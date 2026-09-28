@@ -42,12 +42,6 @@
           >
             <UIcon name="mdi:loading" class="size-3.5 shrink-0 animate-spin motion-reduce:animate-none" />
             <span class="max-w-48 truncate" aria-live="polite">{{ generationStatus }}</span>
-            <span
-              class="shrink-0 tabular-nums"
-              :aria-label="$t('articles.editor.ai.elapsed', { seconds: aiElapsedSeconds })"
-            >
-              {{ aiElapsedSeconds }}s
-            </span>
           </span>
         </div>
       </div>
@@ -254,6 +248,16 @@
       <div
         class="min-w-0 flex flex-col gap-6 lg:sticky lg:top-20 lg:max-h-[calc(100dvh-10rem)] lg:self-start lg:overflow-y-auto lg:overscroll-contain lg:pr-2"
       >
+        <ArticleEditorGenerationRun
+          v-if="aiRun"
+          ref="generationRun"
+          :run="aiRun"
+          :words="aiWordCount"
+          :authorName="clientStatus?.aiUser?.username"
+          @stop="stopGeneration"
+          @retry="generateAIContent"
+          @dismiss="aiRun = null"
+        />
         <div ref="titleTarget" class="rounded-(--topiqu-surface-radius) transition-shadow">
           <UFormField :label="$t('common.labels.articleTitle')">
             <UInput
@@ -314,16 +318,7 @@
             :imageUrl="editedArticle.imageUrl"
             :articleTags="articleTags"
             :aiGenerating="aiGenerating"
-            :aiPhase="aiPhase"
             :aiAuthorName="clientStatus?.aiUser?.username"
-            :aiElapsedSeconds="aiElapsedSeconds"
-            :aiLastActivitySeconds="aiLastActivitySeconds"
-            :aiWordCount="aiWordCount"
-            :aiResearch="aiResearch"
-            :aiMedia="aiMedia"
-            :aiReservedArticles="aiReservedArticles"
-            :aiLastResult="aiLastResult"
-            :aiWritingStage="aiWritingStage"
             :optimizationState="aiGenerating ? 'analyzing' : optimizationState"
             :optimizationResult="aiGenerating ? null : optimizationResult"
             :factCheckState="factCheckState"
@@ -425,16 +420,7 @@
           :imageUrl="editedArticle.imageUrl"
           :articleTags="articleTags"
           :aiGenerating="aiGenerating"
-          :aiPhase="aiPhase"
           :aiAuthorName="clientStatus?.aiUser?.username"
-          :aiElapsedSeconds="aiElapsedSeconds"
-          :aiLastActivitySeconds="aiLastActivitySeconds"
-          :aiWordCount="aiWordCount"
-          :aiResearch="aiResearch"
-          :aiMedia="aiMedia"
-          :aiReservedArticles="aiReservedArticles"
-          :aiLastResult="aiLastResult"
-          :aiWritingStage="aiWritingStage"
           :optimizationState="aiGenerating ? 'analyzing' : optimizationState"
           :optimizationResult="aiGenerating ? null : optimizationResult"
           :factCheckState="factCheckState"
@@ -522,6 +508,7 @@
 </template>
 
 <script setup lang="ts">
+import type { ComponentPublicInstance } from 'vue'
 import type { ArticleWithDetails } from '~~/types/article'
 import type { CoverCredit } from '~~/shared/utils/imageCredit'
 import type { OptimizationTarget } from '~~/shared/types/articleOptimization'
@@ -534,17 +521,14 @@ import { setImageMediaId } from '~~/shared/utils/mediaRights'
 import { translationDraft } from '~~/shared/utils/articleTranslations'
 import {
   type ArticleGenerationBilling,
-  type ArticleGenerationModule,
-  type ArticleGenerationResult,
-  type ArticleMediaProgress,
+  type GenerationRun,
+  finishGenerationRun,
+  reduceGenerationRun,
+  startGenerationRun,
   defaultArticleGenerationOptions,
 } from '~~/shared/utils/articleGeneration'
 
-import type {
-  GenerationPhase,
-  GenerationResearchResult,
-  GenerationWritingStage,
-} from '~/composables/useArticleGeneration'
+import { GenerationStreamError } from '~/composables/useArticleGeneration'
 
 definePageMeta({ middleware: 'admin', shell: 'dashboard' })
 
@@ -620,28 +604,16 @@ const articleTags = shallowRef<string[]>([])
 const optimizedImageUrl = shallowRef('')
 const customPrompt = shallowRef(typeof route.query.prompt === 'string' ? route.query.prompt.slice(0, 5000) : '')
 const aiOptions = ref(defaultArticleGenerationOptions())
-const aiPhase = shallowRef<GenerationPhase>('research')
-const aiResearch = shallowRef<GenerationResearchResult | null>(null)
-const aiMedia = shallowRef<ArticleMediaProgress | null>(null)
-const aiReservedArticles = shallowRef<number | null>(null)
-const aiLastResult = shallowRef<ArticleGenerationResult | null>(null)
-const aiGenerating = shallowRef(false)
+const aiRun = shallowRef<GenerationRun | null>(null)
+const aiGenerating = computed(() => aiRun.value?.status === 'running')
 const activeGenerationSessionId = shallowRef<string | null>(null)
-const aiWritingStage = shallowRef<GenerationWritingStage>('starting')
-const aiStartedAt = shallowRef(0)
-const aiLastActivityAt = shallowRef(0)
-const aiClock = useNow({ interval: 1_000 })
-const aiElapsedSeconds = computed(() =>
-  aiStartedAt.value ? Math.max(0, Math.floor((aiClock.value.getTime() - aiStartedAt.value) / 1_000)) : 0,
-)
-const generationStatus = computed(() =>
-  aiPhase.value === 'writing'
-    ? t(`articles.editor.ai.writingStage.${aiWritingStage.value}`)
-    : t(`articles.editor.ai.phase${aiPhase.value[0]!.toUpperCase()}${aiPhase.value.slice(1)}`),
-)
-const aiLastActivitySeconds = computed(() =>
-  aiLastActivityAt.value ? Math.max(0, Math.floor((aiClock.value.getTime() - aiLastActivityAt.value) / 1_000)) : 0,
-)
+const generationStatus = computed(() => {
+  const run = aiRun.value
+  if (!run) return ''
+  return run.phase === 'writing'
+    ? t(`articles.editor.ai.writingStage.${run.writingStage}`)
+    : t(`articles.editor.ai.phase${run.phase[0]!.toUpperCase()}${run.phase.slice(1)}`)
+})
 const aiWordCount = computed(() => {
   const text = (editedArticle.value.content ?? '').replace(/<[^>]*>/g, ' ').trim()
   return text ? text.split(/\s+/).length : 0
@@ -1022,15 +994,13 @@ const dismissGeneration = async () => {
   if (recoverableGeneration.value) await resolveGenerationSession(recoverableGeneration.value.id, 'dismiss')
 }
 
+const generationRun = useTemplateRef<ComponentPublicInstance>('generationRun')
+const RUN_TOAST_COLOR = { completed: 'success', partial: 'warning', stopped: 'info', failed: 'error' } as const
+
 const generateAIContent = async () => {
   const reservedBefore = clientStatus.value?.articleWallet.reserved ?? 0
-  let missingModules: ArticleGenerationModule[] = []
   let billing: ArticleGenerationBilling | null = null
   let finalReceived = false
-  let sourceCount = 0
-  let mediaFound = 0
-  let mediaTotal = 0
-  let reviewApproved: boolean | null = null
   let streamedContent = ''
   const streamedImages = new Map<number, string>()
   const applyStreamedImages = (content: string) => {
@@ -1041,20 +1011,19 @@ const generateAIContent = async () => {
   const presentStreamedContent = () => {
     editedArticle.value.content = stripContentSlots(applyStreamedImages(streamedContent))
   }
-  aiGenerating.value = true
-  aiPhase.value = aiOptions.value.research.enabled ? 'research' : 'writing'
-  aiResearch.value = null
-  aiMedia.value = null
-  aiReservedArticles.value = null
-  aiWritingStage.value = 'starting'
-  aiStartedAt.value = Date.now()
-  aiLastActivityAt.value = aiStartedAt.value
-  aiLastResult.value = null
+  aiRun.value = startGenerationRun(aiOptions.value, Date.now())
+  // The run card above the article is the progress view; the preset form only gets in the way.
+  aiOpen.value = false
+  sidebarOpen.value = false
+  void nextTick(() => generationRun.value?.$el?.scrollIntoView?.({ behavior: 'smooth', block: 'nearest' }))
   try {
     const outcome = await streamGenerate(
       customPrompt.value,
       { ...aiOptions.value, language: primaryLanguage.value },
       {
+        onEvent: (event) => {
+          if (aiRun.value) aiRun.value = reduceGenerationRun(aiRun.value, event, Date.now())
+        },
         onSession: (id) => (activeGenerationSessionId.value = id),
         onPartial: (partial) => {
           if (partial.title != null) editedArticle.value.title = partial.title
@@ -1065,23 +1034,12 @@ const generateAIContent = async () => {
             presentStreamedContent()
           }
         },
-        onPhase: (phase) => (aiPhase.value = phase),
-        onResearch: (research) => {
-          aiResearch.value = research
-          sourceCount = research.sourceCount
-          editedArticle.value.sources = research.sources
-        },
-        onMedia: (media) => {
-          aiMedia.value = media
-          mediaFound = media.found
-          mediaTotal = media.total
-        },
-        onReview: (review) => (reviewApproved = review.approved),
+        onResearch: (research) => (editedArticle.value.sources = research.sources),
         onBilling: (result) => {
           billing = result
           const reserved = Math.max(
             reservedBefore,
-            (clientStatus.value?.articleWallet.reserved ?? 0) - (aiReservedArticles.value ?? 0),
+            (clientStatus.value?.articleWallet.reserved ?? 0) - (aiRun.value?.reserved ?? 0),
           )
           patchClientSiteArticleWallet({
             available: result.articlesRemaining,
@@ -1090,7 +1048,6 @@ const generateAIContent = async () => {
           })
         },
         onReservation: (articles) => {
-          aiReservedArticles.value = articles
           const wallet = clientStatus.value?.articleWallet
           if (wallet)
             patchClientSiteArticleWallet({
@@ -1099,25 +1056,12 @@ const generateAIContent = async () => {
               balance: wallet.balance,
             })
         },
-        onWritingStage: (stage) => (aiWritingStage.value = stage),
-        onActivity: () => (aiLastActivityAt.value = Date.now()),
         onImage: ({ slot, html }) => {
           streamedImages.set(slot, html)
           presentStreamedContent()
         },
         onFinal: (article) => {
           finalReceived = true
-          const content = article.content ?? ''
-          const delivered: Record<ArticleGenerationModule, boolean> = {
-            answer: Boolean(article.answer),
-            takeaways: Boolean(article.keyTakeaways?.length),
-            faq: Boolean(article.faq?.length),
-            poll: /data-type=["']poll["']/i.test(content),
-            table: /<table\b/i.test(content),
-            images: /<img\b/i.test(content),
-            youtube: /data-youtube-video/i.test(content),
-          }
-          missingModules = aiOptions.value.modules.filter((module) => !delivered[module])
           Object.assign(editedArticle.value, {
             title: article.title,
             excerpt: article.perex,
@@ -1139,59 +1083,19 @@ const generateAIContent = async () => {
         },
       },
     )
-    const durationSeconds = Math.max(1, Math.round((Date.now() - aiStartedAt.value) / 1_000))
-    aiLastResult.value = {
-      status:
-        outcome === 'aborted' ? 'stopped' : missingModules.length || reviewApproved === false ? 'partial' : 'completed',
-      durationSeconds,
-      sourceCount: sourceCount || editedArticle.value.sources?.length || 0,
-      wordCount: aiWordCount.value,
-      mediaFound,
-      mediaTotal,
-      missingModules,
-      reviewApproved,
-    }
-    if (outcome === 'aborted')
-      toast.add({
-        color: 'info',
-        title: t('articles.editor.ai.aiContentStopped'),
-      })
-    else if (missingModules.length)
-      toast.add({
-        color: 'warning',
-        title: t('articles.editor.aiModulesUnavailable'),
-        description: missingModules.map((module) => t(`articles.editor.ai.module.${module}`)).join(', '),
-      })
-    else if (reviewApproved === false)
-      toast.add({
-        color: 'warning',
-        title: t('articles.editor.ai.reviewWarning'),
-      })
-    else
-      toast.add({
-        color: 'success',
-        title: t('articles.editor.aiContentGenerated'),
-      })
+    if (aiRun.value) aiRun.value = finishGenerationRun(aiRun.value, outcome, Date.now())
   } catch (error: any) {
-    aiLastResult.value = {
-      status: finalReceived ? 'partial' : 'failed',
-      durationSeconds: Math.max(1, Math.round((Date.now() - aiStartedAt.value) / 1_000)),
-      sourceCount,
-      wordCount: aiWordCount.value,
-      mediaFound,
-      mediaTotal,
-      missingModules: finalReceived ? missingModules : aiOptions.value.modules,
-      reviewApproved,
-    }
-    toast.add({
-      color: 'error',
-      title: t('articles.editor.aiContentFailed'),
-      description: error?.message || undefined,
-    })
+    const failure =
+      error instanceof GenerationStreamError
+        ? { message: error.message, stage: error.stage, creditReturned: error.creditReturned }
+        : { message: error?.message || t('articles.editor.aiContentFailed') }
+    if (aiRun.value) aiRun.value = finishGenerationRun(aiRun.value, failure, Date.now())
   } finally {
     if (!finalReceived && streamedContent)
       editedArticle.value.content = stripContentSlots(applyStreamedImages(streamedContent))
-    aiGenerating.value = false
+    const status = aiRun.value?.status
+    if (status && status !== 'running')
+      toast.add({ color: RUN_TOAST_COLOR[status], title: t(`articles.editor.ai.run.title.${status}`) })
     retryOptimization()
     const recoverySaved = isNew ? await saveDraftNow() : true
     if (recoverySaved && activeGenerationSessionId.value)

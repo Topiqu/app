@@ -25,9 +25,8 @@ describe('generated article modules', () => {
     expect(editorSource).toContain(':answer="editedArticle.answer"')
     expect(editorSource).toContain(':takeaways="editedArticle.keyTakeaways ?? []"')
     expect(editorSource).toContain(':entries="readFaq(editedArticle.faq)"')
-    expect(editorSource).toContain('else if (missingModules.length)')
-    expect(editorSource).toContain("t('articles.editor.aiModulesUnavailable')")
-    expect(editorSource).toContain('t(`articles.editor.ai.module.${module}`)')
+    expect(editorSource).toContain('<ArticleEditorGenerationRun')
+    expect(editorSource).toContain('finishGenerationRun(aiRun.value, outcome, Date.now())')
   })
 
   it('replaces the shared wallet value and waits out reservation settlement after Stop', () => {

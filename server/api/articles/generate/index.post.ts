@@ -6,6 +6,7 @@ import {
   ARTICLE_GENERATION_MODULES,
   RESEARCH_DEPTHS,
   defaultArticleGenerationOptions,
+  missingArticleModules,
 } from '~~/shared/utils/articleGeneration'
 
 export default defineEventHandler(async (event) => {
@@ -256,6 +257,7 @@ export default defineEventHandler(async (event) => {
             onMedia: (media) => send(controller, { type: 'media', ...media }),
           }).catch(async (error) => {
             await reportCaughtError('Article finalization failed', error, { clientSiteId })
+            send(controller, { type: 'media', stage: 'failed', completed: 0, total: 0, found: 0 })
             return {
               ...object,
               content: stripContentSlots(object.content),
@@ -301,7 +303,11 @@ export default defineEventHandler(async (event) => {
             status: 'COMPLETED',
             charged: true,
           })
-          send(controller, { type: 'final', article: { ...finalized, metrics, aiInvolvement: 'ASSIST' } })
+          send(controller, {
+            type: 'final',
+            article: { ...finalized, metrics, aiInvolvement: 'ASSIST' },
+            missingModules: missingArticleModules(finalized, options?.modules ?? []),
+          })
           send(controller, { type: 'billing', articlesCharged: 1, articlesRemaining: articleWallet.available })
         } catch (error: any) {
           if (abortController.signal.aborted && !timedOutStage) {
@@ -349,11 +355,12 @@ export default defineEventHandler(async (event) => {
               failureReason: 'Generation was interrupted by the client connection.',
             })
           } else {
+            const failedStage = timedOutStage ?? (generation ? (textDone ? 'finalization' : 'writing') : 'research')
             // The response is already a 200 with a half-written body, so this can never reach Nitro's
             // `error` hook and Sentry never sees a caught throw — without this the author got a
             // generic toast and production had no record at all.
             await auditAttempt('MANUAL_GENERATION_FAILED', {
-              stage: timedOutStage ?? (generation ? (textDone ? 'finalization' : 'writing') : 'research'),
+              stage: failedStage,
               error: timedOutStage
                 ? timedOutStage === 'writer_idle'
                   ? 'Writer produced no data for 30 seconds'
@@ -372,6 +379,9 @@ export default defineEventHandler(async (event) => {
                   ? t('articles.editor.ai.writerIdleError')
                   : t('articles.editor.ai.writerDeadlineError')
                 : error?.message || t('articles.editor.aiContentFailed'),
+              stage: failedStage,
+              // A failed run always releases its held article below.
+              creditReturned: true,
             })
             await finishGenerationSession({
               sessionId: recoverySession!.id,

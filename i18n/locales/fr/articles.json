@@ -425,7 +425,6 @@
         "stopButton": "Arrêter",
         "generating": "Génération de l'article",
         "neutralAuthor": "Préparer un nouvel article",
-        "neutralWorking": "Un nouvel article est en préparation",
         "planDescription": "Définissez le résultat avant de commencer. Vous verrez exactement ce qui sera utilisé.",
         "outputLabel": "Type de contenu",
         "researchLabel": "Vérifier le sujet sur le web",
@@ -436,24 +435,13 @@
         "modulesLabel": "Éléments de l'article",
         "modulesDescription": "Les éléments sélectionnés sont générés. Une vidéo n'est intégrée que si la recherche trouve une URL YouTube vérifiée.",
         "planSummary": "{format} · {research} · {modules} éléments sélectionnés",
-        "done": "Terminé",
         "elapsed": "Temps écoulé : {seconds} s",
         "waitingWriting": "L'auteur n'a pas envoyé de nouveau texte depuis {seconds} s. La rédaction s'arrête automatiquement après 30 s sans données.",
         "waitingResearch": "La vérification des sources prend plus de temps que prévu. La tâche est toujours active et peut être arrêtée sans risque.",
         "waitingImages": "La préparation d'une image peut prendre jusqu'à 45 s. Si le service n'en fournit pas, l'article sera terminé sans image.",
-        "researchTarget": "Recherche de : {topic}",
-        "researchMethod": "Recherche de sources primaires récentes et vérification des affirmations de la demande.",
         "reservedDuringRun": "Réservé temporairement : {count} article",
         "writerIdleError": "La génération s'est arrêtée car l'auteur n'a envoyé aucune donnée pendant 30 secondes.",
         "writerDeadlineError": "La génération s'est arrêtée après avoir atteint la limite de rédaction de 90 secondes.",
-        "researchSources": "Recherche terminée, sources trouvées : {count}",
-        "researchSourceBadge": "Sources : {count}",
-        "knowledgeUsed": "Base de connaissances : {count}",
-        "researchStatus": {
-          "fallback": "Aucune source",
-          "skipped": "Ignoré"
-        },
-        "wordsWritten": "Le brouillon contient actuellement environ {count} mots.",
         "output": {
           "news": "Actualité",
           "analysis": "Analyse",
@@ -494,28 +482,6 @@
         "phaseResearch": "Vérification des faits et recherche de sources…",
         "phaseWriting": "Rédaction en cours…",
         "phaseImages": "Préparation des images et des contenus intégrés…",
-        "mediaCover": "Préparation de l'image de couverture…",
-        "mediaProgress": "Préparation des images de l'article ({completed} sur {total}) ; {found} trouvées.",
-        "mediaComplete": "Les images sont prêtes. Utilisées : {count}.",
-        "result": {
-          "completed": "Génération terminée",
-          "partial": "Article terminé avec un avertissement",
-          "stopped": "Génération arrêtée",
-          "failed": "Échec de la génération",
-          "descriptionComplete": "Tous les éléments sélectionnés ont été insérés et un article a été décompté de votre solde.",
-          "descriptionPartial": "{count} éléments sélectionnés n'ont pas pu être insérés. Le résultat reste dans l'éditeur pour vérification.",
-          "descriptionReview": "Le résultat complet reste dans l'éditeur car la vérification éditoriale automatique a encore trouvé un problème.",
-          "reviewWarning": "La vérification éditoriale recommande encore une relecture manuelle avant publication.",
-          "missing": "Manquant :",
-          "words": "Mots",
-          "sources": "Sources",
-          "knowledge": "Connaissances",
-          "knowledgeSources": "Connaissances utilisées",
-          "media": "Médias",
-          "time": "Temps",
-          "tokens": "Utilisation",
-          "balance": "Solde"
-        },
         "aiContentStopped": "Génération arrêtée",
         "recoveryTitle": "Un article IA inachevé peut être récupéré",
         "recoveryDescription": "Topiqu a conservé en sécurité le dernier résultat utilisable d'une génération interrompue.",
@@ -526,11 +492,6 @@
         "enhanceFailed": "Impossible d'améliorer les instructions",
         "topicLabel": "Sujet de l'article",
         "topicPlaceholder": "De quoi l'article doit-il parler ? Ajoutez l'angle, le public cible ou les points clés…",
-        "step": {
-          "research": "Recherche et sources",
-          "writing": "Texte de l'article",
-          "images": "Images et contenus intégrés"
-        },
         "formats": {
           "howto": {
             "label": "Tutoriel",
@@ -567,11 +528,109 @@
         "billingExplanation": "L'article n'est décompté qu'après une génération réussie. En cas d'erreur ou d'annulation, l'article réservé est restitué.",
         "moduleUnavailable": "Indisponible pour ce format",
         "reviewFailed": "L'article n'a pas passé la vérification éditoriale après révision.",
-        "reviewWarning": "Article généré ; veuillez le relire avant publication",
         "allowGeneratedImages": "Autoriser les illustrations IA en dernier recours",
-        "generatedImagesFallback": "Uniquement si aucune image existante adaptée n'est trouvée. S'applique aussi à l'image de couverture.",
+        "generatedImagesFallback": "Uniquement pour les sujets illustratifs sans image existante adaptée, y compris la couverture. L'IA ne remplace pas les photos documentaires de personnes ou d'événements.",
         "useKnowledge": "Utiliser la base de connaissances",
-        "useKnowledgeDescription": "L'IA sélectionne des passages pertinents dans votre base de connaissances."
+        "useKnowledgeDescription": "L'IA sélectionne des passages pertinents dans votre base de connaissances.",
+        "run": {
+          "title": {
+            "running": "Génération de l’article",
+            "completed": "Article généré",
+            "partial": "Article généré avec des avertissements",
+            "stopped": "Génération arrêtée",
+            "failed": "Échec de la génération"
+          },
+          "words": "Mots : {count}",
+          "retry": "Réessayer",
+          "dismiss": "Fermer le rapport",
+          "creditReturned": "L’article réservé a été rendu à votre solde ; cette exécution n’a pas été facturée.",
+          "failedHere": "L’exécution s’est arrêtée à cette étape.",
+          "openVideo": "Ouvrir la vidéo",
+          "cover": "Couverture",
+          "slot": "Image {number}",
+          "sidebarNote": "La progression de la génération s’affiche au-dessus de l’article.",
+          "stopped": "Arrêté avant la fin de cette étape.",
+          "state": {
+            "pending": "En attente",
+            "running": "En cours",
+            "done": "Terminé",
+            "warning": "À vérifier",
+            "failed": "Échec",
+            "skipped": "Ignoré"
+          },
+          "step": {
+            "research": "Recherche web",
+            "knowledge": "Connaissances",
+            "youtube": "Vidéo YouTube",
+            "writing": "Texte de l’article",
+            "review": "Relecture éditoriale",
+            "media": "Images",
+            "modules": "Éléments de l’article"
+          },
+          "research": {
+            "off": "Désactivée pour cette exécution.",
+            "running": "Recherche de sources primaires récentes et vérification des affirmations du sujet.",
+            "sources": "Sources trouvées : {count}",
+            "fallback": {
+              "empty": "La recherche n’a trouvé aucune source exploitable ; l’article a été rédigé sans elles.",
+              "timeout": "La recherche a dépassé le délai ; l’article a été rédigé sans sources.",
+              "error": "La recherche a échoué ; l’article a été rédigé sans sources."
+            }
+          },
+          "knowledge": {
+            "running": "Sélection des passages pertinents de vos Connaissances.",
+            "used": "Sources utilisées : {count}",
+            "none": "Rien dans vos Connaissances ne correspondait à ce sujet."
+          },
+          "youtube": {
+            "running": "Recherche d’une vidéo vérifiée.",
+            "found": "Trouvée : {title}",
+            "notUsed": "« {title} » trouvée, mais non insérée dans l’article.",
+            "researchOff": "Non recherchée : les vidéos ne sont cherchées que pendant la recherche web.",
+            "noCandidates": "La recherche n’a trouvé aucune vidéo pertinente.",
+            "rejected": "Les vidéos trouvées n’ont pas passé la vérification YouTube (supprimées ou privées).",
+            "failed": "La recherche de vidéo a échoué."
+          },
+          "writing": {
+            "words": "Mots rédigés : {count}",
+            "starting": "Préparation de la structure de l’article…",
+            "title": "Le titre est prêt ; préparation de l’introduction…",
+            "intro": "L’introduction est prête ; rédaction du texte principal…",
+            "body": "Le texte de l’article s’ajoute progressivement…"
+          },
+          "review": {
+            "running": "Vérification des faits et de la cohérence…",
+            "approved": "Approuvé sans modification.",
+            "revised": "Révisé ; problèmes corrigés : {count}",
+            "issues": "Une vérification manuelle est recommandée. Problèmes ouverts : {count}"
+          },
+          "media": {
+            "cover": "Préparation de l’image de couverture…",
+            "progress": "Préparation des images ({completed} sur {total})…",
+            "complete": "Images utilisées : {found} sur {total}",
+            "failed": "La préparation des images a échoué ; l’article a été terminé sans images."
+          },
+          "modules": {
+            "missing": "Non insérés :"
+          },
+          "source": {
+            "official": "source officielle",
+            "screenshot": "capture du jeu",
+            "library": "banque d’images",
+            "ai": "illustration IA",
+            "missing": "rien de convenable trouvé"
+          },
+          "issue": {
+            "unsupported_claim": "Affirmation non étayée",
+            "continuity_error": "Erreur de continuité",
+            "stale_framing": "Présentation obsolète",
+            "repetition": "Répétition",
+            "filler": "Remplissage",
+            "generic_language": "Formulations génériques",
+            "missing_specifics": "Détails manquants",
+            "broken_structure": "Structure défaillante"
+          }
+        }
       },
       "drafts": {
         "loadDrafts": "Charger les brouillons",
@@ -841,9 +900,7 @@
       "releaseDateNote": "Définit la date et l'heure de publication de l'article. Laissez vide pour publier manuellement.",
       "createSuccess": "Article créé",
       "createFailed": "Impossible de créer l'article",
-      "aiContentGenerated": "Contenu IA généré",
       "aiImagesUnavailable": "L'article est prêt, mais les images sélectionnées n'ont pas pu être obtenues",
-      "aiModulesUnavailable": "L'article est prêt, mais certains éléments sélectionnés étaient indisponibles",
       "aiContentFailed": "Impossible de générer le contenu IA",
       "loadFailed": "Impossible de charger l'article",
       "metaBar": "Métadonnées de l'article",

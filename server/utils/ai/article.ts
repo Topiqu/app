@@ -1,6 +1,11 @@
 import type { Language } from '~~/generated/zenstack/models'
-import type { CoverCredit } from '~~/shared/utils/imageCredit'
-import type { ArticleMediaProgress, ResearchDepth } from '~~/shared/utils/articleGeneration'
+import type { CoverCredit, ImageKind } from '~~/shared/utils/imageCredit'
+import type {
+  ArticleMediaProgress,
+  ArticleMediaSource,
+  ResearchDepth,
+  YoutubeOutcome,
+} from '~~/shared/utils/articleGeneration'
 
 import { z } from 'zod'
 import { hasAiPlan } from '~~/shared/utils/plans'
@@ -18,8 +23,8 @@ import { escapeHtml } from '../sanitize'
 import { findStockImage } from '../images/chain'
 import { createSteamImageSearch } from '../images/steam'
 import { retrieveKnowledge } from '../knowledge/retrieve'
-import { createImageSelection } from '../images/selection'
 import { buildImageHtml, type CaptionLabels } from '../images/caption'
+import { createImageSelection, photoSubjectQuery } from '../images/selection'
 import { findPressImage, loadPressImages, youtubeThumbnailImage } from '../images/press'
 import { buildRevisionPrompt, reviewArticle, type EditorialReview } from './articleQuality'
 import {
@@ -150,7 +155,10 @@ const RESEARCH_CONFIG = {
   { maxOutputTokens: number; timeoutMs: number; searchContextSize: 'low' | 'medium' | 'high' }
 >
 
-const researchYoutube = async (prompt: string, abortSignal?: AbortSignal) => {
+const researchYoutube = async (
+  prompt: string,
+  abortSignal?: AbortSignal,
+): Promise<{ outcome: YoutubeOutcome; tokens: number }> => {
   const signal = abortSignal ? AbortSignal.any([abortSignal, AbortSignal.timeout(25_000)]) : AbortSignal.timeout(25_000)
 
   try {
@@ -168,17 +176,23 @@ const researchYoutube = async (prompt: string, abortSignal?: AbortSignal) => {
     ]
     const urls = [...new Set(candidates.filter((candidate) => youtubeVideoId(candidate)))].slice(0, 3)
 
+    const tokens = result.usage?.totalTokens ?? 0
+    if (!urls.length) return { outcome: { status: 'noCandidates' }, tokens }
+
     // Try the next retrieved candidate when the best result disappeared or rejects oEmbed.
     for (const url of urls) {
       const verification = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`, {
         signal: AbortSignal.timeout(5_000),
       }).catch(() => null)
-      if (verification?.ok) return { url, tokens: result.usage?.totalTokens ?? 0 }
+      if (!verification?.ok) continue
+      const embed = (await verification.json().catch(() => null)) as { title?: unknown } | null
+      const title = typeof embed?.title === 'string' ? embed.title.slice(0, 200) : null
+      return { outcome: { status: 'found', url, title }, tokens }
     }
-    return { url: null, tokens: result.usage?.totalTokens ?? 0 }
+    return { outcome: { status: 'rejected' }, tokens }
   } catch (error) {
     if (abortSignal?.aborted) throw error
-    return { url: null, tokens: 0 }
+    return { outcome: { status: 'failed' }, tokens: 0 }
   }
 }
 
@@ -227,9 +241,7 @@ const researchTopic = async (
       tools: { web_search: aiWebSearchTool(researchConfig.searchContextSize) as never },
       abortSignal: researchSignal,
     })
-    const youtubeResearch = youtubeRequested
-      ? researchYoutube(prompt, abortSignal)
-      : Promise.resolve({ url: null, tokens: 0 })
+    const youtubeResearch = youtubeRequested ? researchYoutube(prompt, abortSignal) : Promise.resolve(null)
     const [{ text, usage, sources, toolResults, finishReason }, youtube] = await Promise.all([
       mainResearch,
       youtubeResearch,
@@ -238,7 +250,10 @@ const researchTopic = async (
     if (finishReason === 'length') throw new Error('Research exceeded its output budget before completing the brief')
     const evidence = researchEvidence(text, retrievedResearchSources({ sources, toolResults }))
     if (!evidence.brief && !fallbackWithoutResearch) throw new Error('Research returned no supported source material')
-    const verifiedVideo = youtube.url ? `\nVerified YouTube video (checked against YouTube oEmbed): ${youtube.url}` : ''
+    const verifiedVideo =
+      youtube?.outcome.status === 'found'
+        ? `\nVerified YouTube video (checked against YouTube oEmbed): ${youtube.outcome.url}`
+        : ''
     const brief = `${evidence.brief ?? ''}${verifiedVideo}`.trim() || null
     const officialMediaPages = (evidence.brief ?? '')
       .split('\n')
@@ -248,11 +263,13 @@ const researchTopic = async (
     const sourceCount = brief ? new Set(brief.match(/https?:\/\/[^\s)\]}>,]+/g) ?? []).size : 0
     return {
       brief,
-      tokens: (usage?.totalTokens ?? 0) + youtube.tokens,
+      tokens: (usage?.totalTokens ?? 0) + (youtube?.tokens ?? 0),
       sourceCount,
       sources: evidence.urls.filter((url) => !officialMediaPages.includes(url)),
       officialMediaPages,
       status: evidence.brief ? ('completed' as const) : ('fallback' as const),
+      fallbackReason: evidence.brief ? undefined : ('empty' as const),
+      youtube: youtube?.outcome,
     }
   } catch (error) {
     // Stop means stop. Only the research-specific timeout degrades to an ungrounded article.
@@ -267,7 +284,16 @@ const researchTopic = async (
       depth,
     })
 
-    return { brief: null, tokens: 0, sourceCount: 0, sources: [], officialMediaPages: [], status: 'fallback' as const }
+    return {
+      brief: null,
+      tokens: 0,
+      sourceCount: 0,
+      sources: [],
+      officialMediaPages: [],
+      status: 'fallback' as const,
+      fallbackReason: researchSignal.aborted ? ('timeout' as const) : ('error' as const),
+      youtube: youtubeRequested ? ({ status: 'failed' } as const) : undefined,
+    }
   }
 }
 
@@ -368,7 +394,16 @@ const buildArticleConfig = async (
           youtubeRequested,
           imagesRequested,
         )
-      : { brief: null, tokens: 0, sourceCount: 0, sources: [], officialMediaPages: [], status: 'skipped' as const },
+      : {
+          brief: null,
+          tokens: 0,
+          sourceCount: 0,
+          sources: [],
+          officialMediaPages: [],
+          status: 'skipped' as const,
+          fallbackReason: undefined,
+          youtube: youtubeRequested ? ({ status: 'researchOff' } as const) : undefined,
+        },
     knowledgeQuery ? retrieveKnowledge(clientSiteId, knowledgeQuery, { abortSignal }) : null,
   ])
   const { brief } = researchResult
@@ -443,12 +478,13 @@ const buildArticleConfig = async (
       - Use 'photo': for a real, identifiable subject — a named person, place, organisation, product or event (e.g. "Vladimir Putin 2024", "Tokyo Shibuya crossing", "PlayStation 5 console"). Name the subject in English the way a photo archive would catalogue it.
       - Use 'stock': for mood, atmosphere or a generic scene where any fitting picture works (e.g. "office meeting", "gaming setup at night"). Short, precise English keyword.
       - Use 'generate': ONLY for what cannot be photographed — abstract ideas, humor, non-existent concepts (e.g. "AI eating old code"). Provide short archive search keywords; existing suitable images are always searched first. NEVER use it for a real person, a real place or a real event.
+      A missing documentary photo is not permission to invent a depiction of a real person or event. Leave that image slot empty if the licensed search fails.
       Preserve the exact product, installment number and named subject in each query. For games, request a screenshot of the actual game, not cosplay, fan art, an older installment, a generic forest or a gaming desk. Do not pad the article with generic mood images. Each visual must contribute distinct relevant information.
       Each content image also needs a "caption": one factual sentence, in the same language as the article, saying what is in the picture — for 'photo' name who or what it is and when. Never write "Illustrative image", "AI generated", "Source:" or any credit into the caption; the system adds those itself.
 
       ${
         imagesSelected === true
-          ? 'The author explicitly requested images in the article body. Include 1-4 distinct useful image slots in appropriate places using [[IMAGE1]], [[IMAGE2]], etc., and provide exactly one corresponding instruction per slot in the images array. This is a requested deliverable: never return an empty images array. When no documentary asset is obvious, describe a restrained illustrative visual so the server can search existing libraries and, if the author allowed it, generate a labelled AI fallback.'
+          ? 'The author explicitly requested images in the article body. Include 1-4 distinct useful image slots in appropriate places using [[IMAGE1]], [[IMAGE2]], etc., and provide exactly one corresponding instruction per slot in the images array. This is a requested deliverable: never return an empty images array. For real people and events request documentary photos; if no licensed asset is found, the server leaves that slot empty. Use illustrative visuals only for genuinely abstract or generic subjects.'
           : imagesSelected === false
             ? 'Return an empty images array and never write an [[IMAGE]] slot into the content.'
             : 'If the article would benefit from visuals, include 1-4 image slots in appropriate places in the content using [[IMAGE1]], [[IMAGE2]], etc. Provide corresponding instructions in the images array. Use 0 images if not relevant.'
@@ -506,6 +542,8 @@ const buildArticleConfig = async (
     researchTokens,
     research: {
       status: researchResult.status,
+      fallbackReason: researchResult.fallbackReason,
+      youtube: researchResult.youtube,
       sourceCount: researchResult.sourceCount,
       depth: researchDepth,
       knowledgeSourceCount: knowledge?.used.length ?? 0,
@@ -616,13 +654,24 @@ export const finalizeArticle = async (
   ]
   const officialImageCache = new Map<string, Promise<StockImage | null>>()
   const findSteamImage = createSteamImageSearch()
-  const findExistingImage = async (query: string, type: ArticleObject['images'][number]['type']) => {
+  const findExistingImage = async (
+    query: string,
+    type: ArticleObject['images'][number]['type'],
+  ): Promise<{ image: StockImage; kind: ImageKind; source: ArticleMediaSource } | null> => {
     const official = await findPressImage(officialImages, query, acceptImage, officialImageCache)
-    if (official) return { image: official, kind: 'illustration' as const }
+    if (official) return { image: official, kind: 'illustration', source: 'official' }
     const screenshot = await findSteamImage(query, acceptImage)
-    if (screenshot) return { image: screenshot, kind: 'illustration' as const }
+    if (screenshot) return { image: screenshot, kind: 'illustration', source: 'screenshot' }
     const hit = await findStockImage(type, query)
-    return hit && acceptImage(hit.image) ? hit : null
+    if (hit && acceptImage(hit.image)) return { ...hit, source: 'library' }
+    // A named subject has real photos even when the scene the writer described does not; that beats
+    // an AI illustration of any intent.
+    const subject = photoSubjectQuery(query)
+    if (subject) {
+      const portrait = await findStockImage('photo', subject)
+      if (portrait && acceptImage(portrait.image)) return { ...portrait, kind: 'illustration', source: 'library' }
+    }
+    return null
   }
   let articleImageUrl = ''
   let articleImageCredit: CoverCredit | null = null
@@ -630,10 +679,22 @@ export const finalizeArticle = async (
   const mediaTotal = 1 + object.images.length
   let mediaCompleted = 0
   let mediaFound = 0
-  onMedia?.({ stage: 'cover', completed: mediaCompleted, total: mediaTotal, found: mediaFound })
+  let coverSource: ArticleMediaSource | null | undefined
+  const slotSources: (ArticleMediaSource | null | undefined)[] = object.images.map(() => undefined)
+  const reportMedia = (stage: ArticleMediaProgress['stage']) =>
+    onMedia?.({
+      stage,
+      completed: mediaCompleted,
+      total: mediaTotal,
+      found: mediaFound,
+      cover: coverSource,
+      slots: [...slotSources],
+    })
+  reportMedia('cover')
   if (object.coverImage) {
     const hit = await findExistingImage(object.coverImage.query, object.coverImage.type)
-    const generated = !hit ? await tryGenerateImage(object.coverImage.query) : null
+    const generated =
+      !hit && object.coverImage.type !== 'photo' ? await tryGenerateImage(object.coverImage.query) : null
     articleImageUrl = hit?.image.url ?? generated?.url ?? ''
     if (articleImageUrl) {
       articleImageCredit = hit ? { kind: hit.kind, credit: hit.image.credit } : { kind: 'ai' }
@@ -644,15 +705,11 @@ export const finalizeArticle = async (
       articleCoverMediaId = registered.mediaId ?? null
       if (generated) acceptImage({ url: articleImageUrl })
     }
-  }
+    coverSource = hit?.source ?? (generated ? 'ai' : null)
+  } else coverSource = null
   mediaCompleted += 1
   if (articleImageUrl) mediaFound += 1
-  onMedia?.({
-    stage: object.images.length ? 'content' : 'complete',
-    completed: mediaCompleted,
-    total: mediaTotal,
-    found: mediaFound,
-  })
+  reportMedia(object.images.length ? 'content' : 'complete')
 
   const labels = await captionLabels(language)
 
@@ -660,21 +717,27 @@ export const finalizeArticle = async (
   const resolveImage = async (
     instruction: ArticleObject['images'][number],
     idx: number,
-  ): Promise<ArticleImage | null> => {
+  ): Promise<{ image: ArticleImage; source: ArticleMediaSource } | null> => {
     const hit = await findExistingImage(instruction.query, instruction.type)
     if (hit)
       return {
-        url: hit.image.url,
-        kind: hit.kind,
-        width: hit.image.width,
-        height: hit.image.height,
-        alt: hit.image.alt,
-        credit: hit.image.credit,
+        source: hit.source,
+        image: {
+          url: hit.image.url,
+          kind: hit.kind,
+          width: hit.image.width,
+          height: hit.image.height,
+          alt: hit.image.alt,
+          credit: hit.image.credit,
+        },
       }
 
-    const generated = await tryGenerateImage(instruction.query, { filenameSuffix: idx.toString() })
+    const generated =
+      instruction.type === 'photo'
+        ? null
+        : await tryGenerateImage(instruction.query, { filenameSuffix: idx.toString() })
 
-    return generated && acceptImage(generated) ? { ...generated, kind: 'ai' } : null
+    return generated && acceptImage(generated) ? { source: 'ai', image: { ...generated, kind: 'ai' } } : null
   }
 
   const settledImages = await Promise.all(
@@ -682,12 +745,13 @@ export const finalizeArticle = async (
       const resolved = await resolveImage(img, idx).finally(() => {
         mediaCompleted += 1
       })
+      slotSources[idx] = resolved?.source ?? null
       if (!resolved) {
-        onMedia?.({ stage: 'content', completed: mediaCompleted, total: mediaTotal, found: mediaFound })
+        reportMedia('content')
         return null
       }
 
-      const registered = await registerMedia(resolved, img.query)
+      const registered = await registerMedia(resolved.image, img.query)
       const image = {
         slot: idx + 1,
         // A requested caption describes the desired asset, not the asset that was actually
@@ -698,7 +762,7 @@ export const finalizeArticle = async (
       }
       mediaFound += 1
       onImage?.(image)
-      onMedia?.({ stage: 'content', completed: mediaCompleted, total: mediaTotal, found: mediaFound })
+      reportMedia('content')
 
       return image
     }),
@@ -706,7 +770,8 @@ export const finalizeArticle = async (
 
   const generatedImages = settledImages.filter((image) => image !== null).map(({ slot, html }) => ({ slot, html }))
 
-  onMedia?.({ stage: 'complete', completed: mediaTotal, total: mediaTotal, found: mediaFound })
+  mediaCompleted = mediaTotal
+  reportMedia('complete')
 
   // Before the slots are filled: the image attribution carries a deliberate mid-paragraph `<br>`
   // that this pass must not see as padding.

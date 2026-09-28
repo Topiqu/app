@@ -66,78 +66,12 @@
           <div class="mt-3 overflow-hidden rounded-lg border border-primary/30 bg-default shadow-sm">
             <div class="border-b border-primary/20 border-t-4 border-t-primary bg-primary/5 px-4 py-4">
               <p class="text-lg font-semibold text-highlighted">
-                {{ aiGenerating ? activeHeading : $t('articles.editor.ai.createTitle') }}
+                {{ $t('articles.editor.ai.createTitle') }}
               </p>
-              <p v-if="aiGenerating || aiAuthorName" class="mt-1 text-sm leading-5 text-muted">
-                {{ aiGenerating ? activeDescription : aiAuthorName }}
-              </p>
+              <p v-if="aiAuthorName" class="mt-1 text-sm leading-5 text-muted">{{ aiAuthorName }}</p>
             </div>
 
             <div v-if="!aiGenerating" class="flex flex-col gap-5 p-4">
-              <div
-                v-if="aiLastResult"
-                class="overflow-hidden rounded-lg border bg-elevated/40"
-                :class="resultTone"
-                aria-live="polite"
-              >
-                <div class="flex items-start gap-3 px-4 py-3.5">
-                  <span class="mt-0.5 grid size-8 shrink-0 place-items-center text-current">
-                    <UIcon :name="resultIcon" size="20" />
-                  </span>
-                  <div class="min-w-0">
-                    <p class="font-semibold text-highlighted">
-                      {{ $t(`articles.editor.ai.result.${aiLastResult.status}`) }}
-                    </p>
-                    <p class="mt-1 text-xs leading-5 text-muted">{{ resultDescription }}</p>
-                  </div>
-                </div>
-                <dl class="grid grid-cols-2 border-t border-default/70">
-                  <div
-                    v-for="metric in resultMetrics"
-                    :key="metric.label"
-                    class="px-4 py-2.5 even:border-l even:border-default/70"
-                  >
-                    <dt class="text-[11px] uppercase tracking-wide text-muted">{{ metric.label }}</dt>
-                    <dd class="mt-1 text-sm font-semibold text-highlighted">{{ metric.value }}</dd>
-                  </div>
-                </dl>
-                <div v-if="aiResearch?.knowledgeSources?.length" class="border-t border-default/70 px-4 py-3">
-                  <p class="text-[11px] uppercase tracking-wide text-muted">
-                    {{ $t('articles.editor.ai.result.knowledgeSources') }}
-                  </p>
-                  <ul class="mt-1.5 space-y-1">
-                    <li v-for="source in aiResearch.knowledgeSources" :key="source.id">
-                      <NuxtLink
-                        :to="localePath({ name: 'admin-knowledge', query: { source: source.id } })"
-                        target="_blank"
-                        class="inline-flex items-center gap-1.5 text-sm text-highlighted hover:underline"
-                      >
-                        <UIcon
-                          name="mdi:book-open-page-variant-outline"
-                          size="14"
-                          class="text-muted"
-                          aria-hidden="true"
-                        />
-                        {{ source.title }}
-                      </NuxtLink>
-                    </li>
-                  </ul>
-                </div>
-                <div
-                  v-if="aiLastResult.missingModules.length"
-                  class="border-t border-warning/20 px-4 py-3 text-xs text-warning"
-                >
-                  {{ $t('articles.editor.ai.result.missing') }}
-                  {{ aiLastResult.missingModules.map(moduleLabel).join(', ') }}
-                </div>
-                <div
-                  v-if="aiLastResult.reviewApproved === false"
-                  class="border-t border-warning/20 px-4 py-3 text-xs text-warning"
-                >
-                  {{ $t('articles.editor.ai.result.reviewWarning') }}
-                </div>
-              </div>
-
               <UFormField :label="$t('articles.editor.ai.topicLabel')">
                 <UTextarea
                   v-model="customPrompt"
@@ -312,97 +246,10 @@
               </div>
             </div>
 
-            <div v-else class="p-4" aria-live="polite" aria-atomic="false">
-              <div class="mb-4 overflow-hidden rounded-md border border-primary/20 bg-primary/5">
-                <div class="h-1 bg-primary/10" aria-hidden="true">
-                  <div
-                    class="h-full bg-primary transition-[width] duration-500 motion-reduce:transition-none"
-                    :style="{ width: progressWidth }"
-                  />
-                </div>
-                <div class="flex items-start gap-3 px-3 py-3">
-                  <span
-                    class="relative mt-0.5 grid size-9 shrink-0 place-items-center rounded-full bg-primary/12 text-primary"
-                  >
-                    <UIcon :name="phaseIcons[aiPhase]" size="18" aria-hidden="true" />
-                  </span>
-                  <div class="min-w-0 flex-1">
-                    <p class="text-sm font-semibold text-highlighted">{{ phaseDetail }}</p>
-                    <template v-if="aiPhase === 'research'">
-                      <p class="mt-1 line-clamp-2 text-xs leading-5 text-muted">
-                        {{ $t('articles.editor.ai.researchTarget', { topic: customPrompt }) }}
-                      </p>
-                      <p class="mt-1 text-xs leading-5 text-muted">{{ $t('articles.editor.ai.researchMethod') }}</p>
-                    </template>
-                    <p v-else-if="aiPhase === 'writing' && aiWordCount" class="mt-1 text-xs text-muted">
-                      {{ $t('articles.editor.ai.wordsWritten', { count: aiWordCount }) }}
-                    </p>
-                    <p v-if="aiReservedArticles" class="mt-2 text-[11px] tabular-nums text-muted">
-                      {{ $t('articles.editor.ai.reservedDuringRun', { count: aiReservedArticles.toLocaleString() }) }}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <ol class="flex flex-col gap-0.5">
-                <li
-                  v-for="(phase, index) in phases"
-                  :key="phase"
-                  class="grid grid-cols-[1.75rem_1fr_auto] items-start gap-2 rounded-md px-2 py-2.5"
-                  :class="aiPhase === phase ? 'bg-elevated' : ''"
-                >
-                  <span
-                    class="grid size-7 place-items-center rounded-full border"
-                    :class="
-                      phaseState(index) === 'done'
-                        ? 'border-success/30 bg-success/10 text-success'
-                        : phaseState(index) === 'active'
-                          ? 'border-primary/30 bg-primary/10 text-primary'
-                          : 'border-default text-muted'
-                    "
-                  >
-                    <UIcon
-                      :name="phaseState(index) === 'done' ? 'mdi:check' : phaseIcons[phase]"
-                      size="15"
-                      aria-hidden="true"
-                    />
-                  </span>
-                  <span>
-                    <span
-                      class="block text-sm font-medium"
-                      :class="phaseState(index) === 'pending' ? 'text-muted' : 'text-highlighted'"
-                    >
-                      {{ $t(`articles.editor.ai.step.${phase}`) }}
-                    </span>
-                    <span v-if="aiPhase === phase" class="mt-0.5 block text-xs leading-5 text-muted">{{
-                      phaseDetail
-                    }}</span>
-                  </span>
-                  <span v-if="phaseState(index) === 'done'" class="text-xs text-success">
-                    {{ phaseDoneLabel(phase) }}
-                  </span>
-                </li>
-              </ol>
-
-              <div class="mt-3 flex items-center justify-between gap-3 border-t border-default pt-3 text-xs text-muted">
-                <span class="inline-flex items-center gap-1.5 tabular-nums">
-                  <span class="size-1.5 rounded-full bg-success" />
-                  {{ $t('articles.editor.ai.elapsed', { seconds: aiElapsedSeconds }) }}
-                </span>
-                <UButton
-                  size="xs"
-                  color="neutral"
-                  variant="ghost"
-                  icon="mdi:stop-circle-outline"
-                  @click="$emit('stop')"
-                >
-                  {{ $t('articles.editor.ai.stopButton') }}
-                </UButton>
-              </div>
-              <p v-if="aiLastActivitySeconds >= 20" class="mt-2 text-xs leading-5 text-warning">
-                {{ waitingMessage }}
-              </p>
-            </div>
+            <p v-else class="flex items-start gap-2 p-4 text-sm leading-5 text-muted">
+              <UIcon name="mdi:arrow-left-top" size="18" class="mt-0.5 shrink-0 text-primary" aria-hidden="true" />
+              {{ $t('articles.editor.ai.run.sidebarNote') }}
+            </p>
           </div>
         </template>
       </UCollapsible>
@@ -490,37 +337,20 @@ import {
   ARTICLE_GENERATION_MODULES,
   ARTICLE_GENERATION_ALLOWED_MODULES,
   RESEARCH_DEPTHS,
-  type ArticleMediaProgress,
   type ArticleGenerationFormat,
   type ArticleGenerationOptions,
   type ArticleGenerationModule,
-  type ArticleGenerationResult,
 } from '~~/shared/utils/articleGeneration'
 
 import type { MediaRightsState } from '~/composables/useMediaRights'
 import type { ArticleOptimizationState } from '~/composables/useArticleOptimization'
 import type { ArticleFactCheckErrorKind, ArticleFactCheckState } from '~/composables/useArticleFactCheck'
-import type {
-  GenerationPhase,
-  GenerationResearchResult,
-  GenerationWritingStage,
-} from '~/composables/useArticleGeneration'
-
-const props = defineProps<{
+defineProps<{
   article?: ArticleWithDetails
   imageUrl?: string | null
   articleTags: string[]
   aiGenerating: boolean
-  aiPhase: GenerationPhase
   aiAuthorName?: string | null
-  aiElapsedSeconds: number
-  aiLastActivitySeconds: number
-  aiWordCount: number
-  aiResearch?: GenerationResearchResult | null
-  aiMedia?: ArticleMediaProgress | null
-  aiReservedArticles?: number | null
-  aiLastResult?: ArticleGenerationResult | null
-  aiWritingStage: GenerationWritingStage
   optimizationState: ArticleOptimizationState
   optimizationResult: ArticleOptimizationResult | null
   factCheckState: ArticleFactCheckState
@@ -560,24 +390,9 @@ const quickReleaseKinds = ['now', 'inHour', 'tomorrow'] as const
 const formats = ARTICLE_GENERATION_FORMATS
 const modules = ARTICLE_GENERATION_MODULES
 const depths = RESEARCH_DEPTHS
-const phases: GenerationPhase[] = ['research', 'writing', 'images']
-const phaseIcons: Record<GenerationPhase, string> = {
-  research: 'mdi:magnify-scan',
-  writing: 'mdi:text-box-edit-outline',
-  images: 'mdi:image-multiple-outline',
-}
 const { t } = useI18n()
-const localePath = useLocalePath()
 const researchDepthName = useId()
 
-const activeHeading = computed(() => props.aiAuthorName || t('articles.editor.ai.neutralWorking'))
-const activeDescription = computed(() =>
-  props.aiPhase === 'writing'
-    ? t(`articles.editor.ai.writingStage.${props.aiWritingStage}`)
-    : t(`articles.editor.ai.phase${props.aiPhase[0]!.toUpperCase()}${props.aiPhase.slice(1)}`),
-)
-const currentPhaseIndex = computed(() => phases.indexOf(props.aiPhase))
-const progressWidth = computed(() => `${((currentPhaseIndex.value + 0.45) / phases.length) * 100}%`)
 const allowedModules = computed(() => ARTICLE_GENERATION_ALLOWED_MODULES[aiOptions.value.format])
 const formatItems = computed(() =>
   formats.map((value) => ({
@@ -615,49 +430,6 @@ const fallbackItems = computed(() => [
   { value: 'stop', label: t('articles.editor.ai.noSourcesStop') },
   { value: 'continue', label: t('articles.editor.ai.researchFallback') },
 ])
-const phaseState = (index: number) =>
-  index < currentPhaseIndex.value ? 'done' : index === currentPhaseIndex.value ? 'active' : 'pending'
-const phaseDetail = computed(() => {
-  if (props.aiPhase === 'research' && props.aiResearch?.status === 'completed')
-    return t('articles.editor.ai.researchSources', { count: props.aiResearch.sourceCount })
-  if (props.aiPhase === 'writing' && props.aiWritingStage === 'review')
-    return t('articles.editor.ai.writingStage.review')
-  if (props.aiPhase === 'writing')
-    return props.aiWordCount > 0
-      ? t('articles.editor.ai.wordsWritten', { count: props.aiWordCount })
-      : t(`articles.editor.ai.writingStage.${props.aiWritingStage}`)
-  if (props.aiPhase === 'images' && props.aiMedia) {
-    if (props.aiMedia.stage === 'cover') return t('articles.editor.ai.mediaCover')
-    if (props.aiMedia.stage === 'complete') return t('articles.editor.ai.mediaComplete', { count: props.aiMedia.found })
-    return t('articles.editor.ai.mediaProgress', {
-      completed: props.aiMedia.completed,
-      total: props.aiMedia.total,
-      found: props.aiMedia.found,
-    })
-  }
-  return t(`articles.editor.ai.phase${props.aiPhase[0]!.toUpperCase()}${props.aiPhase.slice(1)}`)
-})
-const waitingMessage = computed(() => {
-  if (props.aiPhase === 'writing' && props.aiWritingStage === 'review')
-    return t('articles.editor.ai.writingStage.review')
-  if (props.aiPhase === 'writing')
-    return t('articles.editor.ai.waitingWriting', { seconds: props.aiLastActivitySeconds })
-  if (props.aiPhase === 'images') return t('articles.editor.ai.waitingImages')
-  return t('articles.editor.ai.waitingResearch')
-})
-const knowledgeLabel = computed(() =>
-  props.aiResearch?.knowledgeSourceCount
-    ? t('articles.editor.ai.knowledgeUsed', { count: props.aiResearch.knowledgeSourceCount })
-    : null,
-)
-const phaseDoneLabel = (phase: GenerationPhase) => {
-  if (phase !== 'research' || !props.aiResearch) return t('articles.editor.ai.done')
-  const research =
-    props.aiResearch.status === 'completed'
-      ? t('articles.editor.ai.researchSourceBadge', { count: props.aiResearch.sourceCount })
-      : t(`articles.editor.ai.researchStatus.${props.aiResearch.status}`)
-  return knowledgeLabel.value ? `${research} · ${knowledgeLabel.value}` : research
-}
 const planSummary = computed(() =>
   t('articles.editor.ai.outputSummary', {
     format: t(`articles.editor.ai.output.${aiOptions.value.format}`),
@@ -667,47 +439,6 @@ const planSummary = computed(() =>
     modules: aiOptions.value.modules.length,
   }),
 )
-const resultIcon = computed(() =>
-  props.aiLastResult?.status === 'completed'
-    ? 'mdi:check-decagram'
-    : props.aiLastResult?.status === 'failed'
-      ? 'mdi:alert-circle-outline'
-      : 'mdi:progress-alert',
-)
-const resultTone = computed(() =>
-  props.aiLastResult?.status === 'completed'
-    ? 'border-success/30 text-success'
-    : props.aiLastResult?.status === 'failed'
-      ? 'border-error/30 text-error'
-      : 'border-warning/30 text-warning',
-)
-const resultDescription = computed(() => {
-  const result = props.aiLastResult
-  if (!result) return ''
-  return result.missingModules.length
-    ? t('articles.editor.ai.result.descriptionPartial', { count: result.missingModules.length })
-    : result.reviewApproved === false
-      ? t('articles.editor.ai.result.descriptionReview')
-      : t('articles.editor.ai.result.descriptionComplete')
-})
-const resultMetrics = computed(() => {
-  const result = props.aiLastResult
-  if (!result) return []
-  return [
-    { label: t('articles.editor.ai.result.words'), value: result.wordCount.toLocaleString() },
-    { label: t('articles.editor.ai.result.sources'), value: result.sourceCount.toLocaleString() },
-    ...(props.aiResearch?.knowledgeSourceCount
-      ? [
-          {
-            label: t('articles.editor.ai.result.knowledge'),
-            value: props.aiResearch.knowledgeSourceCount.toLocaleString(),
-          },
-        ]
-      : []),
-    { label: t('articles.editor.ai.result.media'), value: `${result.mediaFound}/${result.mediaTotal}` },
-    { label: t('articles.editor.ai.result.time'), value: `${result.durationSeconds} s` },
-  ]
-})
 const moduleLabel = (module: ArticleGenerationModule) => t(`articles.editor.ai.module.${module}`)
 const selectFormat = (format: ArticleGenerationFormat) => {
   aiOptions.value.format = format

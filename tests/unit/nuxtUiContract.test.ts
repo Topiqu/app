@@ -253,7 +253,7 @@ describe('Nuxt UI template contract', () => {
 
   it('keeps CSS loading indicators at media and editor boundaries', () => {
     const allowlist = new Set([
-      'app/components/Article/Editor/AiComposer.vue',
+      'app/components/Article/Editor/GenerationRun.vue',
       'app/components/Article/Editor/TagsField.vue',
       'app/components/Form/Client/LogoUploader.vue',
       'app/components/Client/Version.vue',
@@ -270,7 +270,6 @@ describe('Nuxt UI template contract', () => {
   it('keeps visual utility classes off Nuxt UI primitives', () => {
     const allowlist = new Set([
       'app/components/File/TiptapImage.vue',
-      'app/components/Article/Editor/AiComposer.vue',
       'app/components/Article/Editor/Chip.vue',
       'app/components/Article/Editor/LanguageTabs.vue',
       'app/components/Article/Editor/TagsField.vue',

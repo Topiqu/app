@@ -63,7 +63,7 @@ export const openverse: ImageProvider = {
         // A commercial blog cannot use NC-licensed work, and the platform is multi-tenant.
         license_type: 'commercial',
         mature: 'false',
-        page_size: '8',
+        page_size: '20',
       }).toString()
 
       // Anonymous access is heavily rate-limited; registering a client raises the ceiling.

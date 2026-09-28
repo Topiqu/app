@@ -425,7 +425,6 @@
         "stopButton": "Zastavit",
         "generating": "Generování článku",
         "neutralAuthor": "Připravit nový článek",
-        "neutralWorking": "Připravuje se nový článek",
         "planDescription": "Nastavte podobu výstupu. Před spuštěním přesně uvidíte, co se použije.",
         "outputLabel": "Typ výstupu",
         "researchLabel": "Ověřit téma na webu",
@@ -436,24 +435,13 @@
         "modulesLabel": "Součásti článku",
         "modulesDescription": "Vybrané bloky se vygenerují. Video se vloží jen tehdy, když výzkum najde ověřený odkaz na YouTube.",
         "planSummary": "{format} · {research} · {modules} vybraných modulů",
-        "done": "Hotovo",
         "elapsed": "Uplynulo {seconds} s",
         "waitingWriting": "Autor {seconds} s neposlal další část textu. Psaní se automaticky zastaví po 30 s bez dat.",
         "waitingResearch": "Ověřování zdrojů trvá déle než obvykle. Běh je stále aktivní a lze jej bezpečně zastavit.",
         "waitingImages": "Příprava obrázku může trvat až 45 s. Pokud jej služba nedodá, článek se dokončí bez něj.",
-        "researchTarget": "Hledané téma: {topic}",
-        "researchMethod": "Hledám aktuální primární zdroje a ověřuji tvrzení ze zadání.",
         "reservedDuringRun": "Dočasně blokováno: {count} článek",
         "writerIdleError": "Generování bylo zastaveno: autor 30 sekund neposlal žádná data.",
         "writerDeadlineError": "Generování bylo zastaveno po dosažení 90sekundového limitu psaní.",
-        "researchSources": "Výzkum dokončen, nalezeno zdrojů: {count}",
-        "researchSourceBadge": "Zdrojů: {count}",
-        "knowledgeUsed": "Znalosti: {count}",
-        "researchStatus": {
-          "fallback": "Bez zdrojů",
-          "skipped": "Přeskočeno"
-        },
-        "wordsWritten": "V konceptu je nyní přibližně {count} slov.",
         "output": {
           "news": "Zpráva",
           "analysis": "Analýza",
@@ -494,28 +482,6 @@
         "phaseResearch": "Ověřují se fakta a hledají zdroje…",
         "phaseWriting": "Píšu…",
         "phaseImages": "Připravují se obrázky a vložený obsah…",
-        "mediaCover": "Připravuje se úvodní obrázek…",
-        "mediaProgress": "Připravují se obrázky v článku ({completed} z {total}); nalezeno {found}.",
-        "mediaComplete": "Obrázky jsou připravené. Použito: {count}.",
-        "result": {
-          "completed": "Generování dokončeno",
-          "partial": "Článek je hotový s upozorněním",
-          "stopped": "Generování bylo zastaveno",
-          "failed": "Generování selhalo",
-          "descriptionComplete": "Všechny vybrané části byly vloženy a článek byl odečten ze zůstatku.",
-          "descriptionPartial": "{count} vybraných částí se nepodařilo vložit. Výsledek zůstává v editoru k úpravě.",
-          "descriptionReview": "Kompletní výsledek zůstává v editoru, protože automatická redakční kontrola stále našla problém.",
-          "reviewWarning": "Redakční kontrola stále doporučuje ruční ověření před publikací.",
-          "missing": "Chybí:",
-          "words": "Slova",
-          "sources": "Zdroje",
-          "knowledge": "Znalosti",
-          "knowledgeSources": "Použité znalosti",
-          "media": "Média",
-          "time": "Čas",
-          "tokens": "Spotřeba",
-          "balance": "Zůstatek"
-        },
         "aiContentStopped": "Generování zastaveno",
         "recoveryTitle": "Lze obnovit nedokončený AI článek",
         "recoveryDescription": "Topiqu bezpečně uložil poslední použitelný výsledek přerušeného generování.",
@@ -526,11 +492,6 @@
         "enhanceFailed": "Vylepšení zadání se nepovedlo",
         "topicLabel": "Téma článku",
         "topicPlaceholder": "O čem má článek být? Doplňte úhel pohledu, publikum nebo klíčové body…",
-        "step": {
-          "research": "Výzkum a zdroje",
-          "writing": "Text článku",
-          "images": "Obrázky a vložený obsah"
-        },
         "formats": {
           "howto": {
             "label": "Návod",
@@ -567,11 +528,109 @@
         "billingExplanation": "Článek se odečte až po úspěšném dokončení. Při chybě nebo zastavení se rezervace vrátí.",
         "moduleUnavailable": "Pro tento formát není dostupné",
         "reviewFailed": "Článek neprošel redakční kontrolou ani po opravě.",
-        "reviewWarning": "Článek byl vygenerován; před publikací jej prosím zkontrolujte",
         "allowGeneratedImages": "Povolit AI ilustrace jako poslední možnost",
-        "generatedImagesFallback": "Pouze pokud nenajdeme vhodný existující obrázek. Platí i pro titulní obrázek.",
+        "generatedImagesFallback": "Jen pro ilustrační motivy bez vhodného existujícího obrázku, včetně titulního. Dokumentární fotografie osob a událostí AI nenahrazuje.",
         "useKnowledge": "Použít znalosti",
-        "useKnowledgeDescription": "AI vybere relevantní podklady z vašich Znalostí."
+        "useKnowledgeDescription": "AI vybere relevantní podklady z vašich Znalostí.",
+        "run": {
+          "title": {
+            "running": "Generuji článek",
+            "completed": "Článek je vygenerovaný",
+            "partial": "Článek je vygenerovaný s výhradami",
+            "stopped": "Generování bylo zastaveno",
+            "failed": "Generování selhalo"
+          },
+          "words": "Slov: {count}",
+          "retry": "Zkusit znovu",
+          "dismiss": "Zavřít přehled",
+          "creditReturned": "Blokovaný článek se vrátil do vašeho zůstatku, tento běh nebyl účtován.",
+          "failedHere": "Běh se zastavil v tomto kroku.",
+          "openVideo": "Otevřít video",
+          "cover": "Titulní",
+          "slot": "Obrázek {number}",
+          "sidebarNote": "Průběh generování vidíte nad článkem.",
+          "stopped": "Zastaveno dřív, než krok doběhl.",
+          "state": {
+            "pending": "Čeká",
+            "running": "Probíhá",
+            "done": "Hotovo",
+            "warning": "Vyžaduje pozornost",
+            "failed": "Selhalo",
+            "skipped": "Přeskočeno"
+          },
+          "step": {
+            "research": "Rešerše na webu",
+            "knowledge": "Znalosti",
+            "youtube": "Video z YouTube",
+            "writing": "Text článku",
+            "review": "Redakční kontrola",
+            "media": "Obrázky",
+            "modules": "Součásti článku"
+          },
+          "research": {
+            "off": "Pro tento běh vypnuto.",
+            "running": "Hledám aktuální primární zdroje a ověřuji tvrzení v zadání.",
+            "sources": "Nalezené zdroje: {count}",
+            "fallback": {
+              "empty": "Rešerše nenašla použitelné zdroje, článek vznikl bez nich.",
+              "timeout": "Rešerše nestihla doběhnout, článek vznikl bez zdrojů.",
+              "error": "Rešerše selhala, článek vznikl bez zdrojů."
+            }
+          },
+          "knowledge": {
+            "running": "Vybírám relevantní pasáže z vašich Znalostí.",
+            "used": "Použité zdroje: {count}",
+            "none": "Ve Znalostech nebylo nic k tomuto tématu."
+          },
+          "youtube": {
+            "running": "Hledám ověřené video.",
+            "found": "Nalezeno: {title}",
+            "notUsed": "Nalezeno „{title}“, ale autor ho do článku nevložil.",
+            "researchOff": "Nehledáno: video se hledá jen při rešerši na webu.",
+            "noCandidates": "Rešerše nenašla žádné relevantní video.",
+            "rejected": "Nalezená videa neprošla ověřením na YouTube (smazaná nebo soukromá).",
+            "failed": "Hledání videa selhalo."
+          },
+          "writing": {
+            "words": "Napsaných slov: {count}",
+            "starting": "Připravuji strukturu článku…",
+            "title": "Titulek je hotový, připravuji úvod…",
+            "intro": "Úvod je hotový, píšu hlavní text…",
+            "body": "Text článku se průběžně doplňuje…"
+          },
+          "review": {
+            "running": "Kontroluji fakta a konzistenci…",
+            "approved": "Schváleno bez úprav.",
+            "revised": "Upraveno, opravené problémy: {count}",
+            "issues": "Doporučuje ruční kontrolu. Otevřené problémy: {count}"
+          },
+          "media": {
+            "cover": "Připravuji titulní obrázek…",
+            "progress": "Připravuji obrázky ({completed} z {total})…",
+            "complete": "Použité obrázky: {found} z {total}",
+            "failed": "Příprava obrázků selhala, článek byl dokončen bez nich."
+          },
+          "modules": {
+            "missing": "Nevloženo:"
+          },
+          "source": {
+            "official": "oficiální zdroj",
+            "screenshot": "snímek ze hry",
+            "library": "fotobanka",
+            "ai": "AI ilustrace",
+            "missing": "nic vhodného nenalezeno"
+          },
+          "issue": {
+            "unsupported_claim": "Nepodložené tvrzení",
+            "continuity_error": "Chyba v návaznosti",
+            "stale_framing": "Zastaralé podání",
+            "repetition": "Opakování",
+            "filler": "Vata",
+            "generic_language": "Obecné formulace",
+            "missing_specifics": "Chybí konkrétní údaje",
+            "broken_structure": "Rozbitá struktura"
+          }
+        }
       },
       "drafts": {
         "loadDrafts": "Načíst koncepty",
@@ -841,9 +900,7 @@
       "releaseDateNote": "Slouží k nastavení data a času publikace článku. Nechte prázdné pro manuální vydání.",
       "createSuccess": "Článek úspěšně vytvořen",
       "createFailed": "Vytvoření článku selhalo",
-      "aiContentGenerated": "Obsah AI úspěšně vygenerován",
       "aiImagesUnavailable": "Článek je hotový, ale vybrané obrázky se nepodařilo získat",
-      "aiModulesUnavailable": "Článek je hotový, ale některé vybrané součásti nebyly dostupné",
       "aiContentFailed": "Generování obsahu AI selhalo",
       "loadFailed": "Načtení článku selhalo",
       "metaBar": "Metadata článku",

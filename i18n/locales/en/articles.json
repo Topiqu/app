@@ -425,7 +425,6 @@
         "stopButton": "Stop",
         "generating": "Generating article",
         "neutralAuthor": "Prepare a new article",
-        "neutralWorking": "A new article is being prepared",
         "planDescription": "Set the output before starting. You will see exactly what will be used.",
         "outputLabel": "Output type",
         "researchLabel": "Verify the topic on the web",
@@ -436,24 +435,13 @@
         "modulesLabel": "Article components",
         "modulesDescription": "Selected blocks are generated. A video is embedded only when research finds a verified YouTube URL.",
         "planSummary": "{format} · {research} · {modules} selected modules",
-        "done": "Done",
         "elapsed": "Elapsed {seconds}s",
         "waitingWriting": "The author has not sent more text for {seconds}s. Writing stops automatically after 30s without data.",
         "waitingResearch": "Source verification is taking longer than usual. The run is still active and can be stopped safely.",
         "waitingImages": "Preparing an image can take up to 45s. If the service does not return one, the article will finish without it.",
-        "researchTarget": "Searching for: {topic}",
-        "researchMethod": "Looking for current primary sources and checking the claims in the assignment.",
         "reservedDuringRun": "Temporarily held: {count} article",
         "writerIdleError": "Generation stopped because the writer sent no data for 30 seconds.",
         "writerDeadlineError": "Generation stopped after reaching the 90-second writing limit.",
-        "researchSources": "Research complete, sources found: {count}",
-        "researchSourceBadge": "Sources: {count}",
-        "knowledgeUsed": "Knowledge: {count}",
-        "researchStatus": {
-          "fallback": "No sources",
-          "skipped": "Skipped"
-        },
-        "wordsWritten": "The draft currently contains about {count} words.",
         "output": {
           "news": "News report",
           "analysis": "Analysis",
@@ -494,28 +482,6 @@
         "phaseResearch": "Verifying facts and finding sources…",
         "phaseWriting": "Writing…",
         "phaseImages": "Preparing images and embedded content…",
-        "mediaCover": "Preparing the cover image…",
-        "mediaProgress": "Preparing article images ({completed} of {total}); found {found}.",
-        "mediaComplete": "Images are ready. Used: {count}.",
-        "result": {
-          "completed": "Generation complete",
-          "partial": "Article completed with a warning",
-          "stopped": "Generation was stopped",
-          "failed": "Generation failed",
-          "descriptionComplete": "All selected components were inserted and one article was deducted from your balance.",
-          "descriptionPartial": "{count} selected components could not be inserted. The result remains in the editor for review.",
-          "descriptionReview": "The complete result remains in the editor because the automated editorial review still found an issue.",
-          "reviewWarning": "Editorial review still recommends a manual check before publishing.",
-          "missing": "Missing:",
-          "words": "Words",
-          "sources": "Sources",
-          "knowledge": "Knowledge",
-          "knowledgeSources": "Knowledge used",
-          "media": "Media",
-          "time": "Time",
-          "tokens": "Usage",
-          "balance": "Balance"
-        },
         "aiContentStopped": "Generation stopped",
         "recoveryTitle": "An unfinished AI article can be recovered",
         "recoveryDescription": "Topiqu safely stored the latest usable result from an interrupted generation.",
@@ -526,11 +492,6 @@
         "enhanceFailed": "Could not improve the prompt",
         "topicLabel": "Article topic",
         "topicPlaceholder": "What should the article be about? Add angle, audience or key points…",
-        "step": {
-          "research": "Research and sources",
-          "writing": "Article text",
-          "images": "Images and embedded content"
-        },
         "formats": {
           "howto": {
             "label": "How-to",
@@ -567,11 +528,109 @@
         "billingExplanation": "The article is deducted only after successful completion. An error or cancellation returns the held article.",
         "moduleUnavailable": "Unavailable for this format",
         "reviewFailed": "The article did not pass editorial review after revision.",
-        "reviewWarning": "Article generated; please review it before publishing",
         "allowGeneratedImages": "Allow AI illustrations as a last resort",
-        "generatedImagesFallback": "Only when no suitable existing image is found. Also applies to the cover image.",
+        "generatedImagesFallback": "Only for illustrative subjects without a suitable existing image, including the cover. AI does not replace documentary photos of people or events.",
         "useKnowledge": "Use knowledge",
-        "useKnowledgeDescription": "AI picks relevant passages from your Knowledge."
+        "useKnowledgeDescription": "AI picks relevant passages from your Knowledge.",
+        "run": {
+          "title": {
+            "running": "Generating the article",
+            "completed": "Article generated",
+            "partial": "Article generated with warnings",
+            "stopped": "Generation stopped",
+            "failed": "Generation failed"
+          },
+          "words": "{count} words",
+          "retry": "Try again",
+          "dismiss": "Close report",
+          "creditReturned": "The held article was returned to your balance; this run was not charged.",
+          "failedHere": "The run stopped at this step.",
+          "openVideo": "Open the video",
+          "cover": "Cover",
+          "slot": "Image {number}",
+          "sidebarNote": "Generation progress is shown above the article.",
+          "stopped": "Stopped before this step finished.",
+          "state": {
+            "pending": "Waiting",
+            "running": "In progress",
+            "done": "Done",
+            "warning": "Needs attention",
+            "failed": "Failed",
+            "skipped": "Skipped"
+          },
+          "step": {
+            "research": "Web research",
+            "knowledge": "Knowledge",
+            "youtube": "YouTube video",
+            "writing": "Article text",
+            "review": "Editorial review",
+            "media": "Images",
+            "modules": "Article components"
+          },
+          "research": {
+            "off": "Turned off for this run.",
+            "running": "Looking for current primary sources and checking the claims in the topic.",
+            "sources": "Sources found: {count}",
+            "fallback": {
+              "empty": "Research returned no usable sources; the article was written without them.",
+              "timeout": "Research timed out; the article was written without sources.",
+              "error": "Research failed; the article was written without sources."
+            }
+          },
+          "knowledge": {
+            "running": "Picking relevant passages from your Knowledge.",
+            "used": "Sources used: {count}",
+            "none": "Nothing in your Knowledge matched this topic."
+          },
+          "youtube": {
+            "running": "Searching for a verified video.",
+            "found": "Found: {title}",
+            "notUsed": "Found “{title}”, but the writer did not place it in the article.",
+            "researchOff": "Not searched: videos are only looked up during web research.",
+            "noCandidates": "Research found no relevant video.",
+            "rejected": "Candidate videos failed YouTube verification (removed or private).",
+            "failed": "The video search failed."
+          },
+          "writing": {
+            "words": "Words written: {count}",
+            "starting": "Preparing the article structure…",
+            "title": "The headline is ready; preparing the introduction…",
+            "intro": "The introduction is ready; writing the main text…",
+            "body": "The article text is being added progressively…"
+          },
+          "review": {
+            "running": "Checking facts and consistency…",
+            "approved": "Approved without changes.",
+            "revised": "Revised; issues fixed: {count}",
+            "issues": "Still recommends a manual check. Open issues: {count}"
+          },
+          "media": {
+            "cover": "Preparing the cover image…",
+            "progress": "Preparing images ({completed} of {total})…",
+            "complete": "Images used: {found} of {total}",
+            "failed": "Image preparation failed; the article was finished without images."
+          },
+          "modules": {
+            "missing": "Not inserted:"
+          },
+          "source": {
+            "official": "official source",
+            "screenshot": "game screenshot",
+            "library": "photo library",
+            "ai": "AI illustration",
+            "missing": "nothing suitable found"
+          },
+          "issue": {
+            "unsupported_claim": "Unsupported claim",
+            "continuity_error": "Continuity error",
+            "stale_framing": "Outdated framing",
+            "repetition": "Repetition",
+            "filler": "Filler",
+            "generic_language": "Generic language",
+            "missing_specifics": "Missing specifics",
+            "broken_structure": "Broken structure"
+          }
+        }
       },
       "drafts": {
         "loadDrafts": "Load Drafts",
@@ -841,9 +900,7 @@
       "releaseDateNote": "Used to set the article's publication date and time. Leave empty for manual release.",
       "createSuccess": "Article created successfully",
       "createFailed": "Failed to create article",
-      "aiContentGenerated": "AI content generated successfully",
       "aiImagesUnavailable": "The article is ready, but the selected images could not be obtained",
-      "aiModulesUnavailable": "The article is ready, but some selected components were unavailable",
       "aiContentFailed": "Failed to generate AI content",
       "loadFailed": "Failed to load the article",
       "metaBar": "Article metadata",

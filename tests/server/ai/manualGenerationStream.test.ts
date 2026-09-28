@@ -81,7 +81,7 @@ describe('manual article generation stream', () => {
     expect(drafts).toContain('if (!force && (idle.value || options.paused?.value)) return false')
     expect(editor).toContain('paused: aiGenerating')
     expect(editor).toMatch(
-      /aiGenerating\.value = false\s+retryOptimization\(\)\s+const recoverySaved = isNew \? await saveDraftNow\(\) : true/,
+      /finishGenerationRun\([\s\S]*retryOptimization\(\)\s+const recoverySaved = isNew \? await saveDraftNow\(\) : true/,
     )
   })
 
@@ -96,8 +96,9 @@ describe('manual article generation stream', () => {
   it('keeps media finalization observable and cancellable', () => {
     expect(endpoint).toContain('abortSignal: abortController.signal')
     expect(endpoint).toMatch(/async cancel\([^)]*\)\s*{\s*abortController\.abort\(\)/)
-    expect(articleGenerator).toContain("onMedia?.({ stage: 'cover'")
-    expect(articleGenerator).toContain("stage: 'complete'")
+    expect(articleGenerator).toContain("reportMedia('cover')")
+    expect(articleGenerator).toContain("reportMedia('complete')")
+    expect(endpoint).toContain("send(controller, { type: 'media', stage: 'failed'")
     expect(articleGenerator).not.toContain('if (!articleImageUrl && firstBodyImage)')
   })
 

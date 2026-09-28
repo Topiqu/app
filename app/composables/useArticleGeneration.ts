@@ -1,8 +1,9 @@
 import type {
   ArticleGenerationOptions,
   ArticleGenerationBilling,
-  ArticleMediaProgress,
-  ResearchDepth,
+  GenerationEvent,
+  GenerationFailureStage,
+  GenerationResearchResult,
 } from '~~/shared/utils/articleGeneration'
 
 interface PartialArticle {
@@ -12,30 +13,25 @@ interface PartialArticle {
   sources?: string[]
 }
 
-export type GenerationPhase = 'research' | 'writing' | 'images'
-export type GenerationWritingStage = 'starting' | 'title' | 'intro' | 'body' | 'review'
-
-export interface GenerationResearchResult {
-  status: 'completed' | 'fallback' | 'skipped'
-  sourceCount: number
-  depth: ResearchDepth
-  knowledgeSourceCount?: number
-  knowledgeSources?: { id: string; title: string }[]
-  sources: string[]
+/** Carries the server's failure stage and whether the held article went back to the wallet. */
+export class GenerationStreamError extends Error {
+  constructor(
+    message: string,
+    readonly stage?: GenerationFailureStage,
+    readonly creditReturned?: boolean,
+  ) {
+    super(message)
+  }
 }
 
 interface StreamHandlers {
+  /** Every progress event, in order; feed it to `reduceGenerationRun`. */
+  onEvent?: (event: GenerationEvent) => void
   onSession?: (id: string) => void
   onPartial?: (partial: PartialArticle) => void
-  onPhase?: (phase: GenerationPhase) => void
   onResearch?: (result: GenerationResearchResult) => void
-  onWritingStage?: (stage: GenerationWritingStage) => void
-  onAttempt?: (attemptId: string) => void
   onReservation?: (articles: number) => void
-  onActivity?: () => void
   onImage?: (image: { slot: number; html: string }) => void
-  onMedia?: (progress: ArticleMediaProgress) => void
-  onReview?: (review: { approved: boolean; revised: boolean }) => void
   onBilling?: (billing: ArticleGenerationBilling) => void
   onFinal: (article: Record<string, any>) => void
 }
@@ -84,20 +80,14 @@ export const useArticleGeneration = () => {
         lastPartialAt = Date.now()
       }
 
-      const dispatch = {
-        reservation: (msg: any) => handlers.onReservation?.(msg.articles),
-        phase: (msg: any) => {
-          handlers.onPhase?.(msg.phase)
-          if (msg.attemptId) handlers.onAttempt?.(msg.attemptId)
-        },
-        research: (msg: any) => handlers.onResearch?.(msg),
-        activity: (msg: any) => msg.writingStage && handlers.onWritingStage?.(msg.writingStage),
-        image: (msg: any) => handlers.onImage?.({ slot: msg.slot, html: msg.html }),
-        media: (msg: any) => handlers.onMedia?.(msg),
-        review: (msg: any) => handlers.onReview?.(msg.review),
-        billing: (msg: any) => handlers.onBilling?.(msg),
-        final: (msg: any) => handlers.onFinal(msg.article),
+      const dispatch: Record<string, (msg: any) => void> = {
+        reservation: (msg) => handlers.onReservation?.(msg.articles),
+        research: (msg) => handlers.onResearch?.(msg),
+        image: (msg) => handlers.onImage?.({ slot: msg.slot, html: msg.html }),
+        billing: (msg) => handlers.onBilling?.(msg),
+        final: (msg) => handlers.onFinal(msg.article),
       }
+      const progress = new Set(['reservation', 'phase', 'research', 'activity', 'media', 'review', 'final', 'billing'])
 
       const consume = (line: string) => {
         const trimmed = line.trim()
@@ -105,11 +95,10 @@ export const useArticleGeneration = () => {
         const msg = JSON.parse(trimmed)
 
         if (msg.type === 'partial') {
-          if (msg.writingStage) handlers.onWritingStage?.(msg.writingStage)
           const now = Date.now()
           if (now - lastPartialAt >= PARTIAL_THROTTLE_MS) {
+            handlers.onEvent?.({ type: 'activity', writingStage: msg.writingStage })
             handlers.onPartial?.(msg.object ?? {})
-            handlers.onActivity?.()
             lastPartialAt = now
             pendingPartial = null
           } else {
@@ -119,13 +108,11 @@ export const useArticleGeneration = () => {
         }
 
         flushPartial()
-        if (msg.type === 'error') throw new Error(msg.message)
+        if (msg.type === 'error') throw new GenerationStreamError(msg.message, msg.stage, msg.creditReturned)
         if (msg.type === 'session') return handlers.onSession?.(msg.id)
-        const handle = dispatch[msg.type as keyof typeof dispatch]
-        if (!handle) return
         if (msg.type === 'final') receivedFinal = true
-        handle(msg)
-        handlers.onActivity?.()
+        dispatch[msg.type]?.(msg)
+        if (progress.has(msg.type)) handlers.onEvent?.(msg)
       }
 
       for (;;) {

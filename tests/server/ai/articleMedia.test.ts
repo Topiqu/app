@@ -127,13 +127,60 @@ describe('article media finalization', () => {
     )
     expect(generateImage).not.toHaveBeenCalled()
   })
+
+  it('uses a labelled subject portrait when a specific event query has no licensed match', async () => {
+    vi.mocked(findStockImage).mockResolvedValueOnce(null).mockResolvedValueOnce(hit('babis-portrait'))
+    const object = {
+      ...draft(),
+      coverImage: { type: 'photo' as const, query: 'Andrej Babis Petr Pavel 2026 meeting' },
+      images: [],
+    }
+    const result = await finalizeArticle(object, 'en', { allowGeneratedImages: true })
+    expect(findStockImage).toHaveBeenNthCalledWith(1, 'photo', 'Andrej Babis Petr Pavel 2026 meeting')
+    expect(findStockImage).toHaveBeenNthCalledWith(2, 'photo', 'Andrej Babis')
+    expect(result.articleImageCredit?.kind).toBe('illustration')
+    expect(generateImage).not.toHaveBeenCalled()
+  })
+
+  it('does not synthesize an unavailable documentary cover', async () => {
+    vi.mocked(findStockImage).mockResolvedValue(null)
+    const object = {
+      ...draft(),
+      coverImage: { type: 'photo' as const, query: 'Andrej Babis 2026 meeting' },
+      images: [],
+    }
+    const result = await finalizeArticle(object, 'en', { allowGeneratedImages: true })
+    expect(result.articleImageUrl).toBe('')
+    expect(generateImage).not.toHaveBeenCalled()
+  })
 })
 
-it('labels enabled photo fallback as AI and discards the documentary caption', async () => {
+it('leaves an unavailable documentary photo empty instead of inventing one', async () => {
   vi.mocked(findStockImage).mockResolvedValue(null)
-  vi.mocked(generateImage).mockResolvedValue({ url: 'https://images.test/ai', width: 1200, height: 800 } as never)
   const object = { ...draft(), coverImage: null, images: [draft().images[0]!] }
   const result = await finalizeArticle(object, 'en', { allowGeneratedImages: true })
-  expect(result.content).toContain('data-ai-disclosure')
-  expect(result.content).not.toContain('invented scene')
+  expect(result.content).not.toContain('<img')
+  expect(generateImage).not.toHaveBeenCalled()
+})
+
+it('prefers a real photo of a named subject over AI and reports where every image came from', async () => {
+  vi.mocked(findStockImage).mockResolvedValueOnce(null).mockResolvedValueOnce(hit('babis')).mockResolvedValue(null)
+  vi.mocked(generateImage).mockResolvedValue({ url: 'https://images.test/generated', width: 1200, height: 800 } as never)
+  const onMedia = vi.fn()
+  const object = {
+    ...draft(),
+    content: '<h2>Ciri</h2>[[IMAGE1]][[IMAGE2]]',
+    coverImage: { type: 'stock' as const, query: 'Andrej Babis press conference crowd' },
+    images: [
+      { type: 'generate' as const, query: 'abstract data flow', caption: '' },
+      { type: 'photo' as const, query: 'Witcher 4 Ciri', caption: '' },
+    ],
+  }
+  const result = await finalizeArticle(object, 'en', { allowGeneratedImages: true, onMedia })
+  expect(findStockImage).toHaveBeenNthCalledWith(2, 'photo', 'Andrej Babis')
+  expect(result.articleImageUrl).toBe('https://images.test/babis')
+  expect(generateImage).toHaveBeenCalledTimes(1)
+  expect(onMedia).toHaveBeenLastCalledWith(
+    expect.objectContaining({ stage: 'complete', found: 2, total: 3, cover: 'library', slots: ['ai', null] }),
+  )
 })

@@ -56,7 +56,7 @@ export const wikimediaImage = (page: CommonsPage): StockImage | null => {
 
 /**
  * Landscape first — the body renders one image per full-width paragraph. Picks on the raw fields
- * so only the winner's credit HTML is ever parsed, rather than all eight candidates'.
+ * so only the winner's credit HTML is ever parsed, rather than every candidate's.
  */
 export const pickWikimediaPage = (pages: CommonsPage[], query?: string): CommonsPage | null => {
   pages = query
@@ -94,7 +94,7 @@ export const wikimedia: ImageProvider = {
         generator: 'search',
         gsrsearch: `filetype:bitmap ${query}`,
         gsrnamespace: '6',
-        gsrlimit: '8',
+        gsrlimit: '20',
         prop: 'imageinfo',
         iiprop: 'url|mime|size|extmetadata',
         iiurlwidth: '1200',
