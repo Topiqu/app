@@ -5,8 +5,13 @@ export const CONSENT_VERSION = 2 as const
 
 export type ConsentLauncher = 'client-version' | 'cookie-button' | 'none'
 
-export const consentLauncherFor = (role: string | null | undefined, publication: boolean): ConsentLauncher => {
-  if (role === 'admin' || role === 'superadmin') return 'client-version'
+/** ClientVersion shows the session tenant's wallet, so on another tenant's blog an admin is a reader. */
+export const consentLauncherFor = (
+  role: string | null | undefined,
+  publication: boolean,
+  foreignHost = false,
+): ConsentLauncher => {
+  if ((role === 'admin' || role === 'superadmin') && !foreignHost) return 'client-version'
   return publication ? 'cookie-button' : 'none'
 }
 

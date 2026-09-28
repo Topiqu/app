@@ -96,6 +96,11 @@ describe('consent settings launcher', () => {
     expect(consentLauncherFor('superadmin', false)).toBe('client-version')
   })
 
+  it('treats a privileged role on another tenant host as a reader', () => {
+    expect(consentLauncherFor('admin', true, true)).toBe('cookie-button')
+    expect(consentLauncherFor('superadmin', false, true)).toBe('none')
+  })
+
   it('uses the bottom-right cookie button only for readers on publication pages', () => {
     expect(consentLauncherFor('user', true)).toBe('cookie-button')
     expect(consentLauncherFor(undefined, true)).toBe('cookie-button')

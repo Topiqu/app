@@ -27,6 +27,7 @@
 import { cs, de, en, fr } from '@nuxt/ui/locale'
 import { languageTag } from '~~/shared/utils/language'
 import { consentLauncherFor } from '~~/shared/utils/consent'
+import { isForeignHost } from '~~/shared/utils/domain'
 import { brandTitle, toAbsoluteUrl } from '~~/shared/utils/seo'
 import { resolveBrandAccent } from '~~/shared/utils/tenantTheme'
 import { platformAdsEnabledForPlan } from '~~/shared/utils/advertising'
@@ -46,7 +47,13 @@ const { marketingGranted } = useConsent(() => clientSite)
 
 const isArticleRoute = computed(() => String(route.name ?? '').startsWith('clanky-slug'))
 const isPublicationSurface = computed(() => resolvePageShell(route.meta.shell) === 'publication')
-const consentLauncher = computed(() => consentLauncherFor(auth.value?.user?.role, isPublicationSurface.value))
+const consentLauncher = computed(() =>
+  consentLauncherFor(
+    auth.value?.user?.role,
+    isPublicationSurface.value,
+    isForeignHost(clientSite?.id, auth.value?.user?.clientSiteId),
+  ),
+)
 const i18nLinks = computed(() =>
   (i18nHead.value.link ?? [])
     .filter((link) => !(isArticleRoute.value && link.rel === 'alternate'))
