@@ -907,7 +907,32 @@
       "addTag": "Ajouter un tag",
       "searchTags": "Rechercher ou créer un tag…",
       "createTag": "Créer « {name} »",
-      "publishImmediately": "Immédiatement"
+      "publishImmediately": "Immédiatement",
+      "aiEdit": {
+        "label": "Retouches IA",
+        "undo": "Annuler",
+        "failed": "La retouche IA a échoué. Veuillez réessayer.",
+        "changed": "Le texte a changé pendant le travail de l’IA ; la retouche n’a donc pas été appliquée.",
+        "unsupported": "Sélectionnez uniquement du texte ; l’IA ne peut pas modifier les images, sondages, vidéos et tableaux.",
+        "text": {
+          "grammar": "Corriger la grammaire",
+          "shorten": "Raccourcir",
+          "simplify": "Simplifier",
+          "formal": "Plus formel",
+          "friendly": "Plus chaleureux",
+          "expand": "Développer"
+        },
+        "prompt": {
+          "label": "Améliorer la consigne",
+          "questions": "Me poser des questions",
+          "sharpen": "Préciser la consigne",
+          "shorten": "Raccourcir",
+          "grammar": "Corriger la grammaire",
+          "questionsHint": "Répondez à ce que vous savez et passez le reste. Vos réponses sont ajoutées à la consigne et l’IA les utilise comme vos propres informations.",
+          "applyAnswers": "Ajouter à la consigne",
+          "answersHeading": "Informations de l’auteur :"
+        }
+      }
     },
     "image": {
       "illustration": "Image d'illustration",

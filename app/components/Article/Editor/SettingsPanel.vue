@@ -85,6 +85,7 @@
                   autoresize
                 />
               </UFormField>
+              <ArticleEditorPromptTools v-model="customPrompt" :format="aiOptions.format" />
 
               <UFormField
                 :label="$t('articles.editor.ai.outputLabel')"

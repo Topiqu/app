@@ -907,7 +907,32 @@
       "addTag": "Přidat tag",
       "searchTags": "Najít nebo vytvořit tag…",
       "createTag": "Vytvořit „{name}“",
-      "publishImmediately": "Ihned"
+      "publishImmediately": "Ihned",
+      "aiEdit": {
+        "label": "AI úpravy",
+        "undo": "Vrátit",
+        "failed": "AI úprava se nepovedla. Zkuste to prosím znovu.",
+        "changed": "Text se během práce AI změnil, úprava proto nebyla použita.",
+        "unsupported": "Označte jen text; obrázky, ankety, videa a tabulky AI upravit neumí.",
+        "text": {
+          "grammar": "Opravit gramatiku",
+          "shorten": "Zkrátit",
+          "simplify": "Zjednodušit",
+          "formal": "Formálněji",
+          "friendly": "Přátelštěji",
+          "expand": "Rozvést"
+        },
+        "prompt": {
+          "label": "Vylepšit zadání",
+          "questions": "Doplnit otázkami",
+          "sharpen": "Zpřesnit zadání",
+          "shorten": "Zkrátit",
+          "grammar": "Opravit gramatiku",
+          "questionsHint": "Odpovězte, co víte, zbytek přeskočte. Odpovědi se přidají do zadání a AI je použije jako vaše vlastní údaje.",
+          "applyAnswers": "Přidat do zadání",
+          "answersHeading": "Podklady od autora:"
+        }
+      }
     },
     "image": {
       "illustration": "Ilustrační obrázek",

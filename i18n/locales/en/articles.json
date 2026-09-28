@@ -907,7 +907,32 @@
       "addTag": "Add tag",
       "searchTags": "Find or create a tag…",
       "createTag": "Create “{name}”",
-      "publishImmediately": "Immediately"
+      "publishImmediately": "Immediately",
+      "aiEdit": {
+        "label": "AI edits",
+        "undo": "Undo",
+        "failed": "The AI edit failed. Please try again.",
+        "changed": "The text changed while the AI was working, so the edit was not applied.",
+        "unsupported": "Select text only; images, polls, videos and tables cannot be edited by AI.",
+        "text": {
+          "grammar": "Fix grammar",
+          "shorten": "Shorten",
+          "simplify": "Simplify",
+          "formal": "More formal",
+          "friendly": "More friendly",
+          "expand": "Expand"
+        },
+        "prompt": {
+          "label": "Improve brief",
+          "questions": "Ask me questions",
+          "sharpen": "Sharpen the brief",
+          "shorten": "Shorten",
+          "grammar": "Fix grammar",
+          "questionsHint": "Answer what you know; skip the rest. Your answers are added to the brief and the AI uses them as your own statements.",
+          "applyAnswers": "Add to brief",
+          "answersHeading": "Author’s details:"
+        }
+      }
     },
     "image": {
       "illustration": "Illustrative image",

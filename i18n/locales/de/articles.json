@@ -907,7 +907,32 @@
       "addTag": "Tag hinzufügen",
       "searchTags": "Tag suchen oder erstellen…",
       "createTag": "„{name}“ erstellen",
-      "publishImmediately": "Sofort"
+      "publishImmediately": "Sofort",
+      "aiEdit": {
+        "label": "KI-Bearbeitung",
+        "undo": "Rückgängig",
+        "failed": "Die KI-Bearbeitung ist fehlgeschlagen. Bitte versuchen Sie es erneut.",
+        "changed": "Der Text hat sich während der KI-Bearbeitung geändert, daher wurde sie nicht übernommen.",
+        "unsupported": "Markieren Sie nur Text; Bilder, Umfragen, Videos und Tabellen kann die KI nicht bearbeiten.",
+        "text": {
+          "grammar": "Grammatik korrigieren",
+          "shorten": "Kürzen",
+          "simplify": "Vereinfachen",
+          "formal": "Förmlicher",
+          "friendly": "Freundlicher",
+          "expand": "Ausführen"
+        },
+        "prompt": {
+          "label": "Auftrag verbessern",
+          "questions": "Fragen stellen",
+          "sharpen": "Auftrag präzisieren",
+          "shorten": "Kürzen",
+          "grammar": "Grammatik korrigieren",
+          "questionsHint": "Beantworten Sie, was Sie wissen, und überspringen Sie den Rest. Die Antworten werden dem Auftrag hinzugefügt und von der KI als Ihre eigenen Angaben verwendet.",
+          "applyAnswers": "Zum Auftrag hinzufügen",
+          "answersHeading": "Angaben des Autors:"
+        }
+      }
     },
     "image": {
       "illustration": "Illustrationsbild",

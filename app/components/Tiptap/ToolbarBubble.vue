@@ -8,6 +8,7 @@
     :options="{ placement: 'top', size: { padding: { top: 8, right: 12, bottom: 8, left: 12 } } }"
     class="z-popover"
   >
+    <div class="flex flex-col items-start gap-1">
     <UFieldGroup role="toolbar" :aria-label="$t('articles.editor.title')">
       <UButton
         icon="mdi:format-bold"
@@ -44,7 +45,28 @@
         :active="editor.isActive('link')"
         @click="emit('openLink', editor.getAttributes('link').href)"
       />
+      <UButton
+        icon="mdi:creation-outline"
+        :title="$t('articles.editor.aiEdit.label')"
+        :aria-label="$t('articles.editor.aiEdit.label')"
+        :aria-expanded="aiOpen"
+        :active="aiOpen"
+        @click="aiOpen = !aiOpen"
+      />
     </UFieldGroup>
+    <div v-if="aiOpen" role="toolbar" :aria-label="$t('articles.editor.aiEdit.label')" class="flex max-w-88 flex-wrap gap-1">
+      <UButton
+        v-for="action in TEXT_EDIT_ACTIONS"
+        :key="action"
+        size="sm"
+        :loading="pending === action"
+        :disabled="pending !== null && pending !== action"
+        @click="rewrite(action)"
+      >
+        {{ $t(`articles.editor.aiEdit.text.${action}`) }}
+      </UButton>
+    </div>
+    </div>
   </BubbleMenu>
 </template>
 
@@ -53,11 +75,14 @@ import type { Editor, ChainedCommands } from '@tiptap/vue-3'
 import type { BubbleMenuPluginProps } from '@tiptap/extension-bubble-menu'
 
 import { BubbleMenu } from '@tiptap/vue-3/menus'
+import { TEXT_EDIT_ACTIONS } from '~~/shared/utils/aiEdit'
 
 const { editor } = defineProps<{ editor: Editor }>()
 const emit = defineEmits<{ (e: 'openLink', url?: string): void }>()
 
 const sk = useTiptapShortcuts()
+const aiOpen = shallowRef(false)
+const { pending, rewrite } = useTiptapRewrite(editor)
 
 const shouldShow: NonNullable<BubbleMenuPluginProps['shouldShow']> = ({ editor, state, from, to }) =>
   editor.isEditable &&

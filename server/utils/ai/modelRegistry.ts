@@ -8,6 +8,7 @@ export const AI_MODELS = {
   linkedinPost: { provider: 'openai', id: 'gpt-5.6-luna' },
   translation: { provider: 'openai', id: 'gpt-6-luna' },
   promptEnhance: { provider: 'openai', id: 'gpt-6-luna' },
+  textEdit: { provider: 'openai', id: 'gpt-6-luna' },
   sentiment: { provider: 'openai', id: 'gpt-6-luna' },
   communityInsight: { provider: 'openai', id: 'gpt-6-luna' },
   visibility: { provider: 'openai', id: 'gpt-6-luna' },
