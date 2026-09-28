@@ -5,9 +5,14 @@ export default defineEventHandler(async (event) => {
   const { clientSiteId } = await readValidatedBody(event, z.object({ clientSiteId: z.string().min(1) }).parse)
   const membership = await prisma.tenantMembership.findUnique({
     where: { clientSiteId_userId: { clientSiteId, userId: user.id } },
-    select: { id: true, deletedAt: true },
+    select: {
+      id: true,
+      deletedAt: true,
+      clientSite: { select: { domain: true, domainVerified: true, deletedAt: true } },
+    },
   })
-  if (!membership || membership.deletedAt) throw createError({ statusCode: 403, message: 'Tenant membership required' })
+  if (!membership || membership.deletedAt || membership.clientSite.deletedAt)
+    throw createError({ statusCode: 403, message: 'Tenant membership required' })
   const session = await prisma.session.findFirst({
     where: { id: user.sessionId, userId: user.id, revoked: false },
     select: { clientSiteId: true },
@@ -21,5 +26,9 @@ export default defineEventHandler(async (event) => {
     ip: getIp(event),
     metadata: { previousClientSiteId: session.clientSiteId },
   })
-  return { clientSiteId }
+  return {
+    clientSiteId,
+    domain: membership.clientSite.domain,
+    domainVerified: membership.clientSite.domainVerified,
+  }
 })

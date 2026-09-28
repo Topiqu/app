@@ -29,6 +29,8 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
 
+import { tenantAdminUrl } from '../utils/tenantAdminUrl'
+
 defineProps<{ collapsed: boolean }>()
 
 type MembershipOption = {
@@ -37,8 +39,10 @@ type MembershipOption = {
   clientSite: { name: string; logoUrl: string | null; domain: string; plan: string }
 }
 
-const { data: auth, getSession } = useAuth()
+const { data: auth } = useAuth()
 const toast = useToast()
+const localePath = useLocalePath()
+const baseDomain = useRuntimeConfig().public.baseDomain
 const { data } = await useFetch<MembershipOption[]>('/api/tenant/memberships')
 const memberships = computed(() => data.value ?? [])
 const activeMembership = computed(
@@ -54,11 +58,11 @@ const switchTenant = async (clientSiteId: string) => {
   if (clientSiteId === auth.value?.user.clientSiteId || switching.value) return
   switching.value = true
   try {
-    await $fetch('/api/tenant/active', { method: 'POST', body: { clientSiteId } })
-    await getSession()
-    // Tenant-scoped useFetch/useAsyncData entries may otherwise keep the previous plan and feature set.
-    clearNuxtData()
-    await reloadNuxtApp({ force: true })
+    const site = await $fetch<{ domain: string; domainVerified: boolean }>('/api/tenant/active', {
+      method: 'POST',
+      body: { clientSiteId },
+    })
+    window.location.assign(tenantAdminUrl(site, window.location.href, localePath({ name: 'admin' }), baseDomain))
   } catch {
     toast.add({ color: 'error', title: $t('common.tenant.switchFailed') })
   } finally {
