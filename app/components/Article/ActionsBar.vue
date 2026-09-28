@@ -21,7 +21,7 @@
       </template>
 
       <div class="flex items-center gap-2">
-        <UIcon size="16" name="mdi:calendar" />{{ formatDate(article.createdAt) }}
+        <UIcon size="16" name="mdi:calendar" />{{ formatDate(article.createdAt, locale) }}
       </div>
       <span>|</span>
       <div class="flex items-center gap-2">
@@ -59,6 +59,7 @@ import { formatDate } from '~~/shared/utils'
 import { formatNumber } from '~~/shared/utils/number'
 
 const localePath = useLocalePath()
+const { locale } = useI18n()
 
 defineProps<{
   article: any
