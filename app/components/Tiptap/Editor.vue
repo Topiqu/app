@@ -20,7 +20,9 @@
         />
 
         <TiptapToolbarBubble :editor @openLink="(url) => openLink({ type: 'link', url })" />
-        <TiptapToolbarTableBubble v-if="edit" :editor />
+        <!-- No v-if on bubble menus: Tiptap detaches their element, so unmounting one on an `edit`
+             toggle crashes the patch and freezes the whole editor page. They gate on isEditable. -->
+        <TiptapToolbarTableBubble :editor />
 
         <EditorContent
           :editor
