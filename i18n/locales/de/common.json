@@ -13,8 +13,12 @@
       "generationReservation": "Jede Generierung reserviert vorübergehend 1 Artikel. Bei Erfolg wird er berechnet; nach einem Fehler oder Abbruch wird er zurückgegeben.",
       "neverExpires": "Im Tarif enthaltene Artikel gelten für den jeweiligen Zeitraum. Gekaufte Artikel verfallen nicht.",
       "explanation": "Dein Tarif fügt jeden Monat Artikel hinzu. Gekaufte Artikel verfallen nie und werden nach den Tarifartikeln verwendet.",
-      "reserved": "Für laufende Generierungen reserviert",
-      "reservedHint": "Jede gleichzeitige Generierung reserviert genau 1 Artikel. Fehlgeschlagene Vorgänge geben ihn zurück.",
+      "reserved": "Vorübergehend reserviert",
+      "reservedHint": "Jede Generierung reserviert 1 Artikel. Bei einem Fehler wird er freigegeben.",
+      "reasons": {
+        "manualArticle": "Manuell erstellter Artikel",
+        "scheduledArticle": "Automatisch erstellter Artikel"
+      },
       "periodUsage": "Verwendet in {period}",
       "expires": "Gültig bis",
       "topup": "Weitere Artikel kaufen",
@@ -31,6 +35,7 @@
         "DEBIT": "Verbrauch",
         "RELEASE": "Reservierung freigegeben",
         "EXPIRY": "Artikel abgelaufen",
+        "EXPIRE": "Artikel abgelaufen",
         "REFUND": "Artikel zurückgegeben",
         "BONUS": "Bonus",
         "ADJUSTMENT": "Manuelle Abbuchung"

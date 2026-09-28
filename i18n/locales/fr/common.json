@@ -13,8 +13,12 @@
       "generationReservation": "Chaque génération réserve temporairement 1 article. Il est décompté en cas de réussite et restitué en cas d'erreur ou d'annulation.",
       "neverExpires": "Les articles inclus dans l'offre sont valables pour la période concernée. Les articles achetés n'expirent pas.",
       "explanation": "Votre offre ajoute des articles chaque mois. Les articles achetés n'expirent jamais et sont utilisés après ceux de l'offre.",
-      "reserved": "Réservés aux générations en cours",
-      "reservedHint": "Chaque génération simultanée réserve exactement 1 article. Les tentatives échouées le restituent.",
+      "reserved": "Réservés temporairement",
+      "reservedHint": "Chaque génération réserve 1 article. Il est libéré en cas d'échec.",
+      "reasons": {
+        "manualArticle": "Article créé manuellement",
+        "scheduledArticle": "Article créé automatiquement"
+      },
       "periodUsage": "Utilisés pendant {period}",
       "expires": "Valable jusqu'au",
       "topup": "Acheter des articles supplémentaires",
@@ -31,6 +35,7 @@
         "DEBIT": "Utilisation",
         "RELEASE": "Réservation libérée",
         "EXPIRY": "Articles expirés",
+        "EXPIRE": "Articles expirés",
         "REFUND": "Articles restitués",
         "BONUS": "Bonus",
         "ADJUSTMENT": "Débit manuel"

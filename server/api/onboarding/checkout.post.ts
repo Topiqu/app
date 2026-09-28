@@ -11,6 +11,11 @@ import { TRIAL_ARTICLE_CREDITS } from '~~/shared/utils/articleCredits'
 import { domainVerificationDefaults, isManagedDomain, isValidDomain, normalizeDomain } from '~~/shared/utils/domain'
 
 const LOGIN_TOKEN_TTL_MS = 30 * 60 * 1000
+const PRICE_BY_PLAN = {
+  PRO: { month: process.env.STRIPE_PRICE_PRO, year: process.env.STRIPE_PRICE_PRO_ANNUAL },
+  PREMIUM: { month: process.env.STRIPE_PRICE_PREMIUM, year: process.env.STRIPE_PRICE_PREMIUM_ANNUAL },
+} as const
+const ANNUAL_PRICE_CENTS = { PRO: 47040, PREMIUM: 95040 } as const
 
 const schema = z.object({
   siteName: z.string().min(1).max(255),
@@ -23,6 +28,7 @@ const schema = z.object({
   password: z.string().min(8).max(124),
   verifiedToken: z.string().min(1),
   selectedPlan: z.enum(['PRO', 'PREMIUM']).nullable().optional(),
+  billingInterval: z.enum(['month', 'year']).default('month'),
 })
 
 export default defineEventHandler(async (event) => {
@@ -34,6 +40,31 @@ export default defineEventHandler(async (event) => {
       statusCode: 400,
       message: t('common.auth.codeExpired') || 'Email not verified. Restart the verification step.',
     })
+  }
+
+  const priceId = body.selectedPlan ? PRICE_BY_PLAN[body.selectedPlan][body.billingInterval] : undefined
+
+  // The landing advertises a 20% annual discount on $49/$99 monthly plans.
+  // Check the deployed Stripe catalog before creating an account or a Checkout session.
+  if (body.selectedPlan && body.billingInterval === 'year') {
+    if (!process.env.STRIPE_SK || !priceId) {
+      throw createError({ statusCode: 503, message: 'Annual billing is temporarily unavailable.' })
+    }
+    let annualPrice
+    try {
+      annualPrice = await useStripe().prices.retrieve(priceId)
+    } catch {
+      throw createError({ statusCode: 503, message: 'Annual billing is temporarily unavailable.' })
+    }
+    const expectedAmount = ANNUAL_PRICE_CENTS[body.selectedPlan]
+    if (
+      !annualPrice.active ||
+      annualPrice.currency !== 'usd' ||
+      annualPrice.recurring?.interval !== 'year' ||
+      annualPrice.unit_amount !== expectedAmount
+    ) {
+      throw createError({ statusCode: 503, message: 'Annual billing is temporarily unavailable.' })
+    }
   }
 
   const fullSubdomain = normalizeDomain(body.domainType === 'SUBDOMAIN' ? `${body.domain}.topiqu.com` : body.domain)
@@ -155,8 +186,6 @@ export default defineEventHandler(async (event) => {
   }
 
   const stripeSecret = process.env.STRIPE_SK
-  const priceId = body.selectedPlan === 'PRO' ? process.env.STRIPE_PRICE_PRO : process.env.STRIPE_PRICE_PREMIUM
-
   if (!stripeSecret || !priceId) {
     return { url: dashboardUrl }
   }
@@ -182,9 +211,9 @@ export default defineEventHandler(async (event) => {
       line_items: [{ price: priceId, quantity: 1 }],
       subscription_data: {
         trial_period_days: 14,
-        metadata: { plan: body.selectedPlan, clientSiteId },
+        metadata: { plan: body.selectedPlan, clientSiteId, interval: body.billingInterval },
       },
-      metadata: { plan: body.selectedPlan, clientSiteId },
+      metadata: { plan: body.selectedPlan, clientSiteId, interval: body.billingInterval },
       success_url: `${dashboardUrl}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: dashboardUrl,
     })
@@ -197,6 +226,7 @@ export default defineEventHandler(async (event) => {
         customerId: customer.id,
         mode: 'subscription',
         plan: body.selectedPlan,
+        interval: body.billingInterval,
       },
       ip: getIp(event) || 'unknown',
     })

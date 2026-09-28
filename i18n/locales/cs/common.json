@@ -13,8 +13,12 @@
       "generationReservation": "Každé generování dočasně zablokuje 1 článek. Po úspěšném dokončení se odečte; při chybě nebo přerušení se vrátí.",
       "neverExpires": "Články z tarifu platí pro dané období. Dokoupené články neexpirují.",
       "explanation": "Tarif přidává články každý měsíc. Dokoupené články neexpirují a spotřebují se až po článcích z tarifu.",
-      "reserved": "Blokováno běžícím generováním",
-      "reservedHint": "Každé souběžné generování blokuje právě 1 článek. Při neúspěchu se vrátí.",
+      "reserved": "Dočasně rezervováno",
+      "reservedHint": "Každé generování rezervuje 1 článek. Při chybě se uvolní.",
+      "reasons": {
+        "manualArticle": "Ručně vytvořený článek",
+        "scheduledArticle": "Automaticky vytvořený článek"
+      },
       "periodUsage": "Spotřeba za {period}",
       "expires": "Platnost do",
       "topup": "Dokoupit články",
@@ -31,6 +35,7 @@
         "DEBIT": "Spotřeba",
         "RELEASE": "Uvolnění rezervace",
         "EXPIRY": "Expirace",
+        "EXPIRE": "Expirace",
         "REFUND": "Vrácení článků",
         "BONUS": "Bonus",
         "ADJUSTMENT": "Ruční odečet"

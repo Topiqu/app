@@ -13,8 +13,12 @@
       "generationReservation": "Each generation temporarily holds 1 article. It is charged on success and returned after an error or cancellation.",
       "neverExpires": "Plan articles are valid for their period. Purchased articles do not expire.",
       "explanation": "Your plan adds articles each month. Purchased articles never expire and are used after plan articles.",
-      "reserved": "Held by running generations",
-      "reservedHint": "Each concurrent generation holds exactly 1 article. Failed runs return it.",
+      "reserved": "Temporarily reserved",
+      "reservedHint": "Each generation reserves 1 article. It is released if generation fails.",
+      "reasons": {
+        "manualArticle": "Manually created article",
+        "scheduledArticle": "Automatically created article"
+      },
       "periodUsage": "Used in {period}",
       "expires": "Valid until",
       "topup": "Buy more articles",
@@ -31,6 +35,7 @@
         "DEBIT": "Usage",
         "RELEASE": "Reservation released",
         "EXPIRY": "Articles expired",
+        "EXPIRE": "Articles expired",
         "REFUND": "Articles returned",
         "BONUS": "Bonus",
         "ADJUSTMENT": "Manual debit"

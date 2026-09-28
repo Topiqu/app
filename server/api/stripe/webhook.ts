@@ -55,6 +55,9 @@ export default defineEventHandler(async (event) => {
       const customerId = typeof session.customer === 'string' ? session.customer : session.customer?.id
       const subscription = subscriptionId ? await stripe.subscriptions.retrieve(subscriptionId) : null
       const priceId = subscription?.items.data[0]?.price.id ?? null
+      const subscriptionInterval = subscription?.items.data[0]?.price.recurring?.interval
+      const billingPlan =
+        subscriptionInterval === 'year' ? 'ANNUAL' : subscriptionInterval === 'month' ? 'MONTHLY' : null
 
       const metadataPlan = session.metadata?.plan
       const derivedPlan = planFromPriceId(priceId) ?? (isSubscribablePlan(metadataPlan) ? metadataPlan : null)
@@ -69,6 +72,7 @@ export default defineEventHandler(async (event) => {
             stripeCustomerId: customerId ?? undefined,
             stripeSubscriptionId: subscriptionId ?? undefined,
             stripePriceId: priceId ?? undefined,
+            ...(billingPlan ? { billingPlan } : {}),
           },
         })
 
@@ -97,6 +101,8 @@ export default defineEventHandler(async (event) => {
     if (!clientSiteId) return { received: true }
 
     const currentPriceId = subscription.items.data[0]?.price.id ?? null
+    const currentInterval = subscription.items.data[0]?.price.recurring?.interval
+    const billingPlan = currentInterval === 'year' ? 'ANNUAL' : currentInterval === 'month' ? 'MONTHLY' : null
     const metadataPlan = subscription.metadata?.plan
     const derivedPlan = planFromPriceId(currentPriceId) ?? (isSubscribablePlan(metadataPlan) ? metadataPlan : null)
     const trialEnded = previous?.status === 'trialing' && subscription.status === 'active'
@@ -115,6 +121,7 @@ export default defineEventHandler(async (event) => {
           data: {
             plan: derivedPlan as ClientPlan,
             stripePriceId: currentPriceId ?? undefined,
+            ...(billingPlan ? { billingPlan } : {}),
             ...(trialEnded ? { firstPaidAt: new Date(), lastPaidAt: new Date() } : {}),
           },
         })
