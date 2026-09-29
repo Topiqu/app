@@ -176,8 +176,34 @@
         @click="run((c) => c.insertTable({ rows: 3, cols: 3, withHeaderRow: true }))"
       />
 
+      <UButton
+        icon="mdi:creation-outline"
+        color="primary"
+        variant="soft"
+        size="sm"
+        class="shrink-0"
+        :title="$t('articles.editor.aiEdit.wholeContent')"
+        :aria-label="$t('articles.editor.aiEdit.wholeContent')"
+        :aria-expanded="rewritePromptOpen"
+        :active="rewritePromptOpen"
+        :loading="rewritePending === 'document'"
+        :disabled="rewritePending !== null"
+        @click="rewritePromptOpen = !rewritePromptOpen"
+      >
+        {{ $t('articles.editor.aiEdit.text.improve') }}
+      </UButton>
+
       <TiptapColorPicker v-model="textColor" />
       <TiptapCharacterCount :editor :limit class="shrink-0 sm:ml-auto" />
+    </div>
+    <div v-if="rewritePromptOpen" class="border-t border-default px-2 py-1.5">
+      <TiptapRewritePrompt
+        scope="document"
+        :pending="rewritePending === 'document'"
+        class="max-w-xl"
+        @cancel="rewritePromptOpen = false"
+        @submit="submitRewritePrompt"
+      />
     </div>
   </div>
 </template>
@@ -195,6 +221,11 @@ const emit = defineEmits<{
 }>()
 
 const sk = useTiptapShortcuts()
+const { pending: rewritePending, rewriteAll } = useTiptapRewrite(editor)
+const rewritePromptOpen = shallowRef(false)
+const submitRewritePrompt = async (instruction: string) => {
+  if (await rewriteAll(instruction)) rewritePromptOpen.value = false
+}
 const alignments = ['left', 'center', 'right', 'justify'] as const
 
 const run = (fn: (c: ChainedCommands) => ChainedCommands) => {

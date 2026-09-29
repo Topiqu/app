@@ -914,7 +914,17 @@
         "failed": "La retouche IA a échoué. Veuillez réessayer.",
         "changed": "Le texte a changé pendant le travail de l’IA ; la retouche n’a donc pas été appliquée.",
         "unsupported": "Sélectionnez uniquement du texte ; l’IA ne peut pas modifier les images, sondages, vidéos et tableaux.",
+        "tooLong": "L’article est trop long pour une seule retouche IA.",
+        "wholeContent": "Améliorer tout le contenu de l’article",
+        "instructionLabel": "Comment l’IA doit-elle modifier le texte ?",
+        "instructionPlaceholder": "Par exemple, le raccourcir, clarifier les arguments ou changer le ton…",
+        "apply": "Modifier le texte",
+        "scope": {
+          "selection": "Texte sélectionné",
+          "document": "Contenu complet de l’article"
+        },
         "text": {
+          "improve": "Améliorer le texte",
           "grammar": "Corriger la grammaire",
           "shorten": "Raccourcir",
           "simplify": "Simplifier",

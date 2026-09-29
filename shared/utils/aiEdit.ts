@@ -3,7 +3,10 @@ export const PROMPT_EDIT_ACTIONS = ['questions', 'sharpen', 'shorten', 'grammar'
 export type PromptEditAction = (typeof PROMPT_EDIT_ACTIONS)[number]
 
 /** Presets for a selected passage of the article body. None of them may add facts. */
-export const TEXT_EDIT_ACTIONS = ['grammar', 'shorten', 'simplify', 'formal', 'friendly', 'expand'] as const
+export const TEXT_EDIT_ACTIONS = ['improve', 'grammar', 'shorten', 'simplify', 'formal', 'friendly', 'expand'] as const
 export type TextEditAction = (typeof TEXT_EDIT_ACTIONS)[number]
 
 export const TEXT_EDIT_MAX_LENGTH = 8000
+export const TEXT_EDIT_INSTRUCTION_MAX_LENGTH = 1000
+export const DOCUMENT_EDIT_MAX_LENGTH = 40_000
+export const DOCUMENT_EDIT_MAX_BLOCKS = 120

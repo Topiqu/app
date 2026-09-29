@@ -914,7 +914,17 @@
         "failed": "AI úprava se nepovedla. Zkuste to prosím znovu.",
         "changed": "Text se během práce AI změnil, úprava proto nebyla použita.",
         "unsupported": "Označte jen text; obrázky, ankety, videa a tabulky AI upravit neumí.",
+        "tooLong": "Článek je pro jednu AI úpravu příliš dlouhý.",
+        "wholeContent": "Vylepšit celý obsah článku",
+        "instructionLabel": "Jak má AI text upravit?",
+        "instructionPlaceholder": "Např. zkrať ho, zpřehledni argumenty nebo změň tón…",
+        "apply": "Upravit text",
+        "scope": {
+          "selection": "Označený text",
+          "document": "Celý obsah článku"
+        },
         "text": {
+          "improve": "Vylepšit text",
           "grammar": "Opravit gramatiku",
           "shorten": "Zkrátit",
           "simplify": "Zjednodušit",

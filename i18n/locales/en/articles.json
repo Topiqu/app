@@ -914,7 +914,17 @@
         "failed": "The AI edit failed. Please try again.",
         "changed": "The text changed while the AI was working, so the edit was not applied.",
         "unsupported": "Select text only; images, polls, videos and tables cannot be edited by AI.",
+        "tooLong": "The article is too long for one AI edit.",
+        "wholeContent": "Improve the entire article body",
+        "instructionLabel": "How should AI edit the text?",
+        "instructionPlaceholder": "For example, shorten it, clarify the argument, or change the tone…",
+        "apply": "Edit text",
+        "scope": {
+          "selection": "Selected text",
+          "document": "Entire article body"
+        },
         "text": {
+          "improve": "Improve text",
           "grammar": "Fix grammar",
           "shorten": "Shorten",
           "simplify": "Simplify",

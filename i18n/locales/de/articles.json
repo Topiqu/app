@@ -914,7 +914,17 @@
         "failed": "Die KI-Bearbeitung ist fehlgeschlagen. Bitte versuchen Sie es erneut.",
         "changed": "Der Text hat sich während der KI-Bearbeitung geändert, daher wurde sie nicht übernommen.",
         "unsupported": "Markieren Sie nur Text; Bilder, Umfragen, Videos und Tabellen kann die KI nicht bearbeiten.",
+        "tooLong": "Der Artikel ist für eine einzelne KI-Bearbeitung zu lang.",
+        "wholeContent": "Gesamten Artikeltext verbessern",
+        "instructionLabel": "Wie soll die KI den Text bearbeiten?",
+        "instructionPlaceholder": "Zum Beispiel kürzen, Argumente klarer machen oder den Ton ändern…",
+        "apply": "Text bearbeiten",
+        "scope": {
+          "selection": "Markierter Text",
+          "document": "Gesamter Artikeltext"
+        },
         "text": {
+          "improve": "Text verbessern",
           "grammar": "Grammatik korrigieren",
           "shorten": "Kürzen",
           "simplify": "Vereinfachen",

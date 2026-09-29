@@ -3,7 +3,14 @@ import { readFileSync } from 'node:fs'
 import { generateObject, generateText } from 'ai'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { briefQuestions, enhancePrompt, rewritePassage, sanitizePassage } from '../../../server/utils/ai/enhance'
+import {
+  briefQuestions,
+  enhancePrompt,
+  rewriteDocumentBlocks,
+  rewritePassage,
+  sanitizeInlineText,
+  sanitizePassage,
+} from '../../../server/utils/ai/enhance'
 
 vi.mock('ai', () => ({ generateObject: vi.fn(), generateText: vi.fn() }))
 
@@ -31,6 +38,58 @@ describe('AI text edits', () => {
     const { html } = await rewritePassage('<p>Long text</p>', 'shorten')
     expect(html).toBe('<p>Short <strong>text</strong></p>')
     expect(vi.mocked(generateText).mock.calls[0]![0]).toMatchObject({ model: 'textEdit' })
+  })
+
+  it('offers a general improvement preset for a selected passage', async () => {
+    vi.mocked(generateText).mockResolvedValue({ text: '<p>Clearer text</p>', usage: {} } as never)
+    expect((await rewritePassage('<p>Awkward text</p>', 'improve', 'Make the wording clearer')).html).toBe(
+      '<p>Clearer text</p>',
+    )
+    expect(vi.mocked(generateText).mock.calls[0]![0].prompt).toBe(
+      JSON.stringify({ instruction: 'Make the wording clearer', html: '<p>Awkward text</p>' }),
+    )
+    expect(String(vi.mocked(generateText).mock.calls[0]![0].instructions)).toContain('instruction field')
+  })
+
+  it('rewrites document blocks in order while sanitizing markup and preserving links', async () => {
+    vi.mocked(generateObject).mockResolvedValue({
+      object: {
+        blocks: ['Clear <strong>opening</strong>', 'Read <a href="https://example.test" onclick="x()">more</a>'],
+      },
+      usage: { totalTokens: 12 },
+    } as never)
+    const input = ['Clumsy opening', 'See <a href="https://example.test">more</a>']
+    expect((await rewriteDocumentBlocks(input, 'Make the article clearer')).blocks).toEqual([
+      'Clear <strong>opening</strong>',
+      'Read <a href="https://example.test">more</a>',
+    ])
+    expect(vi.mocked(generateObject).mock.calls[0]![0]).toMatchObject({
+      model: 'textEdit',
+      prompt: JSON.stringify({ instruction: 'Make the article clearer', blocks: input }),
+    })
+  })
+
+  it('rejects a document rewrite that drops an existing link', async () => {
+    vi.mocked(generateObject).mockResolvedValue({ object: { blocks: ['No link'] }, usage: {} } as never)
+    await expect(rewriteDocumentBlocks(['<a href="https://example.test">Link</a>'], 'Clarify')).rejects.toThrow(
+      'changed a link',
+    )
+  })
+
+  it('preserves safe text color but removes arbitrary model CSS', () => {
+    expect(sanitizeInlineText('<span style="color: #ff0000; background-image: url(https://bad.test)">Red</span>')).toBe(
+      '<span style="color: #ff0000">Red</span>',
+    )
+    expect(sanitizeInlineText('<span style="background-image: url(https://bad.test)">Text</span>')).toBe(
+      '<span>Text</span>',
+    )
+  })
+
+  it('rejects a document rewrite that drops inline text color', async () => {
+    vi.mocked(generateObject).mockResolvedValue({ object: { blocks: ['Plain'] }, usage: {} } as never)
+    await expect(rewriteDocumentBlocks(['<span style="color: #ff0000">Colored</span>'], 'Clarify')).rejects.toThrow(
+      'changed inline styling',
+    )
   })
 
   it('uses the preset instruction for a brief edit', async () => {
