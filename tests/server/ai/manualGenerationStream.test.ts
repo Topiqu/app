@@ -8,6 +8,7 @@ const articleQuality = readFileSync(resolve(process.cwd(), 'server/utils/ai/arti
 const editor = readFileSync(resolve(process.cwd(), 'app/pages/admin/editor/[id].vue'), 'utf8')
 const drafts = readFileSync(resolve(process.cwd(), 'app/composables/useArticleDrafts.ts'), 'utf8')
 const recovery = readFileSync(resolve(process.cwd(), 'server/utils/articleGenerationRecovery.ts'), 'utf8')
+const store = readFileSync(resolve(process.cwd(), 'app/stores/articleGeneration.ts'), 'utf8')
 const stopEndpoint = readFileSync(resolve(process.cwd(), 'server/api/articles/generations/[id]/stop.post.ts'), 'utf8')
 
 describe('manual article generation stream', () => {
@@ -16,7 +17,7 @@ describe('manual article generation stream', () => {
     expect(endpoint).not.toMatch(/event\.node\.res\.on\(['"]close['"]/)
     expect(endpoint).toContain("if (session?.failureReason !== 'USER_STOP_REQUESTED') return")
     expect(stopEndpoint).toContain("data: { failureReason: 'USER_STOP_REQUESTED' }")
-    expect(editor).toContain('await $fetch(`/api/articles/generations/${id}/stop`')
+    expect(store).toContain('await $fetch(`/api/articles/generations/${sessionId.value}/stop`')
   })
 
   it('returns the stream through the Fetch Response contract', () => {
@@ -76,15 +77,16 @@ describe('manual article generation stream', () => {
   it('keeps researched and partially generated sources when the author stops early', () => {
     expect(articleGenerator).toContain('researchSources: researchResult.sources')
     expect(endpoint).toContain("type: 'research', ...research, sources: researchSources")
-    expect(editor).toContain('editedArticle.value.sources = research.sources')
-    expect(editor).toContain('if (partial.sources != null) editedArticle.value.sources = partial.sources')
+    expect(store).toContain('onResearch: (research) => update({ sources: research.sources })')
+    expect(store).toContain('...(partial.sources != null ? { sources: partial.sources } : {})')
   })
 
   it('pauses autosave while generation mutates the editor and saves once afterward', () => {
     expect(drafts).toContain('if (!force && (idle.value || options.paused?.value)) return false')
     expect(editor).toContain('paused: aiGenerating')
-    expect(editor).toMatch(/finishGenerationRun\([\s\S]*if \(!leftDuringGeneration\.value\) retryOptimization\(\)/)
-    expect(editor).toContain('if (isNew) await saveDraftNow()')
+    expect(editor).toMatch(
+      /watch\(aiGenerating, \(now, before\) => \{\s+if \(now \|\| !before\) return\s+retryOptimization\(\)\s+if \(isNew\) void saveDraftNow\(\)/,
+    )
   })
 
   it('couples interrupted billing to a durable useful recovery checkpoint', () => {

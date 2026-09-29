@@ -632,7 +632,8 @@
             "generic_language": "Formulations génériques",
             "missing_specifics": "Détails manquants",
             "broken_structure": "Structure défaillante"
-          }
+          },
+          "busy": "Un autre article est en cours de génération. Attendez la fin ou arrêtez-le d’abord."
         },
         "topicPlaceholderStory": "Racontez votre histoire : ce qui s’est passé, quand, combien de temps cela a duré et comment cela s’est terminé. L’IA s’en tient aux faits que vous donnez."
       },

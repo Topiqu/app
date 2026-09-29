@@ -134,7 +134,7 @@
     <UProgress v-if="!isNew && tr.status === 'pending'" class="mb-6" :aria-label="$t('common.loading')" />
 
     <UAlert
-      v-if="recoverableGeneration"
+      v-if="recoverableGeneration && recoverableGeneration.id !== generation.sessionId"
       class="mb-6"
       color="warning"
       variant="soft"
@@ -248,7 +248,7 @@
           :authorName="clientStatus?.aiUser?.username"
           @stop="requestStopGeneration"
           @retry="generateAIContent"
-          @dismiss="aiRun = null"
+          @dismiss="generation.clear()"
         />
         <div ref="titleTarget" class="rounded-(--topiqu-surface-radius) transition-shadow">
           <UFormField :label="$t('common.labels.articleTitle')">
@@ -521,21 +521,11 @@ import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
 import { articleSlug } from '~~/shared/utils/articleSlug'
 import { setImageMediaId } from '~~/shared/utils/mediaRights'
 import { translationDraft } from '~~/shared/utils/articleTranslations'
-import {
-  type ArticleGenerationBilling,
-  type GenerationRun,
-  finishGenerationRun,
-  reduceGenerationRun,
-  startGenerationRun,
-  defaultArticleGenerationOptions,
-} from '~~/shared/utils/articleGeneration'
+import { defaultArticleGenerationOptions } from '~~/shared/utils/articleGeneration'
 
-import { GenerationStreamError } from '~/composables/useArticleGeneration'
-
-definePageMeta({ middleware: 'admin', shell: 'dashboard', keepalive: { max: 3 } })
+definePageMeta({ middleware: 'admin', shell: 'dashboard' })
 
 const route = useRoute()
-const editorPath = route.path
 const router = useRouter()
 const localePath = useLocalePath()
 const toast = useToast()
@@ -618,70 +608,18 @@ const articleTags = shallowRef<string[]>([])
 const optimizedImageUrl = shallowRef('')
 const customPrompt = shallowRef(typeof route.query.prompt === 'string' ? route.query.prompt.slice(0, 5000) : '')
 const aiOptions = ref(defaultArticleGenerationOptions())
-const aiRun = shallowRef<GenerationRun | null>(null)
+// The run lives in the store, so leaving the editor neither stops it nor needs this page kept alive.
+const generation = useArticleGenerationStore()
+const generationTarget = computed(() => (isNew ? 'new' : (article.value?.id ?? null)))
+const ownsGeneration = computed(() => !!generationTarget.value && generation.target === generationTarget.value)
+const aiRun = computed(() => (ownsGeneration.value ? generation.run : null))
 const aiGenerating = computed(() => aiRun.value?.status === 'running')
-const activeGenerationSessionId = shallowRef<string | null>(null)
 const restoredGenerationSessionId = shallowRef<string | null>(null)
-const leftDuringGeneration = shallowRef(false)
-const backgroundGeneration = useBackgroundArticleGeneration()
-onActivated(() => {
-  if (aiRun.value && backgroundGeneration.value?.editorPath === editorPath) {
-    leftDuringGeneration.value = false
-    backgroundGeneration.value = null
-  }
-})
-const syncBackgroundGeneration = () => {
-  if (aiRun.value && leftDuringGeneration.value)
-    backgroundGeneration.value = {
-      editorPath,
-      title: editedArticle.value.title || customPrompt.value,
-      run: aiRun.value,
-    }
-}
-const setAiRun = (run: GenerationRun) => {
-  aiRun.value = run
-  syncBackgroundGeneration()
-}
-watch(
-  [() => backgroundGeneration.value?.run.status, () => article.value?.id],
-  ([status]) => {
-    if (
-      status &&
-      status !== 'running' &&
-      backgroundGeneration.value?.editorPath === editorPath &&
-      !aiRun.value &&
-      (isNew || article.value?.id)
-    )
-      void refreshRecoverableGeneration()
-  },
-  { immediate: true },
-)
 const aiWordCount = computed(() => {
   const text = (editedArticle.value.content ?? '').replace(/<[^>]*>/g, ' ').trim()
   return text ? text.split(/\s+/).length : 0
 })
-const { streamGenerate, stop: stopGeneration } = useArticleGeneration()
-const stopRequested = shallowRef(false)
-let stoppingSessionId: string | null = null
-const stopActiveGeneration = async () => {
-  const id = activeGenerationSessionId.value
-  if (!id || stoppingSessionId === id) return
-  stoppingSessionId = id
-  try {
-    await $fetch(`/api/articles/generations/${id}/stop`, { method: 'POST' })
-    stopGeneration()
-  } catch {
-    stopRequested.value = false
-    toast.add({ color: 'error', title: t('articles.editor.ai.stopFailed') })
-  } finally {
-    stoppingSessionId = null
-  }
-}
-const requestStopGeneration = () => {
-  if (!aiGenerating.value || stopRequested.value) return
-  stopRequested.value = true
-  void stopActiveGeneration()
-}
+const requestStopGeneration = () => void generation.requestStop()
 const serializeSourceState = () =>
   articleEditorSnapshot(editedArticle.value, articleTags.value, selectedSeries.value?.id ?? null)
 const sourceBaseline = shallowRef(serializeSourceState())
@@ -727,6 +665,23 @@ if (!isNew) {
     router.push(localePath({ name: 'admin' }))
   }
 }
+
+// Whatever the run produced for this document so far, also after coming back to the editor.
+watch(
+  () => (ownsGeneration.value ? generation.article : null),
+  (generated) => {
+    if (!generated) return
+    const { tags, ...fields } = generated
+    Object.assign(editedArticle.value, fields)
+    if (tags) articleTags.value = tags
+  },
+  { immediate: true },
+)
+watch(aiGenerating, (now, before) => {
+  if (now || !before) return
+  retryOptimization()
+  if (isNew) void saveDraftNow()
+})
 
 // Language is a dimension of the article, not a separate screen: `tr.activeLang === ''` edits
 // the source, anything else edits that translation through the same fields.
@@ -1051,10 +1006,11 @@ const resolveGenerationSession = async (id: string, action: 'restore' | 'dismiss
   recoverableGeneration.value = null
 }
 const markGenerationSessionsSaved = async () => {
-  const ids = new Set([activeGenerationSessionId.value, restoredGenerationSessionId.value].filter((id) => !!id))
+  const active = ownsGeneration.value ? generation.sessionId : null
+  const ids = new Set([active, restoredGenerationSessionId.value].filter((id) => !!id))
   await Promise.allSettled(Array.from(ids, (id) => resolveGenerationSession(id!, 'restore')))
-  activeGenerationSessionId.value = null
   restoredGenerationSessionId.value = null
+  if (ownsGeneration.value) generation.clear()
 }
 const restoreGeneration = async () => {
   const recovery = recoverableGeneration.value
@@ -1089,122 +1045,21 @@ const dismissGeneration = async () => {
 }
 
 const generationRun = useTemplateRef<ComponentPublicInstance>('generationRun')
-const RUN_TOAST_COLOR = { completed: 'success', partial: 'warning', stopped: 'info', failed: 'error' } as const
 
 const generateAIContent = async () => {
-  if (aiGenerating.value || backgroundGeneration.value?.run.status === 'running') return
-  leftDuringGeneration.value = false
-  activeGenerationSessionId.value = null
-  stopRequested.value = false
-  if (backgroundGeneration.value?.editorPath === editorPath) backgroundGeneration.value = null
-  const reservedBefore = clientStatus.value?.articleWallet.reserved ?? 0
-  let billing: ArticleGenerationBilling | null = null
-  let finalReceived = false
-  let streamedContent = ''
-  const streamedImages = new Map<number, string>()
-  const applyStreamedImages = (content: string) => {
-    let resolved = content
-    for (const [slot, html] of streamedImages) resolved = replaceSlot(resolved, 'IMAGE', slot, html)
-    return resolved
-  }
-  const presentStreamedContent = () => {
-    editedArticle.value.content = stripContentSlots(applyStreamedImages(streamedContent))
-  }
-  setAiRun(startGenerationRun(aiOptions.value, Date.now()))
+  if (generation.running) return toast.add({ color: 'warning', title: t('articles.editor.ai.run.busy') })
   // The run card above the article is the progress view; the preset form only gets in the way.
   aiOpen.value = false
   sidebarOpen.value = false
+  const run = generation.start({
+    prompt: customPrompt.value,
+    options: { ...aiOptions.value, language: primaryLanguage.value },
+    target: generationTarget.value!,
+    editorPath: route.path,
+    articleId: isNew ? undefined : article.value?.id,
+  })
   void nextTick(() => generationRun.value?.$el?.scrollIntoView?.({ behavior: 'smooth', block: 'nearest' }))
-  try {
-    const outcome = await streamGenerate(
-      customPrompt.value,
-      { ...aiOptions.value, language: primaryLanguage.value },
-      {
-        onEvent: (event) => {
-          if (aiRun.value) setAiRun(reduceGenerationRun(aiRun.value, event, Date.now()))
-        },
-        onSession: (id) => {
-          activeGenerationSessionId.value = id
-          if (stopRequested.value) void stopActiveGeneration()
-        },
-        onPartial: (partial) => {
-          if (partial.title != null) editedArticle.value.title = partial.title
-          if (partial.perex != null) editedArticle.value.excerpt = partial.perex
-          if (partial.sources != null) editedArticle.value.sources = partial.sources
-          if (partial.content != null) {
-            streamedContent = partial.content
-            presentStreamedContent()
-          }
-          syncBackgroundGeneration()
-        },
-        onResearch: (research) => (editedArticle.value.sources = research.sources),
-        onBilling: (result) => {
-          billing = result
-          const reserved = Math.max(
-            reservedBefore,
-            (clientStatus.value?.articleWallet.reserved ?? 0) - (aiRun.value?.reserved ?? 0),
-          )
-          patchClientSiteArticleWallet({
-            available: result.articlesRemaining,
-            reserved,
-            balance: result.articlesRemaining + reserved,
-          })
-        },
-        onReservation: (articles) => {
-          const wallet = clientStatus.value?.articleWallet
-          if (wallet)
-            patchClientSiteArticleWallet({
-              available: Math.max(0, wallet.available - articles),
-              reserved: wallet.reserved + articles,
-              balance: wallet.balance,
-            })
-        },
-        onImage: ({ slot, html }) => {
-          streamedImages.set(slot, html)
-          presentStreamedContent()
-        },
-        onFinal: (article) => {
-          finalReceived = true
-          Object.assign(editedArticle.value, {
-            title: article.title,
-            excerpt: article.perex,
-            content: article.content,
-            imageUrl: article.articleImageUrl,
-            imageCredit: article.articleImageCredit ?? null,
-            coverMediaId: article.articleCoverMediaId ?? null,
-            sources: article.sources ?? [],
-            answer: article.answer || null,
-            keyTakeaways: article.keyTakeaways ?? [],
-            faq: article.faq ?? [],
-            format: aiOptions.value.format,
-            aiInvolvement: 'FULL',
-            totalWords: article.metrics?.totalWords ?? 0,
-            savedAmount: article.metrics?.savedAmount ?? 0,
-            savedTimeMinutes: article.metrics?.savedTimeMinutes ?? 0,
-          })
-          articleTags.value = Array.isArray(article.tags) ? article.tags : []
-        },
-      },
-      isNew ? undefined : article.value?.id,
-    )
-    if (aiRun.value) setAiRun(finishGenerationRun(aiRun.value, outcome, Date.now()))
-  } catch (error: any) {
-    const failure =
-      error instanceof GenerationStreamError
-        ? { message: error.message, stage: error.stage, creditReturned: error.creditReturned }
-        : { message: error?.message || t('articles.editor.aiContentFailed') }
-    if (aiRun.value) setAiRun(finishGenerationRun(aiRun.value, failure, Date.now()))
-  } finally {
-    if (!finalReceived && streamedContent)
-      editedArticle.value.content = stripContentSlots(applyStreamedImages(streamedContent))
-    const status = aiRun.value?.status
-    if (status && status !== 'running')
-      toast.add({ color: RUN_TOAST_COLOR[status], title: t(`articles.editor.ai.run.title.${status}`) })
-    if (!leftDuringGeneration.value) retryOptimization()
-    if (isNew) await saveDraftNow()
-    if (billing) await refreshClientSiteStatus().catch(() => undefined)
-    else await refreshClientSiteStatusAfterStop(reservedBefore).catch(() => undefined)
-  }
+  await run
 }
 
 const submit = async (targetStatus: 'draft' | 'published', mediaRightsReview?: MediaRightsReview) => {
@@ -1360,11 +1215,8 @@ const allowNavigation = shallowRef(false)
 const pendingDestination = shallowRef<string | null>(null)
 
 onBeforeRouteLeave((to) => {
-  if (aiGenerating.value) {
-    leftDuringGeneration.value = true
-    syncBackgroundGeneration()
-    return true
-  }
+  // A running generation keeps going in the store; the result is waiting when the author returns.
+  if (aiGenerating.value) return true
   if (allowNavigation.value || !hasChanges.value) return true
   pendingDestination.value = to.fullPath
   discardConfirmOpen.value = true
@@ -1393,6 +1245,11 @@ const goBack = () => {
 
 const confirmDiscard = async () => {
   const destination = pendingDestination.value ?? localePath({ name: 'admin' })
+  if (ownsGeneration.value && !generation.running) {
+    // Discarded on purpose, so it must not come back as a recovery offer.
+    if (generation.sessionId) void resolveGenerationSession(generation.sessionId, 'dismiss').catch(() => undefined)
+    generation.clear()
+  }
   allowNavigation.value = true
   discardConfirmOpen.value = false
   await router.push(destination)

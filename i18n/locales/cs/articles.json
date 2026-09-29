@@ -632,7 +632,8 @@
             "generic_language": "Obecné formulace",
             "missing_specifics": "Chybí konkrétní údaje",
             "broken_structure": "Rozbitá struktura"
-          }
+          },
+          "busy": "Právě se generuje jiný článek. Počkejte, až doběhne, nebo ho nejdřív zastavte."
         },
         "topicPlaceholderStory": "Popište svůj příběh: co se stalo, kdy, jak dlouho to trvalo a jak to dopadlo. AI se drží faktů, které uvedete."
       },

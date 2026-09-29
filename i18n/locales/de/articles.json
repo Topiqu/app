@@ -632,7 +632,8 @@
             "generic_language": "Allgemeine Formulierungen",
             "missing_specifics": "Fehlende Details",
             "broken_structure": "Fehlerhafte Struktur"
-          }
+          },
+          "busy": "Gerade wird ein anderer Artikel generiert. Warten Sie, bis er fertig ist, oder stoppen Sie ihn zuerst."
         },
         "topicPlaceholderStory": "Erzählen Sie Ihre Geschichte: was geschah, wann, wie lange es dauerte und wie es ausging. Die KI hält sich an Ihre Angaben."
       },

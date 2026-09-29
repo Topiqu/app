@@ -632,7 +632,8 @@
             "generic_language": "Generic language",
             "missing_specifics": "Missing specifics",
             "broken_structure": "Broken structure"
-          }
+          },
+          "busy": "Another article is being generated. Wait for it to finish or stop it first."
         },
         "topicPlaceholderStory": "Tell your story: what happened, when, how long it took and how it ended. The AI keeps to the facts you give."
       },

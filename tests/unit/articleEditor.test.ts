@@ -18,6 +18,7 @@ import {
 } from '../../shared/utils/articleEditor'
 
 const editorSource = readFileSync(resolve(process.cwd(), 'app/pages/admin/editor/[id].vue'), 'utf8')
+const generationStore = readFileSync(resolve(process.cwd(), 'app/stores/articleGeneration.ts'), 'utf8')
 const clientSiteSource = readFileSync(resolve(process.cwd(), 'app/composables/useClientSite.ts'), 'utf8')
 
 describe('generated article modules', () => {
@@ -26,14 +27,14 @@ describe('generated article modules', () => {
     expect(editorSource).toContain(':takeaways="editedArticle.keyTakeaways ?? []"')
     expect(editorSource).toContain(':entries="readFaq(editedArticle.faq)"')
     expect(editorSource).toContain('<ArticleEditorGenerationRun')
-    expect(editorSource).toContain('finishGenerationRun(aiRun.value, outcome, Date.now())')
+    expect(generationStore).toContain('finishGenerationRun(run.value, outcome, Date.now())')
   })
 
   it('replaces the shared wallet value and waits out reservation settlement after Stop', () => {
     expect(clientSiteSource).toContain('status.data.value = {')
     expect(clientSiteSource).toContain('status.articleWallet.reserved <= reservedBefore')
-    expect(editorSource).toContain('patchClientSiteArticleWallet({')
-    expect(editorSource).toContain('refreshClientSiteStatusAfterStop(reservedBefore)')
+    expect(generationStore).toContain('patchClientSiteArticleWallet({')
+    expect(generationStore).toContain('refreshClientSiteStatusAfterStop(reservedBefore)')
   })
 })
 
