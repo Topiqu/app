@@ -174,6 +174,10 @@ const { data, refresh, error, status } = await useFetch(`/api/articles/${slug.va
   deep: true,
 })
 
+const movedTo = (error.value?.data as { data?: { movedTo?: string } } | undefined)?.data?.movedTo
+if (movedTo)
+  await navigateTo(localePath({ name: 'clanky-slug', params: { slug: movedTo } }), { redirectCode: 301, replace: true })
+
 // Landing on this locale with another language's slug (browser-language detection, an old link,
 // a hand-edited URL) silently renders the source body. Send it to the real translation instead.
 // Deliberately 302, not 301: a translation can be unpublished or discarded, and a cached

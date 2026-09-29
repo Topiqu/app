@@ -155,6 +155,7 @@ model ClientSite with Base {
     features             ClientFeature[]
     linkedinCompanies    LinkedinCompany[]
     articleTranslations  ArticleTranslation[]
+    articleSlugRedirects ArticleSlugRedirect[]
     adEarnings           AdEarning[]
     searchConsoleConnection SearchConsoleConnection?
     searchConsoleMetrics SearchConsoleMetric[]

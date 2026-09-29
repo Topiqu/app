@@ -252,14 +252,24 @@
         />
         <div ref="titleTarget" class="rounded-(--topiqu-surface-radius) transition-shadow">
           <UFormField :label="$t('common.labels.articleTitle')">
-            <UInput
-              v-model="titleModel"
-              :placeholder="$t('common.labels.articleTitle')"
-              class="w-full"
-              @input="updateSlug"
-            />
+            <UInput v-model="titleModel" :placeholder="$t('common.labels.articleTitle')" class="w-full" />
           </UFormField>
         </div>
+        <UFormField
+          v-if="tr.isSource"
+          :label="$t('articles.editor.slug.label')"
+          :help="slugRedirected ? $t('articles.editor.slug.redirectNote') : undefined"
+        >
+          <UFieldGroup class="w-full">
+            <UBadge color="neutral" variant="outline" size="lg" :label="slugPrefix" />
+            <UInput
+              v-model="slugModel"
+              class="w-full"
+              :placeholder="$t('articles.editor.slug.placeholder')"
+              @blur="normalizeSlug"
+            />
+          </UFieldGroup>
+        </UFormField>
         <div ref="excerptTarget" class="rounded-(--topiqu-surface-radius) transition-shadow">
           <UFormField :label="$t('common.labels.articleExcerpt')">
             <UTextarea
@@ -506,9 +516,9 @@ import type { CoverCredit } from '~~/shared/utils/imageCredit'
 import type { OptimizationTarget } from '~~/shared/types/articleOptimization'
 import type { MediaRightsItem, MediaRightsReport, MediaRightsReview } from '~~/shared/types/mediaRights'
 
-import slugify from 'slugify'
 import { readFaq } from '~~/shared/utils/articleFaq'
 import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
+import { articleSlug } from '~~/shared/utils/articleSlug'
 import { setImageMediaId } from '~~/shared/utils/mediaRights'
 import { translationDraft } from '~~/shared/utils/articleTranslations'
 import {
@@ -964,14 +974,25 @@ const releaseAtInput = computed<string | null>({
   },
 })
 
-const updateSlug = () => {
-  if (isNew)
-    editedArticle.value.slug = slugify(editedArticle.value.title, {
-      lower: true,
-      strict: true,
-      trim: true,
-    })
+// A new article's slug follows its title until the author edits it; a saved one never moves by itself.
+const slugTouched = shallowRef(false)
+const slugModel = computed({
+  get: () => editedArticle.value.slug ?? '',
+  set: (value: string) => {
+    slugTouched.value = true
+    editedArticle.value.slug = value
+  },
+})
+const normalizeSlug = () => {
+  editedArticle.value.slug = articleSlug(editedArticle.value.slug ?? '') || articleSlug(editedArticle.value.title ?? '')
 }
+// The public address lives in the article's own language, not the admin UI's.
+const slugPrefix = computed(() =>
+  localePath({ name: 'clanky-slug', params: { slug: 'x' } }, primaryLanguage.value).replace(/x$/, ''),
+)
+const slugRedirected = computed(
+  () => !isNew && Boolean(article.value?.publishedAt) && editedArticle.value.slug !== article.value?.slug,
+)
 const addTag = (id: string) => {
   if (!articleTags.value.includes(id)) articleTags.value.push(id)
 }
@@ -1208,9 +1229,9 @@ const submit = async (targetStatus: 'draft' | 'published', mediaRightsReview?: M
     ...(isNew ? { language: primaryLanguage.value } : {}),
     excerpt: sourceDraft?.excerpt ?? editedArticle.value.excerpt,
     content: sourceDraft?.content ?? editedArticle.value.content,
-    slug: sourceDraft
-      ? slugify(sourceDraft.title, { lower: true, strict: true, trim: true })
-      : editedArticle.value.slug,
+    slug: articleSlug(
+      sourceDraft && !slugTouched.value ? sourceDraft.title : editedArticle.value.slug || editedArticle.value.title,
+    ),
     status: targetStatus,
     imageUrl: editedArticle.value.imageUrl,
     imageCredit: editedArticle.value.imageCredit,
@@ -1282,15 +1303,23 @@ const submit = async (targetStatus: 'draft' | 'published', mediaRightsReview?: M
       await invalidateArticles()
       // Stay in the document. Re-baseline the two fields `hasChanges` compares, or leaving would
       // prompt to discard work that is already saved.
+      const slugChanged = payload.slug !== article.value!.slug
       article.value = {
         ...article.value!,
         title: payload.title,
         content: payload.content,
+        slug: payload.slug,
       }
+      editedArticle.value.slug = payload.slug
       editedArticle.value.status = effectiveStatus
       editedArticle.value.sources = payload.sources
       sourceBaseline.value = serializeSourceState()
       await markGenerationSessionsSaved()
+      // The route param is the slug, and the old one now only redirects on the public page.
+      if (slugChanged) {
+        allowNavigation.value = true
+        await router.replace(localePath({ name: 'admin-editor-id', params: { id: payload.slug } }))
+      }
     }
   } catch (e: any) {
     const responseData = e?.data?.data ?? e?.data ?? e?.response?._data?.data ?? e?.response?._data
@@ -1377,12 +1406,7 @@ const discardTranslation = async () => {
 watch(
   () => editedArticle.value.title,
   (newTitle) => {
-    if (isNew)
-      editedArticle.value.slug = slugify(newTitle, {
-        lower: true,
-        strict: true,
-        trim: true,
-      })
+    if (isNew && !slugTouched.value) editedArticle.value.slug = articleSlug(newTitle ?? '')
   },
 )
 </script>

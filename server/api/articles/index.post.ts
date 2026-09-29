@@ -1,5 +1,6 @@
 import { DbNull } from '@zenstackhq/orm'
 import { LanguageSchema } from '~~/shared/siteSchemas'
+import { articleSlug } from '~~/shared/utils/articleSlug'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
@@ -9,6 +10,8 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const mediaRightsReview = body.mediaRightsReview
   delete body.mediaRightsReview
+  body.slug = articleSlug(String(body.slug || body.title || ''))
+  if (!body.slug) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
   if (
     (body.status === 'published' || body.releaseAt) &&
     !hasTenantScope((await requireTenantMember(event)).membership, 'ARTICLE_PUBLISH')

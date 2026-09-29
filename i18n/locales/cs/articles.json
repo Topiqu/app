@@ -352,7 +352,7 @@
       }
     },
     "editor": {
-      "slugConflict": "Článek s tímto titulkem už existuje. Změňte titulek nebo otevřete existující článek.",
+      "slugConflict": "Tuto URL už používá jiný článek. Změňte URL, nebo otevřete existující článek.",
       "articlePublished": "Článek publikován",
       "draftCreated": "Koncept vytvořen",
       "translationSaveFailedAfterCreate": "Článek je uložený, ale překlad se nepodařilo uložit. Před pokračováním zkontrolujte jeho jazykovou záložku.",
@@ -936,6 +936,11 @@
           "applyAnswers": "Přidat do zadání",
           "answersHeading": "Podklady od autora:"
         }
+      },
+      "slug": {
+        "label": "URL",
+        "placeholder": "adresa-clanku",
+        "redirectNote": "Původní adresa bude trvale přesměrovaná sem, takže existující odkazy dál fungují."
       }
     },
     "image": {

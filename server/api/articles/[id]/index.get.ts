@@ -150,8 +150,21 @@ export default defineEventHandler(async (event) => {
             select,
           }))
     // 404, not 403: a distinct status would confirm that an unpublished slug exists.
-    if (!article || (article.status !== 'published' && !isAdmin))
-      throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
+    if (!article || (article.status !== 'published' && !isAdmin)) {
+      const redirect = article
+        ? null
+        : await prisma.articleSlugRedirect.findUnique({
+            where: { slug_clientSiteId: { slug, clientSiteId } },
+            select: { article: { select: { slug: true, status: true } } },
+          })
+      const movedTo = redirect && (redirect.article.status === 'published' || isAdmin) ? redirect.article.slug : null
+      // The page turns `movedTo` into a 301; an old link must keep working after a slug change.
+      throw createError({
+        statusCode: 404,
+        message: t('common.errors.articleNotFound')!,
+        ...(movedTo ? { data: { movedTo } } : {}),
+      })
+    }
     baseSlug = article.slug
     primaryLanguage = article.language
     language = primaryLanguage

@@ -352,7 +352,7 @@
       }
     },
     "editor": {
-      "slugConflict": "Ein Artikel mit diesem Titel existiert bereits. Ändere den Titel oder öffne den vorhandenen Artikel.",
+      "slugConflict": "Diese URL verwendet bereits ein anderer Artikel. Ändern Sie die URL oder öffnen Sie den vorhandenen Artikel.",
       "articlePublished": "Artikel veröffentlicht",
       "draftCreated": "Entwurf erstellt",
       "translationSaveFailedAfterCreate": "Der Artikel wurde gespeichert, aber eine Übersetzung konnte nicht gespeichert werden. Prüfe vor dem Fortfahren den entsprechenden Sprachreiter.",
@@ -936,6 +936,11 @@
           "applyAnswers": "Zum Auftrag hinzufügen",
           "answersHeading": "Angaben des Autors:"
         }
+      },
+      "slug": {
+        "label": "URL",
+        "placeholder": "artikel-adresse",
+        "redirectNote": "Die bisherige Adresse leitet dauerhaft hierher weiter, bestehende Links funktionieren also weiter."
       }
     },
     "image": {

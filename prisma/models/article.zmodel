@@ -104,6 +104,7 @@ model Article with Base, Ownable {
     polls            Poll[]
     notifications    Notification[]    @relation("ArticleNotifications")
     translations     ArticleTranslation[]
+    slugRedirects    ArticleSlugRedirect[]
     mediaRightsSnapshots MediaRightsPublicationSnapshot[]
     mediaUsages      ArticleMediaUsage[]
     sources          String[]
@@ -124,6 +125,20 @@ model Article with Base, Ownable {
     @@allow('all', auth().role == 'admin' && clientSiteId == auth().clientSiteId)
     @@unique([slug, clientSiteId])
     @@index([title, excerpt, clientSiteId, articleSeriesId, seriesOrder])
+}
+
+/// A slug a published article used to live at. Public lookups fall back to it and 301 to the current slug.
+model ArticleSlugRedirect {
+    id           String     @id @default(uuid())
+    slug         String     @length(1, 100)
+    articleId    String
+    article      Article    @relation(fields: [articleId], references: [id], onDelete: Cascade)
+    clientSiteId String
+    clientSite   ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    createdAt    DateTime   @default(now())
+    @@allow('all', auth().role == 'admin' && clientSiteId == auth().clientSiteId)
+    @@unique([slug, clientSiteId])
+    @@index([articleId])
 }
 
 model ArticleTranslation with Base {

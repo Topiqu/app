@@ -1,4 +1,5 @@
 import { DbNull } from '@zenstackhq/orm'
+import { articleSlug } from '~~/shared/utils/articleSlug'
 import { ArticleUpdateSchema } from '~~/shared/databaseSchemas'
 import { ArticleStatus, type NotificationType } from '~~/generated/zenstack/models'
 
@@ -28,6 +29,7 @@ export default defineEventHandler(async (event) => {
   const previousArticle = await db.article.findUnique({
     where: { id },
     select: {
+      slug: true,
       status: true,
       publishedAt: true,
       aiInvolvement: true,
@@ -46,6 +48,11 @@ export default defineEventHandler(async (event) => {
   if (body.language !== undefined && body.language !== previousArticle.language)
     throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
   delete body.language
+  if (body.slug !== undefined) {
+    body.slug = articleSlug(body.slug)
+    if (!body.slug) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
+  }
+  const previousSlug = body.slug !== undefined && body.slug !== previousArticle.slug ? previousArticle.slug : null
   if (previousArticle.userId !== user.id && !hasTenantScope(membership, 'ARTICLE_WRITE_OTHERS'))
     throw createError({ statusCode: 403, message: t('common.errors.articleEditForbidden')! })
   if ((body.status === ArticleStatus.published || body.releaseAt) && !hasTenantScope(membership, 'ARTICLE_PUBLISH'))
@@ -124,10 +131,23 @@ export default defineEventHandler(async (event) => {
     data.aiInvolvement = 'ASSIST'
   }
 
-  const article = await db.article.update({
-    where: { id },
-    data,
-  })
+  const article = await db
+    .$transaction(async (tx) => {
+      const updated = await tx.article.update({ where: { id }, data })
+      // Only an address readers could have seen needs to keep working. A live article always wins
+      // the lookup, so a stale redirect is harmless until the slug is freed again; then it is re-aimed.
+      if (previousSlug && previousArticle.publishedAt)
+        await tx.articleSlugRedirect.upsert({
+          where: { slug_clientSiteId: { slug: previousSlug, clientSiteId: updated.clientSiteId } },
+          create: { slug: previousSlug, articleId: updated.id, clientSiteId: updated.clientSiteId },
+          update: { articleId: updated.id },
+        })
+      return updated
+    })
+    .catch((error) => {
+      if (isUniqueViolation(error)) throw createError({ statusCode: 409, message: t('articles.editor.slugConflict')! })
+      throw error
+    })
 
   if ('content' in data) {
     const contentWithPolls = await syncArticlePolls(
