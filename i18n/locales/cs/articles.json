@@ -248,7 +248,6 @@
       "noTagsSelected": "Žádné štítky nevybrány",
       "selected": "Vybrané štítky",
       "removeNamed": "Odebrat {name}",
-      "selectedEmpty": "Zatím nejsou vybrané žádné štítky.",
       "addExisting": "Přidat existující štítek",
       "createNew": "Vytvořit nový štítek",
       "newTagName": "Název nového štítku"
@@ -426,16 +425,12 @@
         "stopFailed": "Generování se nepodařilo zastavit. Zkuste to znovu.",
         "generating": "Generování článku",
         "neutralAuthor": "Připravit nový článek",
-        "planDescription": "Nastavte podobu výstupu. Před spuštěním přesně uvidíte, co se použije.",
         "outputLabel": "Typ výstupu",
         "researchLabel": "Ověřit téma na webu",
-        "researchDescription": "Vyhledat a ověřit aktuální zdroje.",
         "depthLabel": "Hloubka výzkumu",
         "researchFallback": "Pokračovat bez zdrojů",
         "researchOff": "bez výzkumu",
         "modulesLabel": "Součásti článku",
-        "modulesDescription": "Vybrané bloky se vygenerují. Video se vloží jen tehdy, když výzkum najde ověřený odkaz na YouTube.",
-        "planSummary": "{format} · {research} · {modules} vybraných modulů",
         "elapsed": "Uplynulo {seconds} s",
         "waitingWriting": "Autor {seconds} s neposlal další část textu. Psaní se automaticky zastaví po 30 s bez dat.",
         "waitingResearch": "Ověřování zdrojů trvá déle než obvykle. Běh je stále aktivní a lze jej bezpečně zastavit.",
@@ -515,23 +510,14 @@
             "template": "Napište hloubkovou analýzu tématu:"
           }
         },
-        "createTitle": "Vytvořit článek",
-        "noSourcesLabel": "Pokud se nepodaří získat zdroje",
-        "noSourcesStop": "Zastavit generování",
-        "selectedCount": "Vybráno: {count}",
-        "mediaLabel": "Média",
         "youtubeHint": "Video se vloží pouze tehdy, když rešerše najde ověřený odkaz na YouTube.",
-        "outputSummary": "{format} · {research}",
-        "noModules": "Bez doplňkových bloků",
         "reservationLabel": "Jak se články odečítají",
         "reservationSummary": "Každé generování dočasně zablokuje 1 článek. Dva souběžné běhy proto vyžadují alespoň 2 zbývající články.",
         "billingDetails": "Podrobnosti účtování",
         "billingExplanation": "Článek se odečte až po úspěšném dokončení. Při chybě nebo zastavení se rezervace vrátí.",
         "reviewFailed": "Článek neprošel redakční kontrolou ani po opravě.",
         "allowGeneratedImages": "Povolit AI ilustrace jako poslední možnost",
-        "generatedImagesFallback": "Jen pro ilustrační motivy bez vhodného existujícího obrázku, včetně titulního. Dokumentární fotografie osob a událostí AI nenahrazuje.",
         "useKnowledge": "Použít znalosti",
-        "useKnowledgeDescription": "AI vybere relevantní podklady z vašich Znalostí.",
         "run": {
           "title": {
             "running": "Generuji článek",
@@ -635,7 +621,14 @@
           },
           "busy": "Právě se generuje jiný článek. Počkejte, až doběhne, nebo ho nejdřív zastavte."
         },
-        "topicPlaceholderStory": "Popište svůj příběh: co se stalo, kdy, jak dlouho to trvalo a jak to dopadlo. AI se drží faktů, které uvedete."
+        "topicPlaceholderStory": "Popište svůj příběh: co se stalo, kdy, jak dlouho to trvalo a jak to dopadlo. AI se drží faktů, které uvedete.",
+        "advanced": "Upřesnit",
+        "modulesCount": "bez součástí | {count} součást | {count} součásti | {count} součástí",
+        "upsell": {
+          "title": "AI generování je součástí plánu PRO",
+          "description": "Vytvořte článek z tématu včetně rešerše, zdrojů, obrázků a kontroly faktů.",
+          "cta": "Zobrazit plány"
+        }
       },
       "drafts": {
         "loadDrafts": "Načíst koncepty",
@@ -942,6 +935,11 @@
         "label": "URL",
         "placeholder": "adresa-clanku",
         "redirectNote": "Původní adresa bude trvale přesměrovaná sem, takže existující odkazy dál fungují."
+      },
+      "tabs": {
+        "article": "Článek",
+        "ai": "AI",
+        "checks": "Kontrola"
       }
     },
     "image": {

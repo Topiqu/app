@@ -1,6 +1,8 @@
 <template>
   <fieldset class="space-y-3">
-    <legend class="mb-2 text-sm font-medium text-highlighted">{{ $t('articles.columns.sources') }}</legend>
+    <legend class="mb-2 text-sm font-medium text-highlighted" :class="compact && 'sr-only'">
+      {{ $t('articles.columns.sources') }}
+    </legend>
     <ol class="space-y-3">
       <li
         v-for="(source, index) in sources"

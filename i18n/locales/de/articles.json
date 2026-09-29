@@ -248,7 +248,6 @@
       "noTagsSelected": "Keine Tags ausgewählt",
       "selected": "Ausgewählte Tags",
       "removeNamed": "{name} entfernen",
-      "selectedEmpty": "Noch keine Tags ausgewählt.",
       "addExisting": "Vorhandenen Tag hinzufügen",
       "createNew": "Neuen Tag erstellen",
       "newTagName": "Name des neuen Tags"
@@ -426,16 +425,12 @@
         "stopFailed": "Die Generierung konnte nicht gestoppt werden. Bitte erneut versuchen.",
         "generating": "Artikel wird generiert",
         "neutralAuthor": "Neuen Artikel vorbereiten",
-        "planDescription": "Lege das Ergebnis vor dem Start fest. Du siehst genau, was verwendet wird.",
         "outputLabel": "Textart",
         "researchLabel": "Thema im Web überprüfen",
-        "researchDescription": "Aktuelle Quellen finden und prüfen.",
         "depthLabel": "Recherchetiefe",
         "researchFallback": "Ohne Quellen fortfahren",
         "researchOff": "ohne Recherche",
         "modulesLabel": "Artikelbausteine",
-        "modulesDescription": "Die ausgewählten Bausteine werden erstellt. Ein Video wird nur eingebettet, wenn die Recherche eine bestätigte YouTube-URL findet.",
-        "planSummary": "{format} · {research} · {modules} ausgewählte Bausteine",
         "elapsed": "Vergangen: {seconds} s",
         "waitingWriting": "Seit {seconds} s hat der Autor keinen weiteren Text gesendet. Nach 30 s ohne Daten wird das Schreiben automatisch beendet.",
         "waitingResearch": "Die Quellenprüfung dauert länger als üblich. Der Vorgang läuft noch und kann sicher gestoppt werden.",
@@ -515,23 +510,14 @@
             "template": "Schreibe eine ausführliche Analyse über:"
           }
         },
-        "createTitle": "Artikel erstellen",
-        "noSourcesLabel": "Wenn keine Quellen gefunden werden",
-        "noSourcesStop": "Generierung stoppen",
-        "selectedCount": "{count} ausgewählt",
-        "mediaLabel": "Medien",
         "youtubeHint": "Ein Video wird nur eingebettet, wenn die Recherche eine bestätigte YouTube-URL findet.",
-        "outputSummary": "{format} · {research}",
-        "noModules": "Keine zusätzlichen Bausteine",
         "reservationLabel": "So werden Artikel berechnet",
         "reservationSummary": "Jede Generierung reserviert vorübergehend 1 Artikel. Für zwei gleichzeitig laufende Vorgänge müssen daher mindestens 2 Artikel übrig sein.",
         "billingDetails": "Abrechnungsdetails",
         "billingExplanation": "Der Artikel wird erst nach erfolgreichem Abschluss abgezogen. Bei einem Fehler oder Abbruch wird der reservierte Artikel zurückgegeben.",
         "reviewFailed": "Der Artikel hat die redaktionelle Prüfung auch nach der Überarbeitung nicht bestanden.",
         "allowGeneratedImages": "KI-Illustrationen als letzte Möglichkeit erlauben",
-        "generatedImagesFallback": "Nur für illustrative Motive ohne passendes vorhandenes Bild, auch beim Titelbild. Dokumentarische Fotos von Personen und Ereignissen werden nicht durch KI ersetzt.",
         "useKnowledge": "Wissensbasis verwenden",
-        "useKnowledgeDescription": "Die KI wählt passende Textabschnitte aus deiner Wissensbasis.",
         "run": {
           "title": {
             "running": "Artikel wird generiert",
@@ -635,7 +621,14 @@
           },
           "busy": "Gerade wird ein anderer Artikel generiert. Warten Sie, bis er fertig ist, oder stoppen Sie ihn zuerst."
         },
-        "topicPlaceholderStory": "Erzählen Sie Ihre Geschichte: was geschah, wann, wie lange es dauerte und wie es ausging. Die KI hält sich an Ihre Angaben."
+        "topicPlaceholderStory": "Erzählen Sie Ihre Geschichte: was geschah, wann, wie lange es dauerte und wie es ausging. Die KI hält sich an Ihre Angaben.",
+        "advanced": "Verfeinern",
+        "modulesCount": "keine Bausteine | {count} Baustein | {count} Bausteine",
+        "upsell": {
+          "title": "KI-Generierung ist Teil des PRO-Plans",
+          "description": "Machen Sie aus einem Thema einen Artikel mit Recherche, Quellen, Bildern und Faktencheck.",
+          "cta": "Pläne ansehen"
+        }
       },
       "drafts": {
         "loadDrafts": "Entwürfe laden",
@@ -942,6 +935,11 @@
         "label": "URL",
         "placeholder": "artikel-adresse",
         "redirectNote": "Die bisherige Adresse leitet dauerhaft hierher weiter, bestehende Links funktionieren also weiter."
+      },
+      "tabs": {
+        "article": "Artikel",
+        "ai": "KI",
+        "checks": "Prüfung"
       }
     },
     "image": {

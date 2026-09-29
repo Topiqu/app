@@ -3,17 +3,26 @@
     <UCollapsible v-model:open="open">
       <UButton
         color="neutral"
-        variant="soft"
-        size="lg"
+        variant="ghost"
         type="button"
         class="w-full"
         :ui="{ trailingIcon: 'ms-auto' }"
         icon="mdi:copyright"
         :trailingIcon="open ? 'mdi:chevron-up' : 'mdi:chevron-down'"
-        :label="$t('articles.editor.mediaRights.title')"
-      />
+      >
+        <span class="flex min-w-0 flex-1 items-center justify-between gap-3 text-left">
+          <span class="font-semibold text-highlighted">{{ $t('articles.editor.mediaRights.title') }}</span>
+          <span
+            v-if="result?.counts.needsAttention"
+            class="inline-flex items-center gap-1 text-sm font-semibold tabular-nums text-warning"
+          >
+            <UIcon name="mdi:alert-outline" class="size-4" />{{ result.counts.needsAttention }}
+          </span>
+          <UIcon v-else-if="result?.items.length" name="mdi:check-circle-outline" class="size-4 text-success" />
+        </span>
+      </UButton>
       <template #content>
-        <div class="mt-3 rounded-lg border border-default bg-elevated/30 p-4" aria-live="polite">
+        <div class="mt-2 border-l-2 border-primary/35 pl-4" aria-live="polite">
           <p class="text-xs leading-5 text-muted">{{ $t('articles.editor.mediaRights.description') }}</p>
           <div v-if="state === 'loading' || state === 'analyzing'" class="mt-3"><UProgress /></div>
           <UAlert

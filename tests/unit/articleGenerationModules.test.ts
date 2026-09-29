@@ -2,30 +2,14 @@
 import { createI18n } from 'vue-i18n'
 import { describe, expect, it } from 'vitest'
 import { shallowMount } from '@vue/test-utils'
-import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 
-import SettingsPanel from '../../app/components/Article/Editor/SettingsPanel.vue'
+import GenerationForm from '../../app/components/Article/Editor/GenerationForm.vue'
 import { defaultArticleGenerationOptions } from '../../shared/utils/articleGeneration'
 
-mockNuxtImport('useLocalePath', () => () => (route: unknown) => route)
-
-const mountPanel = () => {
+const mountForm = () => {
   const options = defaultArticleGenerationOptions()
-  const wrapper = shallowMount(SettingsPanel, {
-    props: {
-      articleTags: [],
-      aiGenerating: false,
-      aiPhase: 'research',
-      aiElapsedSeconds: 0,
-      aiLastActivitySeconds: 0,
-      aiWordCount: 0,
-      aiWritingStage: 'starting',
-      customPrompt: 'Gaming news',
-      aiOptions: options,
-      releaseAt: null,
-      sources: [],
-      aiOpen: true,
-    },
+  const wrapper = shallowMount(GenerationForm, {
+    props: { aiGenerating: false, customPrompt: 'Gaming news', aiOptions: options },
     global: {
       plugins: [
         createI18n({ legacy: false, locale: 'en', missingWarn: false, fallbackWarn: false, messages: { en: {} } }),
@@ -43,7 +27,7 @@ describe('article generation module selection', () => {
   })
 
   it('adds and removes content and media independently, keeping the modules array', async () => {
-    const { wrapper, options } = mountPanel()
+    const { wrapper, options } = mountForm()
     const answer = wrapper.get<HTMLInputElement>('input[value="answer"]')
     const poll = wrapper.get<HTMLInputElement>('input[value="poll"]')
     const images = wrapper.get<HTMLInputElement>('input[value="images"]')
@@ -59,10 +43,17 @@ describe('article generation module selection', () => {
     wrapper.unmount()
   })
 
-  it('hides unavailable modules instead of filling the form with disabled controls', () => {
-    const { wrapper } = mountPanel()
-    expect(wrapper.find<HTMLInputElement>('input[value="faq"]').exists()).toBe(false)
-    expect(wrapper.get<HTMLInputElement>('input[value="poll"]').element.disabled).toBe(false)
+  it('offers every module as an enabled choice', () => {
+    const { wrapper } = mountForm()
+    for (const module of ['faq', 'table', 'youtube'])
+      expect(wrapper.get<HTMLInputElement>(`input[value="${module}"]`).element.disabled).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('replaces the form with a pointer to the run card while generating', async () => {
+    const { wrapper } = mountForm()
+    await wrapper.setProps({ aiGenerating: true })
+    expect(wrapper.find('input[type="checkbox"]').exists()).toBe(false)
     wrapper.unmount()
   })
 })

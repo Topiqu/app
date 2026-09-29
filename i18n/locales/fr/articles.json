@@ -248,7 +248,6 @@
       "noTagsSelected": "Aucun tag sélectionné",
       "selected": "Tags sélectionnés",
       "removeNamed": "Supprimer {name}",
-      "selectedEmpty": "Aucun tag sélectionné pour le moment.",
       "addExisting": "Ajouter un tag existant",
       "createNew": "Créer un nouveau tag",
       "newTagName": "Nom du nouveau tag"
@@ -426,16 +425,12 @@
         "stopFailed": "Impossible d’arrêter la génération. Réessayez.",
         "generating": "Génération de l'article",
         "neutralAuthor": "Préparer un nouvel article",
-        "planDescription": "Définissez le résultat avant de commencer. Vous verrez exactement ce qui sera utilisé.",
         "outputLabel": "Type de contenu",
         "researchLabel": "Vérifier le sujet sur le web",
-        "researchDescription": "Trouver et vérifier des sources récentes.",
         "depthLabel": "Profondeur de la recherche",
         "researchFallback": "Continuer sans sources",
         "researchOff": "sans recherche",
         "modulesLabel": "Éléments de l'article",
-        "modulesDescription": "Les éléments sélectionnés sont générés. Une vidéo n'est intégrée que si la recherche trouve une URL YouTube vérifiée.",
-        "planSummary": "{format} · {research} · {modules} éléments sélectionnés",
         "elapsed": "Temps écoulé : {seconds} s",
         "waitingWriting": "L'auteur n'a pas envoyé de nouveau texte depuis {seconds} s. La rédaction s'arrête automatiquement après 30 s sans données.",
         "waitingResearch": "La vérification des sources prend plus de temps que prévu. La tâche est toujours active et peut être arrêtée sans risque.",
@@ -515,23 +510,14 @@
             "template": "Rédigez une analyse approfondie de :"
           }
         },
-        "createTitle": "Créer un article",
-        "noSourcesLabel": "Si aucune source n'est trouvée",
-        "noSourcesStop": "Arrêter la génération",
-        "selectedCount": "{count} sélectionnés",
-        "mediaLabel": "Médias",
         "youtubeHint": "Une vidéo n'est intégrée que si la recherche trouve une URL YouTube vérifiée.",
-        "outputSummary": "{format} · {research}",
-        "noModules": "Aucun élément supplémentaire",
         "reservationLabel": "Comment les articles sont décomptés",
         "reservationSummary": "Chaque génération réserve temporairement 1 article. Deux générations simultanées nécessitent donc au moins 2 articles restants.",
         "billingDetails": "Détails de la facturation",
         "billingExplanation": "L'article n'est décompté qu'après une génération réussie. En cas d'erreur ou d'annulation, l'article réservé est restitué.",
         "reviewFailed": "L'article n'a pas passé la vérification éditoriale après révision.",
         "allowGeneratedImages": "Autoriser les illustrations IA en dernier recours",
-        "generatedImagesFallback": "Uniquement pour les sujets illustratifs sans image existante adaptée, y compris la couverture. L'IA ne remplace pas les photos documentaires de personnes ou d'événements.",
         "useKnowledge": "Utiliser la base de connaissances",
-        "useKnowledgeDescription": "L'IA sélectionne des passages pertinents dans votre base de connaissances.",
         "run": {
           "title": {
             "running": "Génération de l’article",
@@ -635,7 +621,14 @@
           },
           "busy": "Un autre article est en cours de génération. Attendez la fin ou arrêtez-le d’abord."
         },
-        "topicPlaceholderStory": "Racontez votre histoire : ce qui s’est passé, quand, combien de temps cela a duré et comment cela s’est terminé. L’IA s’en tient aux faits que vous donnez."
+        "topicPlaceholderStory": "Racontez votre histoire : ce qui s’est passé, quand, combien de temps cela a duré et comment cela s’est terminé. L’IA s’en tient aux faits que vous donnez.",
+        "advanced": "Affiner",
+        "modulesCount": "aucun bloc | {count} bloc | {count} blocs",
+        "upsell": {
+          "title": "La génération IA fait partie du forfait PRO",
+          "description": "Transformez un sujet en article avec recherche, sources, images et vérification des faits.",
+          "cta": "Voir les forfaits"
+        }
       },
       "drafts": {
         "loadDrafts": "Charger les brouillons",
@@ -942,6 +935,11 @@
         "label": "URL",
         "placeholder": "adresse-article",
         "redirectNote": "L’ancienne adresse redirigera définitivement ici ; les liens existants continueront de fonctionner."
+      },
+      "tabs": {
+        "article": "Article",
+        "ai": "IA",
+        "checks": "Vérifications"
       }
     },
     "image": {

@@ -382,3 +382,6 @@ export const analyzeArticleOptimization = (input: ArticleOptimizationInput): Art
   ]
   return scoreOptimizationChecks(checks, contentState)
 }
+
+export const optimizationScoreColor = (score: number) =>
+  score >= 75 ? ('success' as const) : score >= 50 ? ('warning' as const) : ('error' as const)

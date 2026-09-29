@@ -76,7 +76,7 @@
 
             <UProgress
               :modelValue="result.overallScore"
-              :color="scoreColor(result.overallScore)"
+              :color="optimizationScoreColor(result.overallScore)"
               size="sm"
               :aria-label="$t('articles.editor.optimization.score')"
             />
@@ -107,7 +107,7 @@
                 <UProgress
                   v-else
                   :modelValue="category.score ?? 0"
-                  :color="scoreColor(category.score ?? 0)"
+                  :color="optimizationScoreColor(category.score ?? 0)"
                   size="xs"
                   class="mt-2"
                 />
@@ -244,6 +244,8 @@ import type {
   OptimizationTarget,
 } from '~~/shared/types/articleOptimization'
 
+import { optimizationScoreColor } from '~~/shared/utils/articleOptimization'
+
 import type { ArticleOptimizationState } from '~/composables/useArticleOptimization'
 
 const props = defineProps<{ state: ArticleOptimizationState; result: ArticleOptimizationResult | null }>()
@@ -271,6 +273,5 @@ const diagnostic = (item: OptimizationCheck) => {
 }
 
 const scoreBand = (score: number) => (score >= 90 ? 'excellent' : score >= 75 ? 'good' : score >= 50 ? 'fair' : 'poor')
-const scoreColor = (score: number) => (score >= 75 ? 'success' : score >= 50 ? 'warning' : 'error')
 const scoreTextClass = (score: number) => (score >= 75 ? 'text-success' : score >= 50 ? 'text-warning' : 'text-error')
 </script>

@@ -295,32 +295,24 @@
           <ArticleFaq :entries="readFaq(editedArticle.faq)" />
         </div>
       </div>
-      <aside class="sticky top-20 hidden self-start lg:block">
-        <div v-if="settingsExpanded" class="rounded-(--topiqu-surface-radius) border border-default bg-default p-5">
-          <div class="mb-5 flex items-center justify-between gap-3">
-            <h2 class="font-semibold text-highlighted">{{ $t('articles.editor.settingsTitle') }}</h2>
-            <UButton
-              icon="mdi:chevron-right"
-              color="neutral"
-              variant="ghost"
-              square
-              :aria-label="$t('common.actions.collapse')"
-              @click="settingsExpanded = false"
-            />
-          </div>
+      <aside class="sticky top-20 hidden self-start lg:block" :aria-label="$t('articles.editor.settingsTitle')">
+        <div
+          v-if="settingsExpanded"
+          class="max-h-[calc(100dvh-7rem)] overflow-y-auto overscroll-contain rounded-(--topiqu-surface-radius) border border-default bg-default px-5 pb-5"
+        >
           <ArticleEditorSettingsPanel
             ref="desktopSettingsPanel"
+            v-model:tab="settingsTab"
             v-model:selectedSeries="selectedSeries"
             v-model:customPrompt="customPrompt"
             v-model:aiOptions="aiOptions"
             v-model:releaseAt="releaseAtInput"
             v-model:sources="sourcesModel"
-            v-model:aiOpen="aiOpen"
             :article="article"
             :imageUrl="editedArticle.imageUrl"
             :articleTags="articleTags"
+            :aiAvailable="aiAvailable"
             :aiGenerating="aiGenerating"
-            :aiAuthorName="clientStatus?.aiUser?.username"
             :optimizationState="aiGenerating ? 'analyzing' : optimizationState"
             :optimizationResult="aiGenerating ? null : optimizationResult"
             :factCheckState="factCheckState"
@@ -331,7 +323,6 @@
             :mediaRightsResult="mediaRightsResult"
             @upload="handleUpload"
             @generate="generateAIContent"
-            @stop="requestStopGeneration"
             @addTag="addTag"
             @removeTag="removeTag"
             @quickRelease="setReleaseQuick"
@@ -343,7 +334,19 @@
             @navigateMedia="navigateMedia"
             @attachMedia="attachMedia"
             @refreshMediaRights="refreshMediaRights"
-          />
+          >
+            <template #actions>
+              <UButton
+                icon="mdi:chevron-right"
+                color="neutral"
+                variant="ghost"
+                square
+                class="ms-1 self-center"
+                :aria-label="$t('common.actions.collapse')"
+                @click="settingsExpanded = false"
+              />
+            </template>
+          </ArticleEditorSettingsPanel>
         </div>
         <UButton
           v-else
@@ -412,17 +415,17 @@
       <template #body>
         <ArticleEditorSettingsPanel
           ref="mobileSettingsPanel"
+          v-model:tab="settingsTab"
           v-model:selectedSeries="selectedSeries"
           v-model:customPrompt="customPrompt"
           v-model:aiOptions="aiOptions"
           v-model:releaseAt="releaseAtInput"
           v-model:sources="sourcesModel"
-          v-model:aiOpen="aiOpen"
           :article="article"
           :imageUrl="editedArticle.imageUrl"
           :articleTags="articleTags"
+          :aiAvailable="aiAvailable"
           :aiGenerating="aiGenerating"
-          :aiAuthorName="clientStatus?.aiUser?.username"
           :optimizationState="aiGenerating ? 'analyzing' : optimizationState"
           :optimizationResult="aiGenerating ? null : optimizationResult"
           :factCheckState="factCheckState"
@@ -433,7 +436,6 @@
           :mediaRightsResult="mediaRightsResult"
           @upload="handleUpload"
           @generate="generateAIContent"
-          @stop="requestStopGeneration"
           @addTag="addTag"
           @removeTag="removeTag"
           @quickRelease="setReleaseQuick"
@@ -516,6 +518,7 @@ import type { CoverCredit } from '~~/shared/utils/imageCredit'
 import type { OptimizationTarget } from '~~/shared/types/articleOptimization'
 import type { MediaRightsItem, MediaRightsReport, MediaRightsReview } from '~~/shared/types/mediaRights'
 
+import { hasAiPlan } from '~~/shared/utils/plans'
 import { readFaq } from '~~/shared/utils/articleFaq'
 import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
 import { articleSlug } from '~~/shared/utils/articleSlug'
@@ -845,12 +848,9 @@ const titleTarget = useTemplateRef<HTMLElement>('titleTarget')
 const excerptTarget = useTemplateRef<HTMLElement>('excerptTarget')
 const contentTarget = useTemplateRef<HTMLElement>('contentTarget')
 const tiptapEditor = useTemplateRef<{ focusBlock: (index?: number) => boolean }>('tiptapEditor')
-const desktopSettingsPanel = useTemplateRef<{
-  focusOptimizationTarget: (target: OptimizationTarget) => HTMLElement | null
-}>('desktopSettingsPanel')
-const mobileSettingsPanel = useTemplateRef<{
-  focusOptimizationTarget: (target: OptimizationTarget) => HTMLElement | null
-}>('mobileSettingsPanel')
+type SettingsPanelHandle = { focusOptimizationTarget: (target: OptimizationTarget) => Promise<HTMLElement | null> }
+const desktopSettingsPanel = useTemplateRef<SettingsPanelHandle>('desktopSettingsPanel')
+const mobileSettingsPanel = useTemplateRef<SettingsPanelHandle>('mobileSettingsPanel')
 let highlightTimer: ReturnType<typeof setTimeout> | undefined
 const highlight = (element: HTMLElement | null) => {
   if (!element) return
@@ -875,7 +875,7 @@ const navigateOptimization = async (target: OptimizationTarget) => {
     tiptapEditor.value?.focusBlock(target.blockIndex)
   } else {
     const panel = wasMobile ? mobileSettingsPanel.value : desktopSettingsPanel.value
-    element = panel?.focusOptimizationTarget(target) ?? null
+    element = (await panel?.focusOptimizationTarget(target)) ?? null
   }
   element?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   highlight(element)
@@ -986,10 +986,15 @@ const previewSeries = computed(() => {
 const previewAuthor = computed(() => editedArticle.value.user ?? null)
 const previewImageCredit = computed(() => (editedArticle.value.imageCredit as CoverCredit | null) ?? null)
 
-// Expanded while there is nothing to lose, or on the `?ai=1` deep link. Generation rewrites the
-// whole article, so a permanently open composer serves no mid-article iteration — it just pushed
-// the title below the fold on every visit.
-const aiOpen = shallowRef(isBlank.value || route.query.ai === '1' || !!customPrompt.value)
+const aiAvailable = computed(() => hasAiPlan(clientStatus.value?.plan))
+// AI opens first only while there is nothing to lose, or on the `?ai=1` deep link; a finished run
+// hands over to the checks, which is where a generated draft needs attention next.
+const settingsTab = shallowRef<'article' | 'ai' | 'checks'>(
+  aiAvailable.value && (isBlank.value || route.query.ai === '1' || !!customPrompt.value) ? 'ai' : 'article',
+)
+watch(aiGenerating, (now, before) => {
+  if (before && !now) settingsTab.value = 'checks'
+})
 
 const publishLabel = computed(() => t(`articles.${publishAction(editedArticle.value, isNew)}`))
 
@@ -1049,7 +1054,6 @@ const generationRun = useTemplateRef<ComponentPublicInstance>('generationRun')
 const generateAIContent = async () => {
   if (generation.running) return toast.add({ color: 'warning', title: t('articles.editor.ai.run.busy') })
   // The run card above the article is the progress view; the preset form only gets in the way.
-  aiOpen.value = false
   sidebarOpen.value = false
   const run = generation.start({
     prompt: customPrompt.value,
@@ -1196,6 +1200,7 @@ const submit = async (targetStatus: 'draft' | 'published', mediaRightsReview?: M
 const openMediaRightsPanel = () => {
   mediaPublishReviewOpen.value = false
   settingsExpanded.value = true
+  settingsTab.value = 'checks'
   if (window.matchMedia('(max-width: 1023px)').matches) sidebarOpen.value = true
 }
 const confirmMediaRightsPublish = async () => {

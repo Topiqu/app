@@ -1,32 +1,24 @@
 <template>
   <div class="flex flex-col gap-3">
-    <div>
-      <div class="mb-2 flex items-center justify-between gap-3">
-        <p class="text-xs font-medium text-muted">{{ $t('articles.tags.selected') }}</p>
-        <span v-if="tagBuffer.length" class="text-xs tabular-nums text-muted">{{ tagBuffer.length }}</span>
-      </div>
-
-      <div v-if="tagBuffer.length" class="flex flex-wrap gap-1.5" :aria-label="$t('articles.tags.selected')">
-        <span
-          v-for="tag in tagBuffer"
-          :key="tag.id"
-          class="inline-flex min-w-0 max-w-full items-center gap-1 rounded-md border border-default bg-elevated/60 py-1 pl-2.5 pr-1 text-sm text-highlighted"
-        >
-          <span class="max-w-64 truncate" :title="tag.name">{{ tag.name }}</span>
-          <UButton
-            color="neutral"
-            variant="ghost"
-            class="tag-destructive-control"
-            icon="mdi:close"
-            size="xs"
-            square
-            :aria-label="$t('articles.tags.removeNamed', { name: tag.name })"
-            :title="$t('articles.tags.removeNamed', { name: tag.name })"
-            @click="remove(tag.id)"
-          />
-        </span>
-      </div>
-      <p v-else class="text-xs leading-5 text-muted">{{ $t('articles.tags.selectedEmpty') }}</p>
+    <div v-if="tagBuffer.length" class="flex flex-wrap gap-1.5" :aria-label="$t('articles.tags.selected')">
+      <span
+        v-for="tag in tagBuffer"
+        :key="tag.id"
+        class="inline-flex min-w-0 max-w-full items-center gap-1 rounded-md border border-default bg-elevated/60 py-1 pl-2.5 pr-1 text-sm text-highlighted"
+      >
+        <span class="max-w-64 truncate" :title="tag.name">{{ tag.name }}</span>
+        <UButton
+          color="neutral"
+          variant="ghost"
+          class="tag-destructive-control"
+          icon="mdi:close"
+          size="xs"
+          square
+          :aria-label="$t('articles.tags.removeNamed', { name: tag.name })"
+          :title="$t('articles.tags.removeNamed', { name: tag.name })"
+          @click="remove(tag.id)"
+        />
+      </span>
     </div>
 
     <UFormField :label="$t('articles.tags.addExisting')" :ui="{ label: 'sr-only' }">

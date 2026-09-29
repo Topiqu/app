@@ -3,20 +3,41 @@
     <UCollapsible v-model:open="open">
       <UButton
         color="neutral"
-        variant="soft"
-        size="lg"
+        variant="ghost"
         type="button"
         class="w-full"
         :ui="{ trailingIcon: 'ms-auto' }"
         icon="mdi:shield-search"
         :trailingIcon="open ? 'mdi:chevron-up' : 'mdi:chevron-down'"
-        :label="$t('articles.editor.factCheck.title')"
-      />
+      >
+        <span class="flex min-w-0 flex-1 items-center justify-between gap-3 text-left">
+          <span class="font-semibold text-highlighted">{{ $t('articles.editor.factCheck.title') }}</span>
+          <UIcon v-if="locked" name="mdi:lock-outline" class="size-4 text-muted" />
+          <span
+            v-else-if="result"
+            class="text-sm font-semibold tabular-nums"
+            :class="result.counts.problematic ? 'text-warning' : 'text-success'"
+          >
+            {{ result.counts.supported }}/{{ result.counts.total }}
+          </span>
+        </span>
+      </UButton>
       <template #content>
-        <div class="mt-3 rounded-lg border border-default bg-elevated/30 p-4">
+        <div class="mt-2 border-l-2 border-primary/35 pl-4">
           <p class="text-xs leading-5 text-muted">{{ $t('articles.editor.factCheck.description') }}</p>
 
-          <div v-if="state === 'running'" class="mt-4 space-y-2" aria-live="polite">
+          <UButton
+            v-if="locked"
+            class="mt-3"
+            size="sm"
+            variant="soft"
+            icon="mdi:star-four-points"
+            :to="localePath({ name: 'settings', query: { tab: 'billing' } })"
+          >
+            {{ $t('articles.editor.ai.upsell.cta') }}
+          </UButton>
+
+          <div v-else-if="state === 'running'" class="mt-4 space-y-2" aria-live="polite">
             <p class="text-sm text-muted">{{ $t('articles.editor.factCheck.running') }}</p>
             <UProgress :aria-label="$t('articles.editor.factCheck.running')" />
           </div>
@@ -31,7 +52,7 @@
             :description="$t(`articles.editor.factCheck.error.${errorKind}`)"
           />
 
-          <template v-if="result && state !== 'running'">
+          <template v-if="!locked && result && state !== 'running'">
             <div class="mt-4 flex items-start justify-between gap-3">
               <div>
                 <p class="text-2xl font-bold tabular-nums text-highlighted">{{ result.counts.total }}</p>
@@ -180,7 +201,7 @@
           </template>
 
           <UButton
-            v-if="state !== 'running'"
+            v-if="!locked && state !== 'running'"
             class="mt-4 w-full"
             color="primary"
             variant="soft"
@@ -190,7 +211,7 @@
           >
             {{ result ? $t('articles.editor.factCheck.runAgain') : $t('articles.editor.factCheck.run') }}
           </UButton>
-          <p v-if="!canRun" class="mt-2 text-xs text-muted">{{ $t('articles.editor.factCheck.notEnoughContent') }}</p>
+          <p v-if="!locked && !canRun" class="mt-2 text-xs text-muted">{{ $t('articles.editor.factCheck.notEnoughContent') }}</p>
           <p v-if="result" class="mt-3 text-[11px] leading-4 text-muted">
             {{ $t('articles.editor.factCheck.disclaimer') }}
           </p>
@@ -212,9 +233,11 @@ const props = defineProps<{
   result: ArticleFactCheckResult | null
   canRun: boolean
   errorKind: ArticleFactCheckErrorKind
+  locked?: boolean
 }>()
 defineEmits<{ run: []; navigate: [blockIndex: number]; navigateSources: [] }>()
 
+const localePath = useLocalePath()
 const open = shallowRef(false)
 const supportedOpen = shallowRef(false)
 const sorted = computed(() => sortFactCheckClaims(props.result?.claims ?? []))

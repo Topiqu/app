@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-2 w-full">
-    <span class="ml-1 text-xs font-bold uppercase tracking-wider text-muted">
+    <span v-if="!compact" class="ml-1 text-xs font-bold uppercase tracking-wider text-muted">
       {{ $t('series.label') }}
     </span>
 
