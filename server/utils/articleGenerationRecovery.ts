@@ -12,6 +12,12 @@ export type GenerationSnapshot = {
   articleImageUrl?: string | null
   articleImageCredit?: unknown
   articleCoverMediaId?: string | null
+  answer?: string | null
+  keyTakeaways?: string[]
+  faq?: unknown
+  tags?: string[]
+  format?: string
+  metrics?: { totalWords?: number; savedAmount?: number; savedTimeMinutes?: number }
 }
 
 // Safety contract for future maintainers/AI: billing and recovery are inseparable. An interrupted

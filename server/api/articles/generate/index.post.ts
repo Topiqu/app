@@ -21,10 +21,11 @@ export default defineEventHandler(async (event) => {
 
   await ensureMinAccountAge(event, user.id)
 
-  const { prompt, options } = await readValidatedBody(
+  const { prompt, options, articleId } = await readValidatedBody(
     event,
     z.object({
       prompt: z.string().nonempty(t('common.errors.missing')!),
+      articleId: z.string().uuid().optional(),
       options: z
         .object({
           language: z.enum(LANGUAGE_OPTIONS).optional(),
@@ -43,6 +44,13 @@ export default defineEventHandler(async (event) => {
   )
 
   const clientSiteId = user.clientSiteId
+  if (articleId) {
+    const sourceArticle = await prisma.article.findFirst({
+      where: { id: articleId, clientSiteId },
+      select: { id: true },
+    })
+    if (!sourceArticle) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
+  }
   const attemptId = randomUUID()
   const auditAttempt = async (action: string, metadata: Record<string, unknown> = {}) => {
     try {
@@ -126,7 +134,7 @@ export default defineEventHandler(async (event) => {
       userId: user.id,
       articleOperationId: articleReservation.id,
       prompt,
-      options: generationOptions,
+      options: { ...generationOptions, sourceArticleId: articleId ?? null },
     })
   } catch (error) {
     await settleArticleCredit(articleReservation, false, { ...runConfig, stage: 'session' })
@@ -291,7 +299,7 @@ export default defineEventHandler(async (event) => {
             event,
             user.id,
           )
-          recoverySnapshot = { ...recoverySnapshot, ...finalized }
+          recoverySnapshot = { ...recoverySnapshot, ...finalized, format: generationOptions.format, metrics }
           await checkpointGeneration(recoverySession!.id, 'final', recoverySnapshot)
           const articleWallet = await settleArticleCredit(articleReservation, true, {
             ...runConfig,
@@ -416,6 +424,16 @@ export default defineEventHandler(async (event) => {
       }
     },
     async cancel(reason) {
+      clientAlive = false
+      // Leaving the page disconnects the stream, but the durable generation session keeps
+      // running. Only the explicit Stop endpoint marks the session for cancellation.
+      const session = recoverySession
+        ? await prisma.articleGenerationSession.findUnique({
+            where: { id: recoverySession.id },
+            select: { failureReason: true },
+          })
+        : null
+      if (session?.failureReason !== 'USER_STOP_REQUESTED') return
       abortController.abort()
       await auditAttempt('MANUAL_GENERATION_CANCELLED', {
         stage: generation ? (textDone ? 'finalization' : 'writing') : 'initialization',

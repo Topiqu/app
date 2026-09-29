@@ -19,6 +19,7 @@
     <ClientOnly>
       <ClientVersion v-if="consentLauncher === 'client-version'" />
       <ConsentSettingsButton v-else-if="consentLauncher === 'cookie-button'" />
+      <ArticleGenerationActivity />
     </ClientOnly>
   </UApp>
 </template>
@@ -26,8 +27,8 @@
 <script setup lang="ts">
 import { cs, de, en, fr } from '@nuxt/ui/locale'
 import { languageTag } from '~~/shared/utils/language'
-import { consentLauncherFor } from '~~/shared/utils/consent'
 import { isForeignHost } from '~~/shared/utils/domain'
+import { consentLauncherFor } from '~~/shared/utils/consent'
 import { brandTitle, toAbsoluteUrl } from '~~/shared/utils/seo'
 import { resolveBrandAccent } from '~~/shared/utils/tenantTheme'
 import { platformAdsEnabledForPlan } from '~~/shared/utils/advertising'

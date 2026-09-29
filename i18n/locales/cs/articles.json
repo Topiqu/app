@@ -423,6 +423,7 @@
         "learnMore": "Zjistit více",
         "generateButton": "Vytvořit článek",
         "stopButton": "Zastavit",
+        "stopFailed": "Generování se nepodařilo zastavit. Zkuste to znovu.",
         "generating": "Generování článku",
         "neutralAuthor": "Připravit nový článek",
         "planDescription": "Nastavte podobu výstupu. Před spuštěním přesně uvidíte, co se použije.",
@@ -548,6 +549,9 @@
           "cover": "Titulní",
           "slot": "Obrázek {number}",
           "sidebarNote": "Průběh generování vidíte nad článkem.",
+          "returnToEditor": "Zpět do editoru",
+          "openResult": "Otevřít výsledek",
+          "hideStatus": "Skrýt stav generování",
           "stopped": "Zastaveno dřív, než krok doběhl.",
           "state": {
             "pending": "Čeká",

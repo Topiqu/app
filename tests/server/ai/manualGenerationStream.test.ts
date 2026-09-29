@@ -8,12 +8,15 @@ const articleQuality = readFileSync(resolve(process.cwd(), 'server/utils/ai/arti
 const editor = readFileSync(resolve(process.cwd(), 'app/pages/admin/editor/[id].vue'), 'utf8')
 const drafts = readFileSync(resolve(process.cwd(), 'app/composables/useArticleDrafts.ts'), 'utf8')
 const recovery = readFileSync(resolve(process.cwd(), 'server/utils/articleGenerationRecovery.ts'), 'utf8')
+const stopEndpoint = readFileSync(resolve(process.cwd(), 'server/api/articles/generations/[id]/stop.post.ts'), 'utf8')
 
 describe('manual article generation stream', () => {
-  it('leaves transport close events alone and aborts only when the stream reader cancels', () => {
+  it('keeps generating after a disconnect and aborts only after an explicit Stop request', () => {
     expect(endpoint).not.toMatch(/event\.node\.req\.on\(['"]close['"]/)
     expect(endpoint).not.toMatch(/event\.node\.res\.on\(['"]close['"]/)
-    expect(endpoint).toMatch(/async cancel\([^)]*\)\s*{[\s\S]*abortController\.abort\(\)/)
+    expect(endpoint).toContain("if (session?.failureReason !== 'USER_STOP_REQUESTED') return")
+    expect(stopEndpoint).toContain("data: { failureReason: 'USER_STOP_REQUESTED' }")
+    expect(editor).toContain('await $fetch(`/api/articles/generations/${id}/stop`')
   })
 
   it('returns the stream through the Fetch Response contract', () => {
@@ -80,9 +83,8 @@ describe('manual article generation stream', () => {
   it('pauses autosave while generation mutates the editor and saves once afterward', () => {
     expect(drafts).toContain('if (!force && (idle.value || options.paused?.value)) return false')
     expect(editor).toContain('paused: aiGenerating')
-    expect(editor).toMatch(
-      /finishGenerationRun\([\s\S]*retryOptimization\(\)\s+const recoverySaved = isNew \? await saveDraftNow\(\) : true/,
-    )
+    expect(editor).toMatch(/finishGenerationRun\([\s\S]*if \(!leftDuringGeneration\.value\) retryOptimization\(\)/)
+    expect(editor).toContain('if (isNew) await saveDraftNow()')
   })
 
   it('couples interrupted billing to a durable useful recovery checkpoint', () => {
@@ -95,7 +97,9 @@ describe('manual article generation stream', () => {
 
   it('keeps media finalization observable and cancellable', () => {
     expect(endpoint).toContain('abortSignal: abortController.signal')
-    expect(endpoint).toMatch(/async cancel\([^)]*\)\s*{\s*abortController\.abort\(\)/)
+    expect(endpoint).toMatch(
+      /if \(session\?\.failureReason !== 'USER_STOP_REQUESTED'\) return\s+abortController\.abort\(\)/,
+    )
     expect(articleGenerator).toContain("reportMedia('cover')")
     expect(articleGenerator).toContain("reportMedia('complete')")
     expect(endpoint).toContain("send(controller, { type: 'media', stage: 'failed'")

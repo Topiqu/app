@@ -423,6 +423,7 @@
         "learnMore": "Learn More",
         "generateButton": "Create article",
         "stopButton": "Stop",
+        "stopFailed": "Could not stop generation. Please try again.",
         "generating": "Generating article",
         "neutralAuthor": "Prepare a new article",
         "planDescription": "Set the output before starting. You will see exactly what will be used.",
@@ -548,6 +549,9 @@
           "cover": "Cover",
           "slot": "Image {number}",
           "sidebarNote": "Generation progress is shown above the article.",
+          "returnToEditor": "Back to editor",
+          "openResult": "Open result",
+          "hideStatus": "Hide generation status",
           "stopped": "Stopped before this step finished.",
           "state": {
             "pending": "Waiting",

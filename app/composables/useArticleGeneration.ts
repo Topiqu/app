@@ -48,6 +48,7 @@ export const useArticleGeneration = () => {
     prompt: string,
     options: ArticleGenerationOptions,
     handlers: StreamHandlers,
+    articleId?: string,
   ): Promise<'completed' | 'aborted'> => {
     controller = new AbortController()
     generating.value = true
@@ -57,7 +58,7 @@ export const useArticleGeneration = () => {
       const res = await fetch('/api/articles/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Idempotency-Key': requestKey },
-        body: JSON.stringify({ prompt, options }),
+        body: JSON.stringify({ prompt, options, articleId }),
         signal: controller.signal,
       })
 

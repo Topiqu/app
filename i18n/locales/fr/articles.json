@@ -423,6 +423,7 @@
         "learnMore": "En savoir plus",
         "generateButton": "Créer l'article",
         "stopButton": "Arrêter",
+        "stopFailed": "Impossible d’arrêter la génération. Réessayez.",
         "generating": "Génération de l'article",
         "neutralAuthor": "Préparer un nouvel article",
         "planDescription": "Définissez le résultat avant de commencer. Vous verrez exactement ce qui sera utilisé.",
@@ -548,6 +549,9 @@
           "cover": "Couverture",
           "slot": "Image {number}",
           "sidebarNote": "La progression de la génération s’affiche au-dessus de l’article.",
+          "returnToEditor": "Retour à l’éditeur",
+          "openResult": "Ouvrir le résultat",
+          "hideStatus": "Masquer l’état de génération",
           "stopped": "Arrêté avant la fin de cette étape.",
           "state": {
             "pending": "En attente",
