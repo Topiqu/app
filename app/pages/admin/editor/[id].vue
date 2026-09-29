@@ -237,12 +237,11 @@
       class="grid flex-1 items-start gap-8"
       :class="settingsExpanded ? 'lg:grid-cols-[minmax(0,1fr)_30rem]' : 'lg:grid-cols-[minmax(0,1fr)_3rem]'"
     >
-      <div
-        class="min-w-0 flex flex-col gap-6 lg:sticky lg:top-20 lg:max-h-[calc(100dvh-10rem)] lg:self-start lg:overflow-y-auto lg:overscroll-contain lg:pr-2"
-      >
+      <div class="min-w-0 flex flex-col gap-6">
         <ArticleEditorGenerationRun
           v-if="aiRun"
           ref="generationRun"
+          class="scroll-mt-20"
           :run="aiRun"
           :words="aiWordCount"
           :authorName="clientStatus?.aiUser?.username"
@@ -295,10 +294,10 @@
           <ArticleFaq :entries="readFaq(editedArticle.faq)" />
         </div>
       </div>
-      <aside class="sticky top-20 hidden self-start lg:block" :aria-label="$t('articles.editor.settingsTitle')">
+      <aside class="hidden self-start lg:block" :aria-label="$t('articles.editor.settingsTitle')">
         <div
           v-if="settingsExpanded"
-          class="max-h-[calc(100dvh-7rem)] overflow-y-auto overscroll-contain rounded-(--topiqu-surface-radius) border border-default bg-default px-5 pb-5"
+          class="rounded-(--topiqu-surface-radius) border border-default bg-default px-5 pb-5"
         >
           <ArticleEditorSettingsPanel
             ref="desktopSettingsPanel"
@@ -337,7 +336,7 @@
           >
             <template #actions>
               <UButton
-                icon="mdi:chevron-right"
+                icon="mdi:close"
                 color="neutral"
                 variant="ghost"
                 square
@@ -987,14 +986,10 @@ const previewAuthor = computed(() => editedArticle.value.user ?? null)
 const previewImageCredit = computed(() => (editedArticle.value.imageCredit as CoverCredit | null) ?? null)
 
 const aiAvailable = computed(() => hasAiPlan(clientStatus.value?.plan))
-// AI opens first only while there is nothing to lose, or on the `?ai=1` deep link; a finished run
-// hands over to the checks, which is where a generated draft needs attention next.
+// AI opens first only while there is nothing to lose, or on the `?ai=1` deep link.
 const settingsTab = shallowRef<'article' | 'ai' | 'checks'>(
   aiAvailable.value && (isBlank.value || route.query.ai === '1' || !!customPrompt.value) ? 'ai' : 'article',
 )
-watch(aiGenerating, (now, before) => {
-  if (before && !now) settingsTab.value = 'checks'
-})
 
 const publishLabel = computed(() => t(`articles.${publishAction(editedArticle.value, isNew)}`))
 
@@ -1053,7 +1048,6 @@ const generationRun = useTemplateRef<ComponentPublicInstance>('generationRun')
 
 const generateAIContent = async () => {
   if (generation.running) return toast.add({ color: 'warning', title: t('articles.editor.ai.run.busy') })
-  // The run card above the article is the progress view; the preset form only gets in the way.
   sidebarOpen.value = false
   const run = generation.start({
     prompt: customPrompt.value,
@@ -1062,7 +1056,7 @@ const generateAIContent = async () => {
     editorPath: route.path,
     articleId: isNew ? undefined : article.value?.id,
   })
-  void nextTick(() => generationRun.value?.$el?.scrollIntoView?.({ behavior: 'smooth', block: 'nearest' }))
+  void nextTick(() => generationRun.value?.$el?.scrollIntoView?.({ behavior: 'smooth', block: 'start' }))
   await run
 }
 

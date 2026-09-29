@@ -1,10 +1,6 @@
 <template>
-  <p v-if="aiGenerating" class="flex items-start gap-2 text-sm leading-5 text-muted">
-    <UIcon name="mdi:arrow-left-top" size="18" class="mt-0.5 shrink-0 text-primary" aria-hidden="true" />
-    {{ $t('articles.editor.ai.run.sidebarNote') }}
-  </p>
-
-  <div v-else class="flex flex-col gap-4">
+  <fieldset :disabled="aiGenerating" class="flex min-w-0 flex-col gap-4 disabled:opacity-70">
+    <legend class="sr-only">{{ $t('articles.editor.tabs.ai') }}</legend>
     <UFormField :label="$t('articles.editor.ai.topicLabel')">
       <UTextarea
         v-model="customPrompt"
@@ -115,9 +111,9 @@
       </template>
     </UCollapsible>
 
-    <div class="sticky bottom-0 flex items-center gap-2 bg-default py-3">
-      <UButton block size="lg" :disabled="!customPrompt.trim()" @click="$emit('generate')">
-        {{ $t('articles.editor.ai.generateButton') }}
+    <div class="flex items-center gap-2 pt-2">
+      <UButton block size="lg" :disabled="aiGenerating || !customPrompt.trim()" @click="$emit('generate')">
+        {{ $t(aiGenerating ? 'articles.editor.ai.run.title.running' : 'articles.editor.ai.generateButton') }}
       </UButton>
       <UPopover :content="{ side: 'top', align: 'end' }">
         <UButton
@@ -136,7 +132,7 @@
         </template>
       </UPopover>
     </div>
-  </div>
+  </fieldset>
 </template>
 
 <script setup lang="ts">

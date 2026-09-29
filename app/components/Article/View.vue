@@ -1,6 +1,6 @@
 <template>
   <div class="mx-auto grid max-w-[var(--topiqu-article-width)] gap-10 lg:grid-cols-[minmax(0,1fr)_15rem]">
-    <div class="flex min-w-0 flex-col gap-8 pt-4">
+    <div class="article-reading-column flex min-w-0 flex-col gap-8 pt-4">
       <slot name="top" />
 
       <div ref="hero">

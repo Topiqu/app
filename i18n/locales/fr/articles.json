@@ -534,7 +534,6 @@
           "openVideo": "Ouvrir la vidéo",
           "cover": "Couverture",
           "slot": "Image {number}",
-          "sidebarNote": "La progression de la génération s’affiche au-dessus de l’article.",
           "returnToEditor": "Retour à l’éditeur",
           "openResult": "Ouvrir le résultat",
           "hideStatus": "Masquer l’état de génération",

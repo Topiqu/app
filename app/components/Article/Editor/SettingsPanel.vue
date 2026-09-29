@@ -7,7 +7,7 @@
     class="w-full"
     :ui="{
       root: 'gap-5',
-      list: 'sticky top-0 z-10 bg-default',
+      list: 'bg-default',
       trigger: 'flex-1 justify-center',
     }"
     data-article-settings-panel
@@ -209,7 +209,8 @@ const quickReleaseKinds = ['now', 'inHour', 'tomorrow'] as const
 const checksBadge = computed(() => {
   const score = props.optimizationResult?.overallScore
   const attention = props.mediaRightsResult?.counts.needsAttention ?? 0
-  if (attention) return { label: attention, icon: 'mdi:alert-outline', color: 'warning' as const, variant: 'soft' as const }
+  if (attention)
+    return { label: attention, icon: 'mdi:alert-outline', color: 'warning' as const, variant: 'soft' as const }
   if (score === undefined) return undefined
   return { label: score, color: optimizationScoreColor(score), variant: 'soft' as const }
 })

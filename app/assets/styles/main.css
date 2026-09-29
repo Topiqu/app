@@ -486,8 +486,16 @@ main {
 /* Published tables are server-wrapped with `.article-table`. Keeping the descendant rules in
    CSS makes them available in production builds; Tailwind does not reliably generate arbitrary
    variants assembled inside a shared TypeScript string. */
+.article-reading-column {
+  container-type: inline-size;
+}
+
 .article-table {
-  scrollbar-gutter: stable;
+  position: relative;
+  left: 50%;
+  width: 100%;
+  width: 100cqw;
+  transform: translateX(-50%);
 }
 
 .article-table table,
@@ -499,6 +507,17 @@ main {
   font-size: 0.95em;
   line-height: 1.55;
   table-layout: auto;
+}
+
+/* Distribute published columns across the reading width instead of sizing them by their labels. */
+.article-table table {
+  table-layout: fixed;
+}
+
+@media (max-width: 640px) {
+  .article-table table {
+    min-width: 32rem;
+  }
 }
 
 .article-table th,

@@ -534,7 +534,6 @@
           "openVideo": "Open the video",
           "cover": "Cover",
           "slot": "Image {number}",
-          "sidebarNote": "Generation progress is shown above the article.",
           "returnToEditor": "Back to editor",
           "openResult": "Open result",
           "hideStatus": "Hide generation status",
