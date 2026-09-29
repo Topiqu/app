@@ -1,6 +1,11 @@
 import { articlePath } from '~~/shared/utils/routes'
 import { CommentCreateSchema } from '~~/shared/databaseSchemas'
 
+const emailExcerpt = (content: string) => {
+  const graphemes = new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(content)
+  return `${Array.from(graphemes, ({ segment }) => segment).slice(0, 50).join('')}...`
+}
+
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const user = await requireUser(event)
@@ -47,37 +52,19 @@ export default defineEventHandler(async (event) => {
   const logoUrl = 'https://cdn.topiqu.com/app-logo.png'
 
   let content = body.content
-
-  if (body.parentId) {
-    const parent = await prisma.comment.findUnique({
-      where: { id: body.parentId },
-      select: {
-        user: { select: { id: true, language: true, username: true, email: true, allowEmail: true } },
-        content: true,
-      },
-    })
-    if (!parent) throw createError({ statusCode: 404, message: t('common.errors.missing')! })
-    content = `@${parent.user.username} ${content}`
-
-    if (parent.user.allowEmail && parent.user.email) {
-      await sendEmail({
-        event,
-        to: parent.user.email,
-        lang: parent.user.language,
-        template: 'commentReply',
-        data: {
-          userName: user.name,
-          parentUsername: parent.user.username,
-          commentContent: body.content.slice(0, 50) + '...',
-          parentContent: parent.content.slice(0, 50) + '...',
-          commentUrl: commentUrl(body.parentId),
-          replyUrl,
-          avatarUrl: user.avatarUrl || 'https://via.placeholder.com/50',
-          logoUrl,
-          unsubscribeUrl: unsubscribeUrl(parent.user, `${protocol}://${host}`),
+  const parent = body.parentId
+    ? await prisma.comment.findFirst({
+        where: { id: body.parentId, articleId: body.articleId },
+        select: {
+          user: { select: { id: true, language: true, username: true, email: true, allowEmail: true } },
+          content: true,
         },
       })
-    }
+    : null
+
+  if (body.parentId) {
+    if (!parent) throw createError({ statusCode: 404, message: t('common.errors.missing')! })
+    content = `@${parent.user.username} ${content}`
   }
 
   const comment = await prisma.comment.create({
@@ -107,8 +94,29 @@ export default defineEventHandler(async (event) => {
     })
 
   // One failed mailbox must not fail a comment that is already saved.
-  const sent = await Promise.allSettled(
-    audience
+  const sent = await Promise.allSettled([
+    ...(parent?.user.allowEmail && parent.user.email
+      ? [
+          sendEmail({
+            event,
+            to: parent.user.email,
+            lang: parent.user.language,
+            template: 'commentReply',
+            data: {
+              userName: user.name,
+              parentUsername: parent.user.username,
+              commentContent: emailExcerpt(body.content),
+              parentContent: emailExcerpt(parent.content),
+              commentUrl: commentUrl(comment.id),
+              replyUrl,
+              avatarUrl: user.avatarUrl || 'https://via.placeholder.com/50',
+              logoUrl,
+              unsubscribeUrl: unsubscribeUrl(parent.user, `${protocol}://${host}`),
+            },
+          }),
+        ]
+      : []),
+    ...audience
       .filter((member) => member.allowEmail && member.email)
       .map((member) =>
         sendEmail({
@@ -119,8 +127,8 @@ export default defineEventHandler(async (event) => {
           data: {
             userName: user.name,
             articleTitle: article.title,
-            text: `${user.name}: "${body.content.slice(0, 50)}...".\n${commentUrl(comment.id)}`,
-            commentContent: body.content.slice(0, 50) + '...',
+            text: `${user.name}: "${emailExcerpt(body.content)}".\n${commentUrl(comment.id)}`,
+            commentContent: emailExcerpt(body.content),
             commentUrl: commentUrl(comment.id),
             replyUrl,
             avatarUrl: user.avatarUrl || 'https://via.placeholder.com/50',
@@ -129,8 +137,8 @@ export default defineEventHandler(async (event) => {
           },
         }),
       ),
-  )
-  for (const result of sent) if (result.status === 'rejected') console.error('[newComment email]', result.reason)
+  ])
+  for (const result of sent) if (result.status === 'rejected') console.error('[comment email]', result.reason)
 
   return comment
 })
