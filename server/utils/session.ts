@@ -3,12 +3,13 @@ import type { User } from '~~/generated/zenstack/models'
 
 import { UAParser } from 'ua-parser-js'
 
+import { clientIp } from './ip'
+
 export const generateSessionToken = async (
   user: Pick<User, 'id' | 'clientSiteId'>,
   req: Pick<RequestInternal, 'body' | 'query' | 'headers' | 'method'>,
 ) => {
-  const ipHeader = (req.headers?.['x-forwarded-for'] as string)?.split(',')[0]?.trim() ?? ''
-  const ipAddress = ipHeader || null
+  const ipAddress = clientIp(req.headers ?? {})
 
   const userAgent = req.headers?.['user-agent'] ?? null
   const parser = new UAParser(userAgent)

@@ -29,7 +29,8 @@ describe('credential login decisions', () => {
         headers: {
           host: 'internal:3000',
           'x-forwarded-host': 'tenant.example.com',
-          'x-forwarded-for': '203.0.113.4, 10.0.0.2',
+          'x-forwarded-for': '172.70.240.24',
+          'cf-connecting-ip': '203.0.113.4',
           'user-agent': 'Browser',
         },
       } as any,

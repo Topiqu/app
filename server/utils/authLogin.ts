@@ -2,6 +2,8 @@ import type { RequestInternal } from 'next-auth'
 
 import { createHmac } from 'node:crypto'
 
+import { clientIp } from './ip'
+
 export type LoginFailure =
   'user_not_found' | 'password_missing' | 'password_mismatch' | 'email_unverified' | 'totp_invalid' | 'rate_limited'
 
@@ -32,7 +34,7 @@ const header = (req: AuthRequest, name: string) => {
 
 export const loginRequestContext = (req: AuthRequest, email: string) => ({
   identity: authFingerprint(normalizeLoginEmail(email)),
-  ip: header(req, 'x-forwarded-for')?.split(',')[0]?.trim() || header(req, 'x-real-ip') || null,
+  ip: clientIp(req.headers ?? {}),
   host: header(req, 'x-forwarded-host') || header(req, 'host') || null,
   userAgent: header(req, 'user-agent') || null,
 })

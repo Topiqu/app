@@ -142,7 +142,7 @@ export default defineEventHandler(async (event) => {
       annualAfter: result.annualPayment,
       activeFeatures: result.activeFeatures,
     },
-    ip: getRequestIP(event),
+    ip: getIp(event),
   })
 
   return {
