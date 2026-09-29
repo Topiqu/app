@@ -590,6 +590,7 @@
             "running": "Kontroluji fakta a konzistenci…",
             "approved": "Schváleno bez úprav.",
             "revised": "Upraveno, opravené problémy: {count}",
+            "revisedIssues": "Upraveno, k ruční kontrole zbývá: {count}",
             "issues": "Doporučuje ruční kontrolu. Otevřené problémy: {count}"
           },
           "media": {
@@ -614,6 +615,8 @@
             "stale_framing": "Zastaralé podání",
             "repetition": "Opakování",
             "filler": "Vata",
+            "hedging": "Zbytečné výhrady",
+            "invented_detail": "Vymyšlený detail",
             "generic_language": "Obecné formulace",
             "missing_specifics": "Chybí konkrétní údaje",
             "broken_structure": "Rozbitá struktura"

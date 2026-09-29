@@ -590,6 +590,7 @@
             "running": "Vérification des faits et de la cohérence…",
             "approved": "Approuvé sans modification.",
             "revised": "Révisé ; problèmes corrigés : {count}",
+            "revisedIssues": "Révisé, reste à vérifier manuellement : {count}",
             "issues": "Une vérification manuelle est recommandée. Problèmes ouverts : {count}"
           },
           "media": {
@@ -614,6 +615,8 @@
             "stale_framing": "Présentation obsolète",
             "repetition": "Répétition",
             "filler": "Remplissage",
+            "hedging": "Réserves inutiles",
+            "invented_detail": "Détail inventé",
             "generic_language": "Formulations génériques",
             "missing_specifics": "Détails manquants",
             "broken_structure": "Structure défaillante"

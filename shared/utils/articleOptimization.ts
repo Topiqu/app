@@ -99,7 +99,7 @@ Article optimization requirements (apply them while drafting; never mention this
 - Use at least ${criteria.minimumHeadingsForLongArticle} descriptive section headings for articles longer than ${criteria.structuredArticleMinimumWords} words. Do not use a one-word generic heading such as Introduction, Summary, Conclusion, Úvod, Shrnutí or Závěr.
 - Naturally repeat at least half of the meaningful words from the title within the first ${criteria.topicIntroductionWords} body words.
 - Keep every paragraph at or below ${criteria.maximumParagraphWords} words, every uninterrupted section at or below ${criteria.maximumSectionWords} words, and at least 90% of sentences at or below ${criteria.maximumSentenceWords} words.
-- Include one contextually useful internal link to ${internalDestination}. Use a relative href when possible.
+- Include one contextually useful internal link to ${internalDestination}. Use a relative href when possible. Present it as the publication itself; never describe it as a specific guide, overview or page that may not exist.
 - When live research supplied sources, link at least one supported statement to the most relevant source URL exactly as supplied. Never invent a URL merely to satisfy this requirement.
 - Every body image must have a concise, meaningful alt description derived from its caption.
 - Before returning JSON, silently check these requirements and correct avoidable failures. Optimize for clarity and accuracy first; do not add filler, unsafe links or unsupported claims merely to improve a score.

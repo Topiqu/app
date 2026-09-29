@@ -47,6 +47,28 @@ describe('generation run', () => {
     expect(step(unused, 'youtube')).toMatchObject({ state: 'warning', detail: 'youtube.notUsed' })
   })
 
+  it('shows issues left after a revision instead of a green review step', () => {
+    const review = (approved: boolean): GenerationEvent => ({
+      type: 'review',
+      review: {
+        approved,
+        revised: true,
+        issues: approved ? [] : [{ code: 'invented_detail', note: 'x' }],
+        resolvedIssues: [{ code: 'hedging', note: 'y' }],
+      },
+    })
+    expect(step(play(start(), [review(true)]), 'review')).toMatchObject({
+      state: 'done',
+      detail: 'review.revised',
+      params: { count: 1 },
+    })
+    expect(step(play(start(), [review(false)]), 'review')).toMatchObject({
+      state: 'warning',
+      detail: 'review.revisedIssues',
+      params: { count: 1 },
+    })
+  })
+
   it('reports partial media and open review issues as a partial result', () => {
     const run = play(start(), [
       research({ status: 'noCandidates' }),

@@ -190,10 +190,11 @@ describe('manual article generation stream', () => {
     expect(articleGenerator).not.toContain('press.cdprojektred.com')
   })
 
-  it('uses one strict review, then proceeds to media finalization after any revision', () => {
+  it('checks revised copy before reporting its review and proceeding to media finalization', () => {
     expect(endpoint).toContain("send(controller, { type: 'review', review: generation.editorialReview })")
     const streamImplementation = articleGenerator.slice(articleGenerator.indexOf('export const streamArticle'))
-    expect(streamImplementation.match(/reviewArticle\(/g)).toHaveLength(1)
-    expect(streamImplementation).toContain('checkedAfterRevision: false')
+    expect(streamImplementation.match(/reviewArticle\(/g)).toHaveLength(2)
+    expect(streamImplementation).toContain('...checked.review')
+    expect(streamImplementation).toContain('checkedAfterRevision: true')
   })
 })

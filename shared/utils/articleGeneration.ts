@@ -232,11 +232,23 @@ export const generationSteps = (run: GenerationRun, words: number): GenerationSt
   else steps.push({ id: 'writing', state: 'done', detail: 'writing.words', params: { count: words } })
 
   const review = run.review
-  if (review?.revised)
-    steps.push({ id: 'review', state: 'done', detail: 'review.revised', params: { count: review.resolvedIssues?.length ?? 0 } })
+  if (review?.approved && review.revised)
+    steps.push({
+      id: 'review',
+      state: 'done',
+      detail: 'review.revised',
+      params: { count: review.resolvedIssues?.length ?? 0 },
+    })
   else if (review?.approved) steps.push({ id: 'review', state: 'done', detail: 'review.approved' })
-  else if (review) steps.push({ id: 'review', state: 'warning', detail: 'review.issues', params: { count: review.issues?.length ?? 0 } })
-  else steps.push({ id: 'review', state: reviewing ? 'running' : 'pending', detail: reviewing ? 'review.running' : null })
+  else if (review)
+    steps.push({
+      id: 'review',
+      state: 'warning',
+      detail: review.revised ? 'review.revisedIssues' : 'review.issues',
+      params: { count: review.issues?.length ?? 0 },
+    })
+  else
+    steps.push({ id: 'review', state: reviewing ? 'running' : 'pending', detail: reviewing ? 'review.running' : null })
 
   const media = run.media
   if (!media)

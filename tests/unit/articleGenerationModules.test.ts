@@ -50,10 +50,11 @@ describe('article generation module selection', () => {
     wrapper.unmount()
   })
 
-  it('replaces the form with a pointer to the run card while generating', async () => {
+  it('keeps the brief visible but disables changes while generating', async () => {
     const { wrapper } = mountForm()
     await wrapper.setProps({ aiGenerating: true })
-    expect(wrapper.find('input[type="checkbox"]').exists()).toBe(false)
+    expect(wrapper.find('fieldset').attributes('disabled')).toBeDefined()
+    expect(wrapper.find('input[type="checkbox"]').exists()).toBe(true)
     wrapper.unmount()
   })
 })

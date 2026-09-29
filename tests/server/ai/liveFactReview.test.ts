@@ -99,6 +99,47 @@ it('does not block publication for stylistic repetition', async () => {
   expect((await reviewArticle(draft, context)).review.approved).toBe(true)
 })
 
+it('requires revision when supported facts only repeat a missing confirmation without developing the topic', async () => {
+  vi.mocked(generateText).mockResolvedValue({
+    text: `SUPPORTED: The subjects have separate documented positions. ${url}`,
+    sources: [{ sourceType: 'url', url }],
+    usage: { totalTokens: 30 },
+  } as never)
+  const issue = {
+    code: 'missing_specifics',
+    note: 'The lead, table and ending repeat the lack of a connection. Compare the documented positions on shared criteria.',
+  }
+  vi.mocked(generateObject).mockResolvedValue({
+    object: { approved: false, issues: [issue] },
+    usage: { totalTokens: 20 },
+  } as never)
+
+  const result = await reviewArticle(draft, context)
+  expect(result.review).toMatchObject({ approved: false, issues: [issue] })
+  expect(buildRevisionPrompt(context.prompt, draft, result.review)).toContain('substantive comparison')
+})
+
+it('verifies factual premises without requiring a source to publish the same opinion', async () => {
+  vi.mocked(generateText).mockResolvedValue({
+    text: `SUPPORTED: The two organizations describe different policies. ${url}`,
+    sources: [{ sourceType: 'url', url }],
+    usage: { totalTokens: 30 },
+  } as never)
+  const opinion = {
+    ...draft,
+    content:
+      '<p>These positions conflict: one centralizes the decision while the other leaves it to individuals. If applied together, they would require a compromise over who decides.</p>',
+    polls: [],
+  }
+  const result = await reviewArticle(opinion, { ...context, format: 'opinion' })
+
+  expect(result.review.approved).toBe(true)
+  const instructions = vi.mocked(generateText).mock.calls[0]![0].instructions as string
+  expect(instructions).toContain('Verify the factual premises of arguments and scenarios')
+  expect(instructions).toContain('do not mark these as unsupported events')
+  expect(instructions).toContain('Never invent an event, action, quotation')
+})
+
 it('keeps factual severity with the live verifier instead of a copy-desk uncertainty veto', async () => {
   vi.mocked(generateText).mockResolvedValue({
     text: `SUPPORTED: Ciri leads. ${url}\nNOT VERIFIED: Exact extent is undisclosed. ${url}`,
@@ -113,4 +154,64 @@ it('keeps factual severity with the live verifier instead of a copy-desk uncerta
     usage: { totalTokens: 20 },
   } as never)
   expect((await reviewArticle(draft, context)).review.approved).toBe(true)
+})
+
+it('keeps advisory NOT VERIFIED verdicts out of the revision', async () => {
+  const contradicted = `CONTRADICTED: The trial is unconfirmed. Developers confirmed it. ${url}`
+  const advisory = `NOT VERIFIED: The exact release window. ${url}`
+  vi.mocked(generateText).mockResolvedValue({
+    text: `${contradicted}\n${advisory}`,
+    sources: [{ sourceType: 'url', url }],
+    usage: { totalTokens: 30 },
+  } as never)
+  const result = await reviewArticle(draft, context)
+  const prompt = buildRevisionPrompt(context.prompt, draft, result.review, result.verificationBrief)
+
+  expect(result.verificationBrief).toContain('NOT VERIFIED')
+  expect(prompt).toContain(contradicted)
+  expect(prompt).not.toContain(advisory)
+  expect(prompt).toContain('is not a resolution')
+})
+
+it('sends a draft padded with caveats back for revision', async () => {
+  vi.mocked(generateText).mockResolvedValue({
+    text: `SUPPORTED: Ciri is the protagonist. ${url}`,
+    sources: [{ sourceType: 'url', url }],
+    usage: { totalTokens: 30 },
+  } as never)
+  const issue = { code: 'hedging', note: 'Delete the sentence saying the story cannot be documented.' }
+  vi.mocked(generateObject).mockResolvedValue({
+    object: { approved: false, issues: [issue] },
+    usage: { totalTokens: 20 },
+  } as never)
+
+  expect((await reviewArticle(draft, context)).review).toMatchObject({ approved: false, issues: [issue] })
+})
+
+it('after a verified revision, trusts the verification but still blocks invented details', async () => {
+  const reasoning = { code: 'unsupported_claim', note: 'Qualify the claim that small firms have fewer crews.' }
+  const quote = { code: 'invented_detail', note: 'Remove the blockquote: nobody said this sentence.' }
+  vi.mocked(generateObject).mockResolvedValue({
+    object: { approved: false, issues: [reasoning, quote] },
+    usage: { totalTokens: 20 },
+  } as never)
+
+  const result = await reviewArticle(draft, { ...context, verifyFacts: false, factsChecked: true })
+  expect(generateText).not.toHaveBeenCalled()
+  expect(result.review).toMatchObject({ approved: false, issues: [quote] })
+})
+
+it('lets only an editor-requested story skip documentation of its plot', async () => {
+  vi.mocked(generateText).mockResolvedValue({
+    text: `SUPPORTED: Ciri is the protagonist. ${url}`,
+    sources: [{ sourceType: 'url', url }],
+    usage: { totalTokens: 30 },
+  } as never)
+  await reviewArticle(draft, { ...context, format: 'story', illustrative: true })
+  await reviewArticle(draft, { ...context, format: 'story' })
+  const [manual, cron] = vi.mocked(generateObject).mock.calls.map((call) => call[0].instructions as string)
+
+  expect(manual).toContain('never ask for its documentation')
+  expect(cron).toContain('An invented protagonist, scene or event is invented_detail')
+  expect(cron).not.toContain('never ask for its documentation')
 })

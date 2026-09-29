@@ -19,6 +19,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "eval:ai": "AI_EVAL=1 vitest run tests/eval",
     "test:e2e": "playwright test",
     "test:e2e:release": "playwright test --project=release-smoke",
     "lint": "eslint .",

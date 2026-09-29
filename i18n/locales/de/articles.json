@@ -590,6 +590,7 @@
             "running": "Fakten und Konsistenz werden geprüft…",
             "approved": "Ohne Änderungen freigegeben.",
             "revised": "Überarbeitet; behobene Probleme: {count}",
+            "revisedIssues": "Überarbeitet, zur manuellen Prüfung offen: {count}",
             "issues": "Manuelle Prüfung empfohlen. Offene Probleme: {count}"
           },
           "media": {
@@ -614,6 +615,8 @@
             "stale_framing": "Veraltete Darstellung",
             "repetition": "Wiederholung",
             "filler": "Füllmaterial",
+            "hedging": "Unnötige Vorbehalte",
+            "invented_detail": "Erfundenes Detail",
             "generic_language": "Allgemeine Formulierungen",
             "missing_specifics": "Fehlende Details",
             "broken_structure": "Fehlerhafte Struktur"

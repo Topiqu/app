@@ -1,6 +1,10 @@
-import { describe, expect, it } from 'vitest'
+import { generateObject } from 'ai'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { buildTopicPrompt, researchRequest, topicSchema } from '../../../server/utils/ai/topic'
+import { buildTopicPrompt, pickArticleTopic, researchRequest, topicSchema } from '../../../server/utils/ai/topic'
+
+vi.mock('ai', () => ({ generateObject: vi.fn() }))
+afterEach(() => vi.unstubAllGlobals())
 
 const INPUT = {
   focus: 'personal finance',
@@ -127,5 +131,29 @@ describe('topicSchema editorial choices', () => {
     expect(topicSchema.safeParse({ ...BASE_TOPIC, modules: [] }).success).toBe(false)
     expect(topicSchema.safeParse({ ...BASE_TOPIC, modules: ['images'] }).success).toBe(true)
     expect(topicSchema.safeParse({ ...BASE_TOPIC, modules: ['table'] }).success).toBe(true)
+  })
+})
+
+describe('unattended stories', () => {
+  it('asks for a named, documented case', () => {
+    expect(buildTopicPrompt(INPUT)).toContain('Choose story only for a real, publicly documented case')
+  })
+
+  it('always researches a story, even when the picker says otherwise', async () => {
+    vi.stubGlobal('aiModel', () => 'test-model')
+    const story = {
+      topic: 'Jak Liberec přestavěl tržnici',
+      angle: 'Rozhodnutí, která stavbu zdržela',
+      format: 'story',
+      variant: 'case-study',
+      modules: ['images'],
+      needsResearch: false,
+      searchQuery: ' ',
+    }
+    vi.mocked(generateObject).mockResolvedValue({ object: story, usage: {} } as never)
+
+    const { topic } = await pickArticleTopic(INPUT)
+    expect(topic).toMatchObject({ needsResearch: true, searchQuery: story.topic })
+    expect(researchRequest(topic)).toEqual({ query: story.topic })
   })
 })

@@ -15,7 +15,8 @@ type FormatSpec = {
 
 export const ARTICLE_FORMATS = {
   news: {
-    shape: 'A report on something that just happened. Lead with what changed and who it hits.',
+    shape:
+      'A report on something that just happened. Lead with what changed and who it hits. Without a documented new development, use an honestly framed factual background explainer; never manufacture news or pad the story with repeated denials.',
     words: [350, 550],
     allowedModules: ['answer', 'takeaways', 'poll', 'images', 'youtube'],
     defaultModules: ['answer', 'takeaways'],

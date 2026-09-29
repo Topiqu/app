@@ -590,6 +590,7 @@
             "running": "Checking facts and consistency…",
             "approved": "Approved without changes.",
             "revised": "Revised; issues fixed: {count}",
+            "revisedIssues": "Revised, left for manual review: {count}",
             "issues": "Still recommends a manual check. Open issues: {count}"
           },
           "media": {
@@ -614,6 +615,8 @@
             "stale_framing": "Outdated framing",
             "repetition": "Repetition",
             "filler": "Filler",
+            "hedging": "Hedging",
+            "invented_detail": "Invented detail",
             "generic_language": "Generic language",
             "missing_specifics": "Missing specifics",
             "broken_structure": "Broken structure"

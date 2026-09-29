@@ -94,6 +94,8 @@ anything above is a failure. Your topic must open a question the list leaves una
 
 ## FORMATS
 ${formatMenu()}
+Choose story only for a real, publicly documented case you can name in the topic: a specific company,
+project, place or event. Never for an invented or typical protagonist.
 
 Last few articles were, most recent first: ${input.recentFormats?.length ? input.recentFormats.join(', ') : 'nothing yet'}.
 Do not pick a format from the three most recent unless the topic genuinely allows nothing else.
@@ -140,5 +142,10 @@ export const pickArticleTopic = async (input: TopicInput) => {
     schema: topicSchema,
   })
 
-  return { topic: object, usage }
+  // A story is a documented case, so it always needs the research that documents it.
+  const topic =
+    object.format === 'story'
+      ? { ...object, needsResearch: true, searchQuery: object.searchQuery.trim() || object.topic }
+      : object
+  return { topic, usage }
 }

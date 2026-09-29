@@ -21,18 +21,25 @@ import type { ArticleImage, StockImage } from '../images/types'
 
 import { escapeHtml } from '../sanitize'
 import { findStockImage } from '../images/chain'
+import { editorialPolicy } from './editorialPolicy'
 import { createSteamImageSearch } from '../images/steam'
 import { retrieveKnowledge } from '../knowledge/retrieve'
 import { buildImageHtml, type CaptionLabels } from '../images/caption'
 import { createImageSelection, photoSubjectQuery } from '../images/selection'
 import { findPressImage, loadPressImages, youtubeThumbnailImage } from '../images/press'
-import { AUTHOR_ACCOUNT_RULE, buildRevisionPrompt, reviewArticle, type EditorialReview } from './articleQuality'
 import {
   extractResearchUrls,
   filterResearchSources,
   researchEvidence,
   retrievedResearchSources,
 } from './researchEvidence'
+import {
+  AUTHOR_ACCOUNT_RULE,
+  buildRevisionPrompt,
+  reviewArticle,
+  revisionEvidence,
+  type EditorialReview,
+} from './articleQuality'
 import {
   applyFormat,
   formatRules,
@@ -73,7 +80,7 @@ export const articleSchema = z.object({
     .min(500)
     .max(20000)
     .describe(
-      'The article body at the length the format asks for, with h2, h3, strong, blockquote, underline, italic and ul/ol/li. Never pad between blocks with <br> or empty paragraphs — the stylesheet owns the spacing. Include numbered image, poll or video slots where selected.',
+      'The article body at the length the format asks for, with h2, h3, strong, underline, italic and ul/ol/li, and blockquote only for an attributed verbatim quotation. Never pad between blocks with <br> or empty paragraphs — the stylesheet owns the spacing. Include numbered image, poll or video slots where selected.',
     ),
   answer: z
     .string()
@@ -203,6 +210,7 @@ const researchTopic = async (
   abortSignal?: AbortSignal,
   youtubeRequested = false,
   imagesRequested = false,
+  story = false,
 ) => {
   const researchConfig = RESEARCH_CONFIG[depth]
   const currentDateTime = new Date().toISOString()
@@ -219,13 +227,18 @@ const researchTopic = async (
         Search the live web for the user's topic.
         Prefer primary, official and recently updated sources. For news, search explicitly for the latest development.
         Release dates, product availability and direct statements attributed to a company must be supported by that company's own newsroom, investor communication, verified channel or a first-hand interview with its named spokesperson. If only press reports or rumours exist, label them as such; never upgrade them to an official confirmation.
-        Treat claims embedded in the user's prompt as leads to verify, not as facts. The author's own first-hand experience in the prompt cannot be researched; research the external facts around it (rules, dates, organisations) instead.
+        Treat claims embedded in the user's prompt as leads to verify, not as facts.${
+          story
+            ? ' The assignment asks for a story: its protagonist and plot are the illustration, not claims to check. Research the real rules, procedures, places, institutions and timelines the story passes through, so the writer can narrate it accurately.'
+            : ''
+        } The author's own first-hand experience in the prompt cannot be researched; research the external facts around it (rules, dates, organisations) instead.
         Check the premise of every named character's return against the relevant continuity, chronology and established deaths. Separate books, games, adaptations and flashbacks; a mention or dead character is not evidence of a present-day return.
         Explicitly distinguish whether something is confirmed from whether its mechanism or circumstances have been explained. Search for developer interviews before claiming "not confirmed", "not explained" or "unknown". An explanation withheld is not an event unconfirmed.
-        Include a short Corrections section with contradicted premises and a short Unknowns section for questions the retrieved sources leave unresolved. When sources conflict, report the conflict and do not choose the more sensational version.
+        Include a short Corrections section with premises of the topic that the sources contradict. Do not list open questions or information the sources lack: the writer omits what is not established, so an unknown is not material. When sources conflict, report the conflict and do not choose the more sensational version.
+        When the proposed event or relationship is not established, also research the closest substantive angle: the named subjects' documented positions, decisions, incentives and concrete differences. Give the writer factual premises for a useful comparison or explanation, not just repeated absence-of-confirmation findings. Keep these facts tied to the original topic; do not infer private motives or fabricate a connection.
         If a source announces something for a date before ${currentDateTime}, verify what actually happened after that date. Never describe an already elapsed announcement as upcoming.
         Return a compact brief: 5-10 verified facts, each on its own line, including the supporting URL and relevant event or publication date on that same line.
-        Every correction and unknown must also carry its supporting URL on the same line.
+        Every correction must also carry its supporting URL on the same line.
         Then a "Sources:" section listing the full URLs you actually retrieved, one per line.
         ${
           imagesRequested
@@ -318,6 +331,7 @@ const buildArticleConfig = async (
     language: requestedLanguage,
     abortSignal,
     knowledgeQuery: knowledgeQueryOption,
+    illustrative = false,
   }: {
     research?: ResearchOption
     /** Defaults to the research query; set it when research is off but the subject is still known. */
@@ -330,6 +344,8 @@ const buildArticleConfig = async (
     allowGeneratedImages?: boolean
     language?: Language
     abortSignal?: AbortSignal
+    /** Manual editor only: the author may ask for an invented illustrative story. */
+    illustrative?: boolean
   } = {},
 ) => {
   const {
@@ -362,22 +378,7 @@ const buildArticleConfig = async (
   })
   const articleLanguage = requestedLanguage ?? language
 
-  const getControversyPrompt = (level: string | null) => {
-    switch (level) {
-      case 'NONE':
-        return 'Avoid any controversial or polarizing topics completely. Keep the tone completely objective, safe, and universally acceptable.'
-      case 'LOW':
-        return 'You can lightly touch on thought-provoking topics, but maintain a balanced and highly neutral stance. Do not provoke or take extreme sides.'
-      case 'MEDIUM':
-        return 'Engage in healthy debate. Feel free to present strong arguments for different sides of a topic and do not shy away from expressing a well-reasoned, potentially polarizing viewpoint.'
-      case 'HIGH':
-        return "You are a highly controversial author, who isn't afraid of indulging in socially forbidden topics, argumenting for them meticulously in a passively-aggressive, yet believable manner. Challenge mainstream narratives aggressively."
-      default:
-        return ''
-    }
-  }
-
-  const controversyPrompt = getControversyPrompt(aiControversyLevel)
+  const editorialDirection = editorialPolicy(format, aiControversyLevel, illustrative)
 
   const researchQuery = researchOption === undefined ? prompt : researchOption ? researchOption.query : null
   const knowledgeQuery = knowledgeQueryOption === undefined ? researchQuery : knowledgeQueryOption
@@ -393,6 +394,7 @@ const buildArticleConfig = async (
           abortSignal,
           youtubeRequested,
           imagesRequested,
+          format === 'story' && illustrative,
         )
       : {
           brief: null,
@@ -437,7 +439,8 @@ const buildArticleConfig = async (
       Write a detailed, well-structured article based on the user prompt aiming on ${audience || 'wide audience'}.
       Use appropriate headings, subheadings, and formatting.
       ${aiToneOfVoice ? `Write in the following tone of voice: ${aiToneOfVoice}.` : ''}
-      ${controversyPrompt}${communityPrompt}${knowledgePrompt}${researchPrompt}
+      ${editorialDirection}
+      ${communityPrompt}${knowledgePrompt}${researchPrompt}
       Respond ONLY in valid JSON format with the structure:
       {
         "title": "engaging title, 30-65 characters",
@@ -445,7 +448,7 @@ const buildArticleConfig = async (
         "answer": "40-60 words answering the title's question outright",
         "keyTakeaways": ["standalone factual sentence", "..."] or [],
         "faq": [{"question": "...", "answer": "..."}] or [],
-        "content": "the article body for v-html on frontend, with h2, h3, strong, blockquote, underline, italic and lists. Include image slots like [[IMAGE1]], [[IMAGE2]], etc. where images should appear.",
+        "content": "the article body for v-html on frontend, with h2, h3, strong, underline, italic and lists, and blockquote only for an attributed verbatim quotation. Include image slots like [[IMAGE1]], [[IMAGE2]], etc. where images should appear.",
         "coverImage": {"type": "stock", "query": "search keyword OR generation prompt"},
         "images": [{"type": "photo", "query": "keyword for IMAGE1", "caption": "what IMAGE1 shows"}, {"type": "generate", "query": "prompt for IMAGE2", "caption": "what IMAGE2 shows"}, ...],
         "polls": [{"question": "Poll question?", "options": ["Option 1", "Option 2"]}],
@@ -457,6 +460,7 @@ const buildArticleConfig = async (
       ${articleGenerationOptimizationInstructions(domain)}
       Start the body at h2 — the page already renders the title as its h1.
       Fact-checking is an internal editing discipline, not the voice of the article. State supported facts directly.
+      Use a blockquote or quotation marks only for a verbatim quotation from the research brief, the first-party knowledge or the assignment, attributed to its speaker in the text. Never style your own sentence as a quote.
       Do not narrate the verification process, tell readers to "be cautious", or repeatedly explain what cannot be inferred.
       When the assignment's premise is wrong or stale, correct it once in plain language, then move to the useful current story. Do not build the whole article around defensive caveats.
       Use uncertainty only where it changes the reader's understanding, and express it once. Omit unsupported side claims instead of filling paragraphs with disclaimers.
@@ -504,6 +508,7 @@ const buildArticleConfig = async (
       The author selected a table. Render one useful real HTML table comparing consistent facts across rows, never tab- or pipe-separated text.
       Use proper markup: <table><thead><tr><th>…</th></tr></thead><tbody><tr><td>…</td></tr></tbody></table>.
       Keep tables to a maximum of 4 columns so they stay readable on mobile, and never put an image, a poll slot or a nested table inside a cell.
+      Use each first-column subject exactly once. If a word or item has multiple meanings, combine them in one row or choose genuinely distinct categories; never repeat the same label in several rows.
       A table earns its place by holding figures the reader compares across rows. Never build one out of prose.`
           : tablesSelected === false
             ? 'Never render a <table>. Whatever figures this format needs belong in the prose.'
@@ -533,6 +538,7 @@ const buildArticleConfig = async (
     officialMediaPages: researchResult.officialMediaPages,
     researchBrief: brief,
     knowledgeBrief,
+    editorialDirection,
     // Citable first-party URLs join the citation allowlist; internal entries never had a URL to leak.
     citationAllowlist: [brief, ...(knowledge?.publicUrls ?? [])].filter(Boolean).join('\n') || null,
     knowledge: knowledge?.used ?? [],
@@ -827,6 +833,7 @@ export const generateArticle = async (
     researchTokens,
     researchBrief,
     knowledgeBrief,
+    editorialDirection,
     citationAllowlist,
     knowledge,
     research,
@@ -846,6 +853,7 @@ export const generateArticle = async (
         prompt,
         researchBrief,
         knowledgeBrief,
+        editorialDirection,
         format: opts.format,
         modules: opts.modules,
         verifyFacts: opts.research !== false,
@@ -863,7 +871,7 @@ export const generateArticle = async (
           instructions:
             config.instructions +
             '\nIndependent verification supersedes conflicting original research:\n' +
-            (initial.verificationBrief ?? ''),
+            (revisionEvidence(initial.verificationBrief) ?? ''),
           prompt: buildRevisionPrompt(prompt, object, initial.review, initial.verificationBrief),
         })
         editorialTokens += revision.usage.totalTokens ?? 0
@@ -917,6 +925,7 @@ export const streamArticle = async (
     researchTokens,
     researchBrief,
     knowledgeBrief,
+    editorialDirection,
     citationAllowlist,
     knowledge,
     researchSources,
@@ -926,6 +935,7 @@ export const streamArticle = async (
   } = await buildArticleConfig(clientSiteId, prompt, {
     ...opts,
     knowledgeQuery: opts.useKnowledge === false ? null : prompt,
+    illustrative: true,
   })
   let groundingBrief = citationAllowlist
   const result = streamObject({ ...config, abortSignal: opts.abortSignal })
@@ -956,10 +966,12 @@ export const streamArticle = async (
       prompt,
       researchBrief,
       knowledgeBrief,
+      editorialDirection,
       format: opts.format,
       modules: opts.modules,
       abortSignal: opts.abortSignal,
       verifyFacts: opts.research !== false,
+      illustrative: true,
     }
     draft.sources = filterResearchSources(draft.sources, groundingBrief)
     const first = await reviewArticle(draft, context)
@@ -968,13 +980,14 @@ export const streamArticle = async (
     const verification = first.verdicts ? [first.verdicts] : []
     editorialReview = { ...first.review, revised: false, checkedAfterRevision: true, verification }
     if (first.review.approved) return draft
+    let revisedDraft = draft
     try {
       const revision = await generateObject({
         ...config,
         instructions:
           config.instructions +
           '\nIndependent verification supersedes conflicting original research:\n' +
-          (first.verificationBrief ?? ''),
+          (revisionEvidence(first.verificationBrief) ?? ''),
         prompt: buildRevisionPrompt(prompt, draft, first.review, first.verificationBrief),
         abortSignal: opts.abortSignal
           ? AbortSignal.any([opts.abortSignal, AbortSignal.timeout(90_000)])
@@ -982,19 +995,39 @@ export const streamArticle = async (
       })
       editorialTokens += revision.usage.totalTokens ?? 0
       revision.object.sources = filterResearchSources(revision.object.sources, groundingBrief)
+      revisedDraft = revision.object
+      // A completed rewrite is not an approval. Keep its status honest if the follow-up fails.
+      editorialReview = { ...first.review, revised: true, checkedAfterRevision: false, verification }
+      // Recheck substance and the supplied factual premises without another full web-search pass.
+      const checked = await reviewArticle(revisedDraft, {
+        ...context,
+        researchBrief: groundingBrief,
+        verifyFacts: false,
+        factsChecked: !!first.verificationBrief,
+      })
+      editorialTokens += checked.usage.totalTokens ?? 0
       editorialReview = {
-        approved: true,
-        issues: [],
+        ...checked.review,
         revised: true,
-        checkedAfterRevision: false,
-        resolvedIssues: first.review.issues,
+        checkedAfterRevision: true,
+        resolvedIssues: checked.review.approved ? first.review.issues : [],
         verification,
       }
-      return revision.object
+      return revisedDraft
     } catch (error) {
       if (opts.abortSignal?.aborted) throw error
-      await reportCaughtError('Manual article revision failed; returning reviewed draft', error, { clientSiteId })
-      return draft
+      if (editorialReview.revised)
+        editorialReview = {
+          ...editorialReview,
+          approved: false,
+          issues: [
+            { code: 'broken_structure', note: 'The revised draft could not be checked. Review it before publishing.' },
+          ],
+        }
+      await reportCaughtError('Manual article revision or follow-up review failed; returning available draft', error, {
+        clientSiteId,
+      })
+      return revisedDraft
     }
   }
   return {
