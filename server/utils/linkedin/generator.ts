@@ -2,12 +2,13 @@ import { generateText } from 'ai'
 
 import { aiModel } from '../ai/models'
 
-export async function generateContentForTask(topic: string, brandProfile: any, communityInsight?: any) {
-  const tone = brandProfile?.tone || 'professional'
-  const audience = brandProfile?.audience || 'LinkedIn professionals'
-  const doList = brandProfile?.doList?.join(', ') || 'None'
-  const dontList = brandProfile?.dontList?.join(', ') || 'None'
-  const examples = brandProfile?.examples?.join('\n\n') || 'None'
+export async function generateContentForTask(
+  topic: string,
+  voice: { tone: string | null; audience: string | null },
+  communityInsight?: any,
+) {
+  const tone = voice.tone || 'professional'
+  const audience = voice.audience || 'LinkedIn professionals'
 
   const communityPrompt = communityInsight
     ? `\n    Community Insights to consider:\n    - Audience mood summary: ${communityInsight.summary}\n    - Frequently discussed points: ${(communityInsight.topPoints || []).join(', ')}\n    Ensure the post subtly addresses or acknowledges these current community feelings and discussion points where relevant.`
@@ -19,12 +20,7 @@ export async function generateContentForTask(topic: string, brandProfile: any, c
 
     Brand Voice Guidelines:
     - Tone: ${tone}
-    - Audience: ${audience}
-    - Do include: ${doList}
-    - Do NOT include: ${dontList}${communityPrompt}
-
-    Example successful posts for reference:
-    ${examples}
+    - Audience: ${audience}${communityPrompt}
 
     Provide only the text of the post. Do not include quotes or surrounding metadata.
   `.trim()

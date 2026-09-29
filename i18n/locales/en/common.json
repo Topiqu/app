@@ -911,25 +911,6 @@
           "hitl": "Human in the Loop (HitL)",
           "fullAuto": "Full Auto (Gated by Policy)",
           "help": "HitL requires manual approval before any generated post goes live."
-        },
-        "brand": {
-          "label": "Brand Guidelines",
-          "tone": {
-            "label": "Tone of Voice",
-            "placeholder": "e.g. Professional and thought-provoking"
-          },
-          "audience": {
-            "label": "Target Audience",
-            "placeholder": "e.g. Software engineers, CTOs"
-          },
-          "doList": {
-            "label": "Do List (comma separated)",
-            "placeholder": "e.g. React, Innovation, Cloud"
-          },
-          "dontList": {
-            "label": "Don't List / Banned Words (comma separated)",
-            "placeholder": "e.g. cheap, guarantee, spam"
-          }
         }
       }
     },

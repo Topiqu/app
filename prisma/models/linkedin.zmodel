@@ -43,24 +43,10 @@ model LinkedinCompany with Base {
     clientSiteId   String
     clientSite     ClientSite    @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
 
-    brandProfile   BrandProfile?
     contentTasks   ContentTask[]
 
     @@allow('all', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
     @@allow('read', auth().clientSiteId == clientSiteId)
-}
-
-model BrandProfile with Base {
-    companyId String          @unique
-    company   LinkedinCompany @relation(fields: [companyId], references: [id], onDelete: Cascade)
-    tone      String?
-    audience  String?
-    doList    String[]
-    dontList  String[]
-    examples  String[]
-
-    @@allow('all', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == company.clientSiteId))
-    @@allow('read', auth().clientSiteId == company.clientSiteId)
 }
 
 model ContentTask with Base {

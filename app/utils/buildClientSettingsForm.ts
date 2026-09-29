@@ -54,7 +54,6 @@ export interface ClientSettingsForm {
   discloseAiContent: boolean
   allowGtag: boolean
   linkedinMode: 'HitL' | 'FullAuto'
-  linkedinBrandProfile: { tone: string; audience: string; doList: string[]; dontList: string[] }
   linkedinCompanyType: 'pages' | 'personal'
 }
 
@@ -89,7 +88,6 @@ const emptyForm = (): ClientSettingsForm => ({
   discloseAiContent: false,
   allowGtag: false,
   linkedinMode: 'HitL',
-  linkedinBrandProfile: { tone: '', audience: '', doList: [], dontList: [] },
   linkedinCompanyType: 'pages',
 })
 
@@ -104,7 +102,6 @@ export function buildClientSettingsForm(client?: ClientSite | null): ClientSetti
     | {
         mode?: 'HitL' | 'FullAuto'
         type?: 'pages' | 'personal'
-        brandProfile?: ClientSettingsForm['linkedinBrandProfile']
       }
     | undefined
 
@@ -144,7 +141,6 @@ export function buildClientSettingsForm(client?: ClientSite | null): ClientSetti
     discloseAiContent: client.discloseAiContent ?? false,
     allowGtag: client.allowGtag ?? false,
     linkedinMode: li?.mode ?? 'HitL',
-    linkedinBrandProfile: li?.brandProfile ?? { tone: '', audience: '', doList: [], dontList: [] },
     linkedinCompanyType: li?.type ?? 'pages',
   }
 }

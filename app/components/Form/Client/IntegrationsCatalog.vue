@@ -336,10 +336,8 @@
             :clientSiteId="clientSiteId"
             :mode="linkedinMode"
             :type="linkedinType"
-            :brandProfile="linkedinBrandProfile"
             @update:mode="$emit('update:linkedinMode', $event)"
             @update:type="$emit('update:linkedinType', $event)"
-            @update:brandProfile="$emit('update:linkedinBrandProfile', $event)"
           />
         </div>
       </template>
@@ -363,12 +361,6 @@ const props = defineProps<{
   currentPlan: 'BASIC' | 'PRO' | 'PREMIUM' | 'CUSTOM'
   linkedinMode?: 'HitL' | 'FullAuto'
   linkedinType?: 'pages' | 'personal'
-  linkedinBrandProfile?: {
-    tone: string
-    audience: string
-    doList: string[]
-    dontList: string[]
-  }
 }>()
 
 const localePath = useLocalePath()
@@ -379,14 +371,6 @@ defineEmits<{
   'update:gamNetworkCode': [value: string]
   'update:linkedinMode': [value: 'HitL' | 'FullAuto']
   'update:linkedinType': [value: 'pages' | 'personal']
-  'update:linkedinBrandProfile': [
-    value: {
-      tone: string
-      audience: string
-      doList: string[]
-      dontList: string[]
-    },
-  ]
   generateApiKey: []
   toggleApi: []
   copyApi: []

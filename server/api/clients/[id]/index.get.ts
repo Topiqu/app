@@ -20,9 +20,7 @@ export default defineEventHandler(async (event) => {
           },
         },
       },
-      linkedinCompanies: {
-        include: { brandProfile: true },
-      },
+      linkedinCompanies: true,
     },
   })
 

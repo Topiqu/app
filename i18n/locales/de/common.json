@@ -909,25 +909,6 @@
           "hitl": "Manuelle Freigabe (HitL)",
           "fullAuto": "Vollautomatisch (mit Richtlinienprüfung)",
           "help": "Bei HitL muss jeder generierte Beitrag vor der Veröffentlichung manuell freigegeben werden."
-        },
-        "brand": {
-          "label": "Markenrichtlinien",
-          "tone": {
-            "label": "Schreibstil",
-            "placeholder": "z. B. professionell und zum Nachdenken anregend"
-          },
-          "audience": {
-            "label": "Zielgruppe",
-            "placeholder": "z. B. Softwareentwickler, CTOs"
-          },
-          "doList": {
-            "label": "Erwünschte Themen (durch Kommas getrennt)",
-            "placeholder": "z. B. React, Innovation, Cloud"
-          },
-          "dontList": {
-            "label": "Zu vermeidende Wörter (durch Kommas getrennt)",
-            "placeholder": "z. B. billig, Garantie, Spam"
-          }
         }
       }
     },

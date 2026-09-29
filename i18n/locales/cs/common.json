@@ -911,25 +911,6 @@
           "hitl": "Human in the Loop (HitL)",
           "fullAuto": "Plná automatizace (hlídaná pravidly)",
           "help": "HitL vyžaduje ruční schválení, než vygenerovaný příspěvek vyjde."
-        },
-        "brand": {
-          "label": "Pravidla značky",
-          "tone": {
-            "label": "Tón komunikace",
-            "placeholder": "Např. profesionální a podnětný"
-          },
-          "audience": {
-            "label": "Cílová skupina",
-            "placeholder": "Např. softwaroví inženýři, CTO"
-          },
-          "doList": {
-            "label": "Doporučená témata (oddělená čárkou)",
-            "placeholder": "Např. React, inovace, cloud"
-          },
-          "dontList": {
-            "label": "Zakázaná slova (oddělená čárkou)",
-            "placeholder": "Např. levný, garantujeme, spam"
-          }
         }
       }
     },

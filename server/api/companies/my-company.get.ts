@@ -17,7 +17,6 @@ export default defineEventHandler(async (event) => {
       cadence: true,
       linkedinOrgId: true,
       tokenExpiresAt: true,
-      brandProfile: true,
     },
   })
   if (!company) return {}

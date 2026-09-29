@@ -909,25 +909,6 @@
           "hitl": "Validation humaine (HitL)",
           "fullAuto": "Entièrement automatique (soumis aux règles)",
           "help": "Le mode HitL exige une validation manuelle avant toute publication d'un contenu généré."
-        },
-        "brand": {
-          "label": "Règles de la marque",
-          "tone": {
-            "label": "Ton rédactionnel",
-            "placeholder": "p. ex. professionnel et stimulant"
-          },
-          "audience": {
-            "label": "Public cible",
-            "placeholder": "p. ex. ingénieurs logiciel, directeurs techniques"
-          },
-          "doList": {
-            "label": "Sujets à privilégier (séparés par des virgules)",
-            "placeholder": "p. ex. React, innovation, cloud"
-          },
-          "dontList": {
-            "label": "Mots à éviter (séparés par des virgules)",
-            "placeholder": "p. ex. bon marché, garantie, spam"
-          }
         }
       }
     },

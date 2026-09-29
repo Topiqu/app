@@ -18,19 +18,5 @@ export default defineEventHandler(async (event) => {
     .catch(() => null)
   if (!company) throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
 
-  if (body.brandProfile) {
-    const data = {
-      tone: body.brandProfile.tone,
-      audience: body.brandProfile.audience,
-      doList: body.brandProfile.doList,
-      dontList: body.brandProfile.dontList,
-    }
-    await db.brandProfile.upsert({
-      where: { companyId: company.id },
-      create: { companyId: company.id, ...data },
-      update: data,
-    })
-  }
-
   return { success: true }
 })

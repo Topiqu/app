@@ -26,15 +26,7 @@ export default defineEventHandler(async (event) => {
 
   const db = await getEnhancedPrisma(user)
   const body = await readBody(event)
-  const integrationFields = [
-    'socials',
-    'linkedinMode',
-    'linkedinCompanyType',
-    'linkedinBrandProfile',
-    'gtagId',
-    'allowGtag',
-    'gamNetworkCode',
-  ]
+  const integrationFields = ['socials', 'linkedinMode', 'linkedinCompanyType', 'gtagId', 'allowGtag', 'gamNetworkCode']
   if (user.role !== 'superadmin' && integrationFields.some((field) => field in body))
     await requireTenantScope(event, 'INTEGRATION_CONTROL', id)
   if (body.domain !== undefined) {
@@ -50,7 +42,6 @@ export default defineEventHandler(async (event) => {
     aiUser,
     apiKey: _apiKey,
     linkedinMode,
-    linkedinBrandProfile,
     linkedinCompanyType: _linkedinCompanyType,
     accentColor,
     brandGradient,
@@ -202,20 +193,6 @@ export default defineEventHandler(async (event) => {
 
     if (company) {
       await db.linkedinCompany.update({ where: { id: company.id }, data: { mode: linkedinMode } })
-
-      if (linkedinBrandProfile) {
-        const profile = {
-          tone: linkedinBrandProfile.tone,
-          audience: linkedinBrandProfile.audience,
-          doList: linkedinBrandProfile.doList,
-          dontList: linkedinBrandProfile.dontList,
-        }
-        await db.brandProfile.upsert({
-          where: { companyId: company.id },
-          create: { companyId: company.id, ...profile },
-          update: profile,
-        })
-      }
     }
   }
 

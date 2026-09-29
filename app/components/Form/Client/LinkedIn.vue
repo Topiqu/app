@@ -60,38 +60,6 @@
         </UFormField>
         <p class="text-xs text-neutral-500 mt-2">{{ $t('common.preferences.linkedin.mode.help') }}</p>
       </div>
-
-      <div class="space-y-4 pt-4 border-t border-white/10">
-        <h4 class="font-medium">{{ $t('common.preferences.linkedin.brand.label') }}</h4>
-
-        <AppFormField
-          v-model="localBrandProfile.tone"
-          :label="$t('common.preferences.linkedin.brand.tone.label')"
-          :placeholder="$t('common.preferences.linkedin.brand.tone.placeholder')"
-          @update:modelValue="emitUpdate"
-        />
-
-        <AppFormField
-          v-model="localBrandProfile.audience"
-          :label="$t('common.preferences.linkedin.brand.audience.label')"
-          :placeholder="$t('common.preferences.linkedin.brand.audience.placeholder')"
-          @update:modelValue="emitUpdate"
-        />
-
-        <AppFormField
-          v-model="localDoList"
-          :label="$t('common.preferences.linkedin.brand.doList.label')"
-          :placeholder="$t('common.preferences.linkedin.brand.doList.placeholder')"
-          @update:modelValue="emitUpdate"
-        />
-
-        <AppFormField
-          v-model="localDontList"
-          :label="$t('common.preferences.linkedin.brand.dontList.label')"
-          :placeholder="$t('common.preferences.linkedin.brand.dontList.placeholder')"
-          @update:modelValue="emitUpdate"
-        />
-      </div>
     </div>
   </div>
 </template>
@@ -102,15 +70,9 @@ const props = defineProps<{
   clientSiteId: string
   mode?: 'HitL' | 'FullAuto'
   type?: 'pages' | 'personal'
-  brandProfile?: {
-    tone?: string
-    audience?: string
-    doList?: string[]
-    dontList?: string[]
-  }
 }>()
 
-const emit = defineEmits(['update:mode', 'update:brandProfile', 'update:type'])
+const emit = defineEmits(['update:mode', 'update:type'])
 
 const { t } = useI18n()
 
@@ -128,13 +90,6 @@ const modeItems = computed(() => [
   { value: 'HitL', label: t('common.preferences.linkedin.mode.hitl') },
   { value: 'FullAuto', label: t('common.preferences.linkedin.mode.fullAuto') },
 ])
-const localBrandProfile = ref({
-  tone: props.brandProfile?.tone || '',
-  audience: props.brandProfile?.audience || '',
-})
-
-const localDoList = shallowRef(props.brandProfile?.doList?.join(', ') || '')
-const localDontList = shallowRef(props.brandProfile?.dontList?.join(', ') || '')
 
 onMounted(async () => {
   try {
@@ -168,17 +123,6 @@ watch(
 function emitUpdate() {
   emit('update:mode', localMode.value)
   emit('update:type', localType.value)
-  emit('update:brandProfile', {
-    ...localBrandProfile.value,
-    doList: localDoList.value
-      .split(',')
-      .map((s) => s.trim())
-      .filter(Boolean),
-    dontList: localDontList.value
-      .split(',')
-      .map((s) => s.trim())
-      .filter(Boolean),
-  })
 }
 
 function connectLinkedIn() {

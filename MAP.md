@@ -179,6 +179,7 @@ Every provider connect (LinkedIn, Search Console) **starts on the tenant's own h
 - **`linkedin/connect.get.ts` 403s `appType=pages`** and hardcodes the member scopes (`openid profile email w_member_social`). The organization scopes it used to request — `w_organization_social`, `r_organization_social`, `rw_organization_admin` — belong to LinkedIn's **Community Management API**, which LinkedIn grants only to registered legal entities (not sole traders), so the flow could never have completed. `tests/server/linkedin/connectEndpoint.test.ts` fails if an organization scope reappears.
 - **Everything downstream of the guard is intact**: `LinkedinCompany.type` still carries `'pages' | 'personal'`, `token.ts` still reads `LINKEDIN_CLIENT_ID_COMPANY`, and the callback keeps its `getPagesUrn` branch — unreachable, since `appType` rides in an HMAC-signed state only `connect` can mint. Re-enabling is reverting the guard plus the Connect Page button in `Form/Client/LinkedIn.vue`; do not delete the `pages` plumbing to "clean up".
 - **`clients/[id]` PATCH no longer prefers a `pages` row** when applying `linkedinMode` — it takes the tenant's single `LinkedinCompany` regardless of `type`, so a legacy pages row stays editable.
+- **LinkedIn posts take their voice from `ClientSite`** (`aiToneOfVoice`, `audience`) — the same fields the article writer reads. There is no LinkedIn-specific brand profile; the former `BrandProfile` table duplicated them and was never filled in.
 
 ## 5. Shared (`shared/`)
 

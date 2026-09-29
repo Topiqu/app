@@ -82,27 +82,21 @@ describe('buildClientSettingsForm', () => {
   })
 
   it('derives linkedin fields from linkedinCompanies[0]', () => {
-    const profile = { tone: 'bold', audience: 'B2B', doList: ['x'], dontList: ['y'] }
     const client = baseClient({
-      linkedinCompanies: [{ mode: 'FullAuto', type: 'personal', brandProfile: profile }],
+      linkedinCompanies: [{ mode: 'FullAuto', type: 'personal' }],
     } as Partial<ClientSite>)
     const form = buildClientSettingsForm(client)
     expect(form.linkedinMode).toBe('FullAuto')
     expect(form.linkedinCompanyType).toBe('personal')
-    expect(form.linkedinBrandProfile).toEqual(profile)
   })
 
   it('falls back to the legacy linkedinCompany object when no array is present', () => {
     const client = baseClient({
-      linkedinCompany: {
-        mode: 'FullAuto',
-        type: 'pages',
-        brandProfile: { tone: 't', audience: 'a', doList: [], dontList: [] },
-      },
+      linkedinCompany: { mode: 'FullAuto', type: 'pages' },
     } as Partial<ClientSite>)
     const form = buildClientSettingsForm(client)
     expect(form.linkedinMode).toBe('FullAuto')
-    expect(form.linkedinBrandProfile.tone).toBe('t')
+    expect(form.linkedinCompanyType).toBe('pages')
   })
 
   it('is deterministic — two calls with the same client are deep-equal (initial isDirty === false)', () => {
