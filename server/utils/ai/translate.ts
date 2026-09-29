@@ -1,10 +1,10 @@
 import type { Language } from '~~/generated/zenstack/models'
 
 import { z } from 'zod'
-import slugify from 'slugify'
 import * as cheerio from 'cheerio'
 import { generateObject } from 'ai'
 import { readFaq } from '~~/shared/utils/articleFaq'
+import { articleSlug } from '~~/shared/utils/articleSlug'
 import { LANGUAGE_NAMES } from '~~/shared/utils/language'
 import { normalizePollOptions } from '~~/shared/utils/polls'
 
@@ -278,7 +278,7 @@ export const generateTranslation = async (article: TranslatableArticle, targetLa
       question: object.faq?.[i]?.question?.trim() || entry.question,
       answer: object.faq?.[i]?.answer?.trim() || entry.answer,
     })),
-    slug: slugify(object.title, { lower: true, strict: true, trim: true }),
+    slug: articleSlug(object.title),
     usage,
   }
 }

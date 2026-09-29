@@ -1,6 +1,6 @@
 import type { EventStream } from 'h3'
 
-import slugify from 'slugify'
+import { articleSlug } from '~~/shared/utils/articleSlug'
 import { linkableSources } from '~~/shared/utils/articleSources'
 import { countGeneratedWords, type ValueEvent } from '~~/shared/utils/valueMetrics'
 import { isExistingArticleOpportunity } from '~~/server/utils/searchConsole/autopilot'
@@ -26,7 +26,7 @@ interface GlobalThis {
 declare const globalThis: GlobalThis
 
 const generateUniqueSlug = async (ctx: any, title: string, clientSiteId: string): Promise<string> => {
-  const base = slugify(title, { lower: true, strict: true, trim: true })
+  const base = articleSlug(title)
 
   const existing = await ctx.article.findMany({
     where: { clientSiteId, slug: { startsWith: base } },

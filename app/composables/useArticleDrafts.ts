@@ -1,8 +1,8 @@
 import type { ArticleWithDetails } from '~~/types/article'
 import type { ArticleDraft, Language } from '~~/generated/zenstack/models'
 
-import slugify from 'slugify'
 import equal from 'fast-deep-equal'
+import { articleSlug } from '~~/shared/utils/articleSlug'
 
 export const useArticleDrafts = async (
   editedArticle: Ref<ArticleWithDetails>,
@@ -121,7 +121,7 @@ export const useArticleDrafts = async (
       content: draft.content,
       imageUrl: draft.imageUrl || '',
       coverMediaId: draft.coverMediaId || null,
-      slug: slugify(draft.title ?? '', { lower: true, strict: true, trim: true }),
+      slug: articleSlug(draft.title ?? ''),
       sources: [],
       savedAmount: 0,
       savedTimeMinutes: 0,

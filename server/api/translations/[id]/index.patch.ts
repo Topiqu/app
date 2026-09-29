@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import slugify from 'slugify'
+import { articleSlug } from '~~/shared/utils/articleSlug'
 
 const BodySchema = z.object({
   title: z.string().min(1).max(255).optional(),
@@ -36,7 +36,7 @@ export default defineEventHandler(async (event) => {
     translation.slug ??
     (await dedupeTranslationSlug(
       db,
-      slugify(nextTitle!, { lower: true, strict: true, trim: true }),
+      articleSlug(nextTitle!),
       user.clientSiteId!,
       translation.language,
       translation.articleId,

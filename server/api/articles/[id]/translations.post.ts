@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import slugify from 'slugify'
 import { Language } from '~~/generated/zenstack/models'
+import { articleSlug } from '~~/shared/utils/articleSlug'
 
 const BodySchema = z.object({
   language: z.nativeEnum(Language),
@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
 
   const slug = await dedupeTranslationSlug(
     db,
-    slugify(body.title, { lower: true, strict: true, trim: true }),
+    articleSlug(body.title),
     user.clientSiteId!,
     body.language,
     articleId,
