@@ -6,6 +6,7 @@ import "./notification"
 import "./poll"
 import "./visibility"
 import "./media"
+import "./shopify"
 
 enum ArticleStatus {
     draft
@@ -105,6 +106,7 @@ model Article with Base, Ownable {
     notifications    Notification[]    @relation("ArticleNotifications")
     translations     ArticleTranslation[]
     slugRedirects    ArticleSlugRedirect[]
+    shopifyPublications ShopifyPublication[]
     mediaRightsSnapshots MediaRightsPublicationSnapshot[]
     mediaUsages      ArticleMediaUsage[]
     sources          String[]

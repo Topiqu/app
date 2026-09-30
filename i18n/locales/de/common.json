@@ -1100,6 +1100,54 @@
       "purchaseHint": "Füge jederzeit Artikel hinzu. Sie sind sofort verfügbar und verfallen nie.",
       "neverExpires": "Verfällt nie",
       "upgradeToPremium": "Zu PREMIUM wechseln"
+    },
+    "shopify": {
+      "title": "Shopify",
+      "description": "Veröffentlichen Sie Artikel aus Topiqu in Ihrem Shopify-Blog und aktualisieren Sie sie im Editor.",
+      "notConfigured": "Die Shopify-Integration ist noch nicht verfügbar.",
+      "requiresPlan": "Shopify ist mit Pro und Premium verfügbar.",
+      "shop": "Shop-Domain",
+      "shopHelp": "Geben Sie die ursprüngliche myshopify.com-Domain ohne https:// oder Pfad ein.",
+      "connect": "Shop verbinden",
+      "reconnect": "Shop erneut verbinden",
+      "disconnect": "Shopify trennen",
+      "disconnectDescription": "Versand stoppen und gespeicherte Zugriffstoken entfernen? Artikel in Shopify bleiben erhalten.",
+      "blog": "Standardblog",
+      "chooseBlog": "Shopify-Blog auswählen",
+      "author": "Name des Autors",
+      "manualOnly": "Artikel werden nur auf Ihren Wunsch im Editor übertragen.",
+      "blogsFailed": "Blogs konnten nicht geladen werden. Verbinden Sie Shopify erneut, wenn der Zugriff abgelaufen ist.",
+      "actionFailed": "Der Shopify-Vorgang konnte nicht abgeschlossen werden.",
+      "retry": "Erneut versuchen",
+      "settings": "Shopify einrichten",
+      "sendDraft": "Als Entwurf senden",
+      "publish": "In Shopify veröffentlichen",
+      "update": "In Shopify aktualisieren",
+      "replaceDescription": "Der Shopify-Artikel wird durch die gespeicherte Topiqu-Version ersetzt. Direkt in Shopify vorgenommene Änderungen werden überschrieben.",
+      "saveFirst": "Speichern Sie den Artikel in Topiqu, bevor Sie ihn an Shopify senden.",
+      "sent": "Artikel in Shopify gespeichert",
+      "lastSync": "Zuletzt gesendet:",
+      "view": "In Shopify ansehen",
+      "uncertain": "Shopify hat das Ergebnis nicht bestätigt. Prüfen Sie zuerst den Shop. Erneutes Senden sucht den vorhandenen Artikel, ohne eine weitere Kopie zu erstellen.",
+      "confirmSend": "Bestätigen und senden",
+      "callback": {
+        "connected": "Shopify verbunden. Wählen Sie einen Blog und Autor.",
+        "cancelled": "Shopify-Verbindung abgebrochen.",
+        "error": "Shopify konnte nicht verbunden werden. Versuchen Sie es erneut oder prüfen Sie die App-Konfiguration."
+      },
+      "connection": {
+        "CONNECTED": "Verbunden",
+        "REAUTH_REQUIRED": "Erneute Verbindung erforderlich",
+        "REVOKED": "Getrennt"
+      },
+      "publication": {
+        "QUEUED": "Wartet auf Versand",
+        "PUBLISHING": "Wird gesendet",
+        "SYNCED": "In Shopify gespeichert",
+        "FAILED": "Versand fehlgeschlagen",
+        "UNCERTAIN": "Ergebnis unbestätigt"
+      },
+      "unpublishDescription": "Der Shopify-Artikel wird durch die gespeicherte Topiqu-Version ersetzt und im Shop ausgeblendet. Direkt in Shopify vorgenommene Änderungen werden überschrieben."
     }
   },
   "error": {

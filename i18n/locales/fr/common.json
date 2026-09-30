@@ -1100,6 +1100,54 @@
       "purchaseHint": "Ajoutez des articles selon vos besoins. Ils sont disponibles immédiatement et n'expirent jamais.",
       "neverExpires": "N'expire jamais",
       "upgradeToPremium": "Passer à PREMIUM"
+    },
+    "shopify": {
+      "title": "Shopify",
+      "description": "Publiez les articles de Topiqu sur votre blog Shopify et mettez-les à jour depuis l’éditeur.",
+      "notConfigured": "L’intégration Shopify n’est pas encore disponible.",
+      "requiresPlan": "Shopify est disponible avec Pro et Premium.",
+      "shop": "Domaine de la boutique",
+      "shopHelp": "Saisissez le domaine myshopify.com d’origine, sans https:// ni chemin.",
+      "connect": "Connecter la boutique",
+      "reconnect": "Reconnecter la boutique",
+      "disconnect": "Déconnecter Shopify",
+      "disconnectDescription": "Arrêter les envois et supprimer les jetons d’accès enregistrés ? Les articles dans Shopify seront conservés.",
+      "blog": "Blog par défaut",
+      "chooseBlog": "Choisir un blog Shopify",
+      "author": "Nom de l’auteur",
+      "manualOnly": "Les articles sont envoyés uniquement à votre demande depuis l’éditeur.",
+      "blogsFailed": "Impossible de charger les blogs. Reconnectez Shopify si l’accès a expiré.",
+      "actionFailed": "L’opération Shopify n’a pas pu être terminée.",
+      "retry": "Réessayer",
+      "settings": "Configurer Shopify",
+      "sendDraft": "Envoyer en brouillon",
+      "publish": "Publier dans Shopify",
+      "update": "Mettre à jour dans Shopify",
+      "replaceDescription": "L’article Shopify sera remplacé par la version enregistrée dans Topiqu. Les modifications effectuées directement dans Shopify seront écrasées.",
+      "saveFirst": "Enregistrez l’article dans Topiqu avant de l’envoyer à Shopify.",
+      "sent": "Article enregistré dans Shopify",
+      "lastSync": "Dernier envoi :",
+      "view": "Voir dans Shopify",
+      "uncertain": "Shopify n’a pas confirmé le résultat. Vérifiez d’abord la boutique. Un nouvel envoi recherchera l’article existant sans créer une autre copie.",
+      "confirmSend": "Confirmer et envoyer",
+      "callback": {
+        "connected": "Shopify connecté. Choisissez un blog et un auteur.",
+        "cancelled": "Connexion Shopify annulée.",
+        "error": "Impossible de connecter Shopify. Réessayez ou vérifiez la configuration de l’application."
+      },
+      "connection": {
+        "CONNECTED": "Connecté",
+        "REAUTH_REQUIRED": "Reconnexion nécessaire",
+        "REVOKED": "Déconnecté"
+      },
+      "publication": {
+        "QUEUED": "En attente d’envoi",
+        "PUBLISHING": "Envoi en cours",
+        "SYNCED": "Enregistré dans Shopify",
+        "FAILED": "Échec de l’envoi",
+        "UNCERTAIN": "Résultat non confirmé"
+      },
+      "unpublishDescription": "L’article Shopify sera remplacé par la version enregistrée dans Topiqu et masqué dans la boutique. Les modifications effectuées directement dans Shopify seront écrasées."
     }
   },
   "error": {

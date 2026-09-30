@@ -1102,6 +1102,54 @@
       "purchaseHint": "Doplňte si články podle potřeby. Připíšeme je ihned a neexpirují.",
       "neverExpires": "Bez expirace",
       "upgradeToPremium": "Povýšit na PREMIUM"
+    },
+    "shopify": {
+      "title": "Shopify",
+      "description": "Publikujte články z Topiqu do Shopify blogu a aktualizujte je přímo z editoru.",
+      "notConfigured": "Integrace Shopify zatím není dostupná.",
+      "requiresPlan": "Shopify je dostupné v tarifech Pro a Premium.",
+      "shop": "Doména obchodu",
+      "shopHelp": "Zadejte původní doménu myshopify.com bez https:// a cesty.",
+      "connect": "Připojit obchod",
+      "reconnect": "Znovu připojit obchod",
+      "disconnect": "Odpojit Shopify",
+      "disconnectDescription": "Zastavit odesílání a odstranit uložené přístupové tokeny? Články v Shopify zůstanou zachované.",
+      "blog": "Výchozí blog",
+      "chooseBlog": "Vyberte blog v Shopify",
+      "author": "Jméno autora",
+      "manualOnly": "Články se odesílají pouze na váš pokyn v editoru.",
+      "blogsFailed": "Blogy se nepodařilo načíst. Pokud přístup vypršel, připojte Shopify znovu.",
+      "actionFailed": "Operaci v Shopify se nepodařilo dokončit.",
+      "retry": "Zkusit znovu",
+      "settings": "Nastavit Shopify",
+      "sendDraft": "Odeslat jako koncept",
+      "publish": "Publikovat v Shopify",
+      "update": "Aktualizovat v Shopify",
+      "replaceDescription": "Článek v Shopify se nahradí uloženou verzí z Topiqu. Změny provedené přímo v Shopify se přepíšou.",
+      "saveFirst": "Před odesláním do Shopify článek uložte v Topiqu.",
+      "sent": "Článek uložen v Shopify",
+      "lastSync": "Poslední odeslání:",
+      "view": "Zobrazit v Shopify",
+      "uncertain": "Shopify nepotvrdilo výsledek. Nejdřív zkontrolujte obchod. Další odeslání se pokusí dohledat existující článek bez vytvoření další kopie.",
+      "confirmSend": "Potvrdit a odeslat",
+      "callback": {
+        "connected": "Shopify připojeno. Vyberte blog a autora.",
+        "cancelled": "Připojení Shopify bylo zrušeno.",
+        "error": "Shopify se nepodařilo připojit. Zkuste to znovu nebo ověřte nastavení aplikace."
+      },
+      "connection": {
+        "CONNECTED": "Připojeno",
+        "REAUTH_REQUIRED": "Vyžaduje nové připojení",
+        "REVOKED": "Odpojeno"
+      },
+      "publication": {
+        "QUEUED": "Čeká na odeslání",
+        "PUBLISHING": "Odesílání",
+        "SYNCED": "Uloženo v Shopify",
+        "FAILED": "Odeslání selhalo",
+        "UNCERTAIN": "Výsledek nepotvrzen"
+      },
+      "unpublishDescription": "Článek v Shopify se nahradí uloženou verzí z Topiqu a skryje se v obchodě. Změny provedené přímo v Shopify se přepíšou."
     }
   },
   "error": {

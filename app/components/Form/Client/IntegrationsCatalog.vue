@@ -345,6 +345,9 @@
         ><UButton :disabled="!dirty" @click="$emit('save')">{{ $t('common.actions.saveChanges') }}</UButton></template
       >
     </UModal>
+    <UModal v-model:open="shopifyOpen" :title="$t('common.shopify.title')" :ui="{ content: 'max-w-2xl' }">
+      <template #body><FormClientShopify /></template>
+    </UModal>
   </section>
 </template>
 
@@ -377,12 +380,12 @@ defineEmits<{
   save: []
 }>()
 
-type DialogId = 'gsc' | 'analytics' | 'gam' | 'linkedin'
+type DialogId = 'gsc' | 'analytics' | 'gam' | 'linkedin' | 'shopify'
 type ServiceCard = {
   kind: 'service'
   id: DialogId
   title: string
-  logo: 'admanager' | 'analytics' | 'google' | 'linkedin'
+  logo: 'admanager' | 'analytics' | 'google' | 'linkedin' | 'shopify'
   status: string | null
   description: string
 }
@@ -407,13 +410,24 @@ const dialogModel = (id: DialogId) =>
   computed({
     get: () => activeDialog.value === id,
     set: (open) => {
-      if (!open) activeDialog.value = null
+      if (!open && activeDialog.value === id) activeDialog.value = null
     },
   })
 const gscOpen = dialogModel('gsc')
 const analyticsOpen = dialogModel('analytics')
 const gamOpen = dialogModel('gam')
 const linkedinOpen = dialogModel('linkedin')
+const shopifyOpen = dialogModel('shopify')
+const route = useRoute()
+onMounted(() => {
+  if (typeof route.query.shopify === 'string') activeDialog.value = 'shopify'
+})
+watch(
+  () => route.query.shopify,
+  (value) => {
+    if (typeof value === 'string') activeDialog.value = 'shopify'
+  },
+)
 const filterQuery = shallowRef('')
 const planFilter = shallowRef<'available' | 'all' | 'pro' | 'premium'>(
   props.currentPlan === 'BASIC' ? 'all' : 'available',
@@ -480,6 +494,14 @@ const planSections = computed<PlanSection[]>(() => [
         id: 'wordpress',
         title: $t('common.integrationsCatalog.wordpressTitle'),
         description: $t('common.integrationsCatalog.wordpressDescription'),
+      },
+      {
+        kind: 'service',
+        id: 'shopify',
+        title: $t('common.shopify.title'),
+        logo: 'shopify',
+        status: null,
+        description: $t('common.shopify.description'),
       },
     ],
   },

@@ -12,6 +12,7 @@ import "./searchConsole"
 import "./visibility"
 import "./media"
 import "./generation"
+import "./shopify"
 
 enum GenerationFrequency {
     NONE
@@ -158,6 +159,8 @@ model ClientSite with Base {
     articleSlugRedirects ArticleSlugRedirect[]
     adEarnings           AdEarning[]
     searchConsoleConnection SearchConsoleConnection?
+    shopifyConnection ShopifyConnection?
+    shopifyPublications ShopifyPublication[]
     searchConsoleMetrics SearchConsoleMetric[]
     aiCrawlerDays       AiCrawlerDaily[]
     aiReferralVisits    AiReferralVisit[]

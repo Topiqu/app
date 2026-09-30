@@ -1,0 +1,78 @@
+import "./base"
+import "./client"
+import "./article"
+
+enum ShopifyConnectionStatus {
+    CONNECTED
+    REAUTH_REQUIRED
+    REVOKED
+}
+
+enum ShopifyPublicationStatus {
+    QUEUED
+    PUBLISHING
+    SYNCED
+    FAILED
+    UNCERTAIN
+}
+
+model ShopifyConnection with Base {
+    clientSiteId String @unique
+    clientSite ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    shop String @unique
+    shopName String
+    storefrontUrl String
+    blogId String?
+    blogTitle String?
+    author String?
+    encryptedAccessToken String? @omit
+    encryptedRefreshToken String? @omit
+    accessTokenExpiresAt DateTime?
+    refreshTokenExpiresAt DateTime?
+    refreshLease String? @omit
+    refreshLeaseUntil DateTime?
+    grantedScopes String[]
+    status ShopifyConnectionStatus @default(CONNECTED)
+    publications ShopifyPublication[]
+    @@allow('read', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
+    @@allow('create, update, delete', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
+}
+
+model ShopifyPublication with Base {
+    clientSiteId String
+    clientSite ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    articleId String
+    article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+    connectionId String
+    connection ShopifyConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+    shopifyArticleId String?
+    blogId String
+    handle String
+    url String?
+    status ShopifyPublicationStatus @default(QUEUED)
+    isPublished Boolean @default(false)
+    payload Json @omit
+    attempts Int @default(0)
+    nextAttemptAt DateTime @default(now())
+    lease String? @omit
+    leaseUntil DateTime?
+    createStartedAt DateTime?
+    lastSyncedAt DateTime?
+    lastError String?
+    @@unique([connectionId, articleId])
+    @@index([status, nextAttemptAt])
+    @@allow('read', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
+    @@allow('create, update, delete', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
+}
+
+model ShopifyOAuthAttempt {
+    id String @id @default(uuid())
+    tokenHash String @unique @omit
+    userId String
+    clientSiteId String
+    shop String
+    locale String
+    expiresAt DateTime
+    @@index([expiresAt])
+    @@allow('all', false)
+}

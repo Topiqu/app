@@ -15,6 +15,7 @@ import "./models/visibility"
 import "./models/media"
 import "./models/generation"
 import "./models/knowledge"
+import "./models/shopify"
 
 datasource db {
     provider  = "postgresql"

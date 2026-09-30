@@ -132,6 +132,12 @@
     />
 
     <UProgress v-if="!isNew && tr.status === 'pending'" class="mb-6" :aria-label="$t('common.loading')" />
+    <ArticleEditorShopify
+      v-if="tr.isSource && clientSite?.plan !== 'BASIC'"
+      :articleId="isNew ? undefined : article?.id"
+      :disabled="submitting || aiGenerating || hasChanges"
+    />
+
 
     <UAlert
       v-if="recoverableGeneration && recoverableGeneration.id !== generation.sessionId"

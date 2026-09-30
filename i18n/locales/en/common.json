@@ -1102,6 +1102,54 @@
       "purchaseHint": "Add articles whenever you need them. They are available immediately and never expire.",
       "neverExpires": "Never expires",
       "upgradeToPremium": "Upgrade to PREMIUM"
+    },
+    "shopify": {
+      "title": "Shopify",
+      "description": "Publish articles from Topiqu to your Shopify blog and update them from the editor.",
+      "notConfigured": "Shopify integration is not available yet.",
+      "requiresPlan": "Shopify is available with Pro and Premium.",
+      "shop": "Store domain",
+      "shopHelp": "Enter the original myshopify.com domain, without https:// or a path.",
+      "connect": "Connect store",
+      "reconnect": "Reconnect store",
+      "disconnect": "Disconnect Shopify",
+      "disconnectDescription": "Stop sending articles and remove stored access tokens? Articles already in Shopify will remain.",
+      "blog": "Default blog",
+      "chooseBlog": "Choose a Shopify blog",
+      "author": "Author name",
+      "manualOnly": "Articles are sent only when you choose to send them in the editor.",
+      "blogsFailed": "Could not load the blogs. Reconnect Shopify if access has expired.",
+      "actionFailed": "The Shopify operation could not be completed.",
+      "retry": "Try again",
+      "settings": "Set up Shopify",
+      "sendDraft": "Send as draft",
+      "publish": "Publish in Shopify",
+      "update": "Update in Shopify",
+      "replaceDescription": "This replaces the Shopify article with the saved Topiqu version. Changes made directly in Shopify will be overwritten.",
+      "saveFirst": "Save the article in Topiqu before sending it to Shopify.",
+      "sent": "Article saved in Shopify",
+      "lastSync": "Last sent:",
+      "view": "View in Shopify",
+      "uncertain": "Shopify has not confirmed the result. Check the store first. Sending again will try to recover the existing article without creating another copy.",
+      "confirmSend": "Confirm and send",
+      "callback": {
+        "connected": "Shopify connected. Choose a blog and author.",
+        "cancelled": "Shopify connection cancelled.",
+        "error": "Shopify could not be connected. Try again or check the app configuration."
+      },
+      "connection": {
+        "CONNECTED": "Connected",
+        "REAUTH_REQUIRED": "Reconnect required",
+        "REVOKED": "Disconnected"
+      },
+      "publication": {
+        "QUEUED": "Waiting to send",
+        "PUBLISHING": "Sending",
+        "SYNCED": "Saved in Shopify",
+        "FAILED": "Sending failed",
+        "UNCERTAIN": "Result unconfirmed"
+      },
+      "unpublishDescription": "This replaces the Shopify article with the saved Topiqu version and hides it from the store. Changes made directly in Shopify will be overwritten."
     }
   },
   "error": {
