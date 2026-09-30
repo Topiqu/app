@@ -317,6 +317,7 @@
       "yourVote": "Votre vote"
     },
     "activity": {
+      "noArticles": "Vous n’avez pas encore d’articles favoris",
       "tabs": {
         "likedArticles": "Articles aimés",
         "comments": "Mes commentaires"

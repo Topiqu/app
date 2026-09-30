@@ -317,6 +317,7 @@
       "yourVote": "Deine Stimme"
     },
     "activity": {
+      "noArticles": "Du hast noch keine Lieblingsartikel",
       "tabs": {
         "likedArticles": "Artikel mit „Gefällt mir“",
         "comments": "Meine Kommentare"

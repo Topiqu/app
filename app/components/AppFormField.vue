@@ -1,7 +1,16 @@
 <template>
   <UFormField :label :description :error :required :name :hint class="w-full">
     <template v-if="type === 'textarea' && maxLength" #hint>
-      <span class="tabular-nums" :class="stringValue.length >= maxLength * 0.9 ? 'text-warning' : 'text-dimmed'">
+      <span
+        class="tabular-nums"
+        :class="
+          stringValue.length >= maxLength
+            ? 'text-error'
+            : stringValue.length >= maxLength * 0.9
+              ? 'text-warning'
+              : 'text-dimmed'
+        "
+      >
         {{ stringValue.length }}/{{ maxLength }}
       </span>
     </template>

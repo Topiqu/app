@@ -2,14 +2,14 @@
   <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5 sm:gap-6">
     <UserPictureUploader v-model="avatarUrl" @upload="$emit('upload')" />
 
-    <div class="min-w-0 flex-1 text-center sm:text-left">
+    <div class="min-w-0 max-w-full flex-1 text-center sm:text-left">
       <h2 class="text-xl sm:text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100 truncate">
         {{ username }}
       </h2>
       <p class="text-sm text-neutral-500 dark:text-neutral-400">@{{ handle }}</p>
 
       <p
-        class="mt-3 text-sm leading-relaxed text-pretty"
+        class="mt-3 text-sm leading-relaxed text-pretty [overflow-wrap:anywhere]"
         :class="bio ? 'text-neutral-700 dark:text-neutral-300' : 'text-neutral-400 dark:text-neutral-500 italic'"
       >
         {{ bio || $t('articles.userMenu.noBio') }}

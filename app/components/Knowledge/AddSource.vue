@@ -27,7 +27,16 @@
         </template>
         <template v-else>
           <UFormField :label="$t('knowledge.fields.url')" required>
-            <UInput v-model="form.url" type="url" class="w-full" placeholder="https://" required :disabled="saving" />
+            <UInput
+              v-model="form.url"
+              type="text"
+              inputmode="url"
+              class="w-full"
+              placeholder="https://"
+              required
+              :disabled="saving"
+              @blur="form.url = normalizeSourceUrl(form.url)"
+            />
           </UFormField>
           <URadioGroup
             v-model="webScope"
@@ -168,10 +177,17 @@ const pageForm = (url: string) => {
   return body
 }
 
+const normalizeSourceUrl = (value: string) => {
+  const url = value.trim()
+  if (!url || /^[a-z][a-z\d+.-]*:/i.test(url)) return url
+  return url.startsWith('//') ? `https:${url}` : `https://${url}`
+}
+
+const discoverSitemap = () =>
+  $fetch('/api/knowledge/sitemap', { method: 'POST', body: { url: normalizeSourceUrl(form.url) } })
+
 // Pages go through the regular URL endpoint two at a time, gentle on the site and on the
 // per-tenant rate limit; a full quota or the rate limit ends the import early.
-const discoverSitemap = () => $fetch('/api/knowledge/sitemap', { method: 'POST', body: { url: form.url.trim() } })
-
 const importSitemap = async (urls: string[]) => {
   const queue = [...urls]
   let added = 0
@@ -218,7 +234,7 @@ const submit = async () => {
   if (form.title.trim()) body.set('title', form.title.trim())
   if (form.validAsOf) body.set('validAsOf', form.validAsOf)
   if (kind.value === 'NOTE') body.set('text', form.text)
-  if (kind.value === 'URL') body.set('url', form.url.trim())
+  if (kind.value === 'URL') body.set('url', normalizeSourceUrl(form.url))
   if (kind.value === 'FILE' && file.value) body.set('file', file.value)
   if (form.isPublic && kind.value !== 'URL') body.set('publicUrl', form.publicUrl.trim())
 

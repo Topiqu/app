@@ -10,30 +10,28 @@ export default defineEventHandler(async (event) => {
   const { skip, take } = await getPagination(event)
   const adjustedTake = Math.max(0, Math.min(take, 5))
 
-  const likedArticlesCount = await db.articleReaction.count({ where: { userId: user.id } })
-  const likedArticles = await db.articleReaction.findMany({
-    where: { userId: user.id },
+  // Query articles directly so read policies apply before counting and pagination.
+  // A readable reaction can otherwise include a null article when access to it is denied.
+  const likedArticlesWhere = { reactions: { some: { userId: user.id } } }
+  const likedArticlesCount = await db.article.count({ where: likedArticlesWhere })
+  const likedArticles = await db.article.findMany({
+    where: likedArticlesWhere,
     skip,
     take: adjustedTake,
-    orderBy:
-      sortField === 'likes' ? { article: { reactions: { _count: sortOrder } } } : { article: { createdAt: sortOrder } },
-    include: {
-      article: {
-        select: {
-          id: true,
-          slug: true,
-          language: true,
-          title: true,
-          content: true,
-          excerpt: true,
-          imageUrl: true,
-          createdAt: true,
-          views: true,
-          user: { select: { username: true, avatarUrl: true } },
-          tags: { select: { tag: { select: { name: true } } } },
-          reactions: { select: { id: true } },
-        },
-      },
+    orderBy: sortField === 'likes' ? { reactions: { _count: sortOrder } } : { createdAt: sortOrder },
+    select: {
+      id: true,
+      slug: true,
+      language: true,
+      title: true,
+      content: true,
+      excerpt: true,
+      imageUrl: true,
+      createdAt: true,
+      views: true,
+      user: { select: { username: true, avatarUrl: true } },
+      tags: { select: { tag: { select: { name: true } } } },
+      reactions: { select: { id: true } },
     },
   })
 
@@ -74,20 +72,20 @@ export default defineEventHandler(async (event) => {
   })
 
   return {
-    likedArticles: likedArticles.map((r) => ({
-      id: r.article.id,
-      slug: r.article.slug,
-      language: r.article.language,
-      title: r.article.title,
-      content: r.article.content,
-      excerpt: r.article.excerpt || '',
-      imageUrl: r.article.imageUrl,
-      createdAt: r.article.createdAt?.toISOString() || null,
-      authorUsername: r.article.user?.username || 'Anonym',
-      authorPfp: r.article.user?.avatarUrl || null,
-      views: r.article.views,
-      tags: r.article.tags.map((t) => t.tag.name),
-      likesCount: r.article.reactions.length,
+    likedArticles: likedArticles.map((article) => ({
+      id: article.id,
+      slug: article.slug,
+      language: article.language,
+      title: article.title,
+      content: article.content,
+      excerpt: article.excerpt || '',
+      imageUrl: article.imageUrl,
+      createdAt: article.createdAt?.toISOString() || null,
+      authorUsername: article.user?.username || 'Anonym',
+      authorPfp: article.user?.avatarUrl || null,
+      views: article.views,
+      tags: article.tags.map((t) => t.tag.name),
+      likesCount: article.reactions.length,
     })),
     comments: comments.map((c) => ({
       id: c.id,

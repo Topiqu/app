@@ -122,6 +122,10 @@ model Article with Base, Ownable {
     structureVariant String?           @length(0, 32)
     prompt           String?           @length(0, 5000)
     @@allow('read', status == 'published' || (auth().role == 'admin' && clientSiteId == auth().clientSiteId))
+    // Personal activity spans sites: authors and current owners retain read access after switching sites.
+    @@allow('read', auth().id == userId)
+    @@allow('read', clientSite.tenantMemberships?[userId == auth().id && role == 'OWNER' && deletedAt == null])
+    @@allow('read', auth().role == 'superadmin')
     @@allow('all', auth().role == 'admin' && clientSiteId == auth().clientSiteId)
     @@unique([slug, clientSiteId])
     @@index([title, excerpt, clientSiteId, articleSeriesId, seriesOrder])
