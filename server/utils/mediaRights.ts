@@ -189,6 +189,14 @@ export const applyMediaAttributions = async (clientSiteId: string, content: stri
     const mediaId = $(element).attr('data-media-id')
     const attribution = mediaId ? attributionById.get(mediaId) : null
     if (!attribution) return
+    const figure = $(element).closest('figure')
+    if (figure.length) {
+      const caption = figure.children('figcaption')
+      if (caption.text().trim()) return
+      if (caption.length) caption.text(attribution)
+      else figure.append(`<figcaption>${escapeHtml(attribution)}</figcaption>`)
+      return
+    }
     const parent = $(element).parent()
     if (parent.find('small[data-media-attribution]').length || parent.find('small').length) return
     $(element).after(`<br><small data-media-attribution style="color: gray;">${escapeHtml(attribution)}</small>`)

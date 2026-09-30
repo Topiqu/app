@@ -35,8 +35,7 @@ export function useTiptapImageUpload(
         mediaAsset: { id: string }
       }>('/api/upload', { method: 'POST', body: form })
       if (success) {
-        editor.value?.commands.setImage({ src: optimizedUrl, alt, mediaId: mediaAsset.id } as any)
-        editor.value?.chain().focus().run()
+        editor.value?.chain().focus().setFigure({ src: optimizedUrl, alt, mediaId: mediaAsset.id }).run()
       }
       if (!success) toast.add({ color: 'error', title: $t('articles.editor.uploadFailed') })
     } catch (e: any) {

@@ -32,7 +32,8 @@ const onIndexChange = (_oldIndex: number, newIndex: number) => {
 
 const collect = () => {
   if (!sourceRef) return
-  imageElements.value = [...sourceRef.querySelectorAll<HTMLImageElement>(selector)]
+  // A linked image navigates instead of zooming.
+  imageElements.value = [...sourceRef.querySelectorAll<HTMLImageElement>(selector)].filter((img) => !img.closest('a'))
   images.value = imageElements.value.map((img) => ({
     src: img.currentSrc || img.src,
     title: img.alt || undefined,

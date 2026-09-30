@@ -780,8 +780,6 @@ export const finalizeArticle = async (
   mediaCompleted = mediaTotal
   reportMedia('complete')
 
-  // Before the slots are filled: the image attribution carries a deliberate mid-paragraph `<br>`
-  // that this pass must not see as padding.
   object.content = dropBlankLines(stripUntrustedIframes(object.content))
   object.content = applyContentSlots(object.content, 'IMAGE', generatedImages)
 

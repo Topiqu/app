@@ -15,7 +15,7 @@
           @openLink="openLink"
           @insertPoll="insertPoll"
           @uploadFile="uploadImage"
-          @openMedia="mediaPickerOpen = true"
+          @openMedia="openMedia"
           @focusEditor="focusEditor"
         />
 
@@ -23,6 +23,7 @@
         <!-- No v-if on bubble menus: Tiptap detaches their element, so unmounting one on an `edit`
              toggle crashes the patch and freezes the whole editor page. They gate on isEditable. -->
         <TiptapToolbarTableBubble :editor />
+        <TiptapToolbarImageBubble :editor @replace="openReplace" />
 
         <EditorContent
           :editor
@@ -43,7 +44,7 @@
       />
 
       <TiptapAltModal v-model:open="altModal.show" :defaultAlt="altModal.defaultAlt" @submit="onAltSubmit" />
-      <MediaPicker v-model:open="mediaPickerOpen" mode="body" @select="insertLibraryMedia" />
+      <MediaPicker v-model:open="mediaPickerOpen" mode="body" @select="onMediaSelect" />
     </template>
     <div v-else v-html="content || fallback || $t('articles.editor.noContent')" />
   </div>
@@ -51,6 +52,7 @@
 
 <script setup lang="ts">
 import type { ChainedCommands } from '@tiptap/vue-3'
+import type { MediaPickerSelection } from '~~/shared/types/mediaLibrary'
 
 import { EditorContent } from '@tiptap/vue-3'
 import { pollOptionsAttr } from '~~/shared/utils/polls'
@@ -75,6 +77,8 @@ const linkModal = shallowReactive({
 
 const altModal = shallowReactive({ show: false, defaultAlt: '' })
 const mediaPickerOpen = shallowRef(false)
+/** Position of the image being replaced; `null` inserts a new one. */
+let replacePos: number | null = null
 let altResolver: ((alt: string) => void) | null = null
 
 const promptAlt = (defaultAlt: string) =>
@@ -129,7 +133,7 @@ const applyLink = (url: string) => {
   if (!url && type === 'link') return run((c) => c.unsetLink())
   if (!url) return
   if (type === 'link') run((c) => c.setLink({ href: url }))
-  if (type === 'image') run((c) => c.setImage({ src: url, alt: '' }))
+  if (type === 'image') run((c) => c.setFigure({ src: url, alt: '' }))
   if (type === 'youtube') run((c) => c.setYoutubeVideo({ src: normalizeYoutubeUrl(url) }))
 }
 
@@ -199,17 +203,38 @@ const editor = useTiptapInstance({
 
 const uploadImage = useTiptapImageUpload(editor, promptAlt)
 
-const insertLibraryMedia = (asset: import('~~/shared/types/mediaLibrary').MediaPickerSelection, alt: string) => {
-  editor.value
-    ?.chain()
+const openMedia = () => {
+  replacePos = null
+  mediaPickerOpen.value = true
+}
+
+const openReplace = (pos: number) => {
+  replacePos = pos
+  mediaPickerOpen.value = true
+}
+
+const onMediaSelect = (asset: MediaPickerSelection, alt: string) => {
+  const attrs = {
+    src: asset.deliveryUrl || asset.url,
+    alt,
+    mediaId: asset.id,
+    width: asset.width ?? null,
+    height: asset.height ?? null,
+  }
+  const instance = editor.value
+  const node = replacePos === null ? null : instance?.state.doc.nodeAt(replacePos)
+  if (!instance || !node || !['figure', 'image'].includes(node.type.name)) return run((c) => c.setFigure(attrs))
+
+  // Layout, caption and link stay; only the asset changes.
+  const pos = replacePos!
+  instance
+    .chain()
     .focus()
-    .setImage({
-      src: asset.deliveryUrl || asset.url,
-      alt,
-      mediaId: asset.id,
-      width: asset.width,
-      height: asset.height,
-    } as any)
+    .command(({ tr }) => {
+      tr.setNodeMarkup(pos, undefined, { ...node.attrs, ...attrs })
+      return true
+    })
+    .setNodeSelection(pos)
     .run()
 }
 

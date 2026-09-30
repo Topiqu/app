@@ -71,4 +71,38 @@ describe('ArticleLightbox', () => {
     expect(wrapper.getComponent({ name: 'VueEasyLightbox' }).props('visible')).toBe(true)
     wrapper.unmount()
   })
+
+  it('leaves a linked figure image to its link', async () => {
+    const source = document.createElement('article')
+    source.innerHTML =
+      '<figure class="article-image"><a href="#target"><img src="/linked.webp" data-article-lightbox="true" alt="Linked"></a></figure>' +
+      '<figure class="article-image"><img src="/zoom.webp" data-article-lightbox="true" alt="Zoom"></figure>'
+    document.body.append(source)
+
+    const wrapper = mount(ArticleLightbox, {
+      props: { sourceRef: source },
+      global: {
+        stubs: {
+          VueEasyLightbox: {
+            name: 'VueEasyLightbox',
+            props: ['visible', 'imgs', 'index'],
+            template: '<div data-lightbox />',
+          },
+        },
+      },
+    })
+
+    await nextTick()
+    const lightbox = wrapper.getComponent({ name: 'VueEasyLightbox' })
+    source.querySelector<HTMLImageElement>('img[alt="Linked"]')!.click()
+    await nextTick()
+    expect(lightbox.props('visible')).toBe(false)
+    expect(lightbox.props('imgs')).toHaveLength(1)
+
+    source.querySelector<HTMLImageElement>('img[alt="Zoom"]')!.click()
+    await nextTick()
+    expect(lightbox.props('visible')).toBe(true)
+    expect(lightbox.props('index')).toBe(0)
+    wrapper.unmount()
+  })
 })

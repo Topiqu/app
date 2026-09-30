@@ -4,8 +4,8 @@ import { useDebounceFn } from '@vueuse/core'
 import StarterKit from '@tiptap/starter-kit'
 import { Link } from '@tiptap/extension-link'
 import { Indent } from '~~/extensions/indent'
-import { Image } from '@tiptap/extension-image'
 import { Color } from '@tiptap/extension-color'
+import { InlineImage } from '~~/extensions/image'
 import { Youtube } from '@tiptap/extension-youtube'
 import SlashCommand from '~~/extensions/slashCommand'
 import { Underline } from '@tiptap/extension-underline'
@@ -15,6 +15,8 @@ import { Typography } from '@tiptap/extension-typography'
 import { Blockquote } from '@tiptap/extension-blockquote'
 import { Dropcursor } from '@tiptap/extension-dropcursor'
 import { Table, TableRow } from '@tiptap/extension-table'
+import { AiDisclosure } from '~~/extensions/aiDisclosure'
+import { Figcaption, Figure } from '~~/extensions/figure'
 import { FontFamily } from '@tiptap/extension-font-family'
 import { useEditor, VueNodeViewRenderer } from '@tiptap/vue-3'
 import { CharacterCount } from '@tiptap/extension-character-count'
@@ -23,6 +25,7 @@ import { ColoredTableCell, ColoredTableHeader } from '~~/extensions/tableCellCol
 import Poll from '~~/extensions/poll'
 
 import TiptapImage from '~/components/File/TiptapImage.vue'
+import TiptapFigure from '~/components/File/TiptapFigure.vue'
 
 const CustomBlockquote = Blockquote.extend({
   renderHTML: ({ HTMLAttributes }) => ['blockquote', { class: 'blockquote', ...HTMLAttributes }, 0],
@@ -56,25 +59,10 @@ export function useTiptapInstance(opts: UseTiptapInstanceOptions) {
     extensions: [
       StarterKit.configure({ blockquote: false, dropcursor: false, link: false, underline: false }),
       CustomBlockquote.configure({ HTMLAttributes: { class: 'blockquote' } }),
-      Image.configure({
-        inline: true,
-        allowBase64: true,
-        HTMLAttributes: { class: 'max-w-full h-auto rounded' },
-      }).extend({
-        addAttributes() {
-          return {
-            ...this.parent?.(),
-            mediaId: {
-              default: null,
-              parseHTML: (element) => element.getAttribute('data-media-id'),
-              renderHTML: (attributes) => (attributes.mediaId ? { 'data-media-id': attributes.mediaId } : {}),
-            },
-          }
-        },
-        addNodeView() {
-          return VueNodeViewRenderer(TiptapImage)
-        },
-      }),
+      InlineImage.extend({ addNodeView: () => VueNodeViewRenderer(TiptapImage) }),
+      Figure.extend({ addNodeView: () => VueNodeViewRenderer(TiptapFigure) }),
+      Figcaption,
+      AiDisclosure,
       Dropcursor,
       Underline,
       TextAlign.configure({ types: ['heading', 'paragraph'] }),

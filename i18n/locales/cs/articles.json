@@ -954,6 +954,26 @@
         "ai": "AI",
         "checks": "Kontrola"
       }
+      },
+      "image": {
+        "toolbar": "Nástroje obrázku",
+        "details": "Detaily obrázku",
+        "altButton": "Alt text",
+        "alt": "Alternativní text",
+        "altHint": "Popište, co je na obrázku, pro čtenáře, kteří ho nevidí. Prázdný ho nechte jen u čistě dekorativního obrázku.",
+        "altMissing": "Chybí alt text",
+        "title": "Titulek (tooltip)",
+        "link": "Odkaz",
+        "linkInvalid": "Zadejte webovou adresu začínající https://",
+        "saveDefaultAlt": "Uložit i jako výchozí alt text v knihovně médií",
+        "defaultAltSaved": "Výchozí alt text je uložen v knihovně médií",
+        "defaultAltFailed": "Alt text se nepodařilo uložit do knihovny médií",
+        "width": "Šířka {width} %",
+        "floatLeft": "Vlevo, text obtéká",
+        "floatRight": "Vpravo, text obtéká",
+        "replace": "Nahradit z knihovny médií",
+        "delete": "Smazat obrázek",
+        "captionPlaceholder": "Přidat popisek…"
     },
     "image": {
       "illustration": "Ilustrační obrázek",

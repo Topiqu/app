@@ -409,6 +409,71 @@ main {
   color: #4b5563 !important;
 }
 
+/* Width comes as an inline `style` from the editor; everything else keys off `data-align`. */
+.article-content figure.article-image {
+  max-width: 100%;
+  margin-inline: auto;
+}
+
+.article-content figure.article-image[data-align='left'] {
+  margin-inline: 0 auto;
+}
+
+.article-content figure.article-image[data-align='right'] {
+  margin-inline: auto 0;
+}
+
+.article-content figure.article-image img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 0.75rem;
+  cursor: zoom-in;
+}
+
+.article-content figure.article-image a img {
+  cursor: pointer;
+}
+
+.article-content figure.article-image figcaption {
+  padding-top: 0.5rem;
+  color: var(--ui-text-muted);
+  font-size: 0.875rem;
+  line-height: 1.5rem;
+  text-align: center;
+}
+
+.article-content figure.article-image:is([data-align='left'], [data-align='float-left']) figcaption {
+  text-align: left;
+}
+
+.article-content figure.article-image:is([data-align='right'], [data-align='float-right']) figcaption {
+  text-align: right;
+}
+
+/* A floated image beside a phone-width column leaves a sliver of text, so floats start at `sm`. */
+@media (max-width: 639px) {
+  .article-content figure.article-image[data-align^='float'] {
+    width: 100% !important;
+  }
+}
+
+@media (min-width: 640px) {
+  .article-content figure.article-image[data-align='float-left'] {
+    float: left;
+    margin: 0.375rem 1.5rem 1rem 0;
+  }
+
+  .article-content figure.article-image[data-align='float-right'] {
+    float: right;
+    margin: 0.375rem 0 1rem 1.5rem;
+  }
+
+  .article-content :where(h1, h2, h3, h4, hr, table, figure:not([data-align^='float'])) {
+    clear: both;
+  }
+}
+
 .editorial-enter {
   animation: editorial-enter 480ms cubic-bezier(0.22, 1, 0.36, 1) both;
   animation-delay: calc(var(--enter-order, 0) * 70ms);

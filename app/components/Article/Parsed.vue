@@ -78,6 +78,7 @@ const visibleHtml = (html: string) => {
   const normalized = visible
     .replace(/<p(?:\s[^>]*)?>\s*(?:<br\s*\/?>|&nbsp;|\u00a0)?\s*<\/p>/gi, '')
     .replace(/(<p(?:\s[^>]*)?>)\s*(<img\b[^>]*>)\s*(<\/p>)/gi, '$1$2$3')
+    .replace(/<figcaption>\s*<\/figcaption>/gi, '')
 
   return optimizeArticleImages(normalized, transformArticleImage)
 }

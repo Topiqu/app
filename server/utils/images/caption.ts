@@ -35,13 +35,7 @@ export const renderCredit = (credit: ImageCredit, labels: CaptionLabels) => {
     .join('')
 }
 
-/**
- * The caption line the reader sees. Kept inside the `<p>` wrapper on purpose: TipTap has no
- * figure node (`useTiptapInstance`), so a `<figure>` would be dropped the first time the author
- * opened the article. The explicit lightbox marker survives sanitization and is also added to
- * legacy images at render time. The `<br>` is the deliberate mid-paragraph break preserved by
- * `dropBlankLines`.
- */
+/** The same `<figure>` shape the editor's `Figure` node writes (`extensions/figure.ts`). */
 export const buildImageHtml = (image: ArticleImage, caption: string, labels: CaptionLabels) => {
   const prefix =
     image.kind === 'ai'
@@ -61,8 +55,8 @@ export const buildImageHtml = (image: ArticleImage, caption: string, labels: Cap
   const mediaId = image.mediaId ? ` data-media-id="${escapeHtml(image.mediaId)}"` : ''
 
   return (
-    `<p style="text-align: center;"><img src="${escapeHtml(image.url)}" alt="${alt}" data-article-lightbox="true"${mediaId}${dimensions} />` +
-    (line ? `<br><small style="color: gray;">${line}</small>` : '') +
-    `</p>`
+    `<figure class="article-image"><img src="${escapeHtml(image.url)}" alt="${alt}" data-article-lightbox="true"${mediaId}${dimensions} />` +
+    (line ? `<figcaption>${line}</figcaption>` : '') +
+    `</figure>`
   )
 }

@@ -954,6 +954,26 @@
         "ai": "IA",
         "checks": "Vérifications"
       }
+      },
+      "image": {
+        "toolbar": "Outils d'image",
+        "details": "Détails de l'image",
+        "altButton": "Texte alt",
+        "alt": "Texte alternatif",
+        "altHint": "Décrivez ce que montre l'image pour les lecteurs qui ne peuvent pas la voir. Laissez-le vide uniquement pour une image purement décorative.",
+        "altMissing": "Texte alt manquant",
+        "title": "Titre (infobulle)",
+        "link": "Lien",
+        "linkInvalid": "Saisissez une adresse web commençant par https://",
+        "saveDefaultAlt": "Enregistrer aussi comme texte alt par défaut dans la médiathèque",
+        "defaultAltSaved": "Texte alt par défaut enregistré dans la médiathèque",
+        "defaultAltFailed": "Impossible d'enregistrer le texte alt dans la médiathèque",
+        "width": "Largeur {width} %",
+        "floatLeft": "À gauche, texte habillé",
+        "floatRight": "À droite, texte habillé",
+        "replace": "Remplacer depuis la médiathèque",
+        "delete": "Supprimer l'image",
+        "captionPlaceholder": "Ajouter une légende…"
     },
     "image": {
       "illustration": "Image d'illustration",

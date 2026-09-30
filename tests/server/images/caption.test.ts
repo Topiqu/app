@@ -51,14 +51,13 @@ describe('renderCredit', () => {
 })
 
 describe('buildImageHtml', () => {
-  it('keeps the <p><img> shape the editor and lightbox depend on', () => {
+  it('writes the figure the editor parses and the lightbox opens', () => {
     const html = buildImageHtml(image(), 'Summit v Ženevě', LABELS)
 
-    expect(html).toMatch(
-      /^<p style="text-align: center;"><img src="https:\/\/cdn\/x\.jpg" alt="Summit v Ženevě" data-article-lightbox="true" \/>/,
+    expect(html).toBe(
+      '<figure class="article-image"><img src="https://cdn/x.jpg" alt="Summit v Ženevě" data-article-lightbox="true" />' +
+        '<figcaption>Summit v Ženevě</figcaption></figure>',
     )
-    expect(html).toContain('<br><small')
-    expect(html).not.toContain('<figure')
   })
 
   // Only the AI label is wrapped: `data-ai-disclosure` is what `Parsed.vue` strips and
@@ -102,6 +101,6 @@ describe('buildImageHtml', () => {
   })
 
   it('drops the caption line entirely when there is nothing to say', () => {
-    expect(buildImageHtml(image(), '', LABELS)).not.toContain('<small')
+    expect(buildImageHtml(image(), '', LABELS)).not.toContain('<figcaption')
   })
 })

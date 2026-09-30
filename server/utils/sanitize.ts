@@ -39,6 +39,7 @@ export const sanitizeHtml = (dirty: string) => {
       'data-article-lightbox',
       'data-media-id',
       'data-media-attribution',
+      'data-align',
       'alt',
       'title',
       'colwidth',

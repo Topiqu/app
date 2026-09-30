@@ -89,6 +89,7 @@
 import type { Editor, ChainedCommands } from '@tiptap/vue-3'
 import type { BubbleMenuPluginProps } from '@tiptap/extension-bubble-menu'
 
+import { NodeSelection } from '@tiptap/pm/state'
 import { BubbleMenu } from '@tiptap/vue-3/menus'
 import { TEXT_EDIT_ACTIONS } from '~~/shared/utils/aiEdit'
 import type { SelectedTextPassage } from '~/composables/useTiptapRewrite'
@@ -134,9 +135,11 @@ const submitPrompt = async (instruction: string) => {
   }
 }
 
+// A selected figure spans its caption text, but it belongs to the image bubble.
 const shouldShow: NonNullable<BubbleMenuPluginProps['shouldShow']> = ({ editor, state, from, to }) =>
   editor.isEditable &&
   !state.selection.empty &&
+  !(state.selection instanceof NodeSelection) &&
   Boolean(state.doc.textBetween(from, to).length) &&
   !editor.isActive('table')
 

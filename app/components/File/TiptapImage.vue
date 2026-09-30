@@ -1,23 +1,19 @@
 <template>
-  <NodeViewWrapper class="inline-block relative leading-none select-none max-w-full w-full group">
-    <UButton
-      square
-      size="sm"
-      color="error"
-      variant="solid"
-      icon="mdi:close"
-      class="absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
-      :title="$t('common.close')"
-      @click.stop.prevent="deleteNode"
-      @mousedown.stop.prevent
-    />
-
-    <AppMedia
+  <NodeViewWrapper
+    as="span"
+    class="inline-block max-w-full align-bottom"
+    :style="{ width: `${(preview === undefined ? node.attrs.displayWidth : preview) ?? 100}%` }"
+  >
+    <FileTiptapImageFrame
+      v-model:preview="preview"
       :src="node.attrs.src"
       :alt="node.attrs.alt"
-      aspectRatio="16 / 9"
-      sizes="100vw lg:760px"
-      :containerClass="['w-full rounded-lg', selected ? 'ring-2 ring-primary' : ''].join(' ')"
+      :width="node.attrs.width"
+      :height="node.attrs.height"
+      :selected
+      :editable
+      @delete="deleteNode"
+      @resize="(width) => updateAttributes({ displayWidth: width })"
     />
   </NodeViewWrapper>
 </template>
@@ -27,5 +23,8 @@ import { NodeViewWrapper, nodeViewProps } from '@tiptap/vue-3'
 
 const props = defineProps(nodeViewProps)
 
-const { deleteNode } = props
+const { deleteNode, updateAttributes } = props
+
+const editable = useTiptapEditable(props.editor)
+const preview = shallowRef<number | null>()
 </script>

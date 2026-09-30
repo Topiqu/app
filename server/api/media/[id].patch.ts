@@ -4,7 +4,8 @@ import { MEDIA_ORIGINS } from '~~/shared/types/mediaRights'
 const InputSchema = z.object({
   name: z.string().trim().max(255).nullable().optional(),
   defaultAltText: z.string().trim().max(500).nullable().optional(),
-  origin: z.enum(MEDIA_ORIGINS),
+  // Optional so the editor can save a default alt text without restating provenance.
+  origin: z.enum(MEDIA_ORIGINS).optional(),
   sourceUrl: z.string().url().max(2048).nullable().optional(),
   author: z.string().max(255).nullable().optional(),
   license: z.string().max(255).nullable().optional(),

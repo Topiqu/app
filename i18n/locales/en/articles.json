@@ -954,6 +954,26 @@
         "ai": "AI",
         "checks": "Checks"
       }
+      },
+      "image": {
+        "toolbar": "Image tools",
+        "details": "Image details",
+        "altButton": "Alt text",
+        "alt": "Alternative text",
+        "altHint": "Describe what the image shows for readers who cannot see it. Leave it empty only for a purely decorative image.",
+        "altMissing": "Missing alt text",
+        "title": "Title (tooltip)",
+        "link": "Link",
+        "linkInvalid": "Enter a web address starting with https://",
+        "saveDefaultAlt": "Also save as the default alt text in the media library",
+        "defaultAltSaved": "Default alt text saved to the media library",
+        "defaultAltFailed": "The alt text could not be saved to the media library",
+        "width": "Width {width} %",
+        "floatLeft": "Left, text wraps around",
+        "floatRight": "Right, text wraps around",
+        "replace": "Replace from media library",
+        "delete": "Delete image",
+        "captionPlaceholder": "Add a caption…"
     },
     "image": {
       "illustration": "Illustrative image",

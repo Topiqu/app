@@ -1,14 +1,24 @@
-// @vitest-environment jsdom
+// @vitest-environment nuxt
 
 import { nextTick } from 'vue'
 import { Editor } from '@tiptap/vue-3'
 import { mount } from '@vue/test-utils'
 import StarterKit from '@tiptap/starter-kit'
+import { NodeSelection } from '@tiptap/pm/state'
+import { TextAlign } from '@tiptap/extension-text-align'
+import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 import { afterEach, beforeAll, describe, expect, it } from 'vitest'
 import { Table, TableCell, TableHeader, TableRow } from '@tiptap/extension-table'
 
+import { InlineImage } from '../../extensions/image'
+import { Figcaption, Figure } from '../../extensions/figure'
 import TextBubble from '../../app/components/Tiptap/ToolbarBubble.vue'
 import TableBubble from '../../app/components/Tiptap/ToolbarTableBubble.vue'
+import ImageBubble from '../../app/components/Tiptap/ToolbarImageBubble.vue'
+
+// The bubble's AI rewrite reads toast texts at setup; the test mounts outside the Nuxt app's i18n.
+mockNuxtImport('useI18n', () => () => ({ t: (key: string) => key }))
+mockNuxtImport('useToast', () => () => ({ add: () => {} }))
 
 const editors: Editor[] = []
 
@@ -26,7 +36,17 @@ const makeEditor = (content: string) => {
   const editor = new Editor({
     element: canvas,
     content,
-    extensions: [StarterKit, Table, TableRow, TableHeader, TableCell],
+    extensions: [
+      StarterKit,
+      Table,
+      TableRow,
+      TableHeader,
+      TableCell,
+      TextAlign.configure({ types: ['heading', 'paragraph'] }),
+      InlineImage,
+      Figure,
+      Figcaption,
+    ],
   })
   editors.push(editor)
   return editor
@@ -97,5 +117,39 @@ describe('Tiptap contextual menus', () => {
     await settle()
     expect(wrapper.element.isConnected).toBe(false)
     wrapper.unmount()
+  })
+
+  it('shows image actions for a selected figure and keeps the text bubble away', async () => {
+    const editor = makeEditor('<figure><img src="/a.jpg"><figcaption>Caption</figcaption></figure>')
+    const global = {
+      mocks: { $t: (key: string, params?: { width?: number }) => (params?.width ? `${key}:${params.width}` : key) },
+      stubs: {
+        UButton: { template: '<button><slot /></button>' },
+        UFieldGroup: { template: '<div><slot /></div>' },
+        USeparator: true,
+        TiptapImageDetails: true,
+      },
+    }
+    const image = mount(ImageBubble, { props: { editor }, attachTo: document.body, global })
+    const text = mount(TextBubble, { props: { editor }, attachTo: document.body, global })
+    await settle()
+    editor.view.dispatch(editor.state.tr.setSelection(NodeSelection.create(editor.state.doc, 0)))
+    await settle()
+
+    expect(image.element.isConnected).toBe(true)
+    expect(text.element.isConnected).toBe(false)
+
+    const button = (label: string) => image.element.querySelector(`[aria-label="${label}"]`) as HTMLButtonElement
+    button('articles.editor.image.floatLeft').click()
+    expect(editor.getHTML()).toContain('data-align="float-left" style="width: 50%"')
+
+    button('articles.editor.image.width:100').click()
+    expect(editor.getHTML()).not.toContain('style=')
+    expect(editor.state.selection).toBeInstanceOf(NodeSelection)
+
+    button('articles.editor.image.delete').click()
+    expect(editor.getHTML()).not.toContain('<figure')
+    image.unmount()
+    text.unmount()
   })
 })

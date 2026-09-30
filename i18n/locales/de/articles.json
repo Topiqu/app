@@ -954,6 +954,26 @@
         "ai": "KI",
         "checks": "Prüfung"
       }
+      },
+      "image": {
+        "toolbar": "Bildwerkzeuge",
+        "details": "Bilddetails",
+        "altButton": "Alt-Text",
+        "alt": "Alternativtext",
+        "altHint": "Beschreiben Sie, was das Bild zeigt, für Leser, die es nicht sehen können. Nur bei rein dekorativen Bildern leer lassen.",
+        "altMissing": "Alt-Text fehlt",
+        "title": "Titel (Tooltip)",
+        "link": "Link",
+        "linkInvalid": "Geben Sie eine Webadresse ein, die mit https:// beginnt",
+        "saveDefaultAlt": "Auch als Standard-Alt-Text in der Mediathek speichern",
+        "defaultAltSaved": "Standard-Alt-Text in der Mediathek gespeichert",
+        "defaultAltFailed": "Der Alt-Text konnte nicht in der Mediathek gespeichert werden",
+        "width": "Breite {width} %",
+        "floatLeft": "Links, Text umfließt",
+        "floatRight": "Rechts, Text umfließt",
+        "replace": "Aus der Mediathek ersetzen",
+        "delete": "Bild löschen",
+        "captionPlaceholder": "Bildunterschrift hinzufügen…"
     },
     "image": {
       "illustration": "Illustrationsbild",
