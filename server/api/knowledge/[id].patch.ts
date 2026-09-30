@@ -31,6 +31,9 @@ export default defineEventHandler(async (event) => {
   if (!current) throw createError({ statusCode: 404, statusMessage: 'Knowledge source not found' })
   if (body.text !== undefined && current.kind !== 'NOTE')
     throw createError({ statusCode: 400, statusMessage: 'Only notes can be edited in place' })
+  // A feed's links and dates are its products' own; a source-level override would misdate them.
+  if (current.kind === 'FEED' && (body.publicUrl !== undefined || body.validAsOf !== undefined))
+    throw createError({ statusCode: 400, statusMessage: 'A feed has no public URL or validity date' })
 
   const content = body.text === undefined ? undefined : normalizeKnowledgeText(body.text)
   const contentChanged = content !== undefined && hashKnowledge(content) !== current.contentHash

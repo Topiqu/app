@@ -16,12 +16,14 @@
           <UFormField v-if="textChanged" name="confirmed">
             <UCheckbox v-model="confirmed" required :label="$t('knowledge.consent.confirm')" />
           </UFormField>
-          <UFormField :label="$t('knowledge.fields.validAsOf')" :hint="$t('knowledge.fields.validAsOfHint')">
-            <AppDateInput v-model="form.validAsOf" :max="today" />
-          </UFormField>
-          <UFormField :label="$t('knowledge.fields.publicUrl')" :hint="$t('knowledge.fields.publicUrlHint')">
-            <UInput v-model="form.publicUrl" type="url" class="w-full" placeholder="https://" />
-          </UFormField>
+          <template v-if="!isFeed">
+            <UFormField :label="$t('knowledge.fields.validAsOf')" :hint="$t('knowledge.fields.validAsOfHint')">
+              <AppDateInput v-model="form.validAsOf" :max="today" />
+            </UFormField>
+            <UFormField :label="$t('knowledge.fields.publicUrl')" :hint="$t('knowledge.fields.publicUrlHint')">
+              <UInput v-model="form.publicUrl" type="url" class="w-full" placeholder="https://" />
+            </UFormField>
+          </template>
         </form>
 
         <section v-if="chunks.length" :aria-labelledby="passagesId">
@@ -69,6 +71,7 @@ const today = new Date().toISOString().slice(0, 10)
 const loading = shallowRef(false)
 const saving = shallowRef(false)
 const isNote = shallowRef(false)
+const isFeed = shallowRef(false)
 type Chunk = { ordinal: number; content: string }
 type Detail = {
   source: { kind: string; title: string; content: string | null; publicUrl: string | null; validAsOf: string | null }
@@ -87,6 +90,7 @@ watch([open, () => props.id], async ([value, id]) => {
   try {
     const { source, chunks: preview } = await $fetch<Detail>(`/api/knowledge/${id}`)
     isNote.value = source.kind === 'NOTE'
+    isFeed.value = source.kind === 'FEED'
     loadedText.value = source.content ?? ''
     confirmed.value = false
     chunks.value = preview
@@ -111,8 +115,8 @@ const save = async () => {
       method: 'PATCH',
       body: {
         title: form.title.trim(),
-        publicUrl: form.publicUrl.trim() || null,
-        validAsOf: form.validAsOf || null,
+        // A feed links and dates each product itself.
+        ...(isFeed.value ? {} : { publicUrl: form.publicUrl.trim() || null, validAsOf: form.validAsOf || null }),
         ...(textChanged.value ? { text: form.text, confirmed: true } : {}),
       },
     })

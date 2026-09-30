@@ -3,7 +3,7 @@ import { KNOWLEDGE_LIMITS, type KnowledgeFileExtension } from '~~/shared/utils/k
 import { extractReadableSource } from '../factCheckSources'
 import { fetchPublicUrl, readLimitedBody } from '../images/publicFetch'
 
-export type KnowledgeExtractErrorCode = 'unsupported' | 'empty' | 'tooLarge' | 'unreachable'
+export type KnowledgeExtractErrorCode = 'unsupported' | 'empty' | 'tooLarge' | 'unreachable' | 'notFeed'
 
 export class KnowledgeExtractError extends Error {
   constructor(readonly code: KnowledgeExtractErrorCode) {

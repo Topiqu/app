@@ -11,6 +11,7 @@
     "empty": "Noch keine Wissensquellen",
     "emptyDescription": "Füge Produktfakten, Preise, Fallstudien oder freigegebene Vergleiche hinzu, damit generierte Artikel deine Angaben korrekt wiedergeben.",
     "chunks": "keine Textabschnitte | {n} Textabschnitt | {n} Textabschnitte",
+    "products": "keine Produkte | {n} Produkt | {n} Produkte",
     "failed": "Indexierung fehlgeschlagen. Versuche es erneut oder ersetze die Quelle.",
     "useInArticles": "Beim Schreiben verwenden",
     "useInArticlesFor": "{title} beim Schreiben verwenden",
@@ -37,8 +38,14 @@
     "saved": "Quelle gespeichert",
     "save": "Speichern",
     "cancel": "Abbrechen",
-    "kinds": { "NOTE": "Notiz", "FILE": "Dokument", "URL": "Webseite", "SITEMAP": "Seiten einer Website" },
-    "addKinds": { "NOTE": "Text", "FILE": "Dokument", "URL": "Web" },
+    "kinds": {
+      "NOTE": "Notiz",
+      "FILE": "Dokument",
+      "URL": "Webseite",
+      "SITEMAP": "Seiten einer Website",
+      "FEED": "Shop-Produkte"
+    },
+    "addKinds": { "NOTE": "Text", "FILE": "Dokument", "URL": "Web", "FEED": "Shop" },
     "web": {
       "scope": "Was soll hinzugefügt werden?",
       "page": "Nur diese Seite",
@@ -78,7 +85,7 @@
       "quota": "Deine Wissensbasis ist voll. Lösche eine Quelle, bevor du eine weitere hinzufügst.",
       "sitemapEmpty": "Auf dieser Website wurden keine neuen Seiten zum Hinzufügen gefunden."
     },
-    "quota": "{sources} von {maxSources} Quellen · {characters} von {maxCharacters} Zeichen",
+    "quota": "{sources} von {maxSources} Quellen · {characters} von {maxCharacters} Zeichen · {products} von {maxProducts} Produkten",
     "stale": "Möglicherweise veraltet",
     "asOf": "Gültig ab",
     "usage": "noch nicht verwendet | einmal verwendet, zuletzt | {n}-mal verwendet, zuletzt",
@@ -117,6 +124,27 @@
       "usePublic": "Die KI darf Fakten und Zahlen aus dieser Quelle in veröffentlichten Artikeln verwenden und sie als Quelle verlinken.",
       "processing": "Der Inhalt wird beim Hinzufügen, bei Änderungen und beim Schreiben von Artikeln durch einen externen KI-Anbieter (OpenAI) verarbeitet. Wir speichern nur den extrahierten Text, bis du die Quelle löschst.",
       "confirm": "Ich bestätige, dass diese Quelle keine vertraulichen Informationen, Geschäftsgeheimnisse oder personenbezogenen Daten enthält, die nicht in einem öffentlichen Artikel erscheinen dürfen."
+    },
+    "feed": {
+      "url": "Link zum Produktfeed",
+      "urlHint": "XML für Google Shopping oder Heureka",
+      "where": "Wo finde ich ihn?",
+      "whereBuiltIn": "Shopware und ähnliche: in der Verwaltung bei den Exporten für Google Shopping.",
+      "wherePlugin": "WooCommerce, Shopify: über ein Plugin oder eine App für Produktfeeds.",
+      "language": "Sprache des Shops",
+      "languageHint": "Nur in Artikeln dieser Sprache verwendet.",
+      "currency": "Währung",
+      "currencyHint": "Falls der Feed keine angibt.",
+      "verify": "Feed prüfen",
+      "planLimit": "Tariflimit: {count}.",
+      "errors": {
+        "unreachable": "Der Feed konnte nicht geladen werden. Prüfe den Link.",
+        "tooLarge": "Der Feed ist größer als 50 MB.",
+        "notFeed": "Unter diesem Link liegt kein Feed für Google Shopping oder Heureka.",
+        "empty": "Der Feed enthält keine verwendbaren Produkte (ID, Name oder https-Link fehlt)."
+      },
+      "skipped": "Kein Eintrag übersprungen | 1 Feed-Eintrag übersprungen (ID, Name oder https-Link fehlt) | {n} Feed-Einträge übersprungen (ID, Name oder https-Link fehlt)",
+      "truncated": "Kein Produkt über dem Limit | 1 Produkt wegen deines Tariflimits nicht übernommen | {n} Produkte wegen deines Tariflimits nicht übernommen"
     }
   }
 }

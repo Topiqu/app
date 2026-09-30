@@ -7,7 +7,7 @@ import {
   requireKnowledgeAccess,
 } from '~~/server/utils/knowledge/sources'
 
-/** Re-fetches a URL source (re-embedding only when its text changed) or retries a failed index. */
+/** Re-fetches a URL source or feed (re-embedding only what changed) or retries a failed index. */
 export default defineEventHandler(async (event) => {
   const { user, clientSiteId, db } = await requireKnowledgeAccess(event)
   await requireAiPlan(clientSiteId, 'Knowledge requires an AI plan')
@@ -30,7 +30,8 @@ export default defineEventHandler(async (event) => {
       throw await knowledgeExtractFailure(event, error)
     }
   }
-  if (!changed && source.status === 'FAILED')
+  // A feed is fetched by the sync itself, which the kick below starts.
+  if (source.kind === 'FEED' || (!changed && source.status === 'FAILED'))
     await db.knowledgeSource.update({ where: { id: source.id }, data: { status: 'PENDING', attempts: 0, error: null } })
 
   await logAction({

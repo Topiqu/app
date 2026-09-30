@@ -11,6 +11,7 @@
     "empty": "Aucune source pour le moment",
     "emptyDescription": "Ajoutez des faits sur vos produits, des tarifs, des études de cas ou des comparaisons approuvées pour que les articles générés reflètent fidèlement vos informations.",
     "chunks": "aucun passage | {n} passage | {n} passages",
+    "products": "aucun produit | {n} produit | {n} produits",
     "failed": "L'indexation a échoué. Réessayez ou remplacez la source.",
     "useInArticles": "Utiliser lors de la rédaction",
     "useInArticlesFor": "Utiliser {title} lors de la rédaction",
@@ -40,8 +41,14 @@
     "saved": "Source enregistrée",
     "save": "Enregistrer",
     "cancel": "Annuler",
-    "kinds": { "NOTE": "Note", "FILE": "Document", "URL": "Page web", "SITEMAP": "Pages d'un site web" },
-    "addKinds": { "NOTE": "Texte", "FILE": "Document", "URL": "Web" },
+    "kinds": {
+      "NOTE": "Note",
+      "FILE": "Document",
+      "URL": "Page web",
+      "SITEMAP": "Pages d'un site web",
+      "FEED": "Produits de la boutique"
+    },
+    "addKinds": { "NOTE": "Texte", "FILE": "Document", "URL": "Web", "FEED": "Boutique" },
     "web": {
       "scope": "Éléments à ajouter",
       "page": "Cette page uniquement",
@@ -76,7 +83,7 @@
       "quota": "Votre base de connaissances est pleine. Supprimez une source pour en ajouter une autre.",
       "sitemapEmpty": "Nous n'avons trouvé aucune nouvelle page à ajouter sur ce site."
     },
-    "quota": "{sources} sources sur {maxSources} · {characters} caractères sur {maxCharacters}",
+    "quota": "{sources} sources sur {maxSources} · {characters} caractères sur {maxCharacters} · {products} produits sur {maxProducts}",
     "stale": "Peut-être obsolète",
     "asOf": "Valable au",
     "usage": "jamais utilisée | utilisée une fois, dernière fois | utilisée {n} fois, dernière fois",
@@ -115,6 +122,27 @@
       "usePublic": "L'IA peut utiliser les faits et chiffres de cette source dans vos articles publiés et créer un lien vers elle comme source.",
       "processing": "Le contenu est traité par un fournisseur d'IA externe (OpenAI) lors de son ajout, de chaque modification et de la rédaction des articles. Nous ne conservons que le texte extrait, jusqu'à ce que vous supprimiez la source.",
       "confirm": "Je confirme que cette source ne contient aucune information confidentielle, aucun secret commercial ni aucune donnée personnelle qui ne doivent pas apparaître dans un article public."
+    },
+    "feed": {
+      "url": "Lien du flux produits",
+      "urlHint": "XML Google Shopping ou Heureka",
+      "where": "Où le trouver ?",
+      "whereBuiltIn": "La plupart des plateformes : dans l'administration, parmi les exports pour Google Shopping.",
+      "wherePlugin": "WooCommerce, PrestaShop, Shopify : via un module ou une application de flux produits.",
+      "language": "Langue de la boutique",
+      "languageHint": "Utilisé seulement dans les articles de cette langue.",
+      "currency": "Devise",
+      "currencyHint": "Si le flux ne l'indique pas.",
+      "verify": "Vérifier le flux",
+      "planLimit": "Limite de l'offre : {count}.",
+      "errors": {
+        "unreachable": "Impossible de télécharger le flux. Vérifiez le lien.",
+        "tooLarge": "Le flux dépasse 50 Mo.",
+        "notFeed": "Ce lien n'est pas un flux Google Shopping ou Heureka.",
+        "empty": "Le flux ne contient aucun produit exploitable (ID, nom ou lien https manquant)."
+      },
+      "skipped": "Aucune entrée ignorée | 1 entrée du flux ignorée (ID, nom ou lien https manquant) | {n} entrées du flux ignorées (ID, nom ou lien https manquant)",
+      "truncated": "Aucun produit au-delà de la limite | 1 produit écarté par la limite de votre offre | {n} produits écartés par la limite de votre offre"
     }
   }
 }

@@ -25,6 +25,50 @@
             class="min-h-36 w-full"
           />
         </template>
+        <template v-else-if="kind === 'FEED'">
+          <UFormField :label="$t('knowledge.feed.url')" :hint="$t('knowledge.feed.urlHint')" required>
+            <UInput
+              v-model="form.url"
+              type="text"
+              inputmode="url"
+              class="w-full"
+              placeholder="https://"
+              required
+              :disabled="saving"
+              @blur="form.url = normalizeSourceUrl(form.url)"
+            />
+          </UFormField>
+          <details class="group -mt-2 text-sm">
+            <summary
+              class="inline-flex cursor-pointer list-none items-center gap-1 text-muted hover:text-highlighted [&::-webkit-details-marker]:hidden"
+            >
+              <UIcon name="mdi:help-circle-outline" class="size-4" aria-hidden="true" />
+              {{ $t('knowledge.feed.where') }}
+            </summary>
+            <ul class="mt-2 flex list-disc flex-col gap-1 pl-5 text-muted">
+              <li>{{ $t('knowledge.feed.whereBuiltIn') }}</li>
+              <li>{{ $t('knowledge.feed.wherePlugin') }}</li>
+            </ul>
+          </details>
+          <div class="grid gap-4 sm:grid-cols-2">
+            <UFormField :label="$t('knowledge.feed.language')" :help="$t('knowledge.feed.languageHint')" required>
+              <USelect v-model="form.language" :items="locales" class="w-full" />
+            </UFormField>
+            <UFormField :label="$t('knowledge.feed.currency')" :help="$t('knowledge.feed.currencyHint')" required>
+              <USelectMenu v-model="form.currency" :items="[...KNOWLEDGE_CURRENCIES]" class="w-full" />
+            </UFormField>
+          </div>
+          <p v-if="feedPreview" class="flex items-start gap-2 text-sm" aria-live="polite">
+            <UIcon name="mdi:check-circle" class="mt-0.5 size-4 shrink-0 text-success" aria-hidden="true" />
+            <span class="min-w-0">
+              <span class="font-semibold text-highlighted">{{ $t('knowledge.products', feedPreview.found) }}</span>
+              <span v-if="feedPreview.sample.length" class="text-muted"> · {{ feedPreview.sample.join(', ') }}</span>
+              <span v-if="feedPreview.fits < feedPreview.found" class="block text-xs text-muted">
+                {{ $t('knowledge.feed.planLimit', { count: feedPreview.fits }) }}
+              </span>
+            </span>
+          </p>
+        </template>
         <template v-else>
           <UFormField :label="$t('knowledge.fields.url')" required>
             <UInput
@@ -71,6 +115,7 @@
         </template>
 
         <AddSourceSettings
+          v-if="kind !== 'FEED'"
           v-model:title="form.title"
           v-model:validAsOf="form.validAsOf"
           v-model:isPublic="form.isPublic"
@@ -83,7 +128,11 @@
     </template>
     <template #footer>
       <div class="flex w-full flex-col gap-3 sm:flex-row sm:items-center">
-        <AddSourceConsent v-model:confirmed="form.confirmed" :isPublic="form.isPublic" class="sm:flex-1" />
+        <AddSourceConsent
+          v-model:confirmed="form.confirmed"
+          :isPublic="form.isPublic || kind === 'FEED'"
+          class="sm:flex-1"
+        />
         <div class="flex justify-end gap-2">
           <UButton color="neutral" variant="ghost" @click="open = false">{{ $t('knowledge.cancel') }}</UButton>
           <UButton
@@ -101,7 +150,8 @@
 </template>
 
 <script setup lang="ts">
-import { KNOWLEDGE_LIMITS } from '~~/shared/utils/knowledge'
+import { isLanguage, locales, type Language } from '~~/shared/utils/language'
+import { KNOWLEDGE_CURRENCIES, KNOWLEDGE_LIMITS } from '~~/shared/utils/knowledge'
 
 import AddSourceConsent from './AddSourceConsent.vue'
 import AddSourceSettings from './AddSourceSettings.vue'
@@ -110,13 +160,17 @@ const emit = defineEmits<{ created: [] }>()
 const open = defineModel<boolean>('open', { default: false })
 const { t } = useI18n()
 const toast = useToast()
+const clientSite = await useClientSite()
 
-type Kind = 'NOTE' | 'FILE' | 'URL'
+type Kind = 'NOTE' | 'FILE' | 'URL' | 'FEED'
 const kind = shallowRef<Kind>('NOTE')
 const webScope = shallowRef<'PAGE' | 'SITE'>('PAGE')
 const kindTabs = computed(() =>
-  (['NOTE', 'FILE', 'URL'] as const).map((value) => ({ value, label: t(`knowledge.addKinds.${value}`) })),
+  (['NOTE', 'FILE', 'URL', 'FEED'] as const).map((value) => ({ value, label: t(`knowledge.addKinds.${value}`) })),
 )
+// Only a starting point: Heureka feeds state no currency, so the author confirms it.
+const DEFAULT_CURRENCIES: Record<Language, string> = { cs: 'CZK', de: 'EUR', fr: 'EUR', en: 'USD' }
+const tenantLanguage: Language = isLanguage(clientSite?.language) ? clientSite.language : 'en'
 const webScopeItems = computed(() => [
   { value: 'PAGE', label: t('knowledge.web.page') },
   { value: 'SITE', label: t('knowledge.web.site') },
@@ -124,9 +178,21 @@ const webScopeItems = computed(() => [
 const progress = shallowRef<{ done: number; total: number } | null>(null)
 type Discovery = { urls: string[]; found: number; existing: number; quotaLeft: number }
 const discovered = shallowRef<Discovery | null>(null)
+type FeedPreview = { found: number; fits: number; sample: string[] }
+const feedPreview = shallowRef<FeedPreview | null>(null)
 const file = shallowRef<File | null>(null)
 const saving = shallowRef(false)
-const blank = () => ({ title: '', text: '', url: '', publicUrl: '', validAsOf: '', isPublic: false, confirmed: false })
+const blank = () => ({
+  title: '',
+  text: '',
+  url: '',
+  publicUrl: '',
+  validAsOf: '',
+  isPublic: false,
+  confirmed: false,
+  language: tenantLanguage,
+  currency: DEFAULT_CURRENCIES[tenantLanguage],
+})
 const today = new Date().toISOString().slice(0, 10)
 const form = reactive(blank())
 const maxSize = `${KNOWLEDGE_LIMITS.maxFileBytes / 1024 / 1024} MB`
@@ -138,9 +204,11 @@ watch(open, (value) => {
   kind.value = 'NOTE'
   webScope.value = 'PAGE'
   progress.value = null
-  discovered.value = null
 })
-watch([kind, webScope, () => form.url], () => (discovered.value = null))
+watch([open, kind, webScope, () => form.url], () => {
+  discovered.value = null
+  feedPreview.value = null
+})
 
 // The offer is capped, so say why it is smaller than the sitemap: otherwise 50 of 392 reads as
 // a 50-page sitemap.
@@ -152,6 +220,7 @@ const sitemapCapNote = computed(() => {
     : t('knowledge.sitemap.cappedByBatch', { count: KNOWLEDGE_LIMITS.maxSitemapPages })
 })
 const submitLabel = computed(() => {
+  if (kind.value === 'FEED') return feedPreview.value ? t('knowledge.add') : t('knowledge.feed.verify')
   if (kind.value !== 'URL' || webScope.value !== 'SITE') return t('knowledge.add')
   return discovered.value?.urls.length
     ? t('knowledge.sitemap.import', { count: discovered.value.urls.length })
@@ -227,6 +296,21 @@ const submit = async () => {
     }
     return
   }
+  // A feed is checked first, so a wrong link fails here rather than later in the list.
+  if (kind.value === 'FEED' && !feedPreview.value) {
+    saving.value = true
+    try {
+      feedPreview.value = await $fetch<FeedPreview>('/api/knowledge/feed', {
+        method: 'POST',
+        body: { url: normalizeSourceUrl(form.url), currency: form.currency },
+      })
+    } catch (cause: any) {
+      toast.add({ color: 'error', title: errorMessage(cause) })
+    } finally {
+      saving.value = false
+    }
+    return
+  }
   const body = new FormData()
   body.set('kind', kind.value)
   body.set('isPublic', String(form.isPublic))
@@ -234,7 +318,11 @@ const submit = async () => {
   if (form.title.trim()) body.set('title', form.title.trim())
   if (form.validAsOf) body.set('validAsOf', form.validAsOf)
   if (kind.value === 'NOTE') body.set('text', form.text)
-  if (kind.value === 'URL') body.set('url', normalizeSourceUrl(form.url))
+  if (kind.value === 'URL' || kind.value === 'FEED') body.set('url', normalizeSourceUrl(form.url))
+  if (kind.value === 'FEED') {
+    body.set('language', form.language)
+    body.set('currency', form.currency)
+  }
   if (kind.value === 'FILE' && file.value) body.set('file', file.value)
   if (form.isPublic && kind.value !== 'URL') body.set('publicUrl', form.publicUrl.trim())
 

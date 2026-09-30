@@ -14,6 +14,8 @@
               maxSources: limits.maxSources,
               characters: formatCount(limits.usage.characters),
               maxCharacters: formatCount(limits.maxCharacters),
+              products: formatCount(limits.usage.products),
+              maxProducts: formatCount(limits.maxProducts),
             })
           }}
         </p>
@@ -76,7 +78,9 @@
             </template>
             <template v-if="source.status === 'INDEXED'">
               <span aria-hidden="true">·</span>
-              <span>{{ $t('knowledge.chunks', source.chunkCount) }}</span>
+              <span>{{
+                $t(source.kind === 'FEED' ? 'knowledge.products' : 'knowledge.chunks', source.chunkCount)
+              }}</span>
             </template>
             <span aria-hidden="true">·</span>
             <span v-if="source.lastUsedAt">
@@ -85,8 +89,9 @@
             </span>
             <span v-else>{{ $t('knowledge.unused') }}</span>
           </p>
-          <p v-if="source.status === 'FAILED'" class="mt-1 text-xs text-error">{{ $t('knowledge.failed') }}</p>
+          <p v-if="source.status === 'FAILED'" class="mt-1 text-xs text-error">{{ failure(source) }}</p>
           <p v-else-if="source.error" class="mt-1 text-xs text-warning">{{ $t('knowledge.refreshFailed') }}</p>
+          <p v-if="feedNote(source)" class="mt-1 text-xs text-muted">{{ feedNote(source) }}</p>
         </div>
         <div class="flex shrink-0 items-center gap-2">
           <USwitch
@@ -115,7 +120,12 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
 
-import { isKnowledgeStale, knowledgeAsOf } from '~~/shared/utils/knowledge'
+import {
+  isKnowledgeStale,
+  knowledgeAsOf,
+  KNOWLEDGE_FEED_ERRORS,
+  type KnowledgeFeedReport,
+} from '~~/shared/utils/knowledge'
 
 definePageMeta({ middleware: 'admin', shell: 'dashboard' })
 useSeoMeta({ title: () => $t('knowledge.title') })
@@ -124,6 +134,7 @@ const KIND_ICONS = {
   NOTE: 'mdi:note-text-outline',
   FILE: 'mdi:file-document-outline',
   URL: 'mdi:link-variant',
+  FEED: 'mdi:storefront-outline',
 } as const
 const STATUS_COLORS = { PENDING: 'neutral', PROCESSING: 'warning', INDEXED: 'success', FAILED: 'error' } as const
 
@@ -144,6 +155,26 @@ const formatCount = (value: number) =>
 type Source = (typeof sources.value)[number]
 
 const isStale = (source: Source) => isKnowledgeStale(knowledgeAsOf(source))
+
+const failure = (source: Source) =>
+  source.kind === 'FEED' && KNOWLEDGE_FEED_ERRORS.some((code) => code === source.error)
+    ? t(`knowledge.feed.errors.${source.error}`)
+    : t('knowledge.failed')
+
+// What the last sync left out, so a short catalog is not a mystery.
+const feedNote = (source: Source) => {
+  const report = source.syncReport as KnowledgeFeedReport | null
+  if (source.kind !== 'FEED' || !report) return null
+  const skipped = Object.values(report.skipped).reduce((sum, count) => sum + (count ?? 0), 0)
+  return (
+    [
+      skipped && t('knowledge.feed.skipped', skipped),
+      report.truncated && t('knowledge.feed.truncated', report.truncated),
+    ]
+      .filter(Boolean)
+      .join(' · ') || null
+  )
+}
 const openEdit = (id: string) => {
   editId.value = id
   editOpen.value = true
@@ -190,10 +221,10 @@ const actions = (source: Source): DropdownMenuItem[][] => [
       icon: 'mdi:pencil-outline',
       onSelect: () => openEdit(source.id),
     },
-    ...(source.kind === 'URL' || source.status === 'FAILED'
+    ...(source.kind === 'URL' || source.kind === 'FEED' || source.status === 'FAILED'
       ? [
           {
-            label: t(source.kind === 'URL' ? 'knowledge.refresh' : 'knowledge.retry'),
+            label: t(source.kind === 'URL' || source.kind === 'FEED' ? 'knowledge.refresh' : 'knowledge.retry'),
             icon: 'mdi:refresh',
             disabled: source.status === 'PROCESSING',
             onSelect: () => run(() => $fetch<unknown>(`/api/knowledge/${source.id}/refresh`, { method: 'POST' })),

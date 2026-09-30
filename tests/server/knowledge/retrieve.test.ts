@@ -23,6 +23,10 @@ const candidate = (overrides: Partial<KnowledgeCandidate>): KnowledgeCandidate =
   similarity: 0.5,
   lexicalRank: null,
   score: 0.03,
+  productId: null,
+  price: null,
+  currency: null,
+  availability: null,
   ...overrides,
 })
 
@@ -95,6 +99,33 @@ describe('knowledge retrieval', () => {
 
     expect(brief).toContain('"Old price list" · as of 2025-01-15 · STALE (older than 12 months)')
     expect(brief).toContain('"Live page" · as of 2026-09-20 · internal')
+  })
+
+  it('caps a feed per product, not per feed', () => {
+    const shortlist = shortlistKnowledge(
+      Array.from({ length: 5 }, (_, index) => candidate({ id: `p${index}`, sourceId: 'feed', productId: `${index}` })),
+    )
+    expect(shortlist).toHaveLength(5)
+  })
+
+  it('gives a product its current price in the article language and its own page as the citation', () => {
+    const product = candidate({
+      title: 'Shop',
+      productId: 'knife',
+      publicUrl: 'https://shop.test/knife',
+      fetchedAt: new Date('2026-09-30'),
+      price: '1299.00',
+      currency: 'CZK',
+      availability: 'BACKORDER',
+    })
+    const price = new Intl.NumberFormat('cs', { style: 'currency', currency: 'CZK' }).format(1299)
+
+    expect(formatKnowledgeBrief([product], new Date('2026-09-30'), 'cs')).toContain(
+      `"Shop" · as of 2026-09-30 · product · from ${price} · available to order · citable: https://shop.test/knife`,
+    )
+    expect(formatKnowledgeBrief([{ ...product, price: null }], new Date('2026-09-30'), 'cs')).toContain(
+      '· product · available to order · citable:',
+    )
   })
 
   it('groups used chunks by source for the generation audit', () => {

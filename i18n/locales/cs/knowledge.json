@@ -11,6 +11,7 @@
     "empty": "Zatím žádné znalosti",
     "emptyDescription": "Přidejte fakta o produktu, ceník, případové studie nebo schválená srovnání, aby generované články měly vaše údaje správně.",
     "chunks": "žádná pasáž | {n} pasáž | {n} pasáže | {n} pasáží",
+    "products": "žádný produkt | {n} produkt | {n} produkty | {n} produktů",
     "failed": "Indexace selhala. Zkuste to znovu nebo zdroj nahraďte.",
     "useInArticles": "Používat při psaní",
     "useInArticlesFor": "Používat {title} při psaní",
@@ -47,12 +48,14 @@
       "NOTE": "Poznámka",
       "FILE": "Dokument",
       "URL": "Webová stránka",
-      "SITEMAP": "Stránky z webu"
+      "SITEMAP": "Stránky z webu",
+      "FEED": "Produkty z e-shopu"
     },
     "addKinds": {
       "NOTE": "Text",
       "FILE": "Dokument",
-      "URL": "Web"
+      "URL": "Web",
+      "FEED": "E-shop"
     },
     "web": {
       "scope": "Co přidat",
@@ -93,7 +96,7 @@
       "quota": "Znalosti jsou plné. Smažte nějaký zdroj, abyste mohli přidat další.",
       "sitemapEmpty": "Na tomto webu jsme nenašli žádné nové stránky k přidání."
     },
-    "quota": "{sources} z {maxSources} zdrojů · {characters} z {maxCharacters} znaků",
+    "quota": "{sources} z {maxSources} zdrojů · {characters} z {maxCharacters} znaků · {products} z {maxProducts} produktů",
     "stale": "Možná zastaralé",
     "asOf": "Platné k",
     "usage": "zatím nepoužito | použito jednou, naposledy | použito {n}×, naposledy | použito {n}×, naposledy",
@@ -132,6 +135,27 @@
       "usePublic": "Informace a čísla z podkladu může AI použít ve vašich publikovaných článcích a může na něj odkazovat jako na zdroj.",
       "processing": "Obsah zpracovává externí poskytovatel AI (OpenAI) při nahrání, při každé změně a při psaní článků. Ukládáme jen extrahovaný text, a to do smazání zdroje.",
       "confirm": "Potvrzuji, že podklad neobsahuje důvěrné informace, obchodní tajemství ani osobní údaje, které se nesmí objevit ve veřejném článku."
+    },
+    "feed": {
+      "url": "Odkaz na produktový feed",
+      "urlHint": "XML pro Heureku nebo Google Nákupy",
+      "where": "Kde ho najdu?",
+      "whereBuiltIn": "Shoptet, Upgates a podobné: v administraci u exportů pro Heureku nebo Google Nákupy.",
+      "wherePlugin": "WooCommerce, Shopify: přes plugin nebo aplikaci pro produktový feed.",
+      "language": "Jazyk e-shopu",
+      "languageHint": "Použije se jen v článcích v tomto jazyce.",
+      "currency": "Měna",
+      "currencyHint": "Pokud ji feed neuvádí.",
+      "verify": "Ověřit feed",
+      "planLimit": "Limit tarifu: {count}.",
+      "errors": {
+        "unreachable": "Feed se nepodařilo stáhnout. Zkontrolujte odkaz.",
+        "tooLarge": "Feed je větší než 50 MB.",
+        "notFeed": "Na odkazu není feed pro Heureku ani Google Nákupy.",
+        "empty": "Ve feedu nejsou použitelné produkty (chybí ID, název nebo https odkaz)."
+      },
+      "skipped": "Žádná položka nepřeskočena | Přeskočena 1 položka feedu (chybí ID, název nebo https odkaz) | Přeskočeny {n} položky feedu (chybí ID, název nebo https odkaz) | Přeskočeno {n} položek feedu (chybí ID, název nebo https odkaz)",
+      "truncated": "Žádný produkt nad limit | 1 produkt se nevešel do limitu tarifu | {n} produkty se nevešly do limitu tarifu | {n} produktů se nevešlo do limitu tarifu"
     }
   }
 }

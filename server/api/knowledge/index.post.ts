@@ -1,5 +1,6 @@
 import { z } from 'zod'
-import { KNOWLEDGE_CONSENT_VERSION, KNOWLEDGE_LIMITS } from '~~/shared/utils/knowledge'
+import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
+import { KNOWLEDGE_CONSENT_VERSION, KNOWLEDGE_CURRENCIES, KNOWLEDGE_LIMITS } from '~~/shared/utils/knowledge'
 import {
   extractKnowledgeFile,
   extractKnowledgeUrl,
@@ -26,6 +27,17 @@ const FieldsSchema = z.discriminatedUnion('kind', [
     kind: z.literal('URL'),
     title: z.string().trim().max(200).optional(),
     url: z.string().trim().url().max(2048),
+  }),
+  z.object({
+    kind: z.literal('FEED'),
+    title: z.string().trim().max(200).optional(),
+    url: z.string().trim().url().max(2048),
+    language: z.enum(LANGUAGE_OPTIONS),
+    currency: z
+      .string()
+      .trim()
+      .toUpperCase()
+      .refine((code) => KNOWLEDGE_CURRENCIES.includes(code)),
   }),
 ])
 
@@ -55,7 +67,18 @@ export default defineEventHandler(async (event) => {
   // article and is processed by the AI provider. The audit row below is the record of it.
   if (text('confirmed') !== 'true')
     throw createError({ statusCode: 400, statusMessage: 'Confirmation required', data: { code: 'KNOWLEDGE_CONSENT' } })
-  const fieldNames = ['kind', 'title', 'text', 'url', 'useInArticles', 'isPublic', 'publicUrl', 'validAsOf']
+  const fieldNames = [
+    'kind',
+    'title',
+    'text',
+    'url',
+    'language',
+    'currency',
+    'useInArticles',
+    'isPublic',
+    'publicUrl',
+    'validAsOf',
+  ]
   const raw = Object.fromEntries(fieldNames.map((name) => [name, text(name) || undefined]))
   const fields = FieldsSchema.safeParse(raw)
   const options = OptionsSchema.safeParse(raw)
@@ -78,15 +101,28 @@ export default defineEventHandler(async (event) => {
       originalFilename = file.filename!.split(/[/\\]/).pop()!.slice(0, 255)
       sizeBytes = file.data.byteLength
       extracted = await extractKnowledgeFile(new Uint8Array(file.data), originalFilename)
-    } else {
+    } else if (input.kind === 'URL') {
       sourceUrl = await assertCitableUrl(input.url)
       extracted = await extractKnowledgeUrl(sourceUrl)
+    } else {
+      if (limits.usage.products >= limits.maxProducts)
+        throw createError({
+          statusCode: 409,
+          statusMessage: 'Knowledge quota reached',
+          data: { code: 'KNOWLEDGE_QUOTA' },
+        })
+      // The background sync fetches the feed: it can be tens of megabytes. The host, not the URL,
+      // titles it, because feed URLs often carry an access token.
+      sourceUrl = await assertCitableUrl(input.url)
+      extracted = { title: new URL(sourceUrl).hostname, content: '', mimeType: 'application/xml' }
     }
   } catch (error) {
     throw await knowledgeExtractFailure(event, error)
   }
 
-  const { isPublic, useInArticles } = options.data
+  const { useInArticles } = options.data
+  // Feed products are citable through their own page URLs; the feed itself never is.
+  const isPublic = options.data.isPublic && input.kind !== 'FEED'
   const publicUrl = !isPublic
     ? null
     : input.kind === 'URL'
@@ -100,9 +136,13 @@ export default defineEventHandler(async (event) => {
   if (limits.usage.characters + extracted.content.length > limits.maxCharacters)
     throw createError({ statusCode: 409, statusMessage: 'Knowledge quota reached', data: { code: 'KNOWLEDGE_QUOTA' } })
 
-  const contentHash = hashKnowledge(extracted.content)
+  // Every feed starts empty, so a feed is a duplicate by its address; the sync replaces this hash.
+  const contentHash = hashKnowledge(input.kind === 'FEED' ? sourceUrl! : extracted.content)
   const duplicate = await db.knowledgeSource.findFirst({
-    where: { clientSiteId, contentHash, deletedAt: null },
+    where:
+      input.kind === 'FEED'
+        ? { clientSiteId, kind: 'FEED', sourceUrl, deletedAt: null }
+        : { clientSiteId, contentHash, deletedAt: null },
     select: { id: true },
   })
   if (duplicate)
@@ -126,8 +166,12 @@ export default defineEventHandler(async (event) => {
       sizeBytes,
       content: extracted.content,
       contentHash,
-      validAsOf: options.data.validAsOf ? new Date(options.data.validAsOf) : (extracted.validAsOf ?? null),
-      fetchedAt: sourceUrl ? new Date() : null,
+      ...(input.kind === 'FEED'
+        ? { language: input.language, currency: input.currency }
+        : {
+            validAsOf: options.data.validAsOf ? new Date(options.data.validAsOf) : (extracted.validAsOf ?? null),
+            fetchedAt: sourceUrl ? new Date() : null,
+          }),
     },
     select: KNOWLEDGE_SOURCE_VIEW,
   })

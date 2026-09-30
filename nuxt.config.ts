@@ -133,7 +133,7 @@ export default defineNuxtConfig({
           '0 4 * * *': ['gam-sync'],
           '15 4 * * *': ['grant-annual-article-credits'],
           '30 4 * * *': ['media-gc'],
-          '45 3 * * *': ['knowledge-refresh'],
+          '45 * * * *': ['knowledge-refresh'],
           '0 5 * * *': ['ai-visibility-monitor'],
         }
       : undefined,

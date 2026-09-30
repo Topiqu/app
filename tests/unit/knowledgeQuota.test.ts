@@ -8,6 +8,9 @@ describe('knowledge quotas and freshness', () => {
     expect(knowledgeQuota(undefined).maxSources).toBe(0)
     expect(knowledgeQuota('PRO').maxSources).toBeLessThan(knowledgeQuota('PREMIUM').maxSources)
     expect(knowledgeQuota('PREMIUM').maxCharacters).toBeLessThan(knowledgeQuota('CUSTOM').maxCharacters)
+    expect(knowledgeQuota('BASIC').maxProducts).toBe(0)
+    expect(knowledgeQuota('PRO').maxProducts).toBeLessThan(knowledgeQuota('PREMIUM').maxProducts)
+    expect(knowledgeQuota('PREMIUM').maxProducts).toBeLessThan(knowledgeQuota('CUSTOM').maxProducts)
   })
 
   it('prefers the explicit validity date, then the last fetch, then indexing', () => {

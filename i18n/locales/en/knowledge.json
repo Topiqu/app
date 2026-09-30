@@ -11,6 +11,7 @@
     "empty": "No knowledge yet",
     "emptyDescription": "Add product facts, pricing, case studies or approved comparisons so generated articles get your own details right.",
     "chunks": "no passages | {n} passage | {n} passages",
+    "products": "no products | {n} product | {n} products",
     "failed": "Indexing failed. Try again or replace the source.",
     "useInArticles": "Use when writing",
     "useInArticlesFor": "Use {title} when writing",
@@ -47,12 +48,14 @@
       "NOTE": "Note",
       "FILE": "Document",
       "URL": "Web page",
-      "SITEMAP": "Pages from a website"
+      "SITEMAP": "Pages from a website",
+      "FEED": "Shop products"
     },
     "addKinds": {
       "NOTE": "Text",
       "FILE": "Document",
-      "URL": "Web"
+      "URL": "Web",
+      "FEED": "Shop"
     },
     "web": {
       "scope": "What to add",
@@ -93,7 +96,7 @@
       "quota": "Your knowledge base is full. Delete a source to add another.",
       "sitemapEmpty": "We could not find any new pages to add from this website."
     },
-    "quota": "{sources} of {maxSources} sources · {characters} of {maxCharacters} characters",
+    "quota": "{sources} of {maxSources} sources · {characters} of {maxCharacters} characters · {products} of {maxProducts} products",
     "stale": "Possibly outdated",
     "asOf": "Valid as of",
     "usage": "not used yet | used once, last | used {n} times, last",
@@ -132,6 +135,27 @@
       "usePublic": "AI may use the facts and figures in this source in your published articles and may link to it as a source.",
       "processing": "The content is processed by an external AI provider (OpenAI) when it is added, whenever it changes and when articles are written. We keep only the extracted text, until you delete the source.",
       "confirm": "I confirm this source contains no confidential information, trade secrets or personal data that must not appear in a public article."
+    },
+    "feed": {
+      "url": "Product feed link",
+      "urlHint": "Google Shopping or Heureka XML",
+      "where": "Where do I find it?",
+      "whereBuiltIn": "Most shop platforms: in the admin, under exports for Google Shopping or Heureka.",
+      "wherePlugin": "WooCommerce, Shopify: through a product feed plugin or app.",
+      "language": "Shop language",
+      "languageHint": "Used only in articles in this language.",
+      "currency": "Currency",
+      "currencyHint": "If the feed does not state it.",
+      "verify": "Check feed",
+      "planLimit": "Your plan fits {count}.",
+      "errors": {
+        "unreachable": "The feed could not be downloaded. Check the link.",
+        "tooLarge": "The feed is larger than 50 MB.",
+        "notFeed": "This link is not a Heureka or Google Shopping feed.",
+        "empty": "The feed has no usable products (missing ID, name or https link)."
+      },
+      "skipped": "No entry skipped | 1 feed entry skipped (missing ID, name or https link) | {n} feed entries skipped (missing ID, name or https link)",
+      "truncated": "No product over the limit | 1 product left out by your plan limit | {n} products left out by your plan limit"
     }
   }
 }

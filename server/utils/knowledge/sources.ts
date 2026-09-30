@@ -26,6 +26,9 @@ export const KNOWLEDGE_SOURCE_VIEW = {
   fetchedAt: true,
   usageCount: true,
   lastUsedAt: true,
+  language: true,
+  currency: true,
+  syncReport: true,
   createdAt: true,
   updatedAt: true,
 } as const
@@ -51,10 +54,11 @@ export const limitKnowledgeRequests = async (event: H3Event, clientSiteId: strin
 }
 
 const knowledgeUsage = async (clientSiteId: string) => {
-  const [row] = await prisma.$queryRaw<{ sources: number; characters: number }[]>`
-    SELECT count(*)::int AS sources, COALESCE(sum(length("content")), 0)::int AS characters
+  const [row] = await prisma.$queryRaw<{ sources: number; characters: number; products: number }[]>`
+    SELECT count(*)::int AS sources, COALESCE(sum(length("content")), 0)::int AS characters,
+           (SELECT count(*)::int FROM "KnowledgeProduct" WHERE "clientSiteId" = ${clientSiteId}) AS products
     FROM "KnowledgeSource" WHERE "clientSiteId" = ${clientSiteId} AND "deletedAt" IS NULL`
-  return row ?? { sources: 0, characters: 0 }
+  return row ?? { sources: 0, characters: 0, products: 0 }
 }
 
 export const knowledgeLimits = async (clientSiteId: string) => {
@@ -75,10 +79,11 @@ export const assertCitableUrl = async (url: string) => {
   }
 }
 
-export const knowledgeExtractFailure = async (event: H3Event, error: unknown) => {
+/** `messages` is the i18n group: feeds fail for other reasons than documents do. */
+export const knowledgeExtractFailure = async (event: H3Event, error: unknown, messages = 'knowledge.errors') => {
   if (!(error instanceof KnowledgeExtractError)) return error
   const { translate: t } = await useServerI18n(event)
-  return createError({ statusCode: 422, message: t(`knowledge.errors.${error.code}`) || error.message })
+  return createError({ statusCode: 422, message: t(`${messages}.${error.code}`) || error.message })
 }
 
 /** Starts indexing right away instead of waiting up to five minutes for the cron; the cron stays the safety net. */
