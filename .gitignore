@@ -37,3 +37,6 @@ logs
 CONVENTIONS.md
 # Playwright CLI output (may contain credentials)
 .playwright-cli/
+
+# Shopify CLI cache
+.shopify/

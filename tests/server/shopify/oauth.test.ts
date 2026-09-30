@@ -213,3 +213,58 @@ describe('Shopify authorization account binding', () => {
     expect(cookie).not.toHaveBeenCalled()
   })
 })
+
+describe('Shopify-initiated install', () => {
+  let query: Record<string, string>
+  const cookie = vi.fn()
+  const sign = () => {
+    const message = Object.keys(query)
+      .filter((key) => key !== 'hmac')
+      .sort()
+      .map((key) => `${key}=${query[key]}`)
+      .join('&')
+    query.hmac = createHmac('sha256', 'secret').update(message).digest('hex')
+  }
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.stubEnv('APP_URL', 'https://app.topiqu.com')
+    vi.stubEnv('SHOPIFY_CLIENT_ID', 'client')
+    vi.stubEnv('SHOPIFY_CLIENT_SECRET', 'secret')
+    vi.stubEnv('SHOPIFY_ENCRYPTION_KEY', Buffer.alloc(32, 7).toString('base64'))
+    vi.stubGlobal('defineEventHandler', (handler: unknown) => handler)
+    vi.stubGlobal('createError', createError)
+    vi.stubGlobal('getQuery', () => query)
+    vi.stubGlobal('getCookie', () => 'cs')
+    vi.stubGlobal('setCookie', cookie)
+    vi.stubGlobal('setHeader', vi.fn())
+    vi.stubGlobal('sendRedirect', (_event: unknown, url: string) => url)
+    query = { host: 'YWRtaW4', shop: 'store.myshopify.com', timestamp: String(Math.floor(Date.now() / 1000)) }
+    sign()
+  })
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    vi.unstubAllEnvs()
+  })
+  const run = async () => (await import('../../../server/api/shopify/install.get')).default({} as never)
+
+  it('remembers the signed store and opens the integration settings', async () => {
+    expect(await run()).toBe('https://app.topiqu.com/cs/settings?tab=integrations&shopify=install')
+    expect(cookie).toHaveBeenCalledWith(
+      {},
+      'shopify_install',
+      'store.myshopify.com',
+      expect.objectContaining({ secure: true, sameSite: 'lax', path: '/' }),
+    )
+  })
+  it('rejects a store swapped after signing', async () => {
+    query.shop = 'other.myshopify.com'
+    await expect(run()).rejects.toMatchObject({ statusCode: 403 })
+    expect(cookie).not.toHaveBeenCalled()
+  })
+  it('rejects a replayed launch link', async () => {
+    query = { shop: 'store.myshopify.com', timestamp: String(Math.floor(Date.now() / 1000) - 7200) }
+    sign()
+    await expect(run()).rejects.toMatchObject({ statusCode: 403 })
+    expect(cookie).not.toHaveBeenCalled()
+  })
+})

@@ -1,4 +1,5 @@
 import { isLanguage } from '~~/shared/utils/language'
+import { SHOPIFY_INSTALL_COOKIE } from '~~/shared/utils/shopify'
 
 import { shopifyTokenFields } from '../../utils/shopify/token'
 import { shopifyGraphql, shopifyTokenRequest } from '../../utils/shopify/api'
@@ -53,11 +54,9 @@ export default defineEventHandler(async (event) => {
     where: { id: attempt.id, expiresAt: { gt: new Date() } },
   })
   if (!claimed.count) throw createError({ statusCode: 403, message: 'Shopify authorization already completed' })
-  deleteCookie(event, 'shopify_oauth_state', {
-    path: '/api/shopify',
-    secure: shopifyOrigin().startsWith('https:'),
-    sameSite: 'lax',
-  })
+  const secure = shopifyOrigin().startsWith('https:')
+  deleteCookie(event, 'shopify_oauth_state', { path: '/api/shopify', secure, sameSite: 'lax' })
+  deleteCookie(event, SHOPIFY_INSTALL_COOKIE, { path: '/', secure, sameSite: 'lax' })
   const platformOrigin = shopifyOrigin()
   const tenantOrigin =
     ['localhost', '127.0.0.1'].includes(site.domain) && new URL(platformOrigin).protocol === 'http:'

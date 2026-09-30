@@ -6,6 +6,7 @@ const toast = useToast()
 const confirm = useConfirm()
 const route = useRoute()
 const { data, status, error, refresh } = await useShopify()
+const installedShop = useCookie<string | null>(SHOPIFY_INSTALL_COOKIE)
 const shop = shallowRef('')
 const blogId = shallowRef('')
 const author = shallowRef('')
@@ -28,7 +29,7 @@ const loadBlogs = async () => {
 watch(
   () => data.value?.connection,
   (connection) => {
-    shop.value = connection?.shop || ''
+    shop.value = connection?.shop || installedShop.value || ''
     blogId.value = connection?.blogId || ''
     author.value = connection?.author || 'Topiqu'
     if (connection?.status === 'CONNECTED') void loadBlogs()

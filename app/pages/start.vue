@@ -26,6 +26,7 @@ const localePath = useLocalePath()
 const pending = ref(true)
 const failed = ref(false)
 const createOpen = ref(false)
+const shopifyInstall = useCookie<string | null>(SHOPIFY_INSTALL_COOKIE)
 
 useSeoMeta({ robots: 'noindex, nofollow' })
 
@@ -46,7 +47,13 @@ const openWorkspace = async () => {
       await getSession()
       clearNuxtData()
     }
-    await navigateTo(localePath({ name: 'admin' }), { replace: true })
+    // A store installed from Shopify before sign-in continues to its connection.
+    await navigateTo(
+      shopifyInstall.value
+        ? localePath({ name: 'settings', query: { tab: 'integrations', shopify: 'install' } })
+        : localePath({ name: 'admin' }),
+      { replace: true },
+    )
   } catch {
     failed.value = true
   } finally {
