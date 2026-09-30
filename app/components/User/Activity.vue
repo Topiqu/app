@@ -72,13 +72,24 @@
       v-else-if="error"
       class="rounded-(--topiqu-surface-radius) border border-red-200 bg-red-50 p-5 text-center dark:border-red-900/60 dark:bg-red-900/20"
     >
-      <p class="text-sm font-medium text-red-600 dark:text-red-400">{{ error?.message || $t('common.error') }}</p>
+      <p class="text-sm font-medium text-red-600 dark:text-red-400">{{ $t('common.messages.loadFailedText') }}</p>
+      <UButton class="mt-3" color="neutral" variant="soft" @click="refresh()">
+        {{ $t('common.messages.retry') }}
+      </UButton>
     </div>
 
     <template v-else>
       <div v-if="!items.length" class="py-12 text-center">
         <NuxtImg src="/topik_empty_rm.png" alt="" class="mx-auto size-16" format="webp" quality="80" loading="lazy" />
-        <p class="mt-3 text-sm text-neutral-500 dark:text-neutral-400">{{ $t('common.noResults') }}</p>
+        <p class="mt-3 text-sm text-neutral-500 dark:text-neutral-400">
+          {{
+            searchQuery.trim() || selectedTags.length
+              ? $t('common.noResults')
+              : activeTab === 'likedArticles'
+                ? $t('articles.activity.noArticles')
+                : $t('articles.comments.noComments')
+          }}
+        </p>
         <NuxtLink
           :to="localePath({ name: 'index' })"
           class="mt-1 inline-block text-sm font-medium text-blue-700 hover:underline dark:text-blue-400"
