@@ -28,7 +28,7 @@ describe('article generation store', () => {
     const store = useArticleGenerationStore()
     const run = store.start({
       prompt: 'topic',
-      options: defaultArticleGenerationOptions(),
+      options: { ...defaultArticleGenerationOptions(), language: 'de' },
       target: 'new',
       editorPath: '/cs/admin/editor/new',
     })
@@ -36,6 +36,7 @@ describe('article generation store', () => {
 
     expect(store.running).toBe(true)
     expect(store.sessionId).toBe('session-1')
+    expect(store.language).toBe('de')
     expect(store.article.content).toBe('<p>Draft <img src="https://img.test/a.png"></p>')
 
     store.clear()
@@ -49,5 +50,6 @@ describe('article generation store', () => {
     store.clear()
     expect(store.run).toBeNull()
     expect(store.target).toBeNull()
+    expect(store.language).toBeUndefined()
   })
 })

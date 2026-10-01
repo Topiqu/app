@@ -523,7 +523,7 @@
           "title": {
             "running": "Generating the article",
             "completed": "Article generated",
-            "partial": "Article generated with warnings",
+            "partial": "Article generated, review the flagged steps",
             "stopped": "Generation stopped",
             "failed": "Generation failed"
           },
@@ -539,6 +539,7 @@
           "openResult": "Open result",
           "hideStatus": "Hide generation status",
           "stopped": "Stopped before this step finished.",
+          "resumed": "Details of this step were lost when the page reloaded.",
           "state": {
             "pending": "Waiting",
             "running": "In progress",

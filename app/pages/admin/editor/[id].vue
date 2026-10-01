@@ -604,7 +604,17 @@ const init = (): ArticleWithDetails =>
   }) as unknown as ArticleWithDetails
 
 const editedArticle = ref(init())
+// The run lives in the store, so leaving the editor neither stops it nor needs this page kept alive.
+const generation = useArticleGenerationStore()
 const newArticleLanguage = shallowRef<Language>((clientSite.value?.language as Language) ?? 'en')
+// A run restored after a page load arrives after setup; its article belongs to the language it was written in.
+watch(
+  () => isNew && generation.target === 'new' && generation.language,
+  (language) => {
+    if (language) newArticleLanguage.value = language
+  },
+  { immediate: true },
+)
 const newLanguageDrafts = reactive<Record<Language, ReturnType<typeof translationDraft>>>({
   cs: translationDraft(),
   en: translationDraft(),
@@ -616,8 +626,6 @@ const articleTags = shallowRef<string[]>([])
 const optimizedImageUrl = shallowRef('')
 const customPrompt = shallowRef(typeof route.query.prompt === 'string' ? route.query.prompt.slice(0, 5000) : '')
 const aiOptions = ref(defaultArticleGenerationOptions())
-// The run lives in the store, so leaving the editor neither stops it nor needs this page kept alive.
-const generation = useArticleGenerationStore()
 const generationTarget = computed(() => (isNew ? 'new' : (article.value?.id ?? null)))
 const ownsGeneration = computed(() => !!generationTarget.value && generation.target === generationTarget.value)
 const aiRun = computed(() => (ownsGeneration.value ? generation.run : null))
@@ -935,7 +943,9 @@ const releaseAtInput = computed<string | null>({
 })
 
 // A new article's slug follows its title until the author edits it; a saved one never moves by itself.
-const slugTouched = shallowRef(false)
+const slugTouched = shallowRef(
+  !!editedArticle.value.slug && editedArticle.value.slug !== articleSlug(editedArticle.value.title ?? ''),
+)
 const slugModel = computed({
   get: () => editedArticle.value.slug ?? '',
   set: (value: string) => {
@@ -1219,9 +1229,35 @@ const hasChanges = computed(() => {
 const allowNavigation = shallowRef(false)
 const pendingDestination = shallowRef<string | null>(null)
 
+// Returning restores the store's article, so it takes the author's edits of the result along.
+const keepGeneratedEdits = () => {
+  const { title, excerpt, content, slug, imageUrl, imageCredit, coverMediaId, sources, answer, keyTakeaways, faq } =
+    editedArticle.value
+  generation.article = {
+    ...generation.article,
+    title,
+    excerpt,
+    content,
+    slug,
+    imageUrl,
+    imageCredit,
+    coverMediaId,
+    sources,
+    answer,
+    keyTakeaways,
+    faq,
+    tags: articleTags.value,
+  }
+}
+
 onBeforeRouteLeave((to) => {
   // A running generation keeps going in the store; the result is waiting when the author returns.
   if (aiGenerating.value) return true
+  const onGeneratedSource = isNew ? newArticleLanguage.value === generation.language : tr.isSource
+  if (aiRun.value && onGeneratedSource && !tr.isDirty) {
+    keepGeneratedEdits()
+    return true
+  }
   if (allowNavigation.value || !hasChanges.value) return true
   pendingDestination.value = to.fullPath
   discardConfirmOpen.value = true
@@ -1235,18 +1271,8 @@ if (import.meta.client) {
   })
 }
 
-const goBack = () => {
-  if (aiGenerating.value) {
-    void router.push(localePath({ name: 'admin' }))
-    return
-  }
-  if (hasChanges.value) {
-    pendingDestination.value = localePath({ name: 'admin' })
-    discardConfirmOpen.value = true
-    return
-  }
-  router.push(localePath({ name: 'admin' }))
-}
+// The leave guard decides whether unsaved work needs a confirmation.
+const goBack = () => router.push(localePath({ name: 'admin' }))
 
 const confirmDiscard = async () => {
   const destination = pendingDestination.value ?? localePath({ name: 'admin' })
@@ -1270,5 +1296,7 @@ watch(
   (newTitle) => {
     if (isNew && !slugTouched.value) editedArticle.value.slug = articleSlug(newTitle ?? '')
   },
+  // The generated title may already be in place when the author returns to the editor.
+  { immediate: true },
 )
 </script>

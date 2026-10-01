@@ -523,7 +523,7 @@
           "title": {
             "running": "Generuji článek",
             "completed": "Článek je vygenerovaný",
-            "partial": "Článek je vygenerovaný s výhradami",
+            "partial": "Článek je vygenerovaný, zkontrolujte označené kroky",
             "stopped": "Generování bylo zastaveno",
             "failed": "Generování selhalo"
           },
@@ -539,6 +539,7 @@
           "openResult": "Otevřít výsledek",
           "hideStatus": "Skrýt stav generování",
           "stopped": "Zastaveno dřív, než krok doběhl.",
+          "resumed": "Po obnovení stránky se podrobnosti kroku nenačetly.",
           "state": {
             "pending": "Čeká",
             "running": "Probíhá",

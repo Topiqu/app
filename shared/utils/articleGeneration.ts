@@ -93,6 +93,8 @@ export interface GenerationRun {
   missingModules: ArticleGenerationModule[] | null
   charged: boolean
   error: { message: string; stage: GenerationFailureStage | null; creditReturned: boolean } | null
+  /** Finished from the server's session after a page load cut the stream; later steps were never reported. */
+  resumed?: boolean
 }
 
 export const startGenerationRun = (options: ArticleGenerationOptions, now: number): GenerationRun => ({
@@ -268,7 +270,15 @@ export const generationSteps = (run: GenerationRun, words: number): GenerationSt
   const missing = run.missingModules?.filter((module) => module !== 'youtube' && module !== 'images') ?? []
   if (missing.length) steps.push({ id: 'modules', state: 'warning', detail: 'modules.missing' })
 
-  if (run.status === 'running' || run.status === 'completed' || run.status === 'partial') return steps
+  if (run.status === 'running') return steps
+  if (run.status === 'completed' || run.status === 'partial')
+    return run.resumed
+      ? steps.map((step) =>
+          step.state === 'pending' || step.state === 'running'
+            ? { ...step, state: 'skipped', detail: 'resumed' }
+            : step,
+        )
+      : steps
   if (run.status === 'stopped')
     return steps.map((step) => (step.state === 'running' ? { ...step, state: 'skipped', detail: 'stopped' } : step))
   const failedId = run.error?.stage ? FAILURE_STEP[run.error.stage] : steps.find((step) => step.state === 'running')?.id

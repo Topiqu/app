@@ -96,6 +96,15 @@ describe('generation run', () => {
     expect(finishGenerationRun(run, { message: 'recovery failed' }, 5).status).toBe('partial')
   })
 
+  it('does not pass off steps a page load never reported as pending once the run is resumed', () => {
+    const run = play(start(), [research(undefined), { type: 'phase', phase: 'images' }])
+    const resumed = finishGenerationRun({ ...run, resumed: true }, 'completed', 10)
+    expect(step(resumed, 'research')).toMatchObject({ state: 'done' })
+    expect(step(resumed, 'writing', 120)).toMatchObject({ state: 'done', params: { count: 120 } })
+    expect(step(resumed, 'review')).toMatchObject({ state: 'skipped', detail: 'resumed' })
+    expect(step(resumed, 'media')).toMatchObject({ state: 'skipped', detail: 'resumed' })
+  })
+
   it('skips research-dependent steps when research is off', () => {
     const run = startGenerationRun({ ...options(), modules: ['youtube'], research: { ...options().research, enabled: false } }, 0)
     expect(step(run, 'research')).toMatchObject({ state: 'skipped' })

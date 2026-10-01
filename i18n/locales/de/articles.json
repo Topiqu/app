@@ -523,7 +523,7 @@
           "title": {
             "running": "Artikel wird generiert",
             "completed": "Artikel generiert",
-            "partial": "Artikel mit Hinweisen generiert",
+            "partial": "Artikel generiert, markierte Schritte prüfen",
             "stopped": "Generierung gestoppt",
             "failed": "Generierung fehlgeschlagen"
           },
@@ -539,6 +539,7 @@
           "openResult": "Ergebnis öffnen",
           "hideStatus": "Generierungsstatus ausblenden",
           "stopped": "Gestoppt, bevor dieser Schritt fertig war.",
+          "resumed": "Nach dem Neuladen der Seite liegen keine Details zu diesem Schritt vor.",
           "state": {
             "pending": "Wartet",
             "running": "Läuft",

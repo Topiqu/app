@@ -523,7 +523,7 @@
           "title": {
             "running": "Génération de l’article",
             "completed": "Article généré",
-            "partial": "Article généré avec des avertissements",
+            "partial": "Article généré, vérifiez les étapes signalées",
             "stopped": "Génération arrêtée",
             "failed": "Échec de la génération"
           },
@@ -539,6 +539,7 @@
           "openResult": "Ouvrir le résultat",
           "hideStatus": "Masquer l’état de génération",
           "stopped": "Arrêté avant la fin de cette étape.",
+          "resumed": "Les détails de cette étape ont été perdus au rechargement de la page.",
           "state": {
             "pending": "En attente",
             "running": "En cours",

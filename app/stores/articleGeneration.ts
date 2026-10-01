@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import {
   finishGenerationRun,
+  missingArticleModules,
   reduceGenerationRun,
   startGenerationRun,
   type ArticleGenerationOptions,
@@ -14,8 +15,9 @@ import { GenerationStreamError } from '~/composables/useArticleGeneration'
 /** What the generation has produced so far, in the editor's field names. */
 export interface GeneratedArticle {
   title?: string
-  excerpt?: string
-  content?: string
+  excerpt?: string | null
+  content?: string | null
+  slug?: string
   sources?: string[]
   imageUrl?: string | null
   imageCredit?: unknown
@@ -32,6 +34,51 @@ export interface GeneratedArticle {
 }
 
 const RUN_TOAST_COLOR = { completed: 'success', partial: 'warning', stopped: 'info', failed: 'error' } as const
+const STORAGE_KEY = 'topiqu-article-generation'
+const RESUME_POLL_MS = 3_000
+const RESUME_LIMIT_MS = 15 * 60_000
+
+/** The server's copy of the finished article, from the stream's `final` or the session snapshot. */
+type FinalArticle = {
+  title?: string
+  perex?: string
+  content?: string
+  sources?: string[]
+  articleImageUrl?: string | null
+  articleImageCredit?: unknown
+  articleCoverMediaId?: string | null
+  answer?: string | null
+  keyTakeaways?: string[]
+  faq?: unknown
+  tags?: unknown
+  format?: string
+  metrics?: { totalWords?: number; savedAmount?: number; savedTimeMinutes?: number }
+}
+
+type ResumedSession = {
+  status: string
+  recoverableSnapshot: FinalArticle | null
+  failureReason: string | null
+}
+
+const generatedFromFinal = (final: FinalArticle, format?: string): GeneratedArticle => ({
+  title: final.title,
+  excerpt: final.perex,
+  content: final.content,
+  imageUrl: final.articleImageUrl,
+  imageCredit: final.articleImageCredit ?? null,
+  coverMediaId: final.articleCoverMediaId ?? null,
+  sources: final.sources ?? [],
+  answer: final.answer || null,
+  keyTakeaways: final.keyTakeaways ?? [],
+  faq: final.faq ?? [],
+  format: format ?? final.format,
+  aiInvolvement: 'FULL',
+  totalWords: final.metrics?.totalWords ?? 0,
+  savedAmount: final.metrics?.savedAmount ?? 0,
+  savedTimeMinutes: final.metrics?.savedTimeMinutes ?? 0,
+  tags: Array.isArray(final.tags) ? final.tags : [],
+})
 
 /**
  * One manual generation at a time, owned by the app rather than the editor page, so leaving the
@@ -45,6 +92,7 @@ export const useArticleGenerationStore = defineStore('articleGeneration', () => 
   const run = shallowRef<GenerationRun | null>(null)
   const target = shallowRef<string | null>(null)
   const editorPath = shallowRef('')
+  const language = shallowRef<ArticleGenerationOptions['language']>()
   const sessionId = shallowRef<string | null>(null)
   const article = shallowRef<GeneratedArticle>({})
   const stopRequested = shallowRef(false)
@@ -81,6 +129,7 @@ export const useArticleGenerationStore = defineStore('articleGeneration', () => 
     run.value = startGenerationRun(request.options, Date.now())
     target.value = request.target
     editorPath.value = request.editorPath
+    language.value = request.options.language
     sessionId.value = null
     article.value = {}
     stopRequested.value = false
@@ -141,24 +190,7 @@ export const useArticleGenerationStore = defineStore('articleGeneration', () => 
           },
           onFinal: (final) => {
             streamedContent = ''
-            update({
-              title: final.title,
-              excerpt: final.perex,
-              content: final.content,
-              imageUrl: final.articleImageUrl,
-              imageCredit: final.articleImageCredit ?? null,
-              coverMediaId: final.articleCoverMediaId ?? null,
-              sources: final.sources ?? [],
-              answer: final.answer || null,
-              keyTakeaways: final.keyTakeaways ?? [],
-              faq: final.faq ?? [],
-              format: request.options.format,
-              aiInvolvement: 'FULL',
-              totalWords: final.metrics?.totalWords ?? 0,
-              savedAmount: final.metrics?.savedAmount ?? 0,
-              savedTimeMinutes: final.metrics?.savedTimeMinutes ?? 0,
-              tags: Array.isArray(final.tags) ? final.tags : [],
-            })
+            update(generatedFromFinal(final, request.options.format))
           },
         },
         request.articleId,
@@ -187,9 +219,88 @@ export const useArticleGenerationStore = defineStore('articleGeneration', () => 
     run.value = null
     target.value = null
     editorPath.value = ''
+    language.value = undefined
     sessionId.value = null
     article.value = {}
   }
 
-  return { run, target, editorPath, sessionId, article, running, stopRequested, start, requestStop, clear }
+  // A full page load (the public site, a refresh) ends the stream but not the server's run: the
+  // state survives in sessionStorage and the finished article is read back from the session.
+  const settleResumed = (outcome: Parameters<typeof finishGenerationRun>[1]) => {
+    if (!run.value) return
+    // A completed session got past writing even though its phase events never arrived.
+    const phase = outcome === 'completed' ? 'images' : run.value.phase
+    run.value = finishGenerationRun({ ...run.value, phase, resumed: true }, outcome, Date.now())
+    const status = run.value.status as keyof typeof RUN_TOAST_COLOR
+    toast.add({ color: RUN_TOAST_COLOR[status], title: t(`articles.editor.ai.run.title.${status}`) })
+    void refreshClientSiteStatus().catch(() => undefined)
+  }
+
+  const resume = async () => {
+    const id = sessionId.value
+    if (!id) return settleResumed({ message: t('articles.editor.aiContentFailed') })
+    const deadline = Date.now() + RESUME_LIMIT_MS
+    for (;;) {
+      const session = await $fetch<ResumedSession>(`/api/articles/generations/${id}/status`).catch((error) =>
+        error?.statusCode === 404
+          ? ({ status: 'FAILED', recoverableSnapshot: null, failureReason: null } as const)
+          : null,
+      )
+      // Cleared, stopped or replaced by a new run while the request was out.
+      if (run.value?.status !== 'running' || sessionId.value !== id) return
+      const finished = !!session && !['RESERVED', 'RESEARCHING', 'WRITING', 'FINALIZING'].includes(session.status)
+      if (!finished && Date.now() < deadline) {
+        await new Promise((resolve) => setTimeout(resolve, RESUME_POLL_MS))
+        continue
+      }
+      if (session?.recoverableSnapshot && session.status !== 'FAILED') {
+        article.value = { ...article.value, ...generatedFromFinal(session.recoverableSnapshot) }
+        const { content, answer, keyTakeaways, faq } = article.value
+        const missingModules = missingArticleModules(
+          { content, answer, keyTakeaways, faq: Array.isArray(faq) ? faq : [] },
+          run.value.modules,
+        )
+        run.value = reduceGenerationRun(run.value, { type: 'final', missingModules }, Date.now())
+      }
+      if (session?.status === 'INTERRUPTED') return settleResumed('aborted')
+      if (finished && session.status !== 'FAILED') return settleResumed('completed')
+      return settleResumed({ message: session?.failureReason || t('articles.editor.aiContentFailed') })
+    }
+  }
+
+  if (import.meta.client) {
+    // Read before hydration: the payload's empty state would otherwise be persisted over it.
+    let saved: ({ run?: GenerationRun } & Record<string, any>) | null = null
+    try {
+      saved = JSON.parse(sessionStorage.getItem(STORAGE_KEY) ?? 'null')
+    } catch {
+      sessionStorage.removeItem(STORAGE_KEY)
+    }
+    const persist = () => {
+      if (saved) return
+      if (!run.value) return sessionStorage.removeItem(STORAGE_KEY)
+      const state = { run: run.value, target: target.value, editorPath: editorPath.value, language: language.value }
+      sessionStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ ...state, sessionId: sessionId.value, article: article.value }),
+      )
+    }
+    watchThrottled([run, target, editorPath, language, sessionId, article], persist, { throttle: 1_000 })
+    useEventListener(window, 'pagehide', persist)
+    // After hydration, so the server-rendered editor matches before the restored run appears.
+    onNuxtReady(() => {
+      const restored = saved
+      saved = null
+      if (!restored?.run || run.value) return persist()
+      run.value = restored.run
+      target.value = restored.target
+      editorPath.value = restored.editorPath
+      language.value = restored.language
+      sessionId.value = restored.sessionId
+      article.value = restored.article ?? {}
+      if (restored.run.status === 'running') void resume()
+    })
+  }
+
+  return { run, target, editorPath, language, sessionId, article, running, stopRequested, start, requestStop, clear }
 })
