@@ -56,6 +56,26 @@ describe('ArticleEditorPreview', () => {
     expect(viewProps(mountPreview({ content: '<p></p>' })).article.blocks).toEqual([])
   })
 
+  it('updates all extraction fields when switching language and clears missing translations', async () => {
+    const wrapper = mountPreview({
+      answer: 'České shrnutí',
+      takeaways: ['Český bod'],
+      faq: [{ question: 'Česká otázka?', answer: 'Česká odpověď.' }],
+    })
+    const translated = {
+      answer: 'Deutsche Zusammenfassung',
+      takeaways: ['Deutscher Punkt'],
+      faq: [{ question: 'Deutsche Frage?', answer: 'Deutsche Antwort.' }],
+    }
+
+    await wrapper.setProps(translated)
+    expect(viewProps(wrapper).article).toMatchObject(translated)
+
+    await wrapper.setProps({ answer: null, takeaways: [], faq: null })
+    expect(viewProps(wrapper).article).toMatchObject({ answer: null, takeaways: [], faq: [] })
+    wrapper.unmount()
+  })
+
   it('renders on the tenant publication surface and discloses AI only when the tenant does', () => {
     status.value = { theme: 'green', typographyPreset: 'EDITORIAL', discloseAiContent: true }
     const wrapper = mountPreview({ aiInvolvement: 'GENERATED' })

@@ -9,6 +9,9 @@ export interface ArticleTranslationRow {
   title: string | null
   excerpt: string | null
   content: string | null
+  answer: string | null
+  keyTakeaways: string[]
+  faq: unknown
   status: TranslationStatus
   source: TranslationSource
   error: string | null

@@ -288,7 +288,7 @@
           </UFormField>
         </div>
 
-        <ArticleSummary :answer="editedArticle.answer" :takeaways="editedArticle.keyTakeaways ?? []" />
+        <ArticleSummary :answer="activeExtraction?.answer" :takeaways="activeExtraction?.keyTakeaways ?? []" />
 
         <div ref="contentTarget" class="mt-4 min-w-0 max-w-full">
           <TiptapEditor
@@ -298,7 +298,7 @@
             class="min-h-[500px]"
           />
 
-          <ArticleFaq :entries="readFaq(editedArticle.faq)" />
+          <ArticleFaq :entries="readFaq(activeExtraction?.faq)" />
         </div>
       </div>
       <aside class="hidden self-start xl:block" :aria-label="$t('articles.editor.settingsTitle')">
@@ -402,9 +402,9 @@
           :articleId="editedArticle.id"
           :title="titleModel"
           :excerpt="excerptModel"
-          :answer="editedArticle.answer"
-          :takeaways="editedArticle.keyTakeaways ?? []"
-          :faq="editedArticle.faq"
+          :answer="activeExtraction?.answer"
+          :takeaways="activeExtraction?.keyTakeaways ?? []"
+          :faq="activeExtraction?.faq"
           :content="bodyModel"
           :imageUrl="editedArticle.imageUrl"
           :imageCredit="previewImageCredit"
@@ -781,6 +781,9 @@ const translationBadgeColor = computed(() => {
 })
 const activeSlug = computed(() => (tr.isSource ? editedArticle.value.slug : (tr.active?.slug ?? '')))
 const bodyEditable = computed(() => tr.isSource || tr.hasBody)
+// Summary and FAQ follow the selected language just like the title and body.
+// Missing translation fields stay empty instead of showing source-language text.
+const activeExtraction = computed(() => (tr.isSource ? editedArticle.value : tr.active))
 
 watch(
   () => tr.activeLang,

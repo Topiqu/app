@@ -23,9 +23,13 @@ const clientSiteSource = readFileSync(resolve(process.cwd(), 'app/composables/us
 
 describe('generated article modules', () => {
   it('renders extraction fields in the editor canvas', () => {
-    expect(editorSource).toContain(':answer="editedArticle.answer"')
-    expect(editorSource).toContain(':takeaways="editedArticle.keyTakeaways ?? []"')
-    expect(editorSource).toContain(':entries="readFaq(editedArticle.faq)"')
+    expect(editorSource).toContain(
+      'const activeExtraction = computed(() => (tr.isSource ? editedArticle.value : tr.active))',
+    )
+    expect(editorSource.match(/:answer="activeExtraction\?\.answer"/g)).toHaveLength(2)
+    expect(editorSource.match(/:takeaways="activeExtraction\?\.keyTakeaways \?\? \[\]"/g)).toHaveLength(2)
+    expect(editorSource).toContain(':entries="readFaq(activeExtraction?.faq)"')
+    expect(editorSource).toContain(':faq="activeExtraction?.faq"')
     expect(editorSource).toContain('<ArticleEditorGenerationRun')
     expect(generationStore).toContain('finishGenerationRun(run.value, outcome, Date.now())')
   })
