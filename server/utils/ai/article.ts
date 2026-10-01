@@ -448,7 +448,7 @@ const buildArticleConfig = async (
         "answer": "40-60 words answering the title's question outright",
         "keyTakeaways": ["standalone factual sentence", "..."] or [],
         "faq": [{"question": "...", "answer": "..."}] or [],
-        "content": "the article body for v-html on frontend, with h2, h3, strong, underline, italic and lists, and blockquote only for an attributed verbatim quotation. Include image slots like [[IMAGE1]], [[IMAGE2]], etc. where images should appear.",
+        "content": "the article body for v-html on frontend, with h2, h3, strong, underline, italic and lists, and blockquote only for an attributed verbatim quotation. Include image slots like [[IMAGE1]], [[IMAGE2]], etc. where images should appear, each as a bare marker between paragraphs: never inside a tag or attribute, and never write <img> or <figure> yourself.",
         "coverImage": {"type": "stock", "query": "search keyword OR generation prompt"},
         "images": [{"type": "photo", "query": "keyword for IMAGE1", "caption": "what IMAGE1 shows"}, {"type": "generate", "query": "prompt for IMAGE2", "caption": "what IMAGE2 shows"}, ...],
         "polls": [{"question": "Poll question?", "options": ["Option 1", "Option 2"]}],
@@ -780,7 +780,7 @@ export const finalizeArticle = async (
   mediaCompleted = mediaTotal
   reportMedia('complete')
 
-  object.content = dropBlankLines(stripUntrustedIframes(object.content))
+  object.content = dropBlankLines(dropAuthoredImages(stripUntrustedIframes(object.content)))
   object.content = applyContentSlots(object.content, 'IMAGE', generatedImages)
 
   const polls = (object.polls ?? []).map((poll, idx) => {

@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { findStockImage } from '../../../server/utils/images/chain'
-import { applyContentSlots } from '../../../shared/utils/contentSlots'
 import { finalizeArticle, streamArticle } from '../../../server/utils/ai/article'
+import { applyContentSlots, dropAuthoredImages } from '../../../shared/utils/contentSlots'
 
 vi.mock('../../../server/utils/images/chain', () => ({
   findStockImage: vi.fn(),
@@ -42,6 +42,7 @@ beforeEach(() => {
   vi.stubGlobal('getServerTranslator', async () => (key: string) => key)
   vi.stubGlobal('dropBlankLines', (content: string) => content)
   vi.stubGlobal('applyContentSlots', applyContentSlots)
+  vi.stubGlobal('dropAuthoredImages', dropAuthoredImages)
   vi.stubGlobal('generateImage', vi.fn())
 })
 afterEach(() => vi.unstubAllGlobals())
@@ -87,6 +88,21 @@ describe('article media finalization', () => {
     expect(result.articleImageUrl).toBe('')
     expect(result.content.match(/<img /g)).toHaveLength(1)
     expect(generateImage).not.toHaveBeenCalled()
+  })
+
+  it('fills a slot the writer wrapped in its own markup and drops the images it guessed', async () => {
+    vi.mocked(findStockImage).mockResolvedValueOnce(null).mockResolvedValueOnce(hit('body')).mockResolvedValue(null)
+    const result = await finalizeArticle({
+      ...draft(),
+      content:
+        '<figure><img src="[[IMAGE1]]" alt="Plot" /><figcaption>Plot</figcaption></figure><p>a</p>' +
+        '<figure><img src="[[IMAGE2]]" alt="Hills" /><figcaption>Hills</figcaption></figure>' +
+        '<img src="https://listing.test/photo.jpg" alt="Listing">',
+      images: draft().images.slice(0, 2),
+    })
+    expect(result.content.match(/<img /g)).toHaveLength(1)
+    expect(result.content).toContain('images.test/body')
+    expect(result.content).not.toMatch(/alt="(Plot|Hills|Listing)"|listing\.test|Hills<\/figcaption>/)
   })
 
   it('never generates a cover or body image when AI fallback is disabled', async () => {

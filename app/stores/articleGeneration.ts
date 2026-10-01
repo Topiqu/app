@@ -90,7 +90,7 @@ export const useArticleGenerationStore = defineStore('articleGeneration', () => 
     let streamedContent = ''
     const streamedImages = new Map<number, string>()
     const present = () => {
-      let content = streamedContent
+      let content = unwrapContentSlots(streamedContent)
       for (const [slot, html] of streamedImages) content = replaceSlot(content, 'IMAGE', slot, html)
       return stripContentSlots(content)
     }

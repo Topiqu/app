@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { applyContentSlots, replaceSlot, stripContentSlots } from '../../shared/utils/contentSlots'
+import { applyContentSlots, dropAuthoredImages, replaceSlot, stripContentSlots } from '../../shared/utils/contentSlots'
 
 const img = (n: number) => `<p><img src="/i${n}.png" /></p>`
 
@@ -54,6 +54,15 @@ describe('applyContentSlots', () => {
     expect(out).toBe(`${img(1)}[[POLL1]]`)
   })
 
+  it('fills a marker the writer put inside its own image markup instead of nesting it in an attribute', () => {
+    const out = applyContentSlots(
+      '<figure><img src="[[IMAGE1]]" alt="x" /><figcaption>x</figcaption></figure>',
+      'IMAGE',
+      [{ slot: 1, html: img(1) }],
+    )
+    expect(out).toBe(img(1))
+  })
+
   it('handles repeated markers for the same slot', () => {
     const out = applyContentSlots('[[IMAGE1]]x[[IMAGE1]]', 'IMAGE', [{ slot: 1, html: img(1) }])
     expect(out).toBe(`${img(1)}x`)
@@ -75,6 +84,20 @@ describe('replaceSlot', () => {
 
   it('does not match a different slot number with the same prefix', () => {
     expect(replaceSlot('[[IMAGE12]]', 'IMAGE', 1, img(1))).toBe('[[IMAGE12]]')
+  })
+})
+
+describe('dropAuthoredImages', () => {
+  it('removes images and figures the writer wrote itself but keeps slots, videos and tables', () => {
+    const out = dropAuthoredImages(
+      '<p>a</p><img src="https://x.test/a.jpg"><figure><img src="/b.jpg"><figcaption>b</figcaption></figure>' +
+        '<figure><img src="[[IMAGE1]]"></figure><figure class="article-video"><iframe src="/v"></iframe></figure>' +
+        '<figure><table><tr><td>t</td></tr></table></figure>',
+    )
+    expect(out).toBe(
+      '<p>a</p>[[IMAGE1]]<figure class="article-video"><iframe src="/v"></iframe></figure>' +
+        '<figure><table><tr><td>t</td></tr></table></figure>',
+    )
   })
 })
 

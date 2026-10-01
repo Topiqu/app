@@ -268,7 +268,7 @@ export default defineEventHandler(async (event) => {
             send(controller, { type: 'media', stage: 'failed', completed: 0, total: 0, found: 0 })
             return {
               ...object,
-              content: stripContentSlots(object.content),
+              content: stripContentSlots(dropAuthoredImages(object.content)),
               articleImageUrl: '',
               articleImageCredit: null,
             }

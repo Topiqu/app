@@ -14,7 +14,7 @@ mockNuxtImport('useArticleGeneration', () => () => ({
   stop: () => {},
   streamGenerate: async (_prompt: string, _options: unknown, handlers: any) => {
     handlers.onSession('session-1')
-    handlers.onPartial({ title: 'Draft title', content: '<p>Draft [[IMAGE1]]</p>' })
+    handlers.onPartial({ title: 'Draft title', content: '<p>Draft <img src="[[IMAGE1]]" alt="x"></p>' })
     handlers.onImage({ slot: 1, html: '<img src="https://img.test/a.png">' })
     await new Promise<void>((resolve) => (finish = resolve))
     handlers.onFinal({ title: 'Final title', perex: 'Perex', content: '<p>Final</p>', tags: ['t1'], metrics: {} })
