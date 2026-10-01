@@ -94,6 +94,7 @@ describe('Nuxt UI template contract', () => {
       'DevOnly',
       'EditorContent',
       'Icon',
+      'NodeViewContent',
       'NodeViewWrapper',
       'NuxtImg',
       'NuxtLayout',
@@ -203,6 +204,8 @@ describe('Nuxt UI template contract', () => {
       'app/components/Header.vue',
       'app/components/Sidebar.vue',
       'app/components/AppMedia.vue',
+      // The editor previews the stored src as is; the published body is optimized by `optimizeArticleImages`.
+      'app/components/File/TiptapImageFrame.vue',
       'app/components/Auth/Form.vue',
       'app/components/Gif/Selector.vue',
       'app/components/OgImage/AppDefault.takumi.vue',
@@ -269,7 +272,6 @@ describe('Nuxt UI template contract', () => {
 
   it('keeps visual utility classes off Nuxt UI primitives', () => {
     const allowlist = new Set([
-      'app/components/File/TiptapImage.vue',
       'app/components/Article/Editor/Chip.vue',
       'app/components/Article/Editor/LanguageTabs.vue',
       'app/components/Article/Editor/TagsField.vue',

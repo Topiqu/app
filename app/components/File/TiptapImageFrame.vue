@@ -16,27 +16,30 @@
     />
 
     <template v-if="editable">
-      <UBadge
-        v-if="!alt?.trim()"
-        color="warning"
-        variant="solid"
-        size="sm"
-        icon="mdi:alert-outline"
-        :label="$t('articles.editor.image.altMissing')"
-        class="pointer-events-none absolute left-2 top-2 z-10 shadow-sm"
-      />
-      <UButton
-        square
-        size="sm"
-        color="error"
-        variant="solid"
-        icon="mdi:close"
-        class="absolute right-2 top-2 z-20 opacity-0 shadow-sm transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
-        :title="$t('articles.editor.image.delete')"
-        :aria-label="$t('articles.editor.image.delete')"
-        @click.stop.prevent="emit('delete')"
-        @mousedown.stop.prevent
-      />
+      <span v-if="!alt?.trim()" class="pointer-events-none absolute left-2 top-2 z-10">
+        <UBadge
+          color="warning"
+          variant="solid"
+          size="sm"
+          icon="mdi:alert-outline"
+          :label="$t('articles.editor.image.altMissing')"
+        />
+      </span>
+      <span
+        class="absolute right-2 top-2 z-20 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100"
+      >
+        <UButton
+          square
+          size="sm"
+          color="error"
+          variant="solid"
+          icon="mdi:close"
+          :title="$t('articles.editor.image.delete')"
+          :aria-label="$t('articles.editor.image.delete')"
+          @click.stop.prevent="emit('delete')"
+          @mousedown.stop.prevent
+        />
+      </span>
       <!-- The bubble's width presets are the keyboard path; the handles are a pointer shortcut. -->
       <span
         v-for="side in [-1, 1] as const"
