@@ -953,7 +953,6 @@
         "article": "Artikel",
         "ai": "KI",
         "checks": "Prüfung"
-      }
       },
       "image": {
         "toolbar": "Bildwerkzeuge",
@@ -975,6 +974,7 @@
         "openInLibrary": "In der Mediathek öffnen",
         "delete": "Bild löschen",
         "captionPlaceholder": "Bildunterschrift hinzufügen…"
+      }
     },
     "image": {
       "illustration": "Illustrationsbild",

@@ -953,7 +953,6 @@
         "article": "Article",
         "ai": "AI",
         "checks": "Checks"
-      }
       },
       "image": {
         "toolbar": "Image tools",
@@ -975,6 +974,7 @@
         "openInLibrary": "Open in media library",
         "delete": "Delete image",
         "captionPlaceholder": "Add a caption…"
+      }
     },
     "image": {
       "illustration": "Illustrative image",

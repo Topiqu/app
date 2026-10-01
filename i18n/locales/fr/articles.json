@@ -953,7 +953,6 @@
         "article": "Article",
         "ai": "IA",
         "checks": "Vérifications"
-      }
       },
       "image": {
         "toolbar": "Outils d'image",
@@ -975,6 +974,7 @@
         "openInLibrary": "Ouvrir dans la médiathèque",
         "delete": "Supprimer l'image",
         "captionPlaceholder": "Ajouter une légende…"
+      }
     },
     "image": {
       "illustration": "Image d'illustration",

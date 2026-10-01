@@ -953,7 +953,6 @@
         "article": "Článek",
         "ai": "AI",
         "checks": "Kontrola"
-      }
       },
       "image": {
         "toolbar": "Nástroje obrázku",
@@ -975,6 +974,7 @@
         "openInLibrary": "Otevřít v knihovně médií",
         "delete": "Smazat obrázek",
         "captionPlaceholder": "Přidat popisek…"
+      }
     },
     "image": {
       "illustration": "Ilustrační obrázek",
