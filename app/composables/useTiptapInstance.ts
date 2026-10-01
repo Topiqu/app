@@ -119,7 +119,8 @@ export function useTiptapInstance(opts: UseTiptapInstanceOptions) {
     contentVersion++
     if (editor.value?.getHTML() !== v) editor.value?.commands.setContent(v ?? '<p></p>', { emitUpdate: false })
   })
-  watchEffect(() => editor.value?.setEditable(opts.edit.value))
+  // `setEditable` emits `update` by default, which would write TipTap's normalized HTML back as an edit.
+  watchEffect(() => editor.value?.setEditable(opts.edit.value, false))
   onBeforeUnmount(() => editor.value?.destroy())
 
   return editor

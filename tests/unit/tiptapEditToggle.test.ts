@@ -42,4 +42,20 @@ describe('Tiptap/Editor', () => {
     expect(errors).toEqual([])
     expect(document.body.textContent).toContain('Generated body')
   })
+
+  // Saved bodies carry heading ids TipTap drops. Writing its normalized HTML back on an editability
+  // change marked an untouched article dirty, so leaving it asked to discard unsaved changes.
+  it('does not rewrite the loaded body when editability changes', async () => {
+    const wrapper = await mountSuspended(TiptapEditor, {
+      props: { modelValue: '<h2 id="sekce">Sekce</h2><p>Body</p>', edit: true },
+      attachTo: document.body,
+      global: { mocks: { $t: (key: string) => key } },
+    })
+    await settle()
+    await wrapper.setProps({ edit: false })
+    await wrapper.setProps({ edit: true })
+    await new Promise((resolve) => setTimeout(resolve, 300))
+
+    expect(wrapper.emitted('update:modelValue')).toBeUndefined()
+  })
 })
