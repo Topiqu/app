@@ -176,25 +176,27 @@
             role="region"
             :aria-label="$t('common.wallet.history')"
           >
-            <div
-              v-for="entry in visibleLedger"
-              :key="entry.id"
-              class="flex items-start justify-between gap-3 border-b border-default py-2"
-            >
-              <div class="min-w-0">
-                <p class="break-words text-sm font-medium text-highlighted">
-                  {{ $t(`common.wallet.kinds.${entry.kind}`) }}
-                </p>
-                <p v-if="ledgerReason(entry)" class="break-words text-xs text-muted">{{ ledgerReason(entry) }}</p>
-                <AppTime :datetime="entry.createdAt" preset="shortDatetime" class="text-xs text-muted" />
-              </div>
-              <span
-                class="shrink-0 font-semibold tabular-nums"
-                :class="entry.amount > 0 ? 'text-success' : 'text-highlighted'"
-                >{{ entry.amount > 0 ? '+' : '' }}{{ entry.amount.toLocaleString(locale) }}</span
+            <ol v-if="visibleLedger.length">
+              <li
+                v-for="entry in visibleLedger"
+                :key="entry.id"
+                class="flex items-start justify-between gap-3 border-b border-default py-2"
               >
-            </div>
-            <p v-if="!visibleLedger.length && walletState !== 'pending'" class="text-sm text-muted">
+                <div class="min-w-0">
+                  <p class="break-words text-sm font-medium text-highlighted">
+                    {{ $t(`common.wallet.kinds.${entry.kind}`) }}
+                  </p>
+                  <p v-if="ledgerReason(entry)" class="break-words text-xs text-muted">{{ ledgerReason(entry) }}</p>
+                  <AppTime :datetime="entry.createdAt" preset="shortDatetime" class="text-xs text-muted" />
+                </div>
+                <span
+                  class="shrink-0 font-semibold tabular-nums"
+                  :class="entry.amount > 0 ? 'text-success' : 'text-highlighted'"
+                  >{{ entry.amount > 0 ? '+' : '' }}{{ entry.amount.toLocaleString(locale) }}</span
+                >
+              </li>
+            </ol>
+            <p v-else-if="walletState !== 'pending'" class="text-sm text-muted">
               {{ $t('common.wallet.empty') }}
             </p>
           </div>

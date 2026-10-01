@@ -6,17 +6,18 @@ const localeFor = (project: string) => (project.endsWith('-cs') ? 'cs' : 'en')
 
 test.use({ storageState: join(process.cwd(), 'tests/e2e/.auth/admin.json') })
 test('wallet has no capacity meter and paginated activity stays scrollable', async ({ page }, testInfo) => {
-  await page.route('**/api/clients/*/log?*', async (route) => {
-    const pageNumber = Number(new URL(route.request().url()).searchParams.get('page') || 1)
+  await page.route('**/api/clients/*/article-wallet*', async (route) => {
+    const pageNumber = Number(new URL(route.request().url()).searchParams.get('cursor') || 1)
     await route.fulfill({
       json: {
         items: Array.from({ length: 4 }, (_, i) => ({
           id: `${pageNumber}-${i}`,
-          action: 'CRON_ARTICLE_PUBLISHED',
+          kind: 'DEBIT',
+          amount: -1,
+          reason: `Long article title ${pageNumber}-${i} `.repeat(8),
           createdAt: new Date().toISOString(),
-          metadata: { title: `Long article title ${pageNumber}-${i} `.repeat(8) },
         })),
-        hasMore: pageNumber < 5,
+        nextCursor: pageNumber < 5 ? String(pageNumber + 1) : null,
       },
     })
   })
