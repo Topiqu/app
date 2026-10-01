@@ -18,6 +18,7 @@ export type CatalogProduct = {
   description: string
   vendor: string
   productType: string
+  handle: string
   onlineStoreUrl: string | null
   variants: Page<Variant>
   collections: Page<Collection>
@@ -29,21 +30,33 @@ const COLLECTIONS = `nodes { id title description handle } ${PAGE_INFO}`
 const PRODUCT_QUERY = `query TopiquCatalog($after: String) {
   shop { currencyCode }
   products(first: 5, after: $after, sortKey: ID, query: "status:active AND published_status:published") {
-    nodes { id title description vendor productType onlineStoreUrl
+    nodes { id title description vendor productType handle onlineStoreUrl
       variants(first: 50) { ${VARIANTS} }
       collections(first: 20) { ${COLLECTIONS} }
     } ${PAGE_INFO}
   }
 }`
 
-export const catalogVariants = (product: CatalogProduct, currency: string): RawVariant[] => {
-  if (!product.onlineStoreUrl) return []
+// The query already limits products to the online store. A password-protected store (every
+// development store) returns no onlineStoreUrl, so the URL falls back to the storefront domain.
+export const catalogProductUrl = (product: CatalogProduct, storefrontUrl: string) => {
+  if (product.onlineStoreUrl) return product.onlineStoreUrl
+  try {
+    return product.handle ? new URL(`/products/${encodeURIComponent(product.handle)}`, storefrontUrl).href : null
+  } catch {
+    return null
+  }
+}
+
+export const catalogVariants = (product: CatalogProduct, currency: string, storefrontUrl: string): RawVariant[] => {
+  const url = catalogProductUrl(product, storefrontUrl)
+  if (!url) return []
   return product.variants.nodes.map((variant) => ({
     id: variant.id,
     groupId: product.id,
     name: product.title,
     description: product.description,
-    url: product.onlineStoreUrl!,
+    url,
     price: variant.price,
     currency,
     availability:
@@ -70,7 +83,7 @@ export const catalogVariants = (product: CatalogProduct, currency: string): RawV
 export const fetchShopifyCatalog = async (connectionId: string, clientSiteId: string, limit: number) => {
   const connection = await prisma.shopifyConnection.findFirst({
     where: { id: connectionId, clientSiteId, status: 'CONNECTED' },
-    select: { id: true, shop: true, grantedScopes: true, catalogRevision: true },
+    select: { id: true, shop: true, storefrontUrl: true, grantedScopes: true, catalogRevision: true },
   })
   if (!connection || !connection.grantedScopes.includes('read_products'))
     throw new ShopifyApiError('REAUTH_REQUIRED', 'Reconnect Shopify to sync products')
@@ -111,7 +124,7 @@ export const fetchShopifyCatalog = async (connectionId: string, clientSiteId: st
           product[key].pageInfo = next.product[key].pageInfo
         }
       }
-      const entries = catalogVariants(product, result.shop.currencyCode)
+      const entries = catalogVariants(product, result.shop.currencyCode, connection.storefrontUrl)
       variants.push(...entries)
       catalog.set(product.id, product)
       if (entries.length) count += 1

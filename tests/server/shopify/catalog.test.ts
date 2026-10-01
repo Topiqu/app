@@ -21,12 +21,14 @@ const page = <T>(nodes: T[], hasNextPage = false, endCursor: string | null = nul
   nodes,
   pageInfo: { hasNextPage, endCursor },
 })
+const STOREFRONT = 'https://dev-store.myshopify.com'
 const product = (id = '1'): CatalogProduct => ({
   id: `gid://shopify/Product/${id}`,
   title: 'Running shoes',
   description: '<p>Lightweight shoes.</p>',
   vendor: 'Example',
   productType: 'Shoes',
+  handle: `shoes-${id}`,
   onlineStoreUrl: `https://shop.example/products/shoes-${id}`,
   variants: page([
     {
@@ -75,7 +77,7 @@ describe('Shopify catalog ingestion', () => {
       price: '109.00',
       selectedOptions: [{ name: 'Size', value: '43' }],
     })
-    const snapshot = collectFeedProducts(catalogVariants(item, 'EUR'), 500)
+    const snapshot = collectFeedProducts(catalogVariants(item, 'EUR', STOREFRONT), 500)
     expect(snapshot.products).toHaveLength(1)
     expect(snapshot.products[0]).toMatchObject({
       externalId: item.id,
@@ -92,13 +94,19 @@ describe('Shopify catalog ingestion', () => {
   it('distinguishes tracked stock, backorders and products without inventory tracking', () => {
     const item = product()
     item.variants.nodes[0]!.inventoryQuantity = 0
-    expect(catalogVariants(item, 'EUR')[0]!.availability).toBe('OUT_OF_STOCK')
+    expect(catalogVariants(item, 'EUR', STOREFRONT)[0]!.availability).toBe('OUT_OF_STOCK')
     item.variants.nodes[0]!.inventoryPolicy = 'CONTINUE'
-    expect(catalogVariants(item, 'EUR')[0]!.availability).toBe('BACKORDER')
+    expect(catalogVariants(item, 'EUR', STOREFRONT)[0]!.availability).toBe('BACKORDER')
     item.variants.nodes[0]!.inventoryItem.tracked = false
-    expect(catalogVariants(item, 'EUR')[0]!.availability).toBe('IN_STOCK')
+    expect(catalogVariants(item, 'EUR', STOREFRONT)[0]!.availability).toBe('IN_STOCK')
+  })
+
+  it('builds product URLs from the storefront when a password-protected store hides onlineStoreUrl', () => {
+    const item = product()
     item.onlineStoreUrl = null
-    expect(catalogVariants(item, 'EUR')).toEqual([])
+    expect(catalogVariants(item, 'EUR', STOREFRONT)[0]!.url).toBe('https://dev-store.myshopify.com/products/shoes-1')
+    item.handle = ''
+    expect(catalogVariants(item, 'EUR', STOREFRONT)).toEqual([])
   })
 
   it('fetches all nested pages and computes collection counts from the imported products', async () => {

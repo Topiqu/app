@@ -95,7 +95,7 @@ const articleLink = (collection: ShopifyCollectionInsight) => ({
             {{ $t('knowledge.products', data.source.chunkCount) }}
           </NuxtLink>
           <span v-if="syncing">{{ $t('common.shopify.catalog.syncing') }}</span>
-          <NuxtTime v-else-if="data.source.fetchedAt" :datetime="data.source.fetchedAt" relative />
+          <AppTime v-else-if="data.source.fetchedAt" :datetime="data.source.fetchedAt" preset="relative" />
         </p>
         <UAlert v-if="data.source.error" color="warning" :title="$t('common.shopify.catalog.failed')" />
         <p v-if="data.truncated" class="text-sm text-warning">{{ $t('common.shopify.catalog.limit') }}</p>
