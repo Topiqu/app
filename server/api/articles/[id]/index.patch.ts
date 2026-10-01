@@ -20,8 +20,9 @@ export default defineEventHandler(async (event) => {
   if (body.clientSiteId && body.clientSiteId !== user?.clientSiteId)
     throw createError({ statusCode: 403, message: t('common.errors.articleEditForbidden')! })
 
-  if (!isCdnImageUrl(body.imageUrl)) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
-  if (body.coverMediaId !== undefined) await assertTenantMedia(user.clientSiteId!, body.coverMediaId)
+  const coverMedia = body.coverMediaId === undefined ? null : await assertTenantMedia(user.clientSiteId!, body.coverMediaId)
+  if (!isCoverImageUrl(body.imageUrl, coverMedia))
+    throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
   const currentDate = new Date()
   const maxDate = new Date(currentDate.getFullYear() + 100, 11, 31, 23, 59)

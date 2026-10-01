@@ -37,7 +37,7 @@ describe('article creation tags', () => {
       $transaction: (run: (tx: typeof db) => unknown) => run(db),
     }))
     vi.stubGlobal('readBody', async () => body)
-    vi.stubGlobal('isCdnImageUrl', () => true)
+    vi.stubGlobal('isCoverImageUrl', () => true)
     vi.stubGlobal('assertTenantMedia', async () => {})
     vi.stubGlobal('applyMediaAttributions', async (_site: string, content: string) => content)
     vi.stubGlobal('stampHeadingIds', (content: string) => content)

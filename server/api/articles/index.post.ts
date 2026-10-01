@@ -21,8 +21,9 @@ export default defineEventHandler(async (event) => {
   if (body.releaseAt && new Date(body.releaseAt).getTime() > Date.now()) body.status = 'draft'
   else if (body.status === 'published') body.releaseAt = null
 
-  if (!isCdnImageUrl(body.imageUrl)) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
-  await assertTenantMedia(user.clientSiteId!, body.coverMediaId)
+  const coverMedia = await assertTenantMedia(user.clientSiteId!, body.coverMediaId)
+  if (!isCoverImageUrl(body.imageUrl, coverMedia))
+    throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
   const requiresPublicationReview = body.status === 'published' || Boolean(body.releaseAt)
   const mediaReport = requiresPublicationReview

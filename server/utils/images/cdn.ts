@@ -8,3 +8,7 @@ export const isCdnImageUrl = (url?: string | null): boolean => {
     return false
   }
 }
+
+// Stock covers stay on their source host; one is accepted only as the tenant media asset it was registered as.
+export const isCoverImageUrl = (url?: string | null, media?: { url: string; deliveryUrl: string | null } | null) =>
+  isCdnImageUrl(url) || Boolean(url && media && (url === media.url || url === media.deliveryUrl))
