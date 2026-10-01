@@ -33,6 +33,15 @@ const metaText = (page: CommonsPage, key: string) => {
   return cheerio.load(String(raw))('body').text().replace(/\s+/g, ' ').trim() || undefined
 }
 
+/** Uploaders put requests and gallery notes into `Artist`; the user link is the name, and prose is no credit. */
+const artistName = (page: CommonsPage) => {
+  const raw = page.imageinfo?.[0]?.extmetadata?.Artist?.value
+  if (raw === undefined || raw === null) return undefined
+  const $ = cheerio.load(String(raw))
+  const name = ($('a[href*="User:"]').first().text() || $('body').text()).replace(/\s+/g, ' ').trim()
+  return name && name.length <= 80 ? name : undefined
+}
+
 export const wikimediaImage = (page: CommonsPage): StockImage | null => {
   const info = page.imageinfo?.[0]
 
@@ -45,7 +54,7 @@ export const wikimediaImage = (page: CommonsPage): StockImage | null => {
     url: info.thumburl || info.url,
     alt: metaText(page, 'ImageDescription') || page.title?.replace(/^File:/, '').replace(/\.\w+$/, ''),
     credit: {
-      author: metaText(page, 'Artist'),
+      author: artistName(page),
       license: metaText(page, 'LicenseShortName'),
       licenseUrl: typeof licenseUrl === 'string' ? licenseUrl : undefined,
       source: 'Wikimedia Commons',

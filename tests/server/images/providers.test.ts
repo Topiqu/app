@@ -39,6 +39,18 @@ describe('wikimediaImage', () => {
     })
   })
 
+  it('credits the uploader link rather than the notes around it, and no prose at all', () => {
+    const note =
+      'I would appreciate being notified if you use my work outside Wikimedia. More of my work can be found in my personal gallery.'
+    const linked = commonsPage({
+      extmetadata: { Artist: { value: `<a href="//commons.wikimedia.org/wiki/User:Jan">Jan Novák</a>. ${note}` } },
+    })
+    const prose = commonsPage({ extmetadata: { Artist: { value: note } } })
+
+    expect(wikimediaImage(linked)!.credit.author).toBe('Jan Novák')
+    expect(wikimediaImage(prose)!.credit.author).toBeUndefined()
+  })
+
   it('rejects the non-raster files Commons serves from the same namespace', () => {
     for (const mime of ['image/svg+xml', 'application/pdf', 'video/webm', 'image/tiff']) {
       expect(wikimediaImage(commonsPage({ mime }))).toBeNull()
