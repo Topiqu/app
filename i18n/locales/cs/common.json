@@ -204,7 +204,7 @@
     "errors": {
       "general": "Něco se pokazilo. Zkuste to prosím znovu.",
       "unauthorized": "Přístup zamítnut.",
-      "invalidCredentials": "Neplatný e-mail nebo heslo.",
+      "invalidCredentials": "Nesprávný e-mail nebo heslo.",
       "invalidRequest": "Neplatný požadavek.",
       "tooManyRequests": "Příliš mnoho požadavků. Zkuste to prosím později.",
       "missingBlog": "Chybí název blogu.",
@@ -252,7 +252,6 @@
       "featureNotInPlan": "Tato funkce není dostupná ve vašem tarifu",
       "aiRequired": "Nejdřív zapněte AI",
       "followNotFound": "Tento follow vztah neexistuje",
-      "invalidCredentials": "Nesprávný e-mail nebo heslo.",
       "emailNotVerified": "Nejdřív potvrď svůj e-mail. Poslali jsme ti nový ověřovací kód."
     },
     "notifications": {
@@ -282,7 +281,7 @@
       "tags": "Štítky",
       "home": "Domů",
       "notifications": "Oznámení",
-      "toggleTheme": "Přepnout barevný motiv",
+      "toggleTheme": "Přepnout barevný režim",
       "pickDate": "Vybrat datum",
       "continue": "Pokračovat",
       "send": "Odeslat",
@@ -314,7 +313,6 @@
       "openNotifications": "Otevřít oznámení",
       "deleteNotification": "Smazat oznámení",
       "togglePassword": "Zobrazit nebo skrýt heslo",
-      "toggleTheme": "Přepnout barevný režim",
       "toggleChart": "Přepnout typ grafu",
       "addUser": "Přidat uživatele",
       "deleteEmoji": "Smazat emoji",

@@ -21,7 +21,32 @@ const messagesOf = (language: string) =>
     .filter((file) => file.endsWith('.json'))
     .flatMap((file) => strings(JSON.parse(readFileSync(join(localeRoot, file), 'utf8')), file))
 
+const keyCount = (value: unknown): number =>
+  value && typeof value === 'object'
+    ? Object.values(value).reduce<number>(
+        (count, child) => count + keyCount(child),
+        Array.isArray(value) ? 0 : Object.keys(value).length,
+      )
+    : 0
+
 describe('i18n message syntax', () => {
+  // `JSON.parse` keeps the last of two equal keys without a word, so the first translation silently
+  // disappears. In valid JSON only a property name is followed by a colon.
+  it('has no duplicate keys', () => {
+    const files = [
+      ...LANGUAGE_OPTIONS.flatMap((language) => readdirSync(join(localeRoot, language)).map((f) => `${language}/${f}`)),
+      ...LANGUAGE_OPTIONS.map((language) => `master_${language}.json`),
+    ].filter((file) => file.endsWith('.json'))
+    const duplicated = files.filter((file) => {
+      const raw = readFileSync(join(localeRoot, file), 'utf8')
+      // Whole string tokens in order, so an escaped `\":` inside a value is never read as a key.
+      const keys = [...raw.matchAll(/"(?:[^"\\]|\\.)*"(\s*:)?/g)].filter((match) => match[1]).length
+      return keys !== keyCount(JSON.parse(raw))
+    })
+
+    expect(duplicated).toEqual([])
+  })
+
   it.each(LANGUAGE_OPTIONS)('compiles every %s message', (language) => {
     const errors = messagesOf(language).flatMap(([key, message]) => {
       const found: string[] = []

@@ -195,7 +195,7 @@
       "tags": "Tags",
       "home": "Home",
       "notifications": "Notifications",
-      "toggleTheme": "Toggle color theme",
+      "toggleTheme": "Toggle color mode",
       "pickDate": "Pick a date",
       "continue": "Continue",
       "send": "Send",
@@ -227,7 +227,6 @@
       "openNotifications": "Open notifications",
       "deleteNotification": "Delete notification",
       "togglePassword": "Show or hide password",
-      "toggleTheme": "Toggle color mode",
       "toggleChart": "Change chart type",
       "addUser": "Add user",
       "deleteEmoji": "Delete emoji",
@@ -268,7 +267,7 @@
     "errors": {
       "general": "Something went wrong. Please try again.",
       "unauthorized": "Access denied.",
-      "invalidCredentials": "Invalid email or password.",
+      "invalidCredentials": "Incorrect email or password.",
       "invalidRequest": "Invalid request.",
       "tooManyRequests": "Too many requests. Please try again later.",
       "missingBlog": "Missing blog name.",
@@ -316,7 +315,6 @@
       "roleChangeForbidden": "Changing role is not allowed",
       "featureNotInPlan": "This feature is not available on your plan",
       "aiRequired": "Enable AI first",
-      "invalidCredentials": "Incorrect email or password.",
       "emailNotVerified": "Please confirm your email first. We have sent you a new verification code."
     },
     "notifications": {
