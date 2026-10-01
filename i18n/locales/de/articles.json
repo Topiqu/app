@@ -975,6 +975,21 @@
         "openInLibrary": "In der Mediathek öffnen",
         "delete": "Bild löschen",
         "captionPlaceholder": "Bildunterschrift hinzufügen…"
+      },
+      "publishDialog": {
+        "title": "Artikel veröffentlichen",
+        "titleUpdate": "Änderungen speichern",
+        "description": "Wählen Sie, wo der Artikel erscheinen soll.",
+        "descriptionUpdate": "Der Artikel bleibt in Ihrem Topiqu-Blog veröffentlicht.",
+        "topiqu": "Topiqu-Blog",
+        "topiquHelp": "Ohne Häkchen bleibt der Artikel in Topiqu ein Entwurf.",
+        "shopify": "Shopify",
+        "shopifyHelp": "Blog: {blog}",
+        "mode": "Status in Shopify",
+        "draft": "Entwurf",
+        "published": "Veröffentlicht",
+        "scheduled": "Geplante Artikel werden als Entwurf an Shopify gesendet. Veröffentlichen Sie sie dort, sobald sie erscheinen.",
+        "sendOnly": "An Shopify senden"
       }
     },
     "image": {

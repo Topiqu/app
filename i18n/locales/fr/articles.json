@@ -975,6 +975,21 @@
         "openInLibrary": "Ouvrir dans la médiathèque",
         "delete": "Supprimer l'image",
         "captionPlaceholder": "Ajouter une légende…"
+      },
+      "publishDialog": {
+        "title": "Publier l’article",
+        "titleUpdate": "Enregistrer les modifications",
+        "description": "Choisissez où l’article doit apparaître.",
+        "descriptionUpdate": "L’article reste publié sur votre blog Topiqu.",
+        "topiqu": "Blog Topiqu",
+        "topiquHelp": "Si la case est décochée, l’article reste un brouillon dans Topiqu.",
+        "shopify": "Shopify",
+        "shopifyHelp": "Blog : {blog}",
+        "mode": "Statut dans Shopify",
+        "draft": "Brouillon",
+        "published": "Publié",
+        "scheduled": "Les articles programmés sont envoyés à Shopify comme brouillon. Publiez-les là-bas une fois en ligne.",
+        "sendOnly": "Envoyer à Shopify"
       }
     },
     "image": {

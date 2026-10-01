@@ -46,3 +46,11 @@ export interface ShopifyPublication {
   lastSyncedAt: string | null
   lastError: string | null
 }
+
+export type ShopifyPublishMode = 'draft' | 'published'
+
+/** The editor's publish dialog: `shopify: null` leaves Shopify untouched. */
+export interface PublishChoice {
+  topiqu: boolean
+  shopify: ShopifyPublishMode | null
+}

@@ -1,6 +1,6 @@
 // @vitest-environment nuxt
-import { shallowRef } from 'vue'
 import { createError, readBody } from 'h3'
+import { defineComponent, h, shallowRef } from 'vue'
 import { enableAutoUnmount, flushPromises } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockNuxtImport, mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
@@ -17,7 +17,7 @@ const mocks = vi.hoisted(() => ({
   fetch: vi.fn(),
   toast: vi.fn(),
 }))
-mockNuxtImport('useShopify', () => async () => ({ data: mocks.status, refresh: mocks.refresh }))
+mockNuxtImport('useShopify', () => () => ({ data: mocks.status, refresh: mocks.refresh }))
 mockNuxtImport('useI18n', () => () => ({ t: (key: string) => key }))
 mockNuxtImport('useLocalePath', () => () => () => '/en/settings')
 mockNuxtImport('useConfirm', () => () => mocks.confirm)
@@ -50,18 +50,17 @@ const publication = {
 
 const button = (wrapper: Awaited<ReturnType<typeof mountSuspended>>, key: string) =>
   wrapper.findAll('button').find((button) => button.text().includes(key))!
+const global = {
+  mocks: { $t: (key: string) => key },
+  stubs: {
+    UModal: { template: '<div><slot name="body" /><slot name="footer" /></div>' },
+    UPopover: { template: '<div><slot /><slot name="content" /></div>' },
+    UIcon: true,
+    AppTime: true,
+  },
+}
 const mount = async (disabled = false) => {
-  const wrapper = await mountSuspended(ShopifyEditor, {
-    props: { articleId: 'article-1', disabled },
-    global: {
-      mocks: { $t: (key: string) => key },
-      stubs: {
-        UModal: { template: '<div><slot name="body" /><slot name="footer" /></div>' },
-        UIcon: true,
-        NuxtTime: true,
-      },
-    },
-  })
+  const wrapper = await mountSuspended(ShopifyEditor, { props: { articleId: 'article-1', disabled }, global })
   await flushPromises()
   return wrapper
 }
@@ -86,7 +85,10 @@ describe('Shopify publishing in the editor', () => {
     mocks.confirm.mockResolvedValue(true)
     mocks.fetch.mockImplementation(async (_url, options) => (options?.method === 'POST' ? publication : null))
   })
-  afterEach(() => vi.unstubAllGlobals())
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    history.replaceState(null, '')
+  })
 
   it('blocks sending unsaved changes', async () => {
     const wrapper = await mount(true)
@@ -159,5 +161,35 @@ describe('Shopify publishing in the editor', () => {
       method: 'POST',
       body: { mode: 'published', mediaRightsReview: { fingerprint: 'review-1', acknowledged: true } },
     })
+  })
+
+  it('sends a save from the publish dialog even while the editor is still disabled', async () => {
+    let panel: { send: (mode: string) => Promise<void> } | null = null
+    const Page = defineComponent(() => () =>
+      h(ShopifyEditor, { articleId: 'article-1', disabled: true, ref: (el) => (panel = el as typeof panel) }),
+    )
+    await mountSuspended(Page, { global })
+    await flushPromises()
+    await panel!.send('published')
+    await flushPromises()
+    expect(mocks.fetch).toHaveBeenCalledWith('/api/articles/article-1/shopify', {
+      method: 'POST',
+      body: { mode: 'published' },
+    })
+    expect(mocks.confirm).not.toHaveBeenCalled()
+  })
+
+  it('sends once from the history state a remounting save left behind', async () => {
+    history.replaceState({ shopify: { mode: 'draft', review: { fingerprint: 'review-1', acknowledged: true } } }, '')
+    await mount()
+    await flushPromises()
+    const posts = mocks.fetch.mock.calls.filter((call) => call[1]?.method === 'POST')
+    expect(posts).toEqual([
+      [
+        '/api/articles/article-1/shopify',
+        { method: 'POST', body: { mode: 'draft', mediaRightsReview: { fingerprint: 'review-1', acknowledged: true } } },
+      ],
+    ])
+    expect(history.state.shopify).toBeNull()
   })
 })

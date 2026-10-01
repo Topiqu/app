@@ -975,6 +975,21 @@
         "openInLibrary": "Open in media library",
         "delete": "Delete image",
         "captionPlaceholder": "Add a caption…"
+      },
+      "publishDialog": {
+        "title": "Publish article",
+        "titleUpdate": "Save changes",
+        "description": "Choose where the article should appear.",
+        "descriptionUpdate": "The article stays published on your Topiqu blog.",
+        "topiqu": "Topiqu blog",
+        "topiquHelp": "When unchecked, the article stays a draft in Topiqu.",
+        "shopify": "Shopify",
+        "shopifyHelp": "Blog: {blog}",
+        "mode": "Status in Shopify",
+        "draft": "Draft",
+        "published": "Published",
+        "scheduled": "Scheduled articles are sent to Shopify as a draft. Publish them there once they go live.",
+        "sendOnly": "Send to Shopify"
       }
     },
     "image": {

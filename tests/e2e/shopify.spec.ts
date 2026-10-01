@@ -103,7 +103,9 @@ test('confirms a store opened from Shopify and saves the selected blog', async (
   await page.screenshot({ path: test.info().outputPath('shopify-settings.png'), fullPage: true })
 })
 
-test('publishes the saved article and disables sending after an unsaved title change', async ({ page }) => {
+test('publishes to Shopify from the publish dialog and disables sending after an unsaved title change', async ({
+  page,
+}) => {
   await page.route('**/api/shopify/status', (route) => route.fulfill({ json: status() }))
   let sent = false
   const remote = {
@@ -122,15 +124,26 @@ test('publishes the saved article and disables sending after an unsaved title ch
     return route.fulfill({ json: remote })
   })
   await page.goto('/en/admin/editor/shopify-test-article')
-  const publication = page.locator('[data-shopify-publication]')
-  const publish = publication.getByRole('button', { name: 'Publish in Shopify', exact: true })
-  await expect(publish).toBeEnabled({ timeout: 20_000 })
-  await publish.click()
+  const shopify = page.locator('[data-shopify-status]')
+  await expect(shopify).toBeVisible({ timeout: 20_000 })
+  await page.locator('[data-editor-command-bar]').getByRole('button', { name: 'Publish', exact: true }).click()
+  const dialog = page.locator('[data-publish-dialog]')
+  await expect(dialog.getByLabel('Topiqu blog', { exact: true })).toBeChecked()
+  await expect(dialog.getByLabel('Shopify', { exact: true })).toBeChecked()
+  await dialog.getByRole('radio', { name: 'Published', exact: true }).click()
+  await page.screenshot({ path: test.info().outputPath('shopify-publish-dialog.png'), fullPage: true })
+  await page.locator('[data-publish-confirm]').click()
   await expect.poll(() => sent).toBe(true)
+  await expect(page.locator('[data-editor-command-bar]').getByRole('button', { name: 'Save changes' })).toBeVisible()
+
+  await shopify.click()
+  const publication = page.locator('[data-shopify-publication]')
   await expect(publication.getByRole('button', { name: 'Update in Shopify', exact: true })).toBeVisible()
   await page.screenshot({ path: test.info().outputPath('shopify-editor.png'), fullPage: true })
+  await page.keyboard.press('Escape')
   const title = page.getByRole('textbox', { name: 'Article title', exact: true })
   await title.fill('Unsaved title change')
+  await shopify.click()
   await expect(publication.getByRole('button', { name: 'Send as draft', exact: true })).toBeDisabled()
   await expect(publication.getByText('Save the article in Topiqu before sending it to Shopify.')).toBeVisible()
 })

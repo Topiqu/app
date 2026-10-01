@@ -1,35 +1,40 @@
 <script setup lang="ts">
-import type { ShopifyPublication } from '~~/shared/types/shopify'
+import type { ShopifyPublication, ShopifyPublishMode } from '~~/shared/types/shopify'
 import type { MediaRightsReport, MediaRightsReview } from '~~/shared/types/mediaRights'
+
+type Handoff = { mode: ShopifyPublishMode; review: MediaRightsReview | null }
 
 const props = defineProps<{ articleId?: string; disabled?: boolean }>()
 const { t } = useI18n()
 const toast = useToast()
 const confirm = useConfirm()
 const localePath = useLocalePath()
-const { data, refresh } = await useShopify()
+const { data, refresh } = useShopify()
 const publication = shallowRef<ShopifyPublication | null>(null)
 const busy = shallowRef(false)
 const loadFailed = shallowRef(false)
 const loadingPublication = shallowRef(false)
-const mode = shallowRef<'draft' | 'published'>('draft')
+const mode = shallowRef<ShopifyPublishMode>('draft')
 const review = shallowRef<MediaRightsReport | null>(null)
 const reviewOpen = shallowRef(false)
-const visible = computed(() => data.value?.eligible && data.value.canPublish && data.value.connection)
-const ready = computed(() => data.value?.connection?.status === 'CONNECTED' && data.value.connection.blogId)
-const pending = computed(() => ['QUEUED', 'PUBLISHING'].includes(publication.value?.status || ''))
-const canSend = computed(
-  () =>
-    ready.value &&
-    props.articleId &&
-    !props.disabled &&
-    !busy.value &&
-    !pending.value &&
-    !loadFailed.value &&
-    !loadingPublication.value,
+const handoff = shallowRef<Handoff | null>(null)
+const visible = computed(() => Boolean(data.value?.eligible && data.value.canPublish && data.value.connection))
+const ready = computed(
+  () => visible.value && data.value?.connection?.status === 'CONNECTED' && Boolean(data.value.connection.blogId),
 )
-const color = computed(() =>
-  publication.value?.status === 'SYNCED' ? 'success' : publication.value?.status === 'FAILED' ? 'error' : 'warning',
+const pending = computed(() => ['QUEUED', 'PUBLISHING'].includes(publication.value?.status || ''))
+const canPost = computed(() => ready.value && !busy.value && !pending.value && !loadFailed.value && !loadingPublication.value)
+const canSend = computed(() => canPost.value && Boolean(props.articleId) && !props.disabled)
+const color = computed(() => {
+  const status = publication.value?.status
+  if (status === 'SYNCED') return 'success'
+  if (status === 'FAILED') return 'error'
+  return status === 'UNCERTAIN' ? 'warning' : 'info'
+})
+const label = computed(() =>
+  publication.value
+    ? `${t('common.shopify.title')}: ${t(`common.shopify.publication.${publication.value.status}`)}`
+    : t('common.shopify.title'),
 )
 const loadPublication = async () => {
   if (!props.articleId || !visible.value) return
@@ -59,16 +64,24 @@ onMounted(() => {
   timer = setInterval(() => {
     if (pending.value && !busy.value && !loadingPublication.value) void loadPublication()
   }, 3000)
+  // A save that creates the article or changes its slug remounts the page before it can send.
+  // History state, unlike a query, cannot be set by a link from another site.
+  const state = history.state as { shopify?: Handoff | null } | null
+  if (state?.shopify) {
+    handoff.value = state.shopify
+    history.replaceState({ ...state, shopify: null }, '')
+  }
 })
 onBeforeUnmount(() => clearInterval(timer))
 
-const send = async (rights?: MediaRightsReview) => {
-  if (!canSend.value) return
+const post = async (nextMode: ShopifyPublishMode, rights?: MediaRightsReview | null) => {
+  if (!canPost.value || !props.articleId) return
+  mode.value = nextMode
   busy.value = true
   try {
     publication.value = await $fetch<ShopifyPublication>(`/api/articles/${props.articleId}/shopify`, {
       method: 'POST',
-      body: { mode: mode.value, ...(rights ? { mediaRightsReview: rights } : {}) },
+      body: { mode: nextMode, ...(rights ? { mediaRightsReview: rights } : {}) },
     })
     if (publication.value?.status === 'SYNCED') toast.add({ color: 'success', title: t('common.shopify.sent') })
     await refresh()
@@ -85,7 +98,18 @@ const send = async (rights?: MediaRightsReview) => {
     busy.value = false
   }
 }
-const requestSend = async (nextMode: 'draft' | 'published') => {
+watch(
+  () => Boolean(handoff.value && canPost.value && props.articleId),
+  (go) => {
+    if (!go || !handoff.value) return
+    const { mode: nextMode, review: rights } = handoff.value
+    handoff.value = null
+    void post(nextMode, rights)
+  },
+  { immediate: true },
+)
+
+const requestSend = async (nextMode: ShopifyPublishMode) => {
   if (!canSend.value) return
   if (
     publication.value?.shopifyArticleId &&
@@ -99,99 +123,106 @@ const requestSend = async (nextMode: 'draft' | 'published') => {
     }))
   )
     return
-  mode.value = nextMode
-  await send()
+  await post(nextMode)
 }
 const confirmReview = async () => {
   if (!review.value) return
   reviewOpen.value = false
-  await send({ fingerprint: review.value.fingerprint, acknowledged: true })
+  await post(mode.value, { fingerprint: review.value.fingerprint, acknowledged: true })
 }
+
+// The publish dialog already confirmed the overwrite and the caller has just saved the article.
+defineExpose({ ready, publication, blog: computed(() => data.value?.connection?.blogTitle ?? null), send: post })
 </script>
 
 <template>
-  <section v-if="visible" class="mb-6 rounded-lg border border-default bg-elevated/30 p-4" data-shopify-publication>
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <div class="min-w-0">
-        <p class="flex items-center gap-2 font-semibold text-highlighted">
-          <UIcon name="mdi:shopify" class="size-5 text-[#95bf47]" />{{ $t('common.shopify.title') }}
-        </p>
-        <p class="mt-1 text-xs text-muted">{{ data?.connection?.blogTitle || $t('common.shopify.chooseBlog') }}</p>
-      </div>
-      <div class="flex flex-wrap items-center gap-2">
-        <UBadge v-if="publication" :color="color" variant="soft" aria-live="polite">{{
-          $t(`common.shopify.publication.${publication.status}`)
-        }}</UBadge>
-        <UButton
-          v-if="!ready"
-          :to="localePath({ name: 'settings', query: { tab: 'integrations', shopify: 'settings' } })"
-          color="neutral"
-          variant="soft"
-          >{{ $t('common.shopify.settings') }}</UButton
-        >
-        <template v-else>
-          <UButton
-            color="neutral"
-            variant="soft"
-            :loading="busy && mode === 'draft'"
-            :disabled="!canSend"
-            @click="requestSend('draft')"
-            >{{ $t('common.shopify.sendDraft') }}</UButton
-          >
-          <UButton :loading="busy && mode === 'published'" :disabled="!canSend" @click="requestSend('published')">{{
-            $t(
-              publication?.shopifyArticleId && publication.isPublished
-                ? 'common.shopify.update'
-                : 'common.shopify.publish',
-            )
-          }}</UButton>
+  <template v-if="visible">
+    <UPopover :content="{ align: 'end' }">
+      <UButton color="neutral" variant="ghost" square :aria-label="label" :title="label" data-shopify-status>
+        <template #leading>
+          <UChip :show="Boolean(publication)" :color size="sm">
+            <UIcon name="mdi:shopify" class="size-5 text-[#95bf47]" />
+          </UChip>
         </template>
-        <UButton
-          v-if="publication?.shopifyArticleId"
-          :to="`https://${data?.connection?.shop}/admin/articles/${publication.shopifyArticleId.split('/').at(-1)}`"
-          target="_blank"
-          rel="noopener noreferrer"
-          color="neutral"
-          variant="ghost"
-          icon="mdi:store-edit-outline"
-          :aria-label="$t('common.shopify.view')"
-        />
-        <UButton
-          v-if="publication?.url && publication.isPublished"
-          :to="publication.url"
-          target="_blank"
-          rel="noopener noreferrer"
-          color="neutral"
-          variant="ghost"
-          icon="mdi:open-in-new"
-          :aria-label="$t('common.shopify.view')"
-        />
-      </div>
-    </div>
-    <p v-if="!articleId || disabled" class="mt-3 text-xs text-muted">{{ $t('common.shopify.saveFirst') }}</p>
-    <p v-if="publication?.lastSyncedAt" class="mt-3 text-xs text-muted">
-      {{ $t('common.shopify.lastSync') }} <NuxtTime :datetime="publication.lastSyncedAt" relative />
-    </p>
-    <UAlert
-      v-if="publication?.status === 'UNCERTAIN'"
-      class="mt-3"
-      color="warning"
-      :title="$t('common.shopify.uncertain')"
-    />
-    <UAlert
-      v-else-if="publication?.lastError"
-      class="mt-3"
-      color="warning"
-      :title="$t('common.shopify.actionFailed')"
-      :description="publication.lastError"
-    />
-    <UAlert v-if="loadFailed" class="mt-3" color="error" :title="$t('common.shopify.actionFailed')">
-      <template #actions
-        ><UButton color="neutral" variant="soft" @click="loadPublication">{{
-          $t('common.shopify.retry')
-        }}</UButton></template
-      >
-    </UAlert>
+      </UButton>
+      <template #content>
+        <div class="w-80 max-w-[calc(100vw-2rem)] space-y-3 p-4" data-shopify-publication>
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="font-semibold text-highlighted">{{ $t('common.shopify.title') }}</p>
+              <p class="mt-0.5 truncate text-xs text-muted">
+                {{ data?.connection?.blogTitle || $t('common.shopify.chooseBlog') }}
+              </p>
+            </div>
+            <UBadge v-if="publication" :color variant="soft" aria-live="polite">{{
+              $t(`common.shopify.publication.${publication.status}`)
+            }}</UBadge>
+          </div>
+          <p v-if="!articleId || disabled" class="text-xs text-muted">{{ $t('common.shopify.saveFirst') }}</p>
+          <p v-if="publication?.lastSyncedAt" class="text-xs text-muted">
+            {{ $t('common.shopify.lastSync') }} <AppTime :datetime="publication.lastSyncedAt" preset="relative" />
+          </p>
+          <UAlert v-if="publication?.status === 'UNCERTAIN'" color="warning" :title="$t('common.shopify.uncertain')" />
+          <UAlert
+            v-else-if="publication?.lastError"
+            color="warning"
+            :title="$t('common.shopify.actionFailed')"
+            :description="publication.lastError"
+          />
+          <UAlert v-if="loadFailed" color="error" :title="$t('common.shopify.actionFailed')">
+            <template #actions>
+              <UButton color="neutral" variant="soft" @click="loadPublication">{{ $t('common.shopify.retry') }}</UButton>
+            </template>
+          </UAlert>
+          <div class="flex flex-wrap items-center gap-2">
+            <UButton
+              v-if="!ready"
+              :to="localePath({ name: 'settings', query: { tab: 'integrations', shopify: 'settings' } })"
+              color="neutral"
+              variant="soft"
+              >{{ $t('common.shopify.settings') }}</UButton
+            >
+            <template v-else>
+              <UButton
+                color="neutral"
+                variant="soft"
+                :loading="busy && mode === 'draft'"
+                :disabled="!canSend"
+                @click="requestSend('draft')"
+                >{{ $t('common.shopify.sendDraft') }}</UButton
+              >
+              <UButton :loading="busy && mode === 'published'" :disabled="!canSend" @click="requestSend('published')">{{
+                $t(
+                  publication?.shopifyArticleId && publication.isPublished
+                    ? 'common.shopify.update'
+                    : 'common.shopify.publish',
+                )
+              }}</UButton>
+            </template>
+            <UButton
+              v-if="publication?.shopifyArticleId"
+              :to="`https://${data?.connection?.shop}/admin/articles/${publication.shopifyArticleId.split('/').at(-1)}`"
+              target="_blank"
+              rel="noopener noreferrer"
+              color="neutral"
+              variant="ghost"
+              icon="mdi:store-edit-outline"
+              :aria-label="$t('common.shopify.view')"
+            />
+            <UButton
+              v-if="publication?.url && publication.isPublished"
+              :to="publication.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              color="neutral"
+              variant="ghost"
+              icon="mdi:open-in-new"
+              :aria-label="$t('common.shopify.view')"
+            />
+          </div>
+        </div>
+      </template>
+    </UPopover>
     <UModal
       v-model:open="reviewOpen"
       :title="$t('articles.editor.mediaRights.publishTitle')"
@@ -214,8 +245,8 @@ const confirmReview = async () => {
       </template>
       <template #footer>
         <UButton color="neutral" variant="ghost" @click="reviewOpen = false">{{ $t('common.actions.cancel') }}</UButton>
-        <UButton :disabled="!canSend" @click="confirmReview">{{ $t('common.shopify.confirmSend') }}</UButton>
+        <UButton :disabled="!canPost" @click="confirmReview">{{ $t('common.shopify.confirmSend') }}</UButton>
       </template>
     </UModal>
-  </section>
+  </template>
 </template>

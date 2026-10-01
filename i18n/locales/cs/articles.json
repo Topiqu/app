@@ -975,6 +975,21 @@
         "openInLibrary": "Otevřít v knihovně médií",
         "delete": "Smazat obrázek",
         "captionPlaceholder": "Přidat popisek…"
+      },
+      "publishDialog": {
+        "title": "Publikovat článek",
+        "titleUpdate": "Uložit změny",
+        "description": "Vyberte, kde se má článek objevit.",
+        "descriptionUpdate": "Článek zůstane publikovaný na vašem blogu Topiqu.",
+        "topiqu": "Blog Topiqu",
+        "topiquHelp": "Bez zaškrtnutí zůstane článek v Topiqu jako koncept.",
+        "shopify": "Shopify",
+        "shopifyHelp": "Blog: {blog}",
+        "mode": "Stav v Shopify",
+        "draft": "Koncept",
+        "published": "Publikováno",
+        "scheduled": "Naplánované články se do Shopify odešlou jako koncept. Publikujte je tam, až vyjdou.",
+        "sendOnly": "Odeslat do Shopify"
       }
     },
     "image": {

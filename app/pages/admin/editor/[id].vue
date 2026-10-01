@@ -86,6 +86,12 @@
           :aria-label="$t('articles.editor.preview.title')"
           @click="previewing = true"
         />
+        <ArticleEditorShopify
+          v-if="tr.isSource && clientSite?.plan !== 'BASIC'"
+          ref="shopifyPanel"
+          :articleId="isNew ? undefined : article?.id"
+          :disabled="submitting || aiGenerating || hasChanges"
+        />
 
         <UButton
           icon="mdi:cog"
@@ -116,7 +122,7 @@
           color="primary"
           variant="solid"
           class="shrink-0"
-          @click="submit('published')"
+          @click="requestPublish"
         >
           {{ publishLabel }}
         </UButton>
@@ -132,11 +138,6 @@
       :title="successMessage"
     />
 
-    <ArticleEditorShopify
-      v-if="tr.isSource && clientSite?.plan !== 'BASIC'"
-      :articleId="isNew ? undefined : article?.id"
-      :disabled="submitting || aiGenerating || hasChanges"
-    />
 
     <UProgress v-if="!isNew && tr.status === 'pending'" class="mb-6" :aria-label="$t('common.loading')" />
 
@@ -514,14 +515,27 @@
         </div>
       </template>
     </UModal>
+
+    <ArticleEditorPublishDialog
+      v-model:open="publishDialogOpen"
+      :topiquPublished="editedArticle.status === 'published'"
+      :scheduled="publishScheduled"
+      :blog="shopifyPanel?.blog"
+      :publication="shopifyPanel?.publication"
+      :label="publishLabel"
+      :loading="submitting"
+      @confirm="confirmPublish"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
+import type { HistoryState } from 'vue-router'
 import type { ComponentPublicInstance } from 'vue'
 import type { ArticleWithDetails } from '~~/types/article'
 import type { CoverCredit } from '~~/shared/utils/imageCredit'
 import type { OptimizationTarget } from '~~/shared/types/articleOptimization'
+import type { PublishChoice, ShopifyPublishMode } from '~~/shared/types/shopify'
 import type { MediaRightsItem, MediaRightsReport, MediaRightsReview } from '~~/shared/types/mediaRights'
 
 import { hasAiPlan } from '~~/shared/utils/plans'
@@ -554,6 +568,9 @@ const submitting = shallowRef(false)
 const mediaPublishReviewOpen = shallowRef(false)
 const pendingMediaReport = shallowRef<MediaRightsReport | null>(null)
 const pendingMediaTarget = shallowRef<'draft' | 'published'>('published')
+const pendingShopify = shallowRef<ShopifyPublishMode | null>(null)
+const publishDialogOpen = shallowRef(false)
+const shopifyPanel = useTemplateRef('shopifyPanel')
 
 const article = shallowRef<ArticleWithDetails | undefined>(undefined)
 type RecoverableGeneration = {
@@ -1015,6 +1032,7 @@ const settingsTab = shallowRef<'article' | 'ai' | 'checks'>(
 )
 
 const publishLabel = computed(() => t(`articles.${publishAction(editedArticle.value, isNew)}`))
+const publishScheduled = computed(() => publishAction(editedArticle.value, isNew) === 'schedule')
 
 const handleUpload = (file: { url: string; optimizedUrl: string; mediaAsset?: { id: string } }) => {
   editedArticle.value.imageUrl = file.url
@@ -1087,7 +1105,26 @@ const generateAIContent = async () => {
   await run
 }
 
-const submit = async (targetStatus: 'draft' | 'published', mediaRightsReview?: MediaRightsReview) => {
+// The page remounts on a new slug, so the Shopify panel picks the send up from history state.
+const shopifyHandoff = (mode: ShopifyPublishMode | null, review?: MediaRightsReview): HistoryState =>
+  mode ? { shopify: { mode, review: review ? { fingerprint: review.fingerprint, acknowledged: true } : null } } : {}
+// Opens the channel choice only where Shopify is set up and publishing would change something there.
+const requestPublish = () => {
+  const offersShopify =
+    shopifyPanel.value?.ready && (editedArticle.value.status !== 'published' || shopifyPanel.value.publication?.shopifyArticleId)
+  if (offersShopify) publishDialogOpen.value = true
+  else void submit('published')
+}
+const confirmPublish = (choice: PublishChoice) => {
+  publishDialogOpen.value = false
+  void submit(choice.topiqu ? 'published' : 'draft', undefined, choice.shopify)
+}
+
+const submit = async (
+  targetStatus: 'draft' | 'published',
+  mediaRightsReview?: MediaRightsReview,
+  shopify: ShopifyPublishMode | null = null,
+) => {
   if (submitting.value) return
   if (isNew) {
     newLanguageDrafts[newArticleLanguage.value] = {
@@ -1169,7 +1206,10 @@ const submit = async (targetStatus: 'draft' | 'published', mediaRightsReview?: M
       // the article id into its fetch URL at construction, so it has to be rebuilt against the
       // saved article before the language tabs mean anything.
       allowNavigation.value = true
-      await router.replace(localePath({ name: 'admin-editor-id', params: { id: created.slug } }))
+      await router.replace({
+        path: localePath({ name: 'admin-editor-id', params: { id: created.slug } }),
+        state: shopifyHandoff(shopify, mediaRightsReview),
+      })
     } else {
       await $fetch(`/api/articles/${article.value!.id}`, {
         method: 'PATCH',
@@ -1198,14 +1238,18 @@ const submit = async (targetStatus: 'draft' | 'published', mediaRightsReview?: M
       // The route param is the slug, and the old one now only redirects on the public page.
       if (slugChanged) {
         allowNavigation.value = true
-        await router.replace(localePath({ name: 'admin-editor-id', params: { id: payload.slug } }))
-      }
+        await router.replace({
+          path: localePath({ name: 'admin-editor-id', params: { id: payload.slug } }),
+          state: shopifyHandoff(shopify, mediaRightsReview),
+        })
+      } else if (shopify) await shopifyPanel.value?.send(shopify, mediaRightsReview)
     }
   } catch (e: any) {
     const responseData = e?.data?.data ?? e?.data ?? e?.response?._data?.data ?? e?.response?._data
     if (responseData?.code === 'MEDIA_RIGHTS_REVIEW_REQUIRED' && responseData.report) {
       pendingMediaReport.value = responseData.report
       pendingMediaTarget.value = targetStatus
+      pendingShopify.value = shopify
       mediaPublishReviewOpen.value = true
       return
     }
@@ -1228,7 +1272,7 @@ const confirmMediaRightsPublish = async () => {
   const fingerprint = pendingMediaReport.value?.fingerprint
   if (!fingerprint) return
   mediaPublishReviewOpen.value = false
-  await submit(pendingMediaTarget.value, { fingerprint, acknowledged: true })
+  await submit(pendingMediaTarget.value, { fingerprint, acknowledged: true }, pendingShopify.value)
 }
 
 const hasChanges = computed(() => {
