@@ -32,7 +32,7 @@
 </template>
 
 <script setup lang="ts">
-import { normalizeImageHref } from '~~/shared/utils/articleFigure'
+import { normalizeImageHref } from '~/utils/articleFigure'
 
 interface ImageDetails {
   alt: string

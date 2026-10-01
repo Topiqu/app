@@ -92,6 +92,7 @@ import type { BubbleMenuPluginProps } from '@tiptap/extension-bubble-menu'
 import { NodeSelection } from '@tiptap/pm/state'
 import { BubbleMenu } from '@tiptap/vue-3/menus'
 import { TEXT_EDIT_ACTIONS } from '~~/shared/utils/aiEdit'
+
 import type { SelectedTextPassage } from '~/composables/useTiptapRewrite'
 
 const { editor } = defineProps<{ editor: Editor }>()

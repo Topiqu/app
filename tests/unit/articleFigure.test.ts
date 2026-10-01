@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { normalizeImageHref, parseFigureAlign, parseImageWidth, snapImageWidth } from '../../shared/utils/articleFigure'
+import { normalizeImageHref, parseFigureAlign, parseImageWidth, snapImageWidth } from '../../app/utils/articleFigure'
 
 describe('image width', () => {
   it('snaps to 5 % steps between 10 % and full width', () => {

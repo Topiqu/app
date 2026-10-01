@@ -1,6 +1,6 @@
 import { Image } from '@tiptap/extension-image'
 
-import { parseImageWidth } from '../shared/utils/articleFigure'
+import { parseImageWidth } from '../app/utils/articleFigure'
 
 /** An image inside running text; standalone images are `Figure`s. */
 export const InlineImage = Image.configure({

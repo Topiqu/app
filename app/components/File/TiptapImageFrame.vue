@@ -64,7 +64,7 @@
 </template>
 
 <script setup lang="ts">
-import { snapImageWidth } from '~~/shared/utils/articleFigure'
+import { snapImageWidth } from '~/utils/articleFigure'
 
 const {
   alt,

@@ -1,9 +1,9 @@
 import { Node } from '@tiptap/core'
 import { NodeSelection, Plugin, PluginKey } from '@tiptap/pm/state'
 
-import type { FigureAlign } from '../shared/utils/articleFigure'
+import type { FigureAlign } from '../app/utils/articleFigure'
 
-import { normalizeImageHref, parseFigureAlign, parseImageWidth } from '../shared/utils/articleFigure'
+import { normalizeImageHref, parseFigureAlign, parseImageWidth } from '../app/utils/articleFigure'
 
 export interface FigureAttrs {
   src: string
