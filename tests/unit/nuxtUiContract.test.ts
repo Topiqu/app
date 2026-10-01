@@ -368,6 +368,7 @@ describe('Nuxt UI template contract', () => {
       'app/components/Article/Editor/Popover.vue',
       'app/components/Form/Client/AI.vue',
       'app/components/Tiptap/Editor.vue',
+      'app/components/Article/Editor/PromptInput.vue',
       'app/pages/clanky/[slug].vue',
       'app/pages/index.vue',
       'app/components/AppMedia.vue',

@@ -2,16 +2,15 @@
   <fieldset :disabled="aiGenerating" class="flex min-w-0 flex-col gap-4 disabled:opacity-70">
     <legend class="sr-only">{{ $t('articles.editor.tabs.ai') }}</legend>
     <UFormField :label="$t('articles.editor.ai.topicLabel')">
-      <UTextarea
+      <ArticleEditorPromptInput
         v-model="customPrompt"
+        :disabled="aiGenerating"
+        :label="$t('articles.editor.ai.topicLabel')"
         :placeholder="
           aiOptions.format === 'story'
             ? $t('articles.editor.ai.topicPlaceholderStory')
             : $t('articles.editor.ai.topicPlaceholder')
         "
-        :rows="4"
-        class="w-full"
-        autoresize
       />
     </UFormField>
     <ArticleEditorPromptTools v-model="customPrompt" :format="aiOptions.format" />
