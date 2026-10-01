@@ -137,11 +137,12 @@
           <ArticleStatusCell :row="row" :pending="pendingStatusIds.has(row.original.id)" @update="debouncedSetStatus" />
         </template>
         <template #languages-cell="{ row }">
-          <ArticleLanguageLinks
-            :links="languageLinks(row.original)"
-            :current="sourceLanguage(row.original)"
-            target="editor"
-            :articleRef="row.original.slug"
+          <ArticleTranslationMenu
+            :source="sourceLanguage(row.original)"
+            :slug="row.original.slug"
+            :translations="row.original.translations"
+            :translating="translatingArticleId === row.original.id"
+            @translate="(language) => translateArticle(row.original, language)"
           />
         </template>
         <template #createdAt-cell="{ row }">{{ formatTime(row.original.createdAt, 'shortDatetime') }}</template>
@@ -209,11 +210,12 @@
               :pending="pendingStatusIds.has(article.id)"
               @update="debouncedSetStatus"
             />
-            <ArticleLanguageLinks
-              :links="languageLinks(article)"
-              :current="sourceLanguage(article)"
-              target="editor"
-              :articleRef="article.slug"
+            <ArticleTranslationMenu
+              :source="sourceLanguage(article)"
+              :slug="article.slug"
+              :translations="article.translations"
+              :translating="translatingArticleId === article.id"
+              @translate="(language) => translateArticle(article, language)"
             />
             <p class="text-xs text-muted">{{ formatTime(article.createdAt, 'shortDatetime') }}</p>
           </div>
@@ -287,10 +289,6 @@ import type { ArticleWithDetails } from '~~/types/article'
 import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
 import type { ArticleStatus } from '~~/generated/zenstack/models'
 
-import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
-
-import type { LanguageLink } from '~/components/Article/LanguageLinks.vue'
-
 const router = useRouter()
 const route = useRoute()
 const toast = useToast()
@@ -306,13 +304,8 @@ const articleUrl = (slug: string, language?: Language) =>
   )
 const { formatTime } = useTime()
 const requestFetch = useRequestFetch()
-const targetLanguages = (article: ArticleWithDetails) =>
-  LANGUAGE_OPTIONS.filter((language) => language !== sourceLanguage(article))
 const translatingArticleId = shallowRef<string | null>(null)
 const listOrigin = useTemplateRef<HTMLElement>('listOrigin')
-
-const hasTargetTranslation = (article: ArticleWithDetails, language: Language) =>
-  article.translations?.some((translation) => translation.language === language) ?? false
 
 const translateArticle = async (article: ArticleWithDetails, language: Language) => {
   if (translatingArticleId.value) return
@@ -336,20 +329,6 @@ const translateArticle = async (article: ArticleWithDetails, language: Language)
 
 // The editor resolves an article by its source slug, not its id — see `GET /api/articles/[id]`.
 const openEditor = (slug: string) => router.push(localePath({ name: 'admin-editor-id', params: { id: slug } }))
-
-/**
- * Source first, then every language that actually has a translation row. A configured-but-never
- * translated language is deliberately absent: the column answers "which versions exist", and an
- * empty placeholder for each unused language would just add noise to every row.
- */
-const languageLinks = (article: ArticleWithDetails): LanguageLink[] => [
-  { language: sourceLanguage(article), slug: article.slug },
-  ...(article.translations ?? []).map((tr) => ({
-    language: tr.language as LanguageLink['language'],
-    slug: tr.slug ?? article.slug,
-    status: tr.status as LanguageLink['status'],
-  })),
-]
 
 const page = shallowRef(Number(route.query.page) || 1)
 const limit = 20
@@ -448,8 +427,8 @@ const columns = computed<TableColumn<ArticleWithDetails>[]>(() => [
     header: $t('articles.translations.languageTabs'),
     meta: {
       class: {
-        th: 'hidden w-36 lg:table-cell',
-        td: 'hidden w-36 lg:table-cell',
+        th: 'hidden w-28 lg:table-cell',
+        td: 'hidden w-28 lg:table-cell',
       },
     },
   },
@@ -605,16 +584,6 @@ const exportItems = (article: ArticleWithDetails): DropdownMenuItem[][] => [
 ]
 
 const desktopActionItems = (article: ArticleWithDetails): DropdownMenuItem[][] => [
-  targetLanguages(article).map((language) => ({
-    label: `${
-      hasTargetTranslation(article, language)
-        ? $t('articles.translations.actions.retranslate')
-        : $t('articles.translations.actions.translate')
-    } (${$t(`languages.${language}`)})`,
-    icon: 'mdi:translate',
-    disabled: translatingArticleId.value === article.id,
-    onSelect: () => translateArticle(article, language),
-  })),
   [
     {
       label: $t('articles.tags.title'),
@@ -637,16 +606,6 @@ const desktopActionItems = (article: ArticleWithDetails): DropdownMenuItem[][] =
 ]
 
 const mobileActionItems = (article: ArticleWithDetails): DropdownMenuItem[][] => [
-  targetLanguages(article).map((language) => ({
-    label: `${
-      hasTargetTranslation(article, language)
-        ? $t('articles.translations.actions.retranslate')
-        : $t('articles.translations.actions.translate')
-    } (${$t(`languages.${language}`)})`,
-    icon: 'mdi:translate',
-    disabled: translatingArticleId.value === article.id,
-    onSelect: () => translateArticle(article, language),
-  })),
   [
     {
       label: $t('common.actions.delete'),
