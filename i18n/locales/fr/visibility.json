@@ -44,7 +44,8 @@
         "SEARCH_CONSOLE": "Depuis Google",
         "ARTICLE": "Depuis un article",
         "COMMENT": "Des lecteurs"
-      }
+      },
+      "schedule": "Vérifié chaque semaine"
     },
     "outcome": {
       "UNCHECKED": "Pas encore vérifié",

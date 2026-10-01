@@ -44,7 +44,8 @@
         "SEARCH_CONSOLE": "From Google",
         "ARTICLE": "From an article",
         "COMMENT": "From readers"
-      }
+      },
+      "schedule": "Checked weekly"
     },
     "outcome": {
       "UNCHECKED": "Not checked yet",

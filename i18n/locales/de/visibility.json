@@ -44,7 +44,8 @@
         "SEARCH_CONSOLE": "Aus Google",
         "ARTICLE": "Aus einem Artikel",
         "COMMENT": "Von Lesern"
-      }
+      },
+      "schedule": "Wöchentlich geprüft"
     },
     "outcome": {
       "UNCHECKED": "Noch nicht geprüft",
