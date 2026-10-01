@@ -60,13 +60,16 @@ describe('generate-article cron row', () => {
     expect(task).toContain("'insufficient_articles'")
   })
 
-  it('copy-edits scheduled articles and never auto-publishes a failed review', () => {
+  it('copy-edits scheduled articles and never auto-publishes a failed review or a missing cover', () => {
     expect(task).toContain('editorialReview: true')
     expect(task).toContain('generated.editorialTokens')
     expect(task).toContain('generated.editorialReview?.approved === true')
     expect(task).toContain("generated.research?.status === 'completed'")
     expect(task).toContain('generated.research?.sourceCount > 0')
-    expect(task).toMatch(/client\.autoRelease && qualityApproved && mediaApproved \? 'published' : 'draft'/)
+    expect(task).toMatch(
+      /client\.autoRelease && qualityApproved && mediaApproved && coverApproved \? 'published' : 'draft'/,
+    )
+    expect(task).toContain('const coverApproved = Boolean(generated.articleImageUrl)')
     expect(task).toContain('mediaReport.counts.needsAttention === 0')
     expect(task).toContain('heldFromAutoRelease')
   })

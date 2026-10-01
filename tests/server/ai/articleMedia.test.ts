@@ -17,7 +17,7 @@ const draft = () => ({
   answer: '',
   keyTakeaways: [],
   faq: [],
-  coverImage: { type: 'photo' as const, query: 'Witcher 4 Ciri' },
+  coverImage: { type: 'photo' as const, query: 'Witcher 4 Ciri', broaderQuery: '' },
   images: [1, 2, 3].map(() => ({
     type: 'photo' as const,
     query: 'Witcher 4 Ciri',
@@ -28,6 +28,7 @@ const draft = () => ({
   tags: [],
   sources: [],
 })
+const aiCover = (query = 'abstract game design') => ({ type: 'generate' as const, query, broaderQuery: '' })
 const hit = (id: string) => ({
   kind: 'photo' as const,
   image: {
@@ -62,7 +63,7 @@ describe('article media finalization', () => {
     vi.stubGlobal('aiModel', () => 'test-model')
     vi.mocked(findStockImage).mockResolvedValue(null)
     const generation = await streamArticle('site', 'Game design', { research: false, allowGeneratedImages: requested })
-    const object = { ...draft(), coverImage: { type: 'generate' as const, query: 'game design' }, images: [] }
+    const object = { ...draft(), coverImage: aiCover('game design'), images: [] }
     await generation.finalize(object, { allowGeneratedImages: true })
     expect(generateImage).not.toHaveBeenCalled()
   })
@@ -109,7 +110,7 @@ describe('article media finalization', () => {
     vi.mocked(findStockImage).mockResolvedValue(null)
     const object = {
       ...draft(),
-      coverImage: { type: 'generate' as const, query: 'abstract game design' },
+      coverImage: aiCover(),
       images: [{ type: 'generate' as const, query: 'abstract game design', caption: '' }],
     }
     const result = await finalizeArticle(object, 'en', { allowGeneratedImages: false })
@@ -126,7 +127,7 @@ describe('article media finalization', () => {
       width: 1200,
       height: 800,
     } as never)
-    const object = { ...draft(), coverImage: { type: 'generate' as const, query: 'abstract game design' }, images: [] }
+    const object = { ...draft(), coverImage: aiCover(), images: [] }
     const result = await finalizeArticle(object, 'en', { allowGeneratedImages: true })
     expect(vi.mocked(findStockImage).mock.invocationCallOrder[0]).toBeLessThan(
       vi.mocked(generateImage).mock.invocationCallOrder[0]!,
@@ -137,18 +138,46 @@ describe('article media finalization', () => {
 
   it('does not generate when an existing cover was found, even with permission', async () => {
     vi.mocked(findStockImage).mockResolvedValue(hit('existing'))
-    const object = { ...draft(), coverImage: { type: 'generate' as const, query: 'abstract game design' }, images: [] }
+    const object = { ...draft(), coverImage: aiCover(), images: [] }
     expect((await finalizeArticle(object, 'en', { allowGeneratedImages: true })).articleImageUrl).toBe(
       'https://images.test/existing',
     )
     expect(generateImage).not.toHaveBeenCalled()
   })
 
+  it('falls back from the exact cover subject to its broader subject, labelled as illustrative', async () => {
+    vi.mocked(findStockImage).mockResolvedValueOnce(null).mockResolvedValueOnce(hit('mountains'))
+    const object = {
+      ...draft(),
+      coverImage: { type: 'photo' as const, query: 'wooden bungalow Jeseniky', broaderQuery: 'Jeseniky mountains' },
+      images: [],
+    }
+    const result = await finalizeArticle(object, 'en', { allowGeneratedImages: true })
+    expect(findStockImage).toHaveBeenLastCalledWith('photo', 'Jeseniky mountains')
+    expect(result.articleImageUrl).toBe('https://images.test/mountains')
+    expect(result.articleImageCredit?.kind).toBe('illustration')
+    expect(generateImage).not.toHaveBeenCalled()
+  })
+
+  it('illustrates a photo cover nobody photographed without depicting people or the event', async () => {
+    vi.mocked(findStockImage).mockResolvedValue(null)
+    vi.mocked(generateImage).mockResolvedValue({ url: 'https://images.test/ai', width: 1200, height: 800 } as never)
+    const object = {
+      ...draft(),
+      coverImage: { type: 'photo' as const, query: 'wooden bungalow Jeseniky', broaderQuery: 'Jeseniky mountains' },
+      images: [],
+    }
+    const result = await finalizeArticle(object, 'en', { allowGeneratedImages: true })
+    expect(vi.mocked(generateImage).mock.calls[0]![0]).toMatch(/Jeseniky mountains.*No people/)
+    expect(result.articleImageUrl).toBe('https://images.test/ai')
+    expect(result.articleImageCredit?.kind).toBe('ai')
+  })
+
   it('uses a labelled subject portrait when a specific event query has no licensed match', async () => {
     vi.mocked(findStockImage).mockResolvedValueOnce(null).mockResolvedValueOnce(hit('babis-portrait'))
     const object = {
       ...draft(),
-      coverImage: { type: 'photo' as const, query: 'Andrej Babis Petr Pavel 2026 meeting' },
+      coverImage: { type: 'photo' as const, query: 'Andrej Babis Petr Pavel 2026 meeting', broaderQuery: '' },
       images: [],
     }
     const result = await finalizeArticle(object, 'en', { allowGeneratedImages: true })
@@ -158,16 +187,19 @@ describe('article media finalization', () => {
     expect(generateImage).not.toHaveBeenCalled()
   })
 
-  it('does not synthesize an unavailable documentary cover', async () => {
+  it('never synthesizes the people or event of an unavailable documentary cover', async () => {
     vi.mocked(findStockImage).mockResolvedValue(null)
+    vi.mocked(generateImage).mockResolvedValue({ url: 'https://images.test/ai', width: 1200, height: 800 } as never)
     const object = {
       ...draft(),
-      coverImage: { type: 'photo' as const, query: 'Andrej Babis 2026 meeting' },
+      coverImage: { type: 'photo' as const, query: 'Andrej Babis 2026 meeting', broaderQuery: '' },
       images: [],
     }
     const result = await finalizeArticle(object, 'en', { allowGeneratedImages: true })
-    expect(result.articleImageUrl).toBe('')
-    expect(generateImage).not.toHaveBeenCalled()
+    expect(vi.mocked(generateImage).mock.calls[0]![0]).toMatch(
+      /No people, faces, logos, text or depiction of a specific real event/,
+    )
+    expect(result.articleImageCredit?.kind).toBe('ai')
   })
 })
 
@@ -186,7 +218,7 @@ it('prefers a real photo of a named subject over AI and reports where every imag
   const object = {
     ...draft(),
     content: '<h2>Ciri</h2>[[IMAGE1]][[IMAGE2]]',
-    coverImage: { type: 'stock' as const, query: 'Andrej Babis press conference crowd' },
+    coverImage: { type: 'stock' as const, query: 'Andrej Babis press conference crowd', broaderQuery: '' },
     images: [
       { type: 'generate' as const, query: 'abstract data flow', caption: '' },
       { type: 'photo' as const, query: 'Witcher 4 Ciri', caption: '' },

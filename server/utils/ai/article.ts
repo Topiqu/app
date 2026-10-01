@@ -101,7 +101,16 @@ export const articleSchema = z.object({
     )
     .max(5)
     .describe('2-5 FAQ entries, or empty when the format raises no recurring questions'),
-  coverImage: imageInstruction.describe('Cover image instruction'),
+  coverImage: imageInstruction
+    .extend({
+      broaderQuery: z
+        .string()
+        .max(200)
+        .describe(
+          'Broader English archive keywords for a subject that certainly has photos: the place, organisation, product line or field (e.g. "Jeseniky mountains"). Empty only when the query is already that broad.',
+        ),
+    })
+    .describe('Cover image instruction'),
   images: z
     .array(
       imageInstruction.extend({
@@ -449,7 +458,7 @@ const buildArticleConfig = async (
         "keyTakeaways": ["standalone factual sentence", "..."] or [],
         "faq": [{"question": "...", "answer": "..."}] or [],
         "content": "the article body for v-html on frontend, with h2, h3, strong, underline, italic and lists, and blockquote only for an attributed verbatim quotation. Include image slots like [[IMAGE1]], [[IMAGE2]], etc. where images should appear, each as a bare marker between paragraphs: never inside a tag or attribute, and never write <img> or <figure> yourself.",
-        "coverImage": {"type": "stock", "query": "search keyword OR generation prompt"},
+        "coverImage": {"type": "stock", "query": "search keyword OR generation prompt", "broaderQuery": "broader subject keywords"},
         "images": [{"type": "photo", "query": "keyword for IMAGE1", "caption": "what IMAGE1 shows"}, {"type": "generate", "query": "prompt for IMAGE2", "caption": "what IMAGE2 shows"}, ...],
         "polls": [{"question": "Poll question?", "options": ["Option 1", "Option 2"]}],
         "videos": [{"url": "https://www.youtube.com/watch?v=...", "caption": "what the video contributes"}],
@@ -484,6 +493,7 @@ const buildArticleConfig = async (
       - Use 'stock': for mood, atmosphere or a generic scene where any fitting picture works (e.g. "office meeting", "gaming setup at night"). Short, precise English keyword.
       - Use 'generate': ONLY for what cannot be photographed — abstract ideas, humor, non-existent concepts (e.g. "AI eating old code"). Provide short archive search keywords; existing suitable images are always searched first. NEVER use it for a real person, a real place or a real event.
       A missing documentary photo is not permission to invent a depiction of a real person or event. Leave that image slot empty if the licensed search fails.
+      Every article needs a cover, so the coverImage also carries a "broaderQuery" for when the exact subject has no photo: the place, organisation, product line or field it belongs to.
       Preserve the exact product, installment number and named subject in each query. For games, request a screenshot of the actual game, not cosplay, fan art, an older installment, a generic forest or a gaming desk. Do not pad the article with generic mood images. Each visual must contribute distinct relevant information.
       Each content image also needs a "caption": one factual sentence, in the same language as the article, saying what is in the picture — for 'photo' name who or what it is and when. Never write "Illustrative image", "AI generated", "Source:" or any credit into the caption; the system adds those itself.
 
@@ -570,6 +580,9 @@ const buildArticleConfig = async (
 }
 
 type FinalizeImage = { slot: number; html: string }
+
+const coverIllustrationPrompt = (subject: string) =>
+  `Atmospheric editorial illustration evoking ${subject}. No people, faces, logos, text or depiction of a specific real event.`
 type FinalizeCallbacks = {
   onImage?: (image: FinalizeImage) => void
   onMedia?: (progress: ArticleMediaProgress) => void
@@ -699,15 +712,23 @@ export const finalizeArticle = async (
     })
   reportMedia('cover')
   if (object.coverImage) {
-    const hit = await findExistingImage(object.coverImage.query, object.coverImage.type)
-    const generated =
-      !hit && object.coverImage.type !== 'photo' ? await tryGenerateImage(object.coverImage.query) : null
+    const { query, broaderQuery, type } = object.coverImage
+    const broader = broaderQuery?.trim()
+    const exact = await findExistingImage(query, type)
+    // A broader subject is a real photo of something else, so it is credited as illustrative.
+    const related = exact || !broader || broader === query ? null : await findExistingImage(broader, 'photo')
+    const hit = exact ?? (related && { ...related, kind: 'illustration' as const })
+    // An article without a cover goes unread, so the cover alone falls back to a labelled AI
+    // illustration even for a photo subject — one that shows no person, logo, text or real event.
+    const generated = hit
+      ? null
+      : await tryGenerateImage(type === 'photo' ? coverIllustrationPrompt(broader || query) : query)
     articleImageUrl = hit?.image.url ?? generated?.url ?? ''
     if (articleImageUrl) {
       articleImageCredit = hit ? { kind: hit.kind, credit: hit.image.credit } : { kind: 'ai' }
       const registered = await registerMedia(
         hit ? { ...hit.image, kind: hit.kind } : { ...generated!, kind: 'ai' as const },
-        object.coverImage.query,
+        query,
       )
       articleCoverMediaId = registered.mediaId ?? null
       if (generated) acceptImage({ url: articleImageUrl })

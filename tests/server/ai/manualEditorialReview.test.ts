@@ -12,7 +12,7 @@ const draft = {
   answer: '',
   keyTakeaways: [],
   faq: [],
-  coverImage: { type: 'photo' as const, query: 'Witcher 4 Ciri' },
+  coverImage: { type: 'photo' as const, query: 'Witcher 4 Ciri', broaderQuery: '' },
   images: [],
   polls: [],
   videos: [],

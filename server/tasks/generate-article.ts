@@ -334,7 +334,9 @@ Respond ONLY in valid JSON (schema required).
         content: generated.content,
       })
       const mediaApproved = mediaReport.counts.needsAttention === 0
-      const status = client.autoRelease && qualityApproved && mediaApproved ? 'published' : 'draft'
+      // Nobody opens an article without a cover, so one that found none waits for a human.
+      const coverApproved = Boolean(generated.articleImageUrl)
+      const status = client.autoRelease && qualityApproved && mediaApproved && coverApproved ? 'published' : 'draft'
 
       const { article, appliedSeries } = await prisma.$transaction(async (ctx: any) => {
         const slug = await generateUniqueSlug(ctx, generated.title, clientSiteId)
@@ -454,6 +456,7 @@ Respond ONLY in valid JSON (schema required).
           editorialReview: generated.editorialReview,
           researchApproved,
           mediaApproved,
+          coverApproved,
           series: {
             action: appliedSeries.action,
             seriesId: appliedSeries.seriesId,
@@ -574,6 +577,7 @@ Respond ONLY in valid JSON (schema required).
             generatedWordCount,
             valueEvent,
             heldFromAutoRelease: client.autoRelease && !qualityApproved,
+            coverApproved,
             editorialReview: generated.editorialReview,
             researchApproved,
           },
