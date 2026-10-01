@@ -47,6 +47,7 @@
           <div>
             <h3 class="font-semibold text-highlighted">{{ $t('common.tenant.choosePlan') }}</h3>
             <p class="mt-1 text-sm text-muted">{{ $t('common.tenant.choosePlanDescription') }}</p>
+            <p v-if="shopifyInstall" class="mt-1 text-sm text-muted">{{ $t('common.tenant.shopifyPlans') }}</p>
           </div>
 
           <div class="grid gap-3 sm:grid-cols-3">
@@ -427,6 +428,8 @@ const formatMinorAmount = (price: PlanPrice | null) => {
   return $t(`common.tenant.price.${price.interval}`, { amount: formatter.format(price.amount / 10 ** digits) })
 }
 
+// A project being linked from Shopify starts on Basic; its paid plan is chosen and billed in Shopify.
+const shopifyInstall = useCookie<string | null>(SHOPIFY_INSTALL_COOKIE)
 const planOptions = computed(() => [
   {
     value: 'BASIC' as const,
@@ -434,7 +437,7 @@ const planOptions = computed(() => [
     description: $t('common.tenant.basicDescription'),
     icon: 'mdi:feather',
   },
-  ...(['PRO', 'PREMIUM'] as const).map((plan) => ({
+  ...(shopifyInstall.value ? [] : (['PRO', 'PREMIUM'] as const)).map((plan) => ({
     value: plan,
     label: `${plan} · ${formatMinorAmount(planPricing.value?.[plan]?.[form.interval] ?? null)}`,
     description: $t(`admin.upgrade.${plan === 'PRO' ? 'toPro' : 'toPremium'}.description`),

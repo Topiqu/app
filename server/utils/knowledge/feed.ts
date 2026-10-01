@@ -248,6 +248,11 @@ export const parseKnowledgeFeed = (xml: string, currency: string | null) => {
   return raws
 }
 
+export const hashFeedProducts = (products: readonly FeedProduct[]) =>
+  createHash('sha256')
+    .update(JSON.stringify(products.map(({ text: _text, ...facts }) => Object.values(facts))))
+    .digest('hex')
+
 /** Normalises, merges and caps a feed; `hash` lets an unchanged feed skip the database entirely. */
 export const collectFeedProducts = (raws: readonly RawVariant[], limit: number) => {
   const skipped: KnowledgeFeedReport['skipped'] = {}
@@ -266,9 +271,7 @@ export const collectFeedProducts = (raws: readonly RawVariant[], limit: number) 
     unpriced: products.filter((product) => !product.price).length,
     truncated: merged.length - products.length,
   }
-  const hash = createHash('sha256')
-    .update(JSON.stringify(products.map(({ text: _text, ...facts }) => Object.values(facts))))
-    .digest('hex')
+  const hash = hashFeedProducts(products)
   return { products, report, hash }
 }
 

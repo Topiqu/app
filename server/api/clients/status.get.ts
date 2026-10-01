@@ -28,6 +28,7 @@ export default defineEventHandler(async (event) => {
       bodyFontUrl: true,
       discloseAiContent: true,
       stripeSubscriptionId: true,
+      billingProvider: true,
       users: {
         where: { role: 'ai' },
         take: 1,

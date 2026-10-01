@@ -27,7 +27,10 @@
         "description": "Les articles peuvent créer un lien vers cette source."
       }
     },
-    "details": { "titleAndDate": "Titre et date de validité", "date": "Date de validité" },
+    "details": {
+      "titleAndDate": "Titre et date de validité",
+      "date": "Date de validité"
+    },
     "actions": "Actions pour {title}",
     "edit": "Modifier",
     "refresh": "Récupérer à nouveau",
@@ -46,16 +49,27 @@
       "FILE": "Document",
       "URL": "Page web",
       "SITEMAP": "Pages d'un site web",
-      "FEED": "Produits de la boutique"
+      "FEED": "Produits de la boutique",
+      "SHOPIFY": "Shopify"
     },
-    "addKinds": { "NOTE": "Texte", "FILE": "Document", "URL": "Web", "FEED": "Boutique" },
+    "addKinds": {
+      "NOTE": "Texte",
+      "FILE": "Document",
+      "URL": "Web",
+      "FEED": "Boutique"
+    },
     "web": {
       "scope": "Éléments à ajouter",
       "page": "Cette page uniquement",
       "site": "Trouver d'autres pages de ce site",
       "siteHint": "Nous afficherons les pages trouvées avant leur ajout. Vous pouvez en ajouter jusqu'à {count} à la fois."
     },
-    "status": { "PENDING": "En attente", "PROCESSING": "Indexation en cours", "INDEXED": "Indexée", "FAILED": "Échec" },
+    "status": {
+      "PENDING": "En attente",
+      "PROCESSING": "Indexation en cours",
+      "INDEXED": "Indexée",
+      "FAILED": "Échec"
+    },
     "fields": {
       "title": "Titre",
       "optional": "Facultatif",

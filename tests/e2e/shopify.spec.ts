@@ -13,6 +13,13 @@ const status = (connected = true) => ({
   eligible: true,
   canManage: true,
   canPublish: true,
+  billingProvider: 'STRIPE',
+  pricingUrl: null,
+  adminUrl: 'https://admin.shopify.com/store/test-store/apps/topiqu',
+  installUrl: 'https://apps.shopify.com/topiqu',
+  pending: connected
+    ? null
+    : { shop: 'test-store.myshopify.com', shopName: 'Test store', project: 'Shopify project', shopifyBilling: false },
   connection: connected
     ? {
         shop: 'test-store.myshopify.com',
@@ -68,16 +75,14 @@ test.beforeEach(async ({ page }) => {
   ])
 })
 
-test('connects Shopify from integration settings and saves the selected blog', async ({ page }) => {
+test('confirms a store opened from Shopify and saves the selected blog', async ({ page }) => {
   let connected = false
   let saved = false
   await page.route('**/api/shopify/status', (route) => route.fulfill({ json: status(connected) }))
-  await page.route('**/api/shopify/connect', async (route) => {
-    expect(route.request().postDataJSON()).toEqual({ shop: 'test-store.myshopify.com' })
+  await page.route('**/api/shopify/link', async (route) => {
+    expect(route.request().method()).toBe('POST')
     connected = true
-    await route.fulfill({
-      json: { url: new URL('/en/settings?tab=integrations&shopify=connected', route.request().url()).href },
-    })
+    await route.fulfill({ json: { success: true } })
   })
   await page.route('**/api/shopify/blogs', (route) =>
     route.fulfill({ json: [{ id: 'gid://shopify/Blog/1', title: 'News', handle: 'news' }] }),
@@ -87,9 +92,9 @@ test('connects Shopify from integration settings and saves the selected blog', a
     saved = true
     await route.fulfill({ json: { success: true } })
   })
-  await page.goto('/en/settings?tab=integrations&shopify=settings')
+  await page.goto('/en/settings?tab=integrations&shopify=link')
   const settings = page.locator('[data-shopify-settings]')
-  await settings.getByLabel('Store domain').fill('test-store.myshopify.com')
+  await expect(settings.getByText('Connect Test store to Topiqu?')).toBeVisible({ timeout: 20_000 })
   await settings.getByRole('button', { name: 'Connect store', exact: true }).click()
   await expect(settings.getByText('Test store', { exact: true })).toBeVisible({ timeout: 20_000 })
   await settings.getByLabel('Author name').fill('Editor')

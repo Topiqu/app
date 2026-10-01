@@ -1,5 +1,7 @@
 import { getArticlePack } from '~~/shared/utils/articlePacks'
 
+import { rejectShopifyBilled } from '../../utils/shopify/billing'
+
 export default defineEventHandler(async (event) => {
   const session = (await getServerSession(event))?.user
   if (!session) {
@@ -23,10 +25,14 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Missing required fields' })
   }
 
-  const site = await prisma.clientSite.findUnique({ where: { id: clientSiteId }, select: { plan: true } })
+  const site = await prisma.clientSite.findUnique({
+    where: { id: clientSiteId },
+    select: { plan: true, billingProvider: true },
+  })
   if (!site || !hasAiPlan(site.plan)) {
     throw createError({ statusCode: 403, message: 'Article packs require an active AI plan' })
   }
+  rejectShopifyBilled(event, site.billingProvider)
 
   // Price and article count come from the server-side catalog, never from the client.
   const articlePack = getArticlePack(pack)

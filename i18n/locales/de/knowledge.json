@@ -22,9 +22,15 @@
         "label": "Nur als Hintergrundwissen",
         "description": "Die KI entnimmt der Quelle Fakten, verlinkt sie aber nicht. Verwende diese Option für interne Unterlagen."
       },
-      "PUBLIC": { "label": "Zitierbare Quelle", "description": "Artikel dürfen diese Quelle verlinken." }
+      "PUBLIC": {
+        "label": "Zitierbare Quelle",
+        "description": "Artikel dürfen diese Quelle verlinken."
+      }
     },
-    "details": { "titleAndDate": "Titel und Gültigkeitsdatum", "date": "Gültigkeitsdatum" },
+    "details": {
+      "titleAndDate": "Titel und Gültigkeitsdatum",
+      "date": "Gültigkeitsdatum"
+    },
     "actions": "Aktionen für {title}",
     "edit": "Bearbeiten",
     "refresh": "Erneut abrufen",
@@ -43,9 +49,15 @@
       "FILE": "Dokument",
       "URL": "Webseite",
       "SITEMAP": "Seiten einer Website",
-      "FEED": "Shop-Produkte"
+      "FEED": "Shop-Produkte",
+      "SHOPIFY": "Shopify"
     },
-    "addKinds": { "NOTE": "Text", "FILE": "Dokument", "URL": "Web", "FEED": "Shop" },
+    "addKinds": {
+      "NOTE": "Text",
+      "FILE": "Dokument",
+      "URL": "Web",
+      "FEED": "Shop"
+    },
     "web": {
       "scope": "Was soll hinzugefügt werden?",
       "page": "Nur diese Seite",

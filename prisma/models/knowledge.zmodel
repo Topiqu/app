@@ -1,12 +1,14 @@
 import "./base"
 import "./client"
 import "./user"
+import "./shopify"
 
 enum KnowledgeSourceKind {
     NOTE
     FILE
     URL
     FEED
+    SHOPIFY
 }
 
 enum KnowledgeSourceStatus {
@@ -59,6 +61,8 @@ model KnowledgeSource with Base {
     currency         String?               @length(3, 3)
     /// FEED only: counts from the last successful sync (`KnowledgeFeedReport`).
     syncReport       Json?
+    shopifyConnectionId String? @unique
+    shopifyConnection ShopifyConnection? @relation(fields: [shopifyConnectionId], references: [id], onDelete: Cascade)
     chunks           KnowledgeChunk[]
     products         KnowledgeProduct[]
 

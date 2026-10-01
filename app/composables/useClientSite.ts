@@ -34,6 +34,7 @@ export interface ClientSiteStatus {
   discloseAiContent: boolean
   aiUser: { username: string; avatarUrl: string | null } | null
   hasActiveSubscription: boolean
+  billingProvider: 'STRIPE' | 'SHOPIFY'
 }
 
 const ROOT_DOMAINS = ['topiqu.com', 'app.topiqu.com', '127.0.0.1']

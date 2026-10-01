@@ -91,7 +91,7 @@
             </dl>
           </section>
 
-          <section aria-labelledby="article-packs-title">
+          <section v-if="site?.billingProvider !== 'SHOPIFY'" aria-labelledby="article-packs-title">
             <h3 id="article-packs-title" class="text-lg font-semibold tracking-tight text-highlighted">
               {{ $t('common.wallet.topup') }}
             </h3>

@@ -11,7 +11,7 @@ export default defineMonitoredTask({
       where: {
         billingPlan: 'ANNUAL',
         plan: { in: ['PRO', 'PREMIUM'] },
-        stripeSubscriptionId: { not: null },
+        OR: [{ stripeSubscriptionId: { not: null } }, { billingProvider: 'SHOPIFY' }],
       },
       select: {
         id: true,

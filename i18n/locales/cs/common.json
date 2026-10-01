@@ -665,7 +665,12 @@
         "annualEquivalent": "V přepočtu {price} měsíčně, účtováno ročně",
         "priceUnavailable": "Aktuální cenu zobrazíme v zabezpečené pokladně Stripe.",
         "checkoutHint": "Před potvrzením uvidíte přesnou cenu i datum první platby. Tarif můžete kdykoli spravovat ve Stripe portálu.",
-        "actionFailed": "Platbu se nepodařilo zahájit. Zkuste to prosím znovu."
+        "actionFailed": "Platbu se nepodařilo zahájit. Zkuste to prosím znovu.",
+        "shopify": {
+          "title": "Placeno přes Shopify",
+          "description": "Tarif tohoto projektu se platí přes váš obchod na Shopify. Změnit nebo zrušit ho můžete v Shopify.",
+          "manage": "Spravovat tarif v Shopify"
+        }
       },
       "validity": {
         "permanent": "Trvalý přístup",
@@ -1063,7 +1068,8 @@
         "invalid": "Použijte pouze malá písmena, čísla a pomlčky.",
         "reserved": "Tato subdoména je rezervovaná.",
         "taken": "Tato subdoména už je obsazená."
-      }
+      },
+      "shopifyPlans": "Obchod se propojuje ze Shopify, proto se placený tarif volí po propojení v Shopify."
     },
     "unsubscribe": {
       "title": "Odhlásit e-mailová oznámení",
@@ -1106,10 +1112,6 @@
       "description": "Publikujte články z Topiqu do Shopify blogu a aktualizujte je přímo z editoru.",
       "notConfigured": "Integrace Shopify zatím není dostupná.",
       "requiresPlan": "Shopify je dostupné v tarifech Pro a Premium.",
-      "shop": "Doména obchodu",
-      "shopHelp": "Zadejte původní doménu myshopify.com bez https:// a cesty.",
-      "connect": "Připojit obchod",
-      "reconnect": "Znovu připojit obchod",
       "disconnect": "Odpojit Shopify",
       "disconnectDescription": "Zastavit odesílání a odstranit uložené přístupové tokeny? Články v Shopify zůstanou zachované.",
       "blog": "Výchozí blog",
@@ -1131,9 +1133,8 @@
       "uncertain": "Shopify nepotvrdilo výsledek. Nejdřív zkontrolujte obchod. Další odeslání se pokusí dohledat existující článek bez vytvoření další kopie.",
       "confirmSend": "Potvrdit a odeslat",
       "callback": {
-        "connected": "Shopify připojeno. Vyberte blog a autora.",
-        "cancelled": "Připojení Shopify bylo zrušeno.",
-        "error": "Shopify se nepodařilo připojit. Zkuste to znovu nebo ověřte nastavení aplikace."
+        "linked": "Shopify propojeno. Vyberte blog a autora.",
+        "expired": "Odkaz ze Shopify vypršel. Otevřete Topiqu znovu z administrace Shopify."
       },
       "connection": {
         "CONNECTED": "Připojeno",
@@ -1147,7 +1148,58 @@
         "FAILED": "Odeslání selhalo",
         "UNCERTAIN": "Výsledek nepotvrzen"
       },
-      "unpublishDescription": "Článek v Shopify se nahradí uloženou verzí z Topiqu a skryje se v obchodě. Změny provedené přímo v Shopify se přepíšou."
+      "unpublishDescription": "Článek v Shopify se nahradí uloženou verzí z Topiqu a skryje se v obchodě. Změny provedené přímo v Shopify se přepíšou.",
+      "catalog": {
+        "title": "Produkty a znalosti",
+        "description": "Produkty, varianty a kolekce ze Shopify použijeme při psaní článků. Změny se synchronizují automaticky; celý katalog kontrolujeme každý den.",
+        "import": "Importovat produkty",
+        "queued": "Synchronizace katalogu byla spuštěna.",
+        "syncing": "Probíhá synchronizace",
+        "failed": "Poslední synchronizace se nezdařila. Zkuste ji spustit znovu.",
+        "collections": "Témata z kolekcí",
+        "collectionsHint": "Přehled vychází z importovaných produktů. Název, popis a příslušnost ke kolekci pomáhají AI vybírat produkty k tématu článku.",
+        "available": "Dostupné produkty: {available} z {total}",
+        "createArticle": "Napsat článek",
+        "articlePrompt": "Napiš nákupního průvodce pro kolekci „{title}“. Použij relevantní dostupné produkty ze znalostní báze a vysvětli, jak mezi nimi vybírat.",
+        "showAll": "Všechny kolekce ({count})",
+        "showLess": "Méně kolekcí",
+        "inventoryReconnect": "Obnovit propojení pro okamžité změny dostupnosti",
+        "limit": "Katalog přesahuje limit tarifu; importovali jsme produkty, které se do něj vejdou."
+      },
+      "install": {
+        "description": "Nainstalujte aplikaci Topiqu ze Shopify App Store, otevřete ji v administraci obchodu a zvolte Propojit s Topiqu.",
+        "action": "Otevřít Shopify App Store"
+      },
+      "pending": {
+        "title": "Propojit {shop} s Topiqu?",
+        "description": "Obchod {shop} bude propojen s projektem {project}. Pokud chcete použít jiný projekt, nejdřív ho přepněte.",
+        "billing": "Placené tarify tohoto projektu se pak vybírají a platí přes Shopify.",
+        "confirm": "Propojit obchod",
+        "cancel": "Zrušit"
+      },
+      "reconnectHint": "Otevřete Topiqu v administraci Shopify a obnovte tím propojení.",
+      "openInShopify": "Otevřít v Shopify",
+      "planRequired": "Pro použití tohoto obchodu zvolte v Shopify tarif Pro nebo Premium.",
+      "choosePlan": "Zvolit tarif v Shopify",
+      "app": {
+        "about": "Topiqu píše články podložené vašimi produkty a kolekcemi a publikuje je do vašeho blogu na Shopify.",
+        "loading": "Načítání",
+        "failed": "Topiqu se nepodařilo načíst.",
+        "retry": "Zkusit znovu",
+        "unlinkedTitle": "Propojte projekt Topiqu",
+        "unlinkedDescription": "Propojte tento obchod s projektem Topiqu, abyste mohli publikovat články a importovat produkty. V dalším kroku se přihlásíte nebo si založíte účet.",
+        "connect": "Propojit s Topiqu",
+        "check": "Zkontrolovat znovu",
+        "waiting": "Dokončete propojení na kartě Topiqu. Tato stránka se aktualizuje sama.",
+        "linkedTitle": "Propojený projekt",
+        "project": "Projekt",
+        "plan": "Tarif",
+        "planRequiredTitle": "Zvolte tarif",
+        "planRequired": "Publikování do Shopify vyžaduje tarif Pro nebo Premium, placený přes Shopify.",
+        "choosePlan": "Zvolit tarif",
+        "managePlan": "Spravovat tarif",
+        "open": "Otevřít Topiqu"
+      }
     }
   },
   "error": {

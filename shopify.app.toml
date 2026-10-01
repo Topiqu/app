@@ -2,14 +2,15 @@
 # Dev Dashboard config, so keep scopes in sync with SHOPIFY_SCOPES in server/utils/shopify/config.ts.
 client_id = "efd8f683d6a61ef92d7c635c2ea6bcd5"
 name = "Topiqu"
-application_url = "https://app.topiqu.com/api/shopify/install"
-embedded = false
+application_url = "https://app.topiqu.com/shopify"
+embedded = true
 
 [access_scopes]
-scopes = "read_products,read_content,write_content"
+scopes = "read_products,read_inventory,read_content,write_content"
 
+# Shopify-managed installation plus token exchange: no OAuth redirect is used.
 [auth]
-redirect_urls = ["https://app.topiqu.com/api/shopify/callback"]
+redirect_urls = ["https://app.topiqu.com/shopify"]
 
 [webhooks]
 api_version = "2026-07"
@@ -17,6 +18,10 @@ api_version = "2026-07"
 [[webhooks.subscriptions]]
 topics = ["app/uninstalled"]
 compliance_topics = ["customers/data_request", "customers/redact", "shop/redact"]
+uri = "https://app.topiqu.com/api/shopify/webhooks"
+
+[[webhooks.subscriptions]]
+topics = ["products/create", "products/update", "products/delete", "collections/create", "collections/update", "collections/delete", "inventory_levels/update", "inventory_items/update"]
 uri = "https://app.topiqu.com/api/shopify/webhooks"
 
 [pos]

@@ -12,6 +12,7 @@ describe('Shopify API transport', () => {
     vi.stubEnv('SHOPIFY_CLIENT_SECRET', 'secret')
   })
   afterEach(() => {
+    vi.useRealTimers()
     vi.unstubAllGlobals()
     vi.unstubAllEnvs()
   })
@@ -70,5 +71,28 @@ describe('Shopify API transport', () => {
     await expect(shopifyGraphql('store.myshopify.com', 'token', 'mutation {}', {}, true)).rejects.toMatchObject({
       code: 'UNCERTAIN',
     })
+  })
+
+  it('paces catalog pages using the store API budget', async () => {
+    vi.useFakeTimers()
+    fetchMock.mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          data: { ok: true },
+          extensions: {
+            cost: { requestedQueryCost: 300, throttleStatus: { currentlyAvailable: 100, restoreRate: 50 } },
+          },
+        }),
+      ),
+    )
+    let completed = false
+    const pending = shopifyGraphql('store.myshopify.com', 'token', 'query {}', {}, false, true).then((result) => {
+      completed = true
+      return result
+    })
+    await vi.advanceTimersByTimeAsync(3999)
+    expect(completed).toBe(false)
+    await vi.advanceTimersByTimeAsync(1)
+    expect(await pending).toEqual({ ok: true })
   })
 })

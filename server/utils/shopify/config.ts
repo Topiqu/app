@@ -1,6 +1,5 @@
-// Must equal the scopes released in the Dev Dashboard. `read_products` is granted up front so a
-// product sync later needs no second merchant consent.
-export const SHOPIFY_SCOPES = 'read_products,read_content,write_content'
+// Must equal the scopes released in the Dev Dashboard. Inventory webhook subscriptions need read_inventory.
+export const SHOPIFY_SCOPES = 'read_products,read_inventory,read_content,write_content'
 export const SHOPIFY_API_VERSION = '2026-07'
 
 export const normalizeShopifyShop = (value: unknown): string | null => {
@@ -27,3 +26,27 @@ export const shopifyCredentials = () => {
 }
 
 export const shopifyEligible = (plan: string) => ['PRO', 'PREMIUM', 'CUSTOM'].includes(plan)
+
+export const shopifyGrantsContent = (scopes: string[]) => scopes.includes('write_content')
+
+// httpOnly: carries the signed link to a pending installation.
+export const SHOPIFY_LINK_COOKIE = 'shopify_link'
+
+// The myshopify subdomain is the store handle in admin.shopify.com URLs.
+const adminStoreUrl = (shop: string) => `https://admin.shopify.com/store/${shop.replace(/\.myshopify\.com$/, '')}`
+const appHandle = () => process.env.SHOPIFY_APP_HANDLE || null
+
+export const shopifyAdminAppUrl = (shop: string) => {
+  const handle = appHandle()
+  return handle ? `${adminStoreUrl(shop)}/apps/${handle}` : null
+}
+
+export const shopifyPricingUrl = (shop: string) => {
+  const handle = appHandle()
+  return handle ? `${adminStoreUrl(shop)}/charges/${handle}/pricing_plans` : null
+}
+
+export const shopifyAppStoreUrl = () => {
+  const handle = appHandle()
+  return handle ? `https://apps.shopify.com/${handle}` : null
+}

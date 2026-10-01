@@ -1,7 +1,8 @@
 import { requireShopifyAccess } from '../../utils/shopify/access'
 
 export default defineEventHandler(async (event) => {
-  const { db, site, user } = await requireShopifyAccess(event)
+  // Disconnecting never needs a paid plan; Shopify billing continues until the app is uninstalled.
+  const { db, site } = await requireShopifyAccess(event, 'INTEGRATION_CONTROL', { requirePlan: false })
   await db.$transaction(async (tx) => {
     await tx.shopifyConnection.updateMany({
       where: { clientSiteId: site.id },
@@ -18,6 +19,5 @@ export default defineEventHandler(async (event) => {
       data: { status: 'FAILED', lease: null, leaseUntil: null, lastError: 'Shopify disconnected' },
     })
   })
-  await prisma.shopifyOAuthAttempt.deleteMany({ where: { clientSiteId: site.id, userId: user.id } })
   return { success: true }
 })

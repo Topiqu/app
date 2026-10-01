@@ -49,7 +49,8 @@
       "FILE": "Document",
       "URL": "Web page",
       "SITEMAP": "Pages from a website",
-      "FEED": "Shop products"
+      "FEED": "Shop products",
+      "SHOPIFY": "Shopify"
     },
     "addKinds": {
       "NOTE": "Text",

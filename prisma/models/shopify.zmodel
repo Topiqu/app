@@ -1,6 +1,7 @@
 import "./base"
 import "./client"
 import "./article"
+import "./knowledge"
 
 enum ShopifyConnectionStatus {
     CONNECTED
@@ -34,6 +35,13 @@ model ShopifyConnection with Base {
     grantedScopes String[]
     status ShopifyConnectionStatus @default(CONNECTED)
     publications ShopifyPublication[]
+    knowledgeSource KnowledgeSource?
+    catalogRevision Int @default(0)
+    catalogSyncedRevision Int @default(0)
+    shopGid String?
+    // Handle of the Shopify App Pricing plan last applied to the project; null when none is active.
+    planHandle String?
+    planCheckedAt DateTime?
     @@allow('read', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
     @@allow('create, update, delete', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
 }
@@ -65,14 +73,19 @@ model ShopifyPublication with Base {
     @@allow('create, update, delete', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
 }
 
-model ShopifyOAuthAttempt {
+// A store that installed the app but is not linked to a project yet.
+model ShopifyInstallation {
     id String @id @default(uuid())
-    tokenHash String @unique @omit
-    userId String
-    clientSiteId String
-    shop String
-    locale String
-    expiresAt DateTime
-    @@index([expiresAt])
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    shop String @unique
+    shopGid String
+    shopName String
+    storefrontUrl String
+    encryptedAccessToken String @omit
+    encryptedRefreshToken String @omit
+    accessTokenExpiresAt DateTime
+    refreshTokenExpiresAt DateTime
+    grantedScopes String[]
     @@allow('all', false)
 }

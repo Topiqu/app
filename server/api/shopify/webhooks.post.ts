@@ -1,4 +1,6 @@
 import { normalizeShopifyShop } from '../../utils/shopify/config'
+import { queueShopifyCatalog } from '../../utils/shopify/catalog'
+import { releaseShopifyBilling } from '../../utils/shopify/billing'
 import { verifyShopifyWebhookHmac } from '../../utils/shopify/security'
 
 export default defineEventHandler(async (event) => {
@@ -18,7 +20,11 @@ export default defineEventHandler(async (event) => {
     if (normalizeShopifyShop(body.myshopify_domain) !== shop)
       throw createError({ statusCode: 400, message: 'Shopify webhook shop mismatch' })
     await prisma.$transaction(async (tx) => {
-      const connection = await tx.shopifyConnection.findUnique({ where: { shop }, select: { id: true } })
+      await tx.shopifyInstallation.deleteMany({ where: { shop } })
+      const connection = await tx.shopifyConnection.findUnique({
+        where: { shop },
+        select: { id: true, clientSiteId: true, planHandle: true },
+      })
       if (!connection) return
       await tx.shopifyConnection.update({
         where: { id: connection.id },
@@ -34,15 +40,28 @@ export default defineEventHandler(async (event) => {
         where: { connectionId: connection.id, status: { in: ['QUEUED', 'PUBLISHING'] } },
         data: { status: 'FAILED', lease: null, leaseUntil: null, lastError: 'Shopify app uninstalled' },
       })
-      await tx.shopifyOAuthAttempt.deleteMany({ where: { shop } })
+      await releaseShopifyBilling(tx, connection)
     })
   } else if (topic === 'shop/redact') {
     if (normalizeShopifyShop(body.shop_domain) !== shop)
       throw createError({ statusCode: 400, message: 'Shopify webhook shop mismatch' })
     await prisma.$transaction(async (tx) => {
       await tx.shopifyConnection.deleteMany({ where: { shop } })
-      await tx.shopifyOAuthAttempt.deleteMany({ where: { shop } })
+      await tx.shopifyInstallation.deleteMany({ where: { shop } })
     })
+  } else if (
+    [
+      'products/create',
+      'products/update',
+      'products/delete',
+      'collections/create',
+      'collections/update',
+      'collections/delete',
+      'inventory_levels/update',
+      'inventory_items/update',
+    ].includes(topic || '')
+  ) {
+    await queueShopifyCatalog(shop)
   } else if (!['customers/data_request', 'customers/redact'].includes(topic || '')) {
     throw createError({ statusCode: 400, message: 'Unsupported Shopify webhook topic' })
   }

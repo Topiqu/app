@@ -665,7 +665,12 @@
         "annualEquivalent": "Equivalent to {price} per month, billed annually",
         "priceUnavailable": "We will show the current price in the secure Stripe checkout.",
         "checkoutHint": "You will see the exact price and first payment date before confirming. Manage the plan anytime in the Stripe portal.",
-        "actionFailed": "Could not start the payment flow. Please try again."
+        "actionFailed": "Could not start the payment flow. Please try again.",
+        "shopify": {
+          "title": "Billed through Shopify",
+          "description": "This project’s plan is paid through your Shopify store. Change or cancel it in Shopify.",
+          "manage": "Manage plan in Shopify"
+        }
       },
       "validity": {
         "permanent": "Lifetime access",
@@ -1063,7 +1068,8 @@
         "invalid": "Use lowercase letters, numbers, and hyphens only.",
         "reserved": "This subdomain is reserved.",
         "taken": "This subdomain is already taken."
-      }
+      },
+      "shopifyPlans": "The store is being connected from Shopify, so paid plans are chosen in Shopify after connecting."
     },
     "unsubscribe": {
       "title": "Unsubscribe from email notifications",
@@ -1106,10 +1112,6 @@
       "description": "Publish articles from Topiqu to your Shopify blog and update them from the editor.",
       "notConfigured": "Shopify integration is not available yet.",
       "requiresPlan": "Shopify is available with Pro and Premium.",
-      "shop": "Store domain",
-      "shopHelp": "Enter the original myshopify.com domain, without https:// or a path.",
-      "connect": "Connect store",
-      "reconnect": "Reconnect store",
       "disconnect": "Disconnect Shopify",
       "disconnectDescription": "Stop sending articles and remove stored access tokens? Articles already in Shopify will remain.",
       "blog": "Default blog",
@@ -1131,9 +1133,8 @@
       "uncertain": "Shopify has not confirmed the result. Check the store first. Sending again will try to recover the existing article without creating another copy.",
       "confirmSend": "Confirm and send",
       "callback": {
-        "connected": "Shopify connected. Choose a blog and author.",
-        "cancelled": "Shopify connection cancelled.",
-        "error": "Shopify could not be connected. Try again or check the app configuration."
+        "linked": "Shopify connected. Choose a blog and author.",
+        "expired": "The Shopify link has expired. Open Topiqu from your Shopify admin again."
       },
       "connection": {
         "CONNECTED": "Connected",
@@ -1147,7 +1148,58 @@
         "FAILED": "Sending failed",
         "UNCERTAIN": "Result unconfirmed"
       },
-      "unpublishDescription": "This replaces the Shopify article with the saved Topiqu version and hides it from the store. Changes made directly in Shopify will be overwritten."
+      "unpublishDescription": "This replaces the Shopify article with the saved Topiqu version and hides it from the store. Changes made directly in Shopify will be overwritten.",
+      "catalog": {
+        "title": "Products and knowledge",
+        "description": "Use Shopify products, variants and collections when writing articles. Changes sync automatically; the full catalog is checked daily.",
+        "import": "Import products",
+        "queued": "Catalog sync started.",
+        "syncing": "Syncing catalog",
+        "failed": "The last sync failed. Try syncing again.",
+        "collections": "Collection topics",
+        "collectionsHint": "Based on imported products. Collection names, descriptions and membership help AI match products to article topics.",
+        "available": "Available products: {available} of {total}",
+        "createArticle": "Write article",
+        "articlePrompt": "Write a buying guide for the “{title}” collection. Use relevant available products from the knowledge base and explain how to choose between them.",
+        "showAll": "All collections ({count})",
+        "showLess": "Fewer collections",
+        "inventoryReconnect": "Reconnect for immediate availability updates",
+        "limit": "The catalog exceeds your plan limit; products within the limit were imported."
+      },
+      "install": {
+        "description": "Install the Topiqu app from the Shopify App Store, open it in your store admin and choose Connect to Topiqu.",
+        "action": "Open Shopify App Store"
+      },
+      "pending": {
+        "title": "Connect {shop} to Topiqu?",
+        "description": "The store {shop} will be linked to the project {project}. Switch projects first if you want to use another one.",
+        "billing": "Paid plans for this project will then be chosen and billed through Shopify.",
+        "confirm": "Connect store",
+        "cancel": "Cancel"
+      },
+      "reconnectHint": "Open Topiqu in your Shopify admin to restore the connection.",
+      "openInShopify": "Open in Shopify",
+      "planRequired": "Choose the Pro or Premium plan in Shopify to use this store.",
+      "choosePlan": "Choose plan in Shopify",
+      "app": {
+        "about": "Topiqu writes articles grounded in your products and collections and publishes them to your Shopify blog.",
+        "loading": "Loading",
+        "failed": "Topiqu could not be loaded.",
+        "retry": "Try again",
+        "unlinkedTitle": "Connect a Topiqu project",
+        "unlinkedDescription": "Link this store to a Topiqu project to publish articles and import products. You can sign in or create an account in the next step.",
+        "connect": "Connect to Topiqu",
+        "check": "Check again",
+        "waiting": "Finish connecting in the Topiqu tab. This page updates automatically.",
+        "linkedTitle": "Connected project",
+        "project": "Project",
+        "plan": "Plan",
+        "planRequiredTitle": "Choose a plan",
+        "planRequired": "Publishing to Shopify requires the Pro or Premium plan, billed through Shopify.",
+        "choosePlan": "Choose plan",
+        "managePlan": "Manage plan",
+        "open": "Open Topiqu"
+      }
     }
   },
   "error": {

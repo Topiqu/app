@@ -44,12 +44,16 @@ export const refreshKnowledgeSources = async (now = new Date()) => {
   // The index queue syncs feeds; a model switch requeues them below like any other source.
   const feeds = await prisma.knowledgeSource.updateMany({
     where: {
-      kind: 'FEED',
+      OR: [{ kind: 'FEED' }, { kind: 'SHOPIFY', shopifyConnection: { status: 'CONNECTED' } }],
       deletedAt: null,
       status: { in: ['INDEXED', 'FAILED'] },
-      OR: [
-        { fetchedAt: null },
-        { fetchedAt: { lt: new Date(now.getTime() - KNOWLEDGE_FEED_REFRESH_HOURS * 3_600_000) } },
+      AND: [
+        {
+          OR: [
+            { fetchedAt: null },
+            { fetchedAt: { lt: new Date(now.getTime() - KNOWLEDGE_FEED_REFRESH_HOURS * 3_600_000) } },
+          ],
+        },
       ],
       clientSite: activeFeatureFilter('AI'),
     },

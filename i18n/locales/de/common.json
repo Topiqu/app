@@ -665,7 +665,12 @@
         "annualEquivalent": "Entspricht {price} pro Monat bei jährlicher Abrechnung",
         "priceUnavailable": "Den aktuellen Preis zeigen wir dir beim sicheren Stripe-Checkout an.",
         "checkoutHint": "Vor der Bestätigung siehst du den genauen Preis und das Datum der ersten Zahlung. Den Tarif kannst du jederzeit im Stripe-Portal verwalten.",
-        "actionFailed": "Der Zahlungsvorgang konnte nicht gestartet werden. Bitte versuche es erneut."
+        "actionFailed": "Der Zahlungsvorgang konnte nicht gestartet werden. Bitte versuche es erneut.",
+        "shopify": {
+          "title": "Abrechnung über Shopify",
+          "description": "Der Tarif dieses Projekts wird über Ihren Shopify-Shop bezahlt. Ändern oder kündigen Sie ihn in Shopify.",
+          "manage": "Tarif in Shopify verwalten"
+        }
       },
       "validity": {
         "permanent": "Lebenslanger Zugriff",
@@ -1063,7 +1068,8 @@
         "invalid": "Verwende nur Kleinbuchstaben, Ziffern und Bindestriche.",
         "reserved": "Diese Subdomain ist reserviert.",
         "taken": "Diese Subdomain ist bereits vergeben."
-      }
+      },
+      "shopifyPlans": "Der Shop wird aus Shopify verbunden, daher wählst du den kostenpflichtigen Tarif nach dem Verbinden in Shopify."
     },
     "unsubscribe": {
       "title": "E-Mail-Benachrichtigungen abbestellen",
@@ -1106,10 +1112,6 @@
       "description": "Veröffentlichen Sie Artikel aus Topiqu in Ihrem Shopify-Blog und aktualisieren Sie sie im Editor.",
       "notConfigured": "Die Shopify-Integration ist noch nicht verfügbar.",
       "requiresPlan": "Shopify ist mit Pro und Premium verfügbar.",
-      "shop": "Shop-Domain",
-      "shopHelp": "Geben Sie die ursprüngliche myshopify.com-Domain ohne https:// oder Pfad ein.",
-      "connect": "Shop verbinden",
-      "reconnect": "Shop erneut verbinden",
       "disconnect": "Shopify trennen",
       "disconnectDescription": "Versand stoppen und gespeicherte Zugriffstoken entfernen? Artikel in Shopify bleiben erhalten.",
       "blog": "Standardblog",
@@ -1131,9 +1133,8 @@
       "uncertain": "Shopify hat das Ergebnis nicht bestätigt. Prüfen Sie zuerst den Shop. Erneutes Senden sucht den vorhandenen Artikel, ohne eine weitere Kopie zu erstellen.",
       "confirmSend": "Bestätigen und senden",
       "callback": {
-        "connected": "Shopify verbunden. Wählen Sie einen Blog und Autor.",
-        "cancelled": "Shopify-Verbindung abgebrochen.",
-        "error": "Shopify konnte nicht verbunden werden. Versuchen Sie es erneut oder prüfen Sie die App-Konfiguration."
+        "linked": "Shopify verbunden. Wählen Sie einen Blog und Autor.",
+        "expired": "Der Shopify-Link ist abgelaufen. Öffnen Sie Topiqu erneut aus dem Shopify-Admin."
       },
       "connection": {
         "CONNECTED": "Verbunden",
@@ -1147,7 +1148,58 @@
         "FAILED": "Versand fehlgeschlagen",
         "UNCERTAIN": "Ergebnis unbestätigt"
       },
-      "unpublishDescription": "Der Shopify-Artikel wird durch die gespeicherte Topiqu-Version ersetzt und im Shop ausgeblendet. Direkt in Shopify vorgenommene Änderungen werden überschrieben."
+      "unpublishDescription": "Der Shopify-Artikel wird durch die gespeicherte Topiqu-Version ersetzt und im Shop ausgeblendet. Direkt in Shopify vorgenommene Änderungen werden überschrieben.",
+      "catalog": {
+        "title": "Produkte und Wissen",
+        "description": "Shopify-Produkte, Varianten und Kollektionen beim Schreiben nutzen. Änderungen werden automatisch synchronisiert; der gesamte Katalog wird täglich geprüft.",
+        "import": "Produkte importieren",
+        "queued": "Katalogsynchronisierung gestartet.",
+        "syncing": "Katalog wird synchronisiert",
+        "failed": "Die letzte Synchronisierung ist fehlgeschlagen. Erneut versuchen.",
+        "collections": "Themen aus Kollektionen",
+        "collectionsHint": "Basierend auf importierten Produkten. Namen, Beschreibungen und Zugehörigkeit helfen der KI bei der Produktauswahl.",
+        "available": "Verfügbare Produkte: {available} von {total}",
+        "createArticle": "Artikel schreiben",
+        "articlePrompt": "Schreibe einen Kaufberater für die Kollektion „{title}“. Nutze relevante verfügbare Produkte aus der Wissensbasis und erkläre die Auswahl.",
+        "showAll": "Alle Kollektionen ({count})",
+        "showLess": "Weniger Kollektionen",
+        "inventoryReconnect": "Für sofortige Verfügbarkeitsupdates erneut verbinden",
+        "limit": "Der Katalog überschreitet das Tariflimit; Produkte innerhalb des Limits wurden importiert."
+      },
+      "install": {
+        "description": "Installieren Sie die Topiqu-App aus dem Shopify App Store, öffnen Sie sie im Shop-Admin und wählen Sie Mit Topiqu verbinden.",
+        "action": "Shopify App Store öffnen"
+      },
+      "pending": {
+        "title": "{shop} mit Topiqu verbinden?",
+        "description": "Der Shop {shop} wird mit dem Projekt {project} verbunden. Wechseln Sie zuerst das Projekt, wenn Sie ein anderes verwenden möchten.",
+        "billing": "Kostenpflichtige Tarife dieses Projekts werden danach über Shopify gewählt und abgerechnet.",
+        "confirm": "Shop verbinden",
+        "cancel": "Abbrechen"
+      },
+      "reconnectHint": "Öffnen Sie Topiqu im Shopify-Admin, um die Verbindung wiederherzustellen.",
+      "openInShopify": "In Shopify öffnen",
+      "planRequired": "Wählen Sie in Shopify den Tarif Pro oder Premium, um diesen Shop zu nutzen.",
+      "choosePlan": "Tarif in Shopify wählen",
+      "app": {
+        "about": "Topiqu schreibt Artikel auf Basis Ihrer Produkte und Kollektionen und veröffentlicht sie in Ihrem Shopify-Blog.",
+        "loading": "Wird geladen",
+        "failed": "Topiqu konnte nicht geladen werden.",
+        "retry": "Erneut versuchen",
+        "unlinkedTitle": "Topiqu-Projekt verbinden",
+        "unlinkedDescription": "Verbinden Sie diesen Shop mit einem Topiqu-Projekt, um Artikel zu veröffentlichen und Produkte zu importieren. Im nächsten Schritt melden Sie sich an oder erstellen ein Konto.",
+        "connect": "Mit Topiqu verbinden",
+        "check": "Erneut prüfen",
+        "waiting": "Schließen Sie die Verbindung im Topiqu-Tab ab. Diese Seite aktualisiert sich automatisch.",
+        "linkedTitle": "Verbundenes Projekt",
+        "project": "Projekt",
+        "plan": "Tarif",
+        "planRequiredTitle": "Tarif wählen",
+        "planRequired": "Das Veröffentlichen in Shopify erfordert den Tarif Pro oder Premium, abgerechnet über Shopify.",
+        "choosePlan": "Tarif wählen",
+        "managePlan": "Tarif verwalten",
+        "open": "Topiqu öffnen"
+      }
     }
   },
   "error": {

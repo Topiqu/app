@@ -79,7 +79,10 @@
             <template v-if="source.status === 'INDEXED'">
               <span aria-hidden="true">·</span>
               <span>{{
-                $t(source.kind === 'FEED' ? 'knowledge.products' : 'knowledge.chunks', source.chunkCount)
+                $t(
+                  ['FEED', 'SHOPIFY'].includes(source.kind) ? 'knowledge.products' : 'knowledge.chunks',
+                  source.chunkCount,
+                )
               }}</span>
             </template>
             <span aria-hidden="true">·</span>
@@ -135,6 +138,7 @@ const KIND_ICONS = {
   FILE: 'mdi:file-document-outline',
   URL: 'mdi:link-variant',
   FEED: 'mdi:storefront-outline',
+  SHOPIFY: 'mdi:shopify',
 } as const
 const STATUS_COLORS = { PENDING: 'neutral', PROCESSING: 'warning', INDEXED: 'success', FAILED: 'error' } as const
 
@@ -164,12 +168,13 @@ const failure = (source: Source) =>
 // What the last sync left out, so a short catalog is not a mystery.
 const feedNote = (source: Source) => {
   const report = source.syncReport as KnowledgeFeedReport | null
-  if (source.kind !== 'FEED' || !report) return null
+  if (!['FEED', 'SHOPIFY'].includes(source.kind) || !report) return null
   const skipped = Object.values(report.skipped).reduce((sum, count) => sum + (count ?? 0), 0)
   return (
     [
       skipped && t('knowledge.feed.skipped', skipped),
-      report.truncated && t('knowledge.feed.truncated', report.truncated),
+      report.truncated &&
+        t(source.kind === 'SHOPIFY' ? 'common.shopify.catalog.limit' : 'knowledge.feed.truncated', report.truncated),
     ]
       .filter(Boolean)
       .join(' · ') || null
@@ -221,10 +226,10 @@ const actions = (source: Source): DropdownMenuItem[][] => [
       icon: 'mdi:pencil-outline',
       onSelect: () => openEdit(source.id),
     },
-    ...(source.kind === 'URL' || source.kind === 'FEED' || source.status === 'FAILED'
+    ...(['URL', 'FEED', 'SHOPIFY'].includes(source.kind) || source.status === 'FAILED'
       ? [
           {
-            label: t(source.kind === 'URL' || source.kind === 'FEED' ? 'knowledge.refresh' : 'knowledge.retry'),
+            label: t(['URL', 'FEED', 'SHOPIFY'].includes(source.kind) ? 'knowledge.refresh' : 'knowledge.retry'),
             icon: 'mdi:refresh',
             disabled: source.status === 'PROCESSING',
             onSelect: () => run(() => $fetch<unknown>(`/api/knowledge/${source.id}/refresh`, { method: 'POST' })),

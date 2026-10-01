@@ -9,6 +9,9 @@ describe('Shopify access gates and webhooks', () => {
   const connectionUpdate = vi.fn()
   const publicationUpdate = vi.fn()
   const connectionDelete = vi.fn()
+  const installationDelete = vi.fn()
+  const siteUpdate = vi.fn()
+  let billingProvider: string
   let raw: string
   let signature: string
   let topic: string
@@ -21,10 +24,13 @@ describe('Shopify access gates and webhooks', () => {
     vi.stubGlobal('requireUser', vi.fn(async () => ({ id: 'admin', role: 'admin', clientSiteId: 'site-1' })))
     vi.stubGlobal('requireTenantScope', vi.fn(async () => ({ membership: { role: 'OWNER', scopes: [] } })))
     vi.stubGlobal('getEnhancedPrisma', vi.fn(async () => ({ clientSite: { findUnique: async () => ({ id: 'site-1', plan: 'PRO' }) } })))
+    billingProvider = 'STRIPE'
+    vi.stubGlobal('syncPlanFeatures', vi.fn())
     const db = {
-      shopifyConnection: { findUnique: async () => ({ id: 'connection-1' }), update: connectionUpdate, deleteMany: connectionDelete },
+      shopifyConnection: { findUnique: async () => ({ id: 'connection-1', clientSiteId: 'site-1', planHandle: 'pro' }), update: connectionUpdate, deleteMany: connectionDelete },
       shopifyPublication: { updateMany: publicationUpdate },
-      shopifyOAuthAttempt: { deleteMany: vi.fn() },
+      shopifyInstallation: { deleteMany: installationDelete },
+      clientSite: { findUnique: async () => ({ billingProvider }), update: siteUpdate },
       $transaction: async (run: (tx: unknown) => Promise<unknown>) => run(db),
     }
     vi.stubGlobal('prisma', db)
@@ -46,9 +52,10 @@ describe('Shopify access gates and webhooks', () => {
     await expect(requireShopifyAccess({} as never)).rejects.toMatchObject({ statusCode: 403 })
   })
 
-  it('rejects Basic plans before accessing Shopify', async () => {
+  it('rejects Basic plans before accessing Shopify, except where no plan is needed', async () => {
     vi.mocked(getEnhancedPrisma).mockResolvedValue({ clientSite: { findUnique: async () => ({ id: 'site-1', plan: 'BASIC' }) } } as never)
     await expect(requireShopifyAccess({} as never)).rejects.toMatchObject({ statusCode: 403 })
+    await expect(requireShopifyAccess({} as never, 'INTEGRATION_CONTROL', { requirePlan: false })).resolves.toMatchObject({ site: { plan: 'BASIC' } })
   })
 
   it('rejects forged webhook signatures before any database change', async () => {
@@ -61,6 +68,14 @@ describe('Shopify access gates and webhooks', () => {
     expect(await webhook()).toEqual({ success: true })
     expect(connectionUpdate).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ status: 'REVOKED', encryptedAccessToken: null, encryptedRefreshToken: null }) }))
     expect(publicationUpdate).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ status: 'FAILED', lease: null }) }))
+    expect(installationDelete).toHaveBeenCalledWith({ where: { shop: 'store.myshopify.com' } })
+    expect(siteUpdate).not.toHaveBeenCalled()
+  })
+
+  it('returns a Shopify-billed project to Stripe and Basic after uninstall', async () => {
+    billingProvider = 'SHOPIFY'
+    await webhook()
+    expect(siteUpdate).toHaveBeenCalledWith({ where: { id: 'site-1' }, data: { billingProvider: 'STRIPE', plan: 'BASIC', nextBillingAt: null } })
   })
 
   it('cannot apply a signed uninstall payload to another shop', async () => {

@@ -80,6 +80,7 @@ export default defineEventHandler(async (event) => {
         lastInvoicedAt: clientSite.lastInvoicedAt,
         stripeCustomerId: clientSite.stripeCustomerId,
         stripeSubscriptionId: clientSite.stripeSubscriptionId,
+        billingProvider: clientSite.billingProvider,
       }
     : {}
   const articleWallet = hasTenantScope(membership, 'AI_USE') ? await getArticleCreditWallet(id) : null

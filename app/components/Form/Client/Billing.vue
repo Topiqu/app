@@ -22,6 +22,31 @@
       </div>
     </div>
 
+    <section
+      v-if="shopifyBilled"
+      class="flex flex-col gap-3 rounded-(--topiqu-surface-radius) border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-neutral-900 sm:flex-row sm:items-center sm:justify-between"
+      aria-labelledby="billing-shopify-title"
+    >
+      <div class="min-w-0">
+        <h2 id="billing-shopify-title" class="flex items-center gap-2 font-semibold text-highlighted">
+          <UIcon name="mdi:shopify" class="size-5" />
+          {{ $t('common.preferences.billing.shopify.title') }}
+        </h2>
+        <p class="mt-1 text-sm text-muted">{{ $t('common.preferences.billing.shopify.description') }}</p>
+      </div>
+      <UButton
+        v-if="shopifyPricingUrl"
+        color="neutral"
+        variant="soft"
+        trailingIcon="mdi:open-in-new"
+        :to="shopifyPricingUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {{ $t('common.preferences.billing.shopify.manage') }}
+      </UButton>
+    </section>
+
     <div
       v-if="client?.billingPlan !== 'PERMANENT' && client?.nextBillingAt"
       class="rounded-(--topiqu-surface-radius) border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-neutral-900"
@@ -101,7 +126,7 @@
         <p class="text-xs text-muted">{{ $t('common.wallet.explanation') }}</p>
       </div>
 
-      <div class="space-y-4">
+      <div v-if="!shopifyBilled" class="space-y-4">
         <div>
           <h3 class="text-lg font-semibold tracking-tight text-highlighted">
             {{ $t('common.articlePacks.title') }}
@@ -375,7 +400,13 @@ const {
   default: () => [],
 })
 
-const upgradeTarget = computed(() => getUpgradeTarget(client?.plan, !!client?.stripeSubscriptionId))
+// Shopify App Pricing owns plan changes and has no one-time purchases, so Stripe offers stay hidden.
+const shopifyBilled = computed(() => client?.billingProvider === 'SHOPIFY')
+const shopify = shopifyBilled.value ? await useShopify() : null
+const shopifyPricingUrl = computed(() => shopify?.data.value?.pricingUrl ?? null)
+const upgradeTarget = computed(() =>
+  shopifyBilled.value ? null : getUpgradeTarget(client?.plan, !!client?.stripeSubscriptionId),
+)
 const { data: planPricing } = await useLazyFetch<PlanPricing>('/api/stripe/plans', {
   immediate: Boolean(upgradeTarget.value),
   default: () => ({

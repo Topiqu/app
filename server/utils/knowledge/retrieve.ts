@@ -95,12 +95,15 @@ export const searchKnowledge = (
       LEFT JOIN "KnowledgeProduct" p ON p."id" = c."productId" AND p."clientSiteId" = ${clientSiteId}
       WHERE c."clientSiteId" = ${clientSiteId}
         AND s."clientSiteId" = ${clientSiteId}
-        AND (s."status" = 'INDEXED' OR s."kind" = 'FEED')
+        AND (s."status" = 'INDEXED' OR s."kind" IN ('FEED', 'SHOPIFY'))
+        AND (s."kind" <> 'SHOPIFY' OR EXISTS (
+          SELECT 1 FROM "ShopifyConnection" sc WHERE sc."id" = s."shopifyConnectionId" AND sc."status" = 'CONNECTED'
+        ))
         AND s."useInArticles"
         AND s."deletedAt" IS NULL
         AND s."embeddingModel" = ${aiEmbeddingModelId('knowledge')}
         AND (
-          s."kind" <> 'FEED'
+          s."kind" NOT IN ('FEED', 'SHOPIFY')
           OR (p."availability" <> 'OUT_OF_STOCK' AND (${language}::text IS NULL OR s."language"::text = ${language}))
         )
     ),
@@ -254,7 +257,15 @@ export const retrieveKnowledge = async (
   }: { abortSignal?: AbortSignal; track?: boolean; language?: string | null } = {},
 ): Promise<KnowledgeBrief> => {
   const available = await prisma.knowledgeSource.findFirst({
-    where: { clientSiteId, useInArticles: true, deletedAt: null, OR: [{ status: 'INDEXED' }, { kind: 'FEED' }] },
+    where: {
+      clientSiteId,
+      useInArticles: true,
+      deletedAt: null,
+      AND: [
+        { OR: [{ status: 'INDEXED' }, { kind: { in: ['FEED', 'SHOPIFY'] } }] },
+        { OR: [{ kind: { not: 'SHOPIFY' } }, { shopifyConnection: { status: 'CONNECTED' } }] },
+      ],
+    },
     select: { id: true },
   })
   if (!available) return EMPTY

@@ -607,7 +607,10 @@ const init = (): ArticleWithDetails =>
 const editedArticle = ref(init())
 // The run lives in the store, so leaving the editor neither stops it nor needs this page kept alive.
 const generation = useArticleGenerationStore()
-const newArticleLanguage = shallowRef<Language>((clientSite.value?.language as Language) ?? 'en')
+const requestedLanguage = LANGUAGE_OPTIONS.find((language) => language === route.query.language)
+const newArticleLanguage = shallowRef<Language>(
+  (isNew ? requestedLanguage : undefined) ?? (clientSite.value?.language as Language) ?? 'en',
+)
 // A run restored after a page load arrives after setup; its article belongs to the language it was written in.
 watch(
   () => isNew && generation.target === 'new' && generation.language,

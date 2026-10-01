@@ -49,7 +49,8 @@
       "FILE": "Dokument",
       "URL": "Webová stránka",
       "SITEMAP": "Stránky z webu",
-      "FEED": "Produkty z e-shopu"
+      "FEED": "Produkty z e-shopu",
+      "SHOPIFY": "Shopify"
     },
     "addKinds": {
       "NOTE": "Text",

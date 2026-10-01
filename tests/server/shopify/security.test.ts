@@ -6,11 +6,19 @@ import { normalizeShopifyShop, shopifyOrigin } from '../../../server/utils/shopi
 import {
   decryptShopifyToken,
   encryptShopifyToken,
-  verifyShopifyOAuthHmac,
+  signShopifyLink,
+  verifyShopifyIdToken,
+  verifyShopifyLink,
   verifyShopifyWebhookHmac,
 } from '../../../server/utils/shopify/security'
 
-describe('Shopify OAuth, domains, and encrypted credentials', () => {
+const idToken = (claims: Record<string, unknown>, secret = 'test-secret', alg = 'HS256') => {
+  const encode = (value: unknown) => Buffer.from(JSON.stringify(value)).toString('base64url')
+  const body = `${encode({ alg, typ: 'JWT' })}.${encode(claims)}`
+  return `${body}.${createHmac('sha256', secret).update(body).digest('base64url')}`
+}
+
+describe('Shopify sessions, domains, and encrypted credentials', () => {
   beforeEach(() => {
     vi.stubEnv('SHOPIFY_CLIENT_ID', 'test-client')
     vi.stubEnv('SHOPIFY_CLIENT_SECRET', 'test-secret')
@@ -33,14 +41,42 @@ describe('Shopify OAuth, domains, and encrypted credentials', () => {
       expect(normalizeShopifyShop(shop)).toBeNull()
   })
 
-  it('verifies the OAuth signature over sorted decoded query values', () => {
-    const query = { shop: 'store.myshopify.com', timestamp: '123', state: 'state', code: 'code' }
-    const message = 'code=code&shop=store.myshopify.com&state=state&timestamp=123'
-    const hmac = createHmac('sha256', 'test-secret').update(message).digest('hex')
-    expect(verifyShopifyOAuthHmac({ ...query, hmac })).toBe(true)
-    expect(verifyShopifyOAuthHmac({ ...query, shop: 'other.myshopify.com', hmac })).toBe(false)
-    expect(verifyShopifyOAuthHmac({ ...query, state: ['state', 'forged'], hmac })).toBe(false)
-    expect(verifyShopifyOAuthHmac({ ...query, hmac: 'short' })).toBe(false)
+  it('accepts only a current App Bridge ID token issued to this app for the store it names', () => {
+    const now = Math.floor(Date.now() / 1000)
+    const claims = {
+      iss: 'https://store.myshopify.com/admin',
+      dest: 'https://store.myshopify.com',
+      aud: 'test-client',
+      sub: '42',
+      exp: now + 60,
+      nbf: now - 1,
+    }
+    expect(verifyShopifyIdToken(idToken(claims))).toEqual({ shop: 'store.myshopify.com' })
+    for (const forged of [
+      idToken(claims, 'other-secret'),
+      idToken(claims, 'test-secret', 'none'),
+      idToken({ ...claims, aud: 'other-app' }),
+      idToken({ ...claims, exp: now - 60 }),
+      idToken({ ...claims, nbf: now + 60 }),
+      idToken({ ...claims, iss: 'https://attacker.myshopify.com/admin' }),
+      idToken({ ...claims, iss: 'https://evil.test/admin', dest: 'https://evil.test' }),
+      'not-a-token',
+      undefined,
+    ])
+      expect(verifyShopifyIdToken(forged)).toBeNull()
+  })
+
+  it('signs installation links that cannot be altered or reused after expiry', () => {
+    const id = '0d4c1b0e-6f0a-4a8e-9c1d-2b3a4c5d6e7f'
+    const link = signShopifyLink(id)
+    expect(verifyShopifyLink(link)).toBe(id)
+    const [, expires, signature] = link.split('.')
+    expect(verifyShopifyLink(`1d4c1b0e-6f0a-4a8e-9c1d-2b3a4c5d6e7f.${expires}.${signature}`)).toBeNull()
+    expect(verifyShopifyLink(`${id}.${Number(expires) + 60}.${signature}`)).toBeNull()
+    expect(verifyShopifyLink(`${link}.extra`)).toBeNull()
+    vi.useFakeTimers({ now: Date.now() + 16 * 60_000 })
+    expect(verifyShopifyLink(link)).toBeNull()
+    vi.useRealTimers()
   })
 
   it('signs the exact raw webhook body, including whitespace', () => {

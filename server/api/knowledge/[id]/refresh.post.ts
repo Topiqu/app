@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
     }
   }
   // A feed is fetched by the sync itself, which the kick below starts.
-  if (source.kind === 'FEED' || (!changed && source.status === 'FAILED'))
+  if (['FEED', 'SHOPIFY'].includes(source.kind) || (!changed && source.status === 'FAILED'))
     await db.knowledgeSource.update({ where: { id: source.id }, data: { status: 'PENDING', attempts: 0, error: null } })
 
   await logAction({

@@ -60,6 +60,7 @@ const loading = shallowRef(false)
 const dismissed = useLocalStorage<string[]>('upsell-dismissed', [])
 
 const target = computed(() => {
+  if (status.value?.billingProvider === 'SHOPIFY') return null
   const plan = getUpgradeTarget(auth.value?.user?.plan, status.value?.hasActiveSubscription)
   return plan && !dismissed.value.includes(plan) ? plan : null
 })

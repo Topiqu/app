@@ -4,6 +4,7 @@ import { knowledgeQuota } from '~~/shared/utils/knowledge'
 import { chunkKnowledge } from './chunk'
 import { KnowledgeExtractError } from './extract'
 import { aiEmbeddingModelId } from '../ai/modelRegistry'
+import { fetchShopifyCatalog } from '../shopify/catalog'
 import { fetchKnowledgeFeed, type FeedProduct } from './feed'
 
 const MAX_ATTEMPTS = 3
@@ -44,9 +45,10 @@ export const indexKnowledgeSource = async (id: string) => {
       contentHash: true,
       embeddingModel: true,
       chunkCount: true,
+      shopifyConnectionId: true,
     },
   })
-  if (source.kind === 'FEED') return syncFeed({ id, ...source })
+  if (source.kind === 'FEED' || source.kind === 'SHOPIFY') return syncFeed({ id, ...source })
   try {
     const chunks = chunkKnowledge(source.title, source.content)
     const { embeddings, usage } = await embedMany({
@@ -107,6 +109,7 @@ type FeedSource = {
   contentHash: string
   embeddingModel: string | null
   chunkCount: number
+  shopifyConnectionId?: string | null
 }
 
 /** The plan's product quota, less what the tenant's other feeds already hold. */
@@ -170,10 +173,11 @@ const embedProducts = async (source: FeedSource, batch: readonly FeedProduct[], 
 const syncFeed = async (source: FeedSource) => {
   const model = aiEmbeddingModelId('knowledge')
   try {
-    const { products, report, hash } = await fetchKnowledgeFeed(source.sourceUrl!, {
-      currency: source.currency,
-      limit: await feedProductLimit(source),
-    })
+    const limit = await feedProductLimit(source)
+    const snapshot = source.shopifyConnectionId
+      ? await fetchShopifyCatalog(source.shopifyConnectionId, source.clientSiteId, limit)
+      : await fetchKnowledgeFeed(source.sourceUrl!, { currency: source.currency, limit })
+    const { products, report, hash } = snapshot
     const changed = hash !== source.contentHash || source.embeddingModel !== model
     let embedded = 0
     let tokens = 0
@@ -213,6 +217,11 @@ const syncFeed = async (source: FeedSource) => {
         error: null,
       },
     })
+    if (source.shopifyConnectionId && 'revision' in snapshot && typeof snapshot.revision === 'number')
+      await prisma.shopifyConnection.update({
+        where: { id: source.shopifyConnectionId },
+        data: { catalogSyncedRevision: snapshot.revision },
+      })
     if (changed)
       await logAction({
         action: 'KNOWLEDGE_SOURCE_INDEXED',

@@ -19,7 +19,8 @@ export default defineMonitoredTask({
       take: 20,
     })
     for (const publication of pending) await publishShopifyArticle(publication.id)
-    await prisma.shopifyOAuthAttempt.deleteMany({ where: { expiresAt: { lt: new Date() } } })
+    // An unlinked installation is useless once its refresh token expires; App Home re-creates it.
+    await prisma.shopifyInstallation.deleteMany({ where: { refreshTokenExpiresAt: { lt: new Date() } } })
     return { result: { count: pending.length } }
   },
 })

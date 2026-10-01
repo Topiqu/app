@@ -1,8 +1,6 @@
-import { createCipheriv, createDecipheriv, createHash, createHmac, timingSafeEqual } from 'node:crypto'
+import { createCipheriv, createDecipheriv, createHmac, timingSafeEqual } from 'node:crypto'
 
-import { shopifyCredentials } from './config'
-
-export const hashShopifyState = (state: string) => createHash('sha256').update(state).digest('hex')
+import { normalizeShopifyShop, shopifyCredentials } from './config'
 
 const equal = (provided: string, expected: string) => {
   const a = Buffer.from(provided)
@@ -10,22 +8,69 @@ const equal = (provided: string, expected: string) => {
   return a.length === b.length && timingSafeEqual(a, b)
 }
 
-export const verifyShopifyOAuthHmac = (query: Record<string, unknown>) => {
-  if (typeof query.hmac !== 'string' || !/^[a-f0-9]{64}$/.test(query.hmac)) return false
-  if (Object.values(query).some((value) => typeof value !== 'string')) return false
-  const message = Object.keys(query)
-    .filter((key) => key !== 'hmac')
-    .sort()
-    .map((key) => `${key}=${query[key]}`)
-    .join('&')
-  return equal(query.hmac, createHmac('sha256', shopifyCredentials().clientSecret).update(message).digest('hex'))
-}
-
 export const verifyShopifyWebhookHmac = (body: string, signature: string | undefined) =>
   Boolean(
     signature &&
     equal(signature, createHmac('sha256', shopifyCredentials().clientSecret).update(body).digest('base64')),
   )
+
+const CLOCK_SKEW_SECONDS = 5
+
+const decodeJwtPart = (part: string) => {
+  try {
+    return JSON.parse(Buffer.from(part, 'base64url').toString('utf8')) as Record<string, unknown>
+  } catch {
+    return null
+  }
+}
+
+const hostname = (value: unknown) => {
+  try {
+    return typeof value === 'string' ? new URL(value).hostname : null
+  } catch {
+    return null
+  }
+}
+
+/** The App Bridge ID token: HS256 signed with the client secret. Returns the shop it was issued for. */
+export const verifyShopifyIdToken = (token: string | undefined) => {
+  const parts = token?.split('.')
+  if (parts?.length !== 3) return null
+  const [header, payload, signature] = parts as [string, string, string]
+  const { clientId, clientSecret } = shopifyCredentials()
+  const expected = createHmac('sha256', clientSecret).update(`${header}.${payload}`).digest('base64url')
+  if (!equal(signature, expected) || decodeJwtPart(header)?.alg !== 'HS256') return null
+  const claims = decodeJwtPart(payload)
+  const now = Date.now() / 1000
+  if (!claims || !(Number(claims.exp) > now - CLOCK_SKEW_SECONDS) || !(Number(claims.nbf) <= now + CLOCK_SKEW_SECONDS))
+    return null
+  const dest = hostname(claims.dest)
+  if (claims.aud !== clientId || !dest || hostname(claims.iss) !== dest) return null
+  const shop = normalizeShopifyShop(dest)
+  return shop ? { shop } : null
+}
+
+const LINK_TTL_SECONDS = 15 * 60
+
+const linkSignature = (installationId: string, expires: number) =>
+  createHmac('sha256', shopifyCredentials().clientSecret)
+    .update(`topiqu-shopify-link:${installationId}:${expires}`)
+    .digest('base64url')
+
+// Stateless, so App Home can hand out a fresh link on every load; the claim deletes the installation.
+export const signShopifyLink = (installationId: string) => {
+  const expires = Math.floor(Date.now() / 1000) + LINK_TTL_SECONDS
+  return `${installationId}.${expires}.${linkSignature(installationId, expires)}`
+}
+
+export const verifyShopifyLink = (value: unknown) => {
+  if (typeof value !== 'string') return null
+  const [installationId, expires, signature, ...rest] = value.split('.')
+  if (rest.length || !installationId || !/^[0-9a-f-]{36}$/.test(installationId) || !/^\d{1,12}$/.test(expires || ''))
+    return null
+  if (Number(expires) < Date.now() / 1000) return null
+  return equal(signature || '', linkSignature(installationId, Number(expires))) ? installationId : null
+}
 
 const encryptionKey = () => {
   const key = Buffer.from(process.env.SHOPIFY_ENCRYPTION_KEY || '', 'base64')

@@ -39,12 +39,22 @@ export const shopifyTokenRequest = async (shop: string, params: Record<string, s
   return tokens
 }
 
+export const shopifyTokenExchange = (shop: string, idToken: string) =>
+  shopifyTokenRequest(shop, {
+    grant_type: 'urn:ietf:params:oauth:grant-type:token-exchange',
+    subject_token: idToken,
+    subject_token_type: 'urn:ietf:params:oauth:token-type:id_token',
+    requested_token_type: 'urn:shopify:params:oauth:token-type:offline-access-token',
+    expiring: '1',
+  })
+
 export const shopifyGraphql = async <T>(
   shop: string,
   accessToken: string,
   query: string,
   variables: Record<string, unknown> = {},
   mutation = false,
+  pace = false,
 ): Promise<T> => {
   if (!normalizeShopifyShop(shop)) throw new Error('Invalid Shopify shop')
   let response: Response
@@ -71,7 +81,13 @@ export const shopifyGraphql = async <T>(
           : 'RETRY',
       'Shopify is temporarily unavailable',
     )
-  let result: { data?: T; errors?: { extensions?: { code?: string } }[] }
+  let result: {
+    data?: T
+    errors?: { extensions?: { code?: string } }[]
+    extensions?: {
+      cost?: { requestedQueryCost: number; throttleStatus?: { currentlyAvailable: number; restoreRate: number } }
+    }
+  }
   try {
     result = await response.json()
   } catch {
@@ -86,5 +102,18 @@ export const shopifyGraphql = async <T>(
     )
   }
   if (!result.data) throw new ShopifyApiError(mutation ? 'UNCERTAIN' : 'RETRY', 'Shopify returned no result')
+  // Sequential catalog pages leave enough capacity for the next page on stores with a small API budget.
+  const cost = result.extensions?.cost
+  const throttle = cost?.throttleStatus
+  if (pace && cost && throttle && throttle.restoreRate > 0 && throttle.currentlyAvailable < cost.requestedQueryCost)
+    await new Promise((resolve) =>
+      setTimeout(
+        resolve,
+        Math.min(
+          30_000,
+          Math.ceil(((cost.requestedQueryCost - throttle.currentlyAvailable) / throttle.restoreRate) * 1000),
+        ),
+      ),
+    )
   return result.data
 }

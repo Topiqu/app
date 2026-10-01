@@ -1,7 +1,7 @@
 import type Stripe from 'stripe'
 import type { ClientPlan } from '~~/generated/zenstack/models'
 
-import { articleCreditsForPlan, nextArticleCreditMonth } from '~~/shared/utils/articleCredits'
+import { nextArticleCreditMonth } from '~~/shared/utils/articleCredits'
 import {
   extractSubscriptionId,
   isSubscribablePlan,
@@ -154,7 +154,6 @@ export default defineEventHandler(async (event) => {
     const derivedPlan =
       planFromPriceId(price?.id) ??
       (isSubscribablePlan(subscription.metadata?.plan) ? subscription.metadata.plan : null)
-    const amount = articleCreditsForPlan(derivedPlan)
     const linePeriod = invoice.lines.data[0]?.period
     const periodStart = linePeriod ? new Date(linePeriod.start * 1000) : new Date()
     const invoicePeriodEnd = linePeriod ? new Date(linePeriod.end * 1000) : new Date(Date.now() + 31 * 86400000)
@@ -170,29 +169,15 @@ export default defineEventHandler(async (event) => {
           ...(annual ? { billingPlan: 'ANNUAL' } : { billingPlan: 'MONTHLY' }),
         },
       })
-      if (derivedPlan && amount > 0) {
-        // A mid-period PRO → PREMIUM invoice should add only the 10-article difference, not
-        // another complete allowance. Downgrades never claw back articles already granted.
-        const activePlanGrants = await tx.articleCreditGrant.aggregate({
-          where: { clientSiteId, source: 'PLAN', expiresAt: { gt: periodStart } },
-          _sum: { amount: true },
+      if (derivedPlan)
+        await grantPlanArticleCredits(tx, {
+          clientSiteId,
+          plan: derivedPlan,
+          idempotencyKey: `stripe:invoice:${invoice.id}`,
+          reason: `${derivedPlan} included articles`,
+          periodStart,
+          periodEnd,
         })
-        const grantAmount = Math.max(0, amount - (activePlanGrants._sum.amount ?? 0))
-        if (grantAmount > 0)
-          await creditArticleCredits(
-            {
-              clientSiteId,
-              amount: grantAmount,
-              source: 'PLAN',
-              idempotencyKey: `stripe:invoice:${invoice.id}`,
-              reason: `${derivedPlan} included articles`,
-              periodStart,
-              periodEnd,
-              expiresAt: periodEnd,
-            },
-            tx,
-          )
-      }
     })
   }
 

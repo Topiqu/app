@@ -41,6 +41,11 @@ enum BillingPlans {
     PERMANENT
 }
 
+enum BillingProvider {
+    STRIPE
+    SHOPIFY
+}
+
 enum DomainVerificationStatus {
     PENDING
     VERIFIED
@@ -125,6 +130,7 @@ model ClientSite with Base {
     insightUpdatedAt     DateTime?
     aiPromptsSeededAt    DateTime?
     billingPlan          BillingPlans        @default(MONTHLY)
+    billingProvider      BillingProvider     @default(STRIPE)
     trialStartedAt       DateTime?
     trialEndsAt          DateTime?
     trialAcknowledgedAt  DateTime?

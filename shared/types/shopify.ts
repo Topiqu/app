@@ -4,6 +4,14 @@ export interface ShopifyBlog {
   handle: string
 }
 
+export interface ShopifyCollectionInsight {
+  id: string
+  title: string
+  description: string
+  products: number
+  available: number
+}
+
 export interface ShopifyStatus {
   configured: boolean
   eligible: boolean
@@ -16,6 +24,16 @@ export interface ShopifyStatus {
     blogTitle: string | null
     author: string | null
     status: 'CONNECTED' | 'REAUTH_REQUIRED' | 'REVOKED'
+  }
+  billingProvider: 'STRIPE' | 'SHOPIFY'
+  pricingUrl: string | null
+  adminUrl: string | null
+  installUrl: string | null
+  pending: null | {
+    shop: string
+    shopName: string
+    project: string
+    shopifyBilling: boolean
   }
 }
 

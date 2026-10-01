@@ -90,7 +90,7 @@ watch([open, () => props.id], async ([value, id]) => {
   try {
     const { source, chunks: preview } = await $fetch<Detail>(`/api/knowledge/${id}`)
     isNote.value = source.kind === 'NOTE'
-    isFeed.value = source.kind === 'FEED'
+    isFeed.value = ['FEED', 'SHOPIFY'].includes(source.kind)
     loadedText.value = source.content ?? ''
     confirmed.value = false
     chunks.value = preview

@@ -2,7 +2,7 @@ import type { JsonValue } from '@zenstackhq/orm'
 import type { ArticleCreditOperation } from '~~/generated/zenstack/models'
 
 import { randomUUID } from 'node:crypto'
-import { ARTICLE_CREDIT_POLICY_VERSION } from '~~/shared/utils/articleCredits'
+import { ARTICLE_CREDIT_POLICY_VERSION, articleCreditsForPlan } from '~~/shared/utils/articleCredits'
 
 import type { DatabaseTransaction } from './database'
 
@@ -137,6 +137,42 @@ export async function creditArticleCredits(
     return grant
   }
   return transaction ? write(transaction) : prisma.$transaction(write)
+}
+
+/** A plan's allowance for one period. A mid-period PRO → PREMIUM change adds only the difference. */
+export async function grantPlanArticleCredits(
+  tx: Tx,
+  input: {
+    clientSiteId: string
+    plan: string
+    idempotencyKey: string
+    reason: string
+    periodStart: Date
+    periodEnd: Date
+  },
+) {
+  const amount = articleCreditsForPlan(input.plan)
+  if (amount <= 0) return
+  // Downgrades never claw back articles already granted.
+  const active = await tx.articleCreditGrant.aggregate({
+    where: { clientSiteId: input.clientSiteId, source: 'PLAN', expiresAt: { gt: input.periodStart } },
+    _sum: { amount: true },
+  })
+  const grantAmount = Math.max(0, amount - (active._sum.amount ?? 0))
+  if (grantAmount > 0)
+    await creditArticleCredits(
+      {
+        clientSiteId: input.clientSiteId,
+        amount: grantAmount,
+        source: 'PLAN',
+        idempotencyKey: input.idempotencyKey,
+        reason: input.reason,
+        periodStart: input.periodStart,
+        periodEnd: input.periodEnd,
+        expiresAt: input.periodEnd,
+      },
+      tx,
+    )
 }
 
 export async function adjustArticleCredits(input: {
