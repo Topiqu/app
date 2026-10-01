@@ -1,7 +1,7 @@
 <template>
   <aside
     v-if="visible"
-    class="fixed bottom-20 right-4 z-overlay w-[min(24rem,calc(100vw-2rem))] rounded-[var(--topiqu-surface-radius)] border border-default bg-default p-4 shadow-lg"
+    class="fixed right-4 top-20 z-overlay w-[min(24rem,calc(100vw-2rem))] rounded-[var(--topiqu-surface-radius)] border border-default bg-default p-4 shadow-lg"
     role="status"
     aria-live="polite"
     data-background-generation
@@ -12,7 +12,7 @@
       </span>
       <div class="min-w-0 flex-1">
         <p class="font-semibold text-highlighted">{{ $t(`articles.editor.ai.run.title.${generation.run!.status}`) }}</p>
-        <p v-if="generation.article.title" class="truncate text-sm text-muted">{{ generation.article.title }}</p>
+        <p v-if="generation.article.title" class="line-clamp-2 text-sm text-muted">{{ generation.article.title }}</p>
         <p class="mt-1 text-sm text-muted">
           <template v-if="running && currentStep">{{ $t(`articles.editor.ai.run.step.${currentStep}`) }} · </template>
           {{ $t('articles.editor.ai.elapsed', { seconds: elapsed }) }}

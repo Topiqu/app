@@ -12,7 +12,7 @@
       />
     </div>
 
-    <header class="flex items-start gap-3 px-4 py-3">
+    <header class="flex flex-wrap items-start gap-3 px-4 py-3">
       <span class="mt-0.5 grid size-8 shrink-0 place-items-center rounded-full" :class="tone.badge">
         <UIcon
           :name="tone.icon"
@@ -21,7 +21,7 @@
           aria-hidden="true"
         />
       </span>
-      <div class="min-w-0 flex-1" role="status">
+      <div class="min-w-48 flex-1" role="status">
         <h2 :id="headingId" class="font-semibold text-highlighted">
           {{ $t(`articles.editor.ai.run.title.${run.status}`) }}
         </h2>
@@ -31,7 +31,7 @@
           <template v-if="words"> · {{ $t('articles.editor.ai.run.words', { count: words }) }}</template>
         </p>
       </div>
-      <div class="flex shrink-0 items-center gap-1">
+      <div class="ml-auto flex shrink-0 items-center gap-1">
         <UButton
           v-if="running"
           size="sm"

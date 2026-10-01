@@ -1,6 +1,7 @@
 <template>
   <div class="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 pb-12 pt-6">
     <div
+      ref="commandBar"
       role="region"
       data-editor-command-bar
       :data-editor-submitting="submitting"
@@ -90,7 +91,7 @@
           icon="mdi:cog"
           color="neutral"
           variant="soft"
-          class="lg:hidden"
+          class="xl:hidden"
           square
           :aria-label="$t('articles.editor.settingsTitle')"
           :title="$t('articles.editor.settingsTitle')"
@@ -131,13 +132,13 @@
       :title="successMessage"
     />
 
-    <UProgress v-if="!isNew && tr.status === 'pending'" class="mb-6" :aria-label="$t('common.loading')" />
     <ArticleEditorShopify
       v-if="tr.isSource && clientSite?.plan !== 'BASIC'"
       :articleId="isNew ? undefined : article?.id"
       :disabled="submitting || aiGenerating || hasChanges"
     />
 
+    <UProgress v-if="!isNew && tr.status === 'pending'" class="mb-6" :aria-label="$t('common.loading')" />
 
     <UAlert
       v-if="recoverableGeneration && recoverableGeneration.id !== generation.sessionId"
@@ -241,13 +242,13 @@
 
     <div
       class="grid flex-1 items-start gap-8"
-      :class="settingsExpanded ? 'lg:grid-cols-[minmax(0,1fr)_30rem]' : 'lg:grid-cols-[minmax(0,1fr)_3rem]'"
+      :class="settingsExpanded ? 'xl:grid-cols-[minmax(0,1fr)_30rem]' : 'xl:grid-cols-[minmax(0,1fr)_3rem]'"
     >
       <div class="min-w-0 flex flex-col gap-6">
         <ArticleEditorGenerationRun
           v-if="aiRun"
           ref="generationRun"
-          class="scroll-mt-20"
+          :style="{ scrollMarginTop: `${commandBarHeight + 16}px` }"
           :run="aiRun"
           :words="aiWordCount"
           :authorName="clientStatus?.aiUser?.username"
@@ -300,7 +301,7 @@
           <ArticleFaq :entries="readFaq(editedArticle.faq)" />
         </div>
       </div>
-      <aside class="hidden self-start lg:block" :aria-label="$t('articles.editor.settingsTitle')">
+      <aside class="hidden self-start xl:block" :aria-label="$t('articles.editor.settingsTitle')">
         <div
           v-if="settingsExpanded"
           class="rounded-(--topiqu-surface-radius) border border-default bg-default px-5 pb-5"
@@ -416,7 +417,7 @@
       </template>
     </UModal>
 
-    <USlideover v-model:open="sidebarOpen" :title="$t('articles.editor.settingsTitle')" class="lg:hidden">
+    <USlideover v-model:open="sidebarOpen" :title="$t('articles.editor.settingsTitle')" class="xl:hidden">
       <template #body>
         <ArticleEditorSettingsPanel
           ref="mobileSettingsPanel"
@@ -1061,6 +1062,10 @@ const dismissGeneration = async () => {
 }
 
 const generationRun = useTemplateRef<ComponentPublicInstance>('generationRun')
+// The sticky command bar wraps to two rows on narrow screens; a fixed margin let it cover the run's header.
+const { height: commandBarHeight } = useElementSize(useTemplateRef<HTMLElement>('commandBar'), undefined, {
+  box: 'border-box',
+})
 
 const generateAIContent = async () => {
   if (generation.running) return toast.add({ color: 'warning', title: t('articles.editor.ai.run.busy') })
@@ -1211,7 +1216,7 @@ const openMediaRightsPanel = () => {
   mediaPublishReviewOpen.value = false
   settingsExpanded.value = true
   settingsTab.value = 'checks'
-  if (window.matchMedia('(max-width: 1023px)').matches) sidebarOpen.value = true
+  if (window.matchMedia('(max-width: 1279px)').matches) sidebarOpen.value = true
 }
 const confirmMediaRightsPublish = async () => {
   const fingerprint = pendingMediaReport.value?.fingerprint
