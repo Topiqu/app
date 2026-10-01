@@ -972,6 +972,7 @@
         "floatLeft": "À gauche, texte habillé",
         "floatRight": "À droite, texte habillé",
         "replace": "Remplacer depuis la médiathèque",
+        "openInLibrary": "Ouvrir dans la médiathèque",
         "delete": "Supprimer l'image",
         "captionPlaceholder": "Ajouter une légende…"
     },

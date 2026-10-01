@@ -121,12 +121,12 @@
 
 <script setup lang="ts">
 import type { MediaOrigin } from '~~/shared/types/mediaRights'
-import type { MediaLibraryDetail } from '~~/shared/types/mediaLibrary'
+import type { MediaLibraryAsset, MediaLibraryDetail } from '~~/shared/types/mediaLibrary'
 
 import { MEDIA_ORIGINS } from '~~/shared/types/mediaRights'
 
 const props = defineProps<{ id?: string | null }>()
-const emit = defineEmits<{ updated: []; removed: [] }>()
+const emit = defineEmits<{ updated: [asset?: MediaLibraryAsset]; removed: [] }>()
 const open = defineModel<boolean>('open', { default: false })
 const { t } = useI18n()
 const localePath = useLocalePath()
@@ -204,7 +204,7 @@ const save = async () => {
     })
     toast.add({ color: 'success', title: t('media.saved') })
     await load()
-    emit('updated')
+    emit('updated', detail.value?.asset)
   } finally {
     saving.value = false
   }

@@ -972,6 +972,7 @@
         "floatLeft": "Vlevo, text obtéká",
         "floatRight": "Vpravo, text obtéká",
         "replace": "Nahradit z knihovny médií",
+        "openInLibrary": "Otevřít v knihovně médií",
         "delete": "Smazat obrázek",
         "captionPlaceholder": "Přidat popisek…"
     },

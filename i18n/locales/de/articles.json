@@ -972,6 +972,7 @@
         "floatLeft": "Links, Text umfließt",
         "floatRight": "Rechts, Text umfließt",
         "replace": "Aus der Mediathek ersetzen",
+        "openInLibrary": "In der Mediathek öffnen",
         "delete": "Bild löschen",
         "captionPlaceholder": "Bildunterschrift hinzufügen…"
     },

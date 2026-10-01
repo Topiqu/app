@@ -152,4 +152,31 @@ describe('Tiptap contextual menus', () => {
     image.unmount()
     text.unmount()
   })
+
+  it('opens the library entry only for an image that has one', async () => {
+    const editor = makeEditor(
+      '<figure><img src="/a.jpg" data-media-id="m1"><figcaption></figcaption></figure><figure><img src="/b.jpg"><figcaption></figcaption></figure>',
+    )
+    const image = mount(ImageBubble, {
+      props: { editor },
+      attachTo: document.body,
+      global: {
+        mocks: { $t: (key: string) => key },
+        stubs: { UButton: { template: '<button><slot /></button>' }, USeparator: true, TiptapImageDetails: true },
+      },
+    })
+    const open = () =>
+      image.element.querySelector('[aria-label="articles.editor.image.openInLibrary"]') as HTMLButtonElement
+    await settle()
+    editor.view.dispatch(editor.state.tr.setSelection(NodeSelection.create(editor.state.doc, 0)))
+    await settle()
+    open().click()
+    expect(image.emitted('inspect')).toEqual([['m1', 0]])
+
+    const second = editor.state.doc.firstChild!.nodeSize
+    editor.view.dispatch(editor.state.tr.setSelection(NodeSelection.create(editor.state.doc, second)))
+    await settle()
+    expect(open()).toBeNull()
+    image.unmount()
+  })
 })

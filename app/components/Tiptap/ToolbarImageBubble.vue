@@ -58,6 +58,17 @@
         @click="selected && emit('replace', selected.pos)"
       />
       <UButton
+        v-if="attrs.mediaId"
+        icon="mdi:folder-image"
+        color="neutral"
+        variant="ghost"
+        size="sm"
+        class="shrink-0"
+        :title="$t('articles.editor.image.openInLibrary')"
+        :aria-label="$t('articles.editor.image.openInLibrary')"
+        @click="selected && emit('inspect', attrs.mediaId, selected.pos)"
+      />
+      <UButton
         icon="mdi:delete-outline"
         color="error"
         variant="ghost"
@@ -81,7 +92,7 @@ import { BubbleMenu } from '@tiptap/vue-3/menus'
 import { IMAGE_WIDTHS } from '~~/shared/utils/articleFigure'
 
 const { editor } = defineProps<{ editor: Editor }>()
-const emit = defineEmits<{ replace: [pos: number] }>()
+const emit = defineEmits<{ replace: [pos: number]; inspect: [mediaId: string, pos: number] }>()
 
 const { t } = useI18n()
 const toast = useToast()

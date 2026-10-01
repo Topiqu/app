@@ -23,7 +23,7 @@
         <!-- No v-if on bubble menus: Tiptap detaches their element, so unmounting one on an `edit`
              toggle crashes the patch and freezes the whole editor page. They gate on isEditable. -->
         <TiptapToolbarTableBubble :editor />
-        <TiptapToolbarImageBubble :editor @replace="openReplace" />
+        <TiptapToolbarImageBubble :editor @replace="openReplace" @inspect="openMediaDetail" />
 
         <EditorContent
           :editor
@@ -45,6 +45,7 @@
 
       <TiptapAltModal v-model:open="altModal.show" :defaultAlt="altModal.defaultAlt" @submit="onAltSubmit" />
       <MediaPicker v-model:open="mediaPickerOpen" mode="body" @select="onMediaSelect" />
+      <MediaDetail :id="mediaDetail.id" v-model:open="mediaDetail.open" @updated="onMediaUpdated" />
     </template>
     <div v-else v-html="content || fallback || $t('articles.editor.noContent')" />
   </div>
@@ -52,7 +53,7 @@
 
 <script setup lang="ts">
 import type { ChainedCommands } from '@tiptap/vue-3'
-import type { MediaPickerSelection } from '~~/shared/types/mediaLibrary'
+import type { MediaLibraryAsset, MediaPickerSelection } from '~~/shared/types/mediaLibrary'
 
 import { EditorContent } from '@tiptap/vue-3'
 import { pollOptionsAttr } from '~~/shared/utils/polls'
@@ -235,6 +236,25 @@ const onMediaSelect = (asset: MediaPickerSelection, alt: string) => {
       return true
     })
     .setNodeSelection(pos)
+    .run()
+}
+
+const mediaDetail = shallowReactive({ open: false, id: null as string | null, pos: -1 })
+
+const openMediaDetail = (id: string, pos: number) => Object.assign(mediaDetail, { open: true, id, pos })
+
+// An empty alt picks up the new library default; an alt written for this article is never overwritten.
+const onMediaUpdated = (asset?: MediaLibraryAsset) => {
+  const alt = asset?.defaultAltText?.trim()
+  const instance = editor.value
+  const node = instance?.state.doc.nodeAt(mediaDetail.pos)
+  if (!alt || !instance || !node || node.attrs.mediaId !== asset!.id || node.attrs.alt?.trim()) return
+  instance
+    .chain()
+    .command(({ tr }) => {
+      tr.setNodeMarkup(mediaDetail.pos, undefined, { ...node.attrs, alt })
+      return true
+    })
     .run()
 }
 

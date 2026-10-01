@@ -972,6 +972,7 @@
         "floatLeft": "Left, text wraps around",
         "floatRight": "Right, text wraps around",
         "replace": "Replace from media library",
+        "openInLibrary": "Open in media library",
         "delete": "Delete image",
         "captionPlaceholder": "Add a caption…"
     },
