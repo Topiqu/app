@@ -8,7 +8,11 @@ import { TextStyle } from '@tiptap/extension-text-style'
 import { afterEach, beforeAll, describe, expect, it } from 'vitest'
 import { Table, TableCell, TableHeader, TableRow } from '@tiptap/extension-table'
 
-import { applyDocumentTextPassages, documentTextPassages } from '../../app/composables/useTiptapRewrite'
+import {
+  applyDocumentTextPassages,
+  documentTextPassages,
+  selectedTextPassage,
+} from '../../app/composables/useTiptapRewrite'
 
 const editors: Editor[] = []
 
@@ -44,6 +48,17 @@ afterEach(() => {
 })
 
 describe('whole-article text improvement', () => {
+  it('captures selected words and their inline formatting without the paragraph wrapper', () => {
+    const editor = makeEditor('<p>Before <strong>selected</strong> after</p>')
+    editor.commands.setTextSelection({ from: 8, to: 16 })
+    expect(selectedTextPassage(editor)).toMatchObject({
+      from: 8,
+      to: 16,
+      text: 'selected',
+      html: '<strong>selected</strong>',
+    })
+  })
+
   it('rewrites every prose run in one transaction without replacing media or table structure', () => {
     const editor = makeEditor(
       '<h2>Old heading</h2><p>Before <img src="https://example.test/image.png" alt="Photo"> after</p><table><tbody><tr><td><p>Old cell</p></td></tr></tbody></table>',

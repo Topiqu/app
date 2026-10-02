@@ -7,7 +7,7 @@ import StarterKit from '@tiptap/starter-kit'
 import { NodeSelection } from '@tiptap/pm/state'
 import { TextAlign } from '@tiptap/extension-text-align'
 import { mockNuxtImport } from '@nuxt/test-utils/runtime'
-import { afterEach, beforeAll, describe, expect, it } from 'vitest'
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { Table, TableCell, TableHeader, TableRow } from '@tiptap/extension-table'
 
 import { InlineImage } from '../../extensions/image'
@@ -19,6 +19,8 @@ import ImageBubble from '../../app/components/Tiptap/ToolbarImageBubble.vue'
 // The bubble's AI rewrite reads toast texts at setup; the test mounts outside the Nuxt app's i18n.
 mockNuxtImport('useI18n', () => () => ({ t: (key: string) => key }))
 mockNuxtImport('useToast', () => () => ({ add: () => {} }))
+const { fetch } = vi.hoisted(() => ({ fetch: vi.fn() }))
+mockNuxtImport('$fetch', () => fetch)
 
 const editors: Editor[] = []
 
@@ -59,6 +61,7 @@ const settle = async () => {
 }
 
 afterEach(() => {
+  fetch.mockReset()
   editors.splice(0).forEach((editor) => editor.destroy())
   document.body.replaceChildren()
 })
@@ -116,6 +119,92 @@ describe('Tiptap contextual menus', () => {
     editor.commands.setTextSelection(5)
     await settle()
     expect(wrapper.element.isConnected).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('replaces formatting actions with an AI input and rewrites the captured selection', async () => {
+    const editor = makeEditor('<p>Original text stays</p>')
+    const wrapper = mount(TextBubble, {
+      props: { editor },
+      attachTo: document.body,
+      global: {
+        mocks: { $t: (key: string) => key },
+        stubs: {
+          UButton: { template: '<button><slot /></button>' },
+          UFieldGroup: { template: '<div><slot /></div>' },
+          UInput: {
+            props: ['modelValue'],
+            emits: ['update:modelValue'],
+            template: '<input :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
+          },
+        },
+      },
+    })
+    await settle()
+    editor.commands.setTextSelection({ from: 1, to: 14 })
+    await settle()
+    await wrapper.get('[aria-label="articles.editor.aiEdit.label"]').trigger('click')
+    await settle()
+
+    expect(wrapper.find('[aria-label="articles.editor.toolbar.bold"]').exists()).toBe(false)
+    expect(wrapper.findAll('button')).toHaveLength(2)
+    await wrapper.get('form').trigger('submit')
+    expect(fetch).not.toHaveBeenCalled()
+    const input = wrapper.get('input')
+    ;(input.element as HTMLInputElement).focus()
+    await input.setValue('  Make this more concise  ')
+    expect(document.activeElement).toBe(input.element)
+    expect(wrapper.element.isConnected).toBe(true)
+    expect(editor.state.selection).toMatchObject({ from: 1, to: 14 })
+
+    fetch.mockResolvedValueOnce({ html: 'Revised' })
+    await wrapper.get('form').trigger('submit')
+    await settle()
+    expect(fetch).toHaveBeenCalledWith('/api/articles/rewrite', {
+      method: 'POST',
+      body: { html: 'Original text', action: 'improve', instruction: 'Make this more concise' },
+    })
+    expect(editor.getHTML()).toBe('<p>Revised stays</p>')
+    expect(wrapper.find('input').exists()).toBe(false)
+    expect(wrapper.find('[aria-label="articles.editor.toolbar.bold"]').exists()).toBe(true)
+    wrapper.unmount()
+  })
+
+  it.each(['Escape', 'Back'])('returns to formatting with %s and starts fresh when reopened', async (action) => {
+    const editor = makeEditor('<p>Text</p>')
+    const wrapper = mount(TextBubble, {
+      props: { editor },
+      attachTo: document.body,
+      global: {
+        mocks: { $t: (key: string) => key },
+        stubs: {
+          UButton: { template: '<button><slot /></button>' },
+          UFieldGroup: { template: '<div><slot /></div>' },
+          UInput: {
+            props: ['modelValue'],
+            emits: ['update:modelValue'],
+            template: '<input :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
+          },
+        },
+      },
+    })
+    await settle()
+    editor.commands.setTextSelection({ from: 1, to: 5 })
+    await settle()
+    await wrapper.get('button[aria-label="articles.editor.aiEdit.label"]').trigger('click')
+    await settle()
+    await wrapper.get('input').setValue('Discard this instruction')
+    if (action === 'Escape') await wrapper.get('input').trigger('keydown', { key: 'Escape' })
+    else await wrapper.get('[aria-label="common.actions.back"]').trigger('click')
+    await settle()
+    expect(wrapper.get('button[aria-label="articles.editor.aiEdit.label"]').attributes('aria-expanded')).toBe('false')
+    expect(wrapper.find('input').exists()).toBe(false)
+    expect(fetch).not.toHaveBeenCalled()
+    expect(editor.getHTML()).toBe('<p>Text</p>')
+
+    await wrapper.get('button[aria-label="articles.editor.aiEdit.label"]').trigger('click')
+    await settle()
+    expect((wrapper.get('input').element as HTMLInputElement).value).toBe('')
     wrapper.unmount()
   })
 

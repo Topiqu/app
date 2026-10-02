@@ -33,7 +33,7 @@ export interface SelectedTextPassage {
 }
 
 export const selectedTextPassage = (editor: Editor): SelectedTextPassage | null => {
-  const { from, to, $from, $to } = editor.state.selection
+  const { from, to } = editor.state.selection
   if (from === to) return null
   let prose = true
   editor.state.doc.nodesBetween(from, to, (node) => {
@@ -43,9 +43,8 @@ export const selectedTextPassage = (editor: Editor): SelectedTextPassage | null 
   if (!prose) return null
   const slice = editor.state.doc.slice(from, to)
   // Inside one paragraph send inline markup only, so the rewrite replaces words, not the block.
-  const inline = $from.sameParent($to) && $from.parent.isTextblock
-  const fragment = inline ? (slice.content.firstChild?.content ?? slice.content) : slice.content
-  const html = getHTMLFromFragment(fragment, editor.schema)
+  // ProseMirror already omits the shared paragraph wrapper from an inline slice.
+  const html = getHTMLFromFragment(slice.content, editor.schema)
   return html.length <= TEXT_EDIT_MAX_LENGTH
     ? { from, to, html, text: editor.state.doc.textBetween(from, to), snapshot: editor.state.doc }
     : null

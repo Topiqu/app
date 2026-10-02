@@ -5,13 +5,27 @@
     :shouldShow="shouldShow"
     :appendTo="getBubbleContainer"
     :updateDelay="0"
-    :options="{ placement: 'top', size: { padding: { top: 8, right: 12, bottom: 8, left: 12 } } }"
-    class="z-popover"
+    :options="{ placement: 'top', offset: 8, flip: true, shift: { padding: 12 }, onHide: resetAi }"
+    class="z-popover max-w-[calc(100vw-1.5rem)] rounded-xl border border-default bg-elevated p-1 shadow-xl"
+    @keydown.esc.prevent.stop="closeAi"
   >
-    <div class="flex flex-col items-start gap-1">
-      <UFieldGroup role="toolbar" :aria-label="$t('articles.editor.title')">
+    <Transition name="bubble-view" mode="out-in" @enter="updatePosition" @afterEnter="updatePosition">
+      <TiptapRewriteInput v-if="aiOpen" key="ai" :pending="pending !== null" @cancel="closeAi" @submit="submitPrompt" />
+      <UFieldGroup
+        v-else
+        key="formatting"
+        role="toolbar"
+        :aria-label="$t('articles.editor.title')"
+        :ui="{ base: 'w-full justify-center' }"
+        @mousedown.prevent
+      >
         <UButton
           icon="mdi:format-bold"
+          color="neutral"
+          variant="ghost"
+          activeColor="primary"
+          activeVariant="soft"
+          size="sm"
           :title="sk($t('articles.editor.toolbar.bold'), 'Mod+B')"
           :aria-label="$t('articles.editor.toolbar.bold')"
           :active="editor.isActive('bold')"
@@ -19,6 +33,11 @@
         />
         <UButton
           icon="mdi:format-italic"
+          color="neutral"
+          variant="ghost"
+          activeColor="primary"
+          activeVariant="soft"
+          size="sm"
           :title="sk($t('articles.editor.toolbar.italic'), 'Mod+I')"
           :aria-label="$t('articles.editor.toolbar.italic')"
           :active="editor.isActive('italic')"
@@ -26,6 +45,11 @@
         />
         <UButton
           icon="mdi:format-underline"
+          color="neutral"
+          variant="ghost"
+          activeColor="primary"
+          activeVariant="soft"
+          size="sm"
           :title="sk($t('articles.editor.toolbar.underline'), 'Mod+U')"
           :aria-label="$t('articles.editor.toolbar.underline')"
           :active="editor.isActive('underline')"
@@ -33,6 +57,11 @@
         />
         <UButton
           icon="mdi:format-strikethrough"
+          color="neutral"
+          variant="ghost"
+          activeColor="primary"
+          activeVariant="soft"
+          size="sm"
           :title="sk($t('articles.editor.toolbar.strikethrough'), 'Mod+Shift+X')"
           :aria-label="$t('articles.editor.toolbar.strikethrough')"
           :active="editor.isActive('strike')"
@@ -40,6 +69,11 @@
         />
         <UButton
           icon="mdi:link"
+          color="neutral"
+          variant="ghost"
+          activeColor="primary"
+          activeVariant="soft"
+          size="sm"
           :title="sk($t('articles.editor.toolbar.link'), 'Mod+K')"
           :aria-label="$t('articles.editor.toolbar.link')"
           :active="editor.isActive('link')"
@@ -47,41 +81,20 @@
         />
         <UButton
           icon="mdi:creation-outline"
+          color="neutral"
+          variant="ghost"
+          activeColor="primary"
+          activeVariant="soft"
+          size="sm"
           :title="$t('articles.editor.aiEdit.label')"
           :aria-label="$t('articles.editor.aiEdit.label')"
-          :aria-expanded="aiOpen || promptOpen"
-          :active="aiOpen || promptOpen"
+          :aria-expanded="aiOpen"
+          :active="aiOpen"
+          :disabled="pending !== null"
           @click="toggleAi"
         />
       </UFieldGroup>
-      <div
-        v-if="aiOpen"
-        role="toolbar"
-        :aria-label="$t('articles.editor.aiEdit.label')"
-        class="flex max-w-88 flex-wrap gap-1"
-      >
-        <UButton
-          v-for="action in TEXT_EDIT_ACTIONS"
-          :key="action"
-          size="sm"
-          :color="action === 'improve' ? 'primary' : 'neutral'"
-          :variant="action === 'improve' ? 'soft' : 'ghost'"
-          :loading="pending === action"
-          :disabled="pending !== null && pending !== action"
-          @click="action === 'improve' ? openPrompt() : rewrite(action)"
-        >
-          {{ $t(`articles.editor.aiEdit.text.${action}`) }}
-        </UButton>
-      </div>
-      <TiptapRewritePrompt
-        v-if="promptOpen"
-        scope="selection"
-        :pending="pending === 'improve'"
-        class="w-80 max-w-[calc(100vw-2rem)]"
-        @cancel="closePrompt"
-        @submit="submitPrompt"
-      />
-    </div>
+    </Transition>
   </BubbleMenu>
 </template>
 
@@ -91,7 +104,6 @@ import type { BubbleMenuPluginProps } from '@tiptap/extension-bubble-menu'
 
 import { NodeSelection } from '@tiptap/pm/state'
 import { BubbleMenu } from '@tiptap/vue-3/menus'
-import { TEXT_EDIT_ACTIONS } from '~~/shared/utils/aiEdit'
 
 import type { SelectedTextPassage } from '~/composables/useTiptapRewrite'
 
@@ -100,40 +112,38 @@ const emit = defineEmits<{ (e: 'openLink', url?: string): void }>()
 
 const sk = useTiptapShortcuts()
 const aiOpen = shallowRef(false)
-const promptOpen = shallowRef(false)
 const captured = shallowRef<SelectedTextPassage | null>(null)
 const { pending, captureSelection, rewrite } = useTiptapRewrite(editor)
 const { t } = useI18n()
 const toast = useToast()
 
-const toggleAi = () => {
-  if (promptOpen.value) {
-    promptOpen.value = false
-    captured.value = null
-  }
-  aiOpen.value = !aiOpen.value
+const resetAi = () => {
+  aiOpen.value = false
+  captured.value = null
 }
 
-const openPrompt = () => {
+const closeAi = () => {
+  if (pending.value) return
+  resetAi()
+  editor.commands.focus()
+}
+
+const toggleAi = () => {
+  if (aiOpen.value) return closeAi()
   const passage = captureSelection()
   if (!passage) return toast.add({ color: 'warning', title: t('articles.editor.aiEdit.unsupported') })
   captured.value = passage
-  aiOpen.value = false
-  promptOpen.value = true
-}
-
-const closePrompt = () => {
-  promptOpen.value = false
-  captured.value = null
   aiOpen.value = true
 }
 
 const submitPrompt = async (instruction: string) => {
   if (!captured.value) return
-  if (await rewrite('improve', instruction, captured.value)) {
-    promptOpen.value = false
-    captured.value = null
-  }
+  if (await rewrite('improve', instruction, captured.value)) resetAi()
+}
+
+// Keep the wider input inside the viewport as soon as its view is mounted.
+const updatePosition = () => {
+  if (!editor.isDestroyed) editor.view.dispatch(editor.state.tr.setMeta('textBubbleMenu', 'updatePosition'))
 }
 
 // A selected figure spans its caption text, but it belongs to the image bubble.
@@ -150,3 +160,29 @@ const run = (fn: (c: ChainedCommands) => ChainedCommands) => {
   fn(editor.chain().focus()).run()
 }
 </script>
+
+<style scoped>
+.bubble-view-enter-active,
+.bubble-view-leave-active {
+  transition:
+    opacity 100ms ease,
+    transform 100ms ease;
+}
+
+.bubble-view-enter-from {
+  opacity: 0;
+  transform: translateX(4px);
+}
+
+.bubble-view-leave-to {
+  opacity: 0;
+  transform: translateX(-4px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bubble-view-enter-active,
+  .bubble-view-leave-active {
+    transition: none;
+  }
+}
+</style>

@@ -114,6 +114,15 @@ describe('Nuxt UI template contract', () => {
         sources.flatMap(({ source }) => {
           const locallyDefined = new Set([
             ...[...source.matchAll(/\bimport\s+([A-Z]\w*)\s+from\s+['"]/g)].map((match) => match[1] ?? ''),
+            ...[...source.matchAll(/\bimport\s*\{([^}]+)\}\s*from\s+['"]/g)].flatMap((match) =>
+              (match[1] ?? '').split(',').map(
+                (name) =>
+                  name
+                    .trim()
+                    .split(/\s+as\s+/)
+                    .at(-1) ?? '',
+              ),
+            ),
             ...[...source.matchAll(/\bconst\s+\[([^\]]+)\]\s*=\s*createReusableTemplate\(/g)].flatMap((match) =>
               (match[1] ?? '').split(',').map((name) => name.trim()),
             ),
@@ -368,6 +377,8 @@ describe('Nuxt UI template contract', () => {
       'app/components/Article/Editor/Popover.vue',
       'app/components/Form/Client/AI.vue',
       'app/components/Tiptap/Editor.vue',
+      // TipTap owns this floating boundary; its two views share a local, reduced-motion transition.
+      'app/components/Tiptap/ToolbarBubble.vue',
       'app/components/Article/Editor/PromptInput.vue',
       'app/pages/clanky/[slug].vue',
       'app/pages/index.vue',
@@ -380,6 +391,7 @@ describe('Nuxt UI template contract', () => {
       'app/components/Form/Client/AI.vue',
       'app/components/Network/Indicator.vue',
       'app/components/Tiptap/DropOverlay.vue',
+      'app/components/Tiptap/ToolbarBubble.vue',
       'app/components/UnsavedBar.vue',
       'app/pages/index.vue',
     ])
