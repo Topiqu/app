@@ -167,7 +167,9 @@
           <USeparator :label="$t('common.wallet.history')" />
           <UAlert v-if="walletError" color="error" :title="$t('common.messages.loadFailedTitle')">
             <template #actions
-              ><UButton @click="refreshWallet()">{{ $t('common.messages.retry') }}</UButton></template
+              ><UButton color="neutral" variant="outline" @click="refreshWallet()">{{
+                $t('common.messages.retry')
+              }}</UButton></template
             >
           </UAlert>
           <div
@@ -200,9 +202,15 @@
               {{ $t('common.wallet.empty') }}
             </p>
           </div>
-          <UButton v-if="walletData?.nextCursor" block :loading="walletState === 'pending'" @click="loadMoreCredit">{{
-            $t('common.pagination.next')
-          }}</UButton>
+          <UButton
+            v-if="walletData?.nextCursor"
+            color="neutral"
+            variant="outline"
+            block
+            :loading="walletState === 'pending'"
+            @click="loadMoreCredit"
+            >{{ $t('common.pagination.next') }}</UButton
+          >
         </section>
       </div>
     </template>

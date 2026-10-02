@@ -11,9 +11,7 @@
     <template #body>
       <form class="mt-2 flex flex-col gap-5" @submit.prevent="submitQueue" @paste="onPaste">
         <div class="flex items-start gap-3">
-          <div
-            class="grid size-9 shrink-0 place-items-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-300"
-          >
+          <div class="grid size-9 shrink-0 place-items-center rounded-xl bg-elevated text-highlighted">
             <UIcon name="mdi:emoticon-plus-outline" class="size-5" />
           </div>
           <div>
@@ -29,8 +27,8 @@
           class="group flex min-h-24 w-full items-center gap-4 rounded-(--topiqu-surface-radius) border border-dashed px-5 py-4 text-left transition-colors"
           :class="
             isDragging
-              ? 'border-indigo-500 bg-indigo-50/80 dark:bg-indigo-950/30'
-              : 'border-neutral-300 bg-neutral-50/70 hover:border-indigo-400 hover:bg-indigo-50/40 dark:border-neutral-700 dark:bg-neutral-800/40 dark:hover:border-indigo-600 dark:hover:bg-indigo-950/20'
+              ? 'border-primary bg-primary/5'
+              : 'border-neutral-300 bg-neutral-50/70 hover:border-primary/60 hover:bg-primary/5 dark:border-neutral-700 dark:bg-neutral-800/40'
           "
           @click="() => openPicker()"
           @dragenter.prevent="isDragging = true"
@@ -39,7 +37,7 @@
           @drop.prevent="onDrop"
         >
           <div
-            class="grid size-11 shrink-0 place-items-center rounded-xl bg-white text-indigo-500 shadow-sm ring-1 ring-neutral-200 transition-transform group-hover:-translate-y-0.5 dark:bg-neutral-800 dark:ring-neutral-700"
+            class="grid size-11 shrink-0 place-items-center rounded-xl bg-white text-muted shadow-sm ring-1 ring-neutral-200 transition-transform group-hover:-translate-y-0.5 dark:bg-neutral-800 dark:ring-neutral-700"
           >
             <UIcon name="mdi:tray-arrow-up" class="size-5" />
           </div>
@@ -79,8 +77,8 @@
                   class="relative grid size-11 place-items-center rounded-lg bg-white ring-1 transition dark:bg-neutral-800"
                   :class="
                     selectedPreview?.id === item.id
-                      ? 'ring-2 ring-indigo-500'
-                      : 'ring-neutral-200 hover:ring-indigo-300 dark:ring-neutral-600'
+                      ? 'ring-2 ring-primary'
+                      : 'ring-neutral-200 hover:ring-primary/50 dark:ring-neutral-600'
                   "
                   :aria="$t('emoji.previewAria', { shortcode: item.shortcode })"
                   @click="selectedPreviewId = item.id"
@@ -88,7 +86,7 @@
                   <NuxtImg :src="item.previewUrl" :alt="item.shortcode" class="size-7 object-contain" />
                   <span
                     v-if="selectedPreview?.id === item.id"
-                    class="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-indigo-500 text-white ring-2 ring-white dark:ring-neutral-700"
+                    class="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-primary text-inverted ring-2 ring-white dark:ring-neutral-700"
                     aria-hidden="true"
                   >
                     <UIcon name="mdi:eye" class="size-2.5" />
@@ -104,7 +102,7 @@
                     :class="
                       itemError(item)
                         ? 'ring-red-400'
-                        : 'ring-neutral-200 focus:ring-2 focus:ring-indigo-400 dark:ring-neutral-600'
+                        : 'ring-neutral-200 focus:ring-2 focus:ring-primary dark:ring-neutral-600'
                     "
                     autocomplete="off"
                     @blur="normalizeItem(item)"

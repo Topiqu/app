@@ -111,6 +111,11 @@
       "linkedinStepOne": "Connect your personal LinkedIn profile.",
       "linkedinStepTwo": "Grant Topiqu the requested LinkedIn access.",
       "linkedinStepThree": "Configure the publishing mode and brand guidelines.",
+      "shopifyBenefitOne": "Articles go live on your store blog and stay editable from the editor.",
+      "shopifyBenefitTwo": "Products and collections are imported into Knowledge, so articles recommend what you actually sell.",
+      "shopifyStepOne": "Install the Topiqu app from the Shopify App Store.",
+      "shopifyStepTwo": "Open it in your store admin.",
+      "shopifyStepThree": "Choose Connect to Topiqu.",
       "developerTitle": "API and WordPress",
       "developerDescription": "Tools for custom development and publishing workflows outside the external services catalog.",
       "apiBenefitOne": "Connect a custom app, automation, or editorial workflow.",
@@ -315,7 +320,9 @@
       "roleChangeForbidden": "Changing role is not allowed",
       "featureNotInPlan": "This feature is not available on your plan",
       "aiRequired": "Enable AI first",
-      "emailNotVerified": "Please confirm your email first. We have sent you a new verification code."
+      "emailNotVerified": "Please confirm your email first. We have sent you a new verification code.",
+      "commentGifsDisabled": "GIFs are disabled for this publication.",
+      "publicationChannelDisabled": "This publication channel is disabled in publication settings."
     },
     "notifications": {
       "userLikedArticle": "{0} liked your article.",
@@ -726,7 +733,7 @@
         "logoSuggestions": "Colors from logo",
         "noLogoColors": "No distinct color could be found in this logo.",
         "gradient": "Homepage hero gradient",
-        "gradientHelp": "A subtle accent behind the homepage hero.",
+        "gradientHelp": "Used behind the homepage hero, in the article reading bar and on the share image.",
         "gradientStop": "Color {number}",
         "gradientAngle": "Direction",
         "gradientSoft": "Soft",
@@ -735,6 +742,8 @@
         "addGradientStop": "Add third color",
         "removeGradientStop": "Remove third color",
         "gradientCustomize": "Customize",
+        "gradientAccentMismatch": "The accent color (buttons, links) doesn’t match the gradient.",
+        "useGradientAccent": "Use the first gradient color",
         "unlockPro": "Unlock with Pro",
         "customFont": "Custom font",
         "customFontHelp": "WOFF2 fonts for headings and body text, up to 2 MB each.",
@@ -779,7 +788,15 @@
       },
       "content": {
         "title": "Content brief",
-        "description": "Every article the AI generates starts from these settings."
+        "description": "Every article the AI generates starts from these settings.",
+        "direction": {
+          "title": "Direction",
+          "description": "What the publication covers and who it is for."
+        },
+        "topics": {
+          "title": "Language and topics",
+          "description": "The language articles are written in and the topics that deserve more room."
+        }
       },
       "focus": {
         "label": "Focus",
@@ -803,9 +820,7 @@
         "label": "Keywords",
         "help": "Topics that should recur in the output.",
         "placeholder": "e.g. Unreal Engine, AI in games",
-        "hint": "Add with Enter or a comma.",
-        "remove": "Remove {0}",
-        "count": "Words: {0}"
+        "hint": "Add with Enter or a comma."
       },
       "autoRelease": {
         "title": "Automatic Publishing",
@@ -894,6 +909,12 @@
             "LOW": "Low (occasional thought-provoking points)",
             "MEDIUM": "Medium (healthy debate)",
             "HIGH": "High (provocative opinions)"
+          },
+          "short": {
+            "NONE": "None",
+            "LOW": "Low",
+            "MEDIUM": "Medium",
+            "HIGH": "High"
           }
         }
       },
@@ -915,6 +936,27 @@
           "fullAuto": "Full Auto (Gated by Policy)",
           "help": "HitL requires manual approval before any generated post goes live."
         }
+      },
+      "community": {
+        "title": "Comments and GIFs",
+        "description": "Control discussion across all articles in this publication.",
+        "comments": "Allow comments",
+        "commentsHelp": "Turning this off closes comments and replies on every article. Existing comments remain visible. Individual articles can still close their own discussion.",
+        "gifs": "Allow GIFs in comments",
+        "gifsHelp": "Turning this off hides existing GIFs and prevents attaching new ones. Comment text remains visible."
+      },
+      "publicationChannels": {
+        "title": "Publication channels",
+        "description": "Choose where this publication may publish. Connected channels keep their existing publishing and approval workflows. Turning a channel off stops new publications, including queued jobs, and keeps previously published content.",
+        "web": "Publication website",
+        "webHelp": "Allow publishing on your Topiqu website. When disabled, generated articles stay as drafts and scheduled articles wait until the channel is enabled again.",
+        "shopify": "Shopify blog",
+        "shopifyHelp": "Allow sending articles to the blog selected in your Shopify integration through the editor’s publish dialog.",
+        "linkedin": "LinkedIn",
+        "linkedinHelp": "Allow your connected LinkedIn account to publish posts using its current manual approval or automatic mode.",
+        "manageIntegrations": "Manage connected channels",
+        "ready": "Ready",
+        "needsSetup": "Set up integration"
       }
     },
     "passwordSuggestions": {
@@ -1167,7 +1209,6 @@
         "limit": "The catalog exceeds your plan limit; products within the limit were imported."
       },
       "install": {
-        "description": "Install the Topiqu app from the Shopify App Store, open it in your store admin and choose Connect to Topiqu.",
         "action": "Open Shopify App Store"
       },
       "pending": {

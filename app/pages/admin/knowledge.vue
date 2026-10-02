@@ -1,29 +1,34 @@
 <template>
   <div class="mx-auto flex min-h-0 w-full max-w-screen-lg flex-1 flex-col gap-5 px-4 py-6 sm:px-6 lg:px-8">
-    <header class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <h1 class="flex items-center gap-2 text-2xl font-bold text-highlighted">
-          {{ $t('knowledge.title') }}
-          <UBadge color="primary" variant="subtle" size="sm">{{ $t('knowledge.beta') }}</UBadge>
-        </h1>
+    <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div class="max-w-2xl">
+        <h1 class="text-2xl font-bold text-highlighted">{{ $t('knowledge.title') }}</h1>
         <p class="mt-1 text-sm text-muted">{{ $t('knowledge.description') }}</p>
-        <p v-if="limits" class="mt-1 text-xs text-muted">
-          {{
-            $t('knowledge.quota', {
-              sources: limits.usage.sources,
-              maxSources: limits.maxSources,
-              characters: formatCount(limits.usage.characters),
-              maxCharacters: formatCount(limits.maxCharacters),
-              products: formatCount(limits.usage.products),
-              maxProducts: formatCount(limits.maxProducts),
-            })
-          }}
-        </p>
       </div>
       <UButton icon="mdi:plus" class="shrink-0" :disabled="quotaFull" @click="addOpen = true">
         {{ $t('knowledge.add') }}
       </UButton>
     </header>
+
+    <dl
+      v-if="limits"
+      class="grid grid-cols-3 divide-x divide-default rounded-lg border border-default bg-default"
+      :aria-label="$t('knowledge.usageTitle')"
+    >
+      <div v-for="meter in meters" :key="meter.key" class="flex flex-col gap-2 px-3 py-3 sm:px-4">
+        <dt class="text-xs text-muted">{{ $t(`knowledge.meters.${meter.key}`) }}</dt>
+        <dd class="text-sm font-semibold tabular-nums text-highlighted">
+          {{ formatCount(meter.used) }} <span class="font-normal text-muted">/ {{ formatCount(meter.max) }}</span>
+        </dd>
+        <UProgress
+          :modelValue="meter.used"
+          :max="meter.max || 1"
+          size="2xs"
+          :color="meter.used >= meter.max * 0.9 ? 'warning' : 'neutral'"
+          aria-hidden="true"
+        />
+      </div>
+    </dl>
 
     <KnowledgePlayground v-if="indexedCount" />
 
@@ -48,9 +53,11 @@
       <li
         v-for="source in sources"
         :key="source.id"
-        class="flex flex-col gap-3 rounded-lg border border-default bg-default p-4 sm:flex-row sm:items-center"
+        class="flex flex-col gap-4 rounded-lg border border-default bg-default p-4 sm:flex-row sm:items-center sm:p-5"
       >
-        <UIcon :name="KIND_ICONS[source.kind]" class="size-6 shrink-0 text-muted" aria-hidden="true" />
+        <span class="grid size-10 shrink-0 place-items-center rounded-lg bg-elevated text-muted" aria-hidden="true">
+          <UIcon :name="KIND_ICONS[source.kind]" class="size-5" />
+        </span>
         <div class="min-w-0 flex-1">
           <div class="flex flex-wrap items-center gap-2">
             <UButton
@@ -149,6 +156,15 @@ const { data, status, error, refresh } = await useLazyFetch('/api/knowledge')
 const sources = computed(() => data.value?.sources ?? [])
 const limits = computed(() => data.value?.limits)
 const quotaFull = computed(() => !!limits.value && limits.value.usage.sources >= limits.value.maxSources)
+const meters = computed(() => {
+  if (!limits.value) return []
+  const { usage, maxSources, maxCharacters, maxProducts } = limits.value
+  return [
+    { key: 'sources', used: usage.sources, max: maxSources },
+    { key: 'characters', used: usage.characters, max: maxCharacters },
+    { key: 'products', used: usage.products, max: maxProducts },
+  ]
+})
 const indexedCount = computed(() => sources.value.filter((source) => source.status === 'INDEXED').length)
 const addOpen = shallowRef(false)
 const editOpen = shallowRef(false)

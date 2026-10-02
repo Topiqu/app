@@ -1,9 +1,12 @@
 import sharp from 'sharp'
+import { resolve } from 'node:path'
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
 import { suggestBrandColors } from '../../server/utils/brandPalette'
 import { resolveBrandAccent, tenantFontFaceCss, tenantThemeStyle } from '../../shared/utils/tenantTheme'
 import {
+  activeBrandGradient,
   contrastRatio,
   hasAdvancedBranding,
   hostedFontUrl,
@@ -111,5 +114,35 @@ describe('logo color suggestions', () => {
       .png()
       .toBuffer()
     expect(await suggestBrandColors(image)).toEqual([])
+  })
+})
+
+describe('brand gradient reach', () => {
+  const source = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf8')
+  const gradient = { colors: ['#FF6600', '#CC0066', '#6633CC'], angle: 90 }
+
+  it('honours the gradient only on plans with advanced branding', () => {
+    expect(activeBrandGradient(gradient, 'PRO')).toEqual(gradient)
+    expect(activeBrandGradient(gradient, 'BASIC')).toBeNull()
+    expect(
+      tenantThemeStyle('indigo', 'MODERN', { brandGradient: gradient, plan: 'BASIC' })['--topiqu-brand-gradient'],
+    ).toBe('none')
+  })
+
+  it('paints the reading bar, loading bar and share image with the gradient', () => {
+    expect(source('app/components/Header.vue')).toContain("'--reading-progress'")
+    expect(source('app/assets/styles/main.css')).toMatch(
+      /\.reading-progress \[data-slot='indicator'\]\s*{[^}]*background-image: var\(--topiqu-brand-gradient, none\);/s,
+    )
+    const app = source('app/app.vue')
+    expect(app).toContain(':color="loadingColor"')
+    expect(app).toContain('brandGradient: brandGradient.value ? gradientCss(brandGradient.value) : undefined')
+    expect(source('app/components/OgImage/ClientSite.takumi.vue')).toContain('brandGradient ??')
+  })
+
+  it('offers to align the accent when hand-picked stops drift from it', () => {
+    const editor = source('app/components/Form/Client/BrandColorEditor.vue')
+    expect(editor).toContain('v-if="accentMismatch"')
+    expect(editor).toContain("emit('update:accentColor', brandGradient.colors[0]!)")
   })
 })

@@ -20,16 +20,17 @@
       class="publication-surface overflow-hidden rounded-(--topiqu-surface-radius) border border-default shadow-sm"
       :style="previewStyle"
     >
-      <div
-        class="h-2"
-        :style="{ background: activeGradient ? gradientCss(activeGradient) : accent }"
-        aria-hidden="true"
-      />
       <div class="p-5">
         <header
-          class="flex items-center gap-3 border-b pb-4"
+          class="relative flex items-center gap-3 border-b pb-4"
           :style="{ borderColor: darkPreview ? '#374151' : '#e5e7eb' }"
         >
+          <!-- Mirrors the article reading-progress bar, the place the gradient really shows. -->
+          <span
+            class="absolute inset-x-0 -bottom-px h-1 [clip-path:inset(0_60%_0_0)]"
+            :style="{ background: activeGradient ? gradientCss(activeGradient) : accent }"
+            aria-hidden="true"
+          />
           <AppMedia
             :src="logoUrl"
             :fallbackText="name"
@@ -83,7 +84,7 @@ import type { BrandGradient } from '~~/shared/utils/publicationBranding'
 import type { PublicationTypography } from '~~/generated/zenstack/models'
 
 import { resolveBrandAccent, tenantThemeStyle } from '~~/shared/utils/tenantTheme'
-import { gradientCss, hasAdvancedBranding, parseBrandGradient } from '~~/shared/utils/publicationBranding'
+import { activeBrandGradient, gradientCss } from '~~/shared/utils/publicationBranding'
 
 const props = defineProps<{
   logoUrl: string
@@ -109,9 +110,7 @@ const baseStyle = computed(() =>
     bodyFontUrl: props.bodyFontUrl,
   }),
 )
-const activeGradient = computed(() =>
-  hasAdvancedBranding(props.plan) ? parseBrandGradient(props.brandGradient) : null,
-)
+const activeGradient = computed(() => activeBrandGradient(props.brandGradient, props.plan))
 const accent = computed(() => resolveBrandAccent(props.currentTheme, props.accentColor))
 const previewStyle = computed(() => ({
   ...baseStyle.value,

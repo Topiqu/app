@@ -2,11 +2,11 @@ import type { PublicationTypography } from '~~/generated/zenstack/models'
 
 import {
   accessibleAccent,
+  activeBrandGradient,
   gradientCss,
   hasAdvancedBranding,
   hostedFontUrl,
   normalizeAccentColor,
-  parseBrandGradient,
 } from './publicationBranding'
 
 export const themeColors = {
@@ -101,7 +101,7 @@ export const tenantThemeStyle = (value: unknown, typography?: unknown, options: 
       ? 'MODERN'
       : typography
   const fonts = typographyFonts(preset, advanced ? options.headingFontUrl : null, advanced ? options.bodyFontUrl : null)
-  const gradient = advanced ? parseBrandGradient(options.brandGradient) : null
+  const gradient = activeBrandGradient(options.brandGradient, options.plan)
   return {
     '--topiqu-tenant-accent-light': background,
     '--topiqu-tenant-accent-dark': darkBackground,

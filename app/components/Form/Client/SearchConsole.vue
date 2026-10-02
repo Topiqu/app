@@ -3,10 +3,7 @@
     <h3 v-if="!embedded" class="mb-4 flex items-center gap-2 text-lg font-semibold">
       <UIcon name="mdi:google" class="size-5 text-blue-500" />
       {{ $t('common.searchConsole.title') }}
-      <span
-        class="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-bold uppercase text-violet-700 dark:bg-violet-500/15 dark:text-violet-300"
-        >Premium</span
-      >
+      <UBadge color="warning" variant="soft" size="sm">Premium</UBadge>
     </h3>
     <div
       :class="

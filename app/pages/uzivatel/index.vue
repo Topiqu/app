@@ -158,7 +158,6 @@
                 :disabled="isLoading || !passwordsMatch"
                 :loading="isLoading"
                 icon="mdi:lock-reset"
-                class="w-full"
                 @click="handleChangePassword"
               >
                 {{ $t('common.auth.changePassword') }}

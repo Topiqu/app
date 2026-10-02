@@ -2,7 +2,7 @@
   <div class="w-full h-full flex flex-col relative overflow-hidden bg-[#0f172a] text-white" style="font-family: Inter">
     <div
       class="absolute inset-0 w-full h-full opacity-40"
-      :style="{ background: `linear-gradient(135deg, ${themeColor} 0%, #0f172a 100%)` }"
+      :style="{ background: brandGradient ?? `linear-gradient(135deg, ${themeColor} 0%, #0f172a 100%)` }"
     />
 
     <div class="absolute inset-0 bg-black/20" />
@@ -70,6 +70,7 @@ const props = defineProps<{
   siteName: string
   siteLogo?: string
   themeColor: string
+  brandGradient?: string
   domain: string
 }>()
 

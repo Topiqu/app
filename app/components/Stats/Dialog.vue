@@ -63,7 +63,9 @@
           {{ $t('common.messages.loadFailedTitle') }}
         </p>
         <p class="text-sm text-neutral-500 dark:text-neutral-400">{{ $t('common.messages.loadFailedText') }}</p>
-        <UButton icon="mdi:refresh" @click="refetch()">{{ $t('common.messages.retry') }}</UButton>
+        <UButton icon="mdi:refresh" color="neutral" variant="outline" @click="refetch()">{{
+          $t('common.messages.retry')
+        }}</UButton>
       </div>
 
       <div
@@ -448,7 +450,7 @@
             :aria="$t('common.messages.retry')"
             @click="refetch()"
           />
-          <UButton size="lg" @click="close">{{ $t('common.close') }}</UButton>
+          <UButton size="lg" color="neutral" variant="soft" @click="close">{{ $t('common.close') }}</UButton>
         </div>
       </div>
     </template>

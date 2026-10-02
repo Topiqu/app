@@ -97,7 +97,12 @@
       "quota": "Votre base de connaissances est pleine. Supprimez une source pour en ajouter une autre.",
       "sitemapEmpty": "Nous n'avons trouvé aucune nouvelle page à ajouter sur ce site."
     },
-    "quota": "{sources} sources sur {maxSources} · {characters} caractères sur {maxCharacters} · {products} produits sur {maxProducts}",
+    "usageTitle": "Utilisation des connaissances",
+    "meters": {
+      "sources": "Sources",
+      "characters": "Caractères",
+      "products": "Produits"
+    },
     "stale": "Peut-être obsolète",
     "asOf": "Valable au",
     "usage": "jamais utilisée | utilisée une fois, dernière fois | utilisée {n} fois, dernière fois",
@@ -127,7 +132,6 @@
       "discover": "Trouver des pages",
       "import": "Importer {count} pages"
     },
-    "beta": "Bêta",
     "consent": {
       "label": "Je confirme que la source ne contient aucune donnée confidentielle ou personnelle",
       "scope": "Les informations confidentielles comprennent les secrets commerciaux et tout ce qui ne doit pas figurer dans un article public.",

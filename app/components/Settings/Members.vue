@@ -17,7 +17,7 @@
 
     <UForm
       v-if="showInvite"
-      class="space-y-5 rounded-(--topiqu-surface-radius) border border-violet-200 bg-violet-50/50 p-5 dark:border-violet-800 dark:bg-violet-950/20"
+      class="space-y-5 rounded-(--topiqu-surface-radius) border border-default bg-elevated/50 p-5"
       @submit.prevent="invite"
     >
       <div>
@@ -87,7 +87,7 @@
                   class="rounded-full px-2 py-0.5 text-[11px] font-semibold"
                   :class="
                     member.role === 'OWNER'
-                      ? 'bg-violet-100 text-violet-700 dark:bg-violet-900 dark:text-violet-200'
+                      ? 'bg-primary/10 text-primary'
                       : 'bg-neutral-200 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-300'
                   "
                 >
@@ -130,7 +130,7 @@
                 class="rounded-full border px-2.5 py-1.5 text-xs transition"
                 :class="
                   hasScope(member, scope)
-                    ? 'border-violet-200 bg-violet-50 text-violet-700 dark:border-violet-800 dark:bg-violet-950 dark:text-violet-200'
+                    ? 'border-primary/30 bg-primary/10 text-primary'
                     : 'border-neutral-200 text-neutral-400 dark:border-neutral-700'
                 "
               >
@@ -209,7 +209,14 @@
       >
         <UIcon name="mdi:account-plus-outline" class="mx-auto size-8 text-neutral-400" />
         <p class="mt-2 text-sm text-neutral-500">{{ $t('common.members.noPending') }}</p>
-        <UButton v-if="data?.canControl" class="mx-auto mt-4" size="sm" @click="showInvite = true">
+        <UButton
+          v-if="data?.canControl"
+          class="mx-auto mt-4"
+          size="sm"
+          color="neutral"
+          variant="outline"
+          @click="showInvite = true"
+        >
           {{ $t('common.members.inviteFirst') }}
         </UButton>
       </div>

@@ -111,6 +111,11 @@
       "linkedinStepOne": "Připojte svůj osobní LinkedIn profil.",
       "linkedinStepTwo": "Povolte Topiqu požadovaný přístup na LinkedIn.",
       "linkedinStepThree": "Nastavte režim publikování a pravidla značky.",
+      "shopifyBenefitOne": "Články vycházejí na blogu obchodu a aktualizujete je přímo z editoru.",
+      "shopifyBenefitTwo": "Produkty a kolekce se importují do Znalostí, takže články doporučují to, co skutečně prodáváte.",
+      "shopifyStepOne": "Nainstalujte aplikaci Topiqu ze Shopify App Store.",
+      "shopifyStepTwo": "Otevřete ji v administraci obchodu.",
+      "shopifyStepThree": "Zvolte Propojit s Topiqu.",
       "developerTitle": "API a WordPress",
       "developerDescription": "Nástroje pro vlastní vývoj a publikační workflow mimo katalog externích služeb.",
       "apiBenefitOne": "Napojíte vlastní aplikaci, automatizaci nebo redakční workflow.",
@@ -252,7 +257,9 @@
       "featureNotInPlan": "Tato funkce není dostupná ve vašem tarifu",
       "aiRequired": "Nejdřív zapněte AI",
       "followNotFound": "Tento follow vztah neexistuje",
-      "emailNotVerified": "Nejdřív potvrď svůj e-mail. Poslali jsme ti nový ověřovací kód."
+      "emailNotVerified": "Nejdřív potvrď svůj e-mail. Poslali jsme ti nový ověřovací kód.",
+      "commentGifsDisabled": "GIFy jsou pro tuto publikaci vypnuté.",
+      "publicationChannelDisabled": "Tento publikační kanál je vypnutý v nastavení publikace."
     },
     "notifications": {
       "userLikedArticle": "{0} lajkl váš článek.",
@@ -726,7 +733,7 @@
         "logoSuggestions": "Barvy z loga",
         "noLogoColors": "Z tohoto loga se nepodařilo získat výraznou barvu.",
         "gradient": "Gradient titulní části",
-        "gradientHelp": "Jemný barevný akcent za titulní částí.",
+        "gradientHelp": "Pozadí titulní části, ukazatel čtení v článcích a obrázek pro sdílení.",
         "gradientStop": "Barva {number}",
         "gradientAngle": "Směr",
         "gradientSoft": "Jemný",
@@ -735,6 +742,8 @@
         "addGradientStop": "Přidat třetí barvu",
         "removeGradientStop": "Odebrat třetí barvu",
         "gradientCustomize": "Upravit ručně",
+        "gradientAccentMismatch": "Akcentní barva (tlačítka, odkazy) neodpovídá gradientu.",
+        "useGradientAccent": "Použít první barvu gradientu",
         "unlockPro": "Odemknout v Pro",
         "customFont": "Vlastní písmo",
         "customFontHelp": "Písma WOFF2 pro nadpisy a text, každé do 2 MB.",
@@ -779,7 +788,15 @@
       },
       "content": {
         "title": "Obsahový brief",
-        "description": "Z těchto údajů vychází AI u každého generovaného článku."
+        "description": "Z těchto údajů vychází AI u každého generovaného článku.",
+        "direction": {
+          "title": "Zadání",
+          "description": "O čem publikace píše a pro koho."
+        },
+        "topics": {
+          "title": "Jazyk a témata",
+          "description": "V jakém jazyce články vznikají a která témata mají dostat prostor."
+        }
       },
       "focus": {
         "label": "Zaměření",
@@ -803,9 +820,7 @@
         "label": "Klíčová slova",
         "help": "Témata, která se mají ve výstupech objevovat častěji.",
         "placeholder": "Např. Unreal Engine, AI ve hrách",
-        "hint": "Přidejte klávesou Enter nebo čárkou.",
-        "remove": "Odebrat {0}",
-        "count": "Počet slov: {0}"
+        "hint": "Přidejte klávesou Enter nebo čárkou."
       },
       "autoRelease": {
         "title": "Automatické publikování",
@@ -874,7 +889,7 @@
           "placeholder": "Popis uživatele AI (max. 300 znaků)"
         },
         "toneOfVoice": {
-          "label": "Tone of voice",
+          "label": "Styl psaní",
           "placeholder": "Jakým stylem má AI psát? (např. profesionálně, vtipně, odborně...)",
           "suggestions": {
             "professional": "Profesionální",
@@ -894,6 +909,12 @@
             "LOW": "Nízká (občasné zamyšlení)",
             "MEDIUM": "Střední (zdravá diskuze)",
             "HIGH": "Vysoká (provokativní názory)"
+          },
+          "short": {
+            "NONE": "Žádná",
+            "LOW": "Nízká",
+            "MEDIUM": "Střední",
+            "HIGH": "Vysoká"
           }
         }
       },
@@ -915,6 +936,27 @@
           "fullAuto": "Plná automatizace (hlídaná pravidly)",
           "help": "HitL vyžaduje ruční schválení, než vygenerovaný příspěvek vyjde."
         }
+      },
+      "community": {
+        "title": "Komentáře a GIFy",
+        "description": "Řiďte diskuzi pod všemi články této publikace.",
+        "comments": "Povolit komentáře",
+        "commentsHelp": "Vypnutím uzavřete komentáře i odpovědi pod všemi články. Stávající komentáře zůstanou viditelné. Jednotlivé články mohou mít diskuzi uzavřenou samostatně.",
+        "gifs": "Povolit GIFy v komentářích",
+        "gifsHelp": "Vypnutím skryjete dosavadní GIFy a zabráníte přidávání nových. Text komentářů zůstane viditelný."
+      },
+      "publicationChannels": {
+        "title": "Publikační kanály",
+        "description": "Vyberte, kam smí tato publikace publikovat. Připojené kanály používají své stávající postupy publikování a schvalování. Vypnutí zastaví nové publikace včetně čekajících úloh a zachová již publikovaný obsah.",
+        "web": "Web publikace",
+        "webHelp": "Povolí publikování na vašem webu Topiqu. Po vypnutí zůstanou generované články jako koncepty a naplánované články počkají na opětovné zapnutí kanálu.",
+        "shopify": "Blog Shopify",
+        "shopifyHelp": "Povolí odesílání článků do blogu vybraného v integraci Shopify přes publikační dialog v editoru.",
+        "linkedin": "LinkedIn",
+        "linkedinHelp": "Povolí připojenému účtu LinkedIn publikovat příspěvky ve stávajícím režimu ručního schvalování nebo automatického publikování.",
+        "manageIntegrations": "Spravovat připojené kanály",
+        "ready": "Připraveno",
+        "needsSetup": "Nastavit integraci"
       }
     },
     "passwordSuggestions": {
@@ -1167,7 +1209,6 @@
         "limit": "Katalog přesahuje limit tarifu; importovali jsme produkty, které se do něj vejdou."
       },
       "install": {
-        "description": "Nainstalujte aplikaci Topiqu ze Shopify App Store, otevřete ji v administraci obchodu a zvolte Propojit s Topiqu.",
         "action": "Otevřít Shopify App Store"
       },
       "pending": {

@@ -84,7 +84,6 @@ const disconnect = async () => {
 
 <template>
   <section class="space-y-4" data-shopify-settings>
-    <p class="text-sm text-muted">{{ $t('common.shopify.description') }}</p>
     <UProgress v-if="status === 'pending'" :aria-label="$t('common.loading')" />
     <UAlert v-else-if="error" color="error" :title="$t('common.shopify.actionFailed')">
       <template #actions
@@ -98,7 +97,7 @@ const disconnect = async () => {
         :title="$t(`common.shopify.callback.${noticeKey}`)"
       />
       <UAlert v-if="!data.configured" color="warning" :title="$t('common.shopify.notConfigured')" />
-      <div v-else-if="data.pending" class="space-y-3 rounded-lg border border-primary/40 bg-primary/5 p-4">
+      <div v-else-if="data.pending" class="space-y-3 rounded-lg border border-default bg-elevated/50 p-4">
         <p class="font-medium text-highlighted">
           {{ $t('common.shopify.pending.title', { shop: data.pending.shopName }) }}
         </p>
@@ -115,8 +114,7 @@ const disconnect = async () => {
           </UButton>
         </div>
       </div>
-      <div v-else-if="!data.connection" class="space-y-3">
-        <p class="text-sm text-muted">{{ $t('common.shopify.install.description') }}</p>
+      <div v-else-if="!data.connection">
         <UButton
           v-if="data.installUrl"
           icon="mdi:shopify"

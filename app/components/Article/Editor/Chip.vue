@@ -34,12 +34,12 @@ const {
 const NEUTRAL = 'bg-white! dark:bg-gray-900! hover:bg-gray-50! dark:hover:bg-gray-800!'
 
 const surface = computed(() => {
-  if (active) return 'bg-indigo-600! hover:bg-indigo-700! border-indigo-600!'
+  if (active) return 'bg-inverted! hover:bg-inverted/90! border-inverted!'
   return `${NEUTRAL} ${filled ? 'border-gray-400! dark:border-gray-500!' : 'border-gray-300! dark:border-gray-700!'}`
 })
 
 const text = computed(() => {
-  if (active) return 'text-white!'
+  if (active) return 'text-inverted!'
   return filled ? 'text-gray-900! dark:text-gray-100!' : 'text-gray-600! dark:text-gray-300!'
 })
 </script>

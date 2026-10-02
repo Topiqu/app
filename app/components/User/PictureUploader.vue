@@ -59,7 +59,7 @@
                 min="1"
                 max="3"
                 step="0.01"
-                class="grow accent-indigo-600"
+                class="grow accent-primary"
                 :disabled="busy"
               />
             </label>

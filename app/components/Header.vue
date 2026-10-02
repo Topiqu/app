@@ -77,7 +77,8 @@
     <template #bottom>
       <UProgress
         v-if="isArticleRoute"
-        class="absolute inset-x-0 bottom-0"
+        class="reading-progress absolute inset-x-0 bottom-0"
+        :style="{ '--reading-progress': `${articleState.progress}%` }"
         :modelValue="articleState.progress"
         :max="100"
         size="xs"

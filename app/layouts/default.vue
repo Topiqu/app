@@ -1,9 +1,5 @@
 <template>
-  <div
-    class="flex min-h-[100dvh] max-w-full flex-col pt-16"
-    :class="[shell === 'dashboard' ? 'bg-muted' : 'bg-default', { 'publication-surface': isPublicationSurface }]"
-    :style="publicationStyle"
-  >
+  <div class="flex min-h-[100dvh] max-w-full flex-col pt-16" :class="shell === 'dashboard' ? 'bg-muted' : 'bg-default'">
     <Header v-model:isSidebarOpen="isSidebarOpen" />
     <UDashboardGroup
       v-if="showDashboard"
@@ -71,6 +67,17 @@ useHead(() => {
     : ''
   return { style: css ? [{ key: 'publication-custom-fonts', innerHTML: css }] : [] }
 })
+// On <html>, not the layout root: teleported UI (modals, toasts, back-to-top) must inherit the brand too.
+useHead(() => ({
+  htmlAttrs: isPublicationSurface.value
+    ? {
+        class: 'publication-surface',
+        style: Object.entries(publicationStyle.value ?? {})
+          .map(([name, value]) => `${name}:${value}`)
+          .join(';'),
+      }
+    : {},
+}))
 
 // The desktop collapsed state is persisted by UDashboardGroup. The drawer is transient
 // and must never survive hydration as an overlay hiding the current page.

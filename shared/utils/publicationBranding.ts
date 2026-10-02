@@ -16,6 +16,9 @@ export const parseBrandGradient = (value: unknown): BrandGradient | null => {
   return colors.every(Boolean) ? { colors: colors as string[], angle: record.angle } : null
 }
 
+export const activeBrandGradient = (value: unknown, plan: unknown) =>
+  hasAdvancedBranding(plan) ? parseBrandGradient(value) : null
+
 export const contrastRatio = (first: string, second: string) => {
   const luminance = (hex: string) => {
     const channels = [1, 3, 5].map((index) => Number.parseInt(hex.slice(index, index + 2), 16) / 255)

@@ -66,7 +66,7 @@
         <UCard
           v-for="card in section.cards"
           :key="card.id"
-          :class="!section.available && 'opacity-70'"
+          :class="[!section.available && 'opacity-70', card.kind === 'api' && 'lg:col-span-2']"
           :ui="{ body: 'flex h-full min-h-44 flex-col' }"
         >
           <template v-if="card.kind === 'service'">
@@ -98,28 +98,32 @@
                 v-else
                 :to="localePath({ name: 'settings', query: { tab: 'billing' } })"
                 size="sm"
+                color="neutral"
+                variant="outline"
                 icon="mdi:arrow-up-circle-outline"
                 :label="$t('common.integrationsCatalog.upgradeToPlan', { plan: section.label })"
               />
             </div>
           </template>
 
-          <template v-else-if="card.kind === 'api'">
-            <div class="flex items-center gap-3 font-semibold text-highlighted">
-              <span class="grid size-10 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
-                <UIcon name="mdi:key-chain-variant" class="size-5" />
-              </span>
-              {{ $t('common.preferences.api.title') }}
+          <div v-else-if="card.kind === 'api'" class="grid gap-x-8 gap-y-5 lg:grid-cols-2">
+            <div>
+              <div class="flex items-center gap-3 font-semibold text-highlighted">
+                <span class="grid size-10 shrink-0 place-items-center rounded-lg bg-elevated text-highlighted">
+                  <UIcon name="mdi:key-chain-variant" class="size-5" />
+                </span>
+                {{ $t('common.preferences.api.title') }}
+              </div>
+              <p class="mt-4 text-sm leading-relaxed text-muted">
+                {{ $t('common.preferences.api.description') }}
+              </p>
+              <ul class="mt-4 space-y-2 text-sm text-muted">
+                <li v-for="benefit in apiBenefits" :key="benefit" class="flex gap-2">
+                  <UIcon name="mdi:check-circle-outline" class="mt-0.5 size-4 shrink-0 text-emerald-500" />{{ benefit }}
+                </li>
+              </ul>
             </div>
-            <p class="mt-4 text-sm leading-relaxed text-muted">
-              {{ $t('common.preferences.api.description') }}
-            </p>
-            <ul class="mt-4 space-y-2 text-sm text-muted">
-              <li v-for="benefit in apiBenefits" :key="benefit" class="flex gap-2">
-                <UIcon name="mdi:check-circle-outline" class="mt-0.5 size-4 shrink-0 text-emerald-500" />{{ benefit }}
-              </li>
-            </ul>
-            <div v-if="!apiKey" class="mt-5">
+            <div v-if="!apiKey" class="lg:self-center">
               <UButton
                 color="neutral"
                 variant="soft"
@@ -129,7 +133,7 @@
                 @click="$emit('generateApiKey')"
               />
             </div>
-            <div v-else class="mt-5 space-y-3">
+            <div v-else class="space-y-3">
               <UFormField :label="$t('common.preferences.api.title')">
                 <div class="flex items-center gap-2" data-api-key-row>
                   <UInput
@@ -177,7 +181,7 @@
                 @click="$emit('generateApiKey')"
               />
             </div>
-          </template>
+          </div>
 
           <template v-else>
             <div class="flex items-start justify-between gap-3">
@@ -346,7 +350,26 @@
       >
     </UModal>
     <UModal v-model:open="shopifyOpen" :title="$t('common.shopify.title')" :ui="{ content: 'max-w-2xl' }">
-      <template #body><FormClientShopify /></template>
+      <template #body>
+        <FormClientDialogIntro
+          icon="mdi:shopify"
+          :description="$t('common.shopify.description')"
+          plan="pro"
+          planLabel="Pro"
+          :benefits="[
+            $t('common.integrationsCatalog.shopifyBenefitOne'),
+            $t('common.integrationsCatalog.shopifyBenefitTwo'),
+          ]"
+          :steps="[
+            $t('common.integrationsCatalog.shopifyStepOne'),
+            $t('common.integrationsCatalog.shopifyStepTwo'),
+            $t('common.integrationsCatalog.shopifyStepThree'),
+          ]"
+        />
+        <div class="mt-6 border-t border-default pt-6">
+          <FormClientShopify />
+        </div>
+      </template>
     </UModal>
   </section>
 </template>
@@ -484,10 +507,12 @@ const planSections = computed<PlanSection[]>(() => [
         description: $t('common.integrationsCatalog.linkedinDescription'),
       },
       {
-        kind: 'api',
-        id: 'api',
-        title: $t('common.preferences.api.title'),
-        description: $t('common.preferences.api.description'),
+        kind: 'service',
+        id: 'shopify',
+        title: $t('common.shopify.title'),
+        logo: 'shopify',
+        status: null,
+        description: $t('common.shopify.description'),
       },
       {
         kind: 'wordpress',
@@ -496,12 +521,10 @@ const planSections = computed<PlanSection[]>(() => [
         description: $t('common.integrationsCatalog.wordpressDescription'),
       },
       {
-        kind: 'service',
-        id: 'shopify',
-        title: $t('common.shopify.title'),
-        logo: 'shopify',
-        status: null,
-        description: $t('common.shopify.description'),
+        kind: 'api',
+        id: 'api',
+        title: $t('common.preferences.api.title'),
+        description: $t('common.preferences.api.description'),
       },
     ],
   },

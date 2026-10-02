@@ -102,6 +102,23 @@ describe('settings integrations catalog', () => {
     expect(catalog).not.toContain("label: 'Premium+'")
   })
 
+  it('introduces Shopify like the other dialogs and gives the API card its own row', () => {
+    const catalog = source('app/components/Form/Client/IntegrationsCatalog.vue')
+    const shopifyDialog = catalog.slice(catalog.indexOf('v-model:open="shopifyOpen"'))
+
+    expect(shopifyDialog).toContain('icon="mdi:shopify"')
+    expect(shopifyDialog).toContain("$t('common.integrationsCatalog.shopifyStepOne')")
+    expect(catalog).toContain("card.kind === 'api' && 'lg:col-span-2'")
+    expect(source('app/components/Form/Client/Shopify.vue')).not.toContain("$t('common.shopify.description')")
+    for (const catalog of ['cs', 'en', 'de', 'fr'].map(catalogMessages)) {
+      expect(catalog.shopifyBenefitOne).toBeTruthy()
+      expect(catalog.shopifyBenefitTwo).toBeTruthy()
+      expect(catalog.shopifyStepOne).toContain('Shopify App Store')
+      expect(catalog.shopifyStepTwo).toBeTruthy()
+      expect(catalog.shopifyStepThree).toContain('Topiqu')
+    }
+  })
+
   it('floats the unsaved changes bar from one shared component', () => {
     const settings = source('app/pages/settings/index.vue')
     const profile = source('app/pages/uzivatel/index.vue')

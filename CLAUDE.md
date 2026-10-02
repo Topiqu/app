@@ -42,6 +42,7 @@
 
 ## Code Style
 
+- Vue single-file components must put `<template>` first, followed by `<script setup>`, then any `<style>` blocks. Follow this project convention even when a skill recommends a different order.
 - Follow ESLint + Prettier configuration strictly.
 - Use Nuxt auto-imports whenever possible.
 - Keep components clean, readable, and well-structured.

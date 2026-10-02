@@ -3,7 +3,7 @@
     <div class="rounded-(--topiqu-surface-radius) bg-neutral-50 p-4 dark:bg-neutral-800/60">
       <div class="flex flex-wrap items-center gap-3">
         <span
-          class="grid size-10 place-items-center rounded-xl bg-indigo-100 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-300"
+          class="grid size-10 place-items-center rounded-xl bg-default text-highlighted shadow-xs ring ring-default"
         >
           <UIcon :name="icon" class="size-5" />
         </span>
@@ -36,7 +36,7 @@
         <h3 class="font-semibold">{{ $t('common.integrationsCatalog.setup') }}</h3>
         <ol class="mt-3 space-y-2 text-sm text-neutral-600 dark:text-neutral-300">
           <li v-for="(step, index) in steps" :key="step" class="flex gap-2">
-            <span class="font-semibold text-indigo-500">{{ index + 1 }}.</span>{{ step }}
+            <span class="font-semibold tabular-nums text-muted">{{ index + 1 }}.</span>{{ step }}
           </li>
         </ol>
       </section>

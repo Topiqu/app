@@ -1,7 +1,7 @@
 export default defineAppConfig({
   ui: {
     colors: {
-      primary: 'indigo',
+      primary: 'slate',
       neutral: 'slate',
       success: 'emerald',
       info: 'sky',
@@ -71,6 +71,13 @@ export default defineAppConfig({
         { square: true, size: 'sm', class: 'size-9 shrink-0 p-0 justify-center' },
         { square: true, size: 'md', class: 'size-10 shrink-0 p-0 justify-center' },
         { square: true, size: 'lg', class: 'size-11 shrink-0 p-0 justify-center' },
+        // Ink in the dashboard; `.publication-surface` points `action` back at the tenant accent.
+        {
+          color: 'primary',
+          variant: 'solid',
+          class:
+            'bg-action hover:bg-action/85 active:bg-action/85 disabled:bg-action aria-disabled:bg-action outline-action/25',
+        },
       ],
       defaultVariants: {
         color: 'primary',

@@ -9,10 +9,10 @@
   >
     <div
       v-if="active"
-      class="absolute inset-0 z-20 flex items-center justify-center bg-indigo-500/10 border-2 border-dashed border-indigo-400 rounded-lg pointer-events-none backdrop-blur-[1px]"
+      class="absolute inset-0 z-20 flex items-center justify-center bg-primary/10 border-2 border-dashed border-primary/60 rounded-lg pointer-events-none backdrop-blur-[1px]"
       aria-hidden="true"
     >
-      <div class="flex flex-col items-center gap-2 text-indigo-600 dark:text-indigo-300">
+      <div class="flex flex-col items-center gap-2 text-primary">
         <UIcon size="48" name="mdi:tray-arrow-down" />
         <span class="text-sm font-medium">{{ $t('articles.editor.dropZone') }}</span>
       </div>

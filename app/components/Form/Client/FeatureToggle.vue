@@ -1,33 +1,39 @@
 <template>
   <label
-    class="flex items-start gap-3 py-3 px-4 rounded-(--topiqu-surface-radius) border transition-all duration-200 select-none cursor-pointer"
+    class="flex h-full select-none flex-col gap-4 rounded-(--topiqu-surface-radius) border bg-default p-4 transition-colors"
     :class="[
-      active ? `${accentRing} border-transparent bg-white dark:bg-gray-800` : idleClass,
-      disabled && 'opacity-60 cursor-not-allowed',
+      active ? 'border-primary' : 'border-default hover:border-accented',
+      disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer',
     ]"
   >
-    <UIcon :name="icon" class="w-6 h-6 mt-0.5 flex-shrink-0" :class="accentIcon" />
-    <div class="flex-1 min-w-0">
-      <div class="font-semibold text-sm text-gray-900 dark:text-gray-100">{{ title }}</div>
-      <div class="text-xs text-gray-600 dark:text-gray-400 leading-tight">{{ description }}</div>
-      <div class="mt-1 flex items-center gap-2 text-xs">
-        <span v-if="price" class="font-semibold text-gray-900 dark:text-gray-100">
-          {{ price }}
-          <span class="text-gray-500 font-normal">
-            /{{ billingPlan === 'ANNUAL' ? $t('common.preferences.annualy') : $t('common.preferences.monthly') }}
-          </span>
-        </span>
-        <span v-else class="inline-flex items-center gap-1 font-medium text-emerald-700 dark:text-emerald-400">
-          <UIcon name="mdi:check-decagram-outline" class="w-3.5 h-3.5" />
-          {{ $t('common.features.includedInPlan') }}
-        </span>
-        <span v-if="price && billingPlan === 'ANNUAL'" class="text-emerald-600 dark:text-emerald-400 font-medium">
-          –20 %
-        </span>
+    <div class="flex items-start justify-between gap-3">
+      <div
+        class="grid size-10 shrink-0 place-items-center rounded-xl transition-colors"
+        :class="active ? 'bg-primary text-inverted' : 'bg-elevated text-muted'"
+        aria-hidden="true"
+      >
+        <UIcon :name="icon" class="size-5" />
       </div>
+      <USwitch :modelValue="enabled" :disabled :aria-label="title" @update:modelValue="emit('toggle')" />
     </div>
-    <div class="w-5 h-5 flex-shrink-0">
-      <UCheckbox :modelValue="enabled" :disabled class="pointer-events-none" @update:modelValue="emit('toggle')" />
+
+    <div class="min-w-0 flex-1">
+      <div class="text-sm font-semibold text-highlighted">{{ title }}</div>
+      <p class="mt-1 text-xs leading-5 text-muted">{{ description }}</p>
+    </div>
+
+    <div class="flex items-center gap-2 border-t border-default pt-3 text-xs">
+      <span v-if="price" class="font-semibold text-highlighted">
+        {{ price }}
+        <span class="font-normal text-muted">
+          /{{ billingPlan === 'ANNUAL' ? $t('common.preferences.annualy') : $t('common.preferences.monthly') }}
+        </span>
+      </span>
+      <span v-else class="inline-flex items-center gap-1 font-medium text-success">
+        <UIcon name="mdi:check-decagram-outline" class="size-3.5" />
+        {{ $t('common.features.includedInPlan') }}
+      </span>
+      <span v-if="price && billingPlan === 'ANNUAL'" class="font-medium text-success">–20 %</span>
     </div>
   </label>
 </template>
@@ -35,8 +41,6 @@
 <script setup lang="ts">
 const props = defineProps<{
   icon: string
-  accentRing: string
-  accentIcon: string
   title: string
   description: string
   price: string | null
@@ -47,9 +51,6 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{ toggle: [] }>()
-
-const idleClass =
-  'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
 
 const active = computed(() => props.enabled && !props.disabled)
 </script>

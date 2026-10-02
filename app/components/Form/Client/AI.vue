@@ -85,19 +85,7 @@
             </div>
           </div>
 
-          <div class="flex min-w-0 flex-col gap-2">
-            <AppFormLabel :text="$t('common.preferences.aiAuthor.controversyLevel.label')" />
-            <USelectMenu
-              v-model="aiControversyLevel"
-              valueKey="value"
-              labelKey="label"
-              :items="controversyOptions"
-              upwards
-            />
-            <p class="text-xs leading-5 text-muted">
-              {{ $t('common.preferences.aiAuthor.controversyLevel.help') }}
-            </p>
-          </div>
+          <FormClientControversyScale v-model="aiControversyLevel" />
         </div>
       </div>
     </section>
@@ -107,11 +95,9 @@
         <h3 class="text-base font-semibold text-highlighted">{{ $t('common.preferences.aiPage.capabilities') }}</h3>
         <p class="mt-1 text-sm text-muted">{{ $t('common.preferences.aiPage.capabilitiesDescription') }}</p>
       </div>
-      <div class="grid gap-3 rounded-(--topiqu-surface-radius) border border-default bg-muted/30 p-3 sm:p-4">
+      <div class="grid gap-3 lg:grid-cols-3">
         <FormClientFeatureToggle
           icon="mdi:robot-outline"
-          accentRing="ring-2 ring-blue-500"
-          accentIcon="text-blue-600 dark:text-blue-400"
           :title="$t('common.features.ai')"
           :description="$t('common.features.aiDesc')"
           :price="featurePrice('AI')"
@@ -124,8 +110,6 @@
 
         <FormClientFeatureToggle
           icon="mdi:emoticon-happy-outline"
-          accentRing="ring-2 ring-emerald-500"
-          accentIcon="text-emerald-600 dark:text-emerald-400"
           :title="$t('common.features.sentiment')"
           :description="$t('common.features.sentimentDesc')"
           :price="featurePrice('SENTIMENT')"
@@ -138,8 +122,6 @@
 
         <FormClientFeatureToggle
           icon="mdi:clock-outline"
-          accentRing="ring-2 ring-violet-500"
-          accentIcon="text-violet-600 dark:text-violet-400"
           :title="$t('common.features.articleCrons')"
           :description="$t('common.features.articleCronsDesc')"
           :price="featurePrice('ARTICLE_CRONS')"
@@ -435,25 +417,6 @@ const aiControversyLevel = computed({
   get: () => props.aiControversyLevel ?? 'NONE',
   set: (v) => emit('update:aiControversyLevel', v === 'NONE' ? null : v),
 })
-
-const controversyOptions = computed(() => [
-  {
-    value: 'NONE',
-    label: t('common.preferences.aiAuthor.controversyLevel.options.NONE'),
-  },
-  {
-    value: 'LOW',
-    label: t('common.preferences.aiAuthor.controversyLevel.options.LOW'),
-  },
-  {
-    value: 'MEDIUM',
-    label: t('common.preferences.aiAuthor.controversyLevel.options.MEDIUM'),
-  },
-  {
-    value: 'HIGH',
-    label: t('common.preferences.aiAuthor.controversyLevel.options.HIGH'),
-  },
-])
 
 const toneSuggestions = computed(() => [
   t('common.preferences.aiAuthor.toneOfVoice.suggestions.professional'),

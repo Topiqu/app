@@ -1,8 +1,15 @@
 <template>
-  <section class="rounded-lg border border-default bg-muted/40 p-4" :aria-labelledby="headingId">
-    <h2 :id="headingId" class="text-sm font-semibold text-highlighted">{{ $t('knowledge.playground.title') }}</h2>
-    <p class="mt-1 text-xs text-muted">{{ $t('knowledge.playground.description') }}</p>
-    <form class="mt-3 flex flex-col gap-2 sm:flex-row" @submit.prevent="run">
+  <section class="rounded-lg border border-default bg-default p-4 sm:p-5" :aria-labelledby="headingId">
+    <div class="flex items-start gap-3">
+      <span class="grid size-10 shrink-0 place-items-center rounded-lg bg-elevated text-muted" aria-hidden="true">
+        <UIcon name="mdi:flask-outline" class="size-5" />
+      </span>
+      <div>
+        <h2 :id="headingId" class="text-sm font-semibold text-highlighted">{{ $t('knowledge.playground.title') }}</h2>
+        <p class="mt-0.5 text-sm text-muted">{{ $t('knowledge.playground.description') }}</p>
+      </div>
+    </div>
+    <form class="mt-4 flex flex-col gap-2 sm:flex-row" @submit.prevent="run">
       <UInput
         v-model="topic"
         class="flex-1"
@@ -12,7 +19,9 @@
         maxlength="500"
         required
       />
-      <UButton type="submit" icon="mdi:magnify" :loading="loading">{{ $t('knowledge.playground.run') }}</UButton>
+      <UButton type="submit" color="neutral" variant="outline" icon="mdi:magnify" :loading="loading">{{
+        $t('knowledge.playground.run')
+      }}</UButton>
     </form>
 
     <div v-if="result" class="mt-4 flex flex-col gap-2" aria-live="polite">

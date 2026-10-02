@@ -3,8 +3,13 @@
 @import '@fontsource-variable/manrope/wght.css';
 @import '@fontsource-variable/source-serif-4/wght.css';
 
+@theme inline {
+  --color-action: var(--topiqu-action);
+}
+
 :root {
-  --ui-primary: var(--ui-color-primary-700);
+  /* Dashboard primary is ink; `.publication-surface` swaps in the tenant accent. */
+  --ui-primary: var(--ui-bg-inverted);
   --ui-success: var(--ui-color-success-700);
   --ui-info: var(--ui-color-info-700);
   --ui-warning: var(--ui-color-warning-800);
@@ -21,6 +26,7 @@
   --topiqu-article-width: 75rem;
   --topiqu-brand: var(--ui-primary);
   --topiqu-tenant-accent: var(--ui-primary);
+  --topiqu-action: var(--ui-bg-inverted);
   --topiqu-layer-header: 30;
   --topiqu-layer-sidebar: 40;
   --topiqu-layer-overlay: 50;
@@ -30,7 +36,6 @@
 }
 
 .dark {
-  --ui-primary: var(--ui-color-primary-300);
   --ui-success: var(--ui-color-success-300);
   --ui-info: var(--ui-color-info-300);
   --ui-warning: var(--ui-color-warning-300);
@@ -38,7 +43,8 @@
   --ui-text-muted: var(--color-slate-400);
 }
 
-.dark .publication-surface {
+.dark .publication-surface,
+.dark.publication-surface {
   --ui-primary: var(--topiqu-tenant-accent-dark);
   --topiqu-tenant-accent: var(--topiqu-tenant-accent-dark);
   --topiqu-tenant-accent-foreground: #0f172a;
@@ -68,6 +74,7 @@
 .publication-surface {
   --topiqu-tenant-accent: var(--topiqu-tenant-accent-light, var(--ui-primary));
   --ui-primary: var(--topiqu-tenant-accent);
+  --topiqu-action: var(--ui-primary);
   font-family: var(
     --topiqu-publication-font,
     Inter,
@@ -78,6 +85,14 @@
     'Segoe UI',
     sans-serif
   );
+}
+
+/* Clip instead of translate, so a brand gradient stays anchored left and fills in as you read. */
+.reading-progress [data-slot='indicator'] {
+  transform: none !important;
+  clip-path: inset(0 calc(100% - var(--reading-progress, 0%)) 0 0);
+  background-image: var(--topiqu-brand-gradient, none);
+  transition: clip-path 200ms ease-out;
 }
 
 .publication-surface :is(h1, h2, h3, h4, h5, h6) {

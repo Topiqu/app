@@ -30,7 +30,7 @@
                   class="flex size-5 shrink-0 items-center justify-center rounded-full border text-[11px] font-bold"
                   :class="
                     index === step || isStepComplete(index)
-                      ? 'border-primary bg-primary text-white'
+                      ? 'border-primary bg-primary text-inverted'
                       : 'border-default bg-default text-muted'
                   "
                 >
@@ -55,23 +55,13 @@
               v-for="plan in planOptions"
               :key="plan.value"
               type="button"
-              class="group relative flex min-h-64 min-w-0 cursor-pointer flex-col items-stretch justify-start overflow-hidden rounded-[var(--topiqu-surface-radius)] border p-4 text-left whitespace-normal shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg active:translate-y-0 active:scale-[0.99] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              class="relative flex min-h-64 min-w-0 cursor-pointer flex-col items-stretch justify-start overflow-hidden rounded-[var(--topiqu-surface-radius)] border p-4 text-left whitespace-normal transition-colors focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary"
               :class="planCardClass(plan.value, form.plan === plan.value)"
               :aria-pressed="form.plan === plan.value"
               @click="form.plan = plan.value"
             >
-              <span class="absolute inset-x-0 top-0 h-1" :class="planAccentClass(plan.value)" aria-hidden="true" />
-              <span
-                class="pointer-events-none absolute -top-10 -right-10 size-28 rounded-full opacity-0 blur-2xl transition-opacity duration-200 group-hover:opacity-35"
-                :class="planGlowClass(plan.value)"
-                aria-hidden="true"
-              />
-
               <span class="relative flex w-full items-start justify-between gap-2">
-                <span
-                  class="flex size-11 items-center justify-center rounded-xl shadow-sm ring-1 ring-black/5 transition-transform duration-200 group-hover:-rotate-3 group-hover:scale-110 dark:ring-white/10"
-                  :class="planIconClass(plan.value)"
-                >
+                <span class="flex size-11 items-center justify-center rounded-xl" :class="planIconClass(plan.value)">
                   <UIcon :name="plan.icon" size="24" />
                 </span>
                 <UIcon
@@ -446,40 +436,21 @@ const planOptions = computed(() => [
 ])
 
 const planCardClass = (plan: SelectedPlan, selected: boolean) => {
-  if (plan === 'BASIC')
-    return selected
-      ? 'border-emerald-500 bg-emerald-50/90 shadow-emerald-200/60 dark:bg-emerald-950/40 dark:shadow-emerald-950/50'
-      : 'border-emerald-200 bg-white hover:border-emerald-400 hover:bg-emerald-50/80 hover:shadow-emerald-200/50 dark:border-emerald-900 dark:bg-neutral-900 dark:hover:border-emerald-600 dark:hover:bg-emerald-950/30 dark:hover:shadow-emerald-950/50'
-  if (plan === 'PRO')
-    return selected
-      ? 'border-indigo-500 bg-indigo-50/90 shadow-indigo-200/60 dark:bg-indigo-950/40 dark:shadow-indigo-950/50'
-      : 'border-indigo-200 bg-white hover:border-indigo-400 hover:bg-indigo-50/80 hover:shadow-indigo-200/50 dark:border-indigo-900 dark:bg-neutral-900 dark:hover:border-indigo-600 dark:hover:bg-indigo-950/30 dark:hover:shadow-indigo-950/50'
-  return selected
-    ? 'border-amber-500 bg-amber-50/90 shadow-amber-200/60 dark:bg-amber-950/40 dark:shadow-amber-950/50'
-    : 'border-amber-200 bg-white hover:border-amber-400 hover:bg-amber-50/80 hover:shadow-amber-200/50 dark:border-amber-900 dark:bg-neutral-900 dark:hover:border-amber-600 dark:hover:bg-amber-950/30 dark:hover:shadow-amber-950/50'
-}
-
-const planAccentClass = (plan: SelectedPlan) => {
-  if (plan === 'BASIC') return 'bg-gradient-to-r from-emerald-400 to-teal-500'
-  if (plan === 'PRO') return 'bg-gradient-to-r from-indigo-500 to-violet-500'
-  return 'bg-gradient-to-r from-amber-400 to-orange-500'
-}
-
-const planGlowClass = (plan: SelectedPlan) => {
-  if (plan === 'BASIC') return 'bg-emerald-400'
-  if (plan === 'PRO') return 'bg-indigo-500'
-  return 'bg-amber-400'
+  if (!selected) return 'border-default bg-default hover:border-accented'
+  if (plan === 'BASIC') return 'border-emerald-500 bg-emerald-50/50 ring-1 ring-emerald-500 dark:bg-emerald-950/20'
+  if (plan === 'PRO') return 'border-sky-500 bg-sky-50/50 ring-1 ring-sky-500 dark:bg-sky-950/20'
+  return 'border-amber-500 bg-amber-50/50 ring-1 ring-amber-500 dark:bg-amber-950/20'
 }
 
 const planIconClass = (plan: SelectedPlan) => {
   if (plan === 'BASIC') return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300'
-  if (plan === 'PRO') return 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300'
+  if (plan === 'PRO') return 'bg-sky-100 text-sky-700 dark:bg-sky-900/60 dark:text-sky-300'
   return 'bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300'
 }
 
 const planCheckClass = (plan: SelectedPlan) => {
   if (plan === 'BASIC') return 'text-emerald-600 dark:text-emerald-400'
-  if (plan === 'PRO') return 'text-indigo-600 dark:text-indigo-400'
+  if (plan === 'PRO') return 'text-sky-600 dark:text-sky-400'
   return 'text-amber-600 dark:text-amber-400'
 }
 

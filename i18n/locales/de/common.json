@@ -111,6 +111,11 @@
       "linkedinStepOne": "Verbinde dein persönliches LinkedIn-Profil.",
       "linkedinStepTwo": "Gewähre Topiqu den angeforderten LinkedIn-Zugriff.",
       "linkedinStepThree": "Konfiguriere den Veröffentlichungsmodus und die Markenrichtlinien.",
+      "shopifyBenefitOne": "Artikel erscheinen im Blog Ihres Shops und bleiben im Editor bearbeitbar.",
+      "shopifyBenefitTwo": "Produkte und Kollektionen landen in der Wissensbasis, damit Artikel empfehlen, was Sie wirklich verkaufen.",
+      "shopifyStepOne": "Installieren Sie die Topiqu-App aus dem Shopify App Store.",
+      "shopifyStepTwo": "Öffnen Sie sie im Shop-Admin.",
+      "shopifyStepThree": "Wählen Sie Mit Topiqu verbinden.",
       "developerTitle": "API und WordPress",
       "developerDescription": "Werkzeuge für eigene Entwicklungen und Veröffentlichungsabläufe außerhalb des Katalogs externer Dienste.",
       "apiBenefitOne": "Verbinde eine eigene App, Automatisierung oder einen Redaktionsablauf.",
@@ -315,7 +320,9 @@
       "roleChangeForbidden": "Die Rolle darf nicht geändert werden",
       "featureNotInPlan": "Diese Funktion ist in deinem Tarif nicht verfügbar",
       "aiRequired": "Aktiviere zuerst die KI",
-      "emailNotVerified": "Bitte bestätige zuerst deine E-Mail-Adresse. Wir haben dir einen neuen Bestätigungscode gesendet."
+      "emailNotVerified": "Bitte bestätige zuerst deine E-Mail-Adresse. Wir haben dir einen neuen Bestätigungscode gesendet.",
+      "commentGifsDisabled": "GIFs sind für diese Publikation deaktiviert.",
+      "publicationChannelDisabled": "Dieser Publikationskanal ist in den Einstellungen deaktiviert."
     },
     "notifications": {
       "userLikedArticle": "{0} gefällt dein Artikel.",
@@ -726,7 +733,7 @@
         "logoSuggestions": "Farben aus dem Logo",
         "noLogoColors": "In diesem Logo wurde keine eindeutige Farbe gefunden.",
         "gradient": "Farbverlauf im Titelbereich der Startseite",
-        "gradientHelp": "Ein dezenter Farbakzent hinter dem Titelbereich der Startseite.",
+        "gradientHelp": "Hinter dem Titelbereich der Startseite, im Lesefortschritt von Artikeln und im Vorschaubild zum Teilen.",
         "gradientStop": "Farbe {number}",
         "gradientAngle": "Richtung",
         "gradientSoft": "Dezent",
@@ -735,6 +742,8 @@
         "addGradientStop": "Dritte Farbe hinzufügen",
         "removeGradientStop": "Dritte Farbe entfernen",
         "gradientCustomize": "Anpassen",
+        "gradientAccentMismatch": "Die Akzentfarbe (Buttons, Links) passt nicht zum Verlauf.",
+        "useGradientAccent": "Erste Verlaufsfarbe verwenden",
         "unlockPro": "Mit Pro freischalten",
         "customFont": "Eigene Schriftart",
         "customFontHelp": "WOFF2-Schriftarten für Überschriften und Fließtext, jeweils bis 2 MB.",
@@ -779,7 +788,15 @@
       },
       "content": {
         "title": "Inhaltsbriefing",
-        "description": "Jeder von der KI generierte Artikel basiert auf diesen Einstellungen."
+        "description": "Jeder von der KI generierte Artikel basiert auf diesen Einstellungen.",
+        "direction": {
+          "title": "Ausrichtung",
+          "description": "Worüber die Publikation schreibt und für wen."
+        },
+        "topics": {
+          "title": "Sprache und Themen",
+          "description": "In welcher Sprache Artikel entstehen und welche Themen mehr Raum bekommen."
+        }
       },
       "focus": {
         "label": "Schwerpunkt",
@@ -803,9 +820,7 @@
         "label": "Schlüsselwörter",
         "help": "Themen, die in den Ergebnissen wiederkehren sollen.",
         "placeholder": "z. B. Unreal Engine, KI in Spielen",
-        "hint": "Mit Enter oder einem Komma hinzufügen.",
-        "remove": "{0} entfernen",
-        "count": "Wörter: {0}"
+        "hint": "Mit Enter oder einem Komma hinzufügen."
       },
       "autoRelease": {
         "title": "Automatische Veröffentlichung",
@@ -894,6 +909,12 @@
             "LOW": "Niedrig (gelegentliche Denkanstöße)",
             "MEDIUM": "Mittel (sachliche Debatte)",
             "HIGH": "Hoch (provokante Meinungen)"
+          },
+          "short": {
+            "NONE": "Keine",
+            "LOW": "Niedrig",
+            "MEDIUM": "Mittel",
+            "HIGH": "Hoch"
           }
         }
       },
@@ -915,6 +936,27 @@
           "fullAuto": "Vollautomatisch (mit Richtlinienprüfung)",
           "help": "Bei HitL muss jeder generierte Beitrag vor der Veröffentlichung manuell freigegeben werden."
         }
+      },
+      "community": {
+        "title": "Kommentare und GIFs",
+        "description": "Steuern Sie die Diskussion unter allen Artikeln dieser Publikation.",
+        "comments": "Kommentare erlauben",
+        "commentsHelp": "Wenn deaktiviert, werden Kommentare und Antworten unter allen Artikeln geschlossen. Bestehende Kommentare bleiben sichtbar. Einzelne Artikel können ihre Diskussion weiterhin separat schließen.",
+        "gifs": "GIFs in Kommentaren erlauben",
+        "gifsHelp": "Wenn deaktiviert, werden vorhandene GIFs ausgeblendet und neue Anhänge blockiert. Der Kommentartext bleibt sichtbar."
+      },
+      "publicationChannels": {
+        "title": "Publikationskanäle",
+        "description": "Wählen Sie, wo diese Publikation veröffentlichen darf. Verbundene Kanäle behalten ihre bisherigen Veröffentlichungs- und Freigabeabläufe. Das Deaktivieren stoppt neue Veröffentlichungen einschließlich wartender Aufträge und erhält bereits veröffentlichte Inhalte.",
+        "web": "Website der Publikation",
+        "webHelp": "Erlaubt Veröffentlichungen auf Ihrer Topiqu-Website. Wenn deaktiviert, bleiben generierte Artikel Entwürfe und geplante Artikel warten auf die erneute Aktivierung.",
+        "shopify": "Shopify-Blog",
+        "shopifyHelp": "Erlaubt das Senden von Artikeln an den in der Shopify-Integration ausgewählten Blog über den Veröffentlichungsdialog im Editor.",
+        "linkedin": "LinkedIn",
+        "linkedinHelp": "Erlaubt dem verbundenen LinkedIn-Konto, Beiträge im bestehenden Modus mit manueller Freigabe oder automatisch zu veröffentlichen.",
+        "manageIntegrations": "Verbundene Kanäle verwalten",
+        "ready": "Bereit",
+        "needsSetup": "Integration einrichten"
       }
     },
     "passwordSuggestions": {
@@ -1167,7 +1209,6 @@
         "limit": "Der Katalog überschreitet das Tariflimit; Produkte innerhalb des Limits wurden importiert."
       },
       "install": {
-        "description": "Installieren Sie die Topiqu-App aus dem Shopify App Store, öffnen Sie sie im Shop-Admin und wählen Sie Mit Topiqu verbinden.",
         "action": "Shopify App Store öffnen"
       },
       "pending": {

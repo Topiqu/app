@@ -364,6 +364,8 @@ const opportunityLink = (opportunity: Opportunity) => ({
                 <UButton
                   :to="opportunityLink(opportunity)"
                   size="sm"
+                  color="neutral"
+                  variant="outline"
                   :icon="opportunity.article ? 'mdi:file-edit-outline' : 'mdi:plus'"
                 >
                   {{ $t(opportunity.article ? 'visibility.opportunities.update' : 'visibility.opportunities.create') }}

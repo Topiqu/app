@@ -97,7 +97,12 @@
       "quota": "Deine Wissensbasis ist voll. Lösche eine Quelle, bevor du eine weitere hinzufügst.",
       "sitemapEmpty": "Auf dieser Website wurden keine neuen Seiten zum Hinzufügen gefunden."
     },
-    "quota": "{sources} von {maxSources} Quellen · {characters} von {maxCharacters} Zeichen · {products} von {maxProducts} Produkten",
+    "usageTitle": "Wissensnutzung",
+    "meters": {
+      "sources": "Quellen",
+      "characters": "Zeichen",
+      "products": "Produkte"
+    },
     "stale": "Möglicherweise veraltet",
     "asOf": "Gültig ab",
     "usage": "noch nicht verwendet | einmal verwendet, zuletzt | {n}-mal verwendet, zuletzt",
@@ -127,7 +132,6 @@
       "discover": "Seiten finden",
       "import": "{count} Seiten importieren"
     },
-    "beta": "Beta",
     "consent": {
       "label": "Ich bestätige, dass die Quelle keine vertraulichen oder personenbezogenen Daten enthält",
       "scope": "Vertraulich sind Geschäftsgeheimnisse und alle anderen Informationen, die nicht in einem öffentlichen Artikel erscheinen dürfen.",

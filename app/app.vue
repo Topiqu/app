@@ -1,6 +1,6 @@
 <template>
   <UApp :locale="uiLocale">
-    <NuxtLoadingIndicator class="z-top" :color="computedThemeColor" />
+    <NuxtLoadingIndicator class="z-top" :color="loadingColor" />
     <NuxtRouteAnnouncer />
     <NetworkIndicator />
     <AppOptimisticStatus />
@@ -32,6 +32,7 @@ import { consentLauncherFor } from '~~/shared/utils/consent'
 import { brandTitle, toAbsoluteUrl } from '~~/shared/utils/seo'
 import { resolveBrandAccent } from '~~/shared/utils/tenantTheme'
 import { platformAdsEnabledForPlan } from '~~/shared/utils/advertising'
+import { activeBrandGradient, gradientCss } from '~~/shared/utils/publicationBranding'
 
 const reqUrl = useRequestURL()
 const route = useRoute()
@@ -70,6 +71,10 @@ onMounted(() => {
 const computedThemeColor = computed(() =>
   resolveBrandAccent(liveClientSite.value?.theme, liveClientSite.value?.accentColor),
 )
+const brandGradient = computed(() =>
+  activeBrandGradient(liveClientSite.value?.brandGradient, liveClientSite.value?.plan),
+)
+const loadingColor = computed(() => (brandGradient.value ? gradientCss(brandGradient.value) : computedThemeColor.value))
 
 useSeoMeta({
   title: () => clientSite?.name || 'Topiqu',
@@ -94,6 +99,7 @@ if (clientSite) {
     siteName: clientSite.name,
     siteLogo: targetLogoUrl,
     themeColor: computedThemeColor.value,
+    brandGradient: brandGradient.value ? gradientCss(brandGradient.value) : undefined,
     domain: reqUrl.host,
   })
 } else {

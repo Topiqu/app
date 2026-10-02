@@ -97,7 +97,12 @@
       "quota": "Your knowledge base is full. Delete a source to add another.",
       "sitemapEmpty": "We could not find any new pages to add from this website."
     },
-    "quota": "{sources} of {maxSources} sources · {characters} of {maxCharacters} characters · {products} of {maxProducts} products",
+    "usageTitle": "Knowledge usage",
+    "meters": {
+      "sources": "Sources",
+      "characters": "Characters",
+      "products": "Products"
+    },
     "stale": "Possibly outdated",
     "asOf": "Valid as of",
     "usage": "not used yet | used once, last | used {n} times, last",
@@ -127,7 +132,6 @@
       "discover": "Find pages",
       "import": "Import {count} pages"
     },
-    "beta": "Beta",
     "consent": {
       "label": "I confirm it contains no confidential or personal data",
       "scope": "Confidential includes trade secrets and anything else that must not appear in a public article.",

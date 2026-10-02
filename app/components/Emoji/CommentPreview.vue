@@ -33,11 +33,7 @@
       class="rounded-(--topiqu-surface-radius) border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-700 dark:bg-neutral-900"
     >
       <div class="flex items-center gap-3">
-        <div
-          class="grid size-8 place-items-center rounded-full bg-indigo-50 text-xs font-bold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-300"
-        >
-          T
-        </div>
+        <div class="grid size-8 place-items-center rounded-full bg-elevated text-xs font-bold text-highlighted">T</div>
         <div>
           <p class="text-sm font-semibold text-neutral-800 dark:text-neutral-100">{{ $t('emoji.previewAuthor') }}</p>
           <p class="text-xs text-neutral-400">{{ $t('emoji.previewTime') }}</p>

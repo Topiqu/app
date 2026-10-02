@@ -41,7 +41,7 @@
           <UIcon
             :name="isSelected(option.id) ? 'mdi:checkbox-marked-circle' : 'mdi:checkbox-blank-circle-outline'"
             class="w-3.5 h-3.5 shrink-0"
-            :class="isSelected(option.id) ? 'text-indigo-500' : 'text-gray-300 dark:text-gray-600'"
+            :class="isSelected(option.id) ? 'text-primary' : 'text-gray-300 dark:text-gray-600'"
             aria-hidden="true"
           />
           <!-- base.scss colours bare `span` directly, so the label cannot inherit from the row. -->
@@ -56,18 +56,18 @@
           tabindex="-1"
           :aria-selected="false"
           :disabled="creating"
-          class="flex items-center gap-2 px-2 py-1.5 rounded-lg text-left text-xs bg-transparent! hover:bg-indigo-50! dark:hover:bg-indigo-950/40! border-t border-gray-100 dark:border-gray-800 rounded-t-none disabled:opacity-50"
-          :class="{ 'bg-indigo-50! dark:bg-indigo-950/40!': highlighted === options.length }"
+          class="flex items-center gap-2 px-2 py-1.5 rounded-lg text-left text-xs bg-transparent! hover:bg-primary/10! border-t border-gray-100 dark:border-gray-800 rounded-t-none disabled:opacity-50"
+          :class="{ 'bg-primary/10!': highlighted === options.length }"
           @click="createTag"
           @mousemove="highlighted = options.length"
         >
           <UIcon
             :name="creating ? 'mdi:loading' : 'mdi:plus'"
-            class="w-3.5 h-3.5 shrink-0 text-indigo-500"
+            class="w-3.5 h-3.5 shrink-0 text-primary"
             :class="{ 'animate-spin motion-reduce:animate-none': creating }"
             aria-hidden="true"
           />
-          <span class="truncate font-medium text-indigo-600! dark:text-indigo-300!">
+          <span class="truncate font-medium text-primary!">
             {{ $t('articles.editor.createTag', { name: query.trim() }) }}
           </span>
         </UButton>

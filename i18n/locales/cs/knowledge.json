@@ -97,7 +97,12 @@
       "quota": "Znalosti jsou plné. Smažte nějaký zdroj, abyste mohli přidat další.",
       "sitemapEmpty": "Na tomto webu jsme nenašli žádné nové stránky k přidání."
     },
-    "quota": "{sources} z {maxSources} zdrojů · {characters} z {maxCharacters} znaků · {products} z {maxProducts} produktů",
+    "usageTitle": "Využití znalostí",
+    "meters": {
+      "sources": "Zdroje",
+      "characters": "Znaky",
+      "products": "Produkty"
+    },
     "stale": "Možná zastaralé",
     "asOf": "Platné k",
     "usage": "zatím nepoužito | použito jednou, naposledy | použito {n}×, naposledy | použito {n}×, naposledy",
@@ -127,7 +132,6 @@
       "discover": "Najít stránky",
       "import": "Importovat stránky ({count})"
     },
-    "beta": "Beta",
     "consent": {
       "label": "Potvrzuji, že podklad neobsahuje důvěrné ani osobní údaje",
       "scope": "Za důvěrné považujte i obchodní tajemství a cokoli dalšího, co se nesmí objevit ve veřejném článku.",

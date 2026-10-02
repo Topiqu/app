@@ -190,6 +190,28 @@
             </div>
           </template>
         </UCollapsible>
+        <div
+          v-if="accentMismatch"
+          class="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-default bg-elevated/50 px-3 py-2"
+        >
+          <p class="text-xs text-muted">{{ $t('common.preferences.branding.gradientAccentMismatch') }}</p>
+          <UButton
+            type="button"
+            color="neutral"
+            variant="outline"
+            size="xs"
+            @click="emit('update:accentColor', brandGradient.colors[0]!)"
+          >
+            <template #leading>
+              <span
+                class="size-3 rounded-full ring-1 ring-black/10 dark:ring-white/15"
+                :style="{ backgroundColor: brandGradient.colors[0] }"
+                aria-hidden="true"
+              />
+            </template>
+            {{ $t('common.preferences.branding.useGradientAccent') }}
+          </UButton>
+        </div>
       </template>
     </div>
   </div>
@@ -224,6 +246,13 @@ const selectedColorLabel = computed(() =>
   props.accentColor
     ? $t('common.preferences.branding.customColor')
     : $t(`common.preferences.branding.colors.${props.theme}`),
+)
+// Presets derive from the accent; only hand-picked stops can drift away from it.
+const accentMismatch = computed(
+  () =>
+    advanced.value &&
+    !!props.brandGradient &&
+    !props.brandGradient.colors.some((color) => color.toUpperCase() === currentColor.value.toUpperCase()),
 )
 const suggestions = shallowRef<string[]>([])
 const suggesting = shallowRef(false)

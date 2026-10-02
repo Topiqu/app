@@ -30,7 +30,13 @@
               class="min-w-48 flex-1"
               @input="updateSlug"
             />
-            <UButton :loading="isCreating" :disabled="isBusy || !newTag.name.trim()" @click="addCustomTag">
+            <UButton
+              color="neutral"
+              variant="outline"
+              :loading="isCreating"
+              :disabled="isBusy || !newTag.name.trim()"
+              @click="addCustomTag"
+            >
               {{ $t('articles.tags.addButton') }}
             </UButton>
           </UFieldGroup>
@@ -45,7 +51,13 @@
               :placeholder="$t('articles.tags.selectExistingTag')"
               class="flex-1"
             />
-            <UButton :loading="isAdding" :disabled="isBusy || !selectedTagId" @click="addExistingTag">
+            <UButton
+              color="neutral"
+              variant="outline"
+              :loading="isAdding"
+              :disabled="isBusy || !selectedTagId"
+              @click="addExistingTag"
+            >
               {{ $t('articles.tags.addButton') }}
             </UButton>
           </UFieldGroup>
@@ -54,7 +66,7 @@
     </template>
 
     <template #footer="{ close }">
-      <UButton size="lg" @click="close">{{ $t('common.close') }}</UButton>
+      <UButton size="lg" color="neutral" variant="soft" @click="close">{{ $t('common.close') }}</UButton>
     </template>
   </UModal>
 </template>
