@@ -163,7 +163,7 @@
           </div>
         </div>
 
-        <section class="space-y-3" :aria-label="$t('common.wallet.history')">
+        <section class="space-y-3">
           <USeparator :label="$t('common.wallet.history')" />
           <UAlert v-if="walletError" color="error" :title="$t('common.messages.loadFailedTitle')">
             <template #actions

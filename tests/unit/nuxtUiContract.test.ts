@@ -425,4 +425,11 @@ describe('Nuxt UI template contract', () => {
       expect(sourceOf(path), path).not.toMatch(/onClickOutside|@keydown\.esc|addEventListener\(['"]keydown/)
     }
   })
+
+  // A labelled <section> is a region landmark itself; wrapping the labelled scroll region in one
+  // announced "Article history" twice and broke the wallet e2e locator.
+  it('labels the wallet history once', () => {
+    const version = sourceOf('app/components/Client/Version.vue')
+    expect(version.match(/:aria-label="\$t\('common\.wallet\.history'\)"/g)).toHaveLength(1)
+  })
 })
