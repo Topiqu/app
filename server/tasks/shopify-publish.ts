@@ -13,7 +13,12 @@ export default defineMonitoredTask({
       },
     })
     const pending = await prisma.shopifyPublication.findMany({
-      where: { status: 'QUEUED', nextAttemptAt: { lte: new Date() }, connection: { status: 'CONNECTED' } },
+      where: {
+        status: 'QUEUED',
+        nextAttemptAt: { lte: new Date() },
+        connection: { status: 'CONNECTED' },
+        clientSite: { publishToShopify: true },
+      },
       select: { id: true },
       orderBy: { nextAttemptAt: 'asc' },
       take: 20,

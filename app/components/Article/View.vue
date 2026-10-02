@@ -53,6 +53,7 @@
           :blocks="article.blocks"
           :articleId="article.id"
           :discloseAi="discloseAi"
+          :ad
         />
         <slot v-else name="empty" />
       </article>
@@ -95,6 +96,7 @@
 <script setup lang="ts">
 import type { Language } from '~~/shared/utils/language'
 import type { FaqEntry } from '~~/shared/utils/articleFaq'
+import type { AdProvider } from '~~/shared/utils/advertising'
 import type { CoverCredit } from '~~/shared/utils/imageCredit'
 import type { ArticleBlock } from '~~/shared/utils/articleBlocks'
 import type { SharePlatform } from '~~/generated/zenstack/models'
@@ -143,6 +145,7 @@ const { article, discloseAi = false } = defineProps<{
   }
   aiDisclosure?: string | null
   discloseAi?: boolean
+  ad?: AdProvider
   follow?: { count: number; following: boolean; visible: boolean; pending: boolean }
 }>()
 

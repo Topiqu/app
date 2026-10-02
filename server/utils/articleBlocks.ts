@@ -23,7 +23,7 @@ export const stampHeadingIds = (content: string | null | undefined) => {
 }
 
 /** Runs on every article read so the body is in the SSR HTML for crawlers without JavaScript. */
-export const articleBlocks = (content: string | null | undefined) => {
+export const articleBlocks = (content: string | null | undefined, options?: { adBreak?: boolean }) => {
   if (!content) return { blocks: [], headings: [] }
 
   // Fragment mode — a document wrapper would put html/body between us and the top-level nodes.
@@ -49,5 +49,5 @@ export const articleBlocks = (content: string | null | undefined) => {
       }
     })
 
-  return buildArticleBlocks(nodes)
+  return buildArticleBlocks(nodes, options)
 }

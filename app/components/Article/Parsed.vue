@@ -2,6 +2,9 @@
   <div ref="root" @error.capture="handleMediaError">
     <template v-for="(block, i) in blocks" :key="i">
       <ArticlePoll v-if="block.type === 'poll'" :poll="block" :articleId="articleId" />
+      <template v-else-if="block.type === 'ad'">
+        <ArticleBodyAd v-if="ad" :provider="ad" :articleId="articleId" />
+      </template>
       <!-- eslint-disable-next-line vue/no-v-html -- server-sanitised body (`sanitizeHtml` on write) -->
       <div v-else v-html="visibleHtml(block.html)" />
     </template>
@@ -9,6 +12,7 @@
 </template>
 
 <script setup lang="ts">
+import type { AdProvider } from '~~/shared/utils/advertising'
 import type { ArticleBlock } from '~~/shared/utils/articleBlocks'
 
 import { canOptimizeImageUrl } from '~~/shared/utils/imageHosts'
@@ -19,10 +23,12 @@ const {
   blocks,
   articleId,
   discloseAi = true,
+  ad = null,
 } = defineProps<{
   blocks: ArticleBlock[]
   articleId: string
   discloseAi?: boolean
+  ad?: AdProvider
 }>()
 const root = useTemplateRef<HTMLElement>('root')
 const image = useImage()

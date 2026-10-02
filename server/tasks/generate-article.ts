@@ -336,7 +336,10 @@ Respond ONLY in valid JSON (schema required).
       const mediaApproved = mediaReport.counts.needsAttention === 0
       // Nobody opens an article without a cover, so one that found none waits for a human.
       const coverApproved = Boolean(generated.articleImageUrl)
-      const status = client.autoRelease && qualityApproved && mediaApproved && coverApproved ? 'published' : 'draft'
+      const status =
+        client.autoRelease && client.publishToWeb && qualityApproved && mediaApproved && coverApproved
+          ? 'published'
+          : 'draft'
 
       const { article, appliedSeries } = await prisma.$transaction(async (ctx: any) => {
         const slug = await generateUniqueSlug(ctx, generated.title, clientSiteId)
@@ -618,6 +621,7 @@ export default defineMonitoredTask({
         humanHourlyRateUsd: true,
         humanWordsPerHour: true,
         autoRelease: true,
+        publishToWeb: true,
         aiSeriesEnabled: true,
         audience: true,
         keywords: true,

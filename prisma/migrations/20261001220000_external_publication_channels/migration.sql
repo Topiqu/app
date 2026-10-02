@@ -1,0 +1,3 @@
+ALTER TABLE "ClientSite"
+ADD COLUMN "publishToWordPress" BOOLEAN NOT NULL DEFAULT true,
+ADD COLUMN "publishToApi" BOOLEAN NOT NULL DEFAULT true;

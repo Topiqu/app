@@ -230,6 +230,8 @@
       </div>
     </section>
 
+    <HomeSeries v-if="clientSite?.name" :site="clientSite.name" />
+
     <section v-if="showFeed" id="articles" class="space-y-6">
       <div class="flex items-baseline justify-between gap-4 border-b border-default pb-3">
         <h2 class="text-3xl font-bold tracking-tight">{{ $t('articles.title') }}</h2>
@@ -283,14 +285,14 @@
         <ArticleSkeletonCard v-for="i in 6" :key="`skel-feed-${i}`" :pending="true" :index="i - 1" />
       </div>
       <div v-else-if="filteredArticles.length" class="home-grid">
-        <ArticleSkeletonCard
-          v-for="(article, idx) in filteredArticles"
-          :key="article.id"
-          :pending="pending"
-          :article="article"
-          :tags="article.tags"
-          :index="idx"
-        />
+        <template v-for="(article, idx) in filteredArticles" :key="article.id">
+          <ArticleSkeletonCard :pending="pending" :article="article" :tags="article.tags" :index="idx" />
+          <!-- Only between full rows: never as the feed's last item, where it would trail a short row. -->
+          <HomeFeedAd
+            v-if="feedAd && idx === FEED_AD_AFTER - 1 && filteredArticles.length > FEED_AD_AFTER"
+            :provider="feedAd"
+          />
+        </template>
       </div>
       <UEmpty v-else icon="mdi:file-search-outline" :title="$t('articles.noResults.message')" />
 
@@ -300,6 +302,8 @@
         </UButton>
       </div>
     </section>
+
+    <HomeDiscussions v-if="clientSite?.name" :site="clientSite.name" />
 
     <section v-if="latestPoll || topArticles.length" class="grid grid-cols-1 gap-10 lg:grid-cols-2">
       <div v-if="latestPoll" class="space-y-4" :class="{ 'lg:col-span-2': !topArticles.length }">
@@ -335,6 +339,7 @@ import type { PollOptionData } from '~~/shared/utils/polls'
 
 import { formatDate } from '~~/shared/utils'
 import { formatNumber } from '~~/shared/utils/number'
+import { FEED_AD_AFTER, adProviderFor } from '~~/shared/utils/advertising'
 
 definePageMeta({ shell: 'publication' })
 
@@ -360,6 +365,9 @@ const hasDashboardChrome = computed(() => ['admin', 'superadmin'].includes(auth.
 const localePath = useLocalePath()
 const { locale } = useI18n()
 const clientSite = await useClientSite()
+const { marketingGranted } = useConsent(() => clientSite)
+const adsenseSlot = String(useRuntimeConfig().public.adsenseFeedSlot || '')
+const feedAd = computed(() => adProviderFor(clientSite, { marketing: marketingGranted.value, adsenseSlot }))
 
 const { data: feat, pending: featPending } = await useFetch(`/api/articles/featured/${clientSite?.name}`, {
   query: { locale },

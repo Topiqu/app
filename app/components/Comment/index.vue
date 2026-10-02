@@ -50,7 +50,7 @@
       class="mt-3 flex shrink-0 flex-wrap justify-end gap-1 sm:absolute sm:right-5 sm:top-5 sm:mt-0"
     >
       <UButton
-        v-if="perms.reply"
+        v-if="perms.reply && allowReplies !== false"
         size="sm"
         color="neutral"
         variant="soft"
@@ -104,7 +104,10 @@
       {{ displayContent }}
     </p>
 
-    <Gif v-if="comment.gifUrl && !comment.deletedAt && !perms.isBanned" :content="comment.gifUrl" />
+    <Gif
+      v-if="allowGifs !== false && comment.gifUrl && !comment.deletedAt && !perms.isBanned"
+      :content="comment.gifUrl"
+    />
 
     <div
       v-if="!comment.deletedAt && !perms.isBanned"
@@ -166,6 +169,8 @@
         :comment="reply"
         :isReplying
         :publication
+        :allowReplies
+        :allowGifs
         :depth="Math.min(depth + 1, 12)"
         @reply="emit('reply', $event)"
         @delete="(c, r) => emit('delete', c, r)"
@@ -240,12 +245,17 @@ import type { CommentWithReplies } from '~~/types/comment'
 
 import { formatDate } from '~~/shared/utils'
 
-const props = defineProps<{
-  comment: CommentWithReplies
-  isReplying: boolean
-  depth: number
-  publication: { name: string; logoUrl?: string | null } | null
-}>()
+const props = withDefaults(
+  defineProps<{
+    comment: CommentWithReplies
+    isReplying: boolean
+    depth: number
+    publication: { name: string; logoUrl?: string | null } | null
+    allowReplies?: boolean
+    allowGifs?: boolean
+  }>(),
+  { allowReplies: true, allowGifs: true },
+)
 const emit = defineEmits<{
   (e: 'reply' | 'like' | 'dislike', c: CommentWithReplies): void
   (e: 'delete', c: CommentWithReplies, reason: string | null): void

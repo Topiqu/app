@@ -4,6 +4,7 @@
       :article
       :aiDisclosure="showsAiDisclosure ? data.aiInvolvement : null"
       :discloseAi="clientSite?.discloseAiContent ?? false"
+      :ad="bodyAd"
       :follow="{
         count: data.followerCount || 0,
         following: isFollowing,
@@ -108,13 +109,25 @@
         <LazyCommentSection
           :articleId="data.id"
           :commCount="data.commentCount || 0"
-          :allowComments="data.allowedComments"
+          :allowComments="data.commentingEnabled"
+          :allowGifs="data.commentGifsEnabled"
         />
       </template>
 
       <template #sidebar>
+        <!-- The rail is `display: none` below lg, so the AdSense unit mounts only once it has width. -->
+        <ClientOnly v-if="sidebarAd === 'adsense'">
+          <AdSenseSlot
+            v-if="isDesktop"
+            :key="`article-sidebar-adsense-${data.id}`"
+            :adSlot="sidebarAdsenseSlot"
+            format="vertical"
+            :fullWidthResponsive="false"
+            class="min-h-[618px]"
+          />
+        </ClientOnly>
         <AdSlot
-          v-if="showArticleAds"
+          v-else-if="sidebarAd === 'gam'"
           :key="`article-sidebar-${data.id}`"
           adUnitPath="/article/sidebar"
           slotId="article-sidebar-ad"
@@ -140,7 +153,7 @@ import type { Language } from '~~/shared/utils/language'
 import type { CoverCredit } from '~~/shared/utils/imageCredit'
 
 import { readFaq } from '~~/shared/utils/articleFaq'
-import { tenantGamEnabled } from '~~/shared/utils/advertising'
+import { adProviderFor } from '~~/shared/utils/advertising'
 import { canManageArticle } from '~~/shared/utils/articleEditor'
 import { localeRedirectSlug } from '~~/shared/utils/articleLocale'
 
@@ -156,7 +169,12 @@ const canonicalOrigin = useCanonicalOrigin()
 const { data: session } = useAuth()
 const clientSite = await useClientSite()
 const { marketingGranted } = useConsent(() => clientSite)
-const showArticleAds = computed(() => tenantGamEnabled(clientSite?.gamNetworkCode) && marketingGranted.value)
+const adsense = useRuntimeConfig().public
+const sidebarAdsenseSlot = String(adsense.adsenseArticleSidebarSlot || '')
+const adFor = (adsenseSlot: string) => adProviderFor(clientSite, { marketing: marketingGranted.value, adsenseSlot })
+const sidebarAd = computed(() => adFor(sidebarAdsenseSlot))
+const bodyAd = computed(() => adFor(String(adsense.adsenseArticleBodySlot || '')))
+const isDesktop = useMediaQuery('(min-width: 1024px)')
 const articleSidebarMapping: GamSizeMapping[] = [
   { viewport: [1024, 0], sizes: [[160, 600]] },
   { viewport: [0, 0], sizes: [] },

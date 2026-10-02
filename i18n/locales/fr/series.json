@@ -18,6 +18,11 @@
     "nextPart": "Partie suivante",
     "current": "Lecture en cours",
     "showList": "Afficher toute la série",
-    "hideList": "Masquer la liste des séries"
+    "hideList": "Masquer la liste des séries",
+    "parts": "aucune partie | {count} partie | {count} parties",
+    "readOf": "{read} sur {total} lus",
+    "finished": "Série terminée",
+    "continueWith": "Continuer : {title}",
+    "start": "Commencer par la partie 1"
   }
 }

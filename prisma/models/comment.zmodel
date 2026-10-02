@@ -29,7 +29,7 @@ model Comment with Base, Ownable {
     sentimentStatus SentimentStatus   @default(PENDING)
 
     @@allow('read', true)
-    @@allow('create', auth() != null)
+    @@allow('create', auth() != null && article.allowedComments && article.clientSite.commentsEnabled && (gifUrl == null || article.clientSite.commentGifsEnabled))
     @@allow('update,delete', auth().id == userId || (auth().role == 'admin' && article.clientSiteId == auth().clientSiteId) || auth().role == 'superadmin')
     @@index([sentimentStatus])
 }

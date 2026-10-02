@@ -128,7 +128,9 @@
       "latestStory": "Dernier article",
       "browseArticles": "Parcourir les articles",
       "exploreTopics": "Explorer les sujets",
-      "recommended": "À lire aussi"
+      "recommended": "À lire aussi",
+      "series": "Séries",
+      "discussions": "Discussions récentes"
     },
     "readingTime": "{0} min de lecture",
     "noResults": {

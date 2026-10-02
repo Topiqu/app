@@ -47,24 +47,30 @@ describe('Shopify publication processing', () => {
         shop: 'store.myshopify.com',
         status: 'CONNECTED',
         storefrontUrl: 'https://store.example',
-        clientSite: { plan: 'PRO', deletedAt: null },
+        clientSite: { plan: 'PRO', deletedAt: null, publishToShopify: true },
       },
     }
     vi.stubGlobal('prisma', {
       shopifyPublication: {
         findUnique: vi.fn(async () => structuredClone(row)),
         updateMany: vi.fn(async ({ where, data }) => {
+          if (where.clientSite?.publishToShopify && !row.connection.clientSite.publishToShopify) return { count: 0 }
           if ((where.status && where.status !== row.status) || (where.lease && where.lease !== row.lease))
             return { count: 0 }
           for (const [key, value] of Object.entries(data))
             row[key] =
               key === 'attempts' && typeof value === 'object'
-                ? row.attempts + (value as { increment: number }).increment
+                ? row.attempts +
+                  ((value as { increment?: number }).increment ?? 0) -
+                  ((value as { decrement?: number }).decrement ?? 0)
                 : value
           return { count: 1 }
         }),
       },
       shopifyConnection: { count: vi.fn(async () => 1), updateMany: vi.fn(async () => ({ count: 1 })) },
+      article: {
+        findUnique: vi.fn(async () => ({ slug: 'renamed', slugRedirects: [{ slug: 'original' }] })),
+      },
     })
     vi.mocked(shopifyAccessToken).mockResolvedValue('token')
   })
@@ -151,6 +157,42 @@ describe('Shopify publication processing', () => {
     expect(shopifyGraphql).not.toHaveBeenCalled()
   })
 
+  it('pauses a queued publication without failing it or consuming attempts, then resumes after enabling Shopify', async () => {
+    row.connection.clientSite.publishToShopify = false
+    await publishShopifyArticle('publication-1')
+    expect(row).toMatchObject({ status: 'QUEUED', attempts: 0, lease: null })
+    expect(shopifyAccessToken).not.toHaveBeenCalled()
+    expect(shopifyGraphql).not.toHaveBeenCalled()
+
+    row.connection.clientSite.publishToShopify = true
+    vi.mocked(shopifyGraphql)
+      .mockResolvedValueOnce({ articles: { nodes: [] } })
+      .mockResolvedValueOnce({ articleCreate: { article: remote(), userErrors: [] } })
+    await publishShopifyArticle('publication-1')
+    expect(row).toMatchObject({ status: 'SYNCED', attempts: 1 })
+  })
+
+  it('releases a claim back to the queue if Shopify is disabled immediately after claiming', async () => {
+    vi.mocked(prisma.shopifyPublication.findUnique).mockImplementationOnce(async () => {
+      row.connection.clientSite.publishToShopify = false
+      return structuredClone(row) as never
+    })
+    await publishShopifyArticle('publication-1')
+    expect(row).toMatchObject({ status: 'QUEUED', attempts: 0, lease: null })
+    expect(shopifyAccessToken).not.toHaveBeenCalled()
+    expect(shopifyGraphql).not.toHaveBeenCalled()
+  })
+
+  it('pauses without sending if Shopify is disabled during the remote lookup', async () => {
+    vi.mocked(shopifyGraphql).mockImplementationOnce(async () => {
+      row.connection.clientSite.publishToShopify = false
+      return { articles: { nodes: [] } }
+    })
+    await publishShopifyArticle('publication-1')
+    expect(row).toMatchObject({ status: 'QUEUED', attempts: 0, lease: null, createStartedAt: null })
+    expect(vi.mocked(shopifyGraphql).mock.calls.some((call) => call[4])).toBe(false)
+  })
+
   it('does not send after its lease was cancelled during the remote lookup', async () => {
     vi.mocked(shopifyGraphql).mockImplementationOnce(async () => {
       row.status = 'FAILED'
@@ -160,5 +202,23 @@ describe('Shopify publication processing', () => {
     await publishShopifyArticle('publication-1')
     expect(row.status).toBe('FAILED')
     expect(vi.mocked(shopifyGraphql).mock.calls.some((call) => call[4])).toBe(false)
+  })
+
+  it('updates an article published before the connection was replaced or the slug renamed', async () => {
+    const original = { ...remote(), handle: 'original-abc', blog: { id: 'gid://shopify/Blog/2', handle: 'stories' } }
+    vi.mocked(shopifyGraphql)
+      .mockResolvedValueOnce({ articles: { nodes: [original] } })
+      .mockResolvedValueOnce({ article: original })
+      .mockResolvedValueOnce({ articleUpdate: { article: original, userErrors: [] } })
+    await publishShopifyArticle('publication-1')
+    const query = String(vi.mocked(shopifyGraphql).mock.calls[0]![3].query)
+    expect(query).toContain('handle:article-unique OR handle:renamed-')
+    expect(query).toContain(' OR handle:original-')
+    expect(query).not.toContain('blog_id')
+    expect(vi.mocked(shopifyGraphql).mock.calls.at(-1)![3]).toMatchObject({
+      id: original.id,
+      article: { blogId: 'gid://shopify/Blog/2', handle: 'original-abc' },
+    })
+    expect(row).toMatchObject({ status: 'SYNCED', blogId: 'gid://shopify/Blog/2', handle: 'original-abc' })
   })
 })

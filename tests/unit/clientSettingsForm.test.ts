@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 
 import type { ClientSite } from '../../app/utils/buildClientSettingsForm'
 
-import { buildClientSettingsForm } from '../../app/utils/buildClientSettingsForm'
+import { buildClientSettingsForm, buildClientSettingsPatch } from '../../app/utils/buildClientSettingsForm'
 
 const baseClient = (overrides: Partial<ClientSite> = {}): ClientSite =>
   ({
@@ -33,6 +33,23 @@ const baseClient = (overrides: Partial<ClientSite> = {}): ClientSite =>
   }) as unknown as ClientSite
 
 describe('buildClientSettingsForm', () => {
+  it('preserves disabled community and publication settings through reload and reset', () => {
+    const disabled = {
+      commentsEnabled: false,
+      commentGifsEnabled: false,
+      publishToWeb: false,
+      publishToShopify: false,
+      publishToLinkedIn: false,
+    }
+    expect(buildClientSettingsForm(baseClient(disabled))).toMatchObject(disabled)
+    expect(buildClientSettingsForm(null)).toMatchObject({
+      commentsEnabled: true,
+      commentGifsEnabled: true,
+      publishToWeb: true,
+      publishToShopify: true,
+      publishToLinkedIn: true,
+    })
+  })
   it('returns the default shape for a null/undefined client', () => {
     const form = buildClientSettingsForm(null)
     expect(form.language).toBe('en')
@@ -102,5 +119,20 @@ describe('buildClientSettingsForm', () => {
   it('is deterministic — two calls with the same client are deep-equal (initial isDirty === false)', () => {
     const client = baseClient()
     expect(equal(buildClientSettingsForm(client), buildClientSettingsForm(client))).toBe(true)
+  })
+})
+
+describe('buildClientSettingsPatch', () => {
+  it('sends only community changes without unrelated integration fields', () => {
+    const pristine = buildClientSettingsForm(baseClient())
+    const form = { ...pristine, commentsEnabled: false, commentGifsEnabled: false }
+    expect(buildClientSettingsPatch(form, pristine)).toEqual({ commentsEnabled: false, commentGifsEnabled: false })
+  })
+
+  it('preserves false channel values and filters empty social URLs only when socials change', () => {
+    const pristine = buildClientSettingsForm(baseClient())
+    const form = { ...pristine, publishToWeb: false, socials: [{ platform: 'X' as const, url: ' ' }] }
+    expect(buildClientSettingsPatch(form, pristine)).toEqual({ publishToWeb: false, socials: [] })
+    expect(buildClientSettingsPatch(pristine, pristine)).toEqual({})
   })
 })

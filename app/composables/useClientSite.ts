@@ -32,6 +32,7 @@ export interface ClientSiteStatus {
   headingFontUrl: PublicClientSite['headingFontUrl']
   bodyFontUrl: PublicClientSite['bodyFontUrl']
   discloseAiContent: boolean
+  publishToWeb: boolean
   aiUser: { username: string; avatarUrl: string | null } | null
   hasActiveSubscription: boolean
   billingProvider: 'STRIPE' | 'SHOPIFY'

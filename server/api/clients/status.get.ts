@@ -27,6 +27,7 @@ export default defineEventHandler(async (event) => {
       headingFontUrl: true,
       bodyFontUrl: true,
       discloseAiContent: true,
+      publishToWeb: true,
       stripeSubscriptionId: true,
       billingProvider: true,
       users: {

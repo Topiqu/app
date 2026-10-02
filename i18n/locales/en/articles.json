@@ -128,7 +128,9 @@
       "latestStory": "Latest story",
       "browseArticles": "Browse articles",
       "exploreTopics": "Explore topics",
-      "recommended": "Recommended reading"
+      "recommended": "Recommended reading",
+      "series": "Series to follow",
+      "discussions": "Latest discussions"
     },
     "readingTime": "{0} min read",
     "noResults": {

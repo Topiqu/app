@@ -74,7 +74,7 @@ export default defineMonitoredTask({
               faq: true,
             },
           },
-          clientSite: { select: { translationMode: true } },
+          clientSite: { select: { translationMode: true, publishToWeb: true } },
         },
       })
 
@@ -99,7 +99,8 @@ export default defineMonitoredTask({
         })
 
         const slug = await dedupeTranslationSlug(prisma, baseSlug, row.clientSiteId, row.language, row.article.id)
-        const finalStatus = row.clientSite.translationMode === 'AUTO' ? 'PUBLISHED' : 'READY'
+        const finalStatus =
+          row.clientSite.translationMode === 'AUTO' && row.clientSite.publishToWeb ? 'PUBLISHED' : 'READY'
 
         const updatedTranslation = await prisma.articleTranslation.update({
           where: { id },

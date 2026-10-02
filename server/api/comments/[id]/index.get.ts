@@ -8,7 +8,10 @@ export default defineEventHandler(async (event) => {
   const user = (await getServerSession(event))?.user
   const db = await getEnhancedPrisma(user)
 
-  const article = await db.article.findUnique({ where: { id: articleId }, select: { clientSiteId: true } })
+  const article = await db.article.findUnique({
+    where: { id: articleId },
+    select: { clientSiteId: true, clientSite: { select: { commentGifsEnabled: true } } },
+  })
   if (!article) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
 
   const pagination = await getPagination(event)
@@ -111,7 +114,7 @@ export default defineEventHandler(async (event) => {
     return {
       id: comment.id,
       content: isDeleted ? '' : comment.content,
-      gifUrl: isDeleted ? null : comment.gifUrl,
+      gifUrl: isDeleted || article.clientSite.commentGifsEnabled === false ? null : comment.gifUrl,
       createdAt: comment.createdAt,
       userId: comment.userId,
       parentId: comment.parentId,

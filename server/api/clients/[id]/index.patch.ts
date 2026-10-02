@@ -5,6 +5,7 @@ import equal from 'fast-deep-equal'
 import { randomBytes } from 'crypto'
 import { DbNull } from '@zenstackhq/orm'
 import { models } from '~~/shared/databaseSchemas'
+import { PUBLICATION_CHANNELS } from '~~/shared/utils/publicationChannels'
 import { domainVerificationDefaults, isValidDomain, normalizeDomain } from '~~/shared/utils/domain'
 import { hasAdvancedBranding, normalizeAccentColor, parseBrandGradient } from '~~/shared/utils/publicationBranding'
 import {
@@ -26,7 +27,15 @@ export default defineEventHandler(async (event) => {
 
   const db = await getEnhancedPrisma(user)
   const body = await readBody(event)
-  const integrationFields = ['socials', 'linkedinMode', 'linkedinCompanyType', 'gtagId', 'allowGtag', 'gamNetworkCode']
+  const integrationFields = [
+    'socials',
+    'linkedinMode',
+    'linkedinCompanyType',
+    'gtagId',
+    'allowGtag',
+    'gamNetworkCode',
+    ...PUBLICATION_CHANNELS.map(({ field }) => field),
+  ]
   if (user.role !== 'superadmin' && integrationFields.some((field) => field in body))
     await requireTenantScope(event, 'INTEGRATION_CONTROL', id)
   if (body.domain !== undefined) {

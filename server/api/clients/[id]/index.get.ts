@@ -57,6 +57,11 @@ export default defineEventHandler(async (event) => {
         audience: clientSite.audience,
         theme: clientSite.theme,
         allowShapes: clientSite.allowShapes,
+        commentsEnabled: clientSite.commentsEnabled,
+        commentGifsEnabled: clientSite.commentGifsEnabled,
+        publishToWeb: clientSite.publishToWeb,
+        publishToShopify: clientSite.publishToShopify,
+        publishToLinkedIn: clientSite.publishToLinkedIn,
         humanHourlyRateUsd: clientSite.humanHourlyRateUsd,
         humanWordsPerHour: clientSite.humanWordsPerHour,
       }

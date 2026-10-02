@@ -11,8 +11,14 @@ export async function executePublish(draftId: string, fromStatuses: DraftStatus[
     throw new Error('Global emergency stop is active. Publishing disabled.')
   }
 
+  const pending = await prisma.draftPost.findUnique({ where: { id: draftId }, select: { status: true } })
+  if (!pending || !fromStatuses.includes(pending.status)) return { status: 'skipped' as const }
   const { count } = await prisma.draftPost.updateMany({
-    where: { id: draftId, status: { in: fromStatuses } },
+    where: {
+      id: draftId,
+      status: pending.status,
+      task: { company: { clientSite: { publishToLinkedIn: true } } },
+    },
     data: { status: 'PUBLISHING' },
   })
   if (count === 0) return { status: 'skipped' as const }
@@ -21,11 +27,25 @@ export async function executePublish(draftId: string, fromStatuses: DraftStatus[
     const draft = await prisma.draftPost.findUniqueOrThrow({
       where: { id: draftId },
       include: {
-        task: { include: { company: { omit: { accessToken: false, refreshToken: false } } } },
+        task: {
+          include: {
+            company: {
+              omit: { accessToken: false, refreshToken: false },
+              include: { clientSite: { select: { publishToLinkedIn: true } } },
+            },
+          },
+        },
       },
     })
 
     const { company } = draft.task
+    if (company.clientSite.publishToLinkedIn === false) {
+      await prisma.draftPost.updateMany({
+        where: { id: draftId, status: 'PUBLISHING' },
+        data: { status: pending.status },
+      })
+      return { status: 'skipped' as const }
+    }
     const accessToken = await getValidAccessToken(company)
 
     const urn = await createPost(accessToken, company.linkedinOrgId, draft.text)
@@ -50,11 +70,19 @@ export async function publishDecisionAndExecute(draftId: string) {
   const draft = await prisma.draftPost.findUnique({
     where: { id: draftId },
     include: {
-      task: { include: { company: { omit: { accessToken: false, refreshToken: false } } } },
+      task: {
+        include: {
+          company: {
+            omit: { accessToken: false, refreshToken: false },
+            include: { clientSite: { select: { publishToLinkedIn: true } } },
+          },
+        },
+      },
     },
   })
 
   if (!draft) throw new Error(`Draft ${draftId} not found`)
+  if (draft.task.company.clientSite.publishToLinkedIn === false) return { status: 'skipped' as const }
 
   if (draft.task.company.mode === 'FullAuto' && draft.score >= 70) {
     return executePublish(draftId, PUBLISHABLE_FROM)

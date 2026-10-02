@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const tasks = await prisma.contentTask.findMany({
-    where: { status: 'PENDING' },
+    where: { status: 'PENDING', company: { clientSite: { publishToLinkedIn: true } } },
     include: {
       company: {
         include: {

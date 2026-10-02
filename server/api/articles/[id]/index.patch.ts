@@ -20,7 +20,8 @@ export default defineEventHandler(async (event) => {
   if (body.clientSiteId && body.clientSiteId !== user?.clientSiteId)
     throw createError({ statusCode: 403, message: t('common.errors.articleEditForbidden')! })
 
-  const coverMedia = body.coverMediaId === undefined ? null : await assertTenantMedia(user.clientSiteId!, body.coverMediaId)
+  const coverMedia =
+    body.coverMediaId === undefined ? null : await assertTenantMedia(user.clientSiteId!, body.coverMediaId)
   if (!isCoverImageUrl(body.imageUrl, coverMedia))
     throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
@@ -42,6 +43,7 @@ export default defineEventHandler(async (event) => {
       coverMediaId: true,
       content: true,
       language: true,
+      clientSite: { select: { publishToWeb: true } },
     },
   })
 
@@ -58,6 +60,8 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 403, message: t('common.errors.articleEditForbidden')! })
   if ((body.status === ArticleStatus.published || body.releaseAt) && !hasTenantScope(membership, 'ARTICLE_PUBLISH'))
     throw createError({ statusCode: 403, message: 'Missing tenant scope: ARTICLE_PUBLISH' })
+  if ((body.status === ArticleStatus.published || body.releaseAt) && previousArticle.clientSite?.publishToWeb === false)
+    throw createError({ statusCode: 403, message: t('common.errors.publicationChannelDisabled')! })
 
   const requiresPublicationReview =
     body.status === ArticleStatus.published ||

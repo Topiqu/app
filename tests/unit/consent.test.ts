@@ -163,15 +163,17 @@ describe('consent integration contracts', () => {
     expect(banner).toContain('aria-labelledby="consent-title"')
   })
 
-  it('renders one responsive tenant GAM placement in the article sidebar', () => {
+  it('renders one consent-gated sidebar placement: tenant GAM or platform AdSense', () => {
     const article = source('app/pages/clanky/[slug].vue')
 
     expect(article.match(/<AdSlot/g)).toHaveLength(1)
+    expect(article.match(/<AdSenseSlot/g)).toHaveLength(1)
     expect(article).toContain('<template #sidebar>')
     expect(article).toContain('adUnitPath="/article/sidebar"')
     expect(article).toContain('{ viewport: [0, 0], sizes: [] }')
-    expect(article).toContain('tenantGamEnabled(clientSite?.gamNetworkCode)')
-    expect(article).toContain('marketingGranted.value')
+    expect(article).toContain('adProviderFor(clientSite, { marketing: marketingGranted.value')
+    // AdSense throws on the zero-width rail hidden below lg.
+    expect(article).toMatch(/<ClientOnly v-if="sidebarAd === 'adsense'">\s*<AdSenseSlot\s+v-if="isDesktop"/)
     expect(source('app/components/AdSlot.vue')).toContain('if (!defined)')
   })
 })

@@ -9,7 +9,7 @@ export default defineMonitoredTask({
     const result = await prisma.$transaction(async (ctx) => {
       // console.log('now', now.toISOString())
       const articles = await ctx.article.findMany({
-        where: { status: 'draft', releaseAt: { not: null, lte: now } },
+        where: { status: 'draft', releaseAt: { not: null, lte: now }, clientSite: { publishToWeb: true } },
         select: {
           id: true,
           title: true,

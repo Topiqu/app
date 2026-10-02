@@ -38,6 +38,7 @@ const ADMIN_FIELDS = { prompt: true, savedAmount: true, savedTimeMinutes: true }
 /** `reactions` is scoped to the caller: unfiltered it shipped every liker's id to answer one bool. */
 const articleSelect = (isAdmin: boolean, viewer: { userId?: string; sessionId?: string | null }) => ({
   ...PUBLIC_FIELDS,
+  clientSite: { select: { commentsEnabled: true, commentGifsEnabled: true } },
   ...(isAdmin ? ADMIN_FIELDS : {}),
   user: {
     select: {
@@ -217,17 +218,19 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  const { reactions, _count, ...rest } = article
+  const { reactions, _count, clientSite, ...rest } = article
 
   return {
     ...rest,
+    commentingEnabled: article.allowedComments && clientSite.commentsEnabled,
+    commentGifsEnabled: clientSite.commentGifsEnabled,
     sourceSlug: baseSlug,
     language,
     primaryLanguage,
     translationStatus,
     alternates,
     // Only place that sees the resolved translation, so the split belongs here.
-    ...articleBlocks(article.content),
+    ...articleBlocks(article.content, { adBreak: true }),
     commentCount: _count.comments,
     likes: _count.reactions,
     likedByUser: reactions.length > 0,

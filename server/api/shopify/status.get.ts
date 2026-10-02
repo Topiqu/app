@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
   const canPublish = hasTenantScope(membership, 'ARTICLE_PUBLISH') && hasTenantScope(membership, 'ARTICLE_WRITE')
   const site = await db.clientSite.findUnique({
     where: { id: user.clientSiteId! },
-    select: { name: true, plan: true, billingProvider: true, stripeSubscriptionId: true },
+    select: { name: true, plan: true, billingProvider: true, stripeSubscriptionId: true, publishToShopify: true },
   })
   const connection = await db.shopifyConnection.findUnique({
     where: { clientSiteId: user.clientSiteId! },
@@ -27,7 +27,7 @@ export default defineEventHandler(async (event) => {
     configured: shopifyConfigured(),
     eligible: Boolean(site && shopifyEligible(site.plan)),
     canManage,
-    canPublish,
+    canPublish: canPublish && site?.publishToShopify !== false,
     connection,
     billingProvider: site?.billingProvider ?? 'STRIPE',
     pricingUrl: shopifyBilled && connection ? shopifyPricingUrl(connection.shop) : null,

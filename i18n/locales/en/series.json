@@ -18,6 +18,11 @@
     "nextPart": "Next part",
     "current": "Currently reading",
     "showList": "Show full series",
-    "hideList": "Hide series list"
+    "hideList": "Hide series list",
+    "parts": "no parts | {count} part | {count} parts",
+    "readOf": "Read {read} of {total}",
+    "finished": "You've read it all",
+    "continueWith": "Continue: {title}",
+    "start": "Start with part 1"
   }
 }

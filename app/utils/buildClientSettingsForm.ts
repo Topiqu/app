@@ -1,7 +1,9 @@
 import type { ThemeSchema, LanguageSchema } from '~~/shared/siteSchemas'
 import type { SocialPlatform, ClientSite as _ClientSite } from '~~/generated/zenstack/models'
 
+import equal from 'fast-deep-equal'
 import { parseBrandGradient, type BrandGradient } from '~~/shared/utils/publicationBranding'
+import { publicationChannelSettings, type PublicationChannelSettings } from '~~/shared/utils/publicationChannels'
 
 export interface ClientSite extends Omit<_ClientSite, 'billingPlan' | 'nextBillingAt' | 'lastGeneratedAt'> {
   billingPlan: 'MONTHLY' | 'ANNUAL' | 'PERMANENT' | null
@@ -19,11 +21,12 @@ export interface ClientSite extends Omit<_ClientSite, 'billingPlan' | 'nextBilli
   aiUser: { username: string; bio: string; avatarUrl: string } | null
   aiToneOfVoice: string | null
   aiControversyLevel: string | null
+  linkedinCompanies?: { linkedinOrgId: string }[]
   articlesRemaining?: number
   articleWallet?: { balance: number; reserved: number; available: number } | null
 }
 
-export interface ClientSettingsForm {
+export interface ClientSettingsForm extends PublicationChannelSettings {
   focus: string
   audience: string
   language: (typeof LanguageSchema.options)[number]
@@ -47,6 +50,8 @@ export interface ClientSettingsForm {
   gamNetworkCode: string
   apiKey: string
   autoRelease: boolean
+  commentsEnabled: boolean
+  commentGifsEnabled: boolean
   aiSeriesEnabled: boolean
   generationFrequency: 'DAILY' | 'WEEKLY' | 'NONE'
   translationMode: 'OFF' | 'MANUAL' | 'AUTO' | 'HYBRID'
@@ -81,6 +86,9 @@ const emptyForm = (): ClientSettingsForm => ({
   gamNetworkCode: '',
   apiKey: '',
   autoRelease: false,
+  commentsEnabled: true,
+  commentGifsEnabled: true,
+  ...publicationChannelSettings(),
   aiSeriesEnabled: false,
   generationFrequency: 'NONE',
   translationMode: 'OFF',
@@ -134,6 +142,9 @@ export function buildClientSettingsForm(client?: ClientSite | null): ClientSetti
     gtagId: client.gtagId ?? '',
     gamNetworkCode: client.gamNetworkCode ?? '',
     autoRelease: client.autoRelease ?? false,
+    commentsEnabled: client.commentsEnabled ?? true,
+    commentGifsEnabled: client.commentGifsEnabled ?? true,
+    ...publicationChannelSettings(client),
     aiSeriesEnabled: client.aiSeriesEnabled ?? false,
     generationFrequency: client.generationFrequency ?? 'NONE',
     translationMode: client.translationMode ?? 'OFF',
@@ -143,4 +154,13 @@ export function buildClientSettingsForm(client?: ClientSite | null): ClientSetti
     linkedinMode: li?.mode ?? 'HitL',
     linkedinCompanyType: li?.type ?? 'pages',
   }
+}
+
+// Send only changes so unrelated settings do not trigger integration permission checks.
+export function buildClientSettingsPatch(form: ClientSettingsForm, pristine: ClientSettingsForm) {
+  const patch = Object.fromEntries(
+    Object.entries(form).filter(([key, value]) => !equal(value, pristine[key as keyof ClientSettingsForm])),
+  ) as Partial<ClientSettingsForm>
+  if (patch.socials) patch.socials = patch.socials.filter((social) => social.url.trim())
+  return patch
 }

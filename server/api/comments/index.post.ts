@@ -3,7 +3,9 @@ import { CommentCreateSchema } from '~~/shared/databaseSchemas'
 
 const emailExcerpt = (content: string) => {
   const graphemes = new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(content)
-  return `${Array.from(graphemes, ({ segment }) => segment).slice(0, 50).join('')}...`
+  return `${Array.from(graphemes, ({ segment }) => segment)
+    .slice(0, 50)
+    .join('')}...`
 }
 
 export default defineEventHandler(async (event) => {
@@ -27,11 +29,14 @@ export default defineEventHandler(async (event) => {
       slug: true,
       language: true,
       title: true,
-      clientSite: { select: { domain: true, language: true } },
+      clientSite: { select: { domain: true, language: true, commentsEnabled: true, commentGifsEnabled: true } },
     },
   })
   if (!article) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
-  if (!article.allowedComments) throw createError({ statusCode: 403, message: t('common.errors.commentsDisabled')! })
+  if (!article.allowedComments || article.clientSite.commentsEnabled === false)
+    throw createError({ statusCode: 403, message: t('common.errors.commentsDisabled')! })
+  if (body.gifUrl && article.clientSite.commentGifsEnabled === false)
+    throw createError({ statusCode: 403, message: t('common.errors.commentGifsDisabled')! })
 
   const activeBan = await prisma.userBan.findFirst({
     where: {

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const prismaMock = {
   draftPost: {
+    findUnique: vi.fn(),
     updateMany: vi.fn(),
     findUniqueOrThrow: vi.fn(),
     update: vi.fn(async () => ({})),
@@ -27,6 +28,7 @@ const draftWithToken = {
       accessToken: 'tok',
       linkedinOrgId: 'urn:li:org:1',
       tokenExpiresAt: new Date(Date.now() + 60 * 60 * 1000),
+      clientSite: { publishToLinkedIn: true },
     },
   },
 }
@@ -35,16 +37,39 @@ beforeEach(() => {
   vi.clearAllMocks()
   vi.unstubAllEnvs()
   prismaMock.draftPost.findUniqueOrThrow.mockResolvedValue(draftWithToken)
+  prismaMock.draftPost.findUnique.mockResolvedValue({ status: 'APPROVED' })
 })
 
 describe('executePublish — atomic claim', () => {
+  it('pauses an approved post after the tenant disables LinkedIn and resumes after enabling it', async () => {
+    prismaMock.draftPost.updateMany.mockResolvedValue({ count: 1 })
+    prismaMock.draftPost.findUniqueOrThrow.mockResolvedValueOnce({
+      ...draftWithToken,
+      task: { company: { ...draftWithToken.task.company, clientSite: { publishToLinkedIn: false } } },
+    })
+    await expect(publishApprovedDraft('draft-1')).resolves.toEqual({ status: 'skipped' })
+    expect(prismaMock.draftPost.updateMany).toHaveBeenLastCalledWith({
+      where: { id: 'draft-1', status: 'PUBLISHING' },
+      data: { status: 'APPROVED' },
+    })
+    expect(prismaMock.draftPost.update).not.toHaveBeenCalled()
+    expect(createPost).not.toHaveBeenCalled()
+    expect(prismaMock.publishedPost.create).not.toHaveBeenCalled()
+
+    await expect(publishApprovedDraft('draft-1')).resolves.toEqual({ status: 'published', urn: 'urn:li:share:123' })
+    expect(createPost).toHaveBeenCalledOnce()
+  })
   it('publishes exactly once when the claim is won', async () => {
     prismaMock.draftPost.updateMany.mockResolvedValue({ count: 1 })
 
     const result = await publishApprovedDraft('draft-1')
 
     expect(prismaMock.draftPost.updateMany).toHaveBeenCalledWith({
-      where: { id: 'draft-1', status: { in: ['APPROVED'] } },
+      where: {
+        id: 'draft-1',
+        status: 'APPROVED',
+        task: { company: { clientSite: { publishToLinkedIn: true } } },
+      },
       data: { status: 'PUBLISHING' },
     })
     expect(createPost).toHaveBeenCalledTimes(1)

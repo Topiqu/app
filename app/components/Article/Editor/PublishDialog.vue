@@ -1,67 +1,13 @@
-<script setup lang="ts">
-import type { PublishChoice, ShopifyPublication, ShopifyPublishMode } from '~~/shared/types/shopify'
-
-const open = defineModel<boolean>('open', { default: false })
-const props = defineProps<{
-  topiquPublished: boolean
-  scheduled: boolean
-  blog?: string | null
-  publication?: ShopifyPublication | null
-  label: string
-  loading?: boolean
-}>()
-const emit = defineEmits<{ confirm: [choice: PublishChoice] }>()
-const { t } = useI18n()
-
-// An article already in Shopify keeps its own state; the remembered choice seeds new ones.
-const remembered = useLocalStorage<{ shopify: boolean; mode: ShopifyPublishMode }>('topiqu-publish-channels', {
-  shopify: true,
-  mode: 'published',
-})
-const topiqu = shallowRef(true)
-const shopify = shallowRef(true)
-const mode = shallowRef<ShopifyPublishMode>('published')
-const inShopify = computed(() => Boolean(props.publication?.shopifyArticleId))
-
-watch(
-  open,
-  (value) => {
-    if (!value) return
-    topiqu.value = true
-    shopify.value = inShopify.value || remembered.value.shopify
-    if (props.scheduled) mode.value = 'draft'
-    else mode.value = inShopify.value ? (props.publication?.isPublished ? 'published' : 'draft') : remembered.value.mode
-  },
-  { immediate: true },
-)
-
-const shopifyMode = computed<ShopifyPublishMode>(() => (props.scheduled ? 'draft' : mode.value))
-const modes = computed(() => [
-  { label: t('articles.editor.publishDialog.draft'), value: 'draft' },
-  { label: t('articles.editor.publishDialog.published'), value: 'published', disabled: props.scheduled },
-])
-const warning = computed(() => {
-  if (!shopify.value || !inShopify.value) return null
-  return shopifyMode.value === 'draft' && props.publication?.isPublished
-    ? t('common.shopify.unpublishDescription')
-    : t('common.shopify.replaceDescription')
-})
-const topiquIncluded = computed(() => props.topiquPublished || topiqu.value)
-const confirmLabel = computed(() => (topiquIncluded.value ? props.label : t('articles.editor.publishDialog.sendOnly')))
-
-const submit = () => {
-  if (!topiquIncluded.value && !shopify.value) return
-  if (!inShopify.value && !props.scheduled) remembered.value = { shopify: shopify.value, mode: mode.value }
-  emit('confirm', { topiqu: topiquIncluded.value, shopify: shopify.value ? shopifyMode.value : null })
-}
-</script>
-
 <template>
   <UModal
     v-model:open="open"
     :title="$t(topiquPublished ? 'articles.editor.publishDialog.titleUpdate' : 'articles.editor.publishDialog.title')"
     :description="
-      $t(topiquPublished ? 'articles.editor.publishDialog.descriptionUpdate' : 'articles.editor.publishDialog.description')
+      $t(
+        topiquPublished
+          ? 'articles.editor.publishDialog.descriptionUpdate'
+          : 'articles.editor.publishDialog.description',
+      )
     "
   >
     <template #body>
@@ -69,8 +15,13 @@ const submit = () => {
         <UCheckbox
           v-if="!topiquPublished"
           v-model="topiqu"
+          :disabled="topiquEnabled === false"
           :label="$t('articles.editor.publishDialog.topiqu')"
-          :description="$t('articles.editor.publishDialog.topiquHelp')"
+          :description="
+            topiquEnabled === false
+              ? $t('common.errors.publicationChannelDisabled')
+              : $t('articles.editor.publishDialog.topiquHelp')
+          "
         />
         <div class="space-y-3">
           <UCheckbox
@@ -101,3 +52,65 @@ const submit = () => {
     </template>
   </UModal>
 </template>
+
+<script setup lang="ts">
+import type { PublishChoice, ShopifyPublication, ShopifyPublishMode } from '~~/shared/types/shopify'
+
+const open = defineModel<boolean>('open', { default: false })
+const props = withDefaults(
+  defineProps<{
+    topiquPublished: boolean
+    topiquEnabled?: boolean
+    scheduled: boolean
+    blog?: string | null
+    publication?: ShopifyPublication | null
+    label: string
+    loading?: boolean
+  }>(),
+  { topiquEnabled: true },
+)
+const emit = defineEmits<{ confirm: [choice: PublishChoice] }>()
+const { t } = useI18n()
+
+// An article already in Shopify keeps its own state; the remembered choice seeds new ones.
+const remembered = useLocalStorage<{ shopify: boolean; mode: ShopifyPublishMode }>('topiqu-publish-channels', {
+  shopify: true,
+  mode: 'published',
+})
+const topiqu = shallowRef(true)
+const shopify = shallowRef(true)
+const mode = shallowRef<ShopifyPublishMode>('published')
+const inShopify = computed(() => Boolean(props.publication?.shopifyArticleId))
+
+watch(
+  open,
+  (value) => {
+    if (!value) return
+    topiqu.value = props.topiquEnabled !== false
+    shopify.value = inShopify.value || remembered.value.shopify
+    if (props.scheduled) mode.value = 'draft'
+    else mode.value = inShopify.value ? (props.publication?.isPublished ? 'published' : 'draft') : remembered.value.mode
+  },
+  { immediate: true },
+)
+
+const shopifyMode = computed<ShopifyPublishMode>(() => (props.scheduled ? 'draft' : mode.value))
+const modes = computed(() => [
+  { label: t('articles.editor.publishDialog.draft'), value: 'draft' },
+  { label: t('articles.editor.publishDialog.published'), value: 'published', disabled: props.scheduled },
+])
+const warning = computed(() => {
+  if (!shopify.value || !inShopify.value) return null
+  return shopifyMode.value === 'draft' && props.publication?.isPublished
+    ? t('common.shopify.unpublishDescription')
+    : t('common.shopify.replaceDescription')
+})
+const topiquIncluded = computed(() => props.topiquEnabled !== false && (props.topiquPublished || topiqu.value))
+const confirmLabel = computed(() => (topiquIncluded.value ? props.label : t('articles.editor.publishDialog.sendOnly')))
+
+const submit = () => {
+  if (!topiquIncluded.value && !shopify.value) return
+  if (!inShopify.value && !props.scheduled) remembered.value = { shopify: shopify.value, mode: mode.value }
+  emit('confirm', { topiqu: topiquIncluded.value, shopify: shopify.value ? shopifyMode.value : null })
+}
+</script>

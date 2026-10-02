@@ -28,6 +28,11 @@ export const TENANT_EDITABLE_CLIENT_SITE_FIELDS = [
   'translationMode',
   'translationLanguages',
   'discloseAiContent',
+  'commentsEnabled',
+  'commentGifsEnabled',
+  'publishToWeb',
+  'publishToShopify',
+  'publishToLinkedIn',
 ] as const
 
 export const PUBLIC_CLIENT_SITE_FIELDS = [
@@ -55,6 +60,8 @@ export const PUBLIC_CLIENT_SITE_FIELDS = [
   'gtagId',
   'allowGtag',
   'allowShapes',
+  'commentsEnabled',
+  'commentGifsEnabled',
   'discloseAiContent',
   'gamNetworkCode',
 ] as const

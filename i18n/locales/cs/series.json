@@ -18,6 +18,11 @@
     "nextPart": "Následující část",
     "current": "Právě čtete",
     "showList": "Zobrazit celou sérii",
-    "hideList": "Skrýt seznam dílů"
+    "hideList": "Skrýt seznam dílů",
+    "parts": "0 dílů | {count} díl | {count} díly | {count} dílů",
+    "readOf": "Přečteno {read} z {total}",
+    "finished": "Máte dočteno",
+    "continueWith": "Pokračovat: {title}",
+    "start": "Začít 1. dílem"
   }
 }

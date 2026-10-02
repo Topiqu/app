@@ -19,7 +19,16 @@ export default defineEventHandler(async (event) => {
 
   const translation = await db.articleTranslation.findFirst({
     where: { id, clientSiteId: user.clientSiteId! },
-    select: { id: true, articleId: true, language: true, slug: true, title: true, content: true, status: true },
+    select: {
+      id: true,
+      articleId: true,
+      language: true,
+      slug: true,
+      title: true,
+      content: true,
+      status: true,
+      clientSite: { select: { publishToWeb: true } },
+    },
   })
   if (translation) await requireArticleAccess(event, translation.articleId)
   if (!translation)
@@ -28,6 +37,8 @@ export default defineEventHandler(async (event) => {
   const nextTitle = body.title ?? translation.title
   const nextContent = body.content ?? translation.content
   const nextStatus = body.status ?? translation.status
+  if (body.status === 'PUBLISHED' && translation.clientSite.publishToWeb === false)
+    throw createError({ statusCode: 403, message: t('common.errors.publicationChannelDisabled')! })
 
   if (nextStatus === 'PUBLISHED' && (!nextTitle || !nextContent))
     throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })

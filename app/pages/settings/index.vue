@@ -74,14 +74,16 @@
             </template>
           </UAlert>
           <LazyFormClientContent
-            :focus="form.focus"
-            :audience="form.audience"
-            :language="form.language"
-            :keywords="form.keywords"
-            @update:focus="form.focus = $event"
-            @update:audience="form.audience = $event"
-            @update:language="form.language = $event as typeof form.language"
-            @update:keywords="form.keywords = $event"
+            v-model:focus="form.focus"
+            v-model:audience="form.audience"
+            v-model:language="form.language"
+            v-model:keywords="form.keywords"
+          />
+          <FormClientCommunity
+            v-if="can('TENANT_SETTINGS')"
+            v-model:commentsEnabled="form.commentsEnabled"
+            v-model:commentGifsEnabled="form.commentGifsEnabled"
+            class="mt-10"
           />
         </section>
 
@@ -168,6 +170,12 @@
             @update:translationLanguages="form.translationLanguages = $event"
             @update:discloseAiContent="form.discloseAiContent = $event"
           />
+          <FormClientPublicationChannels
+            v-if="can('TENANT_SETTINGS') && can('INTEGRATION_CONTROL')"
+            v-model="publicationChannelsModel"
+            :linkedinConnected="Boolean(client?.linkedinCompanies?.length)"
+            class="mt-10"
+          />
         </section>
 
         <section v-if="showBilling" v-show="activeTab === 'billing'">
@@ -183,10 +191,11 @@
 
 <script setup lang="ts">
 import equal from 'fast-deep-equal'
+import { publicationChannelSettings, type PublicationChannelSettings } from '~~/shared/utils/publicationChannels'
 
 import type { TabItem } from '~/components/TabNav.vue'
 
-import { buildClientSettingsForm, type ClientSite } from '~/utils/buildClientSettingsForm'
+import { buildClientSettingsForm, buildClientSettingsPatch, type ClientSite } from '~/utils/buildClientSettingsForm'
 
 definePageMeta({ middleware: 'admin', shell: 'dashboard' })
 
@@ -211,6 +220,10 @@ const { data: tenantAccess } = await useFetch<{ role: 'OWNER' | 'MEMBER'; scopes
 const rate = useCurrencyRate(() => client.value?.currency ?? 'EUR')
 
 const form = ref(buildClientSettingsForm(client.value))
+const publicationChannelsModel = computed({
+  get: () => publicationChannelSettings(form.value),
+  set: (settings: PublicationChannelSettings) => Object.assign(form.value, settings),
+})
 const pristine = ref(buildClientSettingsForm(client.value))
 const isDirty = computed(() => !equal(form.value, pristine.value))
 
@@ -288,16 +301,16 @@ const savePreferences = async () => {
   try {
     await $fetch(`/api/clients/${clientId.value}` as `/api/clients/:id`, {
       method: 'PATCH',
-      body: {
-        ...form.value,
-        logoUrl: form.value.logoUrl,
-        socials: form.value.socials.filter((s) => s.url.trim()),
-        aiUser: form.value.aiUser,
-      },
+      body: buildClientSettingsPatch(form.value, pristine.value),
     })
     toast.add({ color: 'success', title: $t('common.messages.successGeneralTitle') })
     // The publication surface reads the tenant from its own cached entry, which this PATCH just made stale.
-    await Promise.all([refresh(), refreshClientSite()])
+    await Promise.all([
+      refresh(),
+      refreshClientSite(),
+      refreshClientSiteStatus(),
+      refreshNuxtData(`shopify-status-${clientId.value}`),
+    ])
     form.value = buildClientSettingsForm(client.value)
     pristine.value = buildClientSettingsForm(client.value)
   } catch (e: any) {

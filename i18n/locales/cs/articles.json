@@ -129,7 +129,9 @@
       "latestStory": "Nejnovější článek",
       "browseArticles": "Procházet články",
       "exploreTopics": "Prozkoumat témata",
-      "recommended": "Doporučené čtení"
+      "recommended": "Doporučené čtení",
+      "series": "Seriály",
+      "discussions": "Poslední diskuze"
     },
     "noResults": {
       "imageAlt": "Smutný Topík",

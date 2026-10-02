@@ -18,6 +18,11 @@
     "nextPart": "Nächster Teil",
     "current": "Wird gerade gelesen",
     "showList": "Gesamte Serie anzeigen",
-    "hideList": "Serienliste ausblenden"
+    "hideList": "Serienliste ausblenden",
+    "parts": "keine Teile | {count} Teil | {count} Teile",
+    "readOf": "{read} von {total} gelesen",
+    "finished": "Komplett gelesen",
+    "continueWith": "Weiter: {title}",
+    "start": "Mit Teil 1 beginnen"
   }
 }

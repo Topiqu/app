@@ -1,5 +1,5 @@
 <template>
-  <section class="mx-auto mt-14 w-full" :aria-label="$t('articles.comments.title')">
+  <section id="comments" class="mx-auto mt-14 w-full scroll-mt-24" :aria-label="$t('articles.comments.title')">
     <div class="mb-10 flex flex-col gap-3 sm:flex-row sm:items-center">
       <UIcon size="32" name="mdi:comment-multiple-outline" />
       <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight">
@@ -29,7 +29,7 @@
                 :disabled="isSubmitting"
               >
                 <template #leading><UIcon name="mdi:comment-outline" size="20" class="text-muted" /></template>
-                <template #trailing><GifSelector @select="handleGifSelect" /></template>
+                <template v-if="allowGifs" #trailing><GifSelector @select="handleGifSelect" /></template>
               </UTextarea>
               <div class="mt-1 flex justify-between text-xs text-muted">
                 <span>{{ characterCount }} / {{ maxLength }}</span>
@@ -37,7 +37,7 @@
                   {{ $t('articles.comments.characterLimitReached') }}
                 </UBadge>
               </div>
-              <Gif v-model:content="selectedGifUrl" cancellable />
+              <Gif v-if="allowGifs" v-model:content="selectedGifUrl" cancellable />
             </div>
           </UFormField>
           <div v-if="replyingTo" class="flex items-start gap-3 rounded-[var(--topiqu-surface-radius)] bg-elevated p-4">
@@ -69,7 +69,7 @@
       </UForm>
     </div>
     <UAlert
-      v-else-if="session?.user && !props.allowComments"
+      v-else-if="!props.allowComments"
       color="neutral"
       variant="soft"
       :title="$t('articles.comments.commentsDisabled')"
@@ -99,6 +99,8 @@
         :depth="1"
         :isReplying="!!replyingTo"
         :publication
+        :allowReplies="allowComments"
+        :allowGifs
         :class="optimisticCommentIds.has(comment.id) ? 'opacity-60' : ''"
         :aria-busy="optimisticCommentIds.has(comment.id) || deletingCommentIds.has(comment.id)"
         @reply="handleReply"
@@ -132,6 +134,7 @@ const props = defineProps<{
   articleId: string
   commCount: number
   allowComments: boolean
+  allowGifs: boolean
 }>()
 
 const newComment = shallowRef(''),
@@ -246,10 +249,16 @@ const replaceComment = (list: CommentWithReplies[], id: string, patch: Partial<C
 }
 
 const submitComment = async () => {
-  if (!newComment.value.trim() || isSubmitting.value || (replyingTo.value && replyingTo.value.deletedAt)) return
+  if (
+    !props.allowComments ||
+    !newComment.value.trim() ||
+    isSubmitting.value ||
+    (replyingTo.value && replyingTo.value.deletedAt)
+  )
+    return
   const draft = {
     content: newComment.value,
-    gifUrl: selectedGifUrl.value,
+    gifUrl: props.allowGifs ? selectedGifUrl.value : null,
     parent: replyingTo.value,
   }
   const currentUser = session.value?.user as any
@@ -341,6 +350,7 @@ const submitComment = async () => {
 }
 
 const handleReply = (c: CommentWithReplies) =>
+  !props.allowComments ||
   c.deletedAt ||
   ((replyingTo.value = c), nextTick(() => commentForm.value?.scrollIntoView({ behavior: 'smooth', block: 'center' })))
 

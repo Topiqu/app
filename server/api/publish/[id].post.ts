@@ -11,7 +11,11 @@ export default defineEventHandler(async (event) => {
   const db = await getEnhancedPrisma(user)
   const draft = await db.draftPost.findUnique({
     where: { id },
-    select: { task: { select: { company: { select: { clientSiteId: true } } } } },
+    select: {
+      task: {
+        select: { company: { select: { clientSiteId: true, clientSite: { select: { publishToLinkedIn: true } } } } },
+      },
+    },
   })
   if (!draft) throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
 
@@ -19,6 +23,8 @@ export default defineEventHandler(async (event) => {
   const allowed = user.role === 'superadmin' || (user.role === 'admin' && user.clientSiteId === siteId)
   if (!allowed) throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
   if (user.role !== 'superadmin') await requireTenantScope(event, 'INTEGRATION_CONTROL', siteId)
+  if (draft.task.company.clientSite.publishToLinkedIn === false)
+    throw createError({ statusCode: 403, message: t('common.errors.publicationChannelDisabled')! })
 
   try {
     const result = await publishDecisionAndExecute(id)

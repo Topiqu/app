@@ -26,6 +26,12 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
   const requiresPublicationReview = body.status === 'published' || Boolean(body.releaseAt)
+  const site = await prisma.clientSite.findUnique({
+    where: { id: user.clientSiteId! },
+    select: { language: true, publishToWeb: true },
+  })
+  if (requiresPublicationReview && site?.publishToWeb === false)
+    throw createError({ statusCode: 403, message: t('common.errors.publicationChannelDisabled')! })
   const mediaReport = requiresPublicationReview
     ? await requireMediaRightsReview(
         prisma,
@@ -78,7 +84,6 @@ export default defineEventHandler(async (event) => {
     ? { create: validTags.map(({ id }) => ({ tag: { connect: { id } } })) }
     : undefined
 
-  const site = await prisma.clientSite.findUnique({ where: { id: user.clientSiteId! }, select: { language: true } })
   const parsedLanguage = LanguageSchema.safeParse(body.language ?? site?.language ?? 'en')
   if (!parsedLanguage.success) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
   const language = parsedLanguage.data

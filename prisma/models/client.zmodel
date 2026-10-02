@@ -107,6 +107,11 @@ model ClientSite with Base {
     generationFrequency  GenerationFrequency @default(NONE)
     articleCreditWallet  ArticleCreditWallet?
     autoRelease          Boolean             @default(false)
+    commentsEnabled      Boolean             @default(true)
+    commentGifsEnabled   Boolean             @default(true)
+    publishToWeb         Boolean             @default(true)
+    publishToShopify     Boolean             @default(true)
+    publishToLinkedIn    Boolean             @default(true)
     mediaAssets          MediaAsset[]
     articleMediaUsages   ArticleMediaUsage[]
     mediaRightsSnapshots MediaRightsPublicationSnapshot[]

@@ -93,6 +93,9 @@ export default defineNuxtConfig({
       baseDomain: process.env.BASE_DOMAIN || 'topiqu.com',
       baseUrl: SITE_URL,
       adsensePublisherId: process.env.NUXT_PUBLIC_ADSENSE_PUBLISHER_ID || 'ca-pub-9731440718321055',
+      adsenseFeedSlot: process.env.NUXT_PUBLIC_ADSENSE_FEED_SLOT || '4164857668',
+      adsenseArticleSidebarSlot: process.env.NUXT_PUBLIC_ADSENSE_ARTICLE_SIDEBAR_SLOT || '7198304409',
+      adsenseArticleBodySlot: process.env.NUXT_PUBLIC_ADSENSE_ARTICLE_BODY_SLOT || '7146244220',
       turnstileSiteKey: process.env.TURNSTILE_SITE_KEY || '',
       sentry: {
         dsn: process.env.NUXT_PUBLIC_SENTRY_DSN || '',

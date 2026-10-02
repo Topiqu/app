@@ -2,7 +2,9 @@ import { ARTICLE_TABLE_CLASS } from './articleProse'
 import { normalizePollOptions, type PollOptionData } from './polls'
 
 export type ArticleBlock =
-  { type: 'html'; html: string } | { type: 'poll'; pollId: string; question: string; options: PollOptionData[] }
+  | { type: 'html'; html: string }
+  | { type: 'poll'; pollId: string; question: string; options: PollOptionData[] }
+  | { type: 'ad' }
 
 export type ArticleHeading = { id: string; text: string; level: number }
 
@@ -62,12 +64,31 @@ const readPoll = (node: ArticleNode): ArticleBlock | null => {
   return { type: 'poll', pollId, question: node.attr('data-question') || '', options }
 }
 
+/** Shorter bodies get no in-body ad: one there reads as an interruption, not a pause. */
+export const AD_MIN_PARAGRAPHS = 6
+
+/**
+ * Index of the top-level node the in-body ad goes before, or -1. Prefers the second `<h2>` (a
+ * chapter break) when enough text sits on both sides; otherwise follows ~40 % of the paragraphs.
+ */
+export const adBreakIndex = (nodes: ArticleNode[]) => {
+  const paragraphs = nodes.flatMap((node, index) => (node.tag === 'P' ? [index] : []))
+  if (paragraphs.length < AD_MIN_PARAGRAPHS) return -1
+
+  const before = (index: number) => paragraphs.filter((p) => p < index).length
+  const chapter = nodes.flatMap((node, index) => (node.tag === 'H2' ? [index] : []))[1]
+  if (chapter !== undefined && before(chapter) >= 3 && paragraphs.length - before(chapter) >= 2) return chapter
+
+  return paragraphs[Math.max(3, Math.round(paragraphs.length * 0.4)) - 1]! + 1
+}
+
 /**
  * Body into `v-html` runs plus poll blocks, with anchor ids stamped on headings. Adjacent HTML
  * nodes merge into one run — a wrapper per node breaks the adjacent-sibling rules `prose` uses.
  */
-export const buildArticleBlocks = (nodes: ArticleNode[]) => {
+export const buildArticleBlocks = (nodes: ArticleNode[], { adBreak = false } = {}) => {
   const blocks: ArticleBlock[] = []
+  const adAt = adBreak ? adBreakIndex(nodes) : -1
   const headings: ArticleHeading[] = []
   const seenIds = new Set<string>()
   let run = ''
@@ -77,7 +98,12 @@ export const buildArticleBlocks = (nodes: ArticleNode[]) => {
     run = ''
   }
 
-  for (const node of nodes) {
+  for (const [index, node] of nodes.entries()) {
+    if (index === adAt) {
+      flush()
+      blocks.push({ type: 'ad' })
+    }
+
     if (!node.tag) {
       const text = node.text.trim()
       if (text) run += escapeText(text)

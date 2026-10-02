@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { headingSlug } from '../../shared/utils/articleBlocks'
+import { AD_MIN_PARAGRAPHS, headingSlug } from '../../shared/utils/articleBlocks'
 import { articleBlocks, stampHeadingIds } from '../../server/utils/articleBlocks'
 
 describe('headingSlug', () => {
@@ -89,5 +89,39 @@ describe('stampHeadingIds', () => {
     expect(stamped).toContain('<h2 id="prehled-trhu">')
     expect(stamped).toContain('<h3 id="prehled-trhu-2">')
     expect(articleBlocks(stamped).headings.map((h) => h.id)).toEqual(['prehled-trhu', 'prehled-trhu-2'])
+  })
+})
+
+describe('in-body ad break', () => {
+  const p = (n: number, from = 1) => Array.from({ length: n }, (_, i) => `<p>p${from + i}</p>`).join('')
+  const types = (content: string) => articleBlocks(content, { adBreak: true }).blocks.map((block) => block.type)
+  const htmlAround = (content: string) => {
+    const { blocks } = articleBlocks(content, { adBreak: true })
+    const at = blocks.findIndex((block) => block.type === 'ad')
+    return [blocks[at - 1], blocks[at + 1]].map((block) => (block as { html: string }).html)
+  }
+
+  it('is opt-in, so the editor preview and the poll lookup never see it', () => {
+    expect(articleBlocks(p(10)).blocks.map((block) => block.type)).toEqual(['html'])
+  })
+
+  it('skips short articles', () => {
+    expect(types(p(AD_MIN_PARAGRAPHS - 1))).toEqual(['html'])
+  })
+
+  it('goes before the second chapter heading when both sides carry text', () => {
+    const [before, after] = htmlAround(`<h2>A</h2>${p(3)}<h2>B</h2>${p(3, 4)}`)
+    expect(before).toMatch(/<p>p3<\/p>$/)
+    expect(after).toMatch(/^<h2[^>]*>B<\/h2>/)
+  })
+
+  it('falls back to ~40 % of the paragraphs, never right after a heading', () => {
+    const [before, after] = htmlAround(`<h2>A</h2>${p(1)}<h2>B</h2>${p(9, 2)}`)
+    expect(before).toMatch(/<p>p4<\/p>$/)
+    expect(after).toMatch(/^<p>p5<\/p>/)
+  })
+
+  it('places exactly one ad', () => {
+    expect(types(p(30)).filter((type) => type === 'ad')).toHaveLength(1)
   })
 })

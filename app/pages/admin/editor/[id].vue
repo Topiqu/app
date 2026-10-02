@@ -138,7 +138,6 @@
       :title="successMessage"
     />
 
-
     <UProgress v-if="!isNew && tr.status === 'pending'" class="mb-6" :aria-label="$t('common.loading')" />
 
     <UAlert
@@ -519,6 +518,7 @@
     <ArticleEditorPublishDialog
       v-model:open="publishDialogOpen"
       :topiquPublished="editedArticle.status === 'published'"
+      :topiquEnabled="clientStatus?.publishToWeb !== false"
       :scheduled="publishScheduled"
       :blog="shopifyPanel?.blog"
       :publication="shopifyPanel?.publication"
@@ -1111,8 +1111,11 @@ const shopifyHandoff = (mode: ShopifyPublishMode | null, review?: MediaRightsRev
 // Opens the channel choice only where Shopify is set up and publishing would change something there.
 const requestPublish = () => {
   const offersShopify =
-    shopifyPanel.value?.ready && (editedArticle.value.status !== 'published' || shopifyPanel.value.publication?.shopifyArticleId)
+    shopifyPanel.value?.ready &&
+    (editedArticle.value.status !== 'published' || shopifyPanel.value.publication?.shopifyArticleId)
   if (offersShopify) publishDialogOpen.value = true
+  else if (clientStatus.value?.publishToWeb === false)
+    toast.add({ color: 'error', title: t('common.errors.publicationChannelDisabled') })
   else void submit('published')
 }
 const confirmPublish = (choice: PublishChoice) => {

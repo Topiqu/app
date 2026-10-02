@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const drafts = await prisma.draftPost.findMany({
-    where: { status: 'APPROVED' },
+    where: { status: 'APPROVED', task: { company: { clientSite: { publishToLinkedIn: true } } } },
     select: { id: true },
   })
 
