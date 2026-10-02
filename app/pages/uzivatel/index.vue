@@ -246,7 +246,6 @@
     <UnsavedBar :dirty="isDirty" :loading="isLoading" @reset="revertChanges" @save="updateProfile" />
 
     <LazyUserFollowDialog v-model="showDialog" :type="dialogType" />
-    <AppConfirmDialog ref="deactivateDialog" />
   </main>
 </template>
 
@@ -283,9 +282,7 @@ const toast = useToast()
 const route = useRoute()
 const router = useRouter()
 const reducedMotion = usePreferredReducedMotion()
-const deactivateDialog = useTemplateRef<{ ask: (options?: Record<string, unknown>) => Promise<'ok' | 'no'> }>(
-  'deactivateDialog',
-)
+const confirm = useConfirm()
 const oldPasswordId = useId()
 
 function setTab(tab: string) {
@@ -449,7 +446,7 @@ async function handleChangePassword() {
 }
 
 async function confirmDeactivate() {
-  const answer = await deactivateDialog.value?.ask({
+  const answer = await confirm({
     title: $t('profile.deactivateAccountConfirmTitle'),
     message: $t('profile.deactivateAccountConfirmText'),
     icon: 'mdi:alert-outline',
@@ -457,7 +454,7 @@ async function confirmDeactivate() {
     cancelText: $t('common.actions.cancel'),
     variant: 'danger',
   })
-  if (answer === 'ok') await deactivateAccount()
+  if (answer) await deactivateAccount()
 }
 
 async function exportToPDF() {

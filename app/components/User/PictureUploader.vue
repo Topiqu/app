@@ -123,7 +123,6 @@
       </div>
     </template>
   </UModal>
-  <AppConfirmDialog ref="removeDialog" />
 </template>
 
 <script lang="ts" setup>
@@ -139,9 +138,7 @@ const { api, name } = defineProps<{ api?: string; name?: string }>()
 const endpoint = computed(() => api ?? '/api/users/avatar')
 const isOwnAvatar = computed(() => !api)
 
-const removeDialog = useTemplateRef<{ ask: (options?: Record<string, unknown>) => Promise<'ok' | 'no'> }>(
-  'removeDialog',
-)
+const confirm = useConfirm()
 const savedAvatar = shallowRef<string | null>(null)
 const busy = shallowRef(false)
 const isLoading = computed(() => busy.value)
@@ -224,7 +221,7 @@ async function saveAvatar() {
 }
 
 async function confirmRemove() {
-  const answer = await removeDialog.value?.ask({
+  const answer = await confirm({
     title: $t('common.avatar.removeTitle'),
     message: $t('common.avatar.removeConfirm'),
     confirmText: $t('common.actions.confirm'),
@@ -232,7 +229,7 @@ async function confirmRemove() {
     icon: 'mdi:account-remove-outline',
     variant: 'danger',
   })
-  if (answer !== 'ok') return
+  if (!answer) return
 
   busy.value = true
   errorMessage.value = ''

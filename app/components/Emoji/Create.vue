@@ -262,7 +262,6 @@
       </div>
     </template>
   </UModal>
-  <AppConfirmDialog ref="dialog" />
 </template>
 
 <script setup lang="ts">
@@ -290,9 +289,7 @@ const ACCEPTED_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/
 
 const toast = useToast()
 const open = defineModel<boolean>()
-const dialog = useTemplateRef<{
-  ask: (options?: Record<string, unknown>) => Promise<'ok' | 'no'>
-}>('dialog')
+const confirm = useConfirm()
 const queue = ref<QueuedEmoji[]>([])
 const selectedPreviewId = shallowRef('')
 const search = shallowRef('')
@@ -469,7 +466,7 @@ const submitQueue = async () => {
 }
 
 const confirmDelete = async (emoji: EmojiRecord) => {
-  const result = await dialog.value?.ask({
+  const result = await confirm({
     title: $t('emoji.deleteTitle', { shortcode: emoji.shortcode }),
     message: $t('emoji.deleteConfirm', { count: emoji._count.emojiReactions }),
     icon: 'mdi:alert-outline',
@@ -477,7 +474,7 @@ const confirmDelete = async (emoji: EmojiRecord) => {
     cancelText: $t('common.messages.deleteCancel'),
     variant: 'danger',
   })
-  if (result !== 'ok') return
+  if (!result) return
 
   deletingIds.add(emoji.id)
   const previousIndex = (emojis.value || []).findIndex((candidate) => candidate.id === emoji.id)
@@ -542,7 +539,7 @@ const discardQueue = () => {
 
 const confirmClose = async () => {
   if (!queue.value.length) return (open.value = false)
-  const result = await dialog.value?.ask({
+  const result = await confirm({
     title: $t('common.messages.closeConfirmTitle'),
     message: $t('emoji.closeConfirm', { count: queue.value.length }),
     icon: 'mdi:alert-outline',
@@ -550,7 +547,7 @@ const confirmClose = async () => {
     cancelText: $t('common.messages.deleteCancel'),
     variant: 'danger',
   })
-  if (result === 'ok') {
+  if (result) {
     discardQueue()
     open.value = false
   }

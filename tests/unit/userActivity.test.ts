@@ -19,6 +19,7 @@ mockNuxtImport('useFetch', () => () => ({
 mockNuxtImport('useArticleShare', () => () => vi.fn())
 mockNuxtImport('useLocalePath', () => () => () => '/')
 mockNuxtImport('useToast', () => () => ({ add: vi.fn() }))
+mockNuxtImport('useConfirm', () => () => vi.fn())
 
 enableAutoUnmount(afterEach)
 
@@ -27,7 +28,7 @@ const mount = (activeTab: 'likedArticles' | 'comments' = 'likedArticles') =>
     props: { activeTab },
     global: {
       plugins: [createI18n({ legacy: false, locale: 'cs', messages: { cs: { ...articles, ...common } } })],
-      stubs: { NuxtImg: true, AppConfirmDialog: true },
+      stubs: { NuxtImg: true },
     },
   })
 

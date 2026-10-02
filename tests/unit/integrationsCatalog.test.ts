@@ -123,7 +123,7 @@ describe('settings integrations catalog', () => {
     const settings = source('app/pages/settings/index.vue')
     const profile = source('app/pages/uzivatel/index.vue')
     const bar = source('app/components/UnsavedBar.vue')
-    const confirmDialog = source('app/components/ConfirmDialog.vue')
+    const confirmDialog = source('app/components/AppConfirmDialog.vue')
     const styles = source('app/assets/styles/main.css')
 
     expect(settings).toContain('<UnsavedBar :dirty="isDirty" :loading="isSaving"')
@@ -134,7 +134,7 @@ describe('settings integrations catalog', () => {
     expect(bar).toContain('fixed inset-x-0 bottom-4 z-header')
     expect(bar).toContain("$t('common.preferences.unsavedDescription')")
     expect(bar).toContain('motion-reduce:hidden')
-    expect(confirmDialog).toMatch(/<UModal\s+portal\s+scrollable/)
+    expect(confirmDialog).toMatch(/<UModal\s+:open(?:="open")?\s+portal\s+scrollable/)
     expect(styles).not.toMatch(/\.confirm-dialog-content\s*{[^}]*\b(?:top|left|transform):/s)
   })
 })

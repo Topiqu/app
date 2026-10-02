@@ -144,8 +144,6 @@
         </UButton>
       </div>
     </template>
-
-    <AppConfirmDialog ref="deleteDialog" />
   </div>
 </template>
 
@@ -165,9 +163,7 @@ const localePath = useLocalePath()
 const toast = useToast()
 const { copy } = useClipboard({ legacy: true })
 const trackShare = useArticleShare()
-const deleteDialog = useTemplateRef<{
-  ask: (options?: Record<string, unknown>) => Promise<'ok' | 'no'>
-}>('deleteDialog')
+const confirm = useConfirm()
 
 const tabs = [
   {
@@ -310,7 +306,7 @@ async function shareArticle(article: ActivityArticle) {
 }
 
 async function confirmDelete(commentId: string) {
-  const answer = await deleteDialog.value?.ask({
+  const answer = await confirm({
     title: $t('common.messages.deleteConfirmTitle'),
     message: $t('common.messages.deleteConfirmText'),
     icon: 'mdi:delete-outline',
@@ -318,7 +314,7 @@ async function confirmDelete(commentId: string) {
     cancelText: $t('common.actions.cancel'),
     variant: 'danger',
   })
-  if (answer !== 'ok') return
+  if (!answer) return
 
   try {
     await $fetch(`/api/comments/${commentId}`, {

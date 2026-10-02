@@ -5,9 +5,9 @@ import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import UserAccount from '../../app/components/User/Account.vue'
-import ConfirmDialog from '../../app/components/ConfirmDialog.vue'
 import TiptapToolbar from '../../app/components/Tiptap/Toolbar.vue'
 import NotificationBar from '../../app/components/Notification/Bar.vue'
+import AppConfirmDialog from '../../app/components/AppConfirmDialog.vue'
 import ArticleCollection from '../../app/components/Article/Collection.vue'
 import ArticleActionsBar from '../../app/components/Article/ActionsBar.vue'
 
@@ -54,7 +54,12 @@ const buttonStub = {
 const global = {
   mocks: { $t: (key: string) => key },
   stubs: {
-    UModal: { template: '<div><slot /><slot name="body" /><slot name="footer" :close="() => {}" /></div>' },
+    UModal: {
+      name: 'UModal',
+      props: ['open'],
+      emits: ['update:open'],
+      template: '<div><slot /><slot name="body" /><slot name="footer" :close="() => {}" /></div>',
+    },
     UPopover: { template: '<div><slot /><slot name="content" /></div>' },
     UButton: buttonStub,
     UFieldGroup: { template: '<div><slot /></div>' },
@@ -103,7 +108,7 @@ describe('Nuxt UI component behavior', () => {
   })
 
   it('returns explicit confirm and cancel results from the modal', async () => {
-    const wrapper = mount(ConfirmDialog, {
+    const wrapper = mount(AppConfirmDialog, {
       props: {
         title: 'Confirm',
         message: 'This cannot be undone.',
@@ -119,10 +124,23 @@ describe('Nuxt UI component behavior', () => {
     await buttons.find((button) => button.props('label') === 'Yes')!.trigger('click')
 
     expect(wrapper.emitted('close')).toEqual([[false], [true]])
+    expect(wrapper.emitted('cancel')).toEqual([[]])
+    expect(wrapper.emitted('confirm')).toEqual([[]])
     expect(buttons.find((button) => button.props('label') === 'Yes')!.props('color')).toBe('error')
     expect(buttons.find((button) => button.props('label') === 'No')!.props('variant')).toBe('outline')
     expect(wrapper.get('[data-confirm-dialog]').attributes('description')).toBeUndefined()
     expect(wrapper.get('p').text()).toBe('This cannot be undone.')
+  })
+
+  it('treats modal dismissal as cancellation and closes the declarative model', async () => {
+    const wrapper = mount(AppConfirmDialog, { props: { open: true }, global })
+    wrapper.findComponent({ name: 'UModal' }).vm.$emit('update:open', false)
+    await flushPromises()
+
+    expect(wrapper.emitted('close')).toEqual([[false]])
+    expect(wrapper.emitted('cancel')).toEqual([[]])
+    expect(wrapper.emitted('update:open')).toEqual([[false]])
+    expect(wrapper.emitted('confirm')).toBeUndefined()
   })
 
   it('renders notification and user-menu authentication branches', async () => {
