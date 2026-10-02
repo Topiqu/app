@@ -2,7 +2,7 @@ import type { Language } from '~~/generated/zenstack/models'
 
 import { z } from 'zod'
 import * as cheerio from 'cheerio'
-import { generateObject } from 'ai'
+import { generateText, Output } from 'ai'
 import { readFaq } from '~~/shared/utils/articleFaq'
 import { articleSlug } from '~~/shared/utils/articleSlug'
 import { LANGUAGE_NAMES } from '~~/shared/utils/language'
@@ -226,7 +226,7 @@ export const generateTranslation = async (article: TranslatableArticle, targetLa
   const sourceFaq = readFaq(article.faq)
   const sourceTakeaways = article.keyTakeaways ?? []
 
-  const { object, usage } = await generateObject({
+  const { output: object, usage } = await generateText({
     model: aiModel('translation'),
     maxOutputTokens: Math.min(20000, Math.ceil(masked.length / 3) + 1000),
     instructions,
@@ -241,7 +241,7 @@ export const generateTranslation = async (article: TranslatableArticle, targetLa
       keyTakeaways: sourceTakeaways,
       faq: sourceFaq,
     }),
-    schema: translationSchema,
+    output: Output.object({ schema: translationSchema }),
   })
 
   const rebuiltPolls: ExtractedPoll[] = polls.map((poll, i) => {

@@ -1,7 +1,7 @@
 import type { ClientPlan } from '~~/generated/zenstack/models'
 
 import { z } from 'zod'
-import { generateObject } from 'ai'
+import { generateText, Output } from 'ai'
 
 const basicSchema = z.object({
   label: z.enum(['negative', 'neutral', 'positive']),
@@ -28,14 +28,14 @@ const premiumSchema = z.object({
 export const detectSentiment = async (text: string, plan: ClientPlan) => {
   const schema = plan === 'PREMIUM' ? premiumSchema : basicSchema
 
-  const { object, usage } = await generateObject({
+  const { output: object, usage } = await generateText({
     model: aiModel('sentiment'),
     instructions:
       plan === 'PREMIUM'
         ? `Analyze sentiment with 5-tier label, emotion breakdown, toxicity, helpfulness, sarcasm. Extract main point in ≤75 chars. Score -1 to 1. Return ONLY valid JSON.`
         : `Analyze sentiment with 3-tier label. Score -1 to 1. Return ONLY valid JSON.`,
     prompt: text.slice(0, 1000),
-    schema,
+    output: Output.object({ schema }),
     temperature: 0,
   })
 

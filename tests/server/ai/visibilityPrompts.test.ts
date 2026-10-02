@@ -1,9 +1,12 @@
-import { generateObject } from 'ai'
+import { generateText } from 'ai'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { AUTO_PROMPT_LIMIT, seedVisibilityPrompts } from '../../../server/utils/ai/visibilityPrompts'
 
-vi.mock('ai', () => ({ generateObject: vi.fn() }))
+vi.mock('ai', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('ai')>()),
+  generateText: vi.fn(),
+}))
 
 const site = { name: 'Blog', domain: 'blog.cz', focus: 'kávovary', audience: 'baristé', language: 'cs' }
 let db: ReturnType<typeof database>
@@ -22,7 +25,7 @@ const database = (active = 0) => ({
 })
 
 beforeEach(() => {
-  vi.mocked(generateObject).mockReset()
+  vi.mocked(generateText).mockReset()
   db = database()
   vi.stubGlobal('prisma', db)
   vi.stubGlobal('aiModel', () => 'test-model')
@@ -32,8 +35,8 @@ afterEach(() => vi.unstubAllGlobals())
 
 describe('visibility prompt seeding', () => {
   it('links article prompts, drops already tracked questions and logs usage', async () => {
-    vi.mocked(generateObject).mockResolvedValue({
-      object: {
+    vi.mocked(generateText).mockResolvedValue({
+      output: {
         prompts: [
           { text: 'Jaký pákový kávovar koupit domů?', ref: 'Q1' },
           { text: 'Jak vybrat kávovar?', ref: 'SITE' },
@@ -58,15 +61,15 @@ describe('visibility prompt seeding', () => {
     db = database(AUTO_PROMPT_LIMIT)
     vi.stubGlobal('prisma', db)
     expect(await seedVisibilityPrompts('site')).toEqual({ created: 0 })
-    expect(generateObject).not.toHaveBeenCalled()
+    expect(generateText).not.toHaveBeenCalled()
     expect(db.clientSite.update).toHaveBeenCalled()
   })
 
   it('asks only for the free slots', async () => {
     db = database(AUTO_PROMPT_LIMIT - 2)
     vi.stubGlobal('prisma', db)
-    vi.mocked(generateObject).mockResolvedValue({
-      object: {
+    vi.mocked(generateText).mockResolvedValue({
+      output: {
         prompts: [
           { text: 'První otázka o kávovarech?', ref: 'SITE' },
           { text: 'Druhá otázka o kávovarech?', ref: 'SITE' },
@@ -76,6 +79,6 @@ describe('visibility prompt seeding', () => {
       usage: { totalTokens: 1 },
     } as never)
     expect(await seedVisibilityPrompts('site')).toEqual({ created: 2 })
-    expect(vi.mocked(generateObject).mock.calls[0]![0].prompt).toContain('Write up to 2 distinct questions')
+    expect(vi.mocked(generateText).mock.calls[0]![0].prompt).toContain('Write up to 2 distinct questions')
   })
 })

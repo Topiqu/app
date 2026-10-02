@@ -1,9 +1,22 @@
-import { generateObject, generateText, streamObject } from 'ai'
+import { streamText } from 'ai'
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest'
 
 import { streamArticle } from '../../../server/utils/ai/article'
 
-vi.mock('ai', () => ({ generateObject: vi.fn(), generateText: vi.fn(), streamObject: vi.fn(() => ({})) }))
+const { generateStructuredText, generatePlainText } = vi.hoisted(() => ({
+  generateStructuredText: vi.fn<(typeof import('ai'))['generateText']>(),
+  generatePlainText: vi.fn<(typeof import('ai'))['generateText']>(),
+}))
+
+vi.mock('ai', async (importOriginal) => {
+  const sdk = await importOriginal<typeof import('ai')>()
+  return {
+    ...sdk,
+    generateText: (options: Parameters<typeof sdk.generateText>[0]) =>
+      options.output ? generateStructuredText(options) : generatePlainText(options),
+    streamText: vi.fn(() => ({})),
+  }
+})
 
 const draft = {
   title: 'The Witcher 4: Ciri',
@@ -24,12 +37,12 @@ const rejected = {
   issues: [{ code: 'unsupported_claim', note: 'Remove the unsupported claim about returning characters.' }],
 }
 const approved = { approved: true, issues: [] }
-const response = (object: unknown, totalTokens: number) => ({ object, usage: { totalTokens } })
+const response = (object: unknown, totalTokens: number) => ({ output: object, usage: { totalTokens } })
 
 beforeEach(() => {
   vi.clearAllMocks()
-  vi.mocked(generateObject).mockReset()
-  vi.mocked(generateText).mockReset()
+  vi.mocked(generateStructuredText).mockReset()
+  vi.mocked(generatePlainText).mockReset()
   vi.stubGlobal('prisma', {
     clientSite: { findFirstOrThrow: vi.fn().mockResolvedValue({ language: 'en' }) },
     knowledgeSource: { findFirst: vi.fn().mockResolvedValue(null) },
@@ -42,7 +55,7 @@ afterEach(() => vi.unstubAllGlobals())
 describe('manual editorial review', () => {
   it('checks the revision before approving it and accounts for every call', async () => {
     const revision = { ...draft, title: 'Ciri leads The Witcher 4' }
-    vi.mocked(generateObject)
+    vi.mocked(generateStructuredText)
       .mockResolvedValueOnce(response(rejected, 10) as never)
       .mockResolvedValueOnce(response(revision, 20) as never)
       .mockResolvedValueOnce(response(approved, 5) as never)
@@ -54,10 +67,10 @@ describe('manual editorial review', () => {
       checkedAfterRevision: true,
       resolvedIssues: rejected.issues,
     })
-    expect(generateObject).toHaveBeenCalledTimes(3)
+    expect(generateStructuredText).toHaveBeenCalledTimes(3)
     expect(generation.editorialTokens).toBe(35)
-    expect(vi.mocked(generateObject).mock.calls[0]![0].prompt).toContain('"polls":[]')
-    expect(vi.mocked(generateObject).mock.calls[2]![0].prompt).toContain(revision.title)
+    expect(vi.mocked(generateStructuredText).mock.calls[0]![0].prompt).toContain('"polls":[]')
+    expect(vi.mocked(generateStructuredText).mock.calls[2]![0].prompt).toContain(revision.title)
   })
 
   it('does not approve a rewrite that still repeats the absence of confirmation', async () => {
@@ -71,7 +84,7 @@ describe('manual editorial review', () => {
       ],
     }
     const revision = { ...draft, content: '<h2>No announcement</h2><p>No connection is confirmed.</p>' }
-    vi.mocked(generateObject)
+    vi.mocked(generateStructuredText)
       .mockResolvedValueOnce(response(emptyAngle, 10) as never)
       .mockResolvedValueOnce(response(revision, 20) as never)
       .mockResolvedValueOnce(response(emptyAngle, 5) as never)
@@ -89,13 +102,15 @@ describe('manual editorial review', () => {
       issues: emptyAngle.issues,
       resolvedIssues: [],
     })
-    expect(generateObject).toHaveBeenCalledTimes(3)
-    expect(vi.mocked(generateObject).mock.calls[1]![0].prompt).toContain('rebuild the thesis and section progression')
+    expect(generateStructuredText).toHaveBeenCalledTimes(3)
+    expect(vi.mocked(generateStructuredText).mock.calls[1]![0].prompt).toContain(
+      'rebuild the thesis and section progression',
+    )
   })
 
   it('keeps a rewritten draft available without falsely approving it when rechecking fails', async () => {
     const revision = { ...draft, title: 'A concrete comparison' }
-    vi.mocked(generateObject)
+    vi.mocked(generateStructuredText)
       .mockResolvedValueOnce(response(rejected, 10) as never)
       .mockResolvedValueOnce(response(revision, 20) as never)
       .mockRejectedValueOnce(new Error('review unavailable'))
@@ -112,7 +127,7 @@ describe('manual editorial review', () => {
     const source = 'https://example.test/positions'
     const correction = 'https://example.test/decision'
     vi.stubGlobal('aiWebSearchTool', () => ({}))
-    vi.mocked(generateText)
+    vi.mocked(generatePlainText)
       .mockResolvedValueOnce({
         text: `The organizations describe different decision-making policies. ${source}`,
         sources: [{ sourceType: 'url', url: source }],
@@ -124,7 +139,7 @@ describe('manual editorial review', () => {
         usage: { totalTokens: 7 },
       } as never)
     const revision = { ...draft, title: 'Two conflicting ways to decide', sources: [correction] }
-    vi.mocked(generateObject)
+    vi.mocked(generateStructuredText)
       .mockResolvedValueOnce(
         response(
           {
@@ -141,8 +156,8 @@ describe('manual editorial review', () => {
     const generation = await streamArticle('site', 'Compare decision-making', { format: 'comparison', modules: [] })
 
     expect(await generation.review({ ...draft, sources: [source] })).toEqual(revision)
-    expect(generateText).toHaveBeenCalledTimes(2)
-    expect(vi.mocked(generateObject).mock.calls[2]![0].prompt).toContain(correction)
+    expect(generatePlainText).toHaveBeenCalledTimes(2)
+    expect(vi.mocked(generateStructuredText).mock.calls[2]![0].prompt).toContain(correction)
     expect(generation.editorialTokens).toBe(42)
     expect(generation.editorialReview).toMatchObject({ approved: true, revised: true, checkedAfterRevision: true })
   })
@@ -152,11 +167,11 @@ describe('manual editorial review', () => {
       language: 'en',
       aiControversyLevel: 'HIGH',
     } as never)
-    vi.mocked(generateObject).mockResolvedValueOnce(response(approved, 10) as never)
+    vi.mocked(generateStructuredText).mockResolvedValueOnce(response(approved, 10) as never)
     const generation = await streamArticle('site', 'Explain the contrast', { research: false, format, modules: [] })
     await generation.review(draft)
-    const writer = vi.mocked(streamObject).mock.calls.at(-1)![0].instructions as string
-    const reviewer = vi.mocked(generateObject).mock.calls[0]![0].instructions as string
+    const writer = vi.mocked(streamText).mock.calls.at(-1)![0].instructions as string
+    const reviewer = vi.mocked(generateStructuredText).mock.calls[0]![0].instructions as string
     for (const instructions of [writer, reviewer]) {
       expect(instructions).toContain('Use a bold, opinionated voice')
       expect(instructions).toContain('Sources establish the factual premises')
@@ -168,7 +183,7 @@ describe('manual editorial review', () => {
   })
 
   it('returns the reviewed original with a warning when the revision call fails', async () => {
-    vi.mocked(generateObject)
+    vi.mocked(generateStructuredText)
       .mockResolvedValueOnce(response(rejected, 10) as never)
       .mockRejectedValueOnce(new Error('revision unavailable'))
     vi.stubGlobal('reportCaughtError', vi.fn())
@@ -179,10 +194,10 @@ describe('manual editorial review', () => {
   })
 
   it('does not rewrite an approved draft', async () => {
-    vi.mocked(generateObject).mockResolvedValueOnce(response(approved, 10) as never)
+    vi.mocked(generateStructuredText).mockResolvedValueOnce(response(approved, 10) as never)
     const generation = await streamArticle('site', 'Write a report', { research: false })
     expect(await generation.review(draft)).toBe(draft)
-    expect(generateObject).toHaveBeenCalledTimes(1)
+    expect(generateStructuredText).toHaveBeenCalledTimes(1)
     expect(generation.editorialTokens).toBe(10)
   })
 })

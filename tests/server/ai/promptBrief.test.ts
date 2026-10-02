@@ -3,7 +3,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { enhancePrompt, plainTextBrief } from '../../../server/utils/ai/enhance'
 
-vi.mock('ai', () => ({ generateObject: vi.fn(), generateText: vi.fn() }))
+vi.mock('ai', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('ai')>()),
+  generateText: vi.fn(),
+}))
 
 beforeEach(() => vi.stubGlobal('aiModel', (task: string) => task))
 afterEach(() => {

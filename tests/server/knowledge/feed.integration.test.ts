@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { randomUUID } from 'node:crypto'
-import { embed, embedMany, generateObject } from 'ai'
+import { embed, embedMany, generateText } from 'ai'
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createDatabaseClient } from '../../../server/utils/database'
@@ -8,7 +8,12 @@ import { fetchPublicUrl } from '../../../server/utils/images/publicFetch'
 import { retrieveKnowledge } from '../../../server/utils/knowledge/retrieve'
 import { indexKnowledgeSource } from '../../../server/utils/knowledge/indexing'
 
-vi.mock('ai', () => ({ embed: vi.fn(), embedMany: vi.fn(), generateObject: vi.fn() }))
+vi.mock('ai', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('ai')>()),
+  embed: vi.fn(),
+  embedMany: vi.fn(),
+  generateText: vi.fn(),
+}))
 vi.mock('../../../server/utils/images/publicFetch', async (original) => ({
   ...(await original<typeof import('../../../server/utils/images/publicFetch')>()),
   fetchPublicUrl: vi.fn(),
@@ -80,8 +85,8 @@ describe.skipIf(!enabled)('knowledge product feeds on PostgreSQL', () => {
       usage: { tokens: values.length },
     })) as never)
     vi.mocked(embed).mockResolvedValue({ embedding: axis(0), usage: { tokens: 3 } } as never)
-    vi.mocked(generateObject).mockImplementation((async ({ prompt }: { prompt: string }) => ({
-      object: { relevant: JSON.parse(prompt).excerpts.map((excerpt: { id: string }) => excerpt.id) },
+    vi.mocked(generateText).mockImplementation((async ({ prompt }: { prompt: string }) => ({
+      output: { relevant: JSON.parse(prompt).excerpts.map((excerpt: { id: string }) => excerpt.id) },
       usage: { totalTokens: 7 },
     })) as never)
   })

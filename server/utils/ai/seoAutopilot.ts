@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { generateObject } from 'ai'
+import { generateText, Output } from 'ai'
 
 const ctrSchema = z.object({
   title: z.string().min(5).max(255),
@@ -24,10 +24,10 @@ Average position: ${signal.position.toFixed(1)}
 `.trim()
 
 export const generateCtrOptimization = async (article: SeoArticle, signal: SeoSignal) => {
-  const { object, usage } = await generateObject({
+  const { output: object, usage } = await generateText({
     model: aiModel('articleWriter'),
     maxOutputTokens: 500,
-    schema: ctrSchema,
+    output: Output.object({ schema: ctrSchema }),
     instructions:
       'You improve search snippets without clickbait. Preserve the article meaning and language. Never promise information the article does not contain. Return only the schema.',
     prompt: `${signalBlock(signal)}
@@ -43,10 +43,10 @@ Rewrite only the title and excerpt so they accurately answer the observed search
 }
 
 export const generateContentRefresh = async (article: SeoArticle, signal: SeoSignal) => {
-  const { object, usage } = await generateObject({
+  const { output: object, usage } = await generateText({
     model: aiModel('articleWriter'),
     maxOutputTokens: 1400,
-    schema: refreshSchema,
+    output: Output.object({ schema: refreshSchema }),
     instructions:
       'You extend an existing article with one useful, self-contained section. Write in the article language. Do not invent statistics, studies, quotes, product capabilities or time-sensitive facts. Return only the schema.',
     prompt: `${signalBlock(signal)}

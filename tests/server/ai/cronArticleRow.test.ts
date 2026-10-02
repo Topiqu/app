@@ -67,7 +67,7 @@ describe('generate-article cron row', () => {
     expect(task).toContain("generated.research?.status === 'completed'")
     expect(task).toContain('generated.research?.sourceCount > 0')
     expect(task).toMatch(
-      /client\.autoRelease && qualityApproved && mediaApproved && coverApproved \? 'published' : 'draft'/,
+      /client\.autoRelease &&\s+client\.publishToWeb &&\s+qualityApproved &&\s+mediaApproved &&\s+coverApproved\s+\? 'published'\s+: 'draft'/,
     )
     expect(task).toContain('const coverApproved = Boolean(generated.articleImageUrl)')
     expect(task).toContain('mediaReport.counts.needsAttention === 0')

@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { generateObject } from 'ai'
+import { generateText, Output } from 'ai'
 
 import {
   allowedModulesFor,
@@ -130,7 +130,7 @@ export const researchRequest = (topic: Pick<ArticleTopic, 'needsResearch' | 'sea
 }
 
 export const pickArticleTopic = async (input: TopicInput) => {
-  const { object, usage } = await generateObject({
+  const { output: object, usage } = await generateText({
     model: aiModel('topicSelection'),
     maxOutputTokens: 800,
     instructions: `
@@ -139,7 +139,7 @@ export const pickArticleTopic = async (input: TopicInput) => {
       Do not write the article. Return ONLY valid JSON.
     `.trim(),
     prompt: buildTopicPrompt(input),
-    schema: topicSchema,
+    output: Output.object({ schema: topicSchema }),
   })
 
   // A story is a documented case, so it always needs the research that documents it.

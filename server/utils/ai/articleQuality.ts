@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { load } from 'cheerio'
-import { generateObject, generateText } from 'ai'
+import { generateText, Output } from 'ai'
 
 import { AUTHORIAL_REASONING, ILLUSTRATIVE_STORY } from './editorialPolicy'
 import { extractResearchUrls, researchEvidence, retrievedResearchSources } from './researchEvidence'
@@ -261,7 +261,7 @@ firstPartyKnowledge is the publisher's own material, dated per entry. A claim ab
       }
     }
   }
-  const { object, usage } = await generateObject({
+  const { output: object, usage } = await generateText({
     model: aiModel('articleEditor'),
     maxOutputTokens: 2000,
     providerOptions: { openai: { reasoningEffort: 'low' } },
@@ -306,7 +306,7 @@ Do not fail a draft for personal style preferences, a short recap, mild repetiti
       (verificationBrief
         ? `\nIndependent live verification (takes precedence over the original brief):\n${verificationBrief}`
         : ''),
-    schema: editorialReviewSchema,
+    output: Output.object({ schema: editorialReviewSchema }),
   })
 
   const editorialIssues =

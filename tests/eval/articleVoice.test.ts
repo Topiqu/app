@@ -123,8 +123,8 @@ describe.skipIf(!process.env.AI_EVAL)('article voice eval', () => {
         useKnowledge: false,
         allowGeneratedImages: false,
       })
-      for await (const _ of generation.result.fullStream);
-      const draft = await generation.result.object
+      for await (const _ of generation.result.stream);
+      const draft = await generation.result.output
       const final = await generation.review(structuredClone(draft))
       const found = {
         draft: hedges(draft.content),

@@ -1,9 +1,12 @@
-import { generateObject } from 'ai'
+import { generateText } from 'ai'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { buildTopicPrompt, pickArticleTopic, researchRequest, topicSchema } from '../../../server/utils/ai/topic'
 
-vi.mock('ai', () => ({ generateObject: vi.fn() }))
+vi.mock('ai', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('ai')>()),
+  generateText: vi.fn(),
+}))
 afterEach(() => vi.unstubAllGlobals())
 
 const INPUT = {
@@ -150,7 +153,7 @@ describe('unattended stories', () => {
       needsResearch: false,
       searchQuery: ' ',
     }
-    vi.mocked(generateObject).mockResolvedValue({ object: story, usage: {} } as never)
+    vi.mocked(generateText).mockResolvedValue({ output: story, usage: {} } as never)
 
     const { topic } = await pickArticleTopic(INPUT)
     expect(topic).toMatchObject({ needsResearch: true, searchQuery: story.topic })

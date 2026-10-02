@@ -4,6 +4,9 @@ import { describe, expect, it } from 'vitest'
 
 const endpoint = readFileSync(resolve(process.cwd(), 'server/api/articles/generate/index.post.ts'), 'utf8')
 const articleGenerator = readFileSync(resolve(process.cwd(), 'server/utils/ai/article.ts'), 'utf8')
+const articleConfig = readFileSync(resolve(process.cwd(), 'server/utils/ai/articleConfig.ts'), 'utf8')
+const articleMedia = readFileSync(resolve(process.cwd(), 'server/utils/ai/articleMedia.ts'), 'utf8')
+const articleResearch = readFileSync(resolve(process.cwd(), 'server/utils/ai/researchEvidence.ts'), 'utf8')
 const articleQuality = readFileSync(resolve(process.cwd(), 'server/utils/ai/articleQuality.ts'), 'utf8')
 const editor = readFileSync(resolve(process.cwd(), 'app/pages/admin/editor/[id].vue'), 'utf8')
 const drafts = readFileSync(resolve(process.cwd(), 'app/composables/useArticleDrafts.ts'), 'utf8')
@@ -35,9 +38,9 @@ describe('manual article generation stream', () => {
   })
 
   it('bounds research, writer inactivity, and total writing time', () => {
-    expect(articleGenerator).toContain('standard: { maxOutputTokens: 5000, timeoutMs: 90_000')
-    expect(articleGenerator).toContain('AbortSignal.timeout(researchConfig.timeoutMs)')
-    expect(articleGenerator).toContain('abortSignal: researchSignal')
+    expect(articleResearch).toContain('standard: { maxOutputTokens: 5000, timeoutMs: 90_000')
+    expect(articleResearch).toContain('AbortSignal.timeout(researchConfig.timeoutMs)')
+    expect(articleResearch).toContain('abortSignal: researchSignal')
     expect(endpoint).toContain("'MANUAL_GENERATION_RESEARCH_STARTED'")
     expect(endpoint).toContain("auditAttempt('MANUAL_GENERATION_WRITER_STARTED'")
     expect(endpoint).toContain('45_000 - (now - lastWriterDataAt)')
@@ -70,12 +73,12 @@ describe('manual article generation stream', () => {
   it('uses the selected editor language for the generated article', () => {
     expect(editor).toContain('language: primaryLanguage.value')
     expect(endpoint).toContain('language: options?.language')
-    expect(articleGenerator).toContain('const articleLanguage = requestedLanguage ?? language')
-    expect(articleGenerator).toContain('LANGUAGE_NAMES[articleLanguage]')
+    expect(articleConfig).toContain('const articleLanguage = requestedLanguage ?? language')
+    expect(articleConfig).toContain('LANGUAGE_NAMES[articleLanguage]')
   })
 
   it('keeps researched and partially generated sources when the author stops early', () => {
-    expect(articleGenerator).toContain('researchSources: researchResult.sources')
+    expect(articleConfig).toContain('researchSources: researchResult.sources')
     expect(endpoint).toContain("type: 'research', ...research, sources: researchSources")
     expect(store).toContain('onResearch: (research) => update({ sources: research.sources })')
     expect(store).toContain('...(partial.sources != null ? { sources: partial.sources } : {})')
@@ -102,30 +105,30 @@ describe('manual article generation stream', () => {
     expect(endpoint).toMatch(
       /if \(session\?\.failureReason !== 'USER_STOP_REQUESTED'\) return\s+abortController\.abort\(\)/,
     )
-    expect(articleGenerator).toContain("reportMedia('cover')")
-    expect(articleGenerator).toContain("reportMedia('complete')")
+    expect(articleMedia).toContain("reportMedia('cover')")
+    expect(articleMedia).toContain("reportMedia('complete')")
     expect(endpoint).toContain("send(controller, { type: 'media', stage: 'failed'")
-    expect(articleGenerator).not.toContain('if (!articleImageUrl && firstBodyImage)')
+    expect(articleMedia).not.toContain('if (!articleImageUrl && firstBodyImage)')
   })
 
   it('grounds time-sensitive claims against the actual generation date', () => {
-    expect(articleGenerator).toContain('The current date and time is ${currentDateTime}. Treat it as authoritative.')
-    expect(articleGenerator).toContain('Never describe an already elapsed announcement as upcoming.')
-    expect(articleGenerator).toContain('Never call a past date upcoming, future or scheduled.')
+    expect(articleResearch).toContain('The current date and time is ${currentDateTime}. Treat it as authoritative.')
+    expect(articleResearch).toContain('Never describe an already elapsed announcement as upcoming.')
+    expect(articleConfig).toContain('Never call a past date upcoming, future or scheduled.')
   })
 
   it('keeps strict verification out of the published article voice and revision', () => {
-    expect(articleGenerator).toContain('Fact-checking is an internal editing discipline, not the voice of the article.')
-    expect(articleGenerator).toContain('correct it once in plain language')
+    expect(articleConfig).toContain('Fact-checking is an internal editing discipline, not the voice of the article.')
+    expect(articleConfig).toContain('correct it once in plain language')
     expect(articleQuality).toContain('Keep the verification process out of the published voice.')
   })
 
   it('researches a verified YouTube URL when the author selected the video module', () => {
-    expect(articleGenerator).toContain("selectedModules?.includes('youtube')")
-    expect(articleGenerator).toContain('Search for existing, directly relevant YouTube videos')
-    expect(articleGenerator).toContain('https://www.youtube.com/oembed')
-    expect(articleGenerator).toContain('youtubeVideoId(candidate)')
-    expect(articleGenerator).toContain('The author selected a YouTube video.')
+    expect(articleConfig).toContain("selectedModules?.includes('youtube')")
+    expect(articleResearch).toContain('Search for existing, directly relevant YouTube videos')
+    expect(articleResearch).toContain('https://www.youtube.com/oembed')
+    expect(articleResearch).toContain('youtubeVideoId(candidate)')
+    expect(articleConfig).toContain('The author selected a YouTube video.')
   })
 
   it('streams the authoritative article balance after settlement', () => {
@@ -147,20 +150,20 @@ describe('manual article generation stream', () => {
   })
 
   it('requires matching body image slots when the author selected images', () => {
-    expect(articleGenerator).toContain("selectedModules.includes('images')")
-    expect(articleGenerator).toContain('The author explicitly requested images in the article body.')
-    expect(articleGenerator).toContain('This is a requested deliverable: never return an empty images array.')
+    expect(articleConfig).toContain("selectedModules.includes('images')")
+    expect(articleConfig).toContain('The author explicitly requested images in the article body.')
+    expect(articleConfig).toContain('This is a requested deliverable: never return an empty images array.')
   })
 
   it('uses the same constraints for generation and deterministic optimization', () => {
-    expect(articleGenerator).toContain('articleGenerationOptimizationInstructions(domain)')
-    expect(articleGenerator).toContain('.min(optimizationCriteria.titleCharacters.minimum)')
-    expect(articleGenerator).toContain('.max(optimizationCriteria.excerptCharacters.maximum)')
-    expect(articleGenerator).toContain("buildImageHtml(registered, '', labels)")
+    expect(articleConfig).toContain('articleGenerationOptimizationInstructions(domain)')
+    expect(articleConfig).toContain('.min(optimizationCriteria.titleCharacters.minimum)')
+    expect(articleConfig).toContain('.max(optimizationCriteria.excerptCharacters.maximum)')
+    expect(articleMedia).toContain("buildImageHtml(registered, '', labels)")
   })
 
   it('treats an explicitly selected poll as a deliverable', () => {
-    expect(articleGenerator).toContain('Never return an empty polls array when the poll module is selected.')
+    expect(articleConfig).toContain('Never return an empty polls array when the poll module is selected.')
     expect(articleQuality).toMatch(/requireModule\(\s*'poll'/)
     expect(articleQuality).toMatch(/requireModule\(\s*'images'/)
   })
@@ -177,17 +180,17 @@ describe('manual article generation stream', () => {
   })
 
   it('tries retrieved YouTube alternatives before reporting the module unavailable', () => {
-    expect(articleGenerator).toContain('Return up to three full youtube.com/watch or youtu.be URLs')
-    expect(articleGenerator).toContain('for (const url of urls)')
-    expect(articleGenerator).toContain('retrievedResearchSources(result)')
+    expect(articleResearch).toContain('Return up to three full youtube.com/watch or youtu.be URLs')
+    expect(articleResearch).toContain('for (const url of urls)')
+    expect(articleResearch).toContain('retrievedResearchSources(result)')
   })
 
   it('discovers official media pages during research instead of using a publisher allowlist', () => {
-    expect(articleGenerator).toContain('OFFICIAL MEDIA: <owner>')
-    expect(articleGenerator).toContain('officialMediaPages')
-    expect(articleGenerator).toContain('findPressImage')
-    expect(articleGenerator).toContain('youtubeThumbnailImage')
-    expect(articleGenerator).not.toContain('press.cdprojektred.com')
+    expect(articleResearch).toContain('OFFICIAL MEDIA: <owner>')
+    expect(articleConfig).toContain('officialMediaPages')
+    expect(articleMedia).toContain('findPressImage')
+    expect(articleMedia).toContain('youtubeThumbnailImage')
+    expect(articleMedia).not.toContain('press.cdprojektred.com')
   })
 
   it('checks revised copy before reporting its review and proceeding to media finalization', () => {

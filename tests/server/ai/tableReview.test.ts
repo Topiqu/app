@@ -1,17 +1,20 @@
-import { generateObject } from 'ai'
+import { generateText } from 'ai'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { reviewArticle } from '../../../server/utils/ai/articleQuality'
 
-vi.mock('ai', () => ({ generateObject: vi.fn(), generateText: vi.fn() }))
+vi.mock('ai', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('ai')>()),
+  generateText: vi.fn(),
+}))
 
 beforeEach(() => {
   vi.stubGlobal('aiModel', (task: string) => task)
-  vi.mocked(generateObject).mockResolvedValue({ object: { approved: true, issues: [] }, usage: {} } as never)
+  vi.mocked(generateText).mockResolvedValue({ output: { approved: true, issues: [] }, usage: {} } as never)
 })
 afterEach(() => {
   vi.unstubAllGlobals()
-  vi.mocked(generateObject).mockReset()
+  vi.mocked(generateText).mockReset()
 })
 
 describe('comparison table review', () => {

@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { randomUUID } from 'node:crypto'
-import { embed, embedMany, generateObject } from 'ai'
+import { embed, embedMany, generateText } from 'ai'
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createDatabaseClient } from '../../../server/utils/database'
@@ -8,7 +8,12 @@ import { aiEmbeddingModelId } from '../../../server/utils/ai/modelRegistry'
 import { indexKnowledgeSource, toPgVector } from '../../../server/utils/knowledge/indexing'
 import { knowledgeSearchTerms, retrieveKnowledge, searchKnowledge } from '../../../server/utils/knowledge/retrieve'
 
-vi.mock('ai', () => ({ embed: vi.fn(), embedMany: vi.fn(), generateObject: vi.fn() }))
+vi.mock('ai', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('ai')>()),
+  embed: vi.fn(),
+  embedMany: vi.fn(),
+  generateText: vi.fn(),
+}))
 
 const url = process.env.TEST_DATABASE_URL
 const enabled = !!url && /test/i.test(new URL(url).pathname) && url !== process.env.DATABASE_URL
@@ -82,8 +87,8 @@ describe.skipIf(!enabled)('knowledge retrieval on PostgreSQL', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(embed).mockResolvedValue({ embedding: axis(0), usage: { tokens: 3 } } as never)
-    vi.mocked(generateObject).mockImplementation((async ({ prompt }: { prompt: string }) => ({
-      object: { relevant: JSON.parse(prompt).excerpts.map((excerpt: { id: string }) => excerpt.id) },
+    vi.mocked(generateText).mockImplementation((async ({ prompt }: { prompt: string }) => ({
+      output: { relevant: JSON.parse(prompt).excerpts.map((excerpt: { id: string }) => excerpt.id) },
       usage: { totalTokens: 7 },
     })) as never)
   })

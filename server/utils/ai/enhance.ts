@@ -2,8 +2,8 @@ import type { PromptEditAction, TextEditAction } from '~~/shared/utils/aiEdit'
 
 import { z } from 'zod'
 import { load } from 'cheerio'
+import { generateText, Output } from 'ai'
 import DOMPurify from 'isomorphic-dompurify'
-import { generateObject, generateText } from 'ai'
 
 const LANGUAGE_RULE = 'Answer in the same language as the input, and return the result alone, with no preamble.'
 const PLAIN_BRIEF_RULE = 'Return plain text only. Do not use Markdown headings, bold, italics, code fences or HTML.'
@@ -47,9 +47,9 @@ export const plainTextBrief = (text: string) =>
 
 /** What only the author can answer: web research cannot supply their own case, figures or stance. */
 export const briefQuestions = async (prompt: string, format?: string) => {
-  const { object, usage } = await generateObject({
+  const { output: object, usage } = await generateText({
     model: aiModel('promptEnhance'),
-    schema: z.object({ questions: z.array(z.string().min(5).max(200)).min(1).max(5) }),
+    output: Output.object({ schema: z.object({ questions: z.array(z.string().min(5).max(200)).min(1).max(5) }) }),
     instructions: `
       A writer will turn this brief into a${format ? ` ${format}` : 'n'} article. Ask 3-5 short questions whose answers would make it concrete and that web research cannot answer: the author's own experience, figures, dates, outcome, customers or opinion, or the intended angle and audience.
       Never ask about anything the brief already states. One question per item, no numbering.
@@ -158,9 +158,9 @@ export const rewritePassage = async (html: string, action: TextEditAction, instr
 /** Rewrite the article's text blocks together while preserving their positions and non-text content. */
 export const rewriteDocumentBlocks = async (blocks: string[], instruction: string) => {
   if (!instruction.trim()) throw new Error('A text editing instruction is required.')
-  const { object, usage } = await generateObject({
+  const { output: object, usage } = await generateText({
     model: aiModel('textEdit'),
-    schema: z.object({ blocks: z.array(z.string()).length(blocks.length) }),
+    output: Output.object({ schema: z.object({ blocks: z.array(z.string()).length(blocks.length) }) }),
     instructions: `
       Follow the author's editing request in the instruction field across all blocks.
       Keep every claim, name, number, quotation and link. Add no facts or examples.

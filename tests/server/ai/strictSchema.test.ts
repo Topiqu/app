@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest'
 import { zodSchema } from '@ai-sdk/provider-utils'
 
 import { topicSchema } from '../../../server/utils/ai/topic'
-import { articleSchema } from '../../../server/utils/ai/article'
 import { insightSchema } from '../../../server/utils/ai/insight'
+import { articleSchema } from '../../../server/utils/ai/articleConfig'
 import { translationSchema } from '../../../server/utils/ai/translate'
 import { articleSeriesDecisionSchema } from '../../../server/utils/ai/articleSeries'
 

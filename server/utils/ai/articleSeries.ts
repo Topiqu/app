@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import slugify from 'slugify'
-import { generateObject } from 'ai'
+import { generateText, Output } from 'ai'
 
 import type { DatabaseTransaction } from '../database'
 
@@ -212,13 +212,13 @@ export const chooseArticleSeries = async (
       usage: { totalTokens: 0 },
     }
 
-  const { object, usage } = await generateObject({
+  const { output: object, usage } = await generateText({
     model: aiModel('topicSelection'),
     maxOutputTokens: 500,
     instructions:
       'You are a conservative managing editor. Organize articles into a series only when the relationship is unmistakable. Return only valid JSON.',
     prompt: seriesPrompt(context, article, language),
-    schema: articleSeriesDecisionSchema,
+    output: Output.object({ schema: articleSeriesDecisionSchema }),
   })
 
   return { decision: object, usage }

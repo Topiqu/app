@@ -1,4 +1,4 @@
-import { generateObject } from 'ai'
+import { generateText, Output } from 'ai'
 import { insightSchema } from '~~/server/utils/ai/insight'
 
 export default defineMonitoredTask({
@@ -62,7 +62,7 @@ export default defineMonitoredTask({
         let logMetadata: any = {}
 
         try {
-          const { object, usage } = await generateObject({
+          const { output: object, usage } = await generateText({
             model: aiModel('communityInsight'),
             instructions: `You are a community analyst. Respond in the client's language: ${site.language}. Summary must be 250 characters or less. Count every character. Return ONLY valid JSON. No extra text.`,
             prompt: `
@@ -81,7 +81,7 @@ export default defineMonitoredTask({
 
             Write 1–2 sentence summary (MAX 250 CHARS). Add short suggestion if needed, relevant to client's focus and audience: ${site.focus}, ${site.audience}.
           `.trim(),
-            schema: insightSchema,
+            output: Output.object({ schema: insightSchema }),
             temperature: 0,
             maxRetries: 1,
           })

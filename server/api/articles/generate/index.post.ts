@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { randomUUID } from 'node:crypto'
 import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
+import { articleWriterStream } from '~~/server/utils/ai/articleStream'
 import {
   ARTICLE_GENERATION_FORMATS,
   ARTICLE_GENERATION_MODULES,
@@ -187,67 +188,76 @@ export default defineEventHandler(async (event) => {
           let lastWriterDataAt = writerStartedAt
           let lastActivitySentAt = 0
           let writingStage: 'starting' | 'title' | 'intro' | 'body' = 'starting'
-          const writerIterator = result.fullStream[Symbol.asyncIterator]()
-          for (;;) {
-            const now = Date.now()
-            const idleRemaining = Math.max(0, 45_000 - (now - lastWriterDataAt))
-            const deadlineRemaining = Math.max(0, 120_000 - (now - writerStartedAt))
-            const timeoutStage = idleRemaining <= deadlineRemaining ? 'writer_idle' : 'writer_deadline'
-            const timeoutMs = Math.min(idleRemaining, deadlineRemaining)
+          const writerIterator = articleWriterStream(result)[Symbol.asyncIterator]()
+          try {
+            for (;;) {
+              const now = Date.now()
+              const idleRemaining = Math.max(0, 45_000 - (now - lastWriterDataAt))
+              const deadlineRemaining = Math.max(0, 120_000 - (now - writerStartedAt))
+              const timeoutStage = idleRemaining <= deadlineRemaining ? 'writer_idle' : 'writer_deadline'
+              const timeoutMs = Math.min(idleRemaining, deadlineRemaining)
 
-            // Do not rely on AbortSignal to unblock a provider iterator. The race rejects our own
-            // request on time even if the SDK/provider ignores abort and leaves `next()` pending.
-            const next = await Promise.race([
-              writerIterator.next(),
-              new Promise<never>((_, reject) => {
-                writerWaitTimer = setTimeout(() => {
-                  timedOutStage = timeoutStage
-                  abortController.abort()
-                  reject(new Error(timeoutStage))
-                }, timeoutMs)
-              }),
-            ]).finally(() => {
-              if (writerWaitTimer) clearTimeout(writerWaitTimer)
-              writerWaitTimer = undefined
-            })
+              // Do not rely on AbortSignal to unblock a provider iterator. The race rejects our own
+              // request on time even if the SDK/provider ignores abort and leaves `next()` pending.
+              const next = await Promise.race([
+                writerIterator.next(),
+                new Promise<never>((_, reject) => {
+                  writerWaitTimer = setTimeout(() => {
+                    timedOutStage = timeoutStage
+                    abortController.abort()
+                    reject(new Error(timeoutStage))
+                  }, timeoutMs)
+                }),
+              ]).finally(() => {
+                if (writerWaitTimer) clearTimeout(writerWaitTimer)
+                writerWaitTimer = undefined
+              })
 
-            if (next.done) break
-            const part = next.value
-            if (part.type === 'error') throw part.error
-            if (part.type === 'finish') continue
+              if (next.done) break
+              const part = next.value
+              if (part.type === 'error') throw part.error
 
-            lastWriterDataAt = Date.now()
-            if (part.type === 'object') {
-              const partial = part.object
-              const sources = partial.sources?.filter((source): source is string => typeof source === 'string')
-              recoverySnapshot = {
-                ...recoverySnapshot,
-                ...(partial.title !== undefined ? { title: partial.title } : {}),
-                ...(partial.perex !== undefined ? { perex: partial.perex } : {}),
-                ...(partial.content !== undefined ? { content: partial.content } : {}),
-                ...(sources ? { sources } : {}),
+              lastWriterDataAt = Date.now()
+              if (part.type === 'partial') {
+                const partial = part.output
+                const sources = partial.sources?.filter((source): source is string => typeof source === 'string')
+                recoverySnapshot = {
+                  ...recoverySnapshot,
+                  ...(partial.title !== undefined ? { title: partial.title } : {}),
+                  ...(partial.perex !== undefined ? { perex: partial.perex } : {}),
+                  ...(partial.content !== undefined ? { content: partial.content } : {}),
+                  ...(sources ? { sources } : {}),
+                }
+                writingStage = partial.content
+                  ? 'body'
+                  : partial.perex
+                    ? 'intro'
+                    : partial.title
+                      ? 'title'
+                      : writingStage
+                send(controller, { type: 'partial', object: partial, writingStage })
+                if (Date.now() - lastRecoveryCheckpointAt >= 10_000) {
+                  await checkpointGeneration(recoverySession!.id, 'writing', recoverySnapshot)
+                  lastRecoveryCheckpointAt = Date.now()
+                }
               }
-              writingStage = partial.content ? 'body' : partial.perex ? 'intro' : partial.title ? 'title' : writingStage
-              send(controller, { type: 'partial', object: partial, writingStage })
-              if (Date.now() - lastRecoveryCheckpointAt >= 10_000) {
-                await checkpointGeneration(recoverySession!.id, 'writing', recoverySnapshot)
-                lastRecoveryCheckpointAt = Date.now()
+
+              // Structured output can produce real JSON deltas before enough of a field exists for a
+              // partial object. Forward a throttled activity signal so the UI distinguishes active
+              // generation from a stalled provider without exposing raw JSON or model reasoning.
+              const activityAt = Date.now()
+              if (activityAt - lastActivitySentAt >= 1_000) {
+                send(controller, { type: 'activity', phase: 'writing', writingStage })
+                lastActivitySentAt = activityAt
               }
             }
-
-            // Structured output can produce real JSON deltas before enough of a field exists for a
-            // partial object. Forward a throttled activity signal so the UI distinguishes active
-            // generation from a stalled provider without exposing raw JSON or model reasoning.
-            const activityAt = Date.now()
-            if (activityAt - lastActivitySentAt >= 1_000) {
-              send(controller, { type: 'activity', phase: 'writing', writingStage })
-              lastActivitySentAt = activityAt
-            }
+          } finally {
+            void writerIterator.return(undefined).catch(() => {})
           }
           textDone = true
 
           send(controller, { type: 'activity', phase: 'writing', writingStage: 'review' })
-          const object = await generation.review(await result.object)
+          const object = await generation.review(await result.output)
           recoverySnapshot = { ...recoverySnapshot, ...object }
           await checkpointGeneration(recoverySession!.id, 'review', recoverySnapshot)
           send(controller, { type: 'review', review: generation.editorialReview })
@@ -322,7 +332,7 @@ export default defineEventHandler(async (event) => {
             // Stopped mid-generation: log the partial usage we actually spent.
             // Research is included because it completes before the first token streams, so Stop
             // never gets it back.
-            const usage = await generation?.result.usage.catch(() => null)
+            const usage = await Promise.resolve(generation?.result.usage).catch(() => null)
             const hasProviderUsage =
               (usage?.totalTokens ?? 0) + (generation?.researchTokens ?? 0) + (generation?.editorialTokens ?? 0) > 0
             const chargeInterrupted = hasProviderUsage && hasUsefulGenerationSnapshot(recoverySnapshot)

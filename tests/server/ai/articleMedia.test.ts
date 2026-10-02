@@ -1,14 +1,19 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { streamArticle } from '../../../server/utils/ai/article'
 import { findStockImage } from '../../../server/utils/images/chain'
-import { finalizeArticle, streamArticle } from '../../../server/utils/ai/article'
+import { finalizeArticle } from '../../../server/utils/ai/articleMedia'
 import { applyContentSlots, dropAuthoredImages } from '../../../shared/utils/contentSlots'
 
 vi.mock('../../../server/utils/images/chain', () => ({
   findStockImage: vi.fn(),
 }))
 vi.mock('../../../server/utils/images/steam', () => ({ createSteamImageSearch: () => async () => null }))
-vi.mock('ai', () => ({ generateObject: vi.fn(), generateText: vi.fn(), streamObject: vi.fn(() => ({})) }))
+vi.mock('ai', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('ai')>()),
+  generateText: vi.fn(),
+  streamText: vi.fn(() => ({})),
+}))
 
 const draft = () => ({
   title: 'The Witcher 4',
@@ -213,7 +218,11 @@ it('leaves an unavailable documentary photo empty instead of inventing one', asy
 
 it('prefers a real photo of a named subject over AI and reports where every image came from', async () => {
   vi.mocked(findStockImage).mockResolvedValueOnce(null).mockResolvedValueOnce(hit('babis')).mockResolvedValue(null)
-  vi.mocked(generateImage).mockResolvedValue({ url: 'https://images.test/generated', width: 1200, height: 800 } as never)
+  vi.mocked(generateImage).mockResolvedValue({
+    url: 'https://images.test/generated',
+    width: 1200,
+    height: 800,
+  } as never)
   const onMedia = vi.fn()
   const object = {
     ...draft(),

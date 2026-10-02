@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { subDays } from 'date-fns'
-import { generateObject } from 'ai'
+import { generateText, Output } from 'ai'
 import { promptIntent } from '~~/shared/utils/aiVisibility'
 
 export const AUTO_PROMPT_LIMIT = 10
@@ -66,10 +66,10 @@ export const seedVisibilityPrompts = async (clientSiteId: string) => {
     ),
     ...comments.map((row, index) => `C${index + 1}: ${JSON.stringify(row.content.slice(0, 300))}`),
   ]
-  const { object, usage } = await generateObject({
+  const { output: object, usage } = await generateText({
     model: aiModel('visibilityPrompts'),
     maxOutputTokens: 1500,
-    schema,
+    output: Output.object({ schema }),
     instructions:
       'You write the questions real people type into ChatGPT, Gemini or Claude when they need what a publication covers. ' +
       'Each question is conversational, self-contained, and never names the publication. ' +

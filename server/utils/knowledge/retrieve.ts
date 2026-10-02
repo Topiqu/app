@@ -1,7 +1,7 @@
 import type { KnowledgeProductAvailability } from '~~/generated/zenstack/models'
 
 import { z } from 'zod'
-import { embed, generateObject } from 'ai'
+import { embed, generateText, Output } from 'ai'
 import { isKnowledgeStale, knowledgeAsOf, KNOWLEDGE_STALE_MONTHS } from '~~/shared/utils/knowledge'
 
 import { toPgVector } from './indexing'
@@ -221,9 +221,9 @@ const selectionSchema = z.object({
 
 /** Ranks never say "unrelated", so a model gate decides whether any excerpt belongs in the article at all. */
 const selectRelevant = async (topic: string, shortlist: readonly KnowledgeCandidate[], abortSignal?: AbortSignal) => {
-  const { object, usage } = await generateObject({
+  const { output: object, usage } = await generateText({
     model: aiModel('knowledgeSelect'),
-    schema: selectionSchema,
+    output: Output.object({ schema: selectionSchema }),
     maxOutputTokens: 600,
     providerOptions: { openai: { reasoningEffort: 'low' } },
     abortSignal: abortSignal
