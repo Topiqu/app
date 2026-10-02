@@ -7,6 +7,7 @@
 dist
 shared/zod
 generated/zenstack
+prisma/~schema.prisma
 
 # Playwright generated artifacts and local visual baselines
 test-results
