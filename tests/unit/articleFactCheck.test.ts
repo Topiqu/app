@@ -5,12 +5,7 @@ import { describe, expect, it } from 'vitest'
 import type { FactCheckClaim } from '../../shared/types/articleFactCheck'
 
 import { extractReadableSource } from '../../server/utils/factCheckSources'
-import {
-  extractFactCheckBlocks,
-  factCheckCounts,
-  normalizeFactCheckUrl,
-  sortFactCheckClaims,
-} from '../../shared/utils/articleFactCheck'
+import { factCheckCounts, normalizeFactCheckUrl, sortFactCheckClaims } from '../../shared/utils/articleFactCheck'
 
 const claim = (overrides: Partial<FactCheckClaim> = {}): FactCheckClaim => ({
   id: 'claim',
@@ -38,18 +33,6 @@ describe('article fact-check helpers', () => {
     const editor = readFileSync(resolve(process.cwd(), 'app/pages/admin/editor/[id].vue'), 'utf8')
     expect(editor).toContain('isNew ? newArticleLanguage.value : tr.isSource ? primaryLanguage.value : tr.activeLang')
     expect(editor).not.toContain('language: editorLanguageModel.value as Language')
-  })
-
-  it('keeps stable top-level editor indexes while ignoring media-only blocks', () => {
-    expect(
-      extractFactCheckBlocks(
-        '<h2>Overview</h2><p>The product launched in 2026.</p><img src="x.jpg"><p>More detail.</p>',
-      ),
-    ).toEqual([
-      { index: 0, type: 'h2', text: 'Overview' },
-      { index: 1, type: 'p', text: 'The product launched in 2026.' },
-      { index: 3, type: 'p', text: 'More detail.' },
-    ])
   })
 
   it('normalizes URLs for deterministic duplicate detection', () => {

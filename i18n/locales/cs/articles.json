@@ -112,10 +112,6 @@
         "translated": "Překlad vygenerován",
         "discarded": "Překlad zahozen"
       },
-      "reviewQueue": {
-        "title": "Nic nečeká na kontrolu | {count} překlad čeká na kontrolu | {count} překlady čekají na kontrolu | {count} překladů čeká na kontrolu",
-        "desc": "Hybridní režim drží strojové překlady zpět, dokud je neschválíš. Otevři článek a překlad zkontroluj a publikuj."
-      },
       "viewLive": "Zobrazit živou stránku"
     },
     "explore": "Prozkoumat články",
@@ -908,9 +904,6 @@
       "aiContentFailed": "Generování obsahu AI selhalo",
       "loadFailed": "Načtení článku selhalo",
       "metaBar": "Metadata článku",
-      "addTag": "Přidat tag",
-      "searchTags": "Najít nebo vytvořit tag…",
-      "createTag": "Vytvořit „{name}“",
       "publishImmediately": "Ihned",
       "aiEdit": {
         "label": "AI úpravy",

@@ -12,15 +12,6 @@ import { buildMediaRightsItems, extractArticleMedia, mediaRightsCounts } from '~
 
 import { escapeHtml } from './sanitize'
 
-export const mediaRightsFingerprint = (input: ArticleMediaInput) =>
-  createHash('sha256')
-    .update(
-      JSON.stringify(
-        extractArticleMedia(input).map(({ placement, url, mediaId }) => ({ placement, url, mediaId: mediaId ?? null })),
-      ),
-    )
-    .digest('hex')
-
 export const evaluateMediaRights = async (
   db: typeof prisma,
   clientSiteId: string,

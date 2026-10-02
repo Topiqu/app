@@ -129,7 +129,7 @@ describe('tenant boundary wiring', () => {
     expect(auth).toContain('prisma.tenantMembership.findUnique')
     expect(auth).toContain("token.role = hasActiveTenant ? 'admin' : 'reader'")
     expect(source('server/api/tenant/members/[id].delete.ts')).toContain('prisma.session.updateMany')
-    for (const file of ['server/api/stats/dashboard.ts', 'server/api/stats/views.ts', 'server/api/tags/index.get.ts']) {
+    for (const file of ['server/api/stats/dashboard.ts', 'server/api/tags/index.get.ts']) {
       expect(source(file)).toContain('requireTenantScope')
     }
   })

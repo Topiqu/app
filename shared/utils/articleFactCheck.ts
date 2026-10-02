@@ -9,12 +9,6 @@ export const FACT_CHECK_LIMITS = {
   maxClaims: 40,
 } as const
 
-export interface FactCheckArticleBlock {
-  index: number
-  type: string
-  text: string
-}
-
 export const normalizeFactCheckUrl = (value: string) => {
   const url = new URL(value.trim())
   url.hash = ''
@@ -22,15 +16,6 @@ export const normalizeFactCheckUrl = (value: string) => {
   if ((url.protocol === 'https:' && url.port === '443') || (url.protocol === 'http:' && url.port === '80'))
     url.port = ''
   return url.toString()
-}
-
-export const extractFactCheckBlocks = (html: string): FactCheckArticleBlock[] => {
-  const doc = new DOMParser().parseFromString(html || '', 'text/html')
-  return [...doc.body.children].flatMap((node, index) => {
-    if (node.matches('script, style, noscript, img, video, audio, iframe')) return []
-    const text = node.textContent?.replace(/\s+/g, ' ').trim() ?? ''
-    return text ? [{ index, type: node.tagName.toLowerCase(), text }] : []
-  })
 }
 
 export const factCheckCounts = (claims: FactCheckClaim[]): ArticleFactCheckResult['counts'] => {

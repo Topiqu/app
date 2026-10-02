@@ -112,10 +112,6 @@
         "translated": "Traduction générée",
         "discarded": "Traduction ignorée"
       },
-      "reviewQueue": {
-        "title": "Aucune traduction à valider | {count} traduction à valider | {count} traductions à valider",
-        "desc": "En mode hybride, les traductions automatiques sont retenues jusqu'à votre validation. Ouvrez l'article pour les relire et les publier."
-      },
       "viewLive": "Voir la page publiée"
     },
     "explore": "Explorer les articles",
@@ -908,9 +904,6 @@
       "aiContentFailed": "Impossible de générer le contenu IA",
       "loadFailed": "Impossible de charger l'article",
       "metaBar": "Métadonnées de l'article",
-      "addTag": "Ajouter un tag",
-      "searchTags": "Rechercher ou créer un tag…",
-      "createTag": "Créer « {name} »",
       "publishImmediately": "Immédiatement",
       "aiEdit": {
         "label": "Retouches IA",

@@ -1,4 +1,4 @@
-import type { EventHandler, EventHandlerRequest, H3Event } from 'h3'
+import type { H3Event } from 'h3'
 
 import { createHmac } from 'node:crypto'
 import { BlockList, isIP } from 'node:net'
@@ -61,15 +61,3 @@ export const ipKey = (event: H3Event): string =>
   createHmac('sha256', process.env.AUTH_SECRET || 'missing-auth-secret')
     .update(getIp(event))
     .digest('hex')
-
-export const defineWrappedResponseHandler = <T extends EventHandlerRequest, D>(
-  handler: EventHandler<T, D>,
-): EventHandler<T, D> =>
-  defineEventHandler<T>(async (event) => {
-    try {
-      const response = await handler(event)
-      return { response }
-    } catch (err) {
-      return { err }
-    }
-  })

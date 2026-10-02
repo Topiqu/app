@@ -330,7 +330,7 @@
             </div>
           </div>
           <div class="font-semibold tabular-nums text-neutral-900 dark:text-neutral-100">
-            {{ formatInvoiceAmount(invoice.amount, invoice.currency) }}
+            {{ formatMinorAmount(invoice.amount, invoice.currency) }}
           </div>
           <div class="flex items-center gap-2">
             <UButton
@@ -495,15 +495,6 @@ const nextBillingAmountText = computed(() => {
     ? $t('common.preferences.nextBilling.annual')
     : $t('common.preferences.nextBilling.monthly')
 })
-
-const formatInvoiceAmount = (amount: number, currency: string) => {
-  const formatter = new Intl.NumberFormat(locale.value, {
-    style: 'currency',
-    currency,
-  })
-  const fractionDigits = formatter.resolvedOptions().maximumFractionDigits ?? 2
-  return formatter.format(amount / 10 ** fractionDigits)
-}
 
 const invoiceStatusText = (status: BillingInvoiceStatus | null) =>
   $t(`common.preferences.billing.invoiceStatus.${status ?? 'unknown'}`)

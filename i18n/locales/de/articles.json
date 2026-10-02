@@ -112,10 +112,6 @@
         "translated": "Übersetzung erstellt",
         "discarded": "Übersetzung verworfen"
       },
-      "reviewQueue": {
-        "title": "Keine Übersetzung zur Prüfung | {count} Übersetzung zur Prüfung | {count} Übersetzungen zur Prüfung",
-        "desc": "Im Hybridmodus werden maschinelle Übersetzungen zurückgehalten, bis du sie freigibst. Öffne den Artikel, um sie zu prüfen und zu veröffentlichen."
-      },
       "viewLive": "Veröffentlichte Seite ansehen"
     },
     "explore": "Artikel entdecken",
@@ -908,9 +904,6 @@
       "aiContentFailed": "KI-Inhalt konnte nicht generiert werden",
       "loadFailed": "Artikel konnte nicht geladen werden",
       "metaBar": "Artikelmetadaten",
-      "addTag": "Tag hinzufügen",
-      "searchTags": "Tag suchen oder erstellen…",
-      "createTag": "„{name}“ erstellen",
       "publishImmediately": "Sofort",
       "aiEdit": {
         "label": "KI-Bearbeitung",

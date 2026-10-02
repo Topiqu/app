@@ -112,10 +112,6 @@
         "translated": "Translation generated",
         "discarded": "Translation discarded"
       },
-      "reviewQueue": {
-        "title": "Nothing awaiting review | {count} translation awaiting review | {count} translations awaiting review",
-        "desc": "Hybrid mode holds machine translations back until you approve them. Open the article to review and publish."
-      },
       "viewLive": "View live page"
     },
     "explore": "Explore articles",
@@ -908,9 +904,6 @@
       "aiContentFailed": "Failed to generate AI content",
       "loadFailed": "Failed to load the article",
       "metaBar": "Article metadata",
-      "addTag": "Add tag",
-      "searchTags": "Find or create a tag…",
-      "createTag": "Create “{name}”",
       "publishImmediately": "Immediately",
       "aiEdit": {
         "label": "AI edits",
