@@ -17,14 +17,12 @@
     </div>
     <div
       data-publication-preview
-      class="publication-surface overflow-hidden rounded-(--topiqu-surface-radius) border border-default shadow-sm"
+      class="publication-surface overflow-hidden rounded-(--topiqu-surface-radius) border border-default bg-default text-default shadow-sm"
+      :class="darkPreview ? 'dark' : 'light'"
       :style="previewStyle"
     >
       <div class="p-5">
-        <header
-          class="relative flex items-center gap-3 border-b pb-4"
-          :style="{ borderColor: darkPreview ? '#374151' : '#e5e7eb' }"
-        >
+        <header class="relative flex items-center gap-3 border-b border-default pb-4">
           <!-- Mirrors the article reading-progress bar, the place the gradient really shows. -->
           <span
             class="absolute inset-x-0 -bottom-px h-1 [clip-path:inset(0_60%_0_0)]"
@@ -43,26 +41,21 @@
             containerClass="h-10 w-24 shrink-0 bg-transparent"
           />
           <div class="min-w-0">
-            <p class="truncate text-sm font-bold">{{ name }}</p>
-            <p v-if="tagline" class="line-clamp-1 text-xs opacity-70">{{ tagline }}</p>
+            <p class="truncate text-sm font-bold text-highlighted">{{ name }}</p>
+            <p v-if="tagline" class="line-clamp-1 text-xs text-muted">{{ tagline }}</p>
           </div>
         </header>
         <article class="pt-5">
-          <p
-            class="mb-2 text-xs font-semibold uppercase tracking-wider"
-            :style="{
-              color: darkPreview ? baseStyle['--topiqu-tenant-accent-dark'] : baseStyle['--topiqu-tenant-accent-light'],
-            }"
-          >
+          <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">
             {{ $t('common.preferences.branding.sampleCategory') }}
           </p>
           <h3
-            class="text-2xl font-bold leading-tight tracking-tight"
+            class="text-2xl font-bold leading-tight tracking-tight text-highlighted"
             :style="{ fontFamily: baseStyle['--topiqu-heading-font'] }"
           >
             {{ $t('common.preferences.branding.sampleTitle') }}
           </h3>
-          <p class="mt-3 text-sm leading-relaxed opacity-75">
+          <p class="mt-3 text-sm leading-relaxed text-muted">
             {{ description || $t('common.preferences.branding.sampleExcerpt') }}
           </p>
           <p class="mt-3 text-sm leading-relaxed">
@@ -100,7 +93,14 @@ const props = defineProps<{
   plan: string
 }>()
 
-const darkPreview = shallowRef(false)
+const colorMode = useColorMode()
+const previewMode = shallowRef<boolean | null>(null)
+const darkPreview = computed({
+  get: () => previewMode.value ?? colorMode.value === 'dark',
+  set: (value: boolean) => {
+    previewMode.value = value
+  },
+})
 const baseStyle = computed(() =>
   tenantThemeStyle(props.currentTheme, props.typographyPreset, {
     accentColor: props.accentColor,
@@ -114,12 +114,23 @@ const activeGradient = computed(() => activeBrandGradient(props.brandGradient, p
 const accent = computed(() => resolveBrandAccent(props.currentTheme, props.accentColor))
 const previewStyle = computed(() => ({
   ...baseStyle.value,
-  backgroundColor: darkPreview.value ? '#111827' : '#ffffff',
-  color: darkPreview.value ? '#f8fafc' : '#111827',
+  colorScheme: darkPreview.value ? 'dark' : 'light',
+  '--ui-primary': darkPreview.value
+    ? baseStyle.value['--topiqu-tenant-accent-dark']
+    : baseStyle.value['--topiqu-tenant-accent-light'],
+  '--topiqu-tenant-accent': darkPreview.value
+    ? baseStyle.value['--topiqu-tenant-accent-dark']
+    : baseStyle.value['--topiqu-tenant-accent-light'],
+  '--topiqu-tenant-accent-foreground': darkPreview.value
+    ? baseStyle.value['--topiqu-cta-dark-fg']
+    : baseStyle.value['--topiqu-cta-fg'],
   '--topiqu-cta-bg': darkPreview.value ? baseStyle.value['--topiqu-cta-dark-bg'] : baseStyle.value['--topiqu-cta-bg'],
   '--topiqu-cta-hover': darkPreview.value
     ? baseStyle.value['--topiqu-cta-dark-hover']
     : baseStyle.value['--topiqu-cta-hover'],
   '--topiqu-cta-fg': darkPreview.value ? baseStyle.value['--topiqu-cta-dark-fg'] : baseStyle.value['--topiqu-cta-fg'],
+  '--topiqu-cta-focus': darkPreview.value
+    ? baseStyle.value['--topiqu-cta-dark-focus']
+    : baseStyle.value['--topiqu-cta-focus'],
 }))
 </script>

@@ -14,7 +14,6 @@
   --ui-info: var(--ui-color-info-700);
   --ui-warning: var(--ui-color-warning-800);
   --ui-error: var(--ui-color-error-700);
-  --ui-text-muted: var(--color-slate-600);
   --ui-radius: 0.625rem;
   --ui-container: 80rem;
   --topiqu-header-height: 4rem;
@@ -33,6 +32,11 @@
   --topiqu-layer-toast: 60;
   --ui-font-sans: 'Manrope Variable', ui-sans-serif, system-ui, sans-serif;
   --topiqu-font-reading: 'Source Serif 4 Variable', ui-serif, Georgia, serif;
+}
+
+:root,
+.light {
+  --ui-text-muted: var(--color-slate-600);
 }
 
 .dark {
