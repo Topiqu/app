@@ -1,5 +1,3 @@
-import type { EventStream } from 'h3'
-
 import { articleSlug } from '~~/shared/utils/articleSlug'
 import { linkableSources } from '~~/shared/utils/articleSources'
 import { countGeneratedWords, type ValueEvent } from '~~/shared/utils/valueMetrics'
@@ -18,12 +16,6 @@ import {
 } from '~~/server/utils/ai/articleSeries'
 
 import type { DatabaseTransaction } from '../utils/database'
-
-interface GlobalThis {
-  eventStreams?: Map<string, Set<EventStream>>
-}
-
-declare const globalThis: GlobalThis
 
 const generateUniqueSlug = async (ctx: any, title: string, clientSiteId: string): Promise<string> => {
   const base = articleSlug(title)
@@ -491,81 +483,7 @@ Respond ONLY in valid JSON (schema required).
           },
         })
 
-        const sendNotifications = async () => {
-          if (article.user?.role !== 'ai') {
-            const translate = await getServerTranslator(article.user?.language || 'cs')
-            const authorMessage = translate('common.notifications.articlePublished', [article.title])
-
-            const authorNotif = await prisma.notification.create({
-              data: {
-                message: authorMessage!,
-                userId: article.userId,
-                articleId: article.id,
-                type: 'ARTICLE_PUBLISHED',
-              },
-            })
-
-            const authorStreamKey = `notifications:${authorNotif.userId}`
-            const authorStreams = globalThis.eventStreams?.get(authorStreamKey)
-            if (authorStreams) {
-              authorStreams.forEach((s) => s.push(JSON.stringify({ ...authorNotif, count: 1 })))
-            }
-          }
-
-          const followers = await prisma.follow.findMany({
-            where: {
-              followedId: article.userId,
-              follower: { allowNotifs: true },
-            },
-            select: {
-              followerId: true,
-              follower: { select: { language: true } },
-            },
-          })
-
-          if (followers.length === 0) return
-
-          const uniqueLangs = [...new Set(followers.map((f) => f.follower.language || 'cs'))]
-          const username = article.user?.username ?? 'Autor'
-
-          const langTranslations = await Promise.all(
-            uniqueLangs.map(async (lang) => {
-              const translate = await getServerTranslator(lang)
-              const message = translate('common.notifications.newArticleFromFollowed', [username, article.title])!
-              return { lang, message }
-            }),
-          )
-
-          const langToMessage = Object.fromEntries(langTranslations.map((t) => [t.lang, t.message]))
-
-          const notifications = followers.map((f) => ({
-            message: langToMessage[f.follower.language || 'cs']!,
-            userId: f.followerId,
-            articleId: article.id,
-            type: 'ARTICLE_PUBLISHED' as const,
-          }))
-
-          const BATCH_SIZE = 100
-
-          for (let i = 0; i < notifications.length; i += BATCH_SIZE) {
-            const batch = notifications.slice(i, i + BATCH_SIZE)
-
-            await prisma.notification.createMany({
-              data: batch,
-              skipDuplicates: true,
-            })
-
-            batch.forEach((n) => {
-              const key = `notifications:${n.userId}`
-              const streams = globalThis.eventStreams?.get(key)
-              if (streams) {
-                streams.forEach((s) => s.push(JSON.stringify({ ...n, count: 1 })))
-              }
-            })
-          }
-        }
-
-        sendNotifications().catch((err) => {
+        notifyArticlePublished(prisma, article, { notifyAuthor: article.user?.role !== 'ai' }).catch((err) => {
           console.error('[generate-article] Notification error:', err)
         })
       } else {

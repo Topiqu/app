@@ -20,7 +20,7 @@ export default defineMonitoredTask({
           content: true,
           clientSite: { select: { language: true } },
           mediaRightsSnapshots: { orderBy: { createdAt: 'desc' }, take: 1, select: { fingerprint: true } },
-          user: { select: { username: true, language: true } },
+          user: { select: { language: true } },
         },
       })
       if (!articles.length) return { result: { count: 0, timestamp: now.toISOString() }, published: [] }
@@ -78,43 +78,8 @@ export default defineMonitoredTask({
         }
       }
 
-      await Promise.all(
-        publishable.map(async (a) => {
-          const translate = await getServerTranslator(a.user?.language || 'en')
-          return ctx.notification.create({
-            data: {
-              message: translate('common.notifications.articlePublished', [a.title])!,
-              userId: a.userId,
-              articleId: a.id,
-              type: 'ARTICLE_PUBLISHED',
-            },
-          })
-        }),
-      )
-
-      const notifications = []
       for (const a of publishable) {
-        const followers = await ctx.follow.findMany({
-          where: { followedId: a.userId, follower: { allowNotifs: true } },
-          select: { followerId: true, follower: { select: { language: true } } },
-        })
-        const username = a.user?.username ?? 'Anonymous'
-
-        for (const f of followers) {
-          const translate = await getServerTranslator(f.follower.language || 'en')
-          notifications.push({
-            message: translate('common.notifications.newArticleFromFollowed', [username, a.title])!,
-            userId: f.followerId,
-            articleId: a.id,
-            type: 'ARTICLE_PUBLISHED' as const,
-          })
-        }
-      }
-
-      const BATCH_SIZE = 100
-      for (let i = 0; i < notifications.length; i += BATCH_SIZE) {
-        const batch = notifications.slice(i, i + BATCH_SIZE)
-        await ctx.notification.createMany({ data: batch, skipDuplicates: true })
+        await notifyArticlePublished(ctx, a, { notifyAuthor: true })
       }
 
       return {

@@ -1,7 +1,7 @@
 import { DbNull } from '@zenstackhq/orm'
 import { articleSlug } from '~~/shared/utils/articleSlug'
+import { ArticleStatus } from '~~/generated/zenstack/models'
 import { ArticleUpdateSchema } from '~~/shared/databaseSchemas'
-import { ArticleStatus, type NotificationType } from '~~/generated/zenstack/models'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
@@ -208,35 +208,7 @@ export default defineEventHandler(async (event) => {
   })
 
   if (article.status === ArticleStatus.published && previousArticle?.status === ArticleStatus.draft) {
-    const followers = await db.follow.findMany({
-      where: { followedId: article.userId, follower: { allowNotifs: true } },
-      select: { followerId: true, follower: { select: { language: true } } },
-    })
-
-    const author = user?.name ?? 'Anonymous'
-    const notifications = await Promise.all(
-      followers.map(async (follower) => {
-        const translate = await getServerTranslator(follower.follower.language || 'en')
-        return {
-          message: translate('common.notifications.newArticleFromFollowed', [author, article.title])!,
-          userId: follower.followerId,
-          articleId: article.id,
-          type: 'ARTICLE_PUBLISHED' as NotificationType,
-        }
-      }),
-    )
-
-    if (notifications.length > 0) {
-      await db.$transaction(async (tx) => {
-        const BATCH_SIZE = 100
-        for (let i = 0; i < notifications.length; i += BATCH_SIZE) {
-          await tx.notification.createMany({
-            data: notifications.slice(i, i + BATCH_SIZE),
-            skipDuplicates: true,
-          })
-        }
-      })
-    }
+    await db.$transaction((tx) => notifyArticlePublished(tx, article))
   }
 
   return { success: true }
