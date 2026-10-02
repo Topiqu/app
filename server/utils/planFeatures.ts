@@ -105,7 +105,7 @@ export const syncAutoRelease = async (tx: FeatureSyncDb, clientSiteId: string, a
 
 /** The feature toggle is the client's scheduling control. Keeping a separate `NONE` value while
  *  the feature says enabled creates a configuration that can never run and cannot be repaired in
- *  client settings. Preserve an explicit DAILY/WEEKLY choice; otherwise use DAILY as the default. */
+ *  client settings. Preserve an explicit DAILY/WEEKLY/INTERVAL choice; otherwise use DAILY as the default. */
 export const syncGenerationSchedule = async (tx: FeatureSyncDb, clientSiteId: string, active: FeatureCode[]) => {
   if (active.includes('ARTICLE_CRONS')) {
     await tx.clientSite.updateMany({
@@ -115,9 +115,10 @@ export const syncGenerationSchedule = async (tx: FeatureSyncDb, clientSiteId: st
     return
   }
 
+  // A stale slot would fire the moment scheduling comes back; the cron derives a fresh one instead.
   await tx.clientSite.updateMany({
     where: { id: clientSiteId, generationFrequency: { not: 'NONE' } },
-    data: { generationFrequency: 'NONE' },
+    data: { generationFrequency: 'NONE', nextReleaseAt: null },
   })
 }
 

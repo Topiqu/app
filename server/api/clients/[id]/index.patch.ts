@@ -6,6 +6,7 @@ import { randomBytes } from 'crypto'
 import { DbNull } from '@zenstackhq/orm'
 import { models } from '~~/shared/databaseSchemas'
 import { PUBLICATION_CHANNELS } from '~~/shared/utils/publicationChannels'
+import { nextRelease, releaseScheduleError } from '~~/shared/utils/releaseSchedule'
 import { domainVerificationDefaults, isValidDomain, normalizeDomain } from '~~/shared/utils/domain'
 import { hasAdvancedBranding, normalizeAccentColor, parseBrandGradient } from '~~/shared/utils/publicationBranding'
 import {
@@ -111,6 +112,14 @@ export default defineEventHandler(async (event) => {
     clientSite.typographyPreset !== 'CUSTOM'
   )
     throw createError({ statusCode: 403, statusMessage: 'Custom fonts require Pro or higher' })
+  if (RELEASE_SCHEDULE_FIELDS.some((field) => field in data)) {
+    // Validated as a whole: a window or interval is only wrong relative to its other end.
+    const schedule = releaseScheduleOf({ ...clientSite, ...data })
+    const invalid = schedule && releaseScheduleError(schedule)
+    if (invalid) throw createError({ statusCode: 400, statusMessage: `Invalid release schedule: ${invalid}` })
+    // A changed rhythm starts over from now rather than from a slot the old rules picked.
+    data.nextReleaseAt = schedule ? nextRelease(schedule, {}) : null
+  }
   const domainChanged = typeof data.domain === 'string' && data.domain !== clientSite.domain
   if (domainChanged) Object.assign(data, domainVerificationDefaults(data.domain, randomBytes(24).toString('base64url')))
 

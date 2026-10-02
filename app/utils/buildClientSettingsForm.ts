@@ -3,12 +3,17 @@ import type { SocialPlatform, ClientSite as _ClientSite } from '~~/generated/zen
 
 import equal from 'fast-deep-equal'
 import { parseBrandGradient, type BrandGradient } from '~~/shared/utils/publicationBranding'
+import { releaseScheduleSettings, type ReleaseScheduleSettings } from '~~/shared/utils/releaseSchedule'
 import { publicationChannelSettings, type PublicationChannelSettings } from '~~/shared/utils/publicationChannels'
 
-export interface ClientSite extends Omit<_ClientSite, 'billingPlan' | 'nextBillingAt' | 'lastGeneratedAt'> {
+export interface ClientSite extends Omit<
+  _ClientSite,
+  'billingPlan' | 'nextBillingAt' | 'lastGeneratedAt' | 'nextReleaseAt'
+> {
   billingPlan: 'MONTHLY' | 'ANNUAL' | 'PERMANENT' | null
   nextBillingAt: string | null
   lastGeneratedAt: string | null
+  nextReleaseAt: string | null
   activeFeatures: string[] | null
   keywords: string[] | null
   allowedFeatures: {
@@ -26,7 +31,7 @@ export interface ClientSite extends Omit<_ClientSite, 'billingPlan' | 'nextBilli
   articleWallet?: { balance: number; reserved: number; available: number } | null
 }
 
-export interface ClientSettingsForm extends PublicationChannelSettings {
+export interface ClientSettingsForm extends PublicationChannelSettings, ReleaseScheduleSettings {
   focus: string
   audience: string
   language: (typeof LanguageSchema.options)[number]
@@ -53,7 +58,7 @@ export interface ClientSettingsForm extends PublicationChannelSettings {
   commentsEnabled: boolean
   commentGifsEnabled: boolean
   aiSeriesEnabled: boolean
-  generationFrequency: 'DAILY' | 'WEEKLY' | 'NONE'
+  generationFrequency: 'DAILY' | 'WEEKLY' | 'INTERVAL' | 'NONE'
   translationMode: 'OFF' | 'MANUAL' | 'AUTO' | 'HYBRID'
   translationLanguages: string[]
   discloseAiContent: boolean
@@ -91,6 +96,7 @@ const emptyForm = (): ClientSettingsForm => ({
   ...publicationChannelSettings(),
   aiSeriesEnabled: false,
   generationFrequency: 'NONE',
+  ...releaseScheduleSettings(),
   translationMode: 'OFF',
   translationLanguages: [],
   discloseAiContent: false,
@@ -147,6 +153,7 @@ export function buildClientSettingsForm(client?: ClientSite | null): ClientSetti
     ...publicationChannelSettings(client),
     aiSeriesEnabled: client.aiSeriesEnabled ?? false,
     generationFrequency: client.generationFrequency ?? 'NONE',
+    ...releaseScheduleSettings(client),
     translationMode: client.translationMode ?? 'OFF',
     translationLanguages: client.translationLanguages ?? [],
     discloseAiContent: client.discloseAiContent ?? false,

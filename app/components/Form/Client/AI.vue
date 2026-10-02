@@ -166,21 +166,12 @@
           />
         </div>
         <div class="p-5 sm:p-6">
-          <h4 class="text-sm font-semibold text-highlighted">
-            {{ $t('common.preferences.generationFrequency.label') }}
-          </h4>
-          <p class="mb-4 mt-1 text-sm leading-5 text-muted">
-            {{ $t('common.preferences.generationFrequency.description') }}
-          </p>
-          <UFormField :label="$t('common.preferences.generationFrequency.label')" :ui="{ label: 'sr-only' }">
-            <URadioGroup
-              v-model="generationFrequency"
-              :items="generationFrequencyOptions"
-              variant="card"
-              class="grid gap-3 sm:grid-cols-2"
-              :ui="{ item: 'rounded-(--topiqu-surface-radius)' }"
-            />
-          </UFormField>
+          <FormClientReleaseSchedule
+            v-model:frequency="generationFrequency"
+            v-model:schedule="releaseSchedule"
+            :articlesRemaining
+            :nextReleaseAt
+          />
         </div>
         <div class="flex items-start gap-4 p-5 sm:p-6">
           <div class="grid size-10 shrink-0 place-items-center rounded-xl bg-elevated text-muted">
@@ -297,6 +288,8 @@
 </template>
 
 <script setup lang="ts">
+import type { ReleaseFrequency, ReleaseScheduleSettings } from '~~/shared/utils/releaseSchedule'
+
 import { languageTag } from '~~/shared/utils/language'
 import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
 import { BIO_MAX_LENGTH } from '~~/shared/utils/profile'
@@ -315,7 +308,9 @@ const props = defineProps<{
   articleCronsEnabled: boolean
   autoRelease: boolean
   aiSeriesEnabled: boolean
-  generationFrequency: 'DAILY' | 'WEEKLY' | 'NONE'
+  generationFrequency: 'DAILY' | 'WEEKLY' | 'INTERVAL' | 'NONE'
+  articlesRemaining?: number | null
+  nextReleaseAt?: string | null
   canEnableAi: boolean
   canEnableSentiment: boolean
   canEnableArticleCrons: boolean
@@ -342,7 +337,7 @@ const emit = defineEmits<{
   'update:avatarUrl': [string]
   'update:autoRelease': [boolean]
   'update:aiSeriesEnabled': [boolean]
-  'update:generationFrequency': ['DAILY' | 'WEEKLY']
+  'update:generationFrequency': [ReleaseFrequency]
   'update:translationMode': ['OFF' | 'MANUAL' | 'AUTO' | 'HYBRID']
   'update:translationLanguages': [string[]]
   'update:discloseAiContent': [boolean]
@@ -355,17 +350,11 @@ const translationMode = computed({
   get: () => props.translationMode,
   set: (v) => emit('update:translationMode', v),
 })
-const generationFrequency = computed<'DAILY' | 'WEEKLY'>({
-  get: () => (props.generationFrequency === 'WEEKLY' ? 'WEEKLY' : 'DAILY'),
+const generationFrequency = computed<ReleaseFrequency>({
+  get: () => (props.generationFrequency === 'NONE' ? 'DAILY' : props.generationFrequency),
   set: (value) => emit('update:generationFrequency', value),
 })
-const generationFrequencyOptions = computed(() =>
-  (['DAILY', 'WEEKLY'] as const).map((value) => ({
-    value,
-    label: t(`common.preferences.generationFrequency.options.${value}`),
-    description: t(`common.preferences.generationFrequency.optionDescriptions.${value}`),
-  })),
-)
+const releaseSchedule = defineModel<ReleaseScheduleSettings>('releaseSchedule', { required: true })
 
 const translationModeOptions = computed(() =>
   (['OFF', 'MANUAL', 'AUTO', 'HYBRID'] as const).map((value) => ({

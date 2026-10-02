@@ -83,7 +83,7 @@
         "plan": { "label": "Offre" },
         "generationFrequency": {
           "label": "Fréquence de génération",
-          "options": { "NONE": "Aucune", "DAILY": "Quotidienne", "WEEKLY": "Hebdomadaire" }
+          "options": { "NONE": "Aucune", "DAILY": "Quotidienne", "WEEKLY": "Hebdomadaire", "INTERVAL": "Irrégulière" }
         },
         "tokenLimit": { "label": "Capacité en tokens", "placeholder": "Capacité maximale allouée" }
       },

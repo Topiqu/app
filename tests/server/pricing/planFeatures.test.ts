@@ -215,7 +215,7 @@ describe('syncGenerationSchedule', () => {
 
     expect(tx.clientSite.updateMany).toHaveBeenCalledWith({
       where: { id: 'cs1', generationFrequency: { not: 'NONE' } },
-      data: { generationFrequency: 'NONE' },
+      data: { generationFrequency: 'NONE', nextReleaseAt: null },
     })
   })
 })

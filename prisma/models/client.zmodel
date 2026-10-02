@@ -18,6 +18,7 @@ enum GenerationFrequency {
     NONE
     DAILY
     WEEKLY
+    INTERVAL
 }
 
 enum FeatureCodes {
@@ -105,6 +106,14 @@ model ClientSite with Base {
     headingFontUrl       String?             @length(0, 255)
     bodyFontUrl          String?             @length(0, 255)
     generationFrequency  GenerationFrequency @default(NONE)
+    timeZone             String              @default("Europe/Prague") @length(1, 64)
+    releaseHour          Int                 @default(16)
+    releaseWindowStart   Int                 @default(7)
+    releaseWindowEnd     Int                 @default(21)
+    releaseDays          Int[]               @default([1, 2, 3, 4, 5, 6, 7])
+    intervalMinHours     Int                 @default(24)
+    intervalMaxHours     Int                 @default(72)
+    nextReleaseAt        DateTime?
     articleCreditWallet  ArticleCreditWallet?
     autoRelease          Boolean             @default(false)
     commentsEnabled      Boolean             @default(true)
@@ -190,6 +199,7 @@ model ClientSite with Base {
     @@allow('all', auth().role == 'superadmin')
     @@index([domain, name, plan, billingPlan])
     @@index([trialEndsAt, trialAcknowledgedAt])
+    @@index([nextReleaseAt])
 }
 
 model Feature with Base {

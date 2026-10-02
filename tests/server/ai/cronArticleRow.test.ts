@@ -67,8 +67,9 @@ describe('generate-article cron row', () => {
     expect(task).toContain("generated.research?.status === 'completed'")
     expect(task).toContain('generated.research?.sourceCount > 0')
     expect(task).toMatch(
-      /client\.autoRelease &&\s+client\.publishToWeb &&\s+qualityApproved &&\s+mediaApproved &&\s+coverApproved\s+\? 'published'\s+: 'draft'/,
+      /const releasable =\s+client\.autoRelease &&\s+client\.publishToWeb &&\s+qualityApproved &&\s+mediaApproved &&\s+coverApproved\n/,
     )
+    expect(task).toContain("const status = releasable && !releaseAt ? 'published' : 'draft'")
     expect(task).toContain('const coverApproved = Boolean(generated.articleImageUrl)')
     expect(task).toContain('mediaReport.counts.needsAttention === 0')
     expect(task).toContain('heldFromAutoRelease')

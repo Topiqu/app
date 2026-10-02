@@ -1,0 +1,13 @@
+ALTER TYPE "GenerationFrequency" ADD VALUE 'INTERVAL';
+
+ALTER TABLE "ClientSite"
+ADD COLUMN "timeZone" TEXT NOT NULL DEFAULT 'Europe/Prague',
+ADD COLUMN "releaseHour" INTEGER NOT NULL DEFAULT 16,
+ADD COLUMN "releaseWindowStart" INTEGER NOT NULL DEFAULT 7,
+ADD COLUMN "releaseWindowEnd" INTEGER NOT NULL DEFAULT 21,
+ADD COLUMN "releaseDays" INTEGER[] DEFAULT ARRAY[1, 2, 3, 4, 5, 6, 7]::INTEGER[],
+ADD COLUMN "intervalMinHours" INTEGER NOT NULL DEFAULT 24,
+ADD COLUMN "intervalMaxHours" INTEGER NOT NULL DEFAULT 72,
+ADD COLUMN "nextReleaseAt" TIMESTAMP(3);
+
+CREATE INDEX "ClientSite_nextReleaseAt_idx" ON "ClientSite"("nextReleaseAt");

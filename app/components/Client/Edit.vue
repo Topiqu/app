@@ -71,6 +71,7 @@
                 { label: $t('master.clientEdit.fields.generationFrequency.options.NONE'), value: 'NONE' },
                 { label: $t('master.clientEdit.fields.generationFrequency.options.DAILY'), value: 'DAILY' },
                 { label: $t('master.clientEdit.fields.generationFrequency.options.WEEKLY'), value: 'WEEKLY' },
+                { label: $t('master.clientEdit.fields.generationFrequency.options.INTERVAL'), value: 'INTERVAL' },
               ]"
             />
           </UFormField>

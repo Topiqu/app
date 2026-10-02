@@ -834,11 +834,49 @@
         "description": "Jak často má AI autor připravit nový článek.",
         "options": {
           "DAILY": "Každý den",
-          "WEEKLY": "Jednou týdně"
+          "WEEKLY": "Jednou týdně",
+          "INTERVAL": "Nepravidelně"
         },
         "optionDescriptions": {
-          "DAILY": "Nový koncept se připraví každý den, jakmile je předchozí běh uzavřený.",
-          "WEEKLY": "Jeden nový koncept za sedm dní. Vhodné pro pomalejší publikační rytmus."
+          "DAILY": "Jeden článek denně kolem zvolené hodiny.",
+          "WEEKLY": "Jeden článek každých sedm dní kolem zvolené hodiny.",
+          "INTERVAL": "V rámci vašich pravidel vybereme pokaždé jiný den a čas, jako by vydával člověk."
+        }
+      },
+      "releaseSchedule": {
+        "releaseHour": "Čas vydání",
+        "interval": {
+          "label": "Jednou za",
+          "help": "Minimálně {hours} hodin od sebe.",
+          "min": "Nejkratší odstup",
+          "max": "Nejdelší odstup",
+          "unit": "Jednotka",
+          "units": {
+            "hours": "hodin",
+            "days": "dní",
+            "weeks": "týdnů"
+          }
+        },
+        "window": {
+          "label": "Vydávat mezi",
+          "from": "Od",
+          "to": "Do"
+        },
+        "days": "Dny vydávání",
+        "timeZone": "Časové pásmo",
+        "next": "Další článek: {date}",
+        "preview": "Nejbližší vydání",
+        "previewInterval": "Příklad nejbližších vydání (přesné časy losujeme)",
+        "perMonth": "Žádný článek v příštích 30 dnech | ≈ {count} článek v příštích 30 dnech | ≈ {count} články v příštích 30 dnech | ≈ {count} článků v příštích 30 dnech",
+        "creditsUntil": "kredity vystačí zhruba do {date}",
+        "noCredits": "nezbývají žádné články — pro další vydávání je doplňte",
+        "errors": {
+          "timeZone": "Vyberte platné časové pásmo.",
+          "releaseHour": "Vyberte čas vydání.",
+          "releaseWindow": "Konec okna musí být po jeho začátku.",
+          "releaseDays": "Vyberte alespoň jeden den vydávání.",
+          "intervalMinHours": "Nejkratší odstup je mimo povolený rozsah.",
+          "intervalMaxHours": "Nejdelší odstup nesmí být kratší než nejkratší."
         }
       },
       "aiSeries": {

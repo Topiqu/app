@@ -133,6 +133,7 @@
             </template>
           </UAlert>
           <LazyFormClientAI
+            v-model:releaseSchedule="releaseScheduleModel"
             :clientId="clientId ?? ''"
             :username="form.aiUser.username"
             :bio="form.aiUser.bio"
@@ -148,6 +149,8 @@
             :autoRelease="form.autoRelease"
             :aiSeriesEnabled="form.aiSeriesEnabled"
             :generationFrequency="form.generationFrequency"
+            :articlesRemaining="client?.articlesRemaining ?? null"
+            :nextReleaseAt="releaseScheduleDirty ? null : (client?.nextReleaseAt ?? null)"
             :language="form.language"
             :translationMode="form.translationMode"
             :translationLanguages="form.translationLanguages"
@@ -191,6 +194,7 @@
 
 <script setup lang="ts">
 import equal from 'fast-deep-equal'
+import { releaseScheduleSettings, type ReleaseScheduleSettings } from '~~/shared/utils/releaseSchedule'
 import { publicationChannelSettings, type PublicationChannelSettings } from '~~/shared/utils/publicationChannels'
 
 import type { TabItem } from '~/components/TabNav.vue'
@@ -224,8 +228,17 @@ const publicationChannelsModel = computed({
   get: () => publicationChannelSettings(form.value),
   set: (settings: PublicationChannelSettings) => Object.assign(form.value, settings),
 })
+const releaseScheduleModel = computed({
+  get: () => releaseScheduleSettings(form.value),
+  set: (settings: ReleaseScheduleSettings) => Object.assign(form.value, settings),
+})
 const pristine = ref(buildClientSettingsForm(client.value))
 const isDirty = computed(() => !equal(form.value, pristine.value))
+const releaseScheduleDirty = computed(
+  () =>
+    form.value.generationFrequency !== pristine.value.generationFrequency ||
+    !equal(releaseScheduleSettings(form.value), releaseScheduleSettings(pristine.value)),
+)
 
 const onFontStored = async (field: 'headingFontUrl' | 'bodyFontUrl', url: string) => {
   form.value[field] = url

@@ -833,12 +833,50 @@
         "label": "Fréquence des articles",
         "description": "Fréquence à laquelle l'auteur IA doit préparer un nouvel article.",
         "options": {
-          "DAILY": "Tous les jours",
-          "WEEKLY": "Une fois par semaine"
+          "DAILY": "Chaque jour",
+          "WEEKLY": "Une fois par semaine",
+          "INTERVAL": "Irrégulièrement"
         },
         "optionDescriptions": {
-          "DAILY": "Un nouveau brouillon est préparé chaque jour dès que l'exécution précédente est terminée.",
-          "WEEKLY": "Un nouveau brouillon tous les sept jours pour un rythme de publication plus modéré."
+          "DAILY": "Un article par jour autour de l’heure choisie.",
+          "WEEKLY": "Un article tous les sept jours autour de l’heure choisie.",
+          "INTERVAL": "Dans le cadre de vos règles, nous choisissons à chaque fois un autre jour et une autre heure, comme le ferait une rédaction humaine."
+        }
+      },
+      "releaseSchedule": {
+        "releaseHour": "Heure de publication",
+        "interval": {
+          "label": "Une fois tous les",
+          "help": "Au moins {hours} heures d’écart.",
+          "min": "Écart le plus court",
+          "max": "Écart le plus long",
+          "unit": "Unité",
+          "units": {
+            "hours": "heures",
+            "days": "jours",
+            "weeks": "semaines"
+          }
+        },
+        "window": {
+          "label": "Publier entre",
+          "from": "De",
+          "to": "À"
+        },
+        "days": "Jours de publication",
+        "timeZone": "Fuseau horaire",
+        "next": "Prochain article : {date}",
+        "preview": "Prochaines publications",
+        "previewInterval": "Exemple des prochaines publications (les heures exactes sont tirées au sort)",
+        "perMonth": "Aucun article dans les 30 prochains jours | ≈ {count} article dans les 30 prochains jours | ≈ {count} articles dans les 30 prochains jours",
+        "creditsUntil": "les crédits suffisent jusqu’au {date} environ",
+        "noCredits": "plus aucun article — rechargez pour continuer à publier",
+        "errors": {
+          "timeZone": "Choisissez un fuseau horaire valide.",
+          "releaseHour": "Choisissez une heure de publication.",
+          "releaseWindow": "La plage doit se terminer après son début.",
+          "releaseDays": "Choisissez au moins un jour de publication.",
+          "intervalMinHours": "L’écart le plus court est hors limites.",
+          "intervalMaxHours": "L’écart le plus long ne peut pas être plus court que le plus court."
         }
       },
       "aiSeries": {

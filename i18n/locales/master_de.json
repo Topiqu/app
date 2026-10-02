@@ -86,7 +86,7 @@
         "plan": { "label": "Tarif" },
         "generationFrequency": {
           "label": "Generierungshäufigkeit",
-          "options": { "NONE": "Keine", "DAILY": "Täglich", "WEEKLY": "Wöchentlich" }
+          "options": { "NONE": "Keine", "DAILY": "Täglich", "WEEKLY": "Wöchentlich", "INTERVAL": "Unregelmäßig" }
         },
         "tokenLimit": { "label": "Token-Kapazität", "placeholder": "Maximal zugewiesene Kapazität" }
       },

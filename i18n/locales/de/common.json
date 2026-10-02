@@ -833,12 +833,50 @@
         "label": "Artikelhäufigkeit",
         "description": "Wie oft der KI-Autor einen neuen Artikel vorbereiten soll.",
         "options": {
-          "DAILY": "Jeden Tag",
-          "WEEKLY": "Einmal pro Woche"
+          "DAILY": "Täglich",
+          "WEEKLY": "Einmal pro Woche",
+          "INTERVAL": "Unregelmäßig"
         },
         "optionDescriptions": {
-          "DAILY": "Ein neuer Entwurf wird täglich vorbereitet, sobald der vorherige Durchlauf abgeschlossen ist.",
-          "WEEKLY": "Alle sieben Tage ein neuer Entwurf für einen ruhigeren Veröffentlichungsrhythmus."
+          "DAILY": "Ein Artikel pro Tag um die gewählte Uhrzeit.",
+          "WEEKLY": "Ein Artikel alle sieben Tage um die gewählte Uhrzeit.",
+          "INTERVAL": "Innerhalb Ihrer Regeln wählen wir jedes Mal einen anderen Tag und eine andere Uhrzeit – wie eine menschliche Redaktion."
+        }
+      },
+      "releaseSchedule": {
+        "releaseHour": "Veröffentlichungszeit",
+        "interval": {
+          "label": "Einmal alle",
+          "help": "Mindestens {hours} Stunden Abstand.",
+          "min": "Kürzester Abstand",
+          "max": "Längster Abstand",
+          "unit": "Einheit",
+          "units": {
+            "hours": "Stunden",
+            "days": "Tage",
+            "weeks": "Wochen"
+          }
+        },
+        "window": {
+          "label": "Veröffentlichen zwischen",
+          "from": "Von",
+          "to": "Bis"
+        },
+        "days": "Veröffentlichungstage",
+        "timeZone": "Zeitzone",
+        "next": "Nächster Artikel: {date}",
+        "preview": "Nächste Veröffentlichungen",
+        "previewInterval": "Beispiel der nächsten Veröffentlichungen (genaue Zeiten werden ausgelost)",
+        "perMonth": "Keine Artikel in den nächsten 30 Tagen | ≈ {count} Artikel in den nächsten 30 Tagen | ≈ {count} Artikel in den nächsten 30 Tagen",
+        "creditsUntil": "Guthaben reicht etwa bis {date}",
+        "noCredits": "keine Artikel mehr – laden Sie auf, um weiter zu veröffentlichen",
+        "errors": {
+          "timeZone": "Wählen Sie eine gültige Zeitzone.",
+          "releaseHour": "Wählen Sie eine Veröffentlichungszeit.",
+          "releaseWindow": "Das Zeitfenster muss nach seinem Beginn enden.",
+          "releaseDays": "Wählen Sie mindestens einen Veröffentlichungstag.",
+          "intervalMinHours": "Der kürzeste Abstand liegt außerhalb des zulässigen Bereichs.",
+          "intervalMaxHours": "Der längste Abstand darf nicht kürzer als der kürzeste sein."
         }
       },
       "aiSeries": {

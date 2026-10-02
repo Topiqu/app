@@ -161,6 +161,7 @@
                   { label: $t('master.clientEdit.fields.generationFrequency.options.NONE'), value: 'NONE' },
                   { label: $t('master.clientEdit.fields.generationFrequency.options.DAILY'), value: 'DAILY' },
                   { label: $t('master.clientEdit.fields.generationFrequency.options.WEEKLY'), value: 'WEEKLY' },
+                  { label: $t('master.clientEdit.fields.generationFrequency.options.INTERVAL'), value: 'INTERVAL' },
                 ]"
               />
             </UFormField>
@@ -271,7 +272,7 @@ const initClient = () => ({
   customDomain: '',
   domainType: 'SUBDOMAIN' as 'SUBDOMAIN' | 'CUSTOM',
   plan: 'BASIC' as 'BASIC' | 'PRO' | 'PREMIUM' | 'CUSTOM',
-  generationFrequency: 'NONE' as 'NONE' | 'DAILY' | 'WEEKLY',
+  generationFrequency: 'NONE' as 'NONE' | 'DAILY' | 'WEEKLY' | 'INTERVAL',
   optimizedUrl: '',
   initialArticles: 0,
   focus: '',

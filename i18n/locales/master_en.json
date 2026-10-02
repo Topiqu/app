@@ -125,7 +125,8 @@
           "options": {
             "NONE": "None",
             "DAILY": "Daily",
-            "WEEKLY": "Weekly"
+            "WEEKLY": "Weekly",
+            "INTERVAL": "Irregularly"
           }
         },
         "tokenLimit": {

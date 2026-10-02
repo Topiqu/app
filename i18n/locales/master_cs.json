@@ -125,7 +125,8 @@
           "options": {
             "NONE": "Žádná",
             "DAILY": "Denní",
-            "WEEKLY": "Týdenní"
+            "WEEKLY": "Týdenní",
+            "INTERVAL": "Nepravidelně"
           }
         },
         "tokenLimit": {

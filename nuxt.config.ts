@@ -127,7 +127,7 @@ export default defineNuxtConfig({
     scheduledTasks: IS_PROD
       ? {
           '*/10 * * * *': ['publish-check'],
-          '0 15 * * *': ['generate-article'],
+          '*/15 * * * *': ['generate-article'],
           '*/30 * * * *': ['sentiment-analysis'],
           '0 3 * * *': ['community-insights'],
           '0 2 * * *': ['search-console-sync'],

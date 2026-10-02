@@ -45,12 +45,13 @@ const skippedSites = async (pickedIds: string[]) => {
   const scheduled = await prisma.clientSite.findMany({
     where: {
       id: { notIn: pickedIds },
-      OR: [{ generationFrequency: { in: ['DAILY', 'WEEKLY'] } }, activeFeatureFilter('ARTICLE_CRONS')],
+      OR: [{ generationFrequency: { not: 'NONE' } }, activeFeatureFilter('ARTICLE_CRONS')],
     },
     select: {
       id: true,
       name: true,
       lastGeneratedAt: true,
+      nextReleaseAt: true,
       generationFrequency: true,
       articleCreditWallet: {
         select: {
@@ -69,6 +70,7 @@ const skippedSites = async (pickedIds: string[]) => {
     clientSiteId: site.id,
     name: site.name,
     lastGeneratedAt: site.lastGeneratedAt?.toISOString() ?? null,
+    nextReleaseAt: site.nextReleaseAt?.toISOString() ?? null,
     generationFrequency: site.generationFrequency,
     articlesRemaining: site.articleCreditWallet?.grants.reduce((total, grant) => total + grant.remaining, 0) ?? 0,
     reason: !site.features.length
@@ -81,7 +83,7 @@ const skippedSites = async (pickedIds: string[]) => {
   }))
 }
 
-const processClient = async (client: any) =>
+const processClient = async (client: any, slot: Date) =>
   withArticleCreditReservation(
     client.id,
     'SCHEDULED_ARTICLE',
@@ -328,10 +330,11 @@ Respond ONLY in valid JSON (schema required).
       const mediaApproved = mediaReport.counts.needsAttention === 0
       // Nobody opens an article without a cover, so one that found none waits for a human.
       const coverApproved = Boolean(generated.articleImageUrl)
-      const status =
-        client.autoRelease && client.publishToWeb && qualityApproved && mediaApproved && coverApproved
-          ? 'published'
-          : 'draft'
+      const releasable = client.autoRelease && client.publishToWeb && qualityApproved && mediaApproved && coverApproved
+      // Generation runs ahead of the slot; `publish-check` releases the draft when the slot arrives.
+      // A slot already behind us (a slow run, a cron outage) publishes now instead.
+      const releaseAt = releasable && slot > new Date() ? slot : null
+      const status = releasable && !releaseAt ? 'published' : 'draft'
 
       const { article, appliedSeries } = await prisma.$transaction(async (ctx: any) => {
         const slug = await generateUniqueSlug(ctx, generated.title, clientSiteId)
@@ -361,6 +364,7 @@ Respond ONLY in valid JSON (schema required).
             structureVariant: topic?.variant ?? null,
             clientSiteId,
             status,
+            releaseAt,
             publishedAt: status === 'published' ? new Date() : null,
             aiInvolvement: 'FULL',
             articleSeriesId: appliedSeries.seriesId,
@@ -384,7 +388,8 @@ Respond ONLY in valid JSON (schema required).
           skipDuplicates: true,
         })
 
-        if (status === 'published') {
+        // Taken for a scheduled release too: `publish-check` holds it if the media changed meanwhile.
+        if (releasable) {
           await ctx.mediaRightsPublicationSnapshot.create({
             data: {
               articleId: article.id,
@@ -498,6 +503,7 @@ Respond ONLY in valid JSON (schema required).
             generatedWordCount,
             valueEvent,
             heldFromAutoRelease: client.autoRelease && !qualityApproved,
+            scheduledFor: releaseAt?.toISOString() ?? null,
             coverApproved,
             editorialReview: generated.editorialReview,
             researchApproved,
@@ -508,6 +514,7 @@ Respond ONLY in valid JSON (schema required).
       return {
         clientSiteId,
         status,
+        releaseAt: releaseAt?.toISOString() ?? null,
         articleId: article.id,
         title: article.title,
         format: cronFormat,
@@ -546,6 +553,14 @@ export default defineMonitoredTask({
         focus: true,
         language: true,
         generationFrequency: true,
+        timeZone: true,
+        releaseHour: true,
+        releaseWindowStart: true,
+        releaseWindowEnd: true,
+        releaseDays: true,
+        intervalMinHours: true,
+        intervalMaxHours: true,
+        nextReleaseAt: true,
         communityInsight: true,
         lastGeneratedAt: true,
         articleCreditWallet: {
@@ -580,24 +595,37 @@ export default defineMonitoredTask({
         users: { select: { id: true }, orderBy: { role: 'desc' }, take: 1 },
       },
       where: {
-        generationFrequency: { in: ['DAILY', 'WEEKLY'] },
+        generationFrequency: { not: 'NONE' },
         ...activeFeatureFilter('ARTICLE_CRONS'),
-        OR: [
-          { lastGeneratedAt: null },
-          {
-            generationFrequency: 'DAILY',
-            lastGeneratedAt: { lte: generationDueBefore(now, 'DAILY') },
-          },
-          {
-            generationFrequency: 'WEEKLY',
-            lastGeneratedAt: { lte: generationDueBefore(now, 'WEEKLY') },
-          },
-        ],
+        OR: [{ nextReleaseAt: null }, { nextReleaseAt: { lte: new Date(now.getTime() + GENERATION_LEAD_MS) } }],
       },
     })
-    const clients = candidates.filter(
+
+    // Out of credits keeps its slot: the first run after a top-up generates for it.
+    const funded = candidates.filter(
       (client) => (client.articleCreditWallet?.grants.reduce((total, grant) => total + grant.remaining, 0) ?? 0) >= 1,
     )
+    const due: { client: (typeof funded)[number]; slot: Date }[] = []
+    for (const client of funded) {
+      const plan = planRun(client, now)
+      if (plan.action === 'off') continue
+      if (plan.action === 'wait') {
+        if (!client.nextReleaseAt)
+          await prisma.clientSite.updateMany({
+            where: { id: client.id, nextReleaseAt: null },
+            data: { nextReleaseAt: plan.slot },
+          })
+        continue
+      }
+      // The guarded write is the claim: an overlapping run or replica that read the same slot
+      // updates nothing and leaves the site alone.
+      const claimed = await prisma.clientSite.updateMany({
+        where: { id: client.id, nextReleaseAt: client.nextReleaseAt },
+        data: { nextReleaseAt: plan.following },
+      })
+      if (claimed.count) due.push({ client, slot: plan.slot })
+    }
+    const clients = due.map(({ client }) => client)
 
     // The `where` above drops a client without leaving a trace, so a site that stopped generating
     // looks exactly like a site with nothing due. Name the reason instead of guessing it later.
@@ -611,6 +639,8 @@ export default defineMonitoredTask({
       await logAction({
         action: 'CRON_ARTICLE_SKIPPED',
         clientSiteId: site.clientSiteId,
+        // The cron runs every 15 minutes; one entry per slot (or per day without one) is the signal.
+        idempotencyKey: `cron-skip:${site.clientSiteId}:${site.reason}:${site.nextReleaseAt ?? now.toISOString().slice(0, 10)}`,
         metadata: {
           reason: site.reason,
           generationFrequency: site.generationFrequency,
@@ -622,15 +652,15 @@ export default defineMonitoredTask({
     const BATCH_SIZE = 5
 
     const outcomes: any[] = []
-    for (let i = 0; i < clients.length; i += BATCH_SIZE) {
-      const batch = clients.slice(i, i + BATCH_SIZE)
-      const settled = await Promise.allSettled(batch.map(processClient))
+    for (let i = 0; i < due.length; i += BATCH_SIZE) {
+      const batch = due.slice(i, i + BATCH_SIZE)
+      const settled = await Promise.allSettled(batch.map(({ client, slot }) => processClient(client, slot)))
       settled.forEach((result, index) => {
         outcomes.push(
           result.status === 'fulfilled'
             ? result.value
             : {
-                clientSiteId: batch[index]?.id,
+                clientSiteId: batch[index]?.client.id,
                 status: 'failed',
                 stage: 'unhandled',
                 error: result.reason instanceof Error ? result.reason.message : String(result.reason),

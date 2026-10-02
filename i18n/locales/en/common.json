@@ -834,11 +834,49 @@
         "description": "How often the AI author should prepare a new article.",
         "options": {
           "DAILY": "Every day",
-          "WEEKLY": "Once a week"
+          "WEEKLY": "Once a week",
+          "INTERVAL": "Irregularly"
         },
         "optionDescriptions": {
-          "DAILY": "A new draft is prepared each day once the previous run is complete.",
-          "WEEKLY": "One new draft every seven days for a slower publishing rhythm."
+          "DAILY": "One article a day around the hour you choose.",
+          "WEEKLY": "One article every seven days around the hour you choose.",
+          "INTERVAL": "We pick a different day and time within your rules, like a human editor would."
+        }
+      },
+      "releaseSchedule": {
+        "releaseHour": "Release time",
+        "interval": {
+          "label": "Once every",
+          "help": "At least {hours} hours apart.",
+          "min": "Shortest gap",
+          "max": "Longest gap",
+          "unit": "Unit",
+          "units": {
+            "hours": "hours",
+            "days": "days",
+            "weeks": "weeks"
+          }
+        },
+        "window": {
+          "label": "Publish between",
+          "from": "From",
+          "to": "To"
+        },
+        "days": "Publishing days",
+        "timeZone": "Time zone",
+        "next": "Next article: {date}",
+        "preview": "Upcoming releases",
+        "previewInterval": "Example of upcoming releases (exact times are drawn at random)",
+        "perMonth": "No articles in the next 30 days | ≈ {count} article in the next 30 days | ≈ {count} articles in the next 30 days",
+        "creditsUntil": "credits last until about {date}",
+        "noCredits": "no articles left — top up to keep publishing",
+        "errors": {
+          "timeZone": "Choose a valid time zone.",
+          "releaseHour": "Choose a release time.",
+          "releaseWindow": "The window must end after it starts.",
+          "releaseDays": "Choose at least one publishing day.",
+          "intervalMinHours": "The shortest gap is out of range.",
+          "intervalMaxHours": "The longest gap must not be shorter than the shortest one."
         }
       },
       "aiSeries": {
