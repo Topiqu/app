@@ -1,6 +1,53 @@
-import { describe, expect, it } from 'vitest'
+import { createError } from 'h3'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { externalArticleWhere, flattenExternalArticle, parseExternalTagFilter } from '../../server/utils/externalApi'
+import {
+  externalArticleWhere,
+  flattenExternalArticle,
+  parseExternalTagFilter,
+  requireExternalClient,
+} from '../../server/utils/externalApi'
+
+describe('external API authentication', () => {
+  afterEach(() => vi.unstubAllGlobals())
+
+  const setup = (
+    headers: Record<string, string | undefined> = {},
+    client: { id: string } | null = { id: 'tenant-1' },
+  ) => {
+    const getHeader = vi.fn((_event: unknown, name: string) => ({ 'x-api-key': 'tenant-key', ...headers })[name])
+    const findFirst = vi.fn().mockResolvedValue(client)
+    vi.stubGlobal('setResponseHeader', vi.fn())
+    vi.stubGlobal('createError', createError)
+    vi.stubGlobal('getHeader', getHeader)
+    vi.stubGlobal('prisma', { clientSite: { findFirst } })
+    return { run: () => requireExternalClient({} as never), getHeader, findFirst }
+  }
+
+  it.each([undefined, 'Topiqu-Sync/1.0.0', 'External-Sync/1.0'])(
+    'authenticates API consumers equally (user agent: %s)',
+    async (userAgent) => {
+      const { run, getHeader, findFirst } = setup({ 'user-agent': userAgent })
+      await expect(run()).resolves.toEqual({ id: 'tenant-1' })
+      expect(getHeader).toHaveBeenCalledOnce()
+      expect(getHeader).toHaveBeenCalledWith({}, 'x-api-key')
+      expect(findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { apiKey: 'tenant-key', deletedAt: null } }),
+      )
+    },
+  )
+
+  it('still rejects missing API keys before querying the tenant', async () => {
+    const { run, findFirst } = setup({ 'x-api-key': undefined })
+    await expect(run()).rejects.toMatchObject({ statusCode: 401 })
+    expect(findFirst).not.toHaveBeenCalled()
+  })
+
+  it('still rejects invalid API keys', async () => {
+    const { run } = setup({}, null)
+    await expect(run()).rejects.toMatchObject({ statusCode: 401 })
+  })
+})
 
 describe('external API helpers', () => {
   it('normalizes and deduplicates comma-separated tag filters', () => {
