@@ -647,6 +647,10 @@ export default defineMonitoredTask({
           articlesRemaining: site.articlesRemaining,
         },
       })
+      if (site.reason === 'insufficient_articles')
+        await notifyCreditsDepleted(site.clientSiteId).catch((error) =>
+          console.error('[generate-article] Credits email failed:', site.clientSiteId, error),
+        )
     }
 
     const BATCH_SIZE = 5

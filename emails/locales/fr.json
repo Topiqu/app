@@ -61,5 +61,15 @@
     "intro_no_reason": "Votre compte a été suspendu sur le sous-domaine <b>{clientSiteId}</b>.",
     "reason": "{reason}",
     "unsubscribe": { "text": "Vous ne souhaitez plus recevoir de notifications ?", "link": "Se désabonner" }
+  },
+  "creditsDepleted": {
+    "subject": "{tenantName} n’a plus d’articles",
+    "preview": "La publication planifiée est en pause jusqu’à votre recharge.",
+    "greeting": "Votre publication a besoin d’une recharge",
+    "intro": "<b>{tenantName}</b> n’a plus d’articles, l’auteur IA a donc cessé d’écrire.",
+    "paused": "La publication planifiée est en pause. Le prochain article de votre rythme sera généré dès que vous ajouterez des articles — aucun autre réglage à modifier.",
+    "safe": "Tout ce qui est déjà publié, planifié ou enregistré en brouillon reste inchangé.",
+    "button": "Recharger des articles",
+    "footer": "Nous n’envoyons ce message qu’une fois par recharge, il n’encombrera pas votre boîte."
   }
 }

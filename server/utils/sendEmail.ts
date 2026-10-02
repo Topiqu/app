@@ -147,12 +147,14 @@ export const sendEmail = async ({ event, to, template, data, lang: forcedLang }:
     userBan: ['greeting', data.introKey || 'intro_no_reason'],
     tenantInvitation: ['greeting', 'intro', 'community', 'followers', 'website', 'access', 'button', 'expiration'],
     tenantMemberRemoved: ['greeting', 'intro', 'removedBy', 'removedAt', 'otherTenants', 'contact'],
+    creditsDepleted: ['greeting', 'intro', 'paused', 'safe'],
   }
   const textParts = (textKeys[template] || ['intro'])
     .map((key) => translate(`${template}.${key}`, enrichedData))
     .filter((value) => value && !value.startsWith(`${template}.`))
   if (template === 'verificationCode') textParts.splice(2, 0, data.verificationCode || '')
   if (data.commentUrl) textParts.push(data.commentUrl)
+  if (data.topUpUrl) textParts.push(`${translate(`${template}.button`, enrichedData)}: ${data.topUpUrl}`)
   if (data.unsubscribeUrl)
     textParts.push(`${translate(`${template}.unsubscribe.text`, enrichedData)} ${data.unsubscribeUrl}`)
   const textBody = textParts

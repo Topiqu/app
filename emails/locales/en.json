@@ -73,5 +73,15 @@
       "text": "Don't want to receive notifications?",
       "link": "Unsubscribe"
     }
+  },
+  "creditsDepleted": {
+    "subject": "{tenantName} has run out of articles",
+    "preview": "Scheduled publishing is paused until you top up.",
+    "greeting": "Your publication needs a top-up",
+    "intro": "<b>{tenantName}</b> has no articles left, so the AI author has stopped writing.",
+    "paused": "Scheduled publishing is paused. The next article in your rhythm will be generated as soon as you add articles — no other setting needs to change.",
+    "safe": "Everything already published, scheduled or saved as a draft stays exactly as it is.",
+    "button": "Top up articles",
+    "footer": "We send this once per top-up, so it will not fill your inbox."
   }
 }

@@ -58,5 +58,15 @@
     "intro_no_reason": "Dein Konto wurde auf der Subdomain <b>{clientSiteId}</b> gesperrt.",
     "reason": "{reason}",
     "unsubscribe": { "text": "Du möchtest keine Benachrichtigungen mehr erhalten?", "link": "Abmelden" }
+  },
+  "creditsDepleted": {
+    "subject": "{tenantName} hat keine Artikel mehr",
+    "preview": "Die geplante Veröffentlichung pausiert, bis Sie aufladen.",
+    "greeting": "Ihre Publikation braucht neue Artikel",
+    "intro": "<b>{tenantName}</b> hat keine Artikel mehr, deshalb schreibt der KI-Autor nicht weiter.",
+    "paused": "Die geplante Veröffentlichung ist pausiert. Der nächste Artikel Ihres Rhythmus wird erstellt, sobald Sie Artikel aufladen – sonst müssen Sie nichts ändern.",
+    "safe": "Alles, was bereits veröffentlicht, geplant oder als Entwurf gespeichert ist, bleibt unverändert.",
+    "button": "Artikel aufladen",
+    "footer": "Wir senden diese E-Mail nur einmal pro Aufladung, Ihr Postfach bleibt also übersichtlich."
   }
 }

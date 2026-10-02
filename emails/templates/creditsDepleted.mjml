@@ -1,0 +1,43 @@
+<mjml>
+  <mj-head>
+    <mj-preview>{t:creditsDepleted.preview}</mj-preview>
+    <mj-attributes>
+      <mj-all font-family="Inter,Arial,sans-serif" />
+      <mj-text color="#3f3f46" line-height="1.6" font-size="15px" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body background-color="#f4f4f5">
+    <mj-section padding="32px 16px 16px">
+      <mj-column><mj-image src="{logoUrl}" width="110px" alt="Topiqu" /></mj-column>
+    </mj-section>
+    <mj-section background-color="#ffffff" border-radius="20px" padding="32px">
+      <mj-column>
+        <mj-image
+          src="{tenantLogoUrl}"
+          alt="{tenantName}"
+          width="72px"
+          height="72px"
+          border-radius="16px"
+          padding="0 0 18px"
+        />
+        <mj-text align="center" font-size="23px" font-weight="700" padding="0 0 8px"
+          >{t:creditsDepleted.greeting}</mj-text
+        >
+        <mj-text align="center" color="#52525b" padding="0 0 24px">{t:creditsDepleted.intro}</mj-text>
+        <mj-text padding="0 0 8px">{t:creditsDepleted.paused}</mj-text>
+        <mj-text padding="0 0 24px" color="#71717a">{t:creditsDepleted.safe}</mj-text>
+        <mj-button
+          href="{topUpUrl}"
+          background-color="#18181b"
+          color="#ffffff"
+          font-weight="700"
+          border-radius="10px"
+          padding="0 0 18px"
+        >
+          {t:creditsDepleted.button}
+        </mj-button>
+        <mj-text align="center" color="#71717a" font-size="13px" padding="0">{t:creditsDepleted.footer}</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>
