@@ -385,12 +385,15 @@ onMounted(() => {
 
 watch(() => route.hash, focusSection)
 
+const discardChanges = useDiscardChanges()
 function revertChanges() {
   if (!originalProfile.value) return
+  const edited = { ...profileForm }
   Object.assign(profileForm, originalProfile.value)
   draft.clear()
   isDirty.value = false
-  toast.add({ color: 'success', title: $t('common.messages.successGeneral') })
+  // The form watcher marks the restored edits dirty and saves the draft again.
+  discardChanges(() => Object.assign(profileForm, edited))
 }
 
 function openDialog(type: 'followers' | 'followed') {

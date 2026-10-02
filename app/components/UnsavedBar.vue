@@ -34,7 +34,7 @@
 
           <span class="flex shrink-0 items-center gap-1.5">
             <UButton color="neutral" variant="ghost" size="sm" :disabled="loading" @click="emit('reset')">
-              {{ $t('common.actions.reset') }}
+              {{ $t('common.actions.discardChanges') }}
             </UButton>
             <UButton size="sm" icon="mdi:content-save-outline" :loading @click="emit('save')">
               {{ $t('common.actions.saveChanges') }}

@@ -333,17 +333,11 @@ const savePreferences = async () => {
   }
 }
 
-const resetForm = async () => {
-  const confirmed = await confirm({
-    title: $t('common.messages.discardChangesTitle'),
-    message: $t('common.messages.discardChangesText'),
-    icon: 'mdi:backup-restore',
-    confirmText: $t('common.messages.discardConfirm'),
-    cancelText: $t('common.messages.deleteCancel'),
-    variant: 'danger',
-  })
-  if (!confirmed) return
+const discardChanges = useDiscardChanges()
+const resetForm = () => {
+  const edited = structuredClone(toRaw(form.value))
   form.value = structuredClone(toRaw(pristine.value))
+  discardChanges(() => (form.value = edited))
 }
 
 const generateApiKey = async () => {
