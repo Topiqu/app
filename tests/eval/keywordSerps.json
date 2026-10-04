@@ -1,0 +1,2004 @@
+{
+  "capturedAt": "2026-10-04",
+  "groups": [
+    {
+      "id": "coffee",
+      "candidates": [
+        {
+          "keyword": "espresso",
+          "volume": 8100,
+          "difficulty": 0,
+          "intent": "informational",
+          "questions": [
+            "Jak se dělá espresso?",
+            "Kolik mililitrů má espresso?",
+            "Co je silnější espresso nebo lungo?",
+            "Co je to espresso?"
+          ],
+          "aiOverview": false,
+          "organic": [
+            {
+              "title": "Espresso – Wikipedie",
+              "url": "https://cs.wikipedia.org/wiki/Espresso",
+              "domain": "cs.wikipedia.org",
+              "description": "Caffè espresso je kávový nápoj původem z Itálie. V Česku či na Slovensku se také používají pro tento nápoj termíny preso, presso, expreso, nebo piccolo z ..."
+            },
+            {
+              "title": "5 věcí, které musíte vědět o espressu",
+              "url": "https://www.vybornakava.cz/2017/5-veci-ktere-musite-vedet-o-espressu/",
+              "domain": "www.vybornakava.cz",
+              "description": "24. 10. 2023 — Jednoznačně je ze 7 gramů správně pomleté kávy na espresso, přes kterou byla protlačena voda tlakem 8–⁠⁠⁠10 barů o teplotě kolem 90 °C. Pravé ..."
+            },
+            {
+              "title": "Příprava kávy - Espresso - kompletní manuál",
+              "url": "https://www.gourmetkava.cz/cs/blog/priprava-kavy/priprava-kavy-espresso-kompletni-manual",
+              "domain": "www.gourmetkava.cz",
+              "description": "Parametry certifikovaného italského espressa · Hmotnost porce mleté kávy 7 g ± 0,5 · Výstupní teplota vody z kávovaru 88 °C ± 2 °C · Teplota nápoje v šálku 67 ° ..."
+            },
+            {
+              "title": "Co je to káva Espresso | NESCAFÉ® Dolce Gusto®",
+              "url": "https://www.dolce-gusto.cz/clanky-o-kave/co-je-to-espresso",
+              "domain": "www.dolce-gusto.cz",
+              "description": "Espresso je malá, ale hutná káva, která do každého doušku vnáší bohatou a intenzivní chuť. Vyrábí se protlačením horké vody přes jemně mletá kávová zrna pod ..."
+            },
+            {
+              "title": "Jak připravit výborné espresso - Safroncafé",
+              "url": "https://www.safroncafe.cz/zajimavosti/jak-pripravit-espresso/?srsltid=AU7gw4WDEQH4_j0C7HqCAQ-qRBON6QGxIBrE7hmgX_UrUgvuNR9rweXO",
+              "domain": "www.safroncafe.cz",
+              "description": "Pro espresso je potřeba dostatečně jemně namlít 7-10g čerstvě pražené kávy. Pro dvojité espresso je to potom 18-21g kávy. Pokud by byl čas extrakce stále moc ..."
+            }
+          ]
+        },
+        {
+          "keyword": "espresso lungo",
+          "volume": 1000,
+          "difficulty": 0,
+          "intent": "informational",
+          "questions": [
+            "Co je to espresso lungo?",
+            "Co je silnější, lungo nebo espresso?",
+            "Jak správně udělat lungo?",
+            "Jaký je rozdíl mezi lungem a Americanem?"
+          ],
+          "aiOverview": false,
+          "organic": [
+            {
+              "title": "Lungo",
+              "url": "https://cs.wikipedia.org/wiki/Lungo",
+              "domain": "cs.wikipedia.org",
+              "description": "Lungo (italský výraz pro „dlouhé“) je varianta espressa, v jehož daném množstvím kávy proteče větší objem vody, což výsledný nápoj činí slabším (řidším) ale ..."
+            },
+            {
+              "title": "Espresso Lungo: jak jej správně připravit? - Montaña Café",
+              "url": "https://www.cafemontana.cz/o-kave/lungo-jak-jej-spravne-pripravit/",
+              "domain": "www.cafemontana.cz",
+              "description": "18. 8. 2023 — Lungo lze připravovat i opačným způsobem. Postup je následující: do hrnku pro lungo si nalijeme cca 30 ml horké vody a až následně do něho ..."
+            },
+            {
+              "title": "Espresso lungo – návod na přípravu",
+              "url": "https://www.alza.cz/espresso-lungo-priprava",
+              "domain": "www.alza.cz",
+              "description": "9. 12. 2024 — Espresso Lungo – recept: Café lungo je tedy dvakrát zředěná káva, tedy 60 ml vody na 8 gramů kávy, na rozdíl od espressa, které obsahuje vody 30 ..."
+            },
+            {
+              "title": "Espresso vs Lungo: Jaký je rozdíl? (objem, chuť, kofein)",
+              "url": "https://www.mojekafe.cz/slovnik-pojmu/espresso-lungo-rozdil/",
+              "domain": "www.mojekafe.cz",
+              "description": "Je Lungo silnější než espresso? Chuťově ne, espresso je koncentrovanější. Lungo je jemnější, ale hořčí a objemnější. Sledujte nás na Instagramu · Nechce se Vám ..."
+            },
+            {
+              "title": "Příprava kávy lungo: Jak dosáhnout vyvážené chuti",
+              "url": "https://www.gourmetkava.cz/cs/blog/priprava-kavy/priprava-kavy-lungo",
+              "domain": "www.gourmetkava.cz",
+              "description": "15. 4. 2025 — Vychází z tradiční přípravy espressa, použijete stejné množství kávy, ale dvojnásobek vody (50-70 ml) a tím pádem budete potřebovat také více ..."
+            }
+          ]
+        },
+        {
+          "keyword": "espresso tonic recept",
+          "volume": 480,
+          "difficulty": 0,
+          "intent": "informational",
+          "questions": [
+            "Jak se dělá espresso tonic?",
+            "Co je to espresso tonic?",
+            "Jaký je recept na espresso Orange?",
+            "Jak se připravuje espresso?"
+          ],
+          "aiOverview": true,
+          "organic": [
+            {
+              "title": "Připrav si doma espresso tonic. Povzbudí a naladí tě na léto",
+              "url": "https://www.jsmekocky.cz/clanek/eliska-jedlickova/zajimavosti/priprav-si-doma-espresso-tonic-povzbudi-naladi-te-na-leto",
+              "domain": "www.jsmekocky.cz",
+              "description": "Není to žádná věda, jen to chce mít doma kvalitní kávu na přípravu espressa (tedy plus mínu 28 g kávy), 600 ml tonicu, 2 limetky a 20 kostek ledu. To ti vyjde ..."
+            },
+            {
+              "title": "Léto chutná po kávě. Vyzkoušejte dva drinky, které si ...",
+              "url": "https://protisedi.cz/leto-chutna-po-kave-vyzkousejte-dva-drinky-ktere-si-zamiluji-vsechny-milovnice-espresso-tonicu/",
+              "domain": "protisedi.cz",
+              "description": "27. 8. 2026 — Na led nalijte mléko, espresso protřepejte se skořicovým sirupem a přelijte do sklenice. Přidejte Tullamore D.E.W. Café Honey, navrch vyšlehanou ..."
+            },
+            {
+              "title": "(N)espresso tonic",
+              "url": "https://www.dazzlicious.cz/2016/08/nespresso-tonic.html",
+              "domain": "www.dazzlicious.cz",
+              "description": "28. 8. 2016 — Budete potřebovat: vhodnou sklenici, hodně ledu, tonic a čerstvě uvařené espresso plus hezkou, třeba papírovou slámku na ozdobu. Jak víte, já ..."
+            },
+            {
+              "title": "Grepové Espresso Tonic = hořké, svěží a přesně to, co v létě ...",
+              "url": "https://www.facebook.com/kavatrobica/videos/-grepov%C3%A9-espresso-tonic-ho%C5%99k%C3%A9-sv%C4%9B%C5%BE%C3%AD-a-p%C5%99esn%C4%9B-to-co-v-l%C3%A9t%C4%9B-pot%C5%99ebujete%C4%8Derstv%C3%BD-gre/1568231928272174/",
+              "domain": "www.facebook.com",
+              "description": "Vyzkoušíte? Kávu najdete na www.kavatrobica.cz #kavatrobica # recept #prazirna #rodinnaprazirna #arabica. ☕ Grepové Espresso Tonic = hořké, ..."
+            },
+            {
+              "title": "Tipy na espresso tonic?",
+              "url": "https://www.reddit.com/r/espresso/comments/1cxjozi/tips_on_espresso_tonic/?tl=cs",
+              "domain": "www.reddit.com",
+              "description": "Měl jsem nedávno v kavárnách pár skvělých espresso toniců. Ale když si je dělám doma, espresso mi hned rozpustí led a pití se zředí a ..."
+            }
+          ]
+        },
+        {
+          "keyword": "espresso macchiato",
+          "volume": 4400,
+          "difficulty": 0,
+          "intent": "informational",
+          "questions": [
+            "Co je to espresso macchiato?",
+            "Jak se dělá espresso macchiato?",
+            "Jaký je rozdíl mezi latte a latte macchiato?",
+            "Jak se správně vyslovuje espresso macchiato?"
+          ],
+          "aiOverview": true,
+          "organic": [
+            {
+              "title": "Tommy Cash - Espresso Macchiato",
+              "url": "https://www.youtube.com/shorts/R_61ff-2org",
+              "domain": "www.youtube.com",
+              "description": "Tommy Cash - Espresso Macchiato ... This content isn't available. Skip video."
+            },
+            {
+              "title": "ESPRESSO MACCHIATO - TOMMY CASH - Monologato",
+              "url": "https://open.spotify.com/episode/4tRXRGaVNlyY5OVUGcHIEE",
+              "domain": "open.spotify.com",
+              "description": "ESPRESSO MACCHIATO - TOMMY CASH. Monologato. Feb 19, 2025. 4 min. #ESPRESSOMACCHIATO #TOMMYCASH #EUROVISION2025."
+            },
+            {
+              "title": "Espresso Macchiato (Estonia)",
+              "url": "https://www.youtube.com/watch?v=2wi5RgUHjTE",
+              "domain": "www.youtube.com",
+              "description": "Provided to YouTube by ALOADED AB Espresso Macchiato (Estonia) · Coverboys Eurovision 2025 ℗ Eurocover Released on: 2025-05-13 Producer: Ted ..."
+            },
+            {
+              "title": "ESPRESSO MACCHIATO!  | Õhtuleht",
+              "url": "https://www.facebook.com/Ohtuleht/videos/espresso-macchiato-%EF%B8%8F/1507577351085342/",
+              "domain": "www.facebook.com",
+              "description": "ESPRESSO MACCHIATO ! ☕️ ... At the Eurovision Village, a fan records a humorous and excited interaction with another attendee who is cosplaying ..."
+            },
+            {
+              "title": "Espresso Macchiato - Single - Album by Tommy Cash",
+              "url": "https://music.apple.com/am/album/espresso-macchiato-single/1783134225",
+              "domain": "music.apple.com",
+              "description": "7. 12. 2024 — 7 December 2024 1 song, 2 minutes ℗ 2024 TOMMY CASH. More by Tommy Cash. It's Crazy It's Party - Single · It's Crazy It's Party - Single."
+            }
+          ]
+        },
+        {
+          "keyword": "ledová káva recept",
+          "volume": 1900,
+          "difficulty": 0,
+          "intent": "informational",
+          "questions": [
+            "Jak se dělá správná ledová káva?",
+            "Jak udělat ledovou kávu bez šejkru?",
+            "Jaký je rozdíl mezi ledovou kávou a frappé?",
+            "Jak udělat ledovou kávu se zmrzlinou?"
+          ],
+          "aiOverview": true,
+          "organic": [
+            {
+              "title": "Ledová káva – 9 receptů na osvěžení, které dobije baterky",
+              "url": "https://www.vybornakava.cz/2014/ledova-kava-osvezeni-ktere-dobije-baterky/",
+              "domain": "www.vybornakava.cz",
+              "description": "7. 8. 2026 — Smíchejte 1–2 čajové lžičky instantní kávy se studenou vodou (případně i s mlékem). · Přidejte ledové kostky a podrťte ručním mixérem. · Shakerem ..."
+            },
+            {
+              "title": "Moje ledová káva (bez šejkru)",
+              "url": "https://www.toprecepty.cz/recept/12766-moje-ledova-kava-bez-sejkru/",
+              "domain": "www.toprecepty.cz",
+              "description": "Do uzavíratelné sklenice (nejlépe od dětské výživy) dáme 2–3 lžičky instantní kávy (může být i bez kofeinu) a 1–2 lžičky cukru. Kávu s cukrem zalijeme studenou ..."
+            },
+            {
+              "title": "Ledová káva bez shakeru: 3 snadné postupy",
+              "url": "https://www.gentlefox.cz/a/ledova-kava-bez-shakeru-3-snadne-postupy?srsltid=AU7gw4VBj3FWw8HiTWlqWtaI2ekO9-zqJzTEl1BTUvrpz6OJwvKddh-v",
+              "domain": "www.gentlefox.cz",
+              "description": "5. 8. 2026 — Základní poměr pro ledovou kávu doma ; Frappé bez shakeru. instantní káva, voda, led, mléko. 3 až 5 minut. 0. pěnová, lehčí, hravá ; Cold brew."
+            },
+            {
+              "title": "Ledová káva frappé: rychlý domácí recept s Nescafé",
+              "url": "https://www.nemeckyeshop.cz/blog-a-recepty/ledova-kava-frappe--rychly-domaci-recept-s-nescafe/",
+              "domain": "www.nemeckyeshop.cz",
+              "description": "30. 4. 2026 — Ledová káva frappé se doma udělá za pár minut: stačí studené mléko, instantní směs nebo silná vychladlá káva a hrst ledu. Hustou pěnu vyšleháte ..."
+            },
+            {
+              "title": "Všechny recepty na ledovou kávu",
+              "url": "https://www.nescafe.com/czsk/cs-cz/nase-recepty/vsechny-napoje/ledova-kava",
+              "domain": "www.nescafe.com",
+              "description": "Zvládněte horké dny s našimi osvěžujícími recepty na ledovou kávu. Od jednoduchých klasik po kreativní směsi, zůstaňte chlazení."
+            }
+          ]
+        },
+        {
+          "keyword": "vídeňská káva",
+          "volume": 1900,
+          "difficulty": 0,
+          "intent": "informational",
+          "questions": [
+            "Jak se dělá vídeňská káva?",
+            "Co obsahuje videnská káva?",
+            "Jaká je nejzdravější káva?",
+            "Jaké jsou nejlepší kavárny ve Vídni?"
+          ],
+          "aiOverview": false,
+          "organic": [
+            {
+              "title": "jak vznikla a proč se jí říká vídeňská - Kavenka.cz",
+              "url": "https://kavenka.cz/videnska-kava-priprava-informace/",
+              "domain": "kavenka.cz",
+              "description": "16. 3. 2022 — 8 g kávy (nejlépe arabica), ze které uděláte espresso, · horkou vodu – tou dolijete kávu, tj. · pravou 30 % šlehačku, kterou ušleháte dotuha, ..."
+            },
+            {
+              "title": "22. Vídeňská káva - Truckfan - Webnode",
+              "url": "https://truckfan2.webnode.cz/kucharka/napoje/kava/a22-videnska-kava/",
+              "domain": "truckfan2.webnode.cz",
+              "description": "Vídeňská káva. Doba přípravy : 10 minut. Suroviny : •7 g kávy. •cukr (dle chuti). •150 ml voda. •smetana (na šlehání). Postup přípravy :."
+            },
+            {
+              "title": "KOŘENĚNÁ VÍDEŇSKÁ KÁVA",
+              "url": "https://www.nespresso.com/ncp/res/generated/recipes/1345SPI_cs_CZ.pdf",
+              "domain": "www.nespresso.com",
+              "description": "Do lungo šálku připravte 110 ml vybrané kávy. Ve šlehačkové lahvi smíchejte kořeněný sirup a smetanu a našlehejte. Navrch kávy přidejte ochucenou šlehačku."
+            },
+            {
+              "title": "Když se řekne káva se šlehačkou, pravá vídeňská ...",
+              "url": "https://www.facebook.com/budizkafe/posts/kdy%C5%BE-se-%C5%99ekne-k%C3%A1va-se-%C5%A1leha%C4%8Dkou-prav%C3%A1-v%C3%ADde%C5%88sk%C3%A1-k%C3%A1va-je-prvn%C3%AD-co-mnoh%C3%A9-napadne-my/1116770507118788/",
+              "domain": "www.facebook.com",
+              "description": "Naše horká káva s hustou smetanovou čepicí přináší intenzivní chuť a jemnost, která je ještě výraznější než u klasické vídeňské.❄️ Přijďte ..."
+            },
+            {
+              "title": "Vídeňská káva: Kdy a jak tato delikatesa spatřila světlo světa",
+              "url": "https://www.fajntip.cz/clanky/videnska-kava-20211113-2888.html",
+              "domain": "www.fajntip.cz",
+              "description": "13. 11. 2021 — Poprvé se vídeňská káva objevila v roce 1683 po vítězství v bitvě u Vídně. Tenkrát jeden z vítězných hrdinů, polský voják a diplomat Jerzy ..."
+            }
+          ]
+        },
+        {
+          "keyword": "bezkofeinová káva",
+          "volume": 1600,
+          "difficulty": 0,
+          "intent": "informational",
+          "questions": [
+            "Proč pít kávu bez kofeinu?",
+            "Je káva bez kofeinu zdravá?",
+            "Co je bezkofeinová káva?",
+            "Jak se dělá bezkofeinová káva?"
+          ],
+          "aiOverview": false,
+          "organic": [
+            {
+              "title": "Bezkofeinová káva: jak vzniká a kolik má kofeinu",
+              "url": "https://www.kavat.cz/a/bezkofeinova-kava",
+              "domain": "www.kavat.cz",
+              "description": "24. 9. 2026 — Bezkofeinová varianta působí na tělo jinak než klasická káva. Kofein je známý pro své účinky, jako je stimulace centrálního nervového systému a ..."
+            },
+            {
+              "title": "Káva bez kofeinu - sleva až 29%",
+              "url": "https://www.pilulka.cz/kava-bez-kofeinu",
+              "domain": "www.pilulka.cz",
+              "description": "Proč pít bezkofeinovou kávu · mohou si ji vychutnat i ti, kteří jsou na kofein citliví, těhotné ženy, kardiaci, nebo lidé trpící hypertenzí · nezpůsobuje pálení ..."
+            },
+            {
+              "title": "Káva bez kofeinu",
+              "url": "https://www.pilulka.cz/kava-bez-kofeinu",
+              "domain": "www.pilulka.cz",
+              "description": "Pokud nejste fanoušky klasické kávy a nebo chcete zkrátka vyzkoušet její alternativu bez kofeinu, vítáme vás v této kategorii. Bezkofeinová káva může ..."
+            },
+            {
+              "title": "Dekafíčko 1 kg | Bezkofeinová káva 100% Arabika Swiss Water",
+              "url": "https://www.kavanacesty.cz/zrnkova-kava/zrnkova-kava-kava-na-cesty-dekaficko-1-kg/",
+              "domain": "www.kavanacesty.cz",
+              "description": "Káva na cesty Dekafíčko — bezkofeinová 100% Arabika s tóny čokolády, lískových oříšků a mandlí. Kofein odstraněn šetrnou metodou Swiss Water."
+            },
+            {
+              "title": "Zrnková káva Bez kofeinu, Brazílie, do aeropressu - Heureka.cz",
+              "url": "https://zrnkova-kava.heureka.cz/f:36583:1;36588:49313438;36670:49862730/",
+              "domain": "zrnkova-kava.heureka.cz",
+              "description": "Pellini Caffe; Vergnano; DeLonghi; Lucaffé; Illy; Dallmayr; Davidoff; Jacobs; Pražírna CoffeeDream; Pražírna Káva Monro; L'or; Eduscho; Rioba; Alza Café ..."
+            }
+          ]
+        },
+        {
+          "keyword": "hrubost mletí kávy",
+          "volume": 110,
+          "difficulty": 0,
+          "intent": "informational",
+          "questions": [
+            "Kolik kafí denně je zdravé?",
+            "Jak udělat tureckou kávu?",
+            "Jak uchovávat mletou kávu?",
+            "Jak nastavit hrubost mletí kávy v kávovaru?"
+          ],
+          "aiOverview": true,
+          "organic": [
+            {
+              "title": "Pražení a mletí kávy",
+              "url": "https://www.napojoveautomaty.cz/blog/14-prazeni-a-mleti-kavy",
+              "domain": "www.napojoveautomaty.cz",
+              "description": "Čím déle se bude káva louhovat, tím musí být hrubší. Český turek s jemně mletou kávou se logicky této poučce vymyká, ale hrubší kousky kávy nezůstávají ..."
+            },
+            {
+              "title": "JAK ZVOLIT SPRÁVNÉ MLETÍ KÁVY",
+              "url": "https://www.kafco-cajda.cz/jak-zvolit-spravne-mleti-kavy/?srsltid=AU7gw4XtAyM9N7jKUhJR_xNRlmRmPdj_y9xkoGvosfoIQMbH4U2Z4Loy",
+              "domain": "www.kafco-cajda.cz",
+              "description": "Každé mletí má jinou hrubost a je vhodné pro jiný přístroj či přípravu kávy. ... Obdarovaný si sám pak zajistí správnou hrubost mletí kávy. + káva si zachová ..."
+            },
+            {
+              "title": "Dá se regulovat hrubost mletí kávy? - Mlýnky na kávu",
+              "url": "https://kavomlynky.heureka.cz/poradna-otazka/180029/",
+              "domain": "kavomlynky.heureka.cz",
+              "description": "Dá se regulovat hrubost mletí kávy? 19. listopadu 2012. 1 odpověď. Aromaniac logo. Aromaniac. 20. listopadu 2012. Dobrý den, ano, hrubost mletí lze ..."
+            },
+            {
+              "title": "Jak správně namlít kávu pro nejlepší chuť",
+              "url": "https://www.kofio.cz/blog/mleti-kavy",
+              "domain": "www.kofio.cz",
+              "description": "Mletí kávy. Mletí kávy je neoddělitelně spojené s její dokonalou přípravou. Teprve namletá zrnka dokáží vodě předat maximum chuti a aroma."
+            },
+            {
+              "title": "Mletí zrnkové kávy",
+              "url": "https://www.kavazregionu.cz/tipy-o-kave/mleti-zrnkove-kavy/",
+              "domain": "www.kavazregionu.cz",
+              "description": "HRUBOST MLETÍ PODLE TYPU PŘÍPRAVY ; Hrubé mletí. french press, chemex, ; Střední mletí hrubší. filtrovaná káva (V60), vakuum pot ; Střední mletí jemnější."
+            }
+          ]
+        },
+        {
+          "keyword": "mlýnek na kafe",
+          "volume": 390,
+          "difficulty": 2,
+          "intent": "informational",
+          "questions": [],
+          "aiOverview": false,
+          "organic": [
+            {
+              "title": "Mlýnky na kávu ECG",
+              "url": "https://www.alza.cz/mlynky-na-kavu/ecg/18857350-v1825.htm",
+              "domain": "www.alza.cz",
+              "description": "Mlýnky na kávu ECG přehledně na jednom místě. ✓ Široká nabídka. ✓ Produkty skladem. ✓ Doručíme do 24 hodin. ✓ Pravidelné akce a slevy na Mlýnky na kávu ..."
+            },
+            {
+              "title": "Hario MINI SLIM PLUS ruční mlýnek na kávu",
+              "url": "https://www.prazirnabrno.cz/mlynek-hario-mini-slim-plus/?srsltid=AU7gw4W5xhneNtD8ejShc23-1xSHlvFX7XoEPnZBB-HzZ46E7ma3luJK",
+              "domain": "www.prazirnabrno.cz",
+              "description": "Ruční mlýnek Hario Skerton N s keramickými mlecími kameny, nastavitelnou hrubostí a kapacitou až 100 g kávy. Stabilní provedení vhodné pro domácí přípravu ..."
+            },
+            {
+              "title": "Mlýnek na kávu: Jak si vybrat ten správný?",
+              "url": "https://blogokave.cz/mlynek-na-kavu-jak-si-vybrat-ten-spravny/",
+              "domain": "blogokave.cz",
+              "description": "V mlýnku za 10 eur nemůžeme najít kvalitu, vždyť jen potřebné komponenty na zhotovení kvalitního a schopného mlýnku dosahují vyšší částky. Ty nejlevnější mlýnky ..."
+            },
+            {
+              "title": "Recenze 8 nejlepších mlýnků na kávu (ruční i elektrické)",
+              "url": "https://www.rankito.cz/nejlepsi-mlynky-na-kavu/",
+              "domain": "www.rankito.cz",
+              "description": "11. 2. 2020 — Mlýnek má praktickou skládací rukojeť a gumovou manžetu pro snadnější manipulaci. Zásobník na mletou kávu má kapacitu 35 g a zvládne vám namlít ..."
+            },
+            {
+              "title": "Timemore Slim: ruční mlýnek [recenze] | Lázeňská káva",
+              "url": "https://www.youtube.com/watch?v=M0WtoLUlbyo",
+              "domain": "www.youtube.com",
+              "description": "... MLÝNEK NA KÁVU: ruční mlýnek Timemore Silm: https://eshop.lazenskakava.cz/timemore-slim.html ruční mlýnek Timemore Slim+: https ..."
+            }
+          ]
+        },
+        {
+          "keyword": "hrubost mletí kávy v kávovaru",
+          "volume": 50,
+          "difficulty": 0,
+          "intent": "informational",
+          "questions": [
+            "Proč je káva z kávovaru kyselá?",
+            "Kolik kafí denně je zdravé?",
+            "Jak dlouho louhovat kávu ve french pressu?",
+            "Jak nastavit množství kávy v kávovaru DeLonghi?"
+          ],
+          "aiOverview": false,
+          "organic": [
+            {
+              "title": "Jak správně nastavit mlýnek, abych získal nejlepší kávu?",
+              "url": "https://www.delonghi.com/cs-cz/faqs/Jak-spr%C3%A1vn%C4%9B-nastavit-ml%C3%BDnek,-abych-z%C3%ADskal-nejlep%C5%A1%C3%AD-k%C3%A1vu/a/256930",
+              "domain": "www.delonghi.com",
+              "description": "Zcela nový kávovar má mlýnek nastavený mezi úrovněmi 3 a 4, což je optimální úroveň mletí. Pokud však dáváte přednost silnější nebo slabší kávě, ..."
+            },
+            {
+              "title": "Ahoj všichni , jakou ideální hrubost mletí mám nastavit na ...",
+              "url": "https://www.facebook.com/groups/1845911359060157/posts/4276236122694323/",
+              "domain": "www.facebook.com",
+              "description": "Obecně asi takto Jemné mletí: Chuť: Intenzivní, bohatá, s hořkými tóny. Extrakce: Rychlá, protože voda má při průtoku obtížnější cestu."
+            },
+            {
+              "title": "Jaká hrubost namleté kávy je ta správná? Záleží na přípravě!",
+              "url": "https://www.bobkafe.cz/rubriky/blog/jaka-hrubost-namlete-kavy-je-ta-spravna--zalezi-na-priprave/",
+              "domain": "www.bobkafe.cz",
+              "description": "Jaká hrubost namleté kávy je ta správná? Záleží na přípravě! · 1) Nejjemnější prach · 2) Jemně a středně jemně mletá káva · 3) Středně hrubě a polohrubě mletá káva."
+            },
+            {
+              "title": "JAK ZVOLIT SPRÁVNÉ MLETÍ KÁVY",
+              "url": "https://www.kafco-cajda.cz/jak-zvolit-spravne-mleti-kavy/?srsltid=AU7gw4V7IuO8-dRnwNG3E7quayvJn09KKMb0mtEp0ubse5X02CjIQ1YA",
+              "domain": "www.kafco-cajda.cz",
+              "description": "Níže naleznete námi nabízené druhy mletí u kávy a jejich výhody, nevýhody a co vše potřebujete na přípravu kávy. Každé mletí má jinou hrubost a je vhodné pro ..."
+            },
+            {
+              "title": "Jak na správné čerstvé mletí kávy? Mnoho milovníků ...",
+              "url": "https://www.facebook.com/prazirnadrahonice/videos/jak-na-spr%C3%A1vn%C3%A9-%C4%8Derstv%C3%A9-mlet%C3%AD-k%C3%A1vymnoho-milovn%C3%ADk%C5%AF-k%C3%A1vy-se-shoduje-%C5%BEe-%C4%8Derstv%C4%9B-mlet/961289088922117/",
+              "domain": "www.facebook.com",
+              "description": "Zvolte správnou hrubost mletí : Hrubost mletí závisí na způsobu přípravy kávy. Pro espressso potřebujete jemné mletí, zatímco pro french press ..."
+            }
+          ]
+        },
+        {
+          "keyword": "nejlepší zrnková káva",
+          "volume": 880,
+          "difficulty": 0,
+          "intent": "commercial",
+          "questions": [
+            "Z které země je nejlepší káva?",
+            "Proč nepít kávu nalačno?",
+            "Jaké jsou recenze na kávu Bellarom z Lidlu?",
+            "Co je to káva lungo?"
+          ],
+          "aiOverview": false,
+          "organic": [
+            {
+              "title": "Zrnková káva | Kvalitní kávy z itálie | Výběrová káva",
+              "url": "https://www.kafista.cz/",
+              "domain": "www.kafista.cz",
+              "description": "100% přírodní, vyrobeno s důrazem na kvalitu, od plantáží až po šálekOdebíráme pouze ty nejkvalitnější kávová zrna od prověřených farmářů z celého světa. Každá ..."
+            },
+            {
+              "title": "Sladká káva - nejlepší espresso kávy Evropy",
+              "url": "https://ebenica.cz/kava/chut_kavy-sladka-kava/?srsltid=AU7gw4U4RZMbpz9BKNcw0u21x4WXU1kXhsQ3QttrcQnbd1koF2Kt0RPE",
+              "domain": "ebenica.cz",
+              "description": "Čím je výjimečná káva Ebenica. Fantastická chuť – při výrobě káv se zaměřujeme především na chuť. Díky tomu máme na kontě více než dvacet mezinárodních ocenění."
+            },
+            {
+              "title": "Nejlepší zrnková káva do kanceláře",
+              "url": "https://eshop.optimia.cz/blog/nejlepsi-zrnkova-kava-do-kancelare--srovnani-znacek--kvality-a-chuti/",
+              "domain": "eshop.optimia.cz",
+              "description": "Doporučujeme: · Tchibo Gold Selection – silnější směs arabiky a robusty s výrazným aroma. · Tchibo Professional Caffè Crema – 100 % arabica, jemná, ideální do ..."
+            },
+            {
+              "title": "Nejlepší kávy ze supermarketu pro rok 2026",
+              "url": "https://www.kavovelisty.cz/nejlepsi-kava-ze-supermarketu/",
+              "domain": "www.kavovelisty.cz",
+              "description": "21. 1. 2022 — Detailní rozbor nejlepších káv ze supermarketu · 1. Tchibo Espresso Milano Style · 2. Segafredo Speciale Espresso · 3. Illy Ethiopia · 4. Jacobs ..."
+            },
+            {
+              "title": "Nejlepší zrnková káva arabica: 100% arabika bez robusty",
+              "url": "https://www.nejkafe.cz/blog/nejlepsi-arabica-zrnkova-kava/",
+              "domain": "www.nejkafe.cz",
+              "description": "28. 8. 2026 — Podle kombinace hodnocení a chuťové univerzálnosti vychází nejlépe Illy Dark Intenso se 4,6/5 ze 14 recenzí — má plné tělo tmavě pražené kávy, ..."
+            }
+          ]
+        },
+        {
+          "keyword": "elektrický mlýnek na kávu s mlecími kameny",
+          "volume": 320,
+          "difficulty": 0,
+          "intent": "commercial",
+          "questions": [],
+          "aiOverview": false,
+          "organic": [
+            {
+              "title": "Mlýnky na kávu s mlecími kameny",
+              "url": "https://www.eta.cz/shop/mlynky-na-kavu-s-mlecimi-kameny/c-3722/",
+              "domain": "www.eta.cz",
+              "description": "Elektrické mlýnky na kávu s mlecími kameny by neměly doma chybět všem lidem, kteří si potrpí na kvalitní přípravě. Oproti klasickým nožovým mlýnkům pracují ..."
+            },
+            {
+              "title": "Mlýnky na kávu a koření, kávomlýnky ☕",
+              "url": "https://www.gourmetkava.cz/cs/mlynky-20pk",
+              "domain": "www.gourmetkava.cz",
+              "description": "Mlýnek s mlecími kameny – mlýnek vybavený opravdovými mlecími kameny, z 99% ocelovými. Tento druh mlýnku umožňuje nastavit hrubost mletí pro každou přípravu ..."
+            },
+            {
+              "title": "Mlýnky na kávu s mlecími kameny",
+              "url": "https://www.eta.cz/shop/mlynky-na-kavu-s-mlecimi-kameny/c-3722/",
+              "domain": "www.eta.cz",
+              "description": "Oproti klasickým nožovým mlýnkům pracují šetrněji. Zrna se jemně rozdrtí mezi, takže se káva nepálí a zachová si maximum chuti i aroma."
+            },
+            {
+              "title": "Mlýnky na kávu a koření, kávomlýnky ☕",
+              "url": "https://www.gourmetkava.cz/cs/mlynky-20pk",
+              "domain": "www.gourmetkava.cz",
+              "description": "Elektrický kávomlýnek Sencor SCG 5060BK s plochými ocelovými mlecími kameny zaručuje rychlé, rovnoměrné a precizní mletí. Nabízí 30 úrovní hrubosti, zásobník na ..."
+            },
+            {
+              "title": "Mlýnky na kávu s mlecími kameny",
+              "url": "https://www.datart.cz/mlynky-na-kavu-s-mlecimi-kameny.html",
+              "domain": "www.datart.cz",
+              "description": "elektrický mlýnek na kávu • příkon 180 W • 31 nastavení hrubosti • nerezové mlecí kameny • dóza pro mletou kávu • LCD displej • nastavení doby mletí. Ihned k ..."
+            }
+          ]
+        },
+        {
+          "keyword": "hrnky na espresso",
+          "volume": 2400,
+          "difficulty": 0,
+          "intent": "transactional",
+          "questions": [
+            "Jak velký je hrnek na espresso?",
+            "Jak má být velký hrnek na espresso?",
+            "Jaká káva na espresso?",
+            "Jaký je rozdíl mezi \"presso\", \"presso\" a \"espresso\"?"
+          ],
+          "aiOverview": false,
+          "organic": [
+            {
+              "title": "Hrnky a šálky na espresso",
+              "url": "https://www.eporcelan.cz/hrnky-a-salky-na-espresso",
+              "domain": "www.eporcelan.cz",
+              "description": "Jak velký by měl být hrnek na espresso? Ideálně 60-90 ml, na espresso doppio či lungo můžete sáhnout i po kapku větších (100-120 ml)."
+            },
+            {
+              "title": "Šálky na espresso",
+              "url": "https://shop.czechdesign.cz/na-espresso/",
+              "domain": "shop.czechdesign.cz",
+              "description": "Každý kousek z této kategorie je originálem z dílen českých designérů, který přidá do každodenní kávové rutiny nádech elegance a stylu. Ať už si vyberete ..."
+            },
+            {
+              "title": "Hrnky a šálky na espresso",
+              "url": "https://www.eporcelan.cz/hrnky-a-salky-na-espresso",
+              "domain": "www.eporcelan.cz",
+              "description": "Jak velký by měl být hrnek na espresso? Ideálně 60-90 ml, na espresso doppio či lungo můžete sáhnout i po kapku větších (100-120 ml)."
+            },
+            {
+              "title": "Šálky na espresso - CZECHDESIGN SHOP",
+              "url": "https://shop.czechdesign.cz/na-espresso/?srsltid=AU7gw4UlzcNxsS871eLnSm1N92gs9rMLr9OHn69TFhlDG6c5vtLGt7Lq",
+              "domain": "shop.czechdesign.cz",
+              "description": "Pozdravte každý nový den s espressem v designovém šálku. Každý kousek z této kategorie je originálem z dílen českých designérů, který přidá do každodenní ..."
+            },
+            {
+              "title": "Šálky, poháry a hrnky na kávu",
+              "url": "https://www.mojekafe.cz/salky-sklenice-hrnky/",
+              "domain": "www.mojekafe.cz",
+              "description": "Espresso obvykle potřebuje malý šálek s menším objemem. Cappuccino chce širší hrnek, aby se dobře spojilo espresso a mléčná pěna. Latte vynikne ve vyšší ..."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "affordable-cars",
+      "candidates": [
+        {
+          "keyword": "dacia bigster",
+          "volume": 27100,
+          "difficulty": 0,
+          "intent": "mixed",
+          "questions": [
+            "Jaký motor má Dacia Bigster?",
+            "Kolik stojí nová Dacia Bigster?",
+            "Který je lepší, Dacia Bigster nebo Kodiaq?",
+            "Jaký je rozdíl mezi Dusterem a Bigsterem?"
+          ],
+          "aiOverview": true,
+          "organic": [
+            {
+              "title": "Bigster - BonoAuto - Nový Jičín - Dacia",
+              "url": "https://bonoauto-nj.dacia.cz/nove-vozy/bigster/",
+              "domain": "bonoauto-nj.dacia.cz",
+              "description": "Praktický a všestranný · Zavazadlový prostor o objemu až 702 l (667 dm3 VDA) · Zadní sedadla 40/20/40 · Více než 38,8 l úložného prostoru."
+            },
+            {
+              "title": "Nové vozy Dacia Bigster SUV bazar a ... - Sauto.cz",
+              "url": "https://www.sauto.cz/inzerce/osobni/dacia/bigster?razeni=od-nejdrazsich&stav=nove&typ=suv",
+              "domain": "www.sauto.cz",
+              "description": "Nové vozy Dacia Bigster SUV na prodej – bazar, ojetá auta i předváděcí a nové. Mrkněte na Sauto.cz - online autobazar, kde vyřešíte koupi i prodej vozu, ..."
+            },
+            {
+              "title": "Skladové vozy Dacia Bigster automatická",
+              "url": "https://www.smucler.cz/skladove-vozy/znacky_dacia/modely_dacia-bigster/prevodovky_automaticka/",
+              "domain": "www.smucler.cz",
+              "description": "Autocentrum Šmucler má aktuálně v nabídce 3 vozidla skladem modelu Dacia Bigster . Naše nabídka skladových vozidel je v cenovém rozpětí 691 300 až 703 800 ..."
+            },
+            {
+              "title": "Dacia Bigster je rodinné SUV bez kompromisů, s ...",
+              "url": "https://www.denik.cz/damska-jizda/dacia-bigster-je-rodinne-suv-bez-kompromisu-s-hybridem-nadchne-uspornosti/",
+              "domain": "www.denik.cz",
+              "description": "24. 12. 2025 — Základní cena Dacie Bigster s benzinovým mildhybridem a výbavou Essential je 549 900 Kč. Hybrid 155 pořídíte až s druhým výbavovým stupněm ..."
+            },
+            {
+              "title": "Nové vozy Dacia Bigster karosérie SUV (22)",
+              "url": "https://www.hsauto.cz/dacia/bigster/nove-vozy?bodywork=7",
+              "domain": "www.hsauto.cz",
+              "description": "Nový vůz Dacia Bigster Extreme Hybrid 150 4x4, 2026 D1325C ... Převodovka: automat (6 st.) Video. Záruka výrobce. Cena s DPH: 794 900 Kč. Cena ..."
+            }
+          ]
+        },
+        {
+          "keyword": "dacia duster",
+          "volume": 18100,
+          "difficulty": 0,
+          "intent": "mixed",
+          "questions": [
+            "Jaký je nejlepší motor Dacia Duster?",
+            "Na co si dát pozor při koupi Dacia Duster?",
+            "Kolik stojí nový Dacia Duster?",
+            "Jaké jsou recenze na Daciu Duster 2026?"
+          ],
+          "aiOverview": false,
+          "organic": [
+            {
+              "title": "Duster",
+              "url": "https://www.dacia.cz/hybridni-elektricke-vozy/duster-suv.html",
+              "domain": "www.dacia.cz",
+              "description": "Dacia Duster, ikonický model s více než 2,2 miliony uživatelů, přichází se třetí generací. Zcela nový design, skvělé terénní schopnosti, stále ten pravý ..."
+            },
+            {
+              "title": "Dacia Duster bazar a prodej nových vozů",
+              "url": "https://www.sauto.cz/inzerce/osobni/dacia/duster",
+              "domain": "www.sauto.cz",
+              "description": "Dacia Duster na prodej – bazar, ojetá auta i předváděcí a nové vozy. 644 inzerátů v aktuální nabídce. Mrkněte na Sauto.cz - online autobazar Dacia Duster, ..."
+            },
+            {
+              "title": "Vozy Dacia k okamžitému odběru",
+              "url": "https://skladove-vozy.dacia.cz/duster/",
+              "domain": "skladove-vozy.dacia.cz",
+              "description": "Akční cena modelu Duster a Bigster obsahuje zvýhodnění s financováním Premium 20 000 Kč, výkupní bonus ve výši 15 000 Kč pro verze se spalovacím motorem, ..."
+            },
+            {
+              "title": "Dacia Česká republika | Oficiální web Dacia",
+              "url": "https://www.dacia.cz/",
+              "domain": "www.dacia.cz",
+              "description": "Rodinný vůz, SUV nebo městský vůz, prohlédněte si modely Dacia a najděte si ten, který vám vyhovuje nejvíce."
+            },
+            {
+              "title": "Duster - Auto CB",
+              "url": "https://autocb.dacia.cz/nove-vozy/duster/",
+              "domain": "autocb.dacia.cz",
+              "description": "Duster disponuje poprvé také hybridní pohonnou jednotku s výkonem 140 koní. Užijte si dynamický 1,6litrový čtyřválcový motor bez stresu z nabíjení. Ve městě ..."
+            }
+          ]
+        },
+        {
+          "keyword": "dacia sandero",
+          "volume": 9900,
+          "difficulty": 0,
+          "intent": "commercial",
+          "questions": [
+            "Kolik stojí nová Dacia Sandero?",
+            "Jaké jsou recenze na Daciu Sandero?",
+            "Jaký je rozdíl mezi Sandero a Sandero Stepway?",
+            "Jaká je spolehlivost vozu Dacia Sandero?"
+          ],
+          "aiOverview": true,
+          "organic": [
+            {
+              "title": "Video: Podívejte se, jak nová Dacia Sandero klame tělem. ...",
+              "url": "https://www.auto.cz/video-podivejte-se-jak-nova-dacia-sandero-klame-telem-zajemcum-tim-setri-tisice-138281",
+              "domain": "www.auto.cz",
+              "description": "Nová generace Dacie Sandero je na trhu teprve chvilku, přesto už stihla sklidit vlnu pozitivních reakcí. Lidé si pochvalují pokrok oproti ..."
+            },
+            {
+              "title": "Dacia Sandero, Stepway a Jogger v novém",
+              "url": "https://www.auto.cz/diskuse/98414/1",
+              "domain": "www.auto.cz",
+              "description": "Jen pár let po změně loga dostávají hatchbacky a kombík značky Dacia větší facelift, který kromě nové přídě znamená také nový motor o objemu 1,8 litru v ..."
+            },
+            {
+              "title": "Dacia Sandero - Prodej nových",
+              "url": "https://www.cartop.cz/nabidka/prodej/dacia/sandero",
+              "domain": "www.cartop.cz",
+              "description": "Prohlédněte si aktuální nabídky nových vozů Dacia Sandero k přímému prodeji. Okamžitá dostupnost, férové ceny, žádné skryté poplatky."
+            },
+            {
+              "title": "Dacia Sandero už není nejlevnější auto v Česku. Nová ...",
+              "url": "https://zpravy.aktualne.cz/ekonomika/auto/dacia-sandero-ceny/r~16cb6306505911ebb408ac1f6b220ee8/r~71cd734c021c11eb95caac1f6b220ee8/",
+              "domain": "zpravy.aktualne.cz",
+              "description": "Dacia zveřejnila ceny třetí generace hatchbacku Sandero. Ty začínají na necelých 240 tisících korunách."
+            },
+            {
+              "title": "Dacia Sandero - AUTO POŠÍK",
+              "url": "https://autoposik.dacia.cz/ojete-vozy/ojete-vozy/dacia-sandero/",
+              "domain": "autoposik.dacia.cz",
+              "description": "Ojeté vozy. • Prověřeno značkovým servisem v 82 bodech • Možnost zkušební jízdy • Bezplatná kontrola vozu (po 2 000 km nebo 1 měsíc od prodeje)"
+            }
+          ]
+        },
+        {
+          "keyword": "dacia jogger",
+          "volume": 9900,
+          "difficulty": 6,
+          "intent": "commercial",
+          "questions": [
+            "Kolik stojí nová Dacia Jogger?",
+            "Jaký motor má Dacia Jogger?",
+            "Jaké jsou recenze na Daciu Jogger?",
+            "Jaké jsou recenze na Daciu Jogger 2026?"
+          ],
+          "aiOverview": true,
+          "organic": [
+            {
+              "title": "Ojeté vozy Dacia Jogger, MPV na prodej | Autobazar AAA AUTO",
+              "url": "https://www.aaaauto.cz/ojete-vozy/dacia/jogger/mpv",
+              "domain": "www.aaaauto.cz",
+              "description": "Reprezentativní příklad: Cena: 149 999 Kč; Akontace: 35 %, tj. 52 500 Kč; Doba trvání úvěru: 48 měsíců; Měsíční splátka: 1397 Kč (47 x 1397 Kč); Poslední ..."
+            },
+            {
+              "title": "Druhé takové auto nenajdete. Dacia Jogger s hybridním ...",
+              "url": "https://zpravy.aktualne.cz/ekonomika/auto/test-dacia-jogger-hybrid/r~9acb94827b4311efa26cac1f6b220ee8/r~b826550e7b2e11efa26cac1f6b220ee8/",
+              "domain": "zpravy.aktualne.cz",
+              "description": "Dacia Jogger je na českém trhu stálicí, dokonce nejprodávanějším modelem značky po SUV Duster. Doposud se nabízela s plynovým nebo benzinovým pohonem, nově ..."
+            },
+            {
+              "title": "Dacia Jogger na prodej od 240 000 Kč - TipCars",
+              "url": "https://www.tipcars.com/ojete/dacia-jogger",
+              "domain": "www.tipcars.com",
+              "description": "Dacia Jogger: 25 inzerátů v aktuální nabídce. Vybírejte podle ročníku, nájezdu a paliva. Osobní auta z autobazarů i od soukromníků na TipCars.com."
+            },
+            {
+              "title": "Dacia Jogger – rodinný oblíbenec",
+              "url": "https://auto-motor.cz/dacia-jogger-rodinny-oblibenec/",
+              "domain": "auto-motor.cz",
+              "description": "S délkou 4,55 m je Jogger nejdelším vozem v nabídce značky Dacia, díky velkorysému rozvoru 2,90 m nabídne prostorný interiér i zavazadlový prostor. Objem kufru ..."
+            },
+            {
+              "title": "Dacia Jogger (2021-) : Recenze a historie modelu",
+              "url": "https://www.csaka.cz/dacia-jogger-2021/",
+              "domain": "www.csaka.cz",
+              "description": "Dacia Jogger je kompaktní crossover představený rumunskou automobilkou v roce 2021, prezentovaný jakožto dostupný rodinný automobil až pro sedm osob."
+            }
+          ]
+        },
+        {
+          "keyword": "dacia dokker",
+          "volume": 3600,
+          "difficulty": 1,
+          "intent": "commercial",
+          "questions": [],
+          "aiOverview": true,
+          "organic": [
+            {
+              "title": "Osobní vozy Dacia, Dokker, benzín - bazar a prodej",
+              "url": "https://www.automodul.cz/osobni/dacia/dokker/benzin",
+              "domain": "www.automodul.cz",
+              "description": "Dacia Dokker 1.3TCe Klima! Navigace! 219 000 Kč · 73 000 Km. 2020. benzín · kombi. 1 332 ccm, 96 kW. Žďár nad Sázavou · cebia · zobrazit. historii vozu ..."
+            },
+            {
+              "title": "Dacia Dokker",
+              "url": "https://www.daciaclub.cz/model/dacia-dokker-17",
+              "domain": "www.daciaclub.cz",
+              "description": "Dacia Dokker je rodinný vůz značky Dacia vyráběný od roku 2012. Dokker je praktičtější verzí MPV Lodgy a to díky posuvným zadním dveřím a asymetricky dělenými ..."
+            },
+            {
+              "title": "Cena Dacia Dokker je 167 528 Kč - Přehled cen vozů ...",
+              "url": "https://www.kurzy.cz/auto/cena/dacia/dokker/",
+              "domain": "www.kurzy.cz",
+              "description": "K 3.10.2026 je v nabídce autobazarů 74 aut modelu Dacia Dokker v průměrné ceně 167 528 Kč. Prohlédněte si nabídku vozů Dacia Dokker, ověřte si detaily ..."
+            },
+            {
+              "title": "Dacia Dokker (2011 - 2021) – rozměry a foto",
+              "url": "https://www.cartop.cz/katalog/dacia/dokker/dokker",
+              "domain": "www.cartop.cz",
+              "description": "Jaké má Dacia Dokker rozměry? Dacia Dokker měří 4 363 mm na délku, 1 751 mm na šířku a 1 814 mm na výšku. Rozvor náprav měří 2 810 mm."
+            },
+            {
+              "title": "Test Dacie Dokker: Jaká je nejprodávanější osobní ...",
+              "url": "https://www.autorevue.cz/test-dacia-dokker/?showforum=1",
+              "domain": "www.autorevue.cz",
+              "description": "Dacia haní \"odborníci\"co v ní ani neseděli . Koupil jsem Dokker 1,6+LPG od výrobce v r.2017.Naprostá spokojenost ,bez jediné závady (115tkm) levná jizda 0 ..."
+            }
+          ]
+        },
+        {
+          "keyword": "dacia sandero stepway",
+          "volume": 1900,
+          "difficulty": 0,
+          "intent": "commercial",
+          "questions": [
+            "Jaký je rozdíl mezi Sandero a Sandero Stepway?",
+            "Kolik stojí nové Dacia Sandero Stepway?",
+            "Jaké jsou recenze na Daciu Sandero Stepway 2026?",
+            "Jaké jsou recenze na Daciu Sandero Stepway?"
+          ],
+          "aiOverview": true,
+          "organic": [
+            {
+              "title": "Výbava – Sandero Stepway",
+              "url": "https://www.dacia.cz/vozy/sandero-stepway/vybava.html?gradeCode=ENS_MDL2PSL1SERIELIM2",
+              "domain": "www.dacia.cz",
+              "description": "Objevte výbavu Dacia Sandero Stepway: online technologie, asistenční systémy, bezpečnost a komfort pro cestování bez stresu."
+            },
+            {
+              "title": "Dacia Sandero stepway bazar a prodej nových vozů",
+              "url": "https://www.sauto.cz/inzerce/osobni/dacia/sandero?varianta=stepway&razeni=od-nejlevnejsich&strana=5",
+              "domain": "www.sauto.cz",
+              "description": "Dacia Sandero ; Stepway Expression TCe 110 · 2026, 5 km · 437 800 Kč. AUTO GOLDCAR. Hlavní město Praha ; TCe 110 Stepway Expression · 2026, 6 km · 437 800 Kč. AUTO ..."
+            },
+            {
+              "title": "NOVÉ, PŘEDVÁDĚCÍ A OJETÉ VOZY Dacia ...",
+              "url": "https://www.hsauto.cz/dacia/sandero-stepway/nove-predvadeci-a-ojete-vozy?transmission=0&sortCar=3",
+              "domain": "www.hsauto.cz",
+              "description": "Nový vůz Dacia Sandero Stepway Expression TCe 110 D1311 ... Převodovka: manuál (6 st.) Záruka výrobce. Cena s DPH: 429 900 Kč. Cena bez DPH: ..."
+            },
+            {
+              "title": "Dacia Sandero stepway bazar a prodej nových vozů",
+              "url": "https://www.sauto.cz/inzerce/osobni/dacia/sandero?stav=vse&varianta=stepway&strana=5",
+              "domain": "www.sauto.cz",
+              "description": "Dacia Sandero ; Stepway Extreme Eco-G 120 auto · 2026, 5 000 km, LPG + benzín · 536 800 Kč ; III. Stepway TCe 100 LPG · 2022, 88 000 km, Benzín · 249 000 Kč ; stepway ..."
+            },
+            {
+              "title": "Dacia Sandero Stepway Extreme Eco-G 120 | CMN, s.r.o.",
+              "url": "https://renew.renault.cz/nabidka-vozu/rocni-vozy/hledani-rocniho-vozu/dacia-sandero-stepway-extreme-eco-g-120-2/",
+              "domain": "renew.renault.cz",
+              "description": "Výbava. Manuální převodovka, 6 rychlostních stupňů, 6x airbag, ABS, Brzdový asistent, EDS, ASR (protiprokluzový systém kol), Hlídání jízdního pruhu, ..."
+            }
+          ]
+        },
+        {
+          "keyword": "dacia bigster cena",
+          "volume": 1900,
+          "difficulty": 1,
+          "intent": "commercial",
+          "questions": [
+            "Kolik stojí nová Dacia Bigster?",
+            "Jaký motor má Dacia Bigster?",
+            "Který je lepší, Dacia Bigster nebo Kodiaq?",
+            "Jak dlouho se čeká na Dacii Bigster?"
+          ],
+          "aiOverview": false,
+          "organic": [
+            {
+              "title": "Bigster Extreme hybrid 155 | AUTO HORNÁT s.r.o.",
+              "url": "https://skladove-vozy.dacia.cz/bigster-extreme-hybrid-155-v90537/",
+              "domain": "skladove-vozy.dacia.cz",
+              "description": "Ceníková cena 682 800 Kč, Zvýhodnění až -80 000 Kč, Akční cena již od 602 800 Kč, Více zde. Uvedená cena je závazná pouze u prodejce Dacia, který je výše ..."
+            },
+            {
+              "title": "Dacia Bigster Journey hybrid 155",
+              "url": "https://www.sauto.cz/osobni/detail/dacia/bigster/210765299",
+              "domain": "www.sauto.cz",
+              "description": "Srovnání ceny pro Dacia Bigster ; Minimální cena ; Nižší cena. 670 280 Kč ; Běžná cena. 687 600 Kč ; Vyšší cena. 717 820 Kč ; Maximální cena. 743 900 Kč."
+            },
+            {
+              "title": "Skladové vozy Dacia Bigster automatická",
+              "url": "https://www.smucler.cz/skladove-vozy/znacky_dacia/modely_dacia-bigster/prevodovky_automaticka/",
+              "domain": "www.smucler.cz",
+              "description": "Prodejní cena 699 500 Kč. Možnost odpočtu DPH. Ceníková cena 770 800 Kč. ihned k odběru Klatovy. Nejnižší cena za posledních 30 dní: 699 500 Kč. Detail vozu"
+            },
+            {
+              "title": "Bigster Journey hybrid 155 | BORS SERVIS, s.r.o.",
+              "url": "https://skladove-vozy.dacia.cz/bigster-journey-hybrid-155-v88575/",
+              "domain": "skladove-vozy.dacia.cz",
+              "description": "Ceníková cena 665 900 Kč, Zvýhodnění až -80 000 Kč, Akční cena již od 585 900 Kč, Více zde. Uvedená cena je závazná pouze u prodejce Dacia, který je výše ..."
+            },
+            {
+              "title": "🔥 NOVÁ AKČNÍ CENA: 669 000 Kč! 🔥 DACIA BIGSTER ...",
+              "url": "https://www.facebook.com/autocbplzen/posts/-nov%C3%A1-ak%C4%8Dn%C3%AD-cena-669-000-k%C4%8D-dacia-bigster-journeymild-hybrid-tce-140-velk%C3%A9-suv-p/1903966997606303/",
+              "domain": "www.facebook.com",
+              "description": "NOVÁ AKČNÍ CENA: 669 000 Kč ! DACIA BIGSTER JOURNEY mild hybrid TCe 140 Velké SUV, pořádná výbava a teď za cenu, která stojí za ..."
+            }
+          ]
+        },
+        {
+          "keyword": "dacia logan",
+          "volume": 3600,
+          "difficulty": 14,
+          "intent": "commercial",
+          "questions": [
+            "Kolik stojí Dacia Logan?",
+            "Jaké jsou recenze na Daciu Logan?",
+            "Jaká bude nová Dacia v roce 2026?",
+            "Jaká je spotřeba paliva u Dacie Logan?"
+          ],
+          "aiOverview": true,
+          "organic": [
+            {
+              "title": "Dacia Logan Osobní auta sedan - prodej vozů ...",
+              "url": "https://yauto.cz/dacia/logan/osobni/sedan/",
+              "domain": "yauto.cz",
+              "description": "Dacia Logan - Inzerce, 22 inzerátů autobazarů na prodej Dacia Logan Osobní auta sedan - prodej vozů Dacia Logan."
+            },
+            {
+              "title": "Ojeté vozy Dacia Logan, od 2020 na prodej - AAA Auto",
+              "url": "https://www.aaaauto.cz/ojete-vozy/dacia/logan/2020",
+              "domain": "www.aaaauto.cz",
+              "description": "Reprezentativní příklad: Cena: 149 999 Kč; Akontace: 35 %, tj. 52 500 Kč; Doba trvání úvěru: 48 měsíců; Měsíční splátka: 1397 Kč (47 x 1397 Kč); Poslední ..."
+            },
+            {
+              "title": "Dacia Logan | Driveto.cz",
+              "url": "https://www.driveto.cz/pages/auto-model/dacia-logan?srsltid=AU7gw4Vl8NrPSIleUgiDvA0j3GUrzX_DzC8-YOy9gkVVErkuhSI0uVTq",
+              "domain": "www.driveto.cz",
+              "description": "Chcete levný a prostorný sedan? Pak je tu Dacia Logan, která nabízí víc než nejnižší cenu a prostornou kabinu. Majitelé ocení například i velký kufr anebo ..."
+            },
+            {
+              "title": "Dacia Logan (výroba 2004 – 2012)",
+              "url": "https://autoweb.cz/dacia-logan-vyroba-2004-2012",
+              "domain": "autoweb.cz",
+              "description": "Levný „stěhovák“ Dacia Logan láká nenáročné motoristy, kteří ocení výborný poměr cena-užitná hodnota. Nízká cena vozu má ale své důvody. Redakce Autoweb."
+            },
+            {
+              "title": "Průšvih, nebo to ještě jde? Takto vypadá ...",
+              "url": "https://zpravy.aktualne.cz/ekonomika/auto/kdysi-levny-dnes-ceneny-jak-vypada-kombik-od-dacie-po-11-let/r~815563f867ff11f09af20cc47ab5f122/r~e0276f8667d011f0a1910cc47ab5f122/",
+              "domain": "zpravy.aktualne.cz",
+              "description": "Podvozek je u Dacie Logan MCV druhé generace trvanlivý. · Nepřeplňovaný čtyřválec s objemem necelých 1,2 litru je sice výkonově poněkud plochý, zato platí za ..."
+            }
+          ]
+        },
+        {
+          "keyword": "dacia duster 4wd",
+          "volume": 1600,
+          "difficulty": 0,
+          "intent": "commercial",
+          "questions": [
+            "Kolik stojí Dacia Duster 4x4?",
+            "Jak funguje 4x4 Duster?",
+            "Jaké jsou recenze na Daciu Duster 4x4?",
+            "Jaká je spotřeba paliva u Dacie Duster 4x4 na benzin?"
+          ],
+          "aiOverview": true,
+          "organic": [
+            {
+              "title": "Duster",
+              "url": "https://www.dacia.cz/hybridni-elektricke-vozy/duster-suv.html",
+              "domain": "www.dacia.cz",
+              "description": "Duster je vybaven zcela novým dvoupalivovým motorem na LPG a benzin se šestistupňovou automatickou převodovkou s dvojitou spojkou. Výkon 140 koní mild- ..."
+            },
+            {
+              "title": "Dacia Duster 4x4 bazar a prodej nových vozů",
+              "url": "https://www.sauto.cz/inzerce/osobni/dacia/duster?pohon=4x4&strana=4",
+              "domain": "www.sauto.cz",
+              "description": "Dacia Duster, 1.6 4x4 PRESTIGE, ČR,1.MAJ. 2019, 53 210 km, Benzín, Manuální. 349 900 Kč. Auto Qualt, s.r.o.. Trutnov."
+            },
+            {
+              "title": "Dacia duster 4x4 bazar - Auto | Bazoš.cz",
+              "url": "https://auto.bazos.cz/inzeraty/dacia-duster-4x4/",
+              "domain": "auto.bazos.cz",
+              "description": "Auto - Dacia duster 4x4 bazar. Vybírejte z 129 inzerátů. Prodej snadno a rychle na Bazoši. Přes půl milionů uživatelů za den."
+            },
+            {
+              "title": "Duster - Auto CB",
+              "url": "https://autocb.dacia.cz/nove-vozy/duster/",
+              "domain": "autocb.dacia.cz",
+              "description": "Duster disponuje poprvé také hybridní pohonnou jednotku s výkonem 140 koní. Užijte si dynamický 1,6litrový čtyřválcový motor bez stresu z nabíjení. Ve městě ..."
+            },
+            {
+              "title": "Nové vozy Dacia Duster (20)",
+              "url": "https://www.hsauto.cz/dacia/duster/nove-vozy",
+              "domain": "www.hsauto.cz",
+              "description": "Nové vozy Dacia Duster (20) ; Dacia Duster Extreme ECO-G 120 4x2 D1322C · 554 900 Kč · 458 596 Kč ; Dacia Duster Extreme HEV 150 4x4, 2026 D1323 · 719 900 Kč · 594 ..."
+            }
+          ]
+        },
+        {
+          "keyword": "dacia duster ceny",
+          "volume": 880,
+          "difficulty": 0,
+          "intent": "commercial",
+          "questions": [
+            "Kolik stojí nový Duster 2026?",
+            "Kolik stojí nejlevnější Dacia Duster?",
+            "Na co si dát pozor při koupi Dacia Duster?",
+            "Jaký je nejlepší motor Dacia Duster?"
+          ],
+          "aiOverview": true,
+          "organic": [
+            {
+              "title": "Duster",
+              "url": "https://www.dacia.cz/hybridni-elektricke-vozy/duster-suv.html",
+              "domain": "www.dacia.cz",
+              "description": "DUSTER ; essential. již od 441 900 Kč *. DUSTER essential Eco-G 120 ; expression. již od 481 900 Kč *. DUSTER expression Eco-G 120 ; extreme. již od 510 900 Kč *."
+            },
+            {
+              "title": "Nové vozy Dacia Duster (20)",
+              "url": "https://www.hsauto.cz/dacia/duster/nove-vozy",
+              "domain": "www.hsauto.cz",
+              "description": "Dacia Duster Extreme ECO-G 120 4x2 D1322C · 554 900 Kč · 458 596 Kč ; Dacia Duster Extreme HEV 150 4x4, 2026 D1323 · 719 900 Kč · 594 959 Kč ; Dacia Duster Journey ..."
+            },
+            {
+              "title": "dacia duster - ceník",
+              "url": "https://cdn.group.renault.com/dac/cz/pdf/pricelists/duster-cenik.pdf.asset.pdf/f6d1054208.pdf",
+              "domain": "cdn.group.renault.com",
+              "description": "7. 8. 2026 — Essential. Eco-G 120. Dacia LPG Kalkulačka. 441 900. 5 133. Expression. Eco-G 120. Dacia LPG Kalkulačka. 481 900. 5 577. Eco-G 120 auto."
+            },
+            {
+              "title": "Vozy Dacia k okamžitému odběru",
+              "url": "https://skladove-vozy.dacia.cz/duster/",
+              "domain": "skladove-vozy.dacia.cz",
+              "description": "Sleva z ceny vozu v hodnotě 20 000 Kč vč. DPH pro modely Dacia Duster a Bigster platí při využití financování Premium 20 000 Kč od Mobilize Financial Services."
+            },
+            {
+              "title": "Skladové vozy Dacia Duster cena od 118999 Kč",
+              "url": "https://www.smucler.cz/skladove-vozy/znacky_dacia/modely_dacia-duster/",
+              "domain": "www.smucler.cz",
+              "description": "Autocentrum Šmucler má aktuálně v nabídce 9 vozidel skladem modelu Dacia Duster . Naše nabídka skladových vozidel je v cenovém rozpětí 118 999 až 599 300 Kč ..."
+            }
+          ]
+        },
+        {
+          "keyword": "dacia logan mcv",
+          "volume": 720,
+          "difficulty": 0,
+          "intent": "commercial",
+          "questions": [
+            "Jaké jsou recenze na Daciu Logan MCV?",
+            "Jaká je cena vozu Dacia Logan?",
+            "Co znamená logan mcv?",
+            "Jak je spolehlivá Dacia?"
+          ],
+          "aiOverview": true,
+          "organic": [
+            {
+              "title": "Dacia Logan mcv bazar a prodej nových vozů",
+              "url": "https://www.sauto.cz/inzerce/osobni/dacia/logan?varianta=mcv",
+              "domain": "www.sauto.cz",
+              "description": "Dacia Logan, MCV 1.0 SCe Kůže,Max.výb.,STK. 2019, 116 000 km, Benzín, Manuální. 125 000 Kč. Soukromý prodejce. Vsetín. Inzerát byl odebran z oblíbených."
+            },
+            {
+              "title": "Dacia logan mcv bazar - Auto | Bazoš.cz",
+              "url": "https://auto.bazos.cz/inzeraty/dacia-logan-mcv/",
+              "domain": "auto.bazos.cz",
+              "description": "Prodám dacia logan mcv 1.0SCe(B4D)54kw.Interiér Kůže.GP ... Vsetín - 756 43 125 000 Kč. Dacia Logan MCV 0.9 TCe Arctica LPG ..."
+            },
+            {
+              "title": "Dacia Logan MCV 1.0, 54 kW, Benzinový",
+              "url": "https://www.driveto.cz/pages/auto-motorizace/dacia-logan-ii-mcv-2016-1-0-54-kw-benzinovy-predni-manualni?srsltid=AU7gw4XeAJjseuOMl-uk7LQCsBzVzdpnh3n0drYnAY0oNl_IuWhSWqyc",
+              "domain": "www.driveto.cz",
+              "description": "Vůz Dacia Logan MCV je osazen benzínovým motorem s objemem 1 l a výkonem 54 kW spřaženým s manuální převodovkou. Takový motor je vhodný spíše pro kratší ..."
+            },
+            {
+              "title": "Dacia Logan",
+              "url": "https://cs.wikipedia.org/wiki/Dacia_Logan",
+              "domain": "cs.wikipedia.org",
+              "description": "Dacia Logan ; 1733 mm · 1517 mm · 510 litrů (sedan), 700 litrů (kombi MCV), 2500 l (VAN) · 42 litrů (benzinové motory) nebo 50 litrů (naftové motory)."
+            },
+            {
+              "title": "Dacia Logan MCV - ještě větší auto za málo peněz",
+              "url": "https://www.auto.cz/dacia-logan-mcv-jeste-vetsi-auto-za-malo-penez-1458",
+              "domain": "www.auto.cz",
+              "description": "2. 1. 2007 — V pětimístném uspořádání lze do Loganu MCV naložit až 700 l nákladu, v dvoumístném uspořádání pak 2350 l. Pouze v sedmimístném provedení se kufr ..."
+            }
+          ]
+        },
+        {
+          "keyword": "dacia bigster 4x4",
+          "volume": 720,
+          "difficulty": 3,
+          "intent": "commercial",
+          "questions": [
+            "Kolik stojí Dacia Bigster 4x4?",
+            "Jaká jsou auta s pohonem 4x4?",
+            "Který je lepší, Dacia Bigster nebo Kodiaq?",
+            "Jaké motory nabízí Dacia Bigster?"
+          ],
+          "aiOverview": true,
+          "organic": [
+            {
+              "title": "Bigster - Auto CB - Dacia",
+              "url": "https://autocb.dacia.cz/nove-vozy/bigster/",
+              "domain": "autocb.dacia.cz",
+              "description": "Bigster svou velikostí posouvá hranice svého segmentu ! Největší prostor nad hlavou, nejprostornější místo pro nohy cestujících vzadu a až 702 l (667 dm3 VDA) ..."
+            },
+            {
+              "title": "Dacia Bigster 4x4: První jízdní dojmy, technické údaje",
+              "url": "https://autosalon.tv/novinky/nova-auta/spaluje-i-lpg-a-jizdu-v-terenu-zvladne-kazdy-svezli-jsme-se-s-hybridni-ctyrkolkou-pro-dacii-bigster/galerie",
+              "domain": "autosalon.tv",
+              "description": "Nová Dacia Bigster Hybrid-G 150 4x4 s hybridní čtyřkolkou a podporou spalování LPG konečně přijíždí i na český trh. Dacia Bigster Hybrid-G 150 4x4. Zdroj ..."
+            },
+            {
+              "title": "Dacia Bigster EXTREME 4X4 AUTOMAT LPG ...",
+              "url": "https://daciapruhonice.dacia.cz/skladove-a-predvadeci-vozy/detail/dacia-bigster-extreme-4x4-automat-lpg-srpen/",
+              "domain": "daciapruhonice.dacia.cz",
+              "description": "Dvě plnohodnotné nádrže benzin+LPG (50l + 50l). Pohon 4x4. Panoramatická střecha, dvouzónová klimatizace, adaptivní tempomat, vyhřívané sedačky, volant a přední ..."
+            },
+            {
+              "title": "Dacia Bigster hybrid-G 150 4x4 Journey",
+              "url": "https://automotolandcz.renault.cz/nove-vozy/skladove-vozy/skladove-vozy/dacia-bigster-hybrid-g-150-4x4-journey-2/",
+              "domain": "automotolandcz.renault.cz",
+              "description": "Cena s financováním. 772 800 Kč. s DPH ; Karoserie: SUV ; Počet míst: 5 ; Počet dveří: 5 ; Druh paliva: Benzín / LPG."
+            },
+            {
+              "title": "Dacia Bigster Expression Hybrid-G 150 4x4",
+              "url": "https://www.sauto.cz/osobni/detail/dacia/bigster/210833486",
+              "domain": "www.sauto.cz",
+              "description": "Karoserie. SUV · Palivo. LPG + benzín · Objem. 1 199 ccm · Převodovka. Automatická · Spotřeba/100km. 5.9 litrů · Výkon. 113 kW · Barva. Modrá."
+            }
+          ]
+        },
+        {
+          "keyword": "dacia bigster recenze",
+          "volume": 590,
+          "difficulty": 6,
+          "intent": "commercial",
+          "questions": [
+            "Jak je spolehlivá Dacia?",
+            "Kde se vyrábí Dacia Bigster?",
+            "Jaký je nejlepší motor pro Daciu Duster?",
+            "Jaké jsou nevýhody vozu Dacia Duster?"
+          ],
+          "aiOverview": true,
+          "organic": [
+            {
+              "title": "Dacia: testy, recenze a novinky",
+              "url": "https://www.autickar.cz/znacka/dacia/",
+              "domain": "www.autickar.cz",
+              "description": "Dacia Bigster : Konec posměchu, takhle má vypadat auto pro rodinu!"
+            },
+            {
+              "title": "Dacia Bigster SUV Full Hybrid 2025 - Voděodolné koberce ...",
+              "url": "https://allegro.cz/produkt/dacia-bigster-suv-full-hybrid-2025-vodeodolne-koberecky-yin-yang-8f635028-6e8d-49df-af9e-0450a48b1612?srsltid=AU7gw4V8rZG7jURVt9cCSmA8sTygdAnMQIgAjnO6ty7DBOVgpsLqQ5xT",
+              "domain": "allegro.cz",
+              "description": "Série YIN YANG je kombinací klasického designu velurových koberců s praktickou konstrukcí chránící interiér vozu. Pečlivě obšité okraje, vhodné přizpůsobení, ..."
+            },
+            {
+              "title": "Dacia Bigster Extreme 4x4: Dacia, jaká tu ještě nebyla",
+              "url": "https://www.autickar.cz/clanek/galerie/dacia-bigster-extreme-4x4-dacia-jaka-tu-jeste-nebyla/",
+              "domain": "www.autickar.cz",
+              "description": "Dacia Bigster překvapuje stylem, prostorem i technikou. Není už levná, ale je poctivá a dospělá."
+            },
+            {
+              "title": "Galerie: Dacia Bigster Journey: Největší svého druhu",
+              "url": "https://www.autickar.cz/clanek/galerie/dacia-bigster-journey-nejvetsi-sveho-druhu/",
+              "domain": "www.autickar.cz",
+              "description": "Jaký je největší model rumunského výrobce osazený největším nabízeným motorem v nabídce?"
+            }
+          ]
+        },
+        {
+          "keyword": "levná auta do 50 000",
+          "volume": 390,
+          "difficulty": 0,
+          "intent": "commercial",
+          "questions": [
+            "Jaké je nejlevnější auto na trhu v roce 2026?",
+            "Jaká jsou nejspolehlivější auta do 50 000 Kč?",
+            "Jaká značka auta je nejlevnější?",
+            "Jaké je nejlevnější auto s automatem?"
+          ],
+          "aiOverview": true,
+          "organic": [
+            {
+              "title": "Levné vozy do 50 000 Kč | bazar a prodej nových vozů",
+              "url": "https://www.sauto.cz/inzerce/osobni?cena-do=50000",
+              "domain": "www.sauto.cz",
+              "description": "Levné vozy do 50 000 Kč na prodej – bazar, ojetá auta i předváděcí a nové. Mrkněte na Sauto.cz - online autobazar, kde vyřešíte koupi i prodej vozu, motorky ..."
+            },
+            {
+              "title": "do 50 000 Kč na prodej - inzeráty",
+              "url": "https://yauto.cz/do-50000kc/",
+              "domain": "yauto.cz",
+              "description": "do 50 000 Kč - do 50 000 Kč na prodej · dnes Peugeot 207 1.4i, 1.maj, ČR hatchback · dnes Renault Mégane 1.4i, ČR hatchback. Renault Mégane · dnes Škoda Octavia ..."
+            },
+            {
+              "title": "Do 50000 bazar - Auto | Bazoš.cz",
+              "url": "https://auto.bazos.cz/inzeraty/do-50000/",
+              "domain": "auto.bazos.cz",
+              "description": "Auto - Do 50000 bazar. Vybírejte z 648 inzerátů. Prodej snadno a rychle na Bazoši. Přes půl milionů uživatelů za den."
+            },
+            {
+              "title": "11 levných aut do 50 000 Kč",
+              "url": "https://www.auta.cz/levnych-aut-do-50-000-kc-bazar-a-prodej/",
+              "domain": "www.auta.cz",
+              "description": "Aktuálně nabízíme 11 vozů Levná auta do 50 000 Kč. Průměrná cena je 41 271 Kč, nejlevnější kus startuje na 23 948 Kč. Průměrný nájezd je 232 345 km."
+            },
+            {
+              "title": "Ojeté vozy na prodej",
+              "url": "https://www.autoesa.cz/vsechna-auta?cena_do=50000",
+              "domain": "www.autoesa.cz",
+              "description": "Ojeté vozy na prodej ; Škoda Fabia II · 1.6TDi. 66 kW ; Citroën C5 · 2.2 HDi. 120 kW ; Opel Astra · 1.7CDTi. 81 kW ; Mitsubishi Colt · 1.3i. 70 kW ; Kia Ceed · 1.4CVVT."
+            }
+          ]
+        },
+        {
+          "keyword": "nejlepší ojetá auta do 200 000",
+          "volume": 170,
+          "difficulty": 0,
+          "intent": "commercial",
+          "questions": [
+            "Které ojeté auto je nejlepší?",
+            "Jaká jsou nejlepší ojetá auta do 250 000 Kč?",
+            "Jaké je nejlepší SUV do 200 000 Kč?",
+            "Jaké je nejlepší malé auto do města?"
+          ],
+          "aiOverview": true,
+          "organic": [
+            {
+              "title": "Nejlepší auto do 200 000 Kč ✅ Přehled 2026",
+              "url": "https://www.cebia.cz/novinky/rady-a-tipy/nejlepsi-auto-do-200-000-kc",
+              "domain": "www.cebia.cz",
+              "description": "Nabídka ojetých vozů v ceně do 200 000 Kč je extrémně široká - za tuto cenu si můžete koupit pět let starou Škodu Fabia s tříválcem, nebo dvacet let starý Range ..."
+            },
+            {
+              "title": "Ojetá rodinná auta do 200 000 Kč: Čemu se vyhnout",
+              "url": "https://www.garaz.cz/clanek/testy-ojeta-auta-i-do-200-000-kc-se-da-koupit-spolehliva-ojetina-pro-rodinu-ale-pred-nekterymi-pastmi-durazne-varujeme-21014698",
+              "domain": "www.garaz.cz",
+              "description": "2. 5. 2025 — Ford Focus III · Škoda Octavia III · Hyundai i30 / Kia Ceed · Peugeot 308 · Renault Mégane · Opel Astra · Pasti za „dvě kila“, kterým se vyhněte."
+            },
+            {
+              "title": "Ojeté vozy auta Do 200 000 Kč bazar a prodej nových vozů",
+              "url": "https://www.sauto.cz/inzerce/osobni?cena-do=200000&stav=ojete&varianta=auta",
+              "domain": "www.sauto.cz",
+              "description": "Renault Clio, Renault Clio, r.v.2015,1.2 16V · Renault Clio, 4,1 l na 100Km 1,5DCi 55Kw · Volkswagen Golf, 1.4 TSI, Serv. · Škoda Octavia, Škoda Octavia combi 1.6 ..."
+            },
+            {
+              "title": "Tipy na nejlepší ojetá auta do 200 tisíc Kč",
+              "url": "https://www.suri.cz/blog/ojeta-auta-do-200-000/",
+              "domain": "www.suri.cz",
+              "description": "21. 4. 2025 — Pokud byste raději zamířili do kategorie crossoverů a SUV, jako vhodné adepty jsme vybrali Suzuki SX4 S-Cross a Renault Captur. Suzuki SX4 S- ..."
+            },
+            {
+              "title": "diskuze k tématu: Ojeté větší auto do 200 000 Kč",
+              "url": "https://www.tipcars.com/forum/ojete-vetsi-auto-do-200-000-kc-165469.html",
+              "domain": "www.tipcars.com",
+              "description": "Pod 80kw bych nešel. Možná ještě lepší volba je benzínová 1,3 TCe. Je to sice přímovstřikový motor, ale pokud ho alespoň občas proženete po dálnici, není s ním ..."
+            }
+          ]
+        },
+        {
+          "keyword": "nejlepší ojetá auta do 250 000",
+          "volume": 140,
+          "difficulty": 0,
+          "intent": "commercial",
+          "questions": [
+            "Které ojeté auto je nejlepší?",
+            "Jaké je nejlepší ojeté auto do 200 000 Kč?",
+            "Jaké je nejlepší ojeté auto do 300 000 Kč?",
+            "Jaká jsou nejlepší ojetá rodinná auta?"
+          ],
+          "aiOverview": true,
+          "organic": [
+            {
+              "title": "Spolehlivé auto do 250 000 korun? Tyto modely jsou sázkou ...",
+              "url": "https://www.autojournal.cz/spolehlive-auto-do-250-000-korun-tyto-modely-jsou-sazkou-na-jistotu/",
+              "domain": "www.autojournal.cz",
+              "description": "5. 3. 2026 — Spolehlivé auto do 250 000 korun? Tyto modely jsou sázkou na jistotu · Škoda Octavia 2019 · Seat Leon 2019 · Audi A3 2016 · Škoda Scala 2020."
+            },
+            {
+              "title": "Nejlepší auto do 200 000 Kč ✅ Přehled 2026",
+              "url": "https://www.cebia.cz/novinky/rady-a-tipy/nejlepsi-auto-do-200-000-kc",
+              "domain": "www.cebia.cz",
+              "description": "Nabídka ojetých vozů v ceně do 200 000 Kč je extrémně široká - za tuto cenu si můžete koupit pět let starou Škodu Fabia s tříválcem, nebo dvacet let starý Range ..."
+            },
+            {
+              "title": "Slušná ojetá MPV do 250 000 Kč se sehnat dají a nemusí ...",
+              "url": "https://www.garaz.cz/clanek/testy-ojeta-auta-kupujeme-rodinne-auto-s-utazenym-rozpoctem-slusna-ojeta-mpv-do-250-000-kc-se-sehnat-daji-a-nemusi-to-byt-pasti-21016262",
+              "domain": "www.garaz.cz",
+              "description": "23. 1. 2026 — Kupujeme rodinné auto s utaženým rozpočtem: Slušná ojetá MPV do 250 000 Kč se sehnat dají a nemusí to být pasti · Ojetý Ford Grand C-Max je ..."
+            },
+            {
+              "title": "Ojeté osobní vozy, do 250 000 Kč",
+              "url": "https://autosystem.cz/katalog/ojete-vozy?maxPrice=250000",
+              "domain": "autosystem.cz",
+              "description": "Ojeté osobní vozy, do 250 000 Kč · Škoda Fabia, Combi 1.0 TSI Active · Lexus RX 450h, 3.5HSD, ČR-1m, tažné, 4x4 · Škoda BTF, 1.3 MPI · Škoda Roomster, · Citroën C3, ..."
+            },
+            {
+              "title": "diskuze k tématu: Jaké auto v benzínu do 250 tisíc?",
+              "url": "https://www.tipcars.com/forum/jake-auto-v-benzinu-do-250-tisic-153799.html",
+              "domain": "www.tipcars.com",
+              "description": "- koukala jsem na Passat cc, ale ten má 1.8. TSI a 2.0 TSI benzín a od toho mě všichni odrazují.. - poté audi A4, ten samý motor, ten samý problém... Líbí se mi ..."
+            }
+          ]
+        },
+        {
+          "keyword": "ojetá auta s nejnižší spotřebou",
+          "volume": 50,
+          "difficulty": 0,
+          "intent": "informational",
+          "questions": [
+            "Jaké auto s nízkou spotřebou?",
+            "Která auta jsou nejméně poruchová?",
+            "Jaká jsou nejlepší ojetá auta?",
+            "Jaké je nejlepší malé auto?"
+          ],
+          "aiOverview": true,
+          "organic": [
+            {
+              "title": "Tohle jsou automobily, které si nejlépe a nejhůře drží svoji ...",
+              "url": "https://www.testyojetin.cz/ekonomika/analyza-25-automobilu-ktere-si-nejlepe-a-nejhure-drzi-svoji-hodnotu-skodovka-neni-ani-v-jednom-seznamu",
+              "domain": "www.testyojetin.cz",
+              "description": "8. 12. 2023 — 2. BMW 7 Series. 61.8% ; 3. Maserati Ghibli. 61.3% ; 4. BMW 5 Series (hybrid). 58.8% ; 5. Cadillac Escalade ESV. 58.5%."
+            },
+            {
+              "title": "diskuze k tématu: Matiz, Ford-KA nebo Seicento?",
+              "url": "https://www.tipcars.com/forum/ford-ka/matiz-ford-ka-nebo-seicento-21655.html",
+              "domain": "www.tipcars.com",
+              "description": "Motor 1.1 je pro vůz dostačující, ale mrknul bych se po 1.2 8V, má dobrý tah odspodu, což se projeví dobrou spotřebou! Jinak z vašeho výčtu vozů Matiz, KA, ..."
+            },
+            {
+              "title": "Jeli jsme Škoda Economy Run s Enyaqem - Autojournal",
+              "url": "https://www.autojournal.cz/jeli-jsme-skoda-economy-run-s-enyaqem-usetrili-jsme-devadesat-kilometru-moc-snahy-to-nestalo/",
+              "domain": "www.autojournal.cz",
+              "description": "25. 9. 2024 — Pokud by se dařilo s naší výslednou třináctikilowattovou spotřebou jezdit dlouhodobě – a tato rallye dokazuje, že to není vůbec nereálné – ..."
+            },
+            {
+              "title": "Kombi | Aktuálně.cz - Zprávy",
+              "url": "https://zpravy.aktualne.cz/stitky/kombi/?page=4",
+              "domain": "zpravy.aktualne.cz",
+              "description": "Skutečná náhrada za diesel. Hybridní kombi Toyota Corolla TS jezdí za 4,5 litru. Toyota skončila u osobáků s diesely a myslí to s tím smrtelně vážně."
+            },
+            {
+              "title": "Kam z Česka pro levnější Teslu a Škodu Enyaq? Rozdíly v ...",
+              "url": "https://archiv.hn.cz/c1-67302640-kam-z-ceska-pro-levnejsi-teslu-a-skodu-enyaq-rozdily-v-cenach-evropskych-ojetin-jdou-i-do-stovek-tisic-korun",
+              "domain": "archiv.hn.cz",
+              "description": "11. 3. 2024 — Například nový Enyaq v základní verzi s 82kWh baterií a výkonem 210 kW vyjde podle ceníku automobilky Škoda Auto na 1,32 milionu korun."
+            }
+          ]
+        },
+        {
+          "keyword": "nejspolehlivější ojetá auta",
+          "volume": 70,
+          "difficulty": 11,
+          "intent": "informational",
+          "questions": [
+            "Co je nejspolehlivější auto?",
+            "Jak staré auto se vyplatí koupit?",
+            "Jaké malé auto si mohu koupit do 150 000 Kč?",
+            "Jaká jsou nejlepší 4x4 auta?"
+          ],
+          "aiOverview": true,
+          "organic": [
+            {
+              "title": "Najít spolehlivou ojetinu není snadné. Těchto 10 malých ...",
+              "url": "https://autosalon.tv/novinky/ojetiny/najit-spolehlivou-ojetinu-neni-snadne-techto-10-malych-aut-vas-ale-u-cesty-stat-nenecha",
+              "domain": "autosalon.tv",
+              "description": "1. 10. 2025 — Nejspolehlivější nové auto i ojetina. Toyota sbírá jedno ocenění za druhým. Nová auta 4.8 ... Ojeté Mitsubishi ASX je překvapivě spolehlivé auto."
+            },
+            {
+              "title": "Spolehlivé auto do 10 let? Technici TÜV vás směřují k ...",
+              "url": "https://www.tipcars.com/magazin/nase-tema/spolehlive-vozy-ve-stari-7-10-let-242025.html",
+              "domain": "www.tipcars.com",
+              "description": "9. 6. 2025 — Mezi kvalitní auta pronikly i některé modely vyráběné továrnou Škoda ve východočeských Kvasinách. · Volkswagen T-Roc. · Mazda CX-3. · Honda Jazz."
+            },
+            {
+              "title": "Diskuze - Nejspolehlivější ojetá auta do 400 tisíc?",
+              "url": "https://www.garaz.cz/diskuze/nejspolehlivejsi-ojeta-auta-do-400-tisic-38",
+              "domain": "www.garaz.cz",
+              "description": "20. 6. 2018 — Nejprodávanější čínská značka v Česku uvádí svůj vrcholný model. Jaecoo 8 má v základu úplně všechno, ujede přes 1 000 km a nestojí majlant."
+            },
+            {
+              "title": "Jaká auta jsou nejspolehlivější? Z výsledků studií vyčnívá ...",
+              "url": "https://www.tipcars.com/magazin/nase-tema/nejspolehlivejsi-znacka-aut-262024.html",
+              "domain": "www.tipcars.com",
+              "description": "25. 6. 2024 — Jaká auta jsou nejspolehlivější? Z výsledků studií vyčnívá jedna značka · Toyota Camry · Toyota Prius PHEV. · Toyota GR86 Executive 2.4 Boxer."
+            },
+            {
+              "title": "Nejlepší ojetiny do 150 000 korun. Bezpečné, úsporné a ...",
+              "url": "https://www.autojournal.cz/nejlepsi-ojetiny-do-150-000-korun-bezpecne-usporne-a-spolehlive/",
+              "domain": "www.autojournal.cz",
+              "description": "3. 3. 2026 — Osmá generace Fiesty je typické malé auto, které umí být příjemné na řízení. Má vyvážený podvozek, rozumně naladěné řízení a celkově působí ..."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rpg-games",
+      "candidates": [
+        {
+          "keyword": "kingdom come: deliverance ii",
+          "volume": 12100,
+          "difficulty": 13,
+          "intent": "informational",
+          "questions": [
+            "Kdy se odehrává KCD2?",
+            "Kdo hraje Jindru v KCD?",
+            "Kolik kopií se prodalo KCD2?",
+            "Jaké jsou recenze na Kingdom Come: Deliverance?"
+          ],
+          "aiOverview": false,
+          "organic": [
+            {
+              "title": "Kingdom Come: Deliverance II - vše o hře",
+              "url": "https://www.pocitarna.cz/blog/vse-o-kingdom-come-deliverance-2025/",
+              "domain": "www.pocitarna.cz",
+              "description": "17. 2. 2025 — Hlavními motivy Jindřichovy cesty jsou odplata za vraždu rodičů a získání zpět otcova meče, který mu byl během útoku na Skalici ukraden. Pokud ..."
+            },
+            {
+              "title": "Kingdom Come: Deliverance 2 - Day One Edition - Hra na PC",
+              "url": "https://www.alza.cz/gaming/kingdom-come-deliverance-2?dq=12510588",
+              "domain": "www.alza.cz",
+              "description": "Prodej této varianty zboží Kingdom Come: Deliverance 2 - Day One Edition skončil. Zobrazit detail zbožíVybrat alternativu."
+            },
+            {
+              "title": "Koupit Kingdom Come: Deliverance 2 (Gold Edition) (PC)",
+              "url": "https://tbgames.cz/pc/kingdom-come-deliverance-2-gold-edition/?srsltid=AU7gw4Vfw_OXQ1Ivma2ojEQwdqpdx3h5aTCawBBIxy-ji5DLxtWtAmbg",
+              "domain": "tbgames.cz",
+              "description": "4. 2. 2025 — Kingdom Come: Deliverance II Gold Edition přináší epické pokračování v srdci středověké Evropy, kde se ujmete role Henryho, ..."
+            },
+            {
+              "title": "Kingdom Come: Deliverance 2 – Vše, co potřebujete vědět",
+              "url": "https://www.alza.cz/kingdom-come-deliverance-2-info",
+              "domain": "www.alza.cz",
+              "description": "Kingdom Come: Deliverance 2: Datum vydání, platformy. Kingdom Come: Deliverance 2 vyšlo 4. února 2025 na PC (Steam, Epic), PlayStation 5 a Xbox Series X/S. Hra ..."
+            },
+            {
+              "title": "Kingdom Come: Deliverance II - Recenze",
+              "url": "https://www.datart.cz/novinky/recenze/hra-kingdom-come-deliverance-2",
+              "domain": "www.datart.cz",
+              "description": "2. 3. 2025 — Kingdom Come: Deliverance II je skvělou hrou zasazenou do českého středověku. Je to hra nesmlouvavá a plná složitých systémů, které vás na první ..."
+            }
+          ]
+        },
+        {
+          "keyword": "zaklínač postavy",
+          "volume": 4400,
+          "difficulty": 0,
+          "intent": "informational",
+          "questions": [
+            "Kdo jsou postavy v seriálu zaklínač?",
+            "Jaká jsou jména zaklínačů?",
+            "Kdo jsou nejznámější filmové postavy?",
+            "Kdo jsou postavy ve 4. sérii zaklínače?"
+          ],
+          "aiOverview": true,
+          "organic": [
+            {
+              "title": "Annar - Zaklínač",
+              "url": "https://www.postavy.cz/annar/",
+              "domain": "www.postavy.cz",
+              "description": "Annar se s několika dalšími Ofierskýmy válečníky, pod vedením čaroděje Aamada, vydává do Severních království, za záchranou prokletého, Ofierského prince."
+            },
+            {
+              "title": "Postavy - Zaklínač - eStránky.cz",
+              "url": "https://zaklinac-game.estranky.cz/clanky/postavy/",
+              "domain": "zaklinac-game.estranky.cz",
+              "description": "Zaklínač · Postavy · Rayne Von Anderson, WhiteRayne@email.cz · Maritriss Ranuncul, ZaroockWendy · Geralt z Rivie, U.zumakiNaruto · Wiviana Wierda, ZaroockWendy."
+            },
+            {
+              "title": "Odrin - Zaklínač",
+              "url": "https://www.postavy.cz/odrin/",
+              "domain": "www.postavy.cz",
+              "description": "Opilec, výtržník, dezertér. Role. Epizodní. Karma. spoiler (zobraz kliknutím)Neutrální. Autor. CD Projekt Red. Hraje."
+            },
+            {
+              "title": "Do čtvrté série Zaklínače míří tři noví herci, kteří ...",
+              "url": "https://cz.ign.com/the-witcher-5/17477/news/do-ctvrte-serie-zaklinace-miri-tri-novi-herci-kteri-ztvarni-postavy-lea-bonharta-skellena-a-zoltana",
+              "domain": "cz.ign.com",
+              "description": "4. 4. 2024 — ... Zaklínač. Do čtvrté série Zaklínače míří tři noví herci, kteří ztvární postavy Lea Bonharta, Skellena a Zoltana. Brzy začne natáčení ..."
+            },
+            {
+              "title": "Dunca - Zaklínač",
+              "url": "https://www.postavy.cz/dunca/",
+              "domain": "www.postavy.cz",
+              "description": "Dunca ; Věk. Neznámý ; Pohlaví. Muž ; Druh. dryáda ; Titul. strážkyně Brokilonu ; Role. Epizodní."
+            }
+          ]
+        },
+        {
+          "keyword": "zaklínač 3 divoký hon",
+          "volume": 1000,
+          "difficulty": 0,
+          "intent": "informational",
+          "questions": [],
+          "aiOverview": false,
+          "organic": [
+            {
+              "title": "Zaklínač 3 se brzy dočká remasteru zásluhou bezplatné ...",
+              "url": "https://indian-tv.cz/clanek/zaklinac-3-songs-of-the-past-expanze-0twn9x",
+              "domain": "indian-tv.cz",
+              "description": "25. 8. 2026 — Překvapením je oznámení projektu The Witcher 3: Wild Hunt - Remastered. Ten si zahrajeme už za měsíc, konkrétně 29. září/septembra 2026, přičemž ..."
+            },
+            {
+              "title": "Zaklínač 3: Divoký hon | #36 Český Next-Gen Gameplay / Let's ...",
+              "url": "https://www.youtube.com/watch?v=PW_rvLvuwTE",
+              "domain": "www.youtube.com",
+              "description": "Zaklínač 3 : Divoký hon | #36 Český Next-Gen Gameplay / Let's Play přes PC na ULTRA RT | CZ 4K60 HDR. @paranskyraj89 likes1.6K viewsStreamed ..."
+            },
+            {
+              "title": "Zaklínač 3: Divoký hon - recenze - GAMES.CZ",
+              "url": "https://games.tiscali.cz/recenze/zaklinac-3-divoky-hon-recenze-251453",
+              "domain": "games.tiscali.cz",
+              "description": "22. 5. 2015 — Zaklínač 3 je slovanskou hrou od slovanských vývojářů. Je to vidět skoro na každém kroku. Z pohledu Čecha má hra příjemně povědomou atmosféru, ..."
+            },
+            {
+              "title": "Zaklínač 3: Divoký hon - Karta hry - GAMES.CZ",
+              "url": "https://games.tiscali.cz/zaklinac-3-divoky-hon-15396",
+              "domain": "games.tiscali.cz",
+              "description": "Série: Zaklínač ; Vývojář: CD Projekt RED; Vydavatel: Namco Bandai; Distributor: Cenega; Datum vydání: PlayStation 4: 19. května 2015; PC: 19. května 2015 ..."
+            },
+            {
+              "title": "Ušetřete 50 % na produktu Zaklínač 3: Divoký Hon",
+              "url": "https://store.steampowered.com/app/292030/Zaklinac_3_Divoky_Hon__Remaster/?l=czech&curator_clanid=26236671",
+              "domain": "store.steampowered.com",
+              "description": "Zaklínač 3: Divoký hon – Remaster modernizuje oceňovanou hru na hrdiny díky řadě vylepšení a úprav. Staň se Geraltem z Rivie, nájemným zabijákem příšer, ..."
+            }
+          ]
+        },
+        {
+          "keyword": "zaklínač 4 série",
+          "volume": 1000,
+          "difficulty": 1,
+          "intent": "informational",
+          "questions": [
+            "Kdy bude 4. série Zaklínače?",
+            "Kdy vyjde 5. série Zaklínač?",
+            "Kdy má vyjít Witcher 4?",
+            "Kdo hraje Zaklínač 4?"
+          ],
+          "aiOverview": true,
+          "organic": [
+            {
+              "title": "Diskuze: Čtvrtá řada seriálu Zaklínač v premiérové ukázce - Zing",
+              "url": "https://zing.cz/article/ctvrta-rada-serialu-zaklinac-v-premierove-ukazce/comments",
+              "domain": "zing.cz",
+              "description": "Liam Hemsworth se poprvé ukazuje v roli Geralta. Čtvrtá řada seriálu Zaklínač. Sice je to od druhé série pořádná hovadina, Dneska mají seriály a filmy tolik ..."
+            },
+            {
+              "title": "Seriál Zaklínač byl obnoven pro pátou sérii, která bude ...",
+              "url": "https://cz.ign.com/the-witcher-5/17700/news/serial-zaklinac-byl-obnoven-pro-patou-serii-ktera-bude-zaroven-jeho-posledni",
+              "domain": "cz.ign.com",
+              "description": "19. 4. 2024 — Zaklínač si v říjnu 2022 zajistil obnovení pro čtvrtou sérii, ale Netflix dal až nyní zelenou páté sérii. Obě sezóny se budou natáčet za sebou a ..."
+            },
+            {
+              "title": "Zaklínač 4 bude mít fyzické vydání i v době, kdy se zřejmě ...",
+              "url": "https://www.reddit.com/r/Games/comments/1w1wqx6/the_witcher_4_will_have_a_physical_edition_even/?tl=cs",
+              "domain": "www.reddit.com",
+              "description": "Zaklínač: 4. série | Oficiální upoutávka | Netflix (30. října) The Witcher IV na vydání v roce 2028."
+            },
+            {
+              "title": "Zaklínač 4",
+              "url": "https://www.czechgamer.com/hledani.php?tag=zaklinac-4",
+              "domain": "www.czechgamer.com",
+              "description": "Čo nové vlastne prinesie next-gen Zaklínač? Geralt dostal Covid a nakrúcanie Zaklínača bolo zastavenéFilip Voržáček (28.07.2022). Geralt dostal Covid a ..."
+            },
+            {
+              "title": "Trailer Zaklínače S4 : r/witcher",
+              "url": "https://www.reddit.com/r/witcher/comments/1o0h9bi/the_witcher_s4_trailer/?tl=cs",
+              "domain": "www.reddit.com",
+              "description": "Zaklínač : 4. série | Oficiální upoutávka | Netflix (30. října) · r ... Zaklínač je kriticky uznávaná fantasy série knih od Andrzeje Sapkowského."
+            }
+          ]
+        },
+        {
+          "keyword": "kingdom come deliverance 2 review",
+          "volume": 720,
+          "difficulty": 17,
+          "intent": "informational",
+          "questions": [
+            "Is Kingdom Come 2 Deliverance good?",
+            "Is Kingdom Come Deliverance 2 as good as RDR2?",
+            "How many hours is KCD2?",
+            "What is so good about KCD2?"
+          ],
+          "aiOverview": true,
+          "organic": [
+            {
+              "title": "Kingdom Come: Deliverance II Review - Gaming Nexus",
+              "url": "https://www.gamingnexus.com/Article/14169/Kingdom-Come-Deliverance-II/",
+              "domain": "www.gamingnexus.com",
+              "description": "3. 2. 2025 — Kingdom Come: Deliverance II is a near total package, with great writing, acting, and a level of immersion that will have you running down every ..."
+            },
+            {
+              "title": "Kingdom Come Deliverance 2 Review",
+              "url": "https://www.xboxtavern.com/kingdom-come-deliverance-2-review/",
+              "domain": "www.xboxtavern.com",
+              "description": "11. 2. 2025 — It truly feels like a living, breathing place, complete with a robust (and again harsh) set of rules and governances. Get into enough trouble, ..."
+            },
+            {
+              "title": "Kingdom Come Deliverance II Review (PlayStation 5)",
+              "url": "https://www.qualbert.com/reviews/kingdom-come-deliverance-ii-review-ps5/",
+              "domain": "www.qualbert.com",
+              "description": "2. 3. 2025 — Kingdom Come Deliverance II doesn't shirk complexity in its gameplay. This is a fully fledged western style role-playing game. Systems are ..."
+            },
+            {
+              "title": "Now that it has had some time to breathe, what is your ...",
+              "url": "https://www.reddit.com/r/Games/comments/1kazump/now_that_it_has_had_some_time_to_breathe_what_is/",
+              "domain": "www.reddit.com",
+              "description": "I finally finished KCD2 after about 130 hours. I think I did about 80 percent of the side quests and got my character to about level 27.\n\nI think ..."
+            },
+            {
+              "title": "Kingdom Come: Deliverance II Reviews",
+              "url": "https://www.metacritic.com/game/kingdom-come-deliverance-ii/",
+              "domain": "www.metacritic.com",
+              "description": "Kingdom Come: Deliverance 2 is a game of staggering scope, depth and complexity, allowing you to be a smooth-talking diplomat, a cunning craftsman, a sneaky ..."
+            }
+          ]
+        },
+        {
+          "keyword": "kingdom come deliverance mapa",
+          "volume": 320,
+          "difficulty": 0,
+          "intent": "informational",
+          "questions": [],
+          "aiOverview": false,
+          "organic": [
+            {
+              "title": "Kingdom Come Deliverance Map - Interactive map for ...",
+              "url": "https://kingdomcomemap.github.io/",
+              "domain": "kingdomcomemap.github.io",
+              "description": "Initial release 1.0 · In this version of the map you can place markers around the map and it will save it in the local storage in your browser, even if you ..."
+            },
+            {
+              "title": "Kingdom Come: Deliverance Map",
+              "url": "https://mapgenie.io/kingdom-come-deliverance",
+              "domain": "mapgenie.io",
+              "description": "Kingdom Come: Deliverance Interactive Map - All Interesting Sites, Services, Chests, Armor & more! Use the progress tracker to get 100%!"
+            },
+            {
+              "title": "Mapa | Kingdom Come: Deliverance",
+              "url": "https://kingdomcome.cz/mapa/",
+              "domain": "kingdomcome.cz",
+              "description": "Ve druhé alfa verzi Kingdom Come bylo poprvé možné spatřit herní mapu. Ta je pouze pro testovací vesnici Samopše. samopse. Mapa ve hře bude mít několik ..."
+            },
+            {
+              "title": "KCDmap – Aplikace na Google Play",
+              "url": "https://play.google.com/store/apps/details?id=cz.mjakl.apps.kcdmap&hl=cs",
+              "domain": "play.google.com",
+              "description": "Opanuj tento kraj. Zažij Čechy jako nikdy předtím! Vstup do roku 1403 a propoj digitální svět Kingdom Come: Deliverance s dechberoucí realitou České republiky."
+            },
+            {
+              "title": "Mapa Kingdom Come: Deliverance II",
+              "url": "https://www.sccr.cz/propagacni-material/mapa-kingdom-come-deliverance-ii/",
+              "domain": "www.sccr.cz",
+              "description": "Mapa vás zavede nejen do oblasti Kutnohorska a Trosecka, ale také vás vrátí do dobře známého Posázaví. Elektronickou verzi brožury Kingdom Come Deliverance II ..."
+            }
+          ]
+        },
+        {
+          "keyword": "ciri zaklínač",
+          "volume": 260,
+          "difficulty": 0,
+          "intent": "informational",
+          "questions": [
+            "Kdo je Ciri ze Zaklínače?",
+            "Jak zemřel Geralt z Rivie?",
+            "Jak dopadne Ciri?",
+            "Kdo hraje Ciri v Zaklínač?"
+          ],
+          "aiOverview": false,
+          "organic": [
+            {
+              "title": "Moje myšlenky o Ciri jako protagonistce The Witcher IV",
+              "url": "https://www.reddit.com/r/witcher/comments/1hfj5uh/my_thoughts_about_ciri_as_the_protagonist_of_the/?tl=cs",
+              "domain": "www.reddit.com",
+              "description": "Ciri novou Zaklínačku, novou hlavní postavu této nové trilogie, dává CDPR šanci stanovit lore za tím, proč se ženy teď můžou stát Zaklínačkami."
+            },
+            {
+              "title": "Zaklínač: Příběh o původu Ciri se dočká komiksové ... - IGN",
+              "url": "https://cz.ign.com/the-witcher-3/20629/news/zaklinac-pribeh-o-puvodu-ciri-se-docka-komiksove-adaptace",
+              "domain": "cz.ign.com",
+              "description": "25. 11. 2024 — Nakladatelství Dark Horse adaptuje do komiksové podoby další zaklínačskou povídku od autora Andrzeje Sapkowského."
+            },
+            {
+              "title": "Zaklínač 4 oficiálně představen, hlavní hrdinkou je Ciri",
+              "url": "https://gamepress.cz/zaklinac-4-oficialne-predstaven-hlavni-hrdinkou-je-ciri/",
+              "domain": "gamepress.cz",
+              "description": "13. 12. 2024 — V novém akčním RPG se objeví nová hlavní hrdinka v podobě Ciri, která samozřejmě hrála důležitou roli i v Zaklínači 3. V traileru se Ciri vydává ..."
+            },
+            {
+              "title": "Upřímně doufám, že Ciri dostane od Končin (Krones) ve ...",
+              "url": "https://www.reddit.com/r/witcher/comments/1q34cim/im_really_hoping_ciri_gets_closure_from_the/?tl=cs",
+              "domain": "www.reddit.com",
+              "description": "Ciri v tom konci neumírá; tohle je častý omyl. CDPR ve skutečnosti v Next-Gen updatu ten závěrečný sestřih trochu upravilo právě kvůli tomu, ..."
+            },
+            {
+              "title": "r/witcher - Ciri od Felvelial",
+              "url": "https://www.reddit.com/r/witcher/comments/1s9ttsr/ciri_by_felvelial/?tl=cs",
+              "domain": "www.reddit.com",
+              "description": "Co je špatného na tom, že Ciri je heterosexuální a má v Witcher IV jen mužské Love Interests? Ženy můžou milovat muže a přesto být silné a ..."
+            }
+          ]
+        },
+        {
+          "keyword": "zaklínač 4 série recenze",
+          "volume": 260,
+          "difficulty": 0,
+          "intent": "informational",
+          "questions": [
+            "Kdy vyjde 5. série Zaklínače?",
+            "Jak skončí Zaklínač?",
+            "Jaké jsou recenze na desku Zaklínač: Starý svět?",
+            "Kdo hraje Zaklínač 4?"
+          ],
+          "aiOverview": true,
+          "organic": [
+            {
+              "title": "Co všechno víme o čtvrté řadě Zaklínače?",
+              "url": "https://www.edna.cz/zaklinac/novinky/co-vsechno-vime-o-ctvrte-rade-zaklinace/",
+              "domain": "www.edna.cz",
+              "description": "28. 7. 2023 — Co se týče pokračování, největší změnou bude rozhodně to, že Geralta z Rivie už nebude hrát herec Henry Cavill. V pokračování ho nahradí Liam ..."
+            },
+            {
+              "title": "Zaklínač: 4. série. | Oficiální upoutávka | Vrací se 30. října ...",
+              "url": "https://www.reddit.com/r/Fauxmoi/comments/1ngurm3/the_witcher_season_4_official_teaser_returns/?tl=cs",
+              "domain": "www.reddit.com",
+              "description": "Upřímně, Jasker, Henry a trpaslíci byli jediný koukatelný části týhle série, zvlášť jakmile Jodhi May a Bjorn Hlynur Haraldsson (rwrrr) vypadli."
+            },
+            {
+              "title": "Zaklínač 4 řada recenze | Katastrofa na ČSFD (44 %)",
+              "url": "https://rajhrace.cz/zaklinac-4-rada-recenze-csfd-hemsworth/",
+              "domain": "rajhrace.cz",
+              "description": "2. 11. 2025 — Domácí diváci jsou nekompromisní. Na serveru ČSFD si nová série drží tristní hodnocení 44 %, což je zdaleka nejméně v historii seriálu (pro ..."
+            },
+            {
+              "title": "Zaklínač: 4. série | Oficiální trailer | Netflix : r/netflixwitcher",
+              "url": "https://www.reddit.com/r/netflixwitcher/comments/1o0h855/the_witcher_season_4_official_trailer_netflix/?tl=cs",
+              "domain": "www.reddit.com",
+              "description": "Vypadá to, že si pořád berou nějaký ty svobody s dějem. Nejsem si jistý, co Lambert nebo Coen dělají s přeživšími mágy."
+            },
+            {
+              "title": "Recenze seriálu Zaklínač: Něco končí, něco začíná",
+              "url": "https://games.tiscali.cz/tema/recenze-serialu-zaklinac-neco-konci-neco-zacina-337991",
+              "domain": "games.tiscali.cz",
+              "description": "22. 12. 2019 — Končí toulání, začíná hon. Tím pádem by mohla skončit i vypravěčská nejistota, a když už jsme u toho, taky ne úplně přesvědčivé CGI, divné ..."
+            }
+          ]
+        },
+        {
+          "keyword": "kingdom come: deliverance 2 dlc",
+          "volume": 390,
+          "difficulty": 14,
+          "intent": "informational",
+          "questions": [
+            "Will Kingdom Come Deliverance 2 get dlc?",
+            "Which KCD2 dlc is worth it?",
+            "How to start Kingdom Come 2 dlc?",
+            "Is KCD 3 confirmed?"
+          ],
+          "aiOverview": true,
+          "organic": [
+            {
+              "title": "Kingdom Come: Deliverance 2 dostává velkou záplatu a ...",
+              "url": "https://indian-tv.cz/clanek/kingdom-come-deliverance-2-dostava-velkou-zaplatu-a-dlc-1sa9da",
+              "domain": "indian-tv.cz",
+              "description": "9. 9. 2025 — Největší pozornost si bezpochyby zaslouží právě nové placené DLC. Odkaz kovárny (v angličtině Legacy of the Forge) rozšiřuje příběh a dovoluje ..."
+            },
+            {
+              "title": "Kingdom Come: Deliverance 2 vychází v Royal Edition se ...",
+              "url": "https://gamepress.cz/kingdom-come-deliverance-2-vychazi-v-royal-edition-se-vsemi-dlc/",
+              "domain": "gamepress.cz",
+              "description": "12. 11. 2025 — S třetím a zároveň posledním příběhovým DLC pro Kingdom Come: Deliverance 2 od Warhorse Studios z ničeho nic hra objevila v Royal Edition."
+            },
+            {
+              "title": "Kingdom Come: Deliverance II Expansion Pass | Steam klíč",
+              "url": "https://allegro.cz/produkt/kingdom-come-deliverance-ii-2-expansion-pass-dlc-pl-pc-steam-key-83a2d5ea-bf6a-46ae-a05c-4742319a50a2?srsltid=AU7gw4X9TWBcPd0_XSgokDbNHCDntvg_Jsnei9ziv-QaqLRBo19Jh_SG",
+              "domain": "allegro.cz",
+              "description": "Nakupujte levně ☝ KINGDOM COME DELIVERANCE II 2 EXPANSION PASS DLC PL PC STEAM KEY na Allegro za 480.00CZK • Doprava zdarma s Allegro Smart!"
+            },
+            {
+              "title": "Kovářské DLC pro Kingdom Come: Deliverance II ...",
+              "url": "https://www.centrumher.eu/kovarske-dlc-pro-kingdom-come-deliverance-ii-predstaveno-na-gamescomu",
+              "domain": "www.centrumher.eu",
+              "description": "20. 8. 2025 — Studio Warhore trošičku poodhalilo chystané kovářské DLC s názvem Legacy of the Forge. Budeme si moci upravovat vlastní dům a vydělávat ..."
+            },
+            {
+              "title": "Deliverance II odhalilo závěrečné příběhové rozšíření - Zing",
+              "url": "https://zing.cz/article/kingdom-come-deliverance-ii-odhalilo-zaverecne-pribehove-rozsireni",
+              "domain": "zing.cz",
+              "description": "24. 10. 2025 — Autoři lákají na novou dějovou linku, ve které se vydáte do izolovaného Sedleckého kláštera, kde se pokusíte odhalit nebezpečné tajemství. Z ..."
+            }
+          ]
+        },
+        {
+          "keyword": "mmo rpg",
+          "volume": 1600,
+          "difficulty": 12,
+          "intent": "informational",
+          "questions": [
+            "What is MMO vs RPG?",
+            "What does an MMORPG mean?",
+            "What is the best MMORPG?",
+            "What are the big 4 MMOs?"
+          ],
+          "aiOverview": true,
+          "organic": [
+            {
+              "title": "Kategória:MMORPG",
+              "url": "https://sk.wikipedia.org/wiki/Kateg%C3%B3ria:MMORPG",
+              "domain": "sk.wikipedia.org",
+              "description": "Stránky v kategórii „MMORPG“. V tejto kategórii sa nachádza 29 stránok z 29 celkom. Massively-Multiplayer Online Role-Playing Game · Zoznam MMORPG hier. A."
+            },
+            {
+              "title": "The best MMO and MMORPG games on PS4 and PS5",
+              "url": "https://www.playstation.com/en-qa/editorial/the-best-mmo-and-mmorpg-games-on-ps4-and-ps5/",
+              "domain": "www.playstation.com",
+              "description": "Final Fantasy XIV · Star Trek Online · The Elder Scrolls Online · DC Universe Online. When it comes to massively multiplayer heroics, you don't get much more ..."
+            },
+            {
+              "title": "Recommendations for MMO/MMORPG games that are non ...",
+              "url": "https://www.reddit.com/r/rpg_gamers/comments/15cy57x/recommendations_for_mmommorpg_games_that_are/",
+              "domain": "www.reddit.com",
+              "description": "If you want a solid casual MMO experience, I would recommend SWTOR(Star Wars: The Old Republic). It is an MMO with dungeons, raids ..."
+            },
+            {
+              "title": "MMORPG – slovník pojmov – myši",
+              "url": "https://www.alza.sk/slovnik/mmorpg",
+              "domain": "www.alza.sk",
+              "description": "MMORPG (Massively multiplayer online role-playing game) je žáner hry s veľkým počtom hráčov a s prvkami RPG. Ide o hru na hrdinov, ktorá sa odohráva vo ..."
+            },
+            {
+              "title": "Získejte na Steamu zdarma známé MMORPG | Zing",
+              "url": "https://zing.cz/article/ziskejte-na-steamu-zdarma-zname-mmorpg",
+              "domain": "zing.cz",
+              "description": "3. 3. 2023 — Populární MMORPG Black Desert Online aktuálně slaví 7 let od svého vydání. Vývojáři ze studia Pearl Abyss tohoto výročí využili k tomu, ..."
+            }
+          ]
+        },
+        {
+          "keyword": "akční rpg",
+          "volume": 480,
+          "difficulty": 1,
+          "intent": "informational",
+          "questions": [
+            "Jaké je nejlepší RPG?",
+            "Co znamená RPG?",
+            "Jaké jsou typy her RPG?",
+            "Jaké jsou nejnovější RPG hry?"
+          ],
+          "aiOverview": true,
+          "organic": [
+            {
+              "title": "Osiris Reborn ukazuje akční misi na Ganymedu",
+              "url": "https://indian-tv.cz/clanek/the-expanse-osiris-reborn-ukazuje-akcni-misi-na-ganymedu-xiu5fi",
+              "domain": "indian-tv.cz",
+              "description": "28. 8. 2026 — Studio Owlcat Games během gamescomu 2026 představilo nový trailer z připravovaného akčního RPG The Expanse: Osiris Reborn."
+            },
+            {
+              "title": "Akční hry a RPG",
+              "url": "https://www.key4you.cz/hry/akcni/rpg/?srsltid=AU7gw4Ufnw82LyhLtbUFFrGbxyAp1tOOyzURIIZdV_CgUshXtrM7_PKa",
+              "domain": "www.key4you.cz",
+              "description": "Akční hry a RPG · Project Zomboid · The Sims 3 · Kingdom Come Deliverance II · Sniper Elite 5 · Heroes of Might and Magic Olden Era. 649 Kč. Do košíku · Doporuč ..."
+            },
+            {
+              "title": "RPG hry na PC - 2 662 produktů - Heureka.cz",
+              "url": "https://hry-pro-pc.heureka.cz/f:2533:13056/",
+              "domain": "hry-pro-pc.heureka.cz",
+              "description": "Heureka.cz vám poradí, jak vybírat rpg hry na pc. Vybírejte si rpg hry na pc podle parametrů a srovnávejte ceny z internetových obchodů na Heurece."
+            },
+            {
+              "title": "Jaký jsou nejlepší akční RPG hry? : r/rpg_gamers",
+              "url": "https://www.reddit.com/r/rpg_gamers/comments/1fythaa/what_are_the_best_action_rpg_games/?tl=cs",
+              "domain": "www.reddit.com",
+              "description": "Nechci jenom tyhle shora dolů hry s ability jako Path of Exile. \n\nHledám spíš něco jako Fallout 4, to je akční hra s RPG mechanikama. \n\nMám rád ..."
+            },
+            {
+              "title": "Články akční RPG",
+              "url": "https://www.alza.cz/akcni-rpg-tag4128.htm",
+              "domain": "www.alza.cz",
+              "description": "Control: Resonant (RECENZE – Souhrn) · Fable – Vše, co potřebujete vědět · Exodus – Vše, co potřebujete vědět · Titan Quest 2 – Vše, co potřebujete vědět."
+            }
+          ]
+        },
+        {
+          "keyword": "zaklínač mapy",
+          "volume": 320,
+          "difficulty": 0,
+          "intent": "informational",
+          "questions": [],
+          "aiOverview": true,
+          "organic": [
+            {
+              "title": "Mapa na plátně Zaklínač: Hra na hrdiny - imago",
+              "url": "https://www.imago.cz/mapa-na-platne-zaklinac-hra-na-hrdiny",
+              "domain": "www.imago.cz",
+              "description": "prodáváno pouze v imago; na kvalitním plátně – pevná a odolná; rozměr 34 x 30 cm. Tahle stylová mapa ti otevírá bránu do temného a nebezpečného světa ..."
+            },
+            {
+              "title": "Detailní mapa světa Zaklínače : r/wiedzmin",
+              "url": "https://www.reddit.com/r/wiedzmin/comments/s4gmgj/detailed_map_of_the_world_of_the_witcher/?tl=cs",
+              "domain": "www.reddit.com",
+              "description": "Zaklínač 3 prozkoumal na celém kontinentu jen tři místa (Skellige, Velen (včetně Novigradu) a Toussaint), a přesto se v té době zdál obrovský (a ..."
+            },
+            {
+              "title": "Mapy - Fandom - Zaklínač Wiki",
+              "url": "https://zaklinac.fandom.com/wiki/Mapy",
+              "domain": "zaklinac.fandom.com",
+              "description": "Tato stránka jednoduše poskytuje odkazy na různé mapy ve hře Zaklínač v uspořádané podobě pro snadné vyhledávání. Mapa se otevře kliknutím na ikonu mapy nebo ..."
+            },
+            {
+              "title": "Zaklínač 3 mapa — regiony, lokace a DLC | RPG Games",
+              "url": "https://rpggames.cz/hry/zaklinac-3/pruvodce/mapa/",
+              "domain": "rpggames.cz",
+              "description": "27. 8. 2026 — Zaklínač 3 mapa regionů (Witcher 3 world map) v základní hře: Bělosad, Velen, Novigrad s Oxenfurtem, Skellige, Kaer Morhen a krátká zastávka ..."
+            },
+            {
+              "title": "Mapa světa kontinentu, tak jak ho známe z trilogie Zaklínač.",
+              "url": "https://www.reddit.com/r/witcher/comments/173qkkq/world_map_of_the_continent_as_of_the_witcher/?tl=cs",
+              "domain": "www.reddit.com",
+              "description": "Je to nenápadná, nevýznamná část kontinentu, kromě blízkosti Novigradu a Redanie. Chudá říční hranice/venkovská oblast. Bylo by to, jako kdyby ..."
+            }
+          ]
+        },
+        {
+          "keyword": "nový zaklínač",
+          "volume": 260,
+          "difficulty": 0,
+          "intent": "informational",
+          "questions": [
+            "Kdy bude 4. série Zaklínače?",
+            "Kdy bude 5. série Zaklínač?",
+            "Proč Henry Cavill končí jako Zaklínač?",
+            "Kdy vyjde nový Zaklínač?"
+          ],
+          "aiOverview": true,
+          "organic": [
+            {
+              "title": "Zaklínač - Série 4 (S04) (2025) | Tvůrci",
+              "url": "https://www.csfd.cz/film/419063-zaklinac/1396865-serie-4/hraji/",
+              "domain": "www.csfd.cz",
+              "description": "Zaklínač - Série 4 (S04) (2025 ) - série - Herecké obsazení. Přehled 56 herců, které uvidíš ve filmu."
+            },
+            {
+              "title": "Nový Zaklínač: Proč mění tvář a nasazuje úsměv",
+              "url": "https://www.wired.cz/clanky/novy-zaklinac-proc-meni-tvar-a-nasazuje-usmev",
+              "domain": "www.wired.cz",
+              "description": "23. 10. 2025 — Úspěšný seriál vyměnil herce v roli Zaklínače. Nikdo neví, jestli to vyjde. Ale největší změnou nakonec není nová tvář pod starou parukou."
+            },
+            {
+              "title": "Nový Zaklínač vyjde česky ještě letos. S osmnáctiletým ...",
+              "url": "https://cc.cz/novy-zaklinac-vyjde-cesky-uz-na-podzim-ukaze-vam-osmnactileteho-a-povyseneho-geralta-hlasi-sapkowski/",
+              "domain": "cc.cz",
+              "description": "27. 2. 2025 — Nový Zaklínač vyjde česky už na podzim. Ukáže vám osmnáctiletého a povýšeného Geralta, hlásí Sapkowski. „Zažijete zkoušky, které Geralta ..."
+            },
+            {
+              "title": "Zaklínač 4. série - příběh, obsazení, datum vydání",
+              "url": "https://www.konzoliste.cz/magazin/zaklinac-serial-4/",
+              "domain": "www.konzoliste.cz",
+              "description": "13. 5. 2025 — Prozatím čekáme na oficiální datum 4. série seriálu Zaklínač. Netflix 4. sérii natáčel už v roce 2024 a aktuálně probíhá postprodukce, přičemž ..."
+            },
+            {
+              "title": "The Witcher 4 (Zaklínač 4): datum vydání, Ciri, gameplay a ...",
+              "url": "https://www.prokonzole.cz/blog/the-witcher-4--zaklinac-4-datum-vydani--ciri--gameplay-a-vse--co-zatim-vime/",
+              "domain": "www.prokonzole.cz",
+              "description": "13. 4. 2026 — Oficiální datum vydání The Witcher 4 zatím neexistuje. · Podle rozsahu projektu a aktuální fáze vývoje se nejčastěji mluví o období kolem roku ..."
+            }
+          ]
+        },
+        {
+          "keyword": "turn-based rpg games",
+          "volume": 90,
+          "difficulty": 0,
+          "intent": "informational",
+          "questions": [],
+          "aiOverview": true,
+          "organic": [
+            {
+              "title": "Top 10 Turn-Based Strategy Games of All Time - By Brad ...",
+              "url": "https://turnbasedlovers.com/lists/top-10-turn-based-strategy-games-of-all-time-by-brad-deep/",
+              "domain": "turnbasedlovers.com",
+              "description": "25. 9. 2025 — Turn-based strategy games that defined my playtime – classics and modern hits I keep returning to. · #10 – Warlords (1990) · #9 – The Lamplighters ..."
+            },
+            {
+              "title": "10 JRPGs with the Best Turn-Based Combat Ever Made",
+              "url": "https://www.youtube.com/watch?v=_-pNMEwrhh8",
+              "domain": "www.youtube.com",
+              "description": ""
+            },
+            {
+              "title": "Turn Based Lovers - Covering RPGs and Strategy Games",
+              "url": "https://turnbasedlovers.com/",
+              "domain": "turnbasedlovers.com",
+              "description": "NOSTRA puts timed defensive actions and equipment customization into a turn-based, party-based JRPG. It's Runecraft … 15 Turn-Based RPG Deals You Only ..."
+            },
+            {
+              "title": "10 Best Turn-Based RPGs of All Time, Ranked",
+              "url": "https://www.cbr.com/best-turn-based-rpgs-of-all-time-ranked-list/",
+              "domain": "www.cbr.com",
+              "description": "18. 7. 2026 — Suikoden V's Battle System Is Absolutely Perfect · Super Mario RPG's Timing-Based Battle System Is Exciting · Octopath Traveler II Has a Deep ..."
+            },
+            {
+              "title": "Turn Based Games",
+              "url": "https://www.kongregate.com/en/turn-based-games",
+              "domain": "www.kongregate.com",
+              "description": "A turn based game is one where players act in a set order. You make your move, the game or another player responds, and play continues in rounds until a goal is ..."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
