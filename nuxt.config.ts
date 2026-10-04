@@ -140,6 +140,7 @@ export default defineNuxtConfig({
           '45 * * * *': ['knowledge-refresh'],
           '20 * * * *': ['shopify-billing'],
           '0 5 * * *': ['ai-visibility-monitor'],
+          '30 5 * * *': ['keyword-rank'],
         }
       : undefined,
     preset: 'bun',

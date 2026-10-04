@@ -1,7 +1,11 @@
 import { articleSlug } from '~~/shared/utils/articleSlug'
+import { firstRankCheck } from '~~/server/utils/keywords/rank'
 import { linkableSources } from '~~/shared/utils/articleSources'
+import { hasDataForSeo } from '~~/server/utils/keywords/dataforseo'
+import { fetchNews, newsSignal } from '~~/server/utils/keywords/news'
 import { countGeneratedWords, type ValueEvent } from '~~/shared/utils/valueMetrics'
 import { isExistingArticleOpportunity } from '~~/server/utils/searchConsole/autopilot'
+import { keywordPlanFor, planSignal, sameKeyword, type PlanCandidate } from '~~/server/utils/keywords/plan'
 import {
   getSearchOpportunities,
   getSearchTrends,
@@ -167,6 +171,27 @@ const processClient = async (client: any, slot: Date) =>
         return `${article.format || 'unclassified'} / ${article.structureVariant || 'unclassified'} / ${modules.join('+') || 'no optional modules'}`
       })
 
+      // Keyword plan and fresh headlines are enrichment like Search Console: a failure never blocks the run.
+      let planCandidates: PlanCandidate[] = []
+      try {
+        planCandidates = await keywordPlanFor(client)
+      } catch (err) {
+        await logAction({ action: 'CRON_KEYWORD_PLAN_FAILED', clientSiteId, metadata: { error: (err as any).message } })
+      }
+      // A feed that chases every headline stops being a blog: at most two of the last five follow the news.
+      const newsLed = client.articles.slice(0, 5).filter((a: any) => a.newsUrl).length
+      let news: Awaited<ReturnType<typeof fetchNews>> | null = null
+      if (hasDataForSeo() && newsLed < 2) {
+        try {
+          news = await fetchNews({ ...client, language: defaultLang }, [
+            client.keywords ?? [],
+            planCandidates.map((cluster) => cluster.keyword),
+          ])
+        } catch (err) {
+          await logAction({ action: 'CRON_NEWS_FAILED', clientSiteId, metadata: { error: (err as any).message } })
+        }
+      }
+
       const topicInput = {
         focus: client.focus,
         audience: client.audience,
@@ -178,6 +203,8 @@ const processClient = async (client: any, slot: Date) =>
         recentStructures,
         suggestion: client.communityInsight?.suggestion,
         searchSignals,
+        plan: planCandidates.map(planSignal),
+        news: news?.items.map(newsSignal),
       }
 
       // Topic first, then the article. The writer used to receive the whole selection template as its
@@ -198,6 +225,38 @@ const processClient = async (client: any, slot: Date) =>
         })
       }
 
+      const planCluster = topic?.planKeyword
+        ? planCandidates.find((cluster) => sameKeyword(cluster.keyword, topic!.planKeyword))
+        : undefined
+      const searchBlock = planCluster
+        ? `
+
+## SEARCH INTENT
+Primary keyword: ${planCluster.keyword}
+Search intent: ${planCluster.intent}
+Reader need: ${planCluster.opportunity.angle}
+Why this topic: ${planCluster.opportunity.reason}
+Related phrasings: ${
+            (planCluster.keywords as { keyword: string }[])
+              .slice(1, 6)
+              .map((entry) => entry.keyword)
+              .join(', ') || 'none'
+          }
+Reader questions: ${planCluster.questions.slice(0, 4).join(' | ') || 'none'}
+Observed search results (context only, not verified factual sources):
+${planCluster.opportunity.organic.map((result) => `- ${result.title}: ${result.url}`).join('\n') || 'not available'}
+Use the primary keyword naturally in the title and the opening paragraph, and answer what that search wants.
+Answer the reader questions where they fit and prefer them for an FAQ module. Never stuff keywords.`
+        : ''
+      const newsPick = topic?.newsItem ? news?.items[topic.newsItem - 1] : undefined
+      const newsBlock = newsPick
+        ? `
+
+## NEWS HOOK
+Prompted by: "${newsPick.title}" (${newsPick.domain}, ${newsPick.publishedAt.slice(0, 10)})
+The headline is a lead, not a source. Every fact comes from the research; leave out what it cannot confirm.`
+        : ''
+
       const cronFormat = topic?.format ?? 'news'
       const cronModules = topic ? selectedModulesFor(topic.format, topic.modules) : selectedModulesFor(cronFormat)
 
@@ -209,7 +268,7 @@ Topic: ${topic.topic}
 Angle: ${topic.angle}
 Format: ${topic.format}
 Structure: ${topic.variant}
-Optional modules: ${cronModules.join(', ')}`
+Optional modules: ${cronModules.join(', ')}${searchBlock}${newsBlock}`
         : `## TOPIC RULES
 - Do NOT create an article that is semantically similar to previous ones.
 - Similarity = same topic, argument, or thesis, not wording.
@@ -336,7 +395,7 @@ Respond ONLY in valid JSON (schema required).
       const releaseAt = releasable && slot > new Date() ? slot : null
       const status = releasable && !releaseAt ? 'published' : 'draft'
 
-      const { article, appliedSeries } = await prisma.$transaction(async (ctx: any) => {
+      const { article, appliedSeries, planLinked } = await prisma.$transaction(async (ctx: any) => {
         const slug = await generateUniqueSlug(ctx, generated.title, clientSiteId)
         const appliedSeries = await applyArticleSeriesDecision(ctx, clientSiteId, seriesDecision)
 
@@ -362,6 +421,7 @@ Respond ONLY in valid JSON (schema required).
             faq: generated.faq,
             format: cronFormat,
             structureVariant: topic?.variant ?? null,
+            newsUrl: newsPick?.url ?? null,
             clientSiteId,
             status,
             releaseAt,
@@ -383,6 +443,17 @@ Respond ONLY in valid JSON (schema required).
           },
         })
 
+        // The editor may skip the topic while the article is being written. The finished, paid article
+        // still counts; it just stays unlinked from the plan.
+        const planLinked = planCluster
+          ? (
+              await ctx.keywordCluster.updateMany({
+                where: { id: planCluster.id, clientSiteId, status: { in: ['OPEN', 'PINNED'] } },
+                data: { status: 'USED', articleId: article.id, usedAt: new Date(), nextRankCheckAt: firstRankCheck() },
+              })
+            ).count === 1
+          : false
+
         await ctx.articleTag.createMany({
           data: generated.tags.map((tagId: string) => ({ articleId: article.id, tagId })),
           skipDuplicates: true,
@@ -402,8 +473,15 @@ Respond ONLY in valid JSON (schema required).
           })
         }
 
-        return { article, appliedSeries }
+        return { article, appliedSeries, planLinked }
       })
+
+      if (planCluster && !planLinked)
+        await logAction({
+          action: 'KEYWORD_PLAN_TOPIC_UNAVAILABLE',
+          clientSiteId,
+          metadata: { articleId: article.id, keyword: planCluster.keyword },
+        })
 
       // Creating a series can retroactively group an already published standalone article. Its
       // public navigation changes even when the new article is held as a draft.
@@ -451,6 +529,20 @@ Respond ONLY in valid JSON (schema required).
           sources: generated.sources?.length ?? 0,
           tokens,
           researched: topic ? researchRequest(topic) !== false : false,
+          keywordPlan: {
+            offered: planCandidates.map((cluster) => cluster.keyword),
+            chosen: planCluster?.keyword ?? null,
+            linked: planLinked,
+          },
+          news: news
+            ? {
+                queries: news.queries,
+                found: news.found,
+                relevant: news.items.length,
+                used: newsPick?.url ?? null,
+                costUsd: news.costUsd,
+              }
+            : { skipped: newsLed >= 2 ? 'recentNewsLimit' : 'unavailable' },
           knowledge: generated.knowledge ?? [],
           knowledgeShortlisted: generated.research?.knowledgeShortlisted ?? 0,
           editorialReview: generated.editorialReview,
@@ -563,6 +655,11 @@ export default defineMonitoredTask({
         intervalMaxHours: true,
         nextReleaseAt: true,
         communityInsight: true,
+        keywordPlanRefreshedAt: true,
+        keywordPlanAttemptedAt: true,
+        keywordPlanProfile: true,
+        keywordMarket: true,
+        domain: true,
         lastGeneratedAt: true,
         articleCreditWallet: {
           select: {
@@ -585,6 +682,7 @@ export default defineMonitoredTask({
             content: true,
             format: true,
             structureVariant: true,
+            newsUrl: true,
             answer: true,
             keyTakeaways: true,
             faq: true,

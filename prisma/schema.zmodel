@@ -17,6 +17,7 @@ import "./models/generation"
 import "./models/knowledge"
 import "./models/shopify"
 import "./models/webhook"
+import "./models/keywordPlan"
 
 datasource db {
     provider  = "postgresql"

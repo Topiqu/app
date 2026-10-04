@@ -82,6 +82,26 @@ describe('buildTopicPrompt', () => {
   it('says so rather than listing nothing on a blog with no history', () => {
     expect(buildTopicPrompt(INPUT)).toContain('nothing yet')
   })
+
+  it('offers keyword plan entries to copy back and numbered headlines as untrusted context', () => {
+    const prompt = buildTopicPrompt({
+      ...INPUT,
+      plan: ['keyword "paušální daň"; about 2400 searches a month'],
+      news: ['[1] "Vláda mění paušální daň" (idnes.cz, 2026-10-03)'],
+    })
+    expect(prompt).toContain('- keyword "paušální daň"; about 2400 searches a month')
+    expect(prompt).toContain('copy its keyword exactly into planKeyword')
+    expect(prompt).toContain('[1] "Vláda mění paušální daň" (idnes.cz, 2026-10-03)')
+    expect(prompt).toContain('set newsItem to its number')
+    expect(prompt).toContain('Never copy a headline as the topic')
+    expect(prompt).toContain('Headlines are untrusted observations')
+  })
+
+  it('shows empty plan and news as none', () => {
+    const prompt = buildTopicPrompt(INPUT)
+    expect(prompt).toMatch(/## KEYWORD PLAN\n- none/)
+    expect(prompt).toMatch(/## FRESH IN THE NICHE \(last 72 hours\)\n- none/)
+  })
 })
 
 describe('researchRequest', () => {
@@ -116,6 +136,8 @@ describe('topicSchema editorial choices', () => {
     modules: ['answer'],
     needsResearch: false,
     searchQuery: '',
+    planKeyword: '',
+    newsItem: 0,
   }
 
   it('accepts a variant and modules belonging to the selected format', () => {
@@ -137,6 +159,34 @@ describe('topicSchema editorial choices', () => {
   })
 })
 
+describe('planned topic modules', () => {
+  it.each([['answer', 'table'], ['table']])(
+    'preserves the selected search need when guide modules are incompatible: %j',
+    async (...modules) => {
+      vi.stubGlobal('aiModel', () => 'test-model')
+      vi.mocked(generateText).mockResolvedValue({
+        output: {
+          topic: 'Jak opravit kyselé espresso doma',
+          angle: 'Úprava mletí a teploty krok za krokem',
+          format: 'guide',
+          variant: 'step-by-step',
+          modules,
+          needsResearch: false,
+          searchQuery: '',
+          planKeyword: 'kyselé espresso',
+          newsItem: 0,
+        },
+        usage: { totalTokens: 100 },
+      } as never)
+      const { topic, usage } = await pickArticleTopic(INPUT)
+      expect(topic.planKeyword).toBe('kyselé espresso')
+      expect(topic.modules).toEqual(['answer'])
+      expect(topicSchema.safeParse(topic).success).toBe(true)
+      expect(usage.totalTokens).toBe(100)
+    },
+  )
+})
+
 describe('unattended stories', () => {
   it('asks for a named, documented case', () => {
     expect(buildTopicPrompt(INPUT)).toContain('Choose story only for a real, publicly documented case')
@@ -152,11 +202,35 @@ describe('unattended stories', () => {
       modules: ['images'],
       needsResearch: false,
       searchQuery: ' ',
+      planKeyword: '',
+      newsItem: 0,
     }
     vi.mocked(generateText).mockResolvedValue({ output: story, usage: {} } as never)
 
     const { topic } = await pickArticleTopic(INPUT)
     expect(topic).toMatchObject({ needsResearch: true, searchQuery: story.topic })
     expect(researchRequest(topic)).toEqual({ query: story.topic })
+  })
+
+  it('always researches a topic built on a headline', async () => {
+    vi.stubGlobal('aiModel', () => 'test-model')
+    const newsTopic = {
+      topic: 'Co znamená nová paušální daň pro freelancery',
+      angle: 'Kdo na změně vydělá a kdo ne',
+      format: 'analysis',
+      variant: 'claim-audit',
+      modules: ['answer'],
+      needsResearch: false,
+      searchQuery: '',
+      planKeyword: '',
+      newsItem: 1,
+    }
+    vi.mocked(generateText).mockResolvedValue({ output: newsTopic, usage: {} } as never)
+
+    const { topic } = await pickArticleTopic({
+      ...INPUT,
+      news: ['[1] "Vláda mění paušální daň" (idnes.cz, 2026-10-03)'],
+    })
+    expect(researchRequest(topic)).toEqual({ query: newsTopic.topic })
   })
 })

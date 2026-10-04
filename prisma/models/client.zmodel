@@ -14,6 +14,7 @@ import "./media"
 import "./generation"
 import "./shopify"
 import "./webhook"
+import "./keywordPlan"
 
 enum GenerationFrequency {
     NONE
@@ -133,6 +134,15 @@ model ClientSite with Base {
     articleGenerationSessions ArticleGenerationSession[]
     knowledgeSources     KnowledgeSource[]
     webhooks             Webhook[]
+    keywordClusters      KeywordCluster[]
+    /// Last successful DataForSEO rebuild.
+    keywordPlanRefreshedAt DateTime?
+    /// Claim and retry cooldown, separate from the age of the usable plan.
+    keywordPlanAttemptedAt DateTime?
+    /// Versioned hash of the editorial profile, language, market and domain at the last rebuild.
+    keywordPlanProfile   String?
+    /// Country code or GLOBAL (`shared/utils/keywordPlan.ts`); NULL = the article language's home market.
+    keywordMarket        String?             @length(0, 8)
     webhookDeliveries    WebhookDelivery[]
     aiSeriesEnabled      Boolean             @default(false)
     keywords             Json?

@@ -1,0 +1,574 @@
+import { z } from 'zod'
+import { createHash } from 'node:crypto'
+import { generateText, Output } from 'ai'
+import { keywordLocation } from '~~/shared/utils/keywordPlan'
+import { keywordOpportunity, type SearchResult } from '~~/shared/utils/keywordOpportunity'
+
+import { rankHistoryFor } from './rank'
+import { assessOpportunities } from './opportunity'
+import { dataForSeo, hasDataForSeo } from './dataforseo'
+import { inScope, siteKeywords, siteProfile, type ScopeSite } from './scope'
+
+const DAY_MS = 86_400_000
+const REFRESH_DAYS = 30
+const MAX_SEEDS = 5
+const SUGGESTIONS_PER_SEED = 50
+const PLAN_SIZE = 30
+// Candidates sent through the scope check; enough that the plan still fills after it drops some.
+const SCOPE_CANDIDATES = MAX_SEEDS * SUGGESTIONS_PER_SEED
+const MIN_READY = 3
+// A rebuild that found too few topics finds the same few tomorrow; it waits this long before trying again.
+const SHORTAGE_RETRY_DAYS = 7
+// Labs difficulty a blog without proven rankings can realistically reach.
+export const START_DIFFICULTY = 20
+// Topics in a row from one pillar before the plan offers another.
+const PILLAR_STREAK = 3
+
+export interface KeywordIdea {
+  keyword: string
+  volume: number | null
+  difficulty: number | null
+  intent: string | null
+  core: string | null
+  pillar?: string | null
+}
+
+export interface PlannedCluster {
+  keyword: string
+  keywords: { keyword: string; volume: number | null }[]
+  volume: number
+  difficulty: number | null
+  intent: string
+  pillar: string | null
+  score: number
+}
+
+interface LabsItem {
+  keyword: string
+  keyword_info?: { search_volume?: number | null }
+  keyword_properties?: { keyword_difficulty?: number | null; core_keyword?: string | null }
+  search_intent_info?: { main_intent?: string | null }
+}
+
+interface SerpItem {
+  type: string
+  rank_absolute?: number
+  domain?: string
+  title?: string
+  url?: string
+  description?: string
+  items?: { title?: string }[] | null
+}
+
+interface LabsResult {
+  items?: LabsItem[] | null
+  seed_keyword_data?: LabsItem | null
+}
+
+export const ideasFromLabs = (results: LabsResult[], seed: string) =>
+  results.flatMap((result) => [
+    ...(result.seed_keyword_data?.keyword ? [ideaFromLabs(result.seed_keyword_data, seed)] : []),
+    ...(result.items ?? [])
+      .filter((item) => typeof item.keyword === 'string' && item.keyword.trim())
+      .map((item) => ideaFromLabs(item, seed)),
+  ])
+
+export const ideaFromLabs = (item: LabsItem, pillar: string | null = null): KeywordIdea => ({
+  keyword: item.keyword,
+  volume: item.keyword_info?.search_volume ?? null,
+  difficulty: item.keyword_properties?.keyword_difficulty ?? null,
+  intent: item.search_intent_info?.main_intent ?? null,
+  core: item.keyword_properties?.core_keyword ?? null,
+  pillar,
+})
+
+/**
+ * Unknown volume counts as a little demand, not none: Czech long-tail volumes are mostly missing, not zero.
+ * A topic above the blog's difficulty ceiling is discounted, not dropped: Labs difficulty is an estimate.
+ */
+export const clusterScore = (
+  { volume, difficulty, intent }: Pick<PlannedCluster, 'volume' | 'difficulty' | 'intent'>,
+  ceiling = 100,
+) => {
+  const demand = Math.log10(volume + 10)
+  const ease = 1 - Math.min(difficulty ?? 50, 100) / 150
+  const fit = intent === 'commercial' ? 0.8 : intent === 'transactional' ? 0.5 : 1
+  const reach = difficulty != null && difficulty > ceiling ? 0.25 : 1
+  return Math.round(demand * ease * fit * reach * 100) / 100
+}
+
+/**
+ * The hardest topic the blog already ranks top 10 for, plus a margin. A blog with no proven ranking starts
+ * low, so the plan stops offering topics only established sites can win.
+ */
+export const difficultyCeiling = (ranked: { difficulty: number | null; position: number | null }[]) => {
+  const proven = ranked.flatMap(({ difficulty, position }) =>
+    difficulty != null && position != null && position <= 10 ? [difficulty] : [],
+  )
+  return proven.length ? Math.min(100, Math.max(START_DIFFICULTY, Math.max(...proven) + 10)) : START_DIFFICULTY
+}
+
+const words = (text: string) =>
+  text
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLocaleLowerCase()
+    .match(/[\p{L}\p{N}]{3,}/gu) ?? []
+
+/**
+ * Groups word-order and accent variants, plus DataForSEO's `core_keyword` where it has one (rarely for Czech).
+ * Navigational searches want one specific site, so they are dropped. Transactional ones are only discounted:
+ * Labs tags a head term like "výběrová káva" transactional, and a guide can still serve it.
+ */
+export const clusterIdeas = (ideas: KeywordIdea[], ceiling = 100): PlannedCluster[] => {
+  const groups = new Map<string, KeywordIdea[]>()
+  for (const idea of ideas) {
+    if (idea.intent === 'navigational') continue
+    const key = words(idea.core || idea.keyword)
+      .sort()
+      .join(' ')
+    if (!key) continue
+    groups.set(key, [...(groups.get(key) ?? []), idea])
+  }
+  return [...groups.values()]
+    .map((group) => {
+      const sorted = [...group].sort((a, b) => (b.volume ?? 0) - (a.volume ?? 0))
+      const head = sorted[0]!
+      const cluster = {
+        keyword: head.keyword,
+        keywords: sorted.slice(0, 10).map(({ keyword, volume }) => ({ keyword, volume })),
+        // Synonym volumes can describe the same searches; adding them overstates demand.
+        volume: head.volume ?? 0,
+        difficulty: head.difficulty,
+        intent: head.intent ?? 'informational',
+        pillar: head.pillar ?? null,
+      }
+      return { ...cluster, score: clusterScore(cluster, ceiling) }
+    })
+    .sort((a, b) => b.score - a.score)
+}
+
+/** Cheap first pass only; the topic picker still judges novelty against the article summaries. */
+export const isKeywordCovered = (keyword: string, titles: string[]) => {
+  const terms = words(keyword)
+  if (!terms.length) return false
+  return titles.some((title) => {
+    const titleWords = new Set(words(title))
+    return terms.every((term) => titleWords.has(term))
+  })
+}
+
+export const serpSignals = (items: SerpItem[] | null | undefined) => {
+  const list = items ?? []
+  const questions = list
+    .filter((item) => item.type === 'people_also_ask')
+    .flatMap((item) => item.items ?? [])
+    .map((question) => question.title?.trim())
+    .filter((title): title is string => Boolean(title))
+  const domains = list
+    .filter((item) => item.type === 'organic' && item.domain)
+    .sort((a, b) => (a.rank_absolute ?? 0) - (b.rank_absolute ?? 0))
+    .map((item) => item.domain!)
+  const organic: SearchResult[] = list
+    .filter((item) => item.type === 'organic' && item.title && item.url && /^https?:\/\//.test(item.url) && item.domain)
+    .sort((a, b) => (a.rank_absolute ?? 0) - (b.rank_absolute ?? 0))
+    .slice(0, 5)
+    .map((item) => ({
+      title: item.title!,
+      url: item.url!,
+      domain: item.domain!,
+      description: item.description?.slice(0, 300) ?? '',
+    }))
+  return {
+    questions: [...new Set(questions)].slice(0, 5),
+    aiOverview: list.some((item) => item.type === 'ai_overview'),
+    domains: [...new Set(domains)].slice(0, 10),
+    organic,
+  }
+}
+
+type PlanSite = ScopeSite & {
+  keywordPlanRefreshedAt?: Date | string | null
+  keywordPlanAttemptedAt?: Date | string | null
+  keywordPlanProfile?: string | null
+  keywordMarket?: string | null
+  domain?: string | null
+}
+
+const seedSchema = z.object({
+  seeds: z.array(z.string().min(2).max(80)).min(3).max(8).describe('Short search phrases, one to three words each.'),
+})
+
+/**
+ * Rewords the tenant's focus as search phrases. Names and
+ * trends come from the search data, never from the model's memory.
+ */
+const deriveSeeds = async (site: PlanSite, titles: string[]) => {
+  const result = await generateText({
+    model: aiModel('keywordSeeds'),
+    maxOutputTokens: 600,
+    providerOptions: { openai: { reasoningEffort: 'none' } },
+    instructions:
+      "List short search phrases for distinct subtopics inside this blog's exact focus, including specific reader problems and comparisons. Use the blog language. Avoid generic umbrella categories and do not invent trending names or search volumes.",
+    prompt: `${siteProfile(site)}\nRecent titles:\n${
+      titles
+        .slice(0, 10)
+        .map((title) => `- ${title}`)
+        .join('\n') || '- none'
+    }`,
+    output: Output.object({ schema: seedSchema }),
+  })
+  await recordAiUsage(site.id, result.usage.totalTokens ?? 0, 'KEYWORD_PLAN_SEED_TOKENS', { usage: result.usage })
+  return result.output.seeds
+}
+
+export const planProfile = (site: PlanSite) =>
+  createHash('sha256')
+    .update(
+      JSON.stringify([
+        2,
+        site.focus ?? '',
+        site.audience ?? '',
+        siteKeywords(site),
+        site.language,
+        site.keywordMarket ?? '',
+        site.domain ?? '',
+      ]),
+    )
+    .digest('hex')
+    .slice(0, 16)
+
+/** The retry cooldown lives in keywordPlanAttemptedAt, so profile changes can invalidate immediately. */
+export const isPlanStale = (site: PlanSite, now: Date) => {
+  if (!site.keywordPlanRefreshedAt) return true
+  const age = now.getTime() - new Date(site.keywordPlanRefreshedAt).getTime()
+  return age > REFRESH_DAYS * DAY_MS || site.keywordPlanProfile !== planProfile(site)
+}
+
+/**
+ * Rebuilds the plan from DataForSEO: Labs suggestions per seed (volume, difficulty, intent), then a SERP per
+ * top cluster. Suggestions, not `keyword_ideas`: for Czech the ideas endpoint returned local business names.
+ */
+export const refreshKeywordPlan = async (site: PlanSite, now = new Date()) => {
+  const market = keywordLocation(site.language, site.keywordMarket)
+  const articles = await prisma.article.findMany({
+    where: { clientSiteId: site.id, status: { in: ['published', 'draft'] } },
+    select: { title: true, excerpt: true },
+    orderBy: { createdAt: 'desc' },
+    take: 200,
+  })
+  const titles = articles.map((article) => article.title)
+
+  const keywords = siteKeywords(site)
+  const derived = site.focus || keywords.length < 3 ? await deriveSeeds(site, titles) : []
+  const seeds = [
+    ...new Set(
+      [...keywords.slice(0, derived.length ? 3 : MAX_SEEDS), ...derived].map((seed) => seed.trim().toLocaleLowerCase()),
+    ),
+  ].slice(0, MAX_SEEDS)
+
+  let cost = 0
+  // One failing seed must not throw away the ones already paid for.
+  const settled = await Promise.allSettled(
+    seeds.map(async (seed) => {
+      const {
+        result,
+        results,
+        cost: spent,
+      } = await dataForSeo<LabsResult>('/dataforseo_labs/google/keyword_suggestions/live', {
+        keyword: seed,
+        // No location is Labs' worldwide answer for a GLOBAL market.
+        ...(market.labsLocationCode ? { location_code: market.labsLocationCode } : {}),
+        language_code: market.languageCode,
+        include_seed_keyword: true,
+        limit: SUGGESTIONS_PER_SEED,
+      })
+      cost += spent
+      return ideasFromLabs(results ?? (result ? [result] : []), seed)
+    }),
+  )
+  const failedSeeds = settled.filter((outcome) => outcome.status === 'rejected')
+  if (failedSeeds.length === seeds.length) throw (failedSeeds[0] as PromiseRejectedResult).reason
+  const suggestions = settled.flatMap((outcome) => (outcome.status === 'fulfilled' ? outcome.value : []))
+  // The first seed that suggested a keyword owns it, so a topic belongs to one pillar.
+  const unique = new Map<string, KeywordIdea>()
+  for (const idea of suggestions) if (!unique.has(idea.keyword)) unique.set(idea.keyword, idea)
+
+  const [ranked, pinned] = await Promise.all([
+    prisma.keywordCluster.findMany({
+      where: { clientSiteId: site.id, status: 'USED', position: { not: null } },
+      select: { difficulty: true, position: true, rankHistory: true },
+    }),
+    prisma.keywordCluster.findMany({
+      where: { clientSiteId: site.id, status: 'PINNED' },
+      select: { keyword: true, keywords: true, volume: true, difficulty: true, intent: true, pillar: true },
+    }),
+  ])
+  const ceiling = difficultyCeiling(
+    ranked.filter(
+      (row) =>
+        site.domain && rankHistoryFor(row.rankHistory, { ...site, domain: site.domain }).at(-1)?.position != null,
+    ),
+  )
+  const suggested = clusterIdeas([...unique.values()], ceiling)
+  const pinnedKeywords = new Set(pinned.map((row) => row.keyword))
+  const candidates = suggested
+    .filter((cluster) => !pinnedKeywords.has(cluster.keyword) && !isKeywordCovered(cluster.keyword, titles))
+    .slice(0, SCOPE_CANDIDATES)
+  const inside = await inScope(
+    site,
+    candidates.map((cluster) => cluster.keyword),
+    'KEYWORD_PLAN_SCOPE_TOKENS',
+  )
+  // Pinned topics skip the cheap pre-filters: the editor asked for them, so only the full assessment may
+  // drop them. Without it a pin from an older profile would stay visible but never be offered.
+  const reassessed = pinned.map((row) => {
+    const fresh = suggested.find((cluster) => cluster.keyword === row.keyword)
+    if (fresh) return fresh
+    const cluster = {
+      keyword: row.keyword,
+      keywords: row.keywords as PlannedCluster['keywords'],
+      volume: row.volume,
+      difficulty: row.difficulty,
+      intent: row.intent,
+      pillar: row.pillar,
+    }
+    return { ...cluster, score: clusterScore(cluster, ceiling) }
+  })
+  const scoped = [...reassessed, ...inside.map((index) => candidates[index]!).slice(0, PLAN_SIZE)]
+
+  const serps: (ReturnType<typeof serpSignals> | null)[] = []
+  const failedSerps: string[] = []
+  for (let offset = 0; offset < scoped.length; offset += 5) {
+    serps.push(
+      ...(await Promise.all(
+        scoped.slice(offset, offset + 5).map(async (cluster) => {
+          try {
+            const serp = await dataForSeo<{ items: SerpItem[] | null }>('/serp/google/organic/live/advanced', {
+              keyword: cluster.keyword,
+              location_code: market.serpLocationCode,
+              language_code: market.languageCode,
+              depth: 10,
+            })
+            cost += serp.cost
+            return serpSignals(serp.result?.items)
+          } catch (error) {
+            failedSerps.push((error as Error).message)
+            return null
+          }
+        }),
+      )),
+    )
+  }
+  if (scoped.length && failedSerps.length === scoped.length)
+    throw new Error(`No SERP evidence available: ${failedSerps[0]}`)
+
+  const enriched = scoped.map((cluster, index) => ({
+    ...cluster,
+    ...(serps[index] ?? { questions: [], aiOverview: false, domains: [], organic: [] }),
+  }))
+  const decisions = await assessOpportunities(site, enriched, articles)
+  if (failedSerps.length && decisions.length && !decisions.some((decision) => enriched[decision.index]!.organic.length))
+    throw new Error('SERP checks failed for every recommended topic')
+  const profile = planProfile(site)
+  const clusters = decisions
+    .map((decision) => {
+      const { organic, ...cluster } = enriched[decision.index]!
+      return {
+        ...cluster,
+        intent: decision.intent,
+        score:
+          clusterScore({ ...cluster, intent: decision.intent }, ceiling) *
+          (decision.articleFit === 'strong' ? 1 : 0.7) *
+          (decision.specificity === 'focused' ? 1 : 0.35),
+        opportunity: {
+          reason: decision.reason.trim(),
+          angle: decision.angle.trim(),
+          articleFit: decision.articleFit,
+          specificity: decision.specificity,
+          evidence: organic.length ? 'serp' : 'metrics',
+          organic,
+          profile,
+          checkedAt: now.toISOString(),
+        },
+      }
+    })
+    .sort((a, b) => b.score - a.score)
+
+  const existing = await prisma.keywordCluster.findMany({
+    where: { clientSiteId: site.id },
+    select: { id: true, keyword: true, status: true },
+  })
+  const byKeyword = new Map(existing.map((row) => [row.keyword, row]))
+  await prisma.$transaction(async (tx) => {
+    for (const cluster of clusters) {
+      const data = { ...cluster, opportunity: cluster.opportunity as never, keywords: cluster.keywords as never }
+      const row = byKeyword.get(cluster.keyword)
+      // PINNED, SKIPPED and USED are editorial facts; a rebuild only refreshes the numbers behind them.
+      if (row) await tx.keywordCluster.update({ where: { id: row.id }, data })
+      else await tx.keywordCluster.create({ data: { ...data, clientSiteId: site.id } })
+    }
+    const kept = new Set(clusters.map((cluster) => cluster.keyword))
+    const stale = existing.filter((row) => row.status === 'OPEN' && !kept.has(row.keyword)).map((row) => row.id)
+    if (stale.length) await tx.keywordCluster.deleteMany({ where: { id: { in: stale }, status: 'OPEN' } })
+    await tx.clientSite.update({
+      where: { id: site.id },
+      data: { keywordPlanRefreshedAt: now, keywordPlanProfile: profile },
+    })
+  })
+
+  await logAction({
+    action: 'KEYWORD_PLAN_REFRESHED',
+    clientSiteId: site.id,
+    metadata: {
+      clusters: clusters.length,
+      outOfScope: candidates.length - inside.length,
+      unsuitable: scoped.length - clusters.length,
+      serpChecked: serps.filter(Boolean).length,
+      failedSerps: failedSerps.length,
+      serpErrors: [...new Set(failedSerps)].slice(0, 3),
+      seeds: seeds.length,
+      failedSeeds: failedSeeds.length,
+      market: market.market,
+      difficultyCeiling: ceiling,
+      costUsd: Math.round(cost * 10_000) / 10_000,
+    },
+  })
+  return clusters.length
+}
+
+const candidateSelect = {
+  id: true,
+  keyword: true,
+  keywords: true,
+  volume: true,
+  difficulty: true,
+  intent: true,
+  questions: true,
+  aiOverview: true,
+  pillar: true,
+  status: true,
+  opportunity: true,
+} as const
+
+/**
+ * Rebuilds a stale plan first. The claim is a one-day lease written before the paid calls: overlapping
+ * runs cannot both pay, and a failure or a crash mid-rebuild retries tomorrow instead of every slot.
+ */
+export const keywordPlanFor = async (site: PlanSite, now = new Date()) => {
+  const profile = planProfile(site)
+  const current = <T extends { opportunity: unknown }>(rows: T[]) =>
+    rows.flatMap((row) => {
+      const opportunity = keywordOpportunity(row.opportunity)
+      return opportunity?.profile === profile ? [{ ...row, opportunity }] : []
+    })
+  const load = async () => {
+    const [pinned, open, recent] = await Promise.all([
+      prisma.keywordCluster.findMany({
+        where: { clientSiteId: site.id, status: 'PINNED' },
+        select: candidateSelect,
+        orderBy: { updatedAt: 'desc' },
+        take: PLAN_SIZE,
+      }),
+      prisma.keywordCluster.findMany({
+        where: { clientSiteId: site.id, status: 'OPEN' },
+        select: candidateSelect,
+        orderBy: { score: 'desc' },
+        take: PLAN_SIZE,
+      }),
+      prisma.keywordCluster.findMany({
+        where: { clientSiteId: site.id, status: 'USED' },
+        select: { pillar: true },
+        orderBy: { usedAt: 'desc' },
+        take: PILLAR_STREAK,
+      }),
+    ])
+    return { pinned: current(pinned), open: current(open), recent: recent.map((row) => row.pillar) }
+  }
+  let ready = await load()
+  const previous = site.keywordPlanAttemptedAt ? new Date(site.keywordPlanAttemptedAt) : null
+  const canRetry = !previous || now.getTime() - previous.getTime() >= DAY_MS
+  const due =
+    isPlanStale(site, now) || (ready.pinned.length + ready.open.length < MIN_READY && (await shortageDue(site, ready, now)))
+  if (hasDataForSeo() && canRetry && due) {
+    const claimed = await prisma.clientSite.updateMany({
+      where: { id: site.id, keywordPlanAttemptedAt: previous },
+      data: { keywordPlanAttemptedAt: now },
+    })
+    if (claimed.count) {
+      try {
+        await refreshKeywordPlan(site, now)
+        ready = await load()
+      } catch (error) {
+        console.error('[keyword-plan] Rebuild failed:', site.id, (error as Error).message)
+        await logAction({
+          action: 'KEYWORD_PLAN_REFRESH_FAILED',
+          clientSiteId: site.id,
+          metadata: { error: (error as Error).message },
+        })
+      }
+    }
+  }
+  return pickCandidates(ready.pinned, ready.open, ready.recent)
+}
+
+/**
+ * A short plan is refilled daily only when the last rebuild found enough topics and the blog used them up.
+ * A niche where it found fewer would pay for the same few again, so that waits SHORTAGE_RETRY_DAYS.
+ */
+const shortageDue = async (site: PlanSite, ready: { pinned: unknown[]; open: unknown[] }, now: Date) => {
+  if (!site.keywordPlanRefreshedAt) return true
+  const refreshedAt = new Date(site.keywordPlanRefreshedAt)
+  if (now.getTime() - refreshedAt.getTime() >= SHORTAGE_RETRY_DAYS * DAY_MS) return true
+  const used = await prisma.keywordCluster.count({
+    where: { clientSiteId: site.id, status: 'USED', usedAt: { gte: refreshedAt } },
+  })
+  return used + ready.pinned.length + ready.open.length >= MIN_READY
+}
+
+/**
+ * Depth before breadth: two topics continue the pillar the blog wrote about last, one is the best of the
+ * rest, so search engines see a subject covered rather than scattered. After PILLAR_STREAK topics in a row
+ * the pillar rests. Pinned topics always come first.
+ */
+export const pickCandidates = <T extends { pillar: string | null }>(
+  pinned: T[],
+  open: T[],
+  recentPillars: (string | null)[],
+) => {
+  const last = recentPillars[0] ?? null
+  const streak = recentPillars.length >= PILLAR_STREAK && recentPillars.every((pillar) => pillar === last)
+  const other = streak ? open.filter((cluster) => cluster.pillar !== last) : open
+  const pool = other.length ? other : open
+  const continuing = last && !streak ? pool.filter((cluster) => cluster.pillar === last).slice(0, 2) : []
+  const rest = pool.filter((cluster) => !continuing.includes(cluster))
+  return [...pinned, ...continuing, ...rest].slice(0, 3)
+}
+
+export type PlanCandidate = Awaited<ReturnType<typeof keywordPlanFor>>[number]
+
+/** One line per candidate for the topic picker; the exact keyword is what it copies back. */
+export const planSignal = (cluster: PlanCandidate) => {
+  const related = (cluster.keywords as { keyword: string }[])
+    .slice(1, 5)
+    .map((entry) => entry.keyword)
+    .join(', ')
+  return [
+    `keyword "${cluster.keyword}"`,
+    cluster.volume ? `about ${cluster.volume} searches a month` : 'search volume unknown',
+    cluster.difficulty == null ? null : `difficulty ${cluster.difficulty}/100`,
+    `${cluster.intent} intent`,
+    cluster.pillar ? `pillar "${cluster.pillar}"` : null,
+    cluster.aiOverview ? 'Google shows an AI overview' : null,
+    cluster.status === 'PINNED' ? 'pinned by the editor' : null,
+    cluster.opportunity
+      ? `unanswered need: ${cluster.opportunity.angle}; why: ${cluster.opportunity.reason}; evidence: ${cluster.opportunity.evidence}`
+      : null,
+    related ? `related: ${related}` : null,
+    cluster.questions.length ? `readers ask: ${cluster.questions.slice(0, 3).join(' | ')}` : null,
+  ]
+    .filter(Boolean)
+    .join('; ')
+}
+
+export const sameKeyword = (a: string, b: string) => a.trim().toLocaleLowerCase() === b.trim().toLocaleLowerCase()

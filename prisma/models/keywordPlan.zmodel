@@ -1,0 +1,46 @@
+import "./base"
+import "./client"
+import "./article"
+
+enum KeywordClusterStatus {
+    OPEN
+    PINNED
+    USED
+    SKIPPED
+}
+
+/// One search topic for a tenant: a head keyword with its synonyms, measured demand and what Google shows
+/// for it. Refreshed from DataForSEO; an editor's PINNED/SKIPPED and the USED link survive.
+model KeywordCluster with Base {
+    clientSiteId String
+    clientSite   ClientSite           @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    keyword      String               @length(1, 200)
+    /// `[{ keyword, volume }]`, head first.
+    keywords     Json
+    volume       Int                  @default(0)
+    difficulty   Int?
+    intent       String
+    questions    String[]
+    aiOverview   Boolean              @default(false)
+    domains      String[]
+    score        Float                @default(0)
+    /// Evaluated reader need, recommendation and the SERP evidence used for it.
+    opportunity  Json?
+    /// The seed the topic came from; topics sharing it form a pillar the plan covers in depth.
+    pillar       String?              @length(0, 200)
+    status       KeywordClusterStatus @default(OPEN)
+    articleId    String?
+    article      Article?             @relation(fields: [articleId], references: [id], onDelete: SetNull)
+    usedAt       DateTime?
+    /// Latest Google position of the blog for `keyword`; NULL = not in the checked top 30.
+    position     Int?
+    /// `[{ at, position, url, location, language, domain }]`, oldest first.
+    rankHistory  Json?
+    nextRankCheckAt DateTime?
+
+    @@unique([clientSiteId, keyword])
+    @@index([clientSiteId, status, score])
+    @@index([status, nextRankCheckAt])
+    @@allow('read', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
+    @@allow('update', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
+}

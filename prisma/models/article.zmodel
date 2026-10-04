@@ -7,6 +7,7 @@ import "./poll"
 import "./visibility"
 import "./media"
 import "./shopify"
+import "./keywordPlan"
 
 enum ArticleStatus {
     draft
@@ -100,6 +101,7 @@ model Article with Base, Ownable {
     aiReferralVisits AiReferralVisit[]
     aiCitations      AiCitation[]
     aiOpportunities  AiVisibilityOpportunity[]
+    keywordClusters  KeywordCluster[]
     aiPrompts        AiVisibilityPrompt[]
     pollResults      PollResult[]
     polls            Poll[]
@@ -122,6 +124,8 @@ model Article with Base, Ownable {
     format           String?           @length(0, 32)
     /// The narrower dramaturgical variant selected inside `format`; NULL for legacy/manual work.
     structureVariant String?           @length(0, 32)
+    /// The news story a scheduled article was built around; also caps how often the feed follows the news.
+    newsUrl          String?           @length(0, 2048)
     prompt           String?           @length(0, 5000)
     @@allow('read', status == 'published' || (auth().role == 'admin' && clientSiteId == auth().clientSiteId))
     // Personal activity spans sites: authors and current owners retain read access after switching sites.
