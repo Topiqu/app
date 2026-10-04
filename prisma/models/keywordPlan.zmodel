@@ -24,6 +24,10 @@ model KeywordCluster with Base {
     aiOverview   Boolean              @default(false)
     domains      String[]
     score        Float                @default(0)
+    /// Year-on-year change of demand in percent, from Labs.
+    trend        Int?
+    /// Month (1–12) of a clear seasonal peak; NULL for steady demand.
+    peakMonth    Int?
     /// Evaluated reader need, recommendation and the SERP evidence used for it.
     opportunity  Json?
     /// The seed the topic came from; topics sharing it form a pillar the plan covers in depth.

@@ -42,9 +42,11 @@ const {
   clusterIdeas,
   clusterScore,
   difficultyCeiling,
+  groupBySerp,
   ideaFromLabs,
   isKeywordCovered,
   isPlanStale,
+  peakMonthOf,
   pickCandidates,
   keywordPlanFor,
   planProfile,
@@ -107,13 +109,74 @@ describe('clusterScore', () => {
 
   it('discounts a topic above the blog difficulty ceiling instead of dropping it', () => {
     const topic = { volume: 500, difficulty: 45, intent: 'informational' }
-    expect(clusterScore(topic, 20)).toBeGreaterThan(0)
-    expect(clusterScore(topic, 20)).toBeLessThan(clusterScore(topic, 60) / 2)
+    expect(clusterScore(topic, { ceiling: 20 })).toBeGreaterThan(0)
+    expect(clusterScore(topic, { ceiling: 20 })).toBeLessThan(clusterScore(topic, { ceiling: 60 }) / 2)
   })
 
-  it('discounts commercial intent', () => {
-    const informational = clusterScore({ volume: 500, difficulty: 30, intent: 'informational' })
-    expect(clusterScore({ volume: 500, difficulty: 30, intent: 'commercial' })).toBeLessThan(informational)
+  it('treats buying comparisons as good articles and prefers them for a shop', () => {
+    const base = { volume: 500, difficulty: 30 }
+    const informational = clusterScore({ ...base, intent: 'informational' })
+    expect(clusterScore({ ...base, intent: 'commercial' })).toBe(informational)
+    expect(clusterScore({ ...base, intent: 'commercial' }, { sells: true })).toBeGreaterThan(informational)
+    expect(clusterScore({ ...base, intent: 'transactional' }, { sells: true })).toBeLessThan(informational)
+  })
+
+  it('moves a seasonal topic ahead of its peak and holds it back out of season', () => {
+    const tyres = { volume: 500, difficulty: 30, intent: 'informational', peakMonth: 11 }
+    const steady = clusterScore({ ...tyres, peakMonth: null }, { month: 9 })
+    expect(clusterScore(tyres, { month: 9 })).toBeGreaterThan(steady)
+    expect(clusterScore(tyres, { month: 5 })).toBeLessThan(steady)
+  })
+
+  it('nudges rising demand up and falling demand down', () => {
+    const topic = { volume: 500, difficulty: 30, intent: 'informational' }
+    const flat = clusterScore({ ...topic, trend: 10 })
+    expect(clusterScore({ ...topic, trend: 230 })).toBeGreaterThan(flat)
+    expect(clusterScore({ ...topic, trend: -60 })).toBeLessThan(flat)
+  })
+})
+
+describe('peakMonthOf', () => {
+  const year = (volumes: number[]) => volumes.map((search_volume, index) => ({ month: 12 - index, search_volume }))
+
+  it('finds a clear seasonal peak', () => {
+    expect(peakMonthOf(year([900, 2400, 1200, 300, 200, 150, 100, 100, 150, 200, 250, 400]))).toBe(11)
+  })
+
+  it('treats steady demand and missing history as no peak', () => {
+    expect(peakMonthOf(year([500, 520, 480, 510, 500, 490, 505, 515, 495, 500, 510, 500]))).toBeNull()
+    expect(peakMonthOf(year([900, 2400]))).toBeNull()
+  })
+})
+
+describe('groupBySerp', () => {
+  const candidate = (keyword: string, urls: string[], questions: string[] = []) => ({
+    keyword,
+    keywords: [{ keyword, volume: 100 }],
+    volume: 100,
+    difficulty: 10,
+    intent: 'informational',
+    pillar: null,
+    trend: null,
+    peakMonth: null,
+    score: 1,
+    questions,
+    urls,
+  })
+
+  it('merges queries Google answers with the same pages into the first one', () => {
+    const shared = ['a.cz/espresso', 'b.cz/navod', 'c.cz/doma']
+    const groups = groupBySerp([
+      candidate('jak připravit espresso doma', [...shared, 'd.cz'], ['Jaký tlak?']),
+      candidate('domácí espresso návod', [...shared, 'e.cz'], ['Kolik kávy?']),
+      candidate('mlýnek na kávu', ['f.cz', 'g.cz', 'a.cz/espresso']),
+    ])
+    expect(groups.map((group) => group.keyword)).toEqual(['jak připravit espresso doma', 'mlýnek na kávu'])
+    expect(groups[0]!.keywords.map((entry) => entry.keyword)).toEqual([
+      'jak připravit espresso doma',
+      'domácí espresso návod',
+    ])
+    expect(groups[0]!.questions).toEqual(['Jaký tlak?', 'Kolik kávy?'])
   })
 })
 
@@ -167,7 +230,7 @@ describe('ideaFromLabs', () => {
     expect(
       ideaFromLabs({
         keyword: 'výběrová káva',
-        keyword_info: { search_volume: 1300 },
+        keyword_info: { search_volume: 1300, search_volume_trend: { yearly: 233.4 } },
         keyword_properties: { keyword_difficulty: 24, core_keyword: 'káva výběrová' },
         search_intent_info: { main_intent: 'informational' },
       }),
@@ -178,6 +241,8 @@ describe('ideaFromLabs', () => {
       intent: 'informational',
       core: 'káva výběrová',
       pillar: null,
+      trend: 233,
+      peakMonth: null,
     })
   })
 })
@@ -205,7 +270,7 @@ describe('serpSignals', () => {
   })
 
   it('copes with a SERP without items', () => {
-    expect(serpSignals(null)).toEqual({ questions: [], aiOverview: false, domains: [], organic: [] })
+    expect(serpSignals(null)).toEqual({ questions: [], aiOverview: false, domains: [], organic: [], urls: [] })
   })
 })
 
@@ -269,6 +334,7 @@ describe('keywordPlanFor', () => {
     clientSite: { updateMany: vi.fn(), update: vi.fn() },
     keywordCluster: { findMany: vi.fn(), count: vi.fn(), update: vi.fn(), create: vi.fn(), deleteMany: vi.fn() },
     article: { findMany: vi.fn() },
+    knowledgeProduct: { findFirst: vi.fn() },
   }
   const site = { id: 's1', language: 'cs' as const, keywords: ['káva', 'espresso', 'mlýnek'] }
   const DAY = 86_400_000
@@ -407,6 +473,7 @@ describe('refreshKeywordPlan', () => {
   beforeEach(() => {
     vi.stubGlobal('prisma', {
       article: { findMany: vi.fn().mockResolvedValue([{ title: 'Jak vybrat mlýnek na kávu' }]) },
+      knowledgeProduct: { findFirst: vi.fn().mockResolvedValue(null) },
       // Rows carry their status, so each status query sees only its own rows.
       keywordCluster: {
         findMany: async (args: { where?: { status?: unknown } }) => {
@@ -534,6 +601,22 @@ describe('refreshKeywordPlan', () => {
     expect(labs).not.toHaveProperty('location_code')
     expect(labs).toMatchObject({ language_code: 'en' })
     expect(serp).toMatchObject({ location_code: 2840, language_code: 'en' })
+  })
+
+  it('does not plan a new article for a query the blog already ranks top 10 for', async () => {
+    findClusters.mockResolvedValue([])
+    const original = dataForSeo.getMockImplementation()!
+    dataForSeo.mockImplementation(async (path: string, task: unknown) =>
+      path.includes('/serp/')
+        ? { cost: 0.002, result: { items: [{ type: 'organic', rank_absolute: 4, url: 'https://www.kava.cz/espresso' }] } }
+        : original(path, task),
+    )
+    await expect(
+      refreshKeywordPlan({ id: 's1', language: 'cs', domain: 'kava.cz', keywords: ['espresso', 'káva', 'mlýnek'] }),
+    ).resolves.toBe(0)
+    expect(logAction).toHaveBeenCalledWith(
+      expect.objectContaining({ metadata: expect.objectContaining({ alreadyRanking: 1 }) }),
+    )
   })
 
   it('drops topics the scope check rejects', async () => {
