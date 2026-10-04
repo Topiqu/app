@@ -107,14 +107,21 @@ const toResponse = (message: IncomingMessage) => {
  * resolve the host a second time, and a rebinding DNS answer could point that second lookup at
  * 169.254.169.254 or the local network.
  */
-const requestPinned = (url: URL, addresses: LookupAddress[], timeoutMs: number) =>
+const requestPinned = (
+  url: URL,
+  addresses: LookupAddress[],
+  timeoutMs: number,
+  init: { method?: string; headers?: Record<string, string>; body?: string } = {},
+) =>
   new Promise<Response>((resolve, reject) => {
     const request = https.request(
       url,
       {
+        method: init.method ?? 'GET',
         headers: {
           'User-Agent': `Topiqu/1.0 (https://${process.env.BASE_DOMAIN || 'topiqu.com'})`,
           'Accept-Encoding': 'gzip, deflate, br',
+          ...init.headers,
         },
         lookup: (_hostname, options, callback) =>
           options.all ? callback(null, addresses) : callback(null, addresses[0]!.address, addresses[0]!.family),
@@ -130,8 +137,14 @@ const requestPinned = (url: URL, addresses: LookupAddress[], timeoutMs: number) 
       clearTimeout(timer)
       reject(error)
     })
-    request.end()
+    request.end(init.body)
   })
+
+/** A redirect is returned, not followed: its target would bypass the address check. */
+export const postPublicUrl = async (input: string | URL, body: string, headers: Record<string, string>, timeoutMs = 10_000) => {
+  const target = await resolvePublicHttpsUrl(input)
+  return requestPinned(target.url, target.addresses, timeoutMs, { method: 'POST', headers, body })
+}
 
 export const fetchPublicUrl = async (input: string | URL, timeoutMs = 8_000) => {
   let target = await resolvePublicHttpsUrl(input)

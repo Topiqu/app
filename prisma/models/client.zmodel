@@ -13,6 +13,7 @@ import "./visibility"
 import "./media"
 import "./generation"
 import "./shopify"
+import "./webhook"
 
 enum GenerationFrequency {
     NONE
@@ -131,6 +132,8 @@ model ClientSite with Base {
     mediaRightsSnapshots MediaRightsPublicationSnapshot[]
     articleGenerationSessions ArticleGenerationSession[]
     knowledgeSources     KnowledgeSource[]
+    webhooks             Webhook[]
+    webhookDeliveries    WebhookDelivery[]
     aiSeriesEnabled      Boolean             @default(false)
     keywords             Json?
     audience             String?

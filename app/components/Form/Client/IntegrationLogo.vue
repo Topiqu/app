@@ -21,9 +21,12 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{ name: 'admanager' | 'analytics' | 'google' | 'linkedin' | 'wordpress' | 'shopify' }>()
+const props = defineProps<{
+  name: 'admanager' | 'analytics' | 'google' | 'linkedin' | 'wordpress' | 'shopify' | 'webhook'
+}>()
 
 const icon = computed(() => {
+  if (props.name === 'webhook') return 'mdi:webhook'
   if (props.name === 'admanager') return 'mdi:google-ads'
   if (props.name === 'analytics') return 'mdi:google-analytics'
   if (props.name === 'linkedin') return 'mdi:linkedin'
@@ -32,6 +35,7 @@ const icon = computed(() => {
 })
 
 const color = computed(() => {
+  if (props.name === 'webhook') return 'text-[#c73a63]'
   if (props.name === 'admanager') return 'text-[#34a853]'
   if (props.name === 'analytics') return 'text-[#e37400]'
   if (props.name === 'linkedin') return 'text-[#0a66c2]'

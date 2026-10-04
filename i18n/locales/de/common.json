@@ -85,6 +85,51 @@
         "unchanged": "Ihr Blog läuft bereits unter dieser Domain."
       }
     },
+    "webhooks": {
+      "title": "Webhooks",
+      "description": "Benachrichtigen Sie Zapier, Make oder Ihren eigenen Server, sobald ein Artikel veröffentlicht, geändert oder entfernt wird.",
+      "benefitOne": "Spiegeln Sie Artikel in jedes CMS, ohne eigene Integration.",
+      "benefitTwo": "Jede Anfrage ist signiert, wird rund 15 Stunden lang wiederholt und protokolliert.",
+      "stepOne": "Fügen Sie einen HTTPS-Endpunkt von Zapier, Make oder Ihrem Server ein.",
+      "stepTwo": "Wählen Sie die Ereignisse und kopieren Sie den Signaturschlüssel.",
+      "stepThree": "Senden Sie eine Testanfrage, um die Verbindung zu prüfen.",
+      "url": "Endpunkt-URL",
+      "urlHint": "Öffentliche HTTPS-Adresse",
+      "invalidUrl": "Geben Sie eine öffentliche HTTPS-Adresse ein.",
+      "events": "Ereignisse",
+      "event": {
+        "ARTICLE_PUBLISHED": "Artikel veröffentlicht",
+        "ARTICLE_UPDATED": "Veröffentlichter Artikel geändert",
+        "ARTICLE_UNPUBLISHED": "Veröffentlichung zurückgezogen",
+        "ARTICLE_DELETED": "Artikel gelöscht"
+      },
+      "add": "Webhook hinzufügen",
+      "empty": "Noch keine Webhooks.",
+      "limit": "Sie können höchstens {max} Webhooks anlegen.",
+      "secretTitle": "Signaturschlüssel",
+      "secretOnce": "Kopieren Sie ihn jetzt. Er wird nicht erneut angezeigt.",
+      "copy": "Schlüssel kopieren",
+      "copied": "Kopiert",
+      "rotate": "Schlüssel erneuern",
+      "rotateConfirm": "Mit dem alten Schlüssel signierte Anfragen bestehen die Prüfung nicht mehr. Fortfahren?",
+      "test": "Test senden",
+      "testOk": "Testanfrage zugestellt",
+      "testFailed": "Testanfrage fehlgeschlagen",
+      "httpStatus": "HTTP {status}",
+      "unreachable": "Endpunkt nicht erreichbar",
+      "enable": "Aktivieren",
+      "disable": "Pausieren",
+      "delete": "Löschen",
+      "deleteConfirm": "Diesen Webhook löschen? Nicht zugestellte Anfragen werden verworfen.",
+      "lastDelivery": "Letzte Zustellung",
+      "status": {
+        "active": "Aktiv",
+        "paused": "Pausiert",
+        "disabled": "Nach wiederholten Fehlern deaktiviert"
+      },
+      "verifyHint": "Prüfen Sie den Header Topiqu-Signature: v1 ist der HMAC-SHA256 aus dem Zeitstempel t, einem Punkt und dem unveränderten Body, mit Ihrem Schlüssel.",
+      "actionFailed": "Die Webhook-Aktion ist fehlgeschlagen."
+    },
     "integrationsCatalog": {
       "title": "Integrationen",
       "description": "Verbinde Topiqu mit Diensten für Messung, Verbreitung und Veröffentlichung.",

@@ -102,6 +102,7 @@ export default defineMonitoredTask({
 
     // After commit — a rolled-back publish must not flush anyone's listings.
     await Promise.all([...touched].map(invalidateFeed))
+    for (const article of result.published ?? []) await enqueueArticleWebhook('ARTICLE_PUBLISHED', article)
     return { result: result.result }
   },
 })

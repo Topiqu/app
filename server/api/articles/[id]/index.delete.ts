@@ -10,6 +10,9 @@ export default defineEventHandler(async (event) => {
   if (article.userId !== user.id && !hasTenantScope(membership, 'ARTICLE_WRITE_OTHERS'))
     throw createError({ statusCode: 403, message: t('common.errors.articleEditForbidden')! })
   const deleted = await db.article.delete({ where: { id } })
-  if (deleted.status === 'published') await invalidateFeed(deleted.clientSiteId)
+  if (deleted.status === 'published') {
+    await invalidateFeed(deleted.clientSiteId)
+    await enqueueArticleWebhook('ARTICLE_DELETED', deleted)
+  }
   return { success: true }
 })

@@ -1,0 +1,56 @@
+import "./base"
+import "./client"
+
+enum WebhookEvent {
+    ARTICLE_PUBLISHED
+    ARTICLE_UPDATED
+    ARTICLE_UNPUBLISHED
+    ARTICLE_DELETED
+}
+
+enum WebhookDeliveryStatus {
+    PENDING
+    SENDING
+    SUCCEEDED
+    FAILED
+}
+
+/// A tenant's outgoing endpoint. `secret` signs every delivery and is shown only on create/rotate.
+model Webhook with Base {
+    clientSiteId   String
+    clientSite     ClientSite        @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    url            String            @length(1, 2048)
+    secret         String            @omit
+    events         WebhookEvent[]
+    active         Boolean           @default(true)
+    /// Consecutive failed attempts; reaching the limit switches the endpoint off (`disabledAt`).
+    failureStreak  Int               @default(0)
+    disabledAt     DateTime?
+    lastDeliveryAt DateTime?
+    lastStatusCode Int?
+    deliveries     WebhookDelivery[]
+
+    @@index([clientSiteId])
+    @@allow('read', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
+    @@allow('create, update, delete', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
+}
+
+/// Outbox row: the payload is the event as it was when enqueued, so a retry never sends a newer state.
+model WebhookDelivery with Base {
+    webhookId      String
+    webhook        Webhook               @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+    clientSiteId   String
+    clientSite     ClientSite            @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    event          WebhookEvent
+    payload        Json
+    status         WebhookDeliveryStatus @default(PENDING)
+    attempts       Int                   @default(0)
+    nextAttemptAt  DateTime              @default(now())
+    lastStatusCode Int?
+    lastError      String?               @length(0, 500)
+    deliveredAt    DateTime?
+
+    @@index([status, nextAttemptAt])
+    @@index([webhookId, createdAt])
+    @@allow('read', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
+}

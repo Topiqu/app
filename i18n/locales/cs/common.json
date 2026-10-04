@@ -85,6 +85,51 @@
         "unchanged": "Blog už na této doméně běží."
       }
     },
+    "webhooks": {
+      "title": "Webhooky",
+      "description": "Dejte vědět Zapieru, Make nebo vlastnímu serveru ve chvíli, kdy článek vyjde, změní se nebo zmizí.",
+      "benefitOne": "Zrcadlete články do libovolného CMS bez speciální integrace.",
+      "benefitTwo": "Každý požadavek je podepsaný, opakuje se zhruba 15 hodin a je zalogovaný.",
+      "stepOne": "Vložte HTTPS adresu ze Zapieru, Make nebo svého serveru.",
+      "stepTwo": "Vyberte události a zkopírujte podpisový klíč.",
+      "stepThree": "Odešlete testovací požadavek a ověřte spojení.",
+      "url": "URL endpointu",
+      "urlHint": "Veřejná HTTPS adresa",
+      "invalidUrl": "Zadejte veřejnou HTTPS adresu.",
+      "events": "Události",
+      "event": {
+        "ARTICLE_PUBLISHED": "Článek publikován",
+        "ARTICLE_UPDATED": "Publikovaný článek upraven",
+        "ARTICLE_UNPUBLISHED": "Článek stažen z publikace",
+        "ARTICLE_DELETED": "Článek smazán"
+      },
+      "add": "Přidat webhook",
+      "empty": "Zatím žádné webhooky.",
+      "limit": "Můžete přidat nejvýše {max} webhooků.",
+      "secretTitle": "Podpisový klíč",
+      "secretOnce": "Zkopírujte si ho teď. Znovu se nezobrazí.",
+      "copy": "Kopírovat klíč",
+      "copied": "Zkopírováno",
+      "rotate": "Vyměnit klíč",
+      "rotateConfirm": "Požadavky podepsané starým klíčem přestanou projít ověřením. Pokračovat?",
+      "test": "Odeslat test",
+      "testOk": "Testovací požadavek doručen",
+      "testFailed": "Testovací požadavek selhal",
+      "httpStatus": "HTTP {status}",
+      "unreachable": "Endpoint je nedostupný",
+      "enable": "Zapnout",
+      "disable": "Pozastavit",
+      "delete": "Smazat",
+      "deleteConfirm": "Smazat tento webhook? Nedoručené požadavky se zahodí.",
+      "lastDelivery": "Poslední doručení",
+      "status": {
+        "active": "Aktivní",
+        "paused": "Pozastaveno",
+        "disabled": "Vypnuto po opakovaných chybách"
+      },
+      "verifyHint": "Ověřujte hlavičku Topiqu-Signature: v1 je HMAC-SHA256 z časové značky t, tečky a surového těla požadavku, s vaším klíčem.",
+      "actionFailed": "Akce s webhookem selhala."
+    },
     "integrationsCatalog": {
       "title": "Integrace",
       "description": "Propojte Topiqu se službami pro měření, distribuci a publikování.",

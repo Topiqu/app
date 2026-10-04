@@ -211,5 +211,13 @@ export default defineEventHandler(async (event) => {
     await db.$transaction((tx) => notifyArticlePublished(tx, article))
   }
 
+  const wasPublished = previousArticle.status === ArticleStatus.published
+  const isPublished = article.status === ArticleStatus.published
+  if (wasPublished || isPublished)
+    await enqueueArticleWebhook(
+      isPublished ? (wasPublished ? 'ARTICLE_UPDATED' : 'ARTICLE_PUBLISHED') : 'ARTICLE_UNPUBLISHED',
+      { id: article.id, clientSiteId: article.clientSiteId, slug: article.slug, language: article.language },
+    )
+
   return { success: true }
 })

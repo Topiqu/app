@@ -16,6 +16,7 @@ import "./models/media"
 import "./models/generation"
 import "./models/knowledge"
 import "./models/shopify"
+import "./models/webhook"
 
 datasource db {
     provider  = "postgresql"

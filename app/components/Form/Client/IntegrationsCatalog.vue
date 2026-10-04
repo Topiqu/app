@@ -371,6 +371,22 @@
         </div>
       </template>
     </UModal>
+
+    <UModal v-model:open="webhooksOpen" :title="$t('common.webhooks.title')" :ui="{ content: 'max-w-2xl' }">
+      <template #body>
+        <FormClientDialogIntro
+          icon="mdi:webhook"
+          :description="$t('common.webhooks.description')"
+          plan="pro"
+          planLabel="Pro"
+          :benefits="[$t('common.webhooks.benefitOne'), $t('common.webhooks.benefitTwo')]"
+          :steps="[$t('common.webhooks.stepOne'), $t('common.webhooks.stepTwo'), $t('common.webhooks.stepThree')]"
+        />
+        <div class="mt-6 border-t border-default pt-6">
+          <FormClientWebhooks />
+        </div>
+      </template>
+    </UModal>
   </section>
 </template>
 
@@ -403,12 +419,12 @@ defineEmits<{
   save: []
 }>()
 
-type DialogId = 'gsc' | 'analytics' | 'gam' | 'linkedin' | 'shopify'
+type DialogId = 'gsc' | 'analytics' | 'gam' | 'linkedin' | 'shopify' | 'webhooks'
 type ServiceCard = {
   kind: 'service'
   id: DialogId
   title: string
-  logo: 'admanager' | 'analytics' | 'google' | 'linkedin' | 'shopify'
+  logo: 'admanager' | 'analytics' | 'google' | 'linkedin' | 'shopify' | 'webhook'
   status: string | null
   description: string
 }
@@ -441,6 +457,7 @@ const analyticsOpen = dialogModel('analytics')
 const gamOpen = dialogModel('gam')
 const linkedinOpen = dialogModel('linkedin')
 const shopifyOpen = dialogModel('shopify')
+const webhooksOpen = dialogModel('webhooks')
 const route = useRoute()
 onMounted(() => {
   if (typeof route.query.shopify === 'string') activeDialog.value = 'shopify'
@@ -513,6 +530,14 @@ const planSections = computed<PlanSection[]>(() => [
         logo: 'shopify',
         status: null,
         description: $t('common.shopify.description'),
+      },
+      {
+        kind: 'service',
+        id: 'webhooks',
+        title: $t('common.webhooks.title'),
+        logo: 'webhook',
+        status: null,
+        description: $t('common.webhooks.description'),
       },
       {
         kind: 'wordpress',

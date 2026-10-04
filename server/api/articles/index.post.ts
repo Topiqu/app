@@ -153,6 +153,7 @@ export default defineEventHandler(async (event) => {
   if (article.status === 'published') {
     await syncArticleTranslationQueue(db, article.id, user.clientSiteId)
     await invalidateFeed(user.clientSiteId)
+    await enqueueArticleWebhook('ARTICLE_PUBLISHED', { id: article.id, clientSiteId: user.clientSiteId! })
   }
 
   if (mediaReport) {

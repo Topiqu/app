@@ -126,6 +126,7 @@ export default defineMonitoredTask({
           })
           await syncArticleTranslationQueue(prisma, article.id, connection.clientSiteId, { contentChanged: true })
           await invalidateFeed(connection.clientSiteId)
+          await enqueueArticleWebhook('ARTICLE_UPDATED', { id: article.id, clientSiteId: connection.clientSiteId })
           await logAction({
             action: 'SEO_AUTOPILOT_CTR_OPTIMIZED',
             clientSiteId: connection.clientSiteId,
@@ -174,6 +175,7 @@ export default defineMonitoredTask({
           })
           await syncArticleTranslationQueue(prisma, article.id, connection.clientSiteId, { contentChanged: true })
           await invalidateFeed(connection.clientSiteId)
+          await enqueueArticleWebhook('ARTICLE_UPDATED', { id: article.id, clientSiteId: connection.clientSiteId })
           await logAction({
             action: 'SEO_AUTOPILOT_CONTENT_REFRESHED',
             clientSiteId: connection.clientSiteId,

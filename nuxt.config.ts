@@ -126,6 +126,7 @@ export default defineNuxtConfig({
     },
     scheduledTasks: IS_PROD
       ? {
+          '* * * * *': ['webhook-deliver'],
           '*/10 * * * *': ['publish-check'],
           '*/15 * * * *': ['generate-article'],
           '*/30 * * * *': ['sentiment-analysis'],

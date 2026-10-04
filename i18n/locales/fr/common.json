@@ -85,6 +85,51 @@
         "unchanged": "Votre blog est déjà sur ce domaine."
       }
     },
+    "webhooks": {
+      "title": "Webhooks",
+      "description": "Prévenez Zapier, Make ou votre propre serveur dès qu’un article est publié, modifié ou retiré.",
+      "benefitOne": "Répliquez vos articles dans n’importe quel CMS sans intégration dédiée.",
+      "benefitTwo": "Chaque requête est signée, relancée pendant environ 15 heures et journalisée.",
+      "stepOne": "Collez un endpoint HTTPS fourni par Zapier, Make ou votre serveur.",
+      "stepTwo": "Choisissez les événements et copiez la clé de signature.",
+      "stepThree": "Envoyez une requête de test pour vérifier la connexion.",
+      "url": "URL de l’endpoint",
+      "urlHint": "Adresse HTTPS publique",
+      "invalidUrl": "Saisissez une adresse HTTPS publique.",
+      "events": "Événements",
+      "event": {
+        "ARTICLE_PUBLISHED": "Article publié",
+        "ARTICLE_UPDATED": "Article publié modifié",
+        "ARTICLE_UNPUBLISHED": "Article dépublié",
+        "ARTICLE_DELETED": "Article supprimé"
+      },
+      "add": "Ajouter un webhook",
+      "empty": "Aucun webhook pour l’instant.",
+      "limit": "Vous pouvez ajouter au maximum {max} webhooks.",
+      "secretTitle": "Clé de signature",
+      "secretOnce": "Copiez-la maintenant. Elle ne sera plus affichée.",
+      "copy": "Copier la clé",
+      "copied": "Copiée",
+      "rotate": "Renouveler la clé",
+      "rotateConfirm": "Les requêtes signées avec l’ancienne clé ne passeront plus la vérification. Continuer ?",
+      "test": "Envoyer un test",
+      "testOk": "Requête de test livrée",
+      "testFailed": "Échec de la requête de test",
+      "httpStatus": "HTTP {status}",
+      "unreachable": "Endpoint injoignable",
+      "enable": "Activer",
+      "disable": "Mettre en pause",
+      "delete": "Supprimer",
+      "deleteConfirm": "Supprimer ce webhook ? Les requêtes non livrées seront abandonnées.",
+      "lastDelivery": "Dernière livraison",
+      "status": {
+        "active": "Actif",
+        "paused": "En pause",
+        "disabled": "Désactivé après des échecs répétés"
+      },
+      "verifyHint": "Vérifiez l’en-tête Topiqu-Signature : v1 est le HMAC-SHA256 de l’horodatage t, d’un point et du corps brut, avec votre clé.",
+      "actionFailed": "L’action sur le webhook a échoué."
+    },
     "integrationsCatalog": {
       "title": "Intégrations",
       "description": "Connectez Topiqu à des services de mesure, de diffusion et de publication.",

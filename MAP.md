@@ -231,7 +231,14 @@ Every provider connect (LinkedIn, Search Console) **starts on the tenant's own h
 - `GET /api/external/articles/:id` returns one published tenant article with the complete safe external projection. Its response uses flat `tags`, identifies the source `language`, and exposes published translation summaries as `availableTranslations`; a foreign, draft, archived or missing id is the same 404.
 - `GET /api/external/tags` is discovery for filtering: only tags actually attached to at least one published article of the authenticated tenant, sorted by name, with `articleCount`. This deliberately avoids leaking global/other-tenant tags and omits empty tags.
 - `GET /api/external/site` returns public integration metadata (`name`, domain, description, logo, theme, primary/available languages, socials) plus the published article count; it never projects billing, AI configuration or credentials.
-- This remains a read-only pull API. There is no change/deletion cursor, conditional request support, webhook, localized full article response, canonical public URL, key scopes, per-integration keys, rate-limit contract, OpenAPI document or URL version namespace. Those require a deliberate v1 contract and, for reliable unpublish/delete propagation, a persisted change log rather than inference from the current published collection.
+- This remains a read-only pull API; change propagation is pushed by webhooks (below). There is no change/deletion cursor, conditional request support, localized full article response, canonical public URL, key scopes, per-integration keys, rate-limit contract, OpenAPI document or URL version namespace. Those require a deliberate v1 contract and, for reliable unpublish/delete propagation, a persisted change log rather than inference from the current published collection.
+
+### Webhooks (`server/utils/webhooks.ts`)
+
+- Pro+ tenants register up to `MAX_WEBHOOKS` HTTPS endpoints (Settings → Integrations, `/api/webhooks`, `INTEGRATION_CONTROL` scope) for `article.published` / `updated` / `unpublished` / `deleted` on the source-language article. Published/updated payloads reuse the External API projection plus the public `url`; removals carry only `id`/`slug`/`language`, because a deleted row is gone by delivery time.
+- `enqueueArticleWebhook` writes one `WebhookDelivery` outbox row per endpoint with the payload frozen at enqueue time, then tries to send at once; `webhook-deliver` (every minute) retries after 1/5/30/120/720 min and prunes rows older than 30 days. Every publication path calls it (create, PATCH, delete, `publish-check`, `generate-article`, SEO autopilot write + rollback); a new path that changes a live article must too. Enqueue never throws into the article write.
+- A claim is a guarded `updateMany` to `SENDING` whose `nextAttemptAt` doubles as a 5-minute lease, so overlapping runs never double-send and a crashed send is retried (at-least-once; receivers dedupe on `Topiqu-Delivery`).
+- `Topiqu-Signature: t=<unix>,v1=<hmac-sha256(secret, "t.body")>`. The secret is `@omit`, returned only on create/rotate. Sends go through `postPublicUrl` (DNS-pinned, private ranges refused, redirects not followed) because the URL is tenant input. 20 consecutive failures switch an endpoint off (`disabledAt`); re-enabling resets the streak.
 
 ### WordPress integration (`wordpress/topiqu-sync`)
 
@@ -314,6 +321,7 @@ Marketing names diverge from the DB enum: marketing **FREE** = enum **BASIC**. E
 | Manual article writing           | ✅           | ✅                 | ✅                     | ✅                 |
 | Subdomain                        | ✅ (free)    | ✅                 | ✅                     | ✅                 |
 | Custom domain                    | ❌           | ✅                 | ✅                     | ✅                 |
+| Outgoing webhooks                | ❌           | ✅                 | ✅                     | ✅                 |
 | White-label (no Topiqu branding) | ❌           | ❌                 | ❌                     | ✅                 |
 | AI article generation            | ❌           | ✅ (token bundle)  | ✅ (token bundle)      | ✅ (unlimited)     |
 | AI sentiment + auto images       | ❌           | ❌                 | ✅                     | ✅                 |

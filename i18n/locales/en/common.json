@@ -85,6 +85,51 @@
         "unchanged": "Your blog already runs on this domain."
       }
     },
+    "webhooks": {
+      "title": "Webhooks",
+      "description": "Notify Zapier, Make or your own server the moment an article is published, updated or removed.",
+      "benefitOne": "Mirror articles to any CMS without a dedicated integration.",
+      "benefitTwo": "Every request is signed, retried for about 15 hours and logged.",
+      "stepOne": "Paste an HTTPS endpoint from Zapier, Make or your server.",
+      "stepTwo": "Choose the events and copy the signing secret.",
+      "stepThree": "Send a test request to check the connection.",
+      "url": "Endpoint URL",
+      "urlHint": "Public HTTPS address",
+      "invalidUrl": "Enter a public HTTPS address.",
+      "events": "Events",
+      "event": {
+        "ARTICLE_PUBLISHED": "Article published",
+        "ARTICLE_UPDATED": "Published article updated",
+        "ARTICLE_UNPUBLISHED": "Article unpublished",
+        "ARTICLE_DELETED": "Article deleted"
+      },
+      "add": "Add webhook",
+      "empty": "No webhooks yet.",
+      "limit": "You can add up to {max} webhooks.",
+      "secretTitle": "Signing secret",
+      "secretOnce": "Copy it now. It will not be shown again.",
+      "copy": "Copy secret",
+      "copied": "Copied",
+      "rotate": "Rotate secret",
+      "rotateConfirm": "Requests signed with the old secret will stop verifying. Continue?",
+      "test": "Send test",
+      "testOk": "Test request delivered",
+      "testFailed": "Test request failed",
+      "httpStatus": "HTTP {status}",
+      "unreachable": "Endpoint unreachable",
+      "enable": "Enable",
+      "disable": "Pause",
+      "delete": "Delete",
+      "deleteConfirm": "Delete this webhook? Undelivered requests are dropped.",
+      "lastDelivery": "Last delivery",
+      "status": {
+        "active": "Active",
+        "paused": "Paused",
+        "disabled": "Off after repeated failures"
+      },
+      "verifyHint": "Verify the Topiqu-Signature header: v1 is the HMAC-SHA256 of the timestamp t, a dot and the raw body, keyed with your secret.",
+      "actionFailed": "The webhook action failed."
+    },
     "integrationsCatalog": {
       "title": "Integrations",
       "description": "Connect Topiqu to services for measurement, distribution, and publishing.",

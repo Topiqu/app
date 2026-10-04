@@ -491,6 +491,7 @@ Respond ONLY in valid JSON (schema required).
         notifyArticlePublished(prisma, article, { notifyAuthor: article.user?.role !== 'ai' }).catch((err) => {
           console.error('[generate-article] Notification error:', err)
         })
+        await enqueueArticleWebhook('ARTICLE_PUBLISHED', { id: article.id, clientSiteId })
       } else {
         await logAction({
           action: 'CRON_ARTICLE_SAVED_AS_DRAFT',
