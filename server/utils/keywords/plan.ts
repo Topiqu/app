@@ -2,9 +2,11 @@ import { z } from 'zod'
 import { createHash } from 'node:crypto'
 import { generateText, Output } from 'ai'
 import { keywordLocation } from '~~/shared/utils/keywordPlan'
-import { keywordOpportunity, type SearchResult } from '~~/shared/utils/keywordOpportunity'
+import { keywordOpportunity } from '~~/shared/utils/keywordOpportunity'
 
 import { rankHistoryFor } from './rank'
+import { suggestExpansions } from './refresh'
+import { serpSignals, type SerpItem } from './serp'
 import { assessOpportunities } from './opportunity'
 import { dataForSeo, hasDataForSeo } from './dataforseo'
 import { inScope, siteKeywords, siteProfile, type ScopeSite } from './scope'
@@ -72,16 +74,6 @@ export const peakMonthOf = (monthly: { month?: number | null; search_volume?: nu
   return average > 0 && peak.search_volume! >= average * 1.5 ? peak.month! : null
 }
 
-interface SerpItem {
-  type: string
-  rank_absolute?: number
-  domain?: string
-  title?: string
-  url?: string
-  description?: string
-  items?: { title?: string }[] | null
-}
-
 interface LabsResult {
   items?: LabsItem[] | null
   seed_keyword_data?: LabsItem | null
@@ -103,7 +95,9 @@ export const ideaFromLabs = (item: LabsItem, pillar: string | null = null): Keyw
   core: item.keyword_properties?.core_keyword ?? null,
   pillar,
   trend:
-    item.keyword_info?.search_volume_trend?.yearly == null ? null : Math.round(item.keyword_info.search_volume_trend.yearly),
+    item.keyword_info?.search_volume_trend?.yearly == null
+      ? null
+      : Math.round(item.keyword_info.search_volume_trend.yearly),
   peakMonth: peakMonthOf(item.keyword_info?.monthly_searches),
 })
 
@@ -139,7 +133,8 @@ const timingFit = ({ trend, peakMonth }: Pick<PlannedCluster, 'trend' | 'peakMon
  * A topic above the blog's difficulty ceiling is discounted, not dropped: Labs difficulty is an estimate.
  */
 export const clusterScore = (
-  cluster: Pick<PlannedCluster, 'volume' | 'difficulty' | 'intent'> & Partial<Pick<PlannedCluster, 'trend' | 'peakMonth'>>,
+  cluster: Pick<PlannedCluster, 'volume' | 'difficulty' | 'intent'> &
+    Partial<Pick<PlannedCluster, 'trend' | 'peakMonth'>>,
   { ceiling = 100, sells = false, month }: ScoreContext = {},
 ) => {
   const demand = Math.log10(cluster.volume + 10)
@@ -212,48 +207,6 @@ export const isKeywordCovered = (keyword: string, titles: string[]) => {
   })
 }
 
-export const serpSignals = (items: SerpItem[] | null | undefined) => {
-  const list = items ?? []
-  const questions = list
-    .filter((item) => item.type === 'people_also_ask')
-    .flatMap((item) => item.items ?? [])
-    .map((question) => question.title?.trim())
-    .filter((title): title is string => Boolean(title))
-  const domains = list
-    .filter((item) => item.type === 'organic' && item.domain)
-    .sort((a, b) => (a.rank_absolute ?? 0) - (b.rank_absolute ?? 0))
-    .map((item) => item.domain!)
-  const urls = list
-    .filter((item) => item.type === 'organic' && item.url)
-    .sort((a, b) => (a.rank_absolute ?? 0) - (b.rank_absolute ?? 0))
-    .slice(0, 10)
-    .map((item) => normalizeUrl(item.url!))
-  const organic: SearchResult[] = list
-    .filter((item) => item.type === 'organic' && item.title && item.url && /^https?:\/\//.test(item.url) && item.domain)
-    .sort((a, b) => (a.rank_absolute ?? 0) - (b.rank_absolute ?? 0))
-    .slice(0, 5)
-    .map((item) => ({
-      title: item.title!,
-      url: item.url!,
-      domain: item.domain!,
-      description: item.description?.slice(0, 300) ?? '',
-    }))
-  return {
-    questions: [...new Set(questions)].slice(0, 5),
-    aiOverview: list.some((item) => item.type === 'ai_overview'),
-    domains: [...new Set(domains)].slice(0, 10),
-    organic,
-    urls: [...new Set(urls)],
-  }
-}
-
-const normalizeUrl = (url: string) =>
-  url
-    .toLocaleLowerCase()
-    .replace(/^https?:\/\/(www\.)?/, '')
-    .replace(/[?#].*$/, '')
-    .replace(/\/+$/, '')
-
 type SerpCandidate = PlannedCluster & { urls: string[]; questions: string[] }
 
 /**
@@ -264,9 +217,7 @@ type SerpCandidate = PlannedCluster & { urls: string[]; questions: string[] }
 export const groupBySerp = <T extends SerpCandidate>(candidates: T[]) => {
   const heads: T[] = []
   for (const candidate of candidates) {
-    const head = heads.find(
-      (group) => candidate.urls.filter((url) => group.urls.includes(url)).length >= SERP_OVERLAP,
-    )
+    const head = heads.find((group) => candidate.urls.filter((url) => group.urls.includes(url)).length >= SERP_OVERLAP)
     if (!head) {
       heads.push({ ...candidate })
       continue
@@ -274,10 +225,9 @@ export const groupBySerp = <T extends SerpCandidate>(candidates: T[]) => {
     const index = heads.indexOf(head)
     heads[index] = {
       ...head,
-      keywords: [...new Map([...head.keywords, ...candidate.keywords].map((entry) => [entry.keyword, entry])).values()].slice(
-        0,
-        10,
-      ),
+      keywords: [
+        ...new Map([...head.keywords, ...candidate.keywords].map((entry) => [entry.keyword, entry])).values(),
+      ].slice(0, 10),
       questions: [...new Set([...head.questions, ...candidate.questions])].slice(0, 5),
     }
   }
@@ -350,7 +300,7 @@ export const refreshKeywordPlan = async (site: PlanSite, now = new Date()) => {
   const market = keywordLocation(site.language, site.keywordMarket)
   const articles = await prisma.article.findMany({
     where: { clientSiteId: site.id, status: { in: ['published', 'draft'] } },
-    select: { title: true, excerpt: true },
+    select: { id: true, title: true, excerpt: true, status: true },
     orderBy: { createdAt: 'desc' },
     take: 200,
   })
@@ -483,11 +433,16 @@ export const refreshKeywordPlan = async (site: PlanSite, now = new Date()) => {
   // A page of the blog already in the top 10 answers the query; a new article would compete with it.
   // An editor's pin still goes to the assessment, which judges coverage itself.
   const ownHost = site.domain?.toLocaleLowerCase().replace(/^www\./, '')
-  const ranking = (cluster: { urls: string[] }) => Boolean(ownHost) && cluster.urls.some((url) => url.split('/')[0] === ownHost)
+  const ranking = (cluster: { urls: string[] }) =>
+    Boolean(ownHost) && cluster.urls.some((url) => url.split('/')[0] === ownHost)
   const enriched = grouped
     .filter((cluster) => pinnedKeywords.has(cluster.keyword) || !ranking(cluster))
     .map(({ urls: _urls, ...cluster }) => cluster)
-  const decisions = await assessOpportunities(site, enriched, articles)
+  const { accepted: decisions, expansions } = await assessOpportunities(
+    site,
+    enriched,
+    articles.map(({ title, excerpt }) => ({ title, excerpt })),
+  )
   if (failedSerps.length && decisions.length && !decisions.some((decision) => enriched[decision.index]!.organic.length))
     throw new Error('SERP checks failed for every recommended topic')
   const profile = planProfile(site)
@@ -537,6 +492,22 @@ export const refreshKeywordPlan = async (site: PlanSite, now = new Date()) => {
     })
   })
 
+  // Only a published article can be edited in place; a draft still gets its editor's attention first.
+  const expanded = await suggestExpansions(
+    site.id,
+    expansions.flatMap((expansion) => {
+      const article = articles[expansion.article]
+      return article?.status === 'published'
+        ? [{ articleId: article.id, keyword: enriched[expansion.index]!.keyword, ...expansion }]
+        : []
+    }),
+    now,
+  ).catch((error: Error) => {
+    // The plan is already saved; a missed suggestion comes back with the next rebuild.
+    console.error('[keyword-plan] Expansion suggestions failed:', site.id, error.message)
+    return 0
+  })
+
   await logAction({
     action: 'KEYWORD_PLAN_REFRESHED',
     clientSiteId: site.id,
@@ -554,6 +525,7 @@ export const refreshKeywordPlan = async (site: PlanSite, now = new Date()) => {
       mergedBySerp: scoped.length - grouped.length,
       alreadyRanking: grouped.length - enriched.length,
       sells: context.sells,
+      expansionsSuggested: expanded,
       costUsd: Math.round(cost * 10_000) / 10_000,
     },
   })
@@ -576,7 +548,20 @@ const candidateSelect = {
   opportunity: true,
 } as const
 
-const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+const MONTHS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+]
 
 /**
  * Rebuilds a stale plan first. The claim is a one-day lease written before the paid calls: overlapping
@@ -616,7 +601,8 @@ export const keywordPlanFor = async (site: PlanSite, now = new Date()) => {
   const previous = site.keywordPlanAttemptedAt ? new Date(site.keywordPlanAttemptedAt) : null
   const canRetry = !previous || now.getTime() - previous.getTime() >= DAY_MS
   const due =
-    isPlanStale(site, now) || (ready.pinned.length + ready.open.length < MIN_READY && (await shortageDue(site, ready, now)))
+    isPlanStale(site, now) ||
+    (ready.pinned.length + ready.open.length < MIN_READY && (await shortageDue(site, ready, now)))
   if (hasDataForSeo() && canRetry && due) {
     const claimed = await prisma.clientSite.updateMany({
       where: { id: site.id, keywordPlanAttemptedAt: previous },

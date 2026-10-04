@@ -52,8 +52,8 @@ const {
   planProfile,
   planSignal,
   refreshKeywordPlan,
-  serpSignals,
 } = await import('../../../server/utils/keywords/plan')
+const { serpSignals } = await import('../../../server/utils/keywords/serp')
 
 const idea = (
   keyword: string,
@@ -608,7 +608,10 @@ describe('refreshKeywordPlan', () => {
     const original = dataForSeo.getMockImplementation()!
     dataForSeo.mockImplementation(async (path: string, task: unknown) =>
       path.includes('/serp/')
-        ? { cost: 0.002, result: { items: [{ type: 'organic', rank_absolute: 4, url: 'https://www.kava.cz/espresso' }] } }
+        ? {
+            cost: 0.002,
+            result: { items: [{ type: 'organic', rank_absolute: 4, url: 'https://www.kava.cz/espresso' }] },
+          }
         : original(path, task),
     )
     await expect(

@@ -41,10 +41,64 @@ model KeywordCluster with Base {
     /// `[{ at, position, url, location, language, domain }]`, oldest first.
     rankHistory  Json?
     nextRankCheckAt DateTime?
+    contentActions ContentAction[]
 
     @@unique([clientSiteId, keyword])
     @@index([clientSiteId, status, score])
     @@index([status, nextRankCheckAt])
+    @@allow('read', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
+    @@allow('update', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
+}
+
+enum ContentActionType {
+    REFRESH
+    EXPAND
+}
+
+enum ContentActionStatus {
+    SUGGESTED
+    QUEUED
+    READY
+    APPLIED
+    DISMISSED
+    FAILED
+    ROLLED_BACK
+}
+
+/// A suggested improvement of a published article: REFRESH when it sits on positions 8–20 for its
+/// keyword, EXPAND when the plan found an unanswered need it covers. Detection is free; preparing the
+/// edit costs one article credit and the editor applies it after seeing the proposal.
+model ContentAction with Base {
+    clientSiteId     String
+    clientSite       ClientSite          @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    articleId        String
+    article          Article             @relation(fields: [articleId], references: [id], onDelete: Cascade)
+    keywordClusterId String?
+    keywordCluster   KeywordCluster?     @relation(fields: [keywordClusterId], references: [id], onDelete: SetNull)
+    type             ContentActionType
+    status           ContentActionStatus @default(SUGGESTED)
+    keyword          String              @length(1, 200)
+    /// Why, in the blog language (EXPAND, from the plan assessment); a REFRESH is explained by its positions.
+    reason           String?             @length(0, 500)
+    /// The reader need an EXPAND answers.
+    angle            String?             @length(0, 300)
+    positionBefore   Int?
+    positionAfter    Int?
+    /// Set with positionAfter; NULL positionAfter with a date means not in the checked top 30.
+    measuredAt       DateTime?
+    /// `{ title, excerpt, content, summary, baseHash }` once READY; after apply it is the written version.
+    proposal         Json?
+    /// Title, excerpt and content before apply, for rollback.
+    snapshot         Json?
+    creditOperationId String?
+    error            String?             @length(0, 500)
+    queuedAt         DateTime?
+    processingUntil  DateTime?
+    appliedAt        DateTime?
+
+    @@index([clientSiteId, status])
+    @@index([status, queuedAt])
+    @@index([articleId, createdAt])
     @@allow('read', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
     @@allow('update', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
 }

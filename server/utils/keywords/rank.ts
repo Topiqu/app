@@ -1,5 +1,6 @@
 import type { Language } from '~~/generated/zenstack/models'
 
+import { articlePath } from '~~/shared/utils/routes'
 import { keywordLocation } from '~~/shared/utils/keywordPlan'
 
 import { activeFeatureFilter } from '../planFeatures'
@@ -29,6 +30,18 @@ export interface RankPoint {
   location?: number
   language?: string
   domain?: string
+  articlePosition?: number | null
+  articleUrl?: string | null
+}
+
+/** One fresh reading, oldest position first; the task turns these into refresh suggestions and results. */
+export interface RankReading {
+  id: string
+  clientSiteId: string
+  keyword: string
+  articleId: string | null
+  publishedAt: Date
+  positions: (number | null)[]
 }
 
 type RankSite = { domain: string; language: Language; keywordMarket?: string | null }
@@ -56,6 +69,20 @@ export const nextRankCheck = (usedAt: Date, position: number | null, now: Date) 
 
 const bareHost = (host: string) => host.toLocaleLowerCase().replace(/^www\./, '')
 
+export const isArticleUrl = (url: string | null | undefined, domain: string, language: Language, slug: string) => {
+  if (!url) return false
+  try {
+    const parsed = new URL(url)
+    return (
+      /^https?:$/.test(parsed.protocol) &&
+      bareHost(parsed.hostname) === bareHost(domain) &&
+      decodeURI(parsed.pathname).replace(/\/+$/, '') === articlePath(language, slug)
+    )
+  } catch {
+    return false
+  }
+}
+
 /** The blog's best organic position for the query: any of its pages counts, the URL says which. */
 export const blogPosition = (items: RankItem[] | null | undefined, domain: string) => {
   const host = bareHost(domain)
@@ -70,17 +97,18 @@ export const blogPosition = (items: RankItem[] | null | undefined, domain: strin
  * waiting for review is postponed a week; a deleted article ends tracking; a failed call retries tomorrow.
  */
 export const checkDueRanks = async (now = new Date()) => {
-  if (!hasDataForSeo()) return { checked: 0, failed: 0, costUsd: 0 }
+  if (!hasDataForSeo()) return { checked: 0, failed: 0, costUsd: 0, readings: [] as RankReading[] }
   const due = await prisma.keywordCluster.findMany({
     where: { status: 'USED', nextRankCheckAt: { lte: now }, clientSite: activeFeatureFilter('ARTICLE_CRONS') },
     select: {
       id: true,
       clientSiteId: true,
       keyword: true,
+      articleId: true,
       usedAt: true,
       rankHistory: true,
       nextRankCheckAt: true,
-      article: { select: { status: true, publishedAt: true } },
+      article: { select: { status: true, publishedAt: true, slug: true, language: true } },
       clientSite: { select: { domain: true, language: true, keywordMarket: true } },
     },
     orderBy: { nextRankCheckAt: 'asc' },
@@ -88,6 +116,7 @@ export const checkDueRanks = async (now = new Date()) => {
   })
 
   const spent = new Map<string, { checked: number; costUsd: number }>()
+  const readings: RankReading[] = []
   let failed = 0
   for (let index = 0; index < due.length; index += CONCURRENCY) {
     await Promise.all(
@@ -123,11 +152,19 @@ export const checkDueRanks = async (now = new Date()) => {
             depth: RANK_DEPTH,
           })
           const found = blogPosition(serp.result?.items, cluster.clientSite.domain)
+          const matchesArticle = (url: string | null | undefined) =>
+            isArticleUrl(url, cluster.clientSite.domain, cluster.article!.language, cluster.article!.slug)
+          const articleFound = blogPosition(
+            serp.result?.items?.filter((item) => matchesArticle(item.url)),
+            cluster.clientSite.domain,
+          )
           const history = [
             ...rankHistoryFor(cluster.rankHistory, cluster.clientSite),
             {
               at: now.toISOString(),
               ...found,
+              articlePosition: articleFound.position,
+              articleUrl: articleFound.url,
               location: market.serpLocationCode,
               language: market.languageCode,
               domain: bareHost(cluster.clientSite.domain),
@@ -140,6 +177,16 @@ export const checkDueRanks = async (now = new Date()) => {
               rankHistory: history.slice(-HISTORY) as never,
               nextRankCheckAt: nextRankCheck(publishedAt, found.position, now),
             },
+          })
+          readings.push({
+            id: cluster.id,
+            clientSiteId: cluster.clientSiteId,
+            keyword: cluster.keyword,
+            articleId: cluster.articleId,
+            publishedAt,
+            positions: history.map((point) =>
+              matchesArticle(point.articleUrl ?? point.url) ? (point.articlePosition ?? point.position) : null,
+            ),
           })
           const total = spent.get(cluster.clientSiteId) ?? { checked: 0, costUsd: 0 }
           spent.set(cluster.clientSiteId, { checked: total.checked + 1, costUsd: total.costUsd + serp.cost })
@@ -163,5 +210,5 @@ export const checkDueRanks = async (now = new Date()) => {
     })
   const checked = [...spent.values()].reduce((total, entry) => total + entry.checked, 0)
   const costUsd = [...spent.values()].reduce((total, entry) => total + entry.costUsd, 0)
-  return { checked, failed, costUsd: Math.round(costUsd * 10_000) / 10_000 }
+  return { checked, failed, costUsd: Math.round(costUsd * 10_000) / 10_000, readings }
 }

@@ -48,7 +48,11 @@ describe.skipIf(process.env.AI_EVAL !== '1')('captured Czech SERP opportunities'
     '$id',
     async (group) => {
       const profile = profiles[group.id as keyof typeof profiles]
-      const decisions = await assessOpportunities({ id: 'eval', language: 'cs', ...profile }, group.candidates, [])
+      const { accepted: decisions } = await assessOpportunities(
+        { id: 'eval', language: 'cs', ...profile },
+        group.candidates,
+        [],
+      )
       const kept = decisions.map((decision) => group.candidates[decision.index]!.keyword)
       results.push({ id: group.id, capturedAt: snapshots.capturedAt, kept, decisions })
       expect(kept.length).toBeGreaterThan(0)

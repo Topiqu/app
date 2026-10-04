@@ -32,6 +32,11 @@ const decisionSchema = z.object({
     .describe(
       'Number of another candidate answering the same need; keep the better candidate and mark the others. 0 if distinct.',
     ),
+  extendsArticle: z
+    .boolean()
+    .describe(
+      'Only when coveredBy > 0: true if one new section in that article would answer a part of this need it does not answer yet.',
+    ),
   articleFit: z.enum(['strong', 'possible', 'poor']),
   specificity: z
     .enum(['focused', 'broad'])
@@ -65,6 +70,7 @@ One incidental factual sentence on a product page does not make it an editorial 
 When editorial results exist, match that reader need with a concrete angle; do not copy a competitor title.
 Check ALL existing titles and summaries for the same reader need, even when their wording differs.
 Mark coveredBy and write=false for covered queries. A different sub-question in the same subject is allowed when genuinely unanswered.
+For a covered query set extendsArticle=true only when the covering article misses a concrete part of this need that one added section would answer; false when it already answers it.
 Compare candidates with each other too: select one best query per reader need, favor its specific editorial query over the broad head term, mark other candidates duplicateOf it, and write=false for those duplicates.
 Prefer specific useful questions and actionable comparisons over broad head terms a new blog cannot credibly satisfy.
 Classify specificity from the ORIGINAL query and observed intent, not from your invented angle. Treat missing/zero difficulty as uncertain, never proof of weak competition.
@@ -81,7 +87,7 @@ export const assessOpportunities = async (
   candidates: OpportunityCandidate[],
   articles: CoveredArticle[],
 ) => {
-  if (!candidates.length) return []
+  if (!candidates.length) return { accepted: [], expansions: [] }
   const result = await generateText({
     model: aiModel('keywordOpportunity'),
     maxOutputTokens: 3000 + candidates.length * 180,
@@ -105,9 +111,25 @@ ${JSON.stringify(candidates.map((candidate, index) => ({ item: index + 1, ...can
   const byItem = new Map(output.decisions.map((decision) => [decision.item, decision]))
   if (byItem.size !== candidates.length || output.decisions.length !== candidates.length)
     throw new Error('Incomplete keyword opportunity assessment')
-  return candidates.flatMap((_, index) => {
+  const decisions = candidates.map((_, index) => {
     const decision = byItem.get(index + 1)
     if (!decision) throw new Error('Invalid keyword opportunity item')
+    return decision
+  })
+  // A covered need the covering article misses is an edit of that article, not a new one.
+  const expansions = decisions.flatMap((decision, index) =>
+    decision.coveredBy > 0 &&
+    decision.coveredBy <= articles.length &&
+    decision.extendsArticle &&
+    decision.duplicateOf === 0 &&
+    decision.articleFit !== 'poor' &&
+    decision.intent !== 'navigational' &&
+    decision.angle.trim() &&
+    decision.reason.trim()
+      ? [{ index, article: decision.coveredBy - 1, angle: decision.angle.trim(), reason: decision.reason.trim() }]
+      : [],
+  )
+  const accepted = decisions.flatMap((decision, index) => {
     if (
       !decision.write ||
       decision.coveredBy > 0 ||
@@ -125,4 +147,5 @@ ${JSON.stringify(candidates.map((candidate, index) => ({ item: index + 1, ...can
       },
     ]
   })
+  return { accepted, expansions }
 }

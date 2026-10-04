@@ -135,6 +135,7 @@ model ClientSite with Base {
     knowledgeSources     KnowledgeSource[]
     webhooks             Webhook[]
     keywordClusters      KeywordCluster[]
+    contentActions       ContentAction[]
     /// Last successful DataForSEO rebuild.
     keywordPlanRefreshedAt DateTime?
     /// Claim and retry cooldown, separate from the age of the usable plan.

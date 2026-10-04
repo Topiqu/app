@@ -262,7 +262,7 @@ export async function adjustArticleCredits(input: {
 
 export async function reserveArticleCredit(
   clientSiteId: string,
-  action: 'MANUAL_ARTICLE' | 'SCHEDULED_ARTICLE',
+  action: 'MANUAL_ARTICLE' | 'SCHEDULED_ARTICLE' | 'CONTENT_REFRESH',
   key: string = randomUUID(),
   metadata: JsonValue = {},
 ) {
@@ -311,8 +311,9 @@ export async function settleArticleCredit(
   operation: Pick<ArticleCreditOperation, 'id' | 'clientSiteId'>,
   charge: boolean,
   metadata: JsonValue = {},
+  transaction?: Tx,
 ) {
-  return prisma.$transaction(async (tx) => {
+  const write = async (tx: Tx) => {
     await lockWallet(tx, operation.clientSiteId)
     const current = await tx.articleCreditOperation.findFirstOrThrow({
       where: { id: operation.id, clientSiteId: operation.clientSiteId },
@@ -354,7 +355,8 @@ export async function settleArticleCredit(
       },
     })
     return getArticleCreditWallet(operation.clientSiteId, tx)
-  })
+  }
+  return transaction ? write(transaction) : prisma.$transaction(write)
 }
 
 export async function getArticleCreditWallet(clientSiteId: string, transaction?: Tx) {
@@ -375,7 +377,7 @@ export async function getArticleCreditWallet(clientSiteId: string, transaction?:
 
 export async function withArticleCreditReservation<T>(
   clientSiteId: string,
-  action: 'MANUAL_ARTICLE' | 'SCHEDULED_ARTICLE',
+  action: 'MANUAL_ARTICLE' | 'SCHEDULED_ARTICLE' | 'CONTENT_REFRESH',
   work: (operation: ArticleCreditOperation) => Promise<T>,
   options: {
     key?: string
