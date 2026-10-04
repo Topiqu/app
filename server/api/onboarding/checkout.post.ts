@@ -8,6 +8,7 @@ import { saveUserWithLogging } from '~~/server/utils/userLog'
 import { TRIAL_PLAN, TRIAL_DAYS } from '~~/shared/utils/trial'
 import { verifyVerifiedToken } from '~~/server/utils/onboardingTokens'
 import { TRIAL_ARTICLE_CREDITS } from '~~/shared/utils/articleCredits'
+import { normalizeAccentColor, parseBrandGradient } from '~~/shared/utils/publicationBranding'
 import { domainError, domainVerificationDefaults, isManagedDomain, normalizeDomain } from '~~/shared/utils/domain'
 
 const LOGIN_TOKEN_TTL_MS = 30 * 60 * 1000
@@ -22,6 +23,11 @@ const schema = z.object({
   domain: z.string().min(1).max(253),
   domainType: z.enum(['SUBDOMAIN', 'CUSTOM']).default('SUBDOMAIN'),
   theme: z.string().optional(),
+  // Branding chosen in the landing wizard; custom font files need the site to exist, so they are not accepted here.
+  accentColor: z.string().optional(),
+  brandGradient: z.unknown().optional(),
+  typographyPreset: z.enum(['MODERN', 'EDITORIAL', 'MAGAZINE', 'SYSTEM']).optional(),
+  tagline: z.string().trim().max(80).optional(),
   language: z.enum(LANGUAGE_OPTIONS),
   username: z.string().min(3).max(50),
   email: z.email(),
@@ -95,6 +101,10 @@ export default defineEventHandler(async (event) => {
           domain: fullSubdomain,
           language: body.language,
           theme: (body.theme || 'blue') as any,
+          accentColor: normalizeAccentColor(body.accentColor),
+          brandGradient: parseBrandGradient(body.brandGradient) ?? undefined,
+          typographyPreset: body.typographyPreset ?? 'MODERN',
+          tagline: body.tagline || null,
           ...domainVerificationDefaults(fullSubdomain, randomBytes(24).toString('base64url')),
           // The trial is a real plan, not a UI state — `firstPaidAt` stays null as the paid
           // marker, and `trial-expiry` drops a card-less tenant back to BASIC after TRIAL_DAYS.
