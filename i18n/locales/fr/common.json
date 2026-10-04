@@ -642,48 +642,56 @@
       },
       "explanation": "Explication des préférences",
       "guide": {
-        "title": "Comment l'IA lit vos consignes",
-        "intro": "Ces quatre éléments sont transmis directement aux instructions de l'IA : d'abord pour choisir un sujet, puis pour rédiger l'article. Plus ils sont précis, moins le résultat sera générique.",
-        "flow": {
-          "brief": "Consignes de contenu",
-          "topic": "Choix du sujet",
-          "article": "Article rédigé",
-          "publish": "Publication"
+        "title": "Comment définir votre contenu",
+        "intro": "Ces consignes guident le choix des sujets et la rédaction pour vos lecteurs.",
+        "fields": {
+          "focus": "Sujet et angle",
+          "audience": "Pour qui vous écrivez",
+          "language": "Langue des nouveaux articles",
+          "keywords": "Thèmes à approfondir"
         },
-        "usedIn": "Où cela apparaît",
-        "good": "Bon exemple",
-        "bad": "Mauvais exemple",
-        "empty": "Si vous laissez ce champ vide",
-        "focus": {
-          "usedIn": "Choix du sujet · Rédaction · Analyse des commentaires",
-          "description": "Définit les sujets traités et l'angle adopté. Ce champ guide à la fois le choix du sujet et l'orientation de l'article entier.",
-          "good": "journalisme vidéoludique objectif, axé sur la technique de l'Unreal Engine et la liberté des joueurs",
-          "bad": "jeux",
-          "empty": "L'IA se rabat sur des sujets généraux et écrit sur tout ce qui se rapporte vaguement au site."
-        },
-        "audience": {
-          "usedIn": "Choix du sujet · Rédaction · Analyse des commentaires",
-          "description": "Détermine le vocabulaire, la longueur des phrases et le niveau d'explication. Cela fait la différence entre « tout expliquer » et « passer les bases ».",
-          "good": "développeurs de jeux qui connaissent Unreal sans l'utiliser tous les jours",
-          "bad": "tout le monde",
-          "empty": "L'IA suppose un large public et explique des notions que vos lecteurs connaissent déjà."
-        },
-        "language": {
-          "usedIn": "Rédaction",
-          "description": "La langue dans laquelle les nouveaux articles sont rédigés.",
-          "warning": "Rédigez les trois autres champs dans la même langue. Sinon, l'IA risque d'écrire tout l'article dans la langue de ces champs plutôt que dans celle choisie ici."
-        },
-        "keywords": {
-          "usedIn": "Choix du sujet · Rédaction · Mots-clés méta du site",
-          "description": "Ils orientent le choix des sujets vers les domaines que vous souhaitez couvrir. L'IA les intègre ensuite naturellement au texte, sans les forcer.",
-          "good": "5 à 15 termes qui décrivent réellement votre sujet",
-          "bad": "cinquante mots génériques accumulés pour le SEO",
-          "empty": "Les sujets ne reposent alors que sur le domaine d'activité et le public cible.",
-          "note": "Ces termes ne sont pas des mots-clés SEO à répéter partout. Si la Search Console est connectée, les vraies requêtes de recherche peuvent augmenter la priorité d'un sujet, mais elles ne remplacent jamais le domaine d'activité ni le public cible."
+        "examples": {
+          "title": "Exemples de consignes",
+          "previous": "Exemple précédent",
+          "next": "Exemple suivant",
+          "position": "Exemple {current} sur {total} : {title}",
+          "items": {
+            "gaming": {
+              "title": "Magazine de jeux vidéo",
+              "focus": "La technique des jeux et du développement sous Unreal Engine, avec un accent sur les performances et la liberté du joueur.",
+              "audience": "Développeurs et joueurs expérimentés qui connaissent les bases et souhaitent approfondir.",
+              "keywords": "Unreal Engine, rendu, optimisation, IA dans les jeux"
+            },
+            "coffee": {
+              "title": "Torréfacteur de café",
+              "focus": "Le café de spécialité et sa préparation à la maison. Des conseils pratiques sans jargon de barista.",
+              "audience": "Amateurs de café qui veulent une meilleure tasse chez eux et débutent dans la préparation.",
+              "keywords": "café de spécialité, espresso, café filtre, moulins à café"
+            },
+            "software": {
+              "title": "Logiciels d’entreprise",
+              "focus": "Automatiser le travail dans les petites entreprises. Méthodes concrètes, comparatifs d’outils et gain de temps.",
+              "audience": "Dirigeants et responsables d’équipe qui gèrent les opérations sans formation technique.",
+              "keywords": "automatisation, CRM, travail en équipe, no-code"
+            },
+            "travel": {
+              "title": "Guide local",
+              "focus": "Des escapades en France hors des grands circuits touristiques, avec des conseils de transport et des adresses locales.",
+              "audience": "Voyageurs qui préparent un week-end et cherchent des lieux accessibles et peu connus.",
+              "keywords": "escapades de week-end, sentiers de randonnée, cuisine locale, voyages en train"
+            },
+            "running": {
+              "title": "Blog de course à pied",
+              "focus": "Courir pour le plaisir et préparer sa première course. Conseils d’entraînement clairs et tests d’équipement.",
+              "audience": "Coureurs amateurs qui s’entraînent quelques fois par semaine et préparent leur premier 10 km.",
+              "keywords": "course pour débutants, entraînement 10 km, chaussures de course, récupération"
+            }
+          }
         },
         "preview": {
-          "title": "Voici ce que voit l'IA",
-          "hint": "Aperçu en direct de vos saisies. Les valeurs grisées sont les valeurs par défaut utilisées par l'IA lorsqu'un champ est vide."
+          "title": "Afficher les consignes pour l’IA",
+          "hint": "Vos consignes actuelles. Les champs vides affichent les valeurs par défaut.",
+          "fallback": "valeur par défaut"
         }
       },
       "monthlyTitle": "Prix mensuel",

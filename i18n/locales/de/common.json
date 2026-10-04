@@ -642,48 +642,56 @@
       },
       "explanation": "Erläuterung der Einstellungen",
       "guide": {
-        "title": "So liest die KI dein Briefing",
-        "intro": "Diese vier Angaben fließen direkt in die Anweisungen für die KI ein — zuerst bei der Themenwahl, dann beim Schreiben des Artikels. Je konkreter sie sind, desto weniger allgemein fällt das Ergebnis aus.",
-        "flow": {
-          "brief": "Inhaltsbriefing",
-          "topic": "Themenwahl",
-          "article": "Geschriebener Artikel",
-          "publish": "Veröffentlichung"
+        "title": "So legst du deine Inhalte fest",
+        "intro": "Anhand deiner Angaben wählt die KI Themen aus und schreibt für deine Leser.",
+        "fields": {
+          "focus": "Thema und Perspektive",
+          "audience": "Für wen du schreibst",
+          "language": "Sprache neuer Artikel",
+          "keywords": "Themen zum Vertiefen"
         },
-        "usedIn": "Wo es verwendet wird",
-        "good": "Funktioniert",
-        "bad": "Funktioniert nicht",
-        "empty": "Wenn du es leer lässt",
-        "focus": {
-          "usedIn": "Themenwahl · Artikelerstellung · Erkenntnisse aus Kommentaren",
-          "description": "Legt fest, worüber und aus welcher Perspektive geschrieben wird. Hält die Themenwahl und die Ausrichtung des gesamten Artikels zusammen.",
-          "good": "objektiver Spielejournalismus mit Schwerpunkt auf der technischen Seite der Unreal Engine und der Freiheit der Spieler",
-          "bad": "Spiele",
-          "empty": "Die KI greift auf „allgemeine Themen“ zurück und schreibt über alles, was entfernt mit der Website zu tun hat."
-        },
-        "audience": {
-          "usedIn": "Themenwahl · Artikelerstellung · Erkenntnisse aus Kommentaren",
-          "description": "Bestimmt Wortwahl, Satzlänge und wie viel die KI erklärt. Es macht den Unterschied zwischen „von Grund auf erklären“ und „Grundlagen überspringen“.",
-          "good": "Spieleentwickler, die Unreal kennen, aber nicht täglich damit arbeiten",
-          "bad": "alle",
-          "empty": "Die KI nimmt ein „breites Publikum“ an und erklärt Dinge, die deine Leser bereits wissen."
-        },
-        "language": {
-          "usedIn": "Artikelerstellung",
-          "description": "Die Sprache, in der neue Artikel geschrieben werden.",
-          "warning": "Verfasse die anderen drei Felder in derselben Sprache. Andernfalls schreibt die KI möglicherweise den ganzen Artikel in der Sprache dieser Angaben statt in der hier gewählten."
-        },
-        "keywords": {
-          "usedIn": "Themenwahl · Artikelerstellung · Meta-Schlüsselwörter der Website",
-          "description": "Sie lenken die Themenwahl auf die Bereiche, die du abdecken möchtest. Die KI baut sie anschließend natürlich in den Text ein, ohne sie zu erzwingen.",
-          "good": "5–15 Begriffe, die dein Thema wirklich beschreiben",
-          "bad": "fünfzig allgemeine Wörter, die nur für SEO angehäuft wurden",
-          "empty": "Die Themen ergeben sich allein aus Schwerpunkt und Zielgruppe.",
-          "note": "Diese Begriffe sind keine SEO-Tags, die möglichst oft wiederholt werden sollen. Bei verbundener Search Console können echte Suchanfragen einem Thema mehr Gewicht geben, aber sie verdrängen nie Schwerpunkt oder Zielgruppe."
+        "examples": {
+          "title": "Beispiel-Briefings",
+          "previous": "Vorheriges Beispiel",
+          "next": "Nächstes Beispiel",
+          "position": "Beispiel {current} von {total}: {title}",
+          "items": {
+            "gaming": {
+              "title": "Gaming-Magazin",
+              "focus": "Die technische Seite von Spielen und der Entwicklung mit Unreal Engine, mit Fokus auf Leistung und Spielerfreiheit.",
+              "audience": "Entwickler und erfahrene Spieler, die die Grundlagen kennen und tiefer einsteigen möchten.",
+              "keywords": "Unreal Engine, Rendering, Optimierung, Spiele-KI"
+            },
+            "coffee": {
+              "title": "Kaffeerösterei",
+              "focus": "Spezialitätenkaffee und Zubereitung zu Hause. Praktische Anleitungen ohne Barista-Fachsprache.",
+              "audience": "Kaffeeliebhaber, die zu Hause besseren Kaffee möchten und mit der Zubereitung erst anfangen.",
+              "keywords": "Spezialitätenkaffee, Espresso, Filterkaffee, Kaffeemühlen"
+            },
+            "software": {
+              "title": "Firmensoftware",
+              "focus": "Arbeitsabläufe in kleinen Unternehmen automatisieren. Konkrete Anleitungen, Tool-Vergleiche und Zeitersparnis.",
+              "audience": "Unternehmer und Teamleiter, die Abläufe organisieren und keinen technischen Hintergrund haben.",
+              "keywords": "Automatisierung, CRM, Teamarbeit, No-Code"
+            },
+            "travel": {
+              "title": "Regionaler Reiseführer",
+              "focus": "Ausflüge in Deutschland abseits der großen Touristenrouten, mit Tipps zu Anreise und lokalen Angeboten.",
+              "audience": "Menschen, die Wochenendausflüge planen und gut erreichbare, weniger bekannte Orte suchen.",
+              "keywords": "Wochenendausflüge, Wanderwege, regionale Küche, Bahnreisen"
+            },
+            "running": {
+              "title": "Laufblog",
+              "focus": "Laufen aus Freude und Vorbereitung auf den ersten Wettkampf. Verständliche Trainingstipps und Ausrüstungstests.",
+              "audience": "Hobbyläufer, die mehrmals pro Woche laufen und sich auf ihren ersten Zehn-Kilometer-Lauf vorbereiten.",
+              "keywords": "Laufen für Anfänger, 10-km-Training, Laufschuhe, Regeneration"
+            }
+          }
         },
         "preview": {
-          "title": "Das sieht die KI",
-          "hint": "Live-Vorschau deiner aktuellen Angaben. Grau dargestellte Werte sind die Standardwerte, die die KI für leere Felder einsetzt."
+          "title": "KI-Briefing anzeigen",
+          "hint": "Deine aktuellen Angaben. Bei leeren Feldern werden die Standardwerte angezeigt.",
+          "fallback": "Standardwert"
         }
       },
       "monthlyTitle": "Monatlicher Preis",

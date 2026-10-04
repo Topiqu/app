@@ -642,48 +642,56 @@
       },
       "explanation": "Preferences Explanation",
       "guide": {
-        "title": "How the AI reads your brief",
-        "intro": "These four values go straight into the AI's instructions — first when it picks a topic, then when it writes the article. The more specific they are, the less generic the output.",
-        "flow": {
-          "brief": "Content brief",
-          "topic": "Topic pick",
-          "article": "Written article",
-          "publish": "Publication"
+        "title": "How to set up your content",
+        "intro": "AI uses your brief to choose topics and write for your readers.",
+        "fields": {
+          "focus": "Subject and perspective",
+          "audience": "Who you write for",
+          "language": "Language of new articles",
+          "keywords": "Topics to explore"
         },
-        "usedIn": "Where it shows up",
-        "good": "Works",
-        "bad": "Doesn't work",
-        "empty": "If you leave it empty",
-        "focus": {
-          "usedIn": "Topic pick · Article writing · Comment insights",
-          "description": "Sets what gets written about and from which angle. It holds both the topic selection and the tone of the whole article together.",
-          "good": "objective gaming journalism, emphasis on the technical side of Unreal Engine and player freedom",
-          "bad": "games",
-          "empty": "The AI falls back to \"general topics\" and writes anything loosely related to the site."
-        },
-        "audience": {
-          "usedIn": "Topic pick · Article writing · Comment insights",
-          "description": "Drives vocabulary, sentence length and how much the AI explains. It is the difference between \"explain from scratch\" and \"skip the basics\".",
-          "good": "game developers who know Unreal but don't work in it daily",
-          "bad": "everyone",
-          "empty": "The AI falls back to \"wide audience\" and explains things your readers already know."
-        },
-        "language": {
-          "usedIn": "Article writing",
-          "description": "The language new articles are written in.",
-          "warning": "Keep the other three fields in the same language. If you don't, the AI writes the whole article in the language of those inputs instead of this choice."
-        },
-        "keywords": {
-          "usedIn": "Topic pick · Article writing · The site meta keywords",
-          "description": "They pull topic selection toward the areas you want to cover. The AI then works them into the text naturally, not by force.",
-          "good": "5–15 terms that genuinely describe your subject",
-          "bad": "fifty generic words piled up for SEO",
-          "empty": "Topics come from focus and audience alone.",
-          "note": "These are not SEO tags to stuff. With Search Console connected, real search queries can raise a topic's priority, but they never override focus or audience."
+        "examples": {
+          "title": "Example briefs",
+          "previous": "Previous example",
+          "next": "Next example",
+          "position": "Example {current} of {total}: {title}",
+          "items": {
+            "gaming": {
+              "title": "Gaming magazine",
+              "focus": "The technical side of games and Unreal Engine development, with a focus on performance and player freedom.",
+              "audience": "Developers and experienced players who know the basics and want to go deeper.",
+              "keywords": "Unreal Engine, rendering, optimization, game AI"
+            },
+            "coffee": {
+              "title": "Coffee roastery",
+              "focus": "Specialty coffee and home brewing. Practical guides without barista jargon.",
+              "audience": "Coffee lovers who want a better cup at home but are just getting started with brewing.",
+              "keywords": "specialty coffee, espresso, filter coffee, grinders"
+            },
+            "software": {
+              "title": "Business software",
+              "focus": "Automating work in small businesses. Practical workflows, tool comparisons and ways to save time.",
+              "audience": "Business owners and team leads who manage operations without a technical background.",
+              "keywords": "automation, CRM, team collaboration, no-code"
+            },
+            "travel": {
+              "title": "Local travel guide",
+              "focus": "Trips across the UK beyond the main tourist routes, with tips on transport and local places.",
+              "audience": "People planning weekend trips who want accessible, lesser-known destinations.",
+              "keywords": "weekend trips, walking routes, local food, train travel"
+            },
+            "running": {
+              "title": "Running blog",
+              "focus": "Running for fun and preparing for a first race. Clear training tips and gear reviews.",
+              "audience": "Recreational runners who run a few times a week and are preparing for their first 10K.",
+              "keywords": "beginner running, 10K training, running shoes, recovery"
+            }
+          }
         },
         "preview": {
-          "title": "This is what the AI sees",
-          "hint": "A live preview of what you have filled in right now. Greyed values are the fallbacks the AI substitutes for an empty field."
+          "title": "Show the AI brief",
+          "hint": "Your current brief. Empty fields show the default values.",
+          "fallback": "default value"
         }
       },
       "monthlyTitle": "Monthly Price",

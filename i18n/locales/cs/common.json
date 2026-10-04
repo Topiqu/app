@@ -642,48 +642,56 @@
       },
       "explanation": "Vysvětlení preferencí",
       "guide": {
-        "title": "Jak AI čte vaše zadání",
-        "intro": "Tyhle čtyři údaje se vkládají přímo do zadání pro AI — nejdřív když vybírá téma, potom když píše článek. Čím konkrétnější jsou, tím míň generický výstup.",
-        "flow": {
-          "brief": "Obsahový brief",
-          "topic": "Výběr tématu",
-          "article": "Napsaný článek",
-          "publish": "Publikace"
+        "title": "Jak nastavit obsah",
+        "intro": "Podle zadání AI vybírá témata a píše pro vaše čtenáře.",
+        "fields": {
+          "focus": "Téma a úhel pohledu",
+          "audience": "Pro koho píšete",
+          "language": "Jazyk nových článků",
+          "keywords": "Témata k rozvíjení"
         },
-        "usedIn": "Kde se projeví",
-        "good": "Funguje",
-        "bad": "Nefunguje",
-        "empty": "Když necháte prázdné",
-        "focus": {
-          "usedIn": "Výběr tématu · Psaní článku · Insighty z komentářů",
-          "description": "Určuje, o čem se píše a s jakým úhlem pohledu. Drží pohromadě výběr témat i vyznění celého článku.",
-          "good": "objektivní herní žurnalistika, důraz na technickou stránku Unreal Enginu a svobodu hráče",
-          "bad": "hry",
-          "empty": "AI si dosadí „obecná témata“ a bude psát cokoliv, co k webu volně sedí."
-        },
-        "audience": {
-          "usedIn": "Výběr tématu · Psaní článku · Insighty z komentářů",
-          "description": "Řídí slovník, délku vět i to, kolik věcí AI vysvětluje. Je to rozdíl mezi „vysvětli od začátku“ a „přeskoč základy“.",
-          "good": "vývojáři her, kteří Unreal znají, ale nedělají v něm denně",
-          "bad": "všichni",
-          "empty": "AI si dosadí „široké publikum“ a bude vysvětlovat i to, co vaši čtenáři dávno vědí."
-        },
-        "language": {
-          "usedIn": "Psaní článku",
-          "description": "Jazyk, ve kterém vznikají nové články.",
-          "warning": "Zbylá tři pole držte ve stejném jazyce. Když je vyplníte jinak, AI napíše celý článek podle jazyka vstupů, ne podle téhle volby."
-        },
-        "keywords": {
-          "usedIn": "Výběr tématu · Psaní článku · Meta keywords webu",
-          "description": "Posouvají výběr témat k oblastem, o kterých chcete psát. AI je pak do textu zapracuje přirozeně, ne na sílu.",
-          "good": "5–15 pojmů, kterými se vaše téma opravdu popisuje",
-          "bad": "padesát obecných slov naskládaných kvůli SEO",
-          "empty": "Témata vzniknou jen ze zaměření a cílové skupiny.",
-          "note": "Nejsou to SEO tagy k naskládání. S připojenou Search Console můžou reálné dotazy z vyhledávání téma upřednostnit, ale zaměření ani cílovou skupinu nepřebijí."
+        "examples": {
+          "title": "Příklady zadání",
+          "previous": "Předchozí příklad",
+          "next": "Další příklad",
+          "position": "Příklad {current} z {total}: {title}",
+          "items": {
+            "gaming": {
+              "title": "Herní magazín",
+              "focus": "Technická stránka her a vývoje v Unreal Enginu, s důrazem na výkon a svobodu hráče.",
+              "audience": "Vývojáři a zkušení hráči, kteří znají základy a chtějí jít do hloubky.",
+              "keywords": "Unreal Engine, rendering, optimalizace, herní AI"
+            },
+            "coffee": {
+              "title": "Pražírna kávy",
+              "focus": "Výběrová káva a domácí příprava. Praktické návody bez baristického žargonu.",
+              "audience": "Milovníci kávy, kteří chtějí doma lepší šálek, ale s přípravou teprve začínají.",
+              "keywords": "výběrová káva, espresso, filtrovaná káva, mlýnky"
+            },
+            "software": {
+              "title": "Firemní software",
+              "focus": "Automatizace práce v menších firmách. Konkrétní postupy, srovnání nástrojů a úspora času.",
+              "audience": "Majitelé firem a vedoucí týmů, kteří řeší provoz a nemají technické vzdělání.",
+              "keywords": "automatizace, CRM, týmová spolupráce, no-code"
+            },
+            "travel": {
+              "title": "Lokální průvodce",
+              "focus": "Výlety po Česku mimo hlavní turistické trasy, s tipy na dopravu a místní podniky.",
+              "audience": "Lidé plánující víkendové výlety, kteří hledají dostupná a méně známá místa.",
+              "keywords": "víkendové výlety, pěší trasy, lokální gastronomie, cestování vlakem"
+            },
+            "running": {
+              "title": "Běžecký blog",
+              "focus": "Běh pro radost a první závody. Srozumitelné tréninkové tipy a recenze vybavení.",
+              "audience": "Hobby běžci, kteří běhají párkrát týdně a chystají se na svou první desítku.",
+              "keywords": "běh pro začátečníky, trénink na 10 km, běžecké boty, regenerace"
+            }
+          }
         },
         "preview": {
-          "title": "Takhle vaše zadání vidí AI",
-          "hint": "Živý náhled z toho, co máte právě vyplněné. Šedě jsou náhradní hodnoty, které si AI dosadí za prázdné pole."
+          "title": "Zobrazit zadání pro AI",
+          "hint": "Vaše aktuální zadání. U prázdných polí jsou uvedené výchozí hodnoty.",
+          "fallback": "výchozí hodnota"
         }
       },
       "monthlyTitle": "Měsíční cena",
