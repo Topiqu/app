@@ -85,6 +85,60 @@
         "unchanged": "Your blog already runs on this domain."
       }
     },
+    "keywordPlan": {
+      "title": "Up next",
+      "description": "Automated articles take topics from the top. Pin what you want sooner and skip what you don’t want.",
+      "empty": "The plan is built before the next automated article.",
+      "volume": "≈ {count} searches a month",
+      "volumeUnknown": "search volume unknown",
+      "difficulty": {
+        "easy": "lower competition",
+        "medium": "medium competition",
+        "hard": "higher competition"
+      },
+      "pin": "Pin {keyword}",
+      "skip": "Skip {keyword}",
+      "restore": "Return {keyword} to the plan",
+      "market": "Market",
+      "marketGlobal": "Global",
+      "marketSaved": "Market saved. The plan rebuilds before the next article.",
+      "failed": "The topic plan could not be updated.",
+      "why": "Why do we recommend this topic?",
+      "loadFailed": "The topic plan could not be loaded.",
+      "pinned": "Pinned",
+      "unpin": "Unpin {keyword}",
+      "skipped": "Skipped topics ({count})"
+    },
+    "keywordResults": {
+      "title": "How articles perform",
+      "description": "Where your blog ranks on Google for topics you have already published. Checked 7, 30, 60 and 90 days after publishing.",
+      "position": "Position {position}",
+      "notRanked": "not in top 30",
+      "entered": "new in top 30",
+      "empty": "Nothing to measure yet. We check the first position 7 days after a plan article is published."
+    },
+    "keywords": {
+      "title": "Topics",
+      "description": "What people in your field actually search for. Automated articles cover these topics step by step, and we measure where they land on Google.",
+      "disabledTitle": "Turn on automated articles",
+      "disabledDescription": "The topic plan picks what to write from real search demand, then tracks Google rankings. It works with automated articles.",
+      "openSettings": "Open AI settings",
+      "stats": {
+        "demand": {
+          "label": "Search demand covered",
+          "hint": "{count} topics written · per month"
+        },
+        "top10": {
+          "label": "In Google top 10",
+          "hint": "of tracked articles",
+          "pending": "first check 7 days after publishing"
+        },
+        "queued": {
+          "label": "Ready in the plan",
+          "hint": "topics waiting for an article"
+        }
+      }
+    },
     "webhooks": {
       "title": "Webhooks",
       "description": "Notify Zapier, Make or your own server the moment an article is published, updated or removed.",
@@ -237,7 +291,8 @@
       "settings": "Site settings",
       "dashboard": "Dashboard",
       "media": "Media library",
-      "knowledge": "Knowledge"
+      "knowledge": "Knowledge",
+      "keywords": "Topics"
     },
     "links": {
       "terms": "Terms of Service",

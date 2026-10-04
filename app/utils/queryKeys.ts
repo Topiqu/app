@@ -34,4 +34,7 @@ export const queryKeys = {
   domain: {
     status: ['domain'] as const,
   },
+  keywordPlan: {
+    list: ['keyword-plan'] as const,
+  },
 } as const

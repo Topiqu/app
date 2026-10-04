@@ -85,6 +85,60 @@
         "unchanged": "Ihr Blog läuft bereits unter dieser Domain."
       }
     },
+    "keywordPlan": {
+      "title": "Als Nächstes",
+      "description": "Automatische Artikel nehmen Themen von oben. Heften Sie an, was früher kommen soll, und überspringen Sie, was Sie nicht wollen.",
+      "empty": "Der Plan entsteht vor dem nächsten automatischen Artikel.",
+      "volume": "≈ {count} Suchanfragen pro Monat",
+      "volumeUnknown": "Suchvolumen unbekannt",
+      "difficulty": {
+        "easy": "geringerer Wettbewerb",
+        "medium": "mittlerer Wettbewerb",
+        "hard": "höherer Wettbewerb"
+      },
+      "pin": "{keyword} anheften",
+      "skip": "{keyword} überspringen",
+      "restore": "{keyword} zurück in den Plan",
+      "market": "Markt",
+      "marketGlobal": "Weltweit",
+      "marketSaved": "Markt gespeichert. Der Plan wird vor dem nächsten Artikel neu erstellt.",
+      "failed": "Der Themenplan konnte nicht geändert werden.",
+      "why": "Warum empfehlen wir dieses Thema?",
+      "loadFailed": "Der Themenplan konnte nicht geladen werden.",
+      "pinned": "Angeheftet",
+      "unpin": "{keyword} lösen",
+      "skipped": "Übersprungene Themen ({count})"
+    },
+    "keywordResults": {
+      "title": "Wie die Artikel abschneiden",
+      "description": "Die Google-Position Ihres Blogs für bereits veröffentlichte Themen. Gemessen 7, 30, 60 und 90 Tage nach Veröffentlichung.",
+      "position": "Platz {position}",
+      "notRanked": "nicht in den Top 30",
+      "entered": "neu in den Top 30",
+      "empty": "Noch nichts zu messen. Die erste Position messen wir 7 Tage nach Veröffentlichung eines Plan-Artikels."
+    },
+    "keywords": {
+      "title": "Themen",
+      "description": "Wonach Menschen in Ihrem Bereich wirklich suchen. Automatische Artikel decken diese Themen nach und nach ab, und wir messen ihre Google-Position.",
+      "disabledTitle": "Automatische Artikel aktivieren",
+      "disabledDescription": "Der Themenplan wählt Themen nach echter Suchnachfrage und misst danach die Google-Positionen. Er arbeitet mit automatischen Artikeln.",
+      "openSettings": "KI-Einstellungen öffnen",
+      "stats": {
+        "demand": {
+          "label": "Abgedeckte Suchnachfrage",
+          "hint": "{count} Themen geschrieben · pro Monat"
+        },
+        "top10": {
+          "label": "In den Google-Top-10",
+          "hint": "der gemessenen Artikel",
+          "pending": "erste Messung 7 Tage nach Veröffentlichung"
+        },
+        "queued": {
+          "label": "Bereit im Plan",
+          "hint": "Themen warten auf einen Artikel"
+        }
+      }
+    },
     "webhooks": {
       "title": "Webhooks",
       "description": "Benachrichtigen Sie Zapier, Make oder Ihren eigenen Server, sobald ein Artikel veröffentlicht, geändert oder entfernt wird.",
@@ -237,7 +291,8 @@
       "settings": "Website-Einstellungen",
       "dashboard": "Übersicht",
       "media": "Medienbibliothek",
-      "knowledge": "Wissensbasis"
+      "knowledge": "Wissensbasis",
+      "keywords": "Themen"
     },
     "links": {
       "terms": "Nutzungsbedingungen",

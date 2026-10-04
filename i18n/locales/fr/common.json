@@ -85,6 +85,60 @@
         "unchanged": "Votre blog est déjà sur ce domaine."
       }
     },
+    "keywordPlan": {
+      "title": "À venir",
+      "description": "Les articles automatiques prennent les sujets par le haut. Épinglez ce que vous voulez plus tôt et ignorez ce que vous ne voulez pas.",
+      "empty": "Le plan sera établi avant le prochain article automatique.",
+      "volume": "≈ {count} recherches par mois",
+      "volumeUnknown": "volume de recherche inconnu",
+      "difficulty": {
+        "easy": "concurrence plus faible",
+        "medium": "concurrence moyenne",
+        "hard": "concurrence plus forte"
+      },
+      "pin": "Épingler {keyword}",
+      "skip": "Ignorer {keyword}",
+      "restore": "Remettre {keyword} dans le plan",
+      "market": "Marché",
+      "marketGlobal": "Mondial",
+      "marketSaved": "Marché enregistré. Le plan sera reconstruit avant le prochain article.",
+      "failed": "Impossible de modifier le plan de sujets.",
+      "why": "Pourquoi recommandons-nous ce sujet ?",
+      "loadFailed": "Impossible de charger le plan de sujets.",
+      "pinned": "Épinglé",
+      "unpin": "Désépingler {keyword}",
+      "skipped": "Sujets ignorés ({count})"
+    },
+    "keywordResults": {
+      "title": "Performance des articles",
+      "description": "La position de votre blog sur Google pour les sujets déjà publiés. Mesurée 7, 30, 60 et 90 jours après la publication.",
+      "position": "{position}e position",
+      "notRanked": "hors du top 30",
+      "entered": "nouveau dans le top 30",
+      "empty": "Rien à mesurer pour l’instant. Nous mesurons la première position 7 jours après la publication d’un article du plan."
+    },
+    "keywords": {
+      "title": "Sujets",
+      "description": "Ce que les gens recherchent vraiment dans votre domaine. Les articles automatiques couvrent ces sujets peu à peu, et nous mesurons leur position sur Google.",
+      "disabledTitle": "Activez les articles automatiques",
+      "disabledDescription": "Le plan de sujets choisit quoi écrire selon la demande de recherche réelle, puis suit les positions sur Google. Il fonctionne avec les articles automatiques.",
+      "openSettings": "Ouvrir les réglages IA",
+      "stats": {
+        "demand": {
+          "label": "Demande de recherche couverte",
+          "hint": "{count} sujets écrits · par mois"
+        },
+        "top10": {
+          "label": "Dans le top 10 Google",
+          "hint": "des articles suivis",
+          "pending": "première mesure 7 jours après publication"
+        },
+        "queued": {
+          "label": "Prêts dans le plan",
+          "hint": "sujets en attente d’un article"
+        }
+      }
+    },
     "webhooks": {
       "title": "Webhooks",
       "description": "Prévenez Zapier, Make ou votre propre serveur dès qu’un article est publié, modifié ou retiré.",
@@ -237,7 +291,8 @@
       "settings": "Paramètres du site",
       "dashboard": "Tableau de bord",
       "media": "Médiathèque",
-      "knowledge": "Base de connaissances"
+      "knowledge": "Base de connaissances",
+      "keywords": "Sujets"
     },
     "links": {
       "terms": "Conditions d'utilisation",

@@ -85,6 +85,60 @@
         "unchanged": "Blog už na této doméně běží."
       }
     },
+    "keywordPlan": {
+      "title": "Další na řadě",
+      "description": "Automatické články berou témata shora. Připněte, co chcete dřív, a přeskočte, co nechcete.",
+      "empty": "Plán se sestaví před dalším automatickým článkem.",
+      "volume": "≈ {count} hledání měsíčně",
+      "volumeUnknown": "hledanost neznámá",
+      "difficulty": {
+        "easy": "nižší konkurence",
+        "medium": "střední konkurence",
+        "hard": "vyšší konkurence"
+      },
+      "pin": "Připnout {keyword}",
+      "skip": "Přeskočit {keyword}",
+      "restore": "Vrátit {keyword} do plánu",
+      "market": "Trh",
+      "marketGlobal": "Globálně",
+      "marketSaved": "Trh uložen. Plán se přestaví před dalším článkem.",
+      "failed": "Plán témat se nepodařilo upravit.",
+      "why": "Proč doporučujeme toto téma?",
+      "loadFailed": "Plán témat se nepodařilo načíst.",
+      "pinned": "Připnuto",
+      "unpin": "Odepnout {keyword}",
+      "skipped": "Přeskočená témata ({count})"
+    },
+    "keywordResults": {
+      "title": "Jak si články vedou",
+      "description": "Pozice blogu v Googlu pro témata, o kterých už vyšel článek. Měříme 7, 30, 60 a 90 dní po vydání.",
+      "position": "{position}. místo",
+      "notRanked": "mimo top 30",
+      "entered": "nově v top 30",
+      "empty": "Zatím nic k měření. První pozici změříme 7 dní po vydání článku z plánu."
+    },
+    "keywords": {
+      "title": "Témata",
+      "description": "O čem lidé ve vašem oboru opravdu hledají. Automatické články tato témata postupně pokrývají a my měříme, kde se v Googlu umístí.",
+      "disabledTitle": "Zapněte automatické články",
+      "disabledDescription": "Plán témat vybírá, o čem psát, podle skutečné hledanosti a pak měří pozice v Googlu. Pracuje s automatickými články.",
+      "openSettings": "Otevřít nastavení AI",
+      "stats": {
+        "demand": {
+          "label": "Hledanost napsaných témat",
+          "hint": "{count} témat napsáno · měsíčně"
+        },
+        "top10": {
+          "label": "V top 10 Googlu",
+          "hint": "z měřených článků",
+          "pending": "první měření 7 dní po vydání"
+        },
+        "queued": {
+          "label": "Připraveno v plánu",
+          "hint": "témat čeká na článek"
+        }
+      }
+    },
     "webhooks": {
       "title": "Webhooky",
       "description": "Dejte vědět Zapieru, Make nebo vlastnímu serveru ve chvíli, kdy článek vyjde, změní se nebo zmizí.",
@@ -237,7 +291,8 @@
       "settings": "Nastavení webu",
       "dashboard": "Přehled",
       "media": "Knihovna médií",
-      "knowledge": "Znalosti"
+      "knowledge": "Znalosti",
+      "keywords": "Témata"
     },
     "links": {
       "terms": "Obchodní podmínky",
