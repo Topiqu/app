@@ -17,7 +17,8 @@
       "reservedHint": "Každé generování rezervuje 1 článek. Při chybě se uvolní.",
       "reasons": {
         "manualArticle": "Ručně vytvořený článek",
-        "scheduledArticle": "Automaticky vytvořený článek"
+        "scheduledArticle": "Automaticky vytvořený článek",
+        "contentRefresh": "Aktualizace článku"
       },
       "periodUsage": "Spotřeba za {period}",
       "expires": "Platnost do",
@@ -116,6 +117,36 @@
       "notRanked": "mimo top 30",
       "entered": "nově v top 30",
       "empty": "Zatím nic k měření. První pozici změříme 7 dní po vydání článku z plánu."
+    },
+    "contentActions": {
+      "title": "Ke zlepšení",
+      "description": "Články, kterým úprava může pomoct v Googlu. Návrh připravíme za 1 kredit a použijete ho až po kontrole.",
+      "usage": "Tento měsíc {used} / {monthly} úprav",
+      "empty": "Zatím není co zlepšovat. Návrhy přibudou, až budou články měsíc ve vyhledávání.",
+      "type": {
+        "REFRESH": "Aktualizace",
+        "EXPAND": "Rozšíření"
+      },
+      "keyword": "Dotaz: {keyword}",
+      "reasonRefresh": "Článek se drží kolem {position}. místa. Lepší odpověď na dotaz ho může posunout na první stránku.",
+      "changed": "Změní se zhruba {percent} % textu.",
+      "preparing": "Připravujeme úpravu, obvykle to trvá pár minut.",
+      "prepareFailed": "Úpravu se nepodařilo připravit, kredit se vrátil.",
+      "prepare": "Připravit úpravu (1 kredit)",
+      "retry": "Zkusit znovu",
+      "upgrade": "Dostupné v Premium",
+      "dismiss": "Přeskočit",
+      "preview": "Náhled",
+      "apply": "Použít",
+      "discard": "Zahodit",
+      "rollback": "Vrátit zpět",
+      "rollbackTitle": "Vrátit úpravu?",
+      "rollbackMessage": "Článek se vrátí do podoby před úpravou. Kredit se nevrací.",
+      "applied": "Úprava je v článku.",
+      "failed": "Akci se nepodařilo provést.",
+      "measuring": "Výsledek změříme kolem {date}.",
+      "result": "Pozice {before}. → {after}",
+      "resultAfter": "Pozice po úpravě: {after}"
     },
     "keywords": {
       "title": "Témata",

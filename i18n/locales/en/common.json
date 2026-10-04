@@ -17,7 +17,8 @@
       "reservedHint": "Each generation reserves 1 article. It is released if generation fails.",
       "reasons": {
         "manualArticle": "Manually created article",
-        "scheduledArticle": "Automatically created article"
+        "scheduledArticle": "Automatically created article",
+        "contentRefresh": "Article update"
       },
       "periodUsage": "Used in {period}",
       "expires": "Valid until",
@@ -116,6 +117,36 @@
       "notRanked": "not in top 30",
       "entered": "new in top 30",
       "empty": "Nothing to measure yet. We check the first position 7 days after a plan article is published."
+    },
+    "contentActions": {
+      "title": "To improve",
+      "description": "Articles an update can help on Google. We prepare the proposal for 1 credit; you apply it after checking it.",
+      "usage": "This month {used} / {monthly} updates",
+      "empty": "Nothing to improve yet. Suggestions appear once articles have spent a month in search.",
+      "type": {
+        "REFRESH": "Update",
+        "EXPAND": "Expansion"
+      },
+      "keyword": "Query: {keyword}",
+      "reasonRefresh": "The article sits around position {position}. A better answer can move it to page one.",
+      "changed": "About {percent} % of the text changes.",
+      "preparing": "Preparing the update, usually a few minutes.",
+      "prepareFailed": "The update could not be prepared; the credit was returned.",
+      "prepare": "Prepare update (1 credit)",
+      "retry": "Try again",
+      "upgrade": "Available in Premium",
+      "dismiss": "Skip",
+      "preview": "Preview",
+      "apply": "Apply",
+      "discard": "Discard",
+      "rollback": "Undo",
+      "rollbackTitle": "Undo the update?",
+      "rollbackMessage": "The article returns to its version before the update. The credit is not returned.",
+      "applied": "The update is live in the article.",
+      "failed": "The action failed.",
+      "measuring": "We measure the result around {date}.",
+      "result": "Position {before} → {after}",
+      "resultAfter": "Position after the update: {after}"
     },
     "keywords": {
       "title": "Topics",
