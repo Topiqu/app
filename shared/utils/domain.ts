@@ -73,6 +73,24 @@ export const isManagedDomain = (domain: string, baseDomain = process.env.BASE_DO
   return normalized === base || normalized.endsWith(`.${base}`)
 }
 
+/**
+ * Whether a tenant may claim `domain`. A managed host is verified on save, so it must be one
+ * unreserved label under the base domain, or a tenant could serve its blog on `billing.topiqu.com`.
+ */
+export const domainError = (
+  domain: string,
+  { allowCustom, baseDomain = process.env.BASE_DOMAIN || 'topiqu.com' }: { allowCustom: boolean; baseDomain?: string },
+): 'invalid' | 'reserved' | 'plan' | null => {
+  const normalized = normalizeDomain(domain)
+  if (!isValidDomain(normalized)) return 'invalid'
+  const base = normalizeDomain(baseDomain)
+  if (!isManagedDomain(normalized, base)) return allowCustom ? null : 'plan'
+  if (normalized === base) return 'reserved'
+  const reason = validateSubdomain(normalized.slice(0, -base.length - 1))
+  if (!reason) return null
+  return reason === 'reserved' ? 'reserved' : 'invalid'
+}
+
 export const domainVerificationDefaults = (domain: string, token: string, baseDomain?: string) => {
   const managed = isManagedDomain(domain, baseDomain)
   const now = new Date()

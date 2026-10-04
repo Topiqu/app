@@ -1,8 +1,38 @@
+import type { H3Event } from 'h3'
+
 import { normalizeDomain } from '~~/shared/utils/domain'
+
+/** Taken by another tenant's live domain, or by an old domain that still redirects to its blog. */
+export const isDomainTaken = async (domain: string, exceptClientSiteId?: string) => {
+  const host = normalizeDomain(domain)
+  const [site, redirect] = await Promise.all([
+    prisma.clientSite.findFirst({
+      where: { domain: host, ...(exceptClientSiteId ? { id: { not: exceptClientSiteId } } : {}) },
+      select: { id: true },
+    }),
+    prisma.domainRedirect.findFirst({
+      where: { host, ...(exceptClientSiteId ? { clientSiteId: { not: exceptClientSiteId } } : {}) },
+      select: { id: true },
+    }),
+  ])
+  return Boolean(site || redirect)
+}
 
 export const DOMAIN_ROUTING_TARGET = normalizeDomain(process.env.DOMAIN_ROUTING_TARGET || 'domains.topiqu.com')
 export const verificationRecordName = (domain: string) => `_topiqu-verification.${normalizeDomain(domain)}`
 export const verificationRecordValue = (token: string) => `topiqu-verification=${token}`
+
+export const domainDnsRecords = (domain: string, token: string) => ({
+  domain,
+  txt: { name: verificationRecordName(domain), value: verificationRecordValue(token) },
+  routing: { type: 'CNAME' as const, name: domain, value: DOMAIN_ROUTING_TARGET },
+})
+
+export const requireDomainAccess = async (event: H3Event) => {
+  const { user, db } = await requireDb(event, { role: ['admin', 'superadmin'], clientSite: true })
+  if (user.role !== 'superadmin') await requireTenantScope(event, 'TENANT_SETTINGS', user.clientSiteId!)
+  return { user, db, clientSiteId: user.clientSiteId! }
+}
 
 interface DnsAnswer {
   name?: string

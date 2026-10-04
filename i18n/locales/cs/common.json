@@ -62,6 +62,29 @@
         "SEO_AUTOPILOT_CONTENT_REFRESHED": "Rozšířen obsah"
       }
     },
+    "domain": {
+      "title": "Doména",
+      "current": "Váš blog běží na",
+      "newDomain": "Nová vlastní doména",
+      "continue": "Pokračovat",
+      "pendingIntro": "U registrátora domény {domain} přidejte tyto dva DNS záznamy a pak ověřte.",
+      "keepsServing": "Blog poběží na {domain}, dokud ověření neprojde. Staré odkazy pak přesměrujeme na novou doménu.",
+      "verify": "Ověřit a přepnout",
+      "notYet": "Záznamy zatím nejsou vidět. Změny DNS se mohou projevit až za několik hodin.",
+      "cancel": "Zrušit změnu",
+      "cancelConfirm": "Zrušit změnu domény? Kdykoli ji můžete začít znovu.",
+      "switched": "Blog teď běží na {domain}.",
+      "open": "Otevřít na nové doméně",
+      "planRequired": "Vlastní doména je součástí plánu Pro.",
+      "failed": "Změna domény selhala.",
+      "errors": {
+        "invalid": "Zadejte platnou doménu, například blog.example.com.",
+        "reserved": "Tato doména patří Topiqu.",
+        "plan": "Vlastní doména je součástí plánu Pro.",
+        "taken": "Tuto doménu už používá jiný blog.",
+        "unchanged": "Blog už na této doméně běží."
+      }
+    },
     "integrationsCatalog": {
       "title": "Integrace",
       "description": "Propojte Topiqu se službami pro měření, distribuci a publikování.",

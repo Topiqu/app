@@ -17,7 +17,7 @@ const TENANT_SELECT = {
 } as const
 
 /** The blog host, or null when the request is for the platform's own hosts. */
-const tenantHostname = (event: H3Event) => {
+export const tenantHostname = (event: H3Event) => {
   const host = getRequestHost(event, { xForwardedHost: true })
   if (!host) return null
   return isRootHost(host, useRuntimeConfig(event).public.baseDomain) ? null : toHostname(host)
@@ -44,11 +44,26 @@ export const tenantByHost = async (event: H3Event) => {
   return hostname ? loadTenant(hostname) : null
 }
 
+export const tenantHostKey = (hostname: string) => `tenant:host:${hostname}`
+export const domainRedirectKey = (hostname: string) => `domain:redirect:${hostname}`
+
 /** For hooks that fire on every request, where one indexed read per asset is still waste. */
 export const cachedTenantByHost = async (event: H3Event) => {
   const hostname = tenantHostname(event)
-  return hostname ? cached(`tenant:host:${hostname}`, 300, () => loadTenant(hostname)) : null
+  return hostname ? cached(tenantHostKey(hostname), 300, () => loadTenant(hostname)) : null
 }
+
+/** The domain an old host should 301 to, if the blog it belonged to is still served. */
+export const domainRedirectTarget = (hostname: string) =>
+  cached(domainRedirectKey(hostname), 300, async () => {
+    const redirect = await prisma.domainRedirect.findUnique({
+      where: { host: hostname },
+      select: { clientSite: { select: { domain: true, domainVerified: true, deletedAt: true } } },
+    })
+    const site = redirect?.clientSite
+    if (!site || site.deletedAt || (!site.domainVerified && !isManagedDomain(site.domain))) return null
+    return site.domain
+  })
 
 export type Tenant = NonNullable<Awaited<ReturnType<typeof tenantByHost>>>
 

@@ -50,6 +50,7 @@
             @update:headingFontUrl="onFontStored('headingFontUrl', $event)"
             @update:bodyFontUrl="onFontStored('bodyFontUrl', $event)"
           />
+          <FormClientDomain class="mt-8" />
         </section>
 
         <section v-show="activeTab === 'content'">

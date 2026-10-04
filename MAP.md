@@ -188,6 +188,12 @@ todo/           Working notes (non-code)
 - **Engagement is a site-wide ratio**, `interactions ÷ views` (`server/utils/dashboardStats.ts`, `tests/unit/dashboardStats.test.ts`). It used to be the _mean of per-article ratios_, which let a 1-view article with 3 comments contribute 300% — that is why the client clamped the display at 100%. The clamp is gone; do not reintroduce it to "fix" a number above 100%, fix the formula.
 - **`topTags` ranks in SQL.** Prisma cannot order a tag by an aggregate over its articles, so the old code took the 10 tags with the most articles and sorted _those_ by views — a tag riding two heavily-read articles never entered the candidate set. The raw query joins and `ORDER BY SUM(views)`. Note the metric double-counts by design: an article with three tags gives its views to all three.
 
+### Domains
+
+- `domainError` (`shared/utils/domain.ts`) is the one claim rule: a managed host must be a single unreserved label under the base domain (managed hosts are auto-verified, so `billing.topiqu.com` would be a live platform host), and a custom domain needs a non-BASIC plan. `isDomainTaken` (`server/utils/domainVerification.ts`) also counts old hosts in `DomainRedirect`, so nobody can take over another blog's redirect. Onboarding, tenant creation and the availability check all go through both.
+- `domain` is superadmin-only in `PATCH /api/clients/[id]`. A tenant moves through `/api/domain/pending`: the new domain is stored as `pendingDomain` with its own TXT token while `domain` keeps serving; `pending/verify` checks TXT + CNAME and then, in one transaction, swaps the two, adopts the token for `domain-reverification` and writes a `DomainRedirect` for the old host. A direct swap would take the blog offline, because `tenantByHost` refuses an unverified custom domain. Settings → Branding → `Form/Client/Domain.vue`.
+- `server/middleware/domainRedirect.ts` answers an old host with 301 (308 for non-GET) to the current domain, path and query kept. It only looks up redirects when the host is not a live tenant, and the swap drops the cached host lookups for both hosts (`uncache`).
+
 ### OAuth connect flows cross a host boundary
 
 Every provider connect (LinkedIn, Search Console) **starts on the tenant's own host** — `middleware/admin.ts` pushes admins there — and comes back to `APP_URL` / `AUTH_ORIGIN`, i.e. `app.topiqu.com`. Two consequences, both of which silently broke the flows:
@@ -306,8 +312,8 @@ Marketing names diverge from the DB enum: marketing **FREE** = enum **BASIC**. E
 | Stripe checkout                  | —            | `STRIPE_PRICE_PRO` | `STRIPE_PRICE_PREMIUM` | Sales-led, no SKU  |
 | Revenue share                    | Halted       | Halted             | Halted                 | Halted             |
 | Manual article writing           | ✅           | ✅                 | ✅                     | ✅                 |
-| Subdomain                        | ✅ (free)    | ✅                 | ✅                     | ✅ + apex domain   |
-| Custom (apex) domain             | ❌           | ❌                 | ❌                     | ✅                 |
+| Subdomain                        | ✅ (free)    | ✅                 | ✅                     | ✅                 |
+| Custom domain                    | ❌           | ✅                 | ✅                     | ✅                 |
 | White-label (no Topiqu branding) | ❌           | ❌                 | ❌                     | ✅                 |
 | AI article generation            | ❌           | ✅ (token bundle)  | ✅ (token bundle)      | ✅ (unlimited)     |
 | AI sentiment + auto images       | ❌           | ❌                 | ✅                     | ✅                 |

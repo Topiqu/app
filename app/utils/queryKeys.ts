@@ -28,4 +28,7 @@ export const queryKeys = {
     all: ['visibility'] as const,
     overview: ['visibility', 'overview'] as const,
   },
+  domain: {
+    status: ['domain'] as const,
+  },
 } as const

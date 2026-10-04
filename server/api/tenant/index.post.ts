@@ -78,7 +78,7 @@ export default defineEventHandler(async (event) => {
     })
 
   const [domainConflict, nameConflict] = await Promise.all([
-    prisma.clientSite.findUnique({ where: { domain }, select: { id: true } }),
+    isDomainTaken(domain),
     prisma.clientSite.findUnique({ where: { name: body.name }, select: { id: true } }),
   ])
   if (domainConflict)

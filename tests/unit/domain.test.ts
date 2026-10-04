@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  domainError,
   domainVerificationDefaults,
   isForeignHost,
   isManagedDomain,
@@ -55,5 +56,19 @@ describe('domain rules', () => {
       domainVerificationStatus: 'PENDING',
       domainVerificationToken: 'token',
     })
+  })
+
+  it('lets a tenant claim only an unreserved single label under the base domain', () => {
+    const managed = { allowCustom: false, baseDomain: 'topiqu.com' }
+    expect(domainError('blog.topiqu.com', managed)).toBeNull()
+    expect(domainError('billing.topiqu.com', managed)).toBe('reserved')
+    expect(domainError('topiqu.com', managed)).toBe('reserved')
+    expect(domainError('a.b.topiqu.com', managed)).toBe('invalid')
+    expect(domainError('not a domain', managed)).toBe('invalid')
+  })
+
+  it('reserves custom domains for plans that include them', () => {
+    expect(domainError('blog.example.com', { allowCustom: false, baseDomain: 'topiqu.com' })).toBe('plan')
+    expect(domainError('blog.example.com', { allowCustom: true, baseDomain: 'topiqu.com' })).toBeNull()
   })
 })

@@ -84,6 +84,17 @@ export async function cached<T>(key: string, ttlSeconds: number, fn: () => Promi
   return fresh
 }
 
+/** Drop keys whose value a write just made wrong; a no-op without Redis, where nothing was cached. */
+export async function uncache(...keys: string[]): Promise<void> {
+  const redis = activeClient()
+  if (!redis || !keys.length) return
+  try {
+    await redis.del(...keys)
+  } catch (e) {
+    logErr('del', keys.join(','), e)
+  }
+}
+
 /**
  * Monotonic generation counter for a namespace. Bump it on a write to invalidate
  * every key built under the current gen at once — no SCAN, no pattern delete.

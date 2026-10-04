@@ -62,6 +62,29 @@
         "SEO_AUTOPILOT_CONTENT_REFRESHED": "Inhalt erweitert"
       }
     },
+    "domain": {
+      "title": "Domain",
+      "current": "Ihr Blog läuft unter",
+      "newDomain": "Neue eigene Domain",
+      "continue": "Weiter",
+      "pendingIntro": "Legen Sie bei Ihrem Registrar für {domain} diese zwei DNS-Einträge an und prüfen Sie dann.",
+      "keepsServing": "Ihr Blog bleibt unter {domain}, bis die Prüfung besteht. Danach leiten alte Links auf die neue Domain weiter.",
+      "verify": "Prüfen und umstellen",
+      "notYet": "Die Einträge sind noch nicht sichtbar. DNS-Änderungen können einige Stunden dauern.",
+      "cancel": "Änderung abbrechen",
+      "cancelConfirm": "Domainwechsel abbrechen? Sie können ihn jederzeit neu starten.",
+      "switched": "Ihr Blog läuft jetzt unter {domain}.",
+      "open": "Unter neuer Domain öffnen",
+      "planRequired": "Eine eigene Domain ist im Pro-Plan enthalten.",
+      "failed": "Der Domainwechsel ist fehlgeschlagen.",
+      "errors": {
+        "invalid": "Geben Sie eine gültige Domain ein, zum Beispiel blog.example.com.",
+        "reserved": "Diese Domain gehört Topiqu.",
+        "plan": "Eine eigene Domain ist im Pro-Plan enthalten.",
+        "taken": "Diese Domain nutzt bereits ein anderer Blog.",
+        "unchanged": "Ihr Blog läuft bereits unter dieser Domain."
+      }
+    },
     "integrationsCatalog": {
       "title": "Integrationen",
       "description": "Verbinde Topiqu mit Diensten für Messung, Verbreitung und Veröffentlichung.",

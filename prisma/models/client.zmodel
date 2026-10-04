@@ -94,6 +94,11 @@ model ClientSite with Base {
     domainVerificationFailures Int           @default(0)
     domainVerificationDegradedAt DateTime?
     domainVerificationError String?
+    /// A custom domain awaiting DNS proof. `domain` keeps serving until it is verified, then the two swap.
+    pendingDomain        String?
+    pendingDomainToken   String?
+    pendingDomainRequestedAt DateTime?
+    domainRedirects      DomainRedirect[]
     plan                 ClientPlan          @default(BASIC)
     focus                String?
     description          String?             @length(0, 255, "Popisek musí mít max. 255 znaků")
@@ -213,6 +218,17 @@ model Feature with Base {
 
     @@allow('read', true)
     @@allow('all', auth().role == 'superadmin')
+}
+
+/// A host the blog used to live on; requests to it get a 301 to the current domain. Written only by the
+/// verified domain swap, and it keeps the host from being claimed by another tenant.
+model DomainRedirect with Base {
+    host         String     @unique
+    clientSiteId String
+    clientSite   ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+
+    @@index([clientSiteId])
+    @@allow('read', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
 }
 
 model ClientFeature with Base {

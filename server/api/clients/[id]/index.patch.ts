@@ -7,7 +7,7 @@ import { DbNull } from '@zenstackhq/orm'
 import { models } from '~~/shared/databaseSchemas'
 import { PUBLICATION_CHANNELS } from '~~/shared/utils/publicationChannels'
 import { nextRelease, releaseScheduleError } from '~~/shared/utils/releaseSchedule'
-import { domainVerificationDefaults, isValidDomain, normalizeDomain } from '~~/shared/utils/domain'
+import { domainError, domainVerificationDefaults, isValidDomain, normalizeDomain } from '~~/shared/utils/domain'
 import { hasAdvancedBranding, normalizeAccentColor, parseBrandGradient } from '~~/shared/utils/publicationBranding'
 import {
   PRIVILEGED_CLIENT_SITE_FIELDS,
@@ -68,11 +68,12 @@ export default defineEventHandler(async (event) => {
   if (clientSite.deletedAt && body.deletedAt !== null)
     throw createError({ statusCode: 400, message: t('common.errors.clientDeactivated')! })
 
-  if (body.domain) {
-    const conflict = await db.clientSite.findFirst({
-      where: { domain: body.domain, id: { not: id } },
-    })
-    if (conflict) throw createError({ statusCode: 409, message: t('common.errors.subdomainExists')! })
+  // Tenants move domains through `/api/domain/pending`, which keeps the blog up until DNS is proven.
+  if (user.role === 'superadmin' && body.domain && body.domain !== clientSite.domain) {
+    if (domainError(body.domain, { allowCustom: true }))
+      throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
+    if (await isDomainTaken(body.domain, id))
+      throw createError({ statusCode: 409, message: t('common.errors.subdomainExists')! })
   }
 
   const isSuperadmin = user.role === 'superadmin'

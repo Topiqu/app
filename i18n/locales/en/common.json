@@ -62,6 +62,29 @@
         "SEO_AUTOPILOT_CONTENT_REFRESHED": "Content expanded"
       }
     },
+    "domain": {
+      "title": "Domain",
+      "current": "Your blog runs on",
+      "newDomain": "New custom domain",
+      "continue": "Continue",
+      "pendingIntro": "Add these two DNS records at your registrar for {domain}, then verify.",
+      "keepsServing": "Your blog stays on {domain} until the check passes. Old links then redirect to the new domain.",
+      "verify": "Verify and switch",
+      "notYet": "The records are not visible yet. DNS changes can take a few hours.",
+      "cancel": "Cancel change",
+      "cancelConfirm": "Cancel the domain change? You can start it again any time.",
+      "switched": "Your blog now runs on {domain}.",
+      "open": "Open on the new domain",
+      "planRequired": "A custom domain is part of the Pro plan.",
+      "failed": "The domain change failed.",
+      "errors": {
+        "invalid": "Enter a valid domain, for example blog.example.com.",
+        "reserved": "This domain belongs to Topiqu.",
+        "plan": "A custom domain is part of the Pro plan.",
+        "taken": "This domain is already used by another blog.",
+        "unchanged": "Your blog already runs on this domain."
+      }
+    },
     "integrationsCatalog": {
       "title": "Integrations",
       "description": "Connect Topiqu to services for measurement, distribution, and publishing.",

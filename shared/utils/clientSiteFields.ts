@@ -1,10 +1,10 @@
 import type { ClientSite, SocialPlatform } from '~~/generated/zenstack/models'
 
-export const PRIVILEGED_CLIENT_SITE_FIELDS = ['plan'] as const
+// A tenant changes `domain` only through the verified swap in `/api/domain/pending`.
+export const PRIVILEGED_CLIENT_SITE_FIELDS = ['plan', 'domain'] as const
 
 export const TENANT_EDITABLE_CLIENT_SITE_FIELDS = [
   'name',
-  'domain',
   'generationFrequency',
   'timeZone',
   'releaseHour',

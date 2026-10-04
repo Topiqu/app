@@ -62,6 +62,29 @@
         "SEO_AUTOPILOT_CONTENT_REFRESHED": "Contenu enrichi"
       }
     },
+    "domain": {
+      "title": "Domaine",
+      "current": "Votre blog est accessible sur",
+      "newDomain": "Nouveau domaine personnalisé",
+      "continue": "Continuer",
+      "pendingIntro": "Ajoutez ces deux enregistrements DNS chez le registraire de {domain}, puis lancez la vérification.",
+      "keepsServing": "Votre blog reste sur {domain} tant que la vérification n’a pas réussi. Les anciens liens redirigeront ensuite vers le nouveau domaine.",
+      "verify": "Vérifier et basculer",
+      "notYet": "Les enregistrements ne sont pas encore visibles. Les changements DNS peuvent prendre quelques heures.",
+      "cancel": "Annuler le changement",
+      "cancelConfirm": "Annuler le changement de domaine ? Vous pourrez le relancer à tout moment.",
+      "switched": "Votre blog est désormais sur {domain}.",
+      "open": "Ouvrir sur le nouveau domaine",
+      "planRequired": "Le domaine personnalisé fait partie de l’offre Pro.",
+      "failed": "Le changement de domaine a échoué.",
+      "errors": {
+        "invalid": "Saisissez un domaine valide, par exemple blog.example.com.",
+        "reserved": "Ce domaine appartient à Topiqu.",
+        "plan": "Le domaine personnalisé fait partie de l’offre Pro.",
+        "taken": "Ce domaine est déjà utilisé par un autre blog.",
+        "unchanged": "Votre blog est déjà sur ce domaine."
+      }
+    },
     "integrationsCatalog": {
       "title": "Intégrations",
       "description": "Connectez Topiqu à des services de mesure, de diffusion et de publication.",

@@ -8,7 +8,7 @@ import { saveUserWithLogging } from '~~/server/utils/userLog'
 import { TRIAL_PLAN, TRIAL_DAYS } from '~~/shared/utils/trial'
 import { verifyVerifiedToken } from '~~/server/utils/onboardingTokens'
 import { TRIAL_ARTICLE_CREDITS } from '~~/shared/utils/articleCredits'
-import { domainVerificationDefaults, isManagedDomain, isValidDomain, normalizeDomain } from '~~/shared/utils/domain'
+import { domainError, domainVerificationDefaults, isManagedDomain, normalizeDomain } from '~~/shared/utils/domain'
 
 const LOGIN_TOKEN_TTL_MS = 30 * 60 * 1000
 const PRICE_BY_PLAN = {
@@ -68,12 +68,12 @@ export default defineEventHandler(async (event) => {
   }
 
   const fullSubdomain = normalizeDomain(body.domainType === 'SUBDOMAIN' ? `${body.domain}.topiqu.com` : body.domain)
-  if (!isValidDomain(fullSubdomain)) throw createError({ statusCode: 400, message: 'Invalid domain' })
+  // Every onboarding tenant starts on the trial plan, which includes a custom domain.
+  if (domainError(fullSubdomain, { allowCustom: true })) throw createError({ statusCode: 400, message: 'Invalid domain' })
   const loginToken = randomBytes(32).toString('hex')
   const loginTokenExpiresAt = new Date(Date.now() + LOGIN_TOKEN_TTL_MS)
 
-  const existingSite = await prisma.clientSite.findUnique({ where: { domain: fullSubdomain } })
-  if (existingSite) {
+  if (await isDomainTaken(fullSubdomain)) {
     throw createError({ statusCode: 400, message: t('common.errors.subdomainExists') || 'Subdomain taken' })
   }
 
