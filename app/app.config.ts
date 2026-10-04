@@ -211,6 +211,18 @@ export default defineAppConfig({
       },
     },
     radioGroup: {
+      variants: {
+        variant: {
+          segmented: {
+            root: '@container',
+            fieldset:
+              'grid grid-cols-[auto_auto_auto] gap-1 rounded-[var(--ui-radius)] bg-elevated p-1 @sm:grid-cols-3',
+            item: 'group relative min-h-10 min-w-0 cursor-pointer items-center justify-center rounded-md px-1 py-2 text-center has-data-[state=checked]:bg-default has-data-[state=checked]:shadow-sm has-focus-visible:ring-2 has-focus-visible:ring-primary',
+            container: 'sr-only',
+            label: 'text-xs leading-5 text-muted group-has-data-[state=checked]:text-highlighted @sm:text-sm',
+          },
+        },
+      },
       defaultVariants: {
         color: 'primary',
         size: 'md',

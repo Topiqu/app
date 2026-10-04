@@ -912,19 +912,21 @@
         "description": "Fréquence à laquelle l'auteur IA doit préparer un nouvel article.",
         "options": {
           "DAILY": "Chaque jour",
-          "WEEKLY": "Une fois par semaine",
-          "INTERVAL": "Irrégulièrement"
+          "WEEKLY": "Par semaine",
+          "INTERVAL": "Variable"
         },
         "optionDescriptions": {
           "DAILY": "Un article par jour autour de l’heure choisie.",
           "WEEKLY": "Un article tous les sept jours autour de l’heure choisie.",
-          "INTERVAL": "Dans le cadre de vos règles, nous choisissons à chaque fois un autre jour et une autre heure, comme le ferait une rédaction humaine."
+          "INTERVAL": "Des intervalles et des horaires variables selon vos règles."
         }
       },
       "releaseSchedule": {
+        "advanced": "Autres réglages",
         "releaseHour": "Heure de publication",
         "interval": {
           "label": "Une fois tous les",
+          "minimum": "Min. {hours} h",
           "help": "Au moins {hours} heures d’écart.",
           "min": "Écart le plus court",
           "max": "Écart le plus long",
@@ -944,10 +946,12 @@
         "timeZone": "Fuseau horaire",
         "next": "Prochain article : {date}",
         "preview": "Prochaines publications",
+        "previewNote": "Exemple ; les heures exactes sont choisies au hasard.",
+        "perMonthCompact": "0 article / 30 jours | ≈ {count} article / 30 jours | ≈ {count} articles / 30 jours",
         "previewInterval": "Exemple des prochaines publications (les heures exactes sont tirées au sort)",
         "perMonth": "Aucun article dans les 30 prochains jours | ≈ {count} article dans les 30 prochains jours | ≈ {count} articles dans les 30 prochains jours",
         "creditsUntil": "les crédits suffisent jusqu’au {date} environ",
-        "noCredits": "plus aucun article — rechargez pour continuer à publier",
+        "noCredits": "Vous n'avez plus de crédits. Rechargez pour continuer à publier.",
         "errors": {
           "timeZone": "Choisissez un fuseau horaire valide.",
           "releaseHour": "Choisissez une heure de publication.",
@@ -959,6 +963,7 @@
       },
       "aiSeries": {
         "title": "Séries automatiques",
+        "summary": "Regrouper les articles liés en une série.",
         "description": "L'IA peut regrouper des articles planifiés apparentés en séries et ajouter des suites pertinentes. Des limites fixes préservent la diversité de la publication."
       },
       "aiDisclosure": {

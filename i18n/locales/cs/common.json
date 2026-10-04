@@ -911,20 +911,22 @@
         "label": "Frekvence článků",
         "description": "Jak často má AI autor připravit nový článek.",
         "options": {
-          "DAILY": "Každý den",
-          "WEEKLY": "Jednou týdně",
+          "DAILY": "Denně",
+          "WEEKLY": "Týdně",
           "INTERVAL": "Nepravidelně"
         },
         "optionDescriptions": {
           "DAILY": "Jeden článek denně kolem zvolené hodiny.",
           "WEEKLY": "Jeden článek každých sedm dní kolem zvolené hodiny.",
-          "INTERVAL": "V rámci vašich pravidel vybereme pokaždé jiný den a čas, jako by vydával člověk."
+          "INTERVAL": "Proměnlivé rozestupy i časy v rámci vašich pravidel."
         }
       },
       "releaseSchedule": {
+        "advanced": "Další nastavení",
         "releaseHour": "Čas vydání",
         "interval": {
           "label": "Jednou za",
+          "minimum": "Min. {hours} h",
           "help": "Minimálně {hours} hodin od sebe.",
           "min": "Nejkratší odstup",
           "max": "Nejdelší odstup",
@@ -944,10 +946,12 @@
         "timeZone": "Časové pásmo",
         "next": "Další článek: {date}",
         "preview": "Nejbližší vydání",
+        "previewNote": "Ukázka; přesné časy se vybírají náhodně.",
+        "perMonthCompact": "0 článků / 30 dní | ≈ {count} článek / 30 dní | ≈ {count} články / 30 dní | ≈ {count} článků / 30 dní",
         "previewInterval": "Příklad nejbližších vydání (přesné časy losujeme)",
         "perMonth": "Žádný článek v příštích 30 dnech | ≈ {count} článek v příštích 30 dnech | ≈ {count} články v příštích 30 dnech | ≈ {count} článků v příštích 30 dnech",
         "creditsUntil": "kredity vystačí zhruba do {date}",
-        "noCredits": "nezbývají žádné články — pro další vydávání je doplňte",
+        "noCredits": "Nemáte kredity. Pro další vydávání je doplňte.",
         "errors": {
           "timeZone": "Vyberte platné časové pásmo.",
           "releaseHour": "Vyberte čas vydání.",
@@ -959,6 +963,7 @@
       },
       "aiSeries": {
         "title": "Automatické série",
+        "summary": "Související články propojí do série.",
         "description": "AI může při plánovaném generování spojovat související články do sérií a doplňovat další relevantní díly. Rozmanitost obsahu hlídají pevné limity."
       },
       "aiDisclosure": {

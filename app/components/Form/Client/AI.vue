@@ -134,67 +134,17 @@
       </div>
     </div>
 
-    <section v-if="aiEnabled && articleCronsEnabled" class="space-y-4">
-      <div>
-        <h3 class="text-base font-semibold text-highlighted">{{ $t('common.preferences.aiPage.automation') }}</h3>
-        <p class="mt-1 text-sm text-muted">{{ $t('common.preferences.aiPage.automationDescription') }}</p>
-      </div>
-
-      <div
-        class="divide-y divide-default overflow-hidden rounded-(--topiqu-surface-radius) border border-default bg-default"
-      >
-        <div class="flex items-start gap-4 p-5 sm:p-6">
-          <div class="grid size-10 shrink-0 place-items-center rounded-xl bg-elevated text-muted">
-            <UIcon :name="autoRelease ? 'mdi:publish' : 'mdi:file-document-edit-outline'" class="size-5" />
-          </div>
-
-          <div class="flex-1">
-            <div class="text-sm font-semibold text-highlighted">
-              {{ $t('common.preferences.autoRelease.title') }}
-            </div>
-            <div class="mt-1 text-sm leading-5 text-muted">
-              {{
-                autoRelease ? $t('common.preferences.autoRelease.warning') : $t('common.preferences.autoRelease.desc')
-              }}
-            </div>
-          </div>
-
-          <USwitch
-            :modelValue="autoRelease"
-            :aria-label="$t('common.preferences.autoRelease.title')"
-            @update:modelValue="(val) => handleAutoReleaseToggle(val as boolean)"
-          />
-        </div>
-        <div class="p-5 sm:p-6">
-          <FormClientReleaseSchedule
-            v-model:frequency="generationFrequency"
-            v-model:schedule="releaseSchedule"
-            :articlesRemaining
-            :nextReleaseAt
-          />
-        </div>
-        <div class="flex items-start gap-4 p-5 sm:p-6">
-          <div class="grid size-10 shrink-0 place-items-center rounded-xl bg-elevated text-muted">
-            <UIcon name="mdi:playlist-plus" class="size-5" />
-          </div>
-
-          <div class="min-w-0 flex-1">
-            <div class="text-sm font-semibold text-highlighted">
-              {{ $t('common.preferences.aiSeries.title') }}
-            </div>
-            <div class="mt-1 text-sm leading-5 text-muted">
-              {{ $t('common.preferences.aiSeries.description') }}
-            </div>
-          </div>
-
-          <USwitch
-            :modelValue="aiSeriesEnabled"
-            :aria-label="$t('common.preferences.aiSeries.title')"
-            @update:modelValue="(value) => emit('update:aiSeriesEnabled', value as boolean)"
-          />
-        </div>
-      </div>
-    </section>
+    <FormClientPublication
+      v-if="aiEnabled && articleCronsEnabled"
+      v-model:frequency="generationFrequency"
+      v-model:schedule="releaseSchedule"
+      :autoRelease="autoRelease"
+      :aiSeriesEnabled="aiSeriesEnabled"
+      :articlesRemaining="articlesRemaining"
+      :nextReleaseAt="nextReleaseAt"
+      @update:autoRelease="handleAutoReleaseToggle"
+      @update:aiSeriesEnabled="emit('update:aiSeriesEnabled', $event)"
+    />
 
     <section class="space-y-4">
       <div>

@@ -911,20 +911,22 @@
         "label": "Article frequency",
         "description": "How often the AI author should prepare a new article.",
         "options": {
-          "DAILY": "Every day",
-          "WEEKLY": "Once a week",
+          "DAILY": "Daily",
+          "WEEKLY": "Weekly",
           "INTERVAL": "Irregularly"
         },
         "optionDescriptions": {
           "DAILY": "One article a day around the hour you choose.",
           "WEEKLY": "One article every seven days around the hour you choose.",
-          "INTERVAL": "We pick a different day and time within your rules, like a human editor would."
+          "INTERVAL": "Varying gaps and times within your rules."
         }
       },
       "releaseSchedule": {
+        "advanced": "More settings",
         "releaseHour": "Release time",
         "interval": {
           "label": "Once every",
+          "minimum": "Min. {hours} h",
           "help": "At least {hours} hours apart.",
           "min": "Shortest gap",
           "max": "Longest gap",
@@ -944,10 +946,12 @@
         "timeZone": "Time zone",
         "next": "Next article: {date}",
         "preview": "Upcoming releases",
+        "previewNote": "Example schedule; exact times are chosen at random.",
+        "perMonthCompact": "0 articles / 30 days | ≈ {count} article / 30 days | ≈ {count} articles / 30 days",
         "previewInterval": "Example of upcoming releases (exact times are drawn at random)",
         "perMonth": "No articles in the next 30 days | ≈ {count} article in the next 30 days | ≈ {count} articles in the next 30 days",
         "creditsUntil": "credits last until about {date}",
-        "noCredits": "no articles left — top up to keep publishing",
+        "noCredits": "You have no credits. Top up to keep publishing.",
         "errors": {
           "timeZone": "Choose a valid time zone.",
           "releaseHour": "Choose a release time.",
@@ -959,6 +963,7 @@
       },
       "aiSeries": {
         "title": "Automatic series",
+        "summary": "Group related articles into a series.",
         "description": "AI can group related scheduled articles into series and add relevant follow-ups. Fixed limits keep the publication varied."
       },
       "aiDisclosure": {

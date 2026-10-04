@@ -1,91 +1,142 @@
 <template>
-  <div class="space-y-5">
+  <div class="@container space-y-4">
     <div>
-      <h4 class="text-sm font-semibold text-highlighted">{{ $t('common.preferences.generationFrequency.label') }}</h4>
-      <p class="mt-1 text-sm leading-5 text-muted">{{ $t('common.preferences.generationFrequency.description') }}</p>
+      <UFormField :label="$t('common.preferences.generationFrequency.label')">
+        <URadioGroup
+          v-model="frequency"
+          :items="frequencyOptions"
+          :name="frequencyName"
+          variant="segmented"
+          indicator="hidden"
+          orientation="horizontal"
+          :aria-describedby="`${frequencyName}-description`"
+        />
+      </UFormField>
+      <p :id="`${frequencyName}-description`" class="mt-2 text-xs leading-5 text-muted">{{ frequencyDescription }}</p>
     </div>
 
-    <UFormField :label="$t('common.preferences.generationFrequency.label')" :ui="{ label: 'sr-only' }">
-      <URadioGroup
-        v-model="frequency"
-        :items="frequencyOptions"
-        variant="card"
-        :ui="{ fieldset: 'grid gap-3 sm:grid-cols-3', item: 'rounded-(--topiqu-surface-radius)' }"
-      />
-    </UFormField>
-
-    <div v-if="frequency === 'INTERVAL'" class="grid gap-5 lg:grid-cols-2">
-      <UFormField
-        :label="$t('common.preferences.releaseSchedule.interval.label')"
-        :help="$t('common.preferences.releaseSchedule.interval.help', { hours: MIN_INTERVAL_HOURS })"
-      >
-        <div class="flex flex-wrap items-center gap-2">
-          <UInputNumber
-            v-model="intervalMin"
-            :min="unitMin"
-            :max="unitMax"
-            class="w-28"
-            :aria-label="$t('common.preferences.releaseSchedule.interval.min')"
-          />
-          <span class="text-muted" aria-hidden="true">–</span>
-          <UInputNumber
-            v-model="intervalMax"
-            :min="intervalMin"
-            :max="unitMax"
-            class="w-28"
-            :aria-label="$t('common.preferences.releaseSchedule.interval.max')"
-          />
-          <USelect
-            v-model="unit"
-            :items="unitOptions"
-            class="w-32"
-            :aria-label="$t('common.preferences.releaseSchedule.interval.unit')"
-          />
-        </div>
-      </UFormField>
-      <UFormField :label="$t('common.preferences.releaseSchedule.window.label')">
-        <div class="flex items-center gap-2">
-          <USelect
-            v-model="windowStart"
-            :items="hourOptions(0, 23)"
-            class="w-28"
-            :aria-label="$t('common.preferences.releaseSchedule.window.from')"
-          />
-          <span class="text-muted" aria-hidden="true">–</span>
-          <USelect
-            v-model="windowEnd"
-            :items="hourOptions(1, 24)"
-            class="w-28"
-            :aria-label="$t('common.preferences.releaseSchedule.window.to')"
-          />
-        </div>
-      </UFormField>
-    </div>
-    <UFormField v-else :label="$t('common.preferences.releaseSchedule.releaseHour')">
-      <USelect v-model="releaseHour" :items="hourOptions(0, 23)" class="w-28" />
-    </UFormField>
-
-    <fieldset class="space-y-2">
-      <legend class="text-sm font-medium text-default">{{ $t('common.preferences.releaseSchedule.days') }}</legend>
-      <div class="flex flex-wrap gap-2">
-        <UButton
-          v-for="day in weekdays"
-          :key="day.value"
-          size="sm"
-          :color="schedule.releaseDays.includes(day.value) ? 'primary' : 'neutral'"
-          :variant="schedule.releaseDays.includes(day.value) ? 'solid' : 'outline'"
-          :aria-pressed="schedule.releaseDays.includes(day.value)"
-          :aria-label="day.name"
-          @click="toggleDay(day.value)"
+    <div class="grid gap-4 @lg:grid-cols-2">
+      <template v-if="frequency === 'INTERVAL'">
+        <UFormField
+          :label="$t('common.preferences.releaseSchedule.interval.label')"
+          :hint="$t('common.preferences.releaseSchedule.interval.minimum', { hours: MIN_INTERVAL_HOURS })"
         >
-          {{ day.label }}
-        </UButton>
-      </div>
-    </fieldset>
+          <div
+            class="rounded-(--ui-radius) bg-default ring ring-inset ring-accented focus-within:ring-2 focus-within:ring-primary"
+          >
+            <UFieldGroup class="w-full">
+              <UInputNumber
+                v-model="intervalMin"
+                :min="unitMin"
+                :max="unitMax"
+                :increment="false"
+                :decrement="false"
+                variant="none"
+                :ui="{ base: 'h-10' }"
+                class="min-w-0 flex-1"
+                :aria-label="$t('common.preferences.releaseSchedule.interval.min')"
+              />
+              <span class="flex items-center text-sm text-muted" aria-hidden="true">–</span>
+              <UInputNumber
+                v-model="intervalMax"
+                :min="intervalMin"
+                :max="unitMax"
+                :increment="false"
+                :decrement="false"
+                variant="none"
+                :ui="{ base: 'h-10' }"
+                class="min-w-0 flex-1"
+                :aria-label="$t('common.preferences.releaseSchedule.interval.max')"
+              />
+              <div class="w-28 shrink-0 border-l border-default">
+                <USelect
+                  v-model="unit"
+                  :items="unitOptions"
+                  variant="none"
+                  class="w-full"
+                  :aria-label="$t('common.preferences.releaseSchedule.interval.unit')"
+                />
+              </div>
+            </UFieldGroup>
+          </div>
+        </UFormField>
+        <UFormField :label="$t('common.preferences.releaseSchedule.window.label')">
+          <div
+            class="rounded-(--ui-radius) bg-default ring ring-inset ring-accented focus-within:ring-2 focus-within:ring-primary"
+          >
+            <UFieldGroup class="w-full">
+              <USelect
+                v-model="windowStart"
+                :items="releaseHours"
+                variant="none"
+                class="min-w-0 flex-1"
+                :aria-label="$t('common.preferences.releaseSchedule.window.from')"
+              />
+              <span class="flex items-center text-sm text-muted" aria-hidden="true">–</span>
+              <USelect
+                v-model="windowEnd"
+                :items="windowEndHours"
+                variant="none"
+                class="min-w-0 flex-1"
+                :aria-label="$t('common.preferences.releaseSchedule.window.to')"
+              />
+            </UFieldGroup>
+          </div>
+        </UFormField>
+      </template>
+      <UFormField v-else :label="$t('common.preferences.releaseSchedule.releaseHour')">
+        <USelect
+          v-model="releaseHour"
+          :items="releaseHours"
+          class="w-full"
+          :aria-label="$t('common.preferences.releaseSchedule.releaseHour')"
+        />
+      </UFormField>
 
-    <UFormField :label="$t('common.preferences.releaseSchedule.timeZone')">
-      <USelectMenu v-model="timeZone" :items="timeZones" virtualize class="w-full sm:w-80" />
-    </UFormField>
+      <fieldset class="min-w-0 space-y-2" :class="frequency === 'INTERVAL' && '@lg:col-span-2'">
+        <legend class="text-sm font-medium text-default">{{ $t('common.preferences.releaseSchedule.days') }}</legend>
+        <div class="grid max-w-sm grid-cols-7 gap-1.5">
+          <UButton
+            v-for="day in weekdays"
+            :key="day.value"
+            square
+            color="neutral"
+            :variant="schedule.releaseDays.includes(day.value) ? 'soft' : 'outline'"
+            class="w-full min-w-0"
+            :aria-pressed="schedule.releaseDays.includes(day.value)"
+            :aria-label="day.name"
+            @click="toggleDay(day.value)"
+          >
+            {{ day.label }}
+          </UButton>
+        </div>
+      </fieldset>
+    </div>
+
+    <details class="group" :open="invalid === 'timeZone'">
+      <summary
+        class="flex min-h-10 cursor-pointer list-none items-center gap-2 rounded-md text-sm text-default outline-none focus-visible:ring-2 focus-visible:ring-primary [&::-webkit-details-marker]:hidden"
+      >
+        <span class="shrink-0 font-medium">{{ $t('common.preferences.releaseSchedule.advanced') }}</span>
+        <span class="ml-auto min-w-0 truncate text-xs text-muted group-open:hidden">{{ timeZone }}</span>
+        <UIcon
+          name="mdi:chevron-down"
+          class="size-4 shrink-0 text-muted group-open:ml-auto group-open:rotate-180"
+          aria-hidden="true"
+        />
+      </summary>
+      <div class="space-y-2 pt-2">
+        <UFormField :label="$t('common.preferences.releaseSchedule.timeZone')">
+          <USelectMenu
+            v-model="timeZone"
+            :items="timeZones"
+            virtualize
+            class="w-full sm:max-w-sm"
+            :aria-label="$t('common.preferences.releaseSchedule.timeZone')"
+          />
+        </UFormField>
+      </div>
+    </details>
 
     <UAlert
       v-if="invalid"
@@ -94,40 +145,12 @@
       icon="mdi:alert-circle-outline"
       :title="$t(`common.preferences.releaseSchedule.errors.${invalid}`)"
     />
-
     <ClientOnly v-else>
-      <section
-        class="space-y-3 rounded-(--topiqu-surface-radius) border border-default bg-elevated/50 p-4"
-        :aria-label="$t('common.preferences.releaseSchedule.preview')"
-      >
-        <p v-if="nextReleaseAt" class="text-sm font-medium text-highlighted">
-          {{ $t('common.preferences.releaseSchedule.next', { date: formatSlot(new Date(nextReleaseAt)) }) }}
-        </p>
-        <div>
-          <h5 class="text-xs font-semibold uppercase tracking-wide text-muted">
-            {{
-              frequency === 'INTERVAL'
-                ? $t('common.preferences.releaseSchedule.previewInterval')
-                : $t('common.preferences.releaseSchedule.preview')
-            }}
-          </h5>
-          <ul class="mt-2 space-y-1 text-sm text-default">
-            <li v-for="slot in preview" :key="slot.getTime()">{{ formatSlot(slot) }}</li>
-          </ul>
-        </div>
-        <p class="text-sm text-muted">
-          {{ $t('common.preferences.releaseSchedule.perMonth', forecast.perMonth) }}
-          <template v-if="articlesRemaining === 0">· {{ $t('common.preferences.releaseSchedule.noCredits') }}</template>
-          <template v-else-if="forecast.creditsLastUntil">
-            ·
-            {{
-              $t('common.preferences.releaseSchedule.creditsUntil', {
-                date: formatSlot(forecast.creditsLastUntil, { day: 'numeric', month: 'long' }),
-              })
-            }}
-          </template>
-        </p>
-      </section>
+      <FormClientReleaseSchedulePreview
+        :rules="rules"
+        :articlesRemaining="articlesRemaining"
+        :nextReleaseAt="nextReleaseAt"
+      />
     </ClientOnly>
   </div>
 </template>
@@ -136,10 +159,7 @@
 import {
   MAX_INTERVAL_HOURS,
   MIN_INTERVAL_HOURS,
-  releaseForecast,
   releaseScheduleError,
-  seededRandom,
-  upcomingReleases,
   type ReleaseFrequency,
   type ReleaseScheduleSettings,
 } from '~~/shared/utils/releaseSchedule'
@@ -153,6 +173,7 @@ const frequency = defineModel<ReleaseFrequency>('frequency', { required: true })
 const schedule = defineModel<ReleaseScheduleSettings>('schedule', { required: true })
 
 const { t, locale } = useI18n()
+const frequencyName = useId()
 
 // The page hands over a fresh object on every read, so edits replace it instead of mutating it.
 const field = <K extends keyof ReleaseScheduleSettings>(key: K) =>
@@ -214,8 +235,10 @@ const frequencyOptions = computed(() =>
   (['DAILY', 'WEEKLY', 'INTERVAL'] as const).map((value) => ({
     value,
     label: t(`common.preferences.generationFrequency.options.${value}`),
-    description: t(`common.preferences.generationFrequency.optionDescriptions.${value}`),
   })),
+)
+const frequencyDescription = computed(() =>
+  t(`common.preferences.generationFrequency.optionDescriptions.${frequency.value}`),
 )
 
 const hourOptions = (from: number, to: number) =>
@@ -223,6 +246,8 @@ const hourOptions = (from: number, to: number) =>
     value: from + i,
     label: `${String(from + i).padStart(2, '0')}:00`,
   }))
+const releaseHours = hourOptions(0, 23)
+const windowEndHours = hourOptions(1, 24)
 
 // 1 January 2024 was a Monday, so day i is ISO weekday i + 1.
 const weekdays = computed(() =>
@@ -250,19 +275,4 @@ const timeZones = computed(() => {
 
 const rules = computed(() => ({ ...schedule.value, frequency: frequency.value }))
 const invalid = computed(() => releaseScheduleError(rules.value))
-
-// Seeded by the rules, so the example slots stay put until the author changes something.
-const seed = computed(() =>
-  [...JSON.stringify(rules.value)].reduce((hash, char) => (hash * 31 + char.charCodeAt(0)) | 0, 7),
-)
-const preview = computed(() => upcomingReleases(rules.value, { count: 4, random: seededRandom(seed.value) }))
-const forecast = computed(() => releaseForecast(rules.value, articlesRemaining))
-
-const formatSlot = (date: Date, options: Intl.DateTimeFormatOptions = {}) =>
-  new Intl.DateTimeFormat(locale.value, {
-    timeZone: schedule.value.timeZone,
-    ...(Object.keys(options).length
-      ? options
-      : { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }),
-  }).format(date)
 </script>

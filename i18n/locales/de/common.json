@@ -912,19 +912,21 @@
         "description": "Wie oft der KI-Autor einen neuen Artikel vorbereiten soll.",
         "options": {
           "DAILY": "Täglich",
-          "WEEKLY": "Einmal pro Woche",
+          "WEEKLY": "Wöchentlich",
           "INTERVAL": "Unregelmäßig"
         },
         "optionDescriptions": {
           "DAILY": "Ein Artikel pro Tag um die gewählte Uhrzeit.",
           "WEEKLY": "Ein Artikel alle sieben Tage um die gewählte Uhrzeit.",
-          "INTERVAL": "Innerhalb Ihrer Regeln wählen wir jedes Mal einen anderen Tag und eine andere Uhrzeit – wie eine menschliche Redaktion."
+          "INTERVAL": "Variable Abstände und Uhrzeiten innerhalb Ihrer Regeln."
         }
       },
       "releaseSchedule": {
+        "advanced": "Weitere Einstellungen",
         "releaseHour": "Veröffentlichungszeit",
         "interval": {
           "label": "Einmal alle",
+          "minimum": "Min. {hours} Std.",
           "help": "Mindestens {hours} Stunden Abstand.",
           "min": "Kürzester Abstand",
           "max": "Längster Abstand",
@@ -944,10 +946,12 @@
         "timeZone": "Zeitzone",
         "next": "Nächster Artikel: {date}",
         "preview": "Nächste Veröffentlichungen",
+        "previewNote": "Beispielplan; genaue Zeiten werden zufällig gewählt.",
+        "perMonthCompact": "0 Artikel / 30 Tage | ≈ {count} Artikel / 30 Tage | ≈ {count} Artikel / 30 Tage",
         "previewInterval": "Beispiel der nächsten Veröffentlichungen (genaue Zeiten werden ausgelost)",
         "perMonth": "Keine Artikel in den nächsten 30 Tagen | ≈ {count} Artikel in den nächsten 30 Tagen | ≈ {count} Artikel in den nächsten 30 Tagen",
         "creditsUntil": "Guthaben reicht etwa bis {date}",
-        "noCredits": "keine Artikel mehr – laden Sie auf, um weiter zu veröffentlichen",
+        "noCredits": "Kein Guthaben. Laden Sie auf, um weiter zu veröffentlichen.",
         "errors": {
           "timeZone": "Wählen Sie eine gültige Zeitzone.",
           "releaseHour": "Wählen Sie eine Veröffentlichungszeit.",
@@ -959,6 +963,7 @@
       },
       "aiSeries": {
         "title": "Automatische Serien",
+        "summary": "Verwandte Artikel zu einer Serie verbinden.",
         "description": "Die KI kann zusammengehörige geplante Artikel zu Serien gruppieren und passende Fortsetzungen hinzufügen. Feste Grenzen sorgen für Abwechslung in der Publikation."
       },
       "aiDisclosure": {
