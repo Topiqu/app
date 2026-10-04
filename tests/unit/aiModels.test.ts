@@ -70,7 +70,7 @@ describe('AI model registry', () => {
   it('generates article images with an OpenAI image model', () => {
     expect(aiImageModelProvider('articleImage')).toBe('openai')
     expect(aiImageModelId('articleImage')).toMatch(/^gpt-image-/)
-    expect(aiImageModelId('articleImage')).toBe('gpt-image-2')
+    expect(aiImageModelId('articleImage')).toBe('gpt-image-2.5-flare')
   })
 
   it('keeps the token-heavy translation task on a low-cost tier', () => {

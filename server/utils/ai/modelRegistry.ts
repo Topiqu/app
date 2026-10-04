@@ -18,7 +18,7 @@ export const AI_MODELS = {
 } as const satisfies Record<string, { provider: AiProvider; id: string }>
 
 export const AI_IMAGE_MODELS = {
-  articleImage: { provider: 'openai', id: 'gpt-image-2' },
+  articleImage: { provider: 'openai', id: 'gpt-image-2.5-flare' },
 } as const satisfies Record<string, { provider: AiProvider; id: string }>
 
 // `dimensions` is baked into the `vector(1536)` column: another size needs a migration and a reindex.
