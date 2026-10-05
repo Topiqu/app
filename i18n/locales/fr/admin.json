@@ -8,6 +8,7 @@
       "cta": "Passer à {plan}",
       "loading": "Ouverture du paiement…",
       "error": "Impossible d’ouvrir le paiement. Veuillez réessayer.",
+      "repeatInbox": "L'essai gratuit est limité à une boîte e-mail, et celle-ci l'a déjà utilisé. Le blog démarre donc avec l'offre Free – débloquez les articles IA avec l'offre ci-dessous.",
       "toPro": {
         "title": "Développez votre blog avec l’offre PRO",
         "description": "Génération par IA, publication planifiée, SEO avancé et domaine personnalisé.",

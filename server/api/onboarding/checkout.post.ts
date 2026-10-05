@@ -6,12 +6,13 @@ import { authPath } from '~~/shared/utils/routes'
 import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
 import { saveUserWithLogging } from '~~/server/utils/userLog'
 import { TRIAL_PLAN, TRIAL_DAYS } from '~~/shared/utils/trial'
-import { verifyVerifiedToken } from '~~/server/utils/onboardingTokens'
 import { TRIAL_ARTICLE_CREDITS } from '~~/shared/utils/articleCredits'
+import { landingClientIp, verifyVerifiedToken } from '~~/server/utils/onboardingTokens'
 import { normalizeAccentColor, parseBrandGradient } from '~~/shared/utils/publicationBranding'
 import { domainError, domainVerificationDefaults, isManagedDomain, normalizeDomain } from '~~/shared/utils/domain'
 
 const LOGIN_TOKEN_TTL_MS = 30 * 60 * 1000
+const SIGNUPS_PER_IP_PER_DAY = 10
 const PRICE_BY_PLAN = {
   PRO: { month: process.env.STRIPE_PRICE_PRO, year: process.env.STRIPE_PRICE_PRO_ANNUAL },
   PREMIUM: { month: process.env.STRIPE_PRICE_PREMIUM, year: process.env.STRIPE_PRICE_PREMIUM_ANNUAL },
@@ -45,6 +46,13 @@ export default defineEventHandler(async (event) => {
     throw createError({
       statusCode: 400,
       message: t('common.auth.codeExpired') || 'Email not verified. Restart the verification step.',
+    })
+  }
+
+  if (isDisposableEmail(body.email)) {
+    throw createError({
+      statusCode: 400,
+      message: t('common.auth.disposableEmail') || 'Disposable email addresses are not allowed',
     })
   }
 
@@ -90,11 +98,20 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: t('common.errors.alreadyExists') || 'User exists' })
   }
 
+  // Counted only once a request reaches account creation; failed validation above costs nothing.
+  const signupIp = landingClientIp(event) ?? getIp(event)
+  if (!(await consumeRateLimit(`signup:${pepperIp(signupIp)}`, SIGNUPS_PER_IP_PER_DAY, 86400))) {
+    throw createError({ statusCode: 429, message: t('common.errors.tooManyRequests') || 'Too many requests' })
+  }
+
   let clientSiteId: string
+  let trial = true
   const trialStartedAt = new Date()
   const trialEndsAt = new Date(trialStartedAt.getTime() + TRIAL_DAYS * 86400000)
   try {
     const result = await prisma.$transaction(async (tx) => {
+      // A repeat inbox (alias or re-registration) still gets an account, just not another trial.
+      trial = !(await inboxOwnsSite(tx, body.email))
       const site = await tx.clientSite.create({
         data: {
           name: body.siteName,
@@ -108,24 +125,25 @@ export default defineEventHandler(async (event) => {
           ...domainVerificationDefaults(fullSubdomain, randomBytes(24).toString('base64url')),
           // The trial is a real plan, not a UI state — `firstPaidAt` stays null as the paid
           // marker, and `trial-expiry` drops a card-less tenant back to BASIC after TRIAL_DAYS.
-          plan: TRIAL_PLAN,
-          trialStartedAt,
-          trialEndsAt,
+          plan: trial ? TRIAL_PLAN : 'BASIC',
+          trialStartedAt: trial ? trialStartedAt : null,
+          trialEndsAt: trial ? trialEndsAt : null,
           firstPaidAt: null,
         },
       })
 
-      await creditArticleCredits(
-        {
-          clientSiteId: site.id,
-          amount: TRIAL_ARTICLE_CREDITS,
-          source: 'TRIAL',
-          idempotencyKey: `trial:${site.id}`,
-          reason: 'Welcome trial articles',
-          expiresAt: trialEndsAt,
-        },
-        tx,
-      )
+      if (trial)
+        await creditArticleCredits(
+          {
+            clientSiteId: site.id,
+            amount: TRIAL_ARTICLE_CREDITS,
+            source: 'TRIAL',
+            idempotencyKey: `trial:${site.id}`,
+            reason: 'Welcome trial articles',
+            expiresAt: trialEndsAt,
+          },
+          tx,
+        )
 
       // Crons filter on ClientFeature rows, not on the plan column, so a trial without them
       // would silently skip sentiment and article generation — the parts it exists to show off.
@@ -158,6 +176,9 @@ export default defineEventHandler(async (event) => {
       await tx.tenantMembership.create({
         data: { clientSiteId: site.id, userId: user.id, role: 'OWNER', scopes: [...TENANT_SCOPES] },
       })
+
+      if (!trial)
+        await logAction({ action: 'TRIAL_REPEAT_INBOX', userId: user.id, clientSiteId: site.id, ip: signupIp, tx })
 
       if (!isManagedDomain(site.domain))
         await logAction({
@@ -220,7 +241,7 @@ export default defineEventHandler(async (event) => {
       mode: 'subscription',
       line_items: [{ price: priceId, quantity: 1 }],
       subscription_data: {
-        trial_period_days: 14,
+        ...(trial && { trial_period_days: 14 }),
         metadata: { plan: body.selectedPlan, clientSiteId, interval: body.billingInterval },
       },
       metadata: { plan: body.selectedPlan, clientSiteId, interval: body.billingInterval },

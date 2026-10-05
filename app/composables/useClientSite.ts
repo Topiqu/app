@@ -22,6 +22,8 @@ export interface ClientSiteStatus {
     state: TrialState
     endsAt: string | null
     daysLeft: number
+    /** Onboarding skipped the trial because this inbox already owns a site. */
+    repeatInbox: boolean
   }
   focus: string | null
   audience: string | null

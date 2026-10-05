@@ -8,6 +8,7 @@
       "cta": "Upgrade to {plan}",
       "loading": "Opening checkout…",
       "error": "Could not open checkout. Please try again.",
+      "repeatInbox": "The free trial is one per inbox, and this one has already used it. The blog therefore starts on Free – unlock AI articles with the plan below.",
       "toPro": {
         "title": "Grow your blog with the PRO plan",
         "description": "AI generation, scheduled publishing, advanced SEO and a custom domain.",

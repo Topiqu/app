@@ -8,6 +8,7 @@
       "cta": "Přejít na {plan}",
       "loading": "Otevírám platbu…",
       "error": "Platbu se nepodařilo otevřít. Zkuste to prosím znovu.",
+      "repeatInbox": "Zkušební verze je jedna na e-mailovou schránku a tato ji už využila. Blog proto začíná na tarifu Free – AI články odemknete tarifem níže.",
       "toPro": {
         "title": "Posuňte svůj blog s plánem PRO",
         "description": "AI generování, plánované publikování, pokročilé SEO a vlastní doména.",

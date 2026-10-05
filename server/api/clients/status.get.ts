@@ -53,6 +53,11 @@ export default defineEventHandler(async (event) => {
   } = clientSite
 
   const articleWallet = await getArticleCreditWallet(user.clientSiteId)
+  // Onboarding records why a new site started without a trial; nothing on the site row says so.
+  const repeatInbox =
+    clientSite.plan === 'BASIC' &&
+    !clientSite.trialStartedAt &&
+    (await db.log.count({ where: { clientSiteId: clientSite.id, action: 'TRIAL_REPEAT_INBOX' } })) > 0
   return {
     ...status,
     articlesRemaining: articleWallet.available,
@@ -63,6 +68,7 @@ export default defineEventHandler(async (event) => {
       state,
       endsAt,
       daysLeft,
+      repeatInbox,
     },
   }
 })
