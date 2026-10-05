@@ -43,15 +43,7 @@
       ]"
     />
     <template v-else>
-      <dl
-        class="grid grid-cols-1 divide-y divide-default rounded-(--topiqu-surface-radius) border border-default bg-default sm:grid-cols-3 sm:divide-x sm:divide-y-0"
-      >
-        <div v-for="stat in stats" :key="stat.key" class="flex flex-col gap-1 px-4 py-3">
-          <dt class="text-xs text-muted">{{ $t(`common.keywords.stats.${stat.key}.label`) }}</dt>
-          <dd class="text-xl font-semibold tabular-nums text-highlighted">{{ stat.value }}</dd>
-          <dd class="text-xs text-muted">{{ stat.hint }}</dd>
-        </div>
-      </dl>
+      <AppStatTiles :items="stats" />
 
       <KeywordsResults />
       <KeywordsActions />
@@ -61,6 +53,8 @@
 </template>
 
 <script setup lang="ts">
+import type { StatTile } from '~/components/AppStatTiles.vue'
+
 definePageMeta({ middleware: 'admin', shell: 'dashboard' })
 useSeoMeta({ title: () => $t('common.keywords.title') })
 
@@ -81,27 +75,42 @@ const marketItems = computed(() => {
 })
 
 /** Three numbers that answer "is this worth it": demand covered, rankings won, topics ready. */
-const stats = computed(() => {
+const stats = computed((): StatTile[] => {
   const number = new Intl.NumberFormat(locale.value)
   const written = data.value?.written ?? { topics: 0, volume: 0 }
   const results = data.value?.results ?? []
   const top10 = results.filter((result) => result.position != null && result.position <= 10).length
   const queued = (data.value?.clusters ?? []).filter((cluster) => cluster.status !== 'SKIPPED').length
+  const label = (key: string) => t(`common.keywords.stats.${key}.label`)
+  const info = (key: string) => t(`common.keywords.stats.${key}.info`)
   return [
     {
       key: 'demand',
+      icon: 'mdi:magnify',
+      label: label('demand'),
       value: written.volume ? `≈ ${number.format(written.volume)}` : '—',
-      hint: t('common.keywords.stats.demand.hint', { count: written.topics }),
+      muted: !written.volume,
+      note: written.volume
+        ? t('common.keywords.stats.demand.hint', { n: number.format(written.topics) }, written.topics)
+        : t('common.keywords.stats.demand.empty'),
+      hint: info('demand'),
     },
     {
       key: 'top10',
+      icon: 'mdi:trophy-outline',
+      label: label('top10'),
       value: results.length ? `${top10} / ${results.length}` : '—',
-      hint: t(results.length ? 'common.keywords.stats.top10.hint' : 'common.keywords.stats.top10.pending'),
+      muted: !results.length,
+      note: t(results.length ? 'common.keywords.stats.top10.hint' : 'common.keywords.stats.top10.pending'),
+      hint: info('top10'),
     },
     {
       key: 'queued',
+      icon: 'mdi:playlist-edit',
+      label: label('queued'),
       value: number.format(queued),
-      hint: t('common.keywords.stats.queued.hint'),
+      note: t('common.keywords.stats.queued.hint'),
+      hint: info('queued'),
     },
   ]
 })

@@ -7,8 +7,9 @@
 
     <p
       v-if="!results.length"
-      class="rounded-(--topiqu-surface-radius) border border-dashed border-default px-4 py-3 text-sm text-muted"
+      class="flex items-center gap-2 rounded-(--topiqu-surface-radius) border border-dashed border-default px-4 py-3 text-sm text-muted"
     >
+      <UIcon name="mdi:chart-timeline-variant" class="size-4 shrink-0" aria-hidden="true" />
       {{ $t('common.keywordResults.empty') }}
     </p>
     <ul

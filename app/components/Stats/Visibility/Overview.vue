@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
+import type { StatTile } from '~/components/AppStatTiles.vue'
 
 import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
 import { isLanguage, type Language } from '~~/shared/utils/language'
@@ -49,29 +50,41 @@ const hasData = computed(
 )
 
 const number = (value: number) => numberFormat.value.format(value)
-const metrics = computed(() => [
-  {
-    label: t('visibility.metrics.coverage'),
-    value:
-      data.value?.visibility.citationCoverage == null
-        ? t('visibility.emptyValue')
-        : percentFormat.value.format(data.value.visibility.citationCoverage),
-    note: t('visibility.metrics.coverageNote', {
-      owned: number(data.value?.visibility.ownedRuns ?? 0),
-      total: number(data.value?.visibility.successfulRuns ?? 0),
-    }),
-  },
-  {
-    label: t('visibility.metrics.referrals'),
-    value: number(data.value?.referrals.visits ?? 0),
-    note: t('visibility.metrics.referralsNote', { count: number(data.value?.referrals.uniqueArticles ?? 0) }),
-  },
-  {
-    label: t('visibility.metrics.fetches'),
-    value: number(data.value?.crawlers.requests ?? 0),
-    note: t('visibility.metrics.fetchesNote', { count: number(data.value?.crawlers.uniquePages ?? 0) }),
-  },
-])
+const metrics = computed((): StatTile[] => {
+  const coverage = data.value?.visibility.citationCoverage
+  const articles = data.value?.referrals.uniqueArticles ?? 0
+  const pages = data.value?.crawlers.uniquePages ?? 0
+  return [
+    {
+      key: 'coverage',
+      icon: 'mdi:format-quote-close',
+      label: t('visibility.metrics.coverage'),
+      value: coverage == null ? t('visibility.emptyValue') : percentFormat.value.format(coverage),
+      muted: coverage == null,
+      note: t('visibility.metrics.coverageNote', {
+        owned: number(data.value?.visibility.ownedRuns ?? 0),
+        total: number(data.value?.visibility.successfulRuns ?? 0),
+      }),
+      hint: t('visibility.metrics.coverageHint'),
+    },
+    {
+      key: 'referrals',
+      icon: 'mdi:account-arrow-right-outline',
+      label: t('visibility.metrics.referrals'),
+      value: number(data.value?.referrals.visits ?? 0),
+      note: t('visibility.metrics.referralsNote', { n: number(articles) }, articles),
+      hint: t('visibility.metrics.referralsHint'),
+    },
+    {
+      key: 'fetches',
+      icon: 'mdi:robot-outline',
+      label: t('visibility.metrics.fetches'),
+      value: number(data.value?.crawlers.requests ?? 0),
+      note: t('visibility.metrics.fetchesNote', { n: number(pages) }, pages),
+      hint: t('visibility.metrics.fetchesHint'),
+    },
+  ]
+})
 const languageItems = computed(() =>
   LANGUAGE_OPTIONS.map((language) => ({
     label: t(`languages.${language}`),
@@ -273,19 +286,7 @@ const opportunityLink = (opportunity: Opportunity) => ({
       </section>
 
       <template v-else-if="data">
-        <dl class="grid grid-cols-3 overflow-hidden rounded-(--topiqu-surface-radius) border border-default bg-default">
-          <div
-            v-for="metric in metrics"
-            :key="metric.label"
-            class="min-w-0 border-r border-default px-3 py-3 last:border-0 sm:px-4"
-          >
-            <dt class="min-h-8 text-xs leading-4 text-muted sm:min-h-0 sm:text-sm">{{ metric.label }}</dt>
-            <dd class="mt-1 text-2xl font-semibold tracking-tight tabular-nums text-highlighted">
-              {{ metric.value }}
-            </dd>
-            <dd class="mt-1 text-xs text-muted">{{ metric.note }}</dd>
-          </div>
-        </dl>
+        <AppStatTiles :items="metrics" />
 
         <section class="rounded-(--topiqu-surface-radius) border border-default bg-default">
           <div class="flex flex-col gap-3 border-b border-default px-5 py-4 sm:flex-row sm:items-center">

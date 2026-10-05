@@ -90,8 +90,7 @@
       "title": "Als Nächstes",
       "description": "Automatische Artikel nehmen Themen von oben. Heften Sie an, was früher kommen soll, und überspringen Sie, was Sie nicht wollen.",
       "empty": "Der Plan entsteht vor dem nächsten automatischen Artikel.",
-      "volume": "≈ {count} Suchanfragen pro Monat",
-      "volumeUnknown": "Suchvolumen unbekannt",
+      "volumeUnknown": "unbekannt",
       "difficulty": {
         "easy": "geringerer Wettbewerb",
         "medium": "mittlerer Wettbewerb",
@@ -108,7 +107,8 @@
       "loadFailed": "Der Themenplan konnte nicht geladen werden.",
       "pinned": "Angeheftet",
       "unpin": "{keyword} lösen",
-      "skipped": "Übersprungene Themen ({count})"
+      "skipped": "Übersprungene Themen ({count})",
+      "volumeUnit": "Suchen/Monat"
     },
     "keywordResults": {
       "title": "Wie die Artikel abschneiden",
@@ -157,16 +157,20 @@
       "stats": {
         "demand": {
           "label": "Abgedeckte Suchnachfrage",
-          "hint": "{count} Themen geschrieben · pro Monat"
+          "hint": "Suchen pro Monat · keine Themen | Suchen pro Monat · {n} Thema | Suchen pro Monat · {n} Themen",
+          "empty": "Noch kein Artikel aus dem Plan",
+          "info": "Wie oft Menschen pro Monat bei Google nach Themen suchen, zu denen schon ein Artikel aus dem Plan erschienen ist. So siehst du, wie viel Nachfrage deine Artikel abdecken."
         },
         "top10": {
           "label": "In den Google-Top-10",
           "hint": "der gemessenen Artikel",
-          "pending": "erste Messung 7 Tage nach Veröffentlichung"
+          "pending": "Erste Messung 7 Tage nach Veröffentlichung",
+          "info": "Wie viele Artikel aus dem Plan auf der ersten Google-Seite stehen (Plätze 1–10). Wir messen 7, 30, 60 und 90 Tage nach der Veröffentlichung."
         },
         "queued": {
-          "label": "Bereit im Plan",
-          "hint": "Themen warten auf einen Artikel"
+          "label": "Themen im Plan",
+          "hint": "warten auf einen Artikel",
+          "info": "Geplante Artikel nehmen diese Themen von oben nach unten. Mit Anheften oder Überspringen unter „Als Nächstes“ änderst du die Reihenfolge."
         }
       }
     },
@@ -1448,7 +1452,8 @@
         "managePlan": "Tarif verwalten",
         "open": "Topiqu öffnen"
       }
-    }
+    },
+    "statHint": "Was „{label}“ bedeutet"
   },
   "error": {
     "generic": "Etwas ist schiefgelaufen. Bitte versuche es erneut."

@@ -1,5 +1,13 @@
 <template>
-  <li class="flex items-center gap-3 px-4 py-3" :class="cluster.status === 'SKIPPED' && 'opacity-60'">
+  <!-- An inset shadow, not border-l: `divide-default` on the list recolours every border of a child. -->
+  <li
+    class="flex items-center gap-3 px-4 py-3"
+    :class="{
+      'opacity-60': cluster.status === 'SKIPPED',
+      'bg-primary/5 shadow-[inset_3px_0_0_var(--ui-primary)]': cluster.status === 'PINNED',
+    }"
+  >
+    <span v-if="position" class="w-5 shrink-0 text-right text-xs tabular-nums text-muted">{{ position }}</span>
     <div class="min-w-0 flex-1">
       <div class="flex items-center gap-1">
         <p class="truncate text-sm font-medium text-highlighted">{{ cluster.keyword }}</p>
@@ -13,6 +21,7 @@
             color="neutral"
             variant="ghost"
             icon="mdi:information-outline"
+            class="-my-1"
             :aria-label="$t('common.keywordPlan.why')"
           />
           <template #content>
@@ -20,13 +29,28 @@
           </template>
         </UPopover>
       </div>
-      <p class="text-xs text-muted">{{ details }}</p>
+      <p class="flex min-w-0 items-center gap-1.5 text-xs text-muted">
+        <span v-if="cluster.pillar" class="truncate">{{ cluster.pillar }}</span>
+        <span v-if="cluster.pillar && level" aria-hidden="true">·</span>
+        <span v-if="level" class="flex shrink-0 items-center gap-1">
+          <span class="size-1.5 rounded-full" :class="levelColor[level]" aria-hidden="true" />
+          {{ $t(`common.keywordPlan.difficulty.${level}`) }}
+        </span>
+      </p>
     </div>
+    <p class="w-20 shrink-0 text-right leading-tight">
+      <span class="block text-sm font-medium tabular-nums" :class="cluster.volume ? 'text-highlighted' : 'text-muted'">
+        {{ cluster.volume ? `≈ ${volume}` : '—' }}
+      </span>
+      <span class="block text-xs text-muted">
+        {{ $t(cluster.volume ? 'common.keywordPlan.volumeUnit' : 'common.keywordPlan.volumeUnknown') }}
+      </span>
+    </p>
     <UTooltip v-if="cluster.status !== 'SKIPPED'" :text="pinLabel">
       <UButton
         square
         size="sm"
-        color="neutral"
+        :color="cluster.status === 'PINNED' ? 'primary' : 'neutral'"
         :variant="cluster.status === 'PINNED' ? 'soft' : 'ghost'"
         :icon="cluster.status === 'PINNED' ? 'mdi:pin' : 'mdi:pin-outline'"
         :aria-label="pinLabel"
@@ -53,7 +77,8 @@
 <script setup lang="ts">
 import { difficultyLevel } from '~~/shared/utils/keywordPlan'
 
-const props = defineProps<{ cluster: KeywordPlanCluster; busy: boolean }>()
+/** `position` is the queue order; skipped topics have none. */
+const props = defineProps<{ cluster: KeywordPlanCluster; busy: boolean; position?: number }>()
 const emit = defineEmits<{ toggle: [target: Exclude<KeywordPlanStatus, 'OPEN'>] }>()
 
 const { t, locale } = useI18n()
@@ -69,16 +94,7 @@ const skipLabel = computed(() =>
   }),
 )
 
-const details = computed(() => {
-  const level = difficultyLevel(props.cluster.difficulty)
-  return [
-    props.cluster.pillar,
-    props.cluster.volume
-      ? t('common.keywordPlan.volume', { count: new Intl.NumberFormat(locale.value).format(props.cluster.volume) })
-      : t('common.keywordPlan.volumeUnknown'),
-    level ? t(`common.keywordPlan.difficulty.${level}`) : null,
-  ]
-    .filter(Boolean)
-    .join(' · ')
-})
+const level = computed(() => difficultyLevel(props.cluster.difficulty))
+const levelColor = { easy: 'bg-success', medium: 'bg-warning', hard: 'bg-error' } as const
+const volume = computed(() => new Intl.NumberFormat(locale.value).format(props.cluster.volume))
 </script>

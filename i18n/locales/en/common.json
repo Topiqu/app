@@ -90,8 +90,7 @@
       "title": "Up next",
       "description": "Automated articles take topics from the top. Pin what you want sooner and skip what you don’t want.",
       "empty": "The plan is built before the next automated article.",
-      "volume": "≈ {count} searches a month",
-      "volumeUnknown": "search volume unknown",
+      "volumeUnknown": "unknown",
       "difficulty": {
         "easy": "lower competition",
         "medium": "medium competition",
@@ -108,7 +107,8 @@
       "loadFailed": "The topic plan could not be loaded.",
       "pinned": "Pinned",
       "unpin": "Unpin {keyword}",
-      "skipped": "Skipped topics ({count})"
+      "skipped": "Skipped topics ({count})",
+      "volumeUnit": "searches/mo"
     },
     "keywordResults": {
       "title": "How articles perform",
@@ -157,16 +157,20 @@
       "stats": {
         "demand": {
           "label": "Search demand covered",
-          "hint": "{count} topics written · per month"
+          "hint": "searches a month · no topics | searches a month · {n} topic | searches a month · {n} topics",
+          "empty": "No article from the plan yet",
+          "info": "How often people search Google each month for topics that already have an article from the plan. It shows how much demand your articles cover."
         },
         "top10": {
           "label": "In Google top 10",
-          "hint": "of tracked articles",
-          "pending": "first check 7 days after publishing"
+          "hint": "of measured articles",
+          "pending": "First check 7 days after publishing",
+          "info": "How many plan articles are on Google's first page (positions 1–10). We check 7, 30, 60 and 90 days after publishing."
         },
         "queued": {
-          "label": "Ready in the plan",
-          "hint": "topics waiting for an article"
+          "label": "Topics in the plan",
+          "hint": "waiting for an article",
+          "info": "Scheduled articles take these topics from the top down. Pin or skip topics in Up next to change the order."
         }
       }
     },
@@ -1448,7 +1452,8 @@
         "managePlan": "Manage plan",
         "open": "Open Topiqu"
       }
-    }
+    },
+    "statHint": "What “{label}” means"
   },
   "error": {
     "generic": "Something went wrong. Please try again."

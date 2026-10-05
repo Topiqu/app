@@ -6,12 +6,15 @@
     "methodology": "Zugriffe von KI-Bots und Besuche über KI-Dienste sind tatsächlicher Traffic auf Ihrer Website. Apps ohne Referrer können nicht erfasst werden; der Wert ist daher eine Untergrenze. Zitate werden anhand einer wiederkehrenden Stichprobe Ihrer erfassten Fragen gemessen, nicht anhand aller privaten KI-Unterhaltungen.",
     "window": "Letzte {days} Tage",
     "metrics": {
-      "coverage": "In KI-Antworten zitiert",
+      "coverage": "Zitate in KI-Antworten",
       "coverageNote": "{owned} von {total} Antworten",
-      "referrals": "Besuche über KI",
-      "referralsNote": "Artikel: {count}",
+      "referrals": "Leser aus KI",
+      "referralsNote": "noch keine Besuche | kamen auf {n} Artikel | kamen auf {n} Artikel",
       "fetches": "Besuche von KI-Bots",
-      "fetchesNote": "Seiten: {count}"
+      "fetchesNote": "noch keine Seiten | {n} Seite | {n} verschiedene Seiten",
+      "coverageHint": "Jede Woche stellen wir KI-Suchmaschinen (ChatGPT, Gemini, Perplexity…) deine beobachteten Fragen. Die Zahl zeigt, wie viele Antworten auf deine Website verlinkt haben.",
+      "referralsHint": "Menschen, die über einen Link in einer KI-Antwort auf deine Website gekommen sind. Manche Apps verraten nicht, woher ein Besuch kommt, die echte Zahl kann also höher sein.",
+      "fetchesHint": "Wie oft Bots von KI-Firmen (OpenAI, Google, Anthropic…) deine Seiten abgerufen haben, um daraus zu antworten oder zu lernen. Das sind keine Menschen, aber es zeigt, dass KI deine Inhalte liest."
     },
     "emptyValue": "Noch nicht gemessen",
     "onboarding": {
@@ -73,13 +76,13 @@
     },
     "domains": {
       "title": "Wer statt Ihnen zitiert wird",
-      "description": "Anteil der KI-Antworten, die eine Website zitieren. Als Wettbewerber gilt eine Website, die bei mehreren Ihrer Fragen zitiert wird.",
+      "description": "Websites, auf die KI bei deinen beobachteten Fragen verweist. Der Prozentsatz ist der Anteil der Antworten, die die Website zitieren.",
       "you": "Sie",
       "competitors": "Wettbewerber",
       "references": "Allgemeine Quellen",
       "referencesHint": "Wikipedia, Foren und Behörden. Mit einem Artikel überholen Sie sie nicht, aber sie zeigen, woraus die KI schöpft.",
       "others": "Weitere zitierte Websites",
-      "prompts": "Fragen: {count}",
+      "prompts": "keine Fragen | {n} Frage | {n} Fragen",
       "markCompetitor": "Als Wettbewerber markieren",
       "unmark": "Markierung entfernen",
       "hide": "Ausblenden",

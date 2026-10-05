@@ -6,12 +6,15 @@
     "methodology": "AI bot fetches and AI referrals are real traffic to your site. Apps that omit the referrer cannot be counted, so this is a lower bound. Citations are a recurring sample of your tracked questions, not a record of every private AI conversation.",
     "window": "Last {days} days",
     "metrics": {
-      "coverage": "Cited in AI answers",
+      "coverage": "Citations in AI answers",
       "coverageNote": "{owned} of {total} answers",
-      "referrals": "Visits from AI",
-      "referralsNote": "Articles: {count}",
+      "referrals": "Readers from AI",
+      "referralsNote": "no visits yet | landed on {n} article | landed on {n} articles",
       "fetches": "AI bot visits",
-      "fetchesNote": "Pages: {count}"
+      "fetchesNote": "no pages yet | {n} page | {n} different pages",
+      "coverageHint": "Every week we ask AI search engines (ChatGPT, Gemini, Perplexity…) your tracked questions. This shows how many answers linked to your site.",
+      "referralsHint": "People who reached your site by clicking a link in an AI answer. Some apps don't say where a visit came from, so the real number may be higher.",
+      "fetchesHint": "How often AI companies' bots (OpenAI, Google, Anthropic…) downloaded your pages to answer from them or learn from them. These aren't people, but they show AI is reading your content."
     },
     "emptyValue": "Not measured yet",
     "onboarding": {
@@ -73,13 +76,13 @@
     },
     "domains": {
       "title": "Who gets cited instead of you",
-      "description": "Share of AI answers that cite each site. A competitor is a site cited across several of your questions.",
+      "description": "Sites AI links to for your tracked questions. The percentage is the share of answers that cite the site.",
       "you": "You",
       "competitors": "Competitors",
       "references": "General sources",
       "referencesHint": "Wikipedia, forums and public bodies. An article will not outrank them, but they show where AI draws from.",
       "others": "Other cited sites",
-      "prompts": "Questions: {count}",
+      "prompts": "no questions | {n} question | {n} questions",
       "markCompetitor": "Mark as competitor",
       "unmark": "Remove mark",
       "hide": "Hide",

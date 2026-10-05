@@ -90,8 +90,7 @@
       "title": "À venir",
       "description": "Les articles automatiques prennent les sujets par le haut. Épinglez ce que vous voulez plus tôt et ignorez ce que vous ne voulez pas.",
       "empty": "Le plan sera établi avant le prochain article automatique.",
-      "volume": "≈ {count} recherches par mois",
-      "volumeUnknown": "volume de recherche inconnu",
+      "volumeUnknown": "inconnue",
       "difficulty": {
         "easy": "concurrence plus faible",
         "medium": "concurrence moyenne",
@@ -108,7 +107,8 @@
       "loadFailed": "Impossible de charger le plan de sujets.",
       "pinned": "Épinglé",
       "unpin": "Désépingler {keyword}",
-      "skipped": "Sujets ignorés ({count})"
+      "skipped": "Sujets ignorés ({count})",
+      "volumeUnit": "recherches/mois"
     },
     "keywordResults": {
       "title": "Performance des articles",
@@ -157,16 +157,20 @@
       "stats": {
         "demand": {
           "label": "Demande de recherche couverte",
-          "hint": "{count} sujets écrits · par mois"
+          "hint": "recherches par mois · aucun sujet | recherches par mois · {n} sujet | recherches par mois · {n} sujets",
+          "empty": "Aucun article du plan pour l'instant",
+          "info": "Nombre de recherches Google mensuelles sur les sujets qui ont déjà un article du plan. Cela montre quelle part de la demande vos articles couvrent."
         },
         "top10": {
           "label": "Dans le top 10 Google",
-          "hint": "des articles suivis",
-          "pending": "première mesure 7 jours après publication"
+          "hint": "des articles mesurés",
+          "pending": "Première mesure 7 jours après la publication",
+          "info": "Nombre d'articles du plan en première page de Google (positions 1 à 10). Nous mesurons 7, 30, 60 et 90 jours après la publication."
         },
         "queued": {
-          "label": "Prêts dans le plan",
-          "hint": "sujets en attente d’un article"
+          "label": "Sujets au plan",
+          "hint": "en attente d'un article",
+          "info": "Les articles planifiés traitent ces sujets de haut en bas. Épinglez ou ignorez des sujets dans « À venir » pour changer l'ordre."
         }
       }
     },
@@ -1448,7 +1452,8 @@
         "managePlan": "Gérer l’offre",
         "open": "Ouvrir Topiqu"
       }
-    }
+    },
+    "statHint": "Ce que signifie « {label} »"
   },
   "error": {
     "generic": "Une erreur s'est produite. Veuillez réessayer."

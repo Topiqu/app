@@ -36,7 +36,8 @@ export default defineEventHandler(async (event) => {
             status: true,
             opportunity: true,
           },
-          orderBy: { score: 'desc' },
+          // The generator offers pins newest first (`keywordPlanFor`); the list shows that queue order.
+          orderBy: status === 'PINNED' ? { updatedAt: 'desc' } : { score: 'desc' },
           take: 30,
         }),
       ),
