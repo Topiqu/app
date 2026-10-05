@@ -357,7 +357,8 @@ Respond ONLY in valid JSON (schema required).
         topicTokens +
         seriesTokens +
         (generated.researchTokens ?? 0) +
-        (generated.editorialTokens ?? 0)
+        (generated.editorialTokens ?? 0) +
+        (generated.linkTokens ?? 0)
 
       await recordAiUsage(clientSiteId, tokens, 'CRON_ARTICLE_TOKEN_USAGE', {
         usage,
@@ -365,6 +366,7 @@ Respond ONLY in valid JSON (schema required).
         seriesTokens,
         researchTokens: generated.researchTokens ?? 0,
         editorialTokens: generated.editorialTokens ?? 0,
+        linkTokens: generated.linkTokens ?? 0,
         title: generated.title,
         tags: generated.tags,
       })

@@ -180,7 +180,6 @@ export const buildArticleConfig = async (
     aiControversyLevel,
     communityInsight,
     language,
-    domain,
     plan,
     features,
   } = await prisma.clientSite.findFirstOrThrow({
@@ -188,7 +187,6 @@ export const buildArticleConfig = async (
       plan: true,
       features: { where: { feature: { code: 'AI' } }, select: { isActive: true } },
       language: true,
-      domain: true,
       focus: true,
       keywords: true,
       audience: true,
@@ -280,7 +278,7 @@ export const buildArticleConfig = async (
         "sources": ["full source URL 1", "full source URL 2", ...]
       }.
       The title must be engaging.
-      ${articleGenerationOptimizationInstructions(domain)}
+      ${articleGenerationOptimizationInstructions()}
       Start the body at h2 — the page already renders the title as its h1.
       Fact-checking is an internal editing discipline, not the voice of the article. State supported facts directly.
       Use a blockquote or quotation marks only for a verbatim quotation from the research brief, the first-party knowledge or the assignment, attributed to its speaker in the text. Never style your own sentence as a quote.

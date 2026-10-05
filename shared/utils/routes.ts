@@ -21,6 +21,19 @@ const path = (kind: keyof typeof LOCALIZED_SEGMENTS, language: Language, value: 
   `/${language}/${LOCALIZED_SEGMENTS[kind][language]}/${encodeURIComponent(value)}`
 
 export const articlePath = (language: Language, slug: string) => path('article', language, slug)
+
+/** Inverse of `articlePath`; query, hash and one trailing slash are ignored. */
+export const parseArticlePath = (pathname: string): { language: Language; slug: string } | null => {
+  const [empty, language, segment, slug, ...rest] = pathname.split(/[?#]/)[0]!.split('/')
+  if (empty !== '' || !slug || rest.some(Boolean)) return null
+  if (!Object.hasOwn(LOCALIZED_SEGMENTS.article, language!)) return null
+  if (LOCALIZED_SEGMENTS.article[language as Language] !== segment) return null
+  try {
+    return { language: language as Language, slug: decodeURIComponent(slug) }
+  } catch {
+    return null
+  }
+}
 export const tagPath = (language: Language, slug: string) => path('tag', language, slug)
 export const authorPath = (language: Language, name: string) => path('author', language, name)
 /** `strategy: 'prefix'` — even the default locale carries its prefix, so there is no bare `/`. */

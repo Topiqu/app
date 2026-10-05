@@ -38,7 +38,7 @@ const ADMIN_FIELDS = { prompt: true, savedAmount: true, savedTimeMinutes: true }
 /** `reactions` is scoped to the caller: unfiltered it shipped every liker's id to answer one bool. */
 const articleSelect = (isAdmin: boolean, viewer: { userId?: string; sessionId?: string | null }) => ({
   ...PUBLIC_FIELDS,
-  clientSite: { select: { commentsEnabled: true, commentGifsEnabled: true } },
+  clientSite: { select: { commentsEnabled: true, commentGifsEnabled: true, domain: true } },
   ...(isAdmin ? ADMIN_FIELDS : {}),
   user: {
     select: {
@@ -230,7 +230,15 @@ export default defineEventHandler(async (event) => {
     translationStatus,
     alternates,
     // Only place that sees the resolved translation, so the split belongs here.
-    ...articleBlocks(article.content, { adBreak: true }),
+    // `content` stays as stored for the editor; only the rendered blocks carry resolved links.
+    ...articleBlocks(
+      await resolveArticleLinks(prisma, article.content, {
+        clientSiteId: article.clientSiteId,
+        language,
+        tenantDomain: clientSite.domain,
+      }),
+      { adBreak: true },
+    ),
     commentCount: _count.comments,
     likes: _count.reactions,
     likedByUser: reactions.length > 0,

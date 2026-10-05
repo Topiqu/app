@@ -75,7 +75,13 @@ export default defineEventHandler(async (event) => {
     ...(article.keyTakeaways.length
       ? ['## Key takeaways', '', ...article.keyTakeaways.map((item) => `- ${item}`), '']
       : []),
-    contentToMarkdown(article.content),
+    contentToMarkdown(
+      await resolveArticleLinks(prisma, article.content, {
+        clientSiteId: tenant.id,
+        language,
+        tenantDomain: tenant.domain,
+      }),
+    ),
     ...(faq.length
       ? ['', '## FAQ', '', ...faq.flatMap((entry) => [`### ${entry.question}`, '', entry.answer, ''])]
       : []),

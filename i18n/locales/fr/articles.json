@@ -816,9 +816,9 @@
             "recommendation": "Commencez par H2 et poursuivez sans sauter de niveau, par exemple H2, H3, puis à nouveau H2."
           },
           "internal-link": {
-            "title": "L'article ne contient aucun lien interne",
-            "description": "Le corps de l'article ne renvoie à aucune autre page du même site.",
-            "recommendation": "Ajoutez un lien sur une expression pertinente vers un article connexe ou une page de votre site."
+            "title": "Aucun lien vers un article connexe",
+            "description": "Le corps de l'article ne renvoie à aucun autre article de ce site. Un lien vers la page d'accueil ne compte pas.",
+            "recommendation": "Si un autre de vos articles prolonge naturellement ce texte, ajoutez un lien sur une expression qui le décrit. Sinon, n'ajoutez pas de lien."
           },
           "external-link": {
             "title": "L'article ne contient aucun lien externe",

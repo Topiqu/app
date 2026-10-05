@@ -156,7 +156,7 @@ describe('manual article generation stream', () => {
   })
 
   it('uses the same constraints for generation and deterministic optimization', () => {
-    expect(articleConfig).toContain('articleGenerationOptimizationInstructions(domain)')
+    expect(articleConfig).toContain('articleGenerationOptimizationInstructions()')
     expect(articleConfig).toContain('.min(optimizationCriteria.titleCharacters.minimum)')
     expect(articleConfig).toContain('.max(optimizationCriteria.excerptCharacters.maximum)')
     expect(articleMedia).toContain("buildImageHtml(registered, '', labels)")

@@ -816,9 +816,9 @@
             "recommendation": "Začněte na H2 a pokračujte bez skoků, například H2, H3 a zpět na H2."
           },
           "internal-link": {
-            "title": "Chybí interní odkaz",
-            "description": "Článek neodkazuje na žádnou další stránku stejného webu.",
-            "recommendation": "Propojte vhodnou část textu se souvisejícím článkem nebo stránkou vašeho webu."
+            "title": "Chybí odkaz na související článek",
+            "description": "Text neodkazuje na žádný jiný článek tohoto webu. Odkaz na úvodní stránku se nepočítá.",
+            "recommendation": "Pokud na text přirozeně navazuje jiný váš článek, propojte s ním frázi, která popisuje jeho obsah. Když žádný nenavazuje, odkaz nepřidávejte."
           },
           "external-link": {
             "title": "Chybí externí odkaz",

@@ -816,9 +816,9 @@
             "recommendation": "Start at H2 and continue without jumps, for example H2, H3, then back to H2."
           },
           "internal-link": {
-            "title": "The article has no internal link",
-            "description": "The body does not link to another page on the same website.",
-            "recommendation": "Link a relevant phrase to a related article or page on your website."
+            "title": "No link to a related article",
+            "description": "The body does not link to another article on this website. A link to the homepage does not count.",
+            "recommendation": "If another of your articles naturally follows on from this text, link a phrase that describes it. If none does, leave the link out."
           },
           "external-link": {
             "title": "The article has no external link",

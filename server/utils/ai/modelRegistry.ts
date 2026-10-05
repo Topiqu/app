@@ -15,6 +15,7 @@ export const AI_MODELS = {
   visibilityPrompts: { provider: 'openai', id: 'gpt-6-luna' },
   factCheck: { provider: 'openai', id: 'gpt-5.6-luna' },
   knowledgeSelect: { provider: 'openai', id: 'gpt-6-luna' },
+  articleLinks: { provider: 'openai', id: 'gpt-6-luna' },
   keywordSeeds: { provider: 'openai', id: 'gpt-6-luna' },
   topicScope: { provider: 'openai', id: 'gpt-5.6-luna' },
   keywordOpportunity: { provider: 'openai', id: 'gpt-5.6-luna' },

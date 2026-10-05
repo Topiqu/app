@@ -816,9 +816,9 @@
             "recommendation": "Beginne mit H2 und fahre ohne Sprünge fort, zum Beispiel H2, H3 und dann wieder H2."
           },
           "internal-link": {
-            "title": "Der Artikel enthält keinen internen Link",
-            "description": "Der Text verweist auf keine weitere Seite derselben Website.",
-            "recommendation": "Verlinke eine passende Textstelle mit einem verwandten Artikel oder einer Seite deiner Website."
+            "title": "Kein Link auf einen verwandten Artikel",
+            "description": "Der Text verweist auf keinen anderen Artikel dieser Website. Ein Link auf die Startseite zählt nicht.",
+            "recommendation": "Wenn ein anderer deiner Artikel natürlich an diesen Text anschließt, verlinke eine Formulierung, die ihn beschreibt. Schließt keiner an, lass den Link weg."
           },
           "external-link": {
             "title": "Der Artikel enthält keinen externen Link",

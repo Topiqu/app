@@ -8,6 +8,7 @@ import type { ArticleObject, ResearchOption } from './articleConfig'
 import type { ArticleFormat, ArticleModule, ArticleStructureVariant } from './formats'
 
 import { applyFormat } from './formats'
+import { linkArticle } from './articleLinks'
 import { finalizeArticle } from './articleMedia'
 import { buildArticleConfig } from './articleConfig'
 import { filterResearchSources } from './researchEvidence'
@@ -103,8 +104,19 @@ export const generateArticle = async (
     clientSiteId,
     requireClearRights: opts?.requireClearRights,
   })
+  const linked = await linkArticle(clientSiteId, finalized, language)
 
-  return { ...finalized, usage: first.usage, researchTokens, research, knowledge, editorialTokens, editorialReview }
+  return {
+    ...finalized,
+    content: linked.content,
+    usage: first.usage,
+    researchTokens,
+    research,
+    knowledge,
+    editorialTokens,
+    linkTokens: linked.tokens,
+    editorialReview,
+  }
 }
 
 export const streamArticle = async (
@@ -120,6 +132,8 @@ export const streamArticle = async (
     language?: Language
     format?: ArticleFormat
     modules?: readonly ArticleModule[]
+    /** The article being regenerated, so it is never offered as its own link target. */
+    articleId?: string | null
   } = {},
 ) => {
   const {
@@ -143,9 +157,10 @@ export const streamArticle = async (
   let groundingBrief = citationAllowlist
   const result = streamText({ ...config, abortSignal: opts.abortSignal })
 
+  let linkTokens = 0
   // Caption labels follow the requested article language, including a selected translation tab.
-  const finalize = (object: ArticleObject, callbacks?: FinalizeCallbacks) =>
-    finalizeArticle(
+  const finalize = async (object: ArticleObject, callbacks?: FinalizeCallbacks) => {
+    const finalized = await finalizeArticle(
       applyFormat(
         { ...object, sources: filterResearchSources(object.sources, groundingBrief) },
         opts.format,
@@ -154,6 +169,13 @@ export const streamArticle = async (
       language,
       { ...callbacks, allowGeneratedImages, officialMediaPages, clientSiteId },
     )
+    const linked = await linkArticle(clientSiteId, finalized, language, {
+      excludeId: opts.articleId,
+      abortSignal: callbacks?.abortSignal ?? opts.abortSignal,
+    })
+    linkTokens += linked.tokens
+    return { ...finalized, content: linked.content }
+  }
 
   let editorialTokens = 0
   let editorialReview:
@@ -243,6 +265,9 @@ export const streamArticle = async (
     knowledge,
     get editorialTokens() {
       return editorialTokens
+    },
+    get linkTokens() {
+      return linkTokens
     },
     get editorialReview() {
       return editorialReview
