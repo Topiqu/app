@@ -20,6 +20,7 @@ export default defineEventHandler(async (event) => {
       firstPaidAt: true,
       focus: true,
       audience: true,
+      websiteUrl: true,
       theme: true,
       typographyPreset: true,
       accentColor: true,
@@ -52,7 +53,10 @@ export default defineEventHandler(async (event) => {
     ...status
   } = clientSite
 
-  const articleWallet = await getArticleCreditWallet(user.clientSiteId)
+  const [articleWallet, knowledgeSources] = await Promise.all([
+    getArticleCreditWallet(user.clientSiteId),
+    db.knowledgeSource.count({ where: { clientSiteId: clientSite.id, deletedAt: null } }),
+  ])
   // Onboarding records why a new site started without a trial; nothing on the site row says so.
   const repeatInbox =
     clientSite.plan === 'BASIC' &&
@@ -62,6 +66,7 @@ export default defineEventHandler(async (event) => {
     ...status,
     articlesRemaining: articleWallet.available,
     articleWallet,
+    knowledgeSources,
     aiUser: users[0] ?? null,
     hasActiveSubscription: !!stripeSubscriptionId,
     trial: {

@@ -16,6 +16,8 @@ export interface ClientSiteStatus {
     grants: { id: string; remaining: number; expiresAt: string | null; periodEnd: string | null; source: string }[]
   }
   articlesRemaining: number
+  knowledgeSources: number
+  websiteUrl: string | null
   createdAt: string
   firstPaidAt: string | null
   trial: {
