@@ -11,7 +11,9 @@ import type { ArticleImage, StockImage } from '../images/types'
 
 import { escapeHtml } from '../sanitize'
 import { findStockImage } from '../images/chain'
+import { storeMediaSource } from '../images/stores'
 import { createSteamImageSearch } from '../images/steam'
+import { createAppStoreImageSearch } from '../images/appStore'
 import { buildImageHtml, type CaptionLabels } from '../images/caption'
 import { createImageSelection, photoSubjectQuery } from '../images/selection'
 import { findPressImage, loadPressImages, youtubeThumbnailImage } from '../images/press'
@@ -102,9 +104,10 @@ export const finalizeArticle = async (
   }
 
   const acceptImage = createImageSelection()
-  // Store screenshots are uploaded by the publisher for promotion. Press-page images and video thumbnails
-  // carry no such guarantee (a page can embed licensed agency photos), so they stay EXTERNAL.
-  const fromPublisher = (source?: ArticleMediaSource | null) => source === 'screenshot'
+  // Store media is uploaded by the publisher for promotion, whichever provider found it. Official pages are
+  // re-hosted on our CDN, so the original address survives only as the credit's source.
+  const fromStore = (image: Pick<ArticleImage, 'url' | 'credit'>) =>
+    [image.url, image.credit?.sourceUrl].some((url) => !!url && !!storeMediaSource(url))
   const rightsClear = (asset: Partial<MediaAssetRecord>, url: string) =>
     !mediaRightsIssues({ key: url, placement: 'body', url }, asset as MediaAssetRecord).some(
       (issue) => issue.severity === 'warning',
@@ -112,7 +115,6 @@ export const finalizeArticle = async (
   const registerMedia = async (
     image: ArticleImage,
     searchHint?: string,
-    publisher = false,
   ): Promise<ArticleImage & { mediaId?: string; rightsClear: boolean }> => {
     if (!clientSiteId) return { ...image, rightsClear: true }
     const asset = await registerMediaAsset({
@@ -125,7 +127,7 @@ export const finalizeArticle = async (
       mimeType: image.mimeType,
       sizeBytes: image.sizeBytes,
       contentHash: image.contentHash,
-      ...creditAsset(image.credit, publisher),
+      ...creditAsset(image.credit, image.kind !== 'ai' && fromStore(image)),
       ...(image.kind === 'ai' && { origin: 'TOPIQU_AI' as const }),
       width: image.width,
       height: image.height,
@@ -142,11 +144,11 @@ export const finalizeArticle = async (
     }),
   ]
   const officialImageCache = new Map<string, Promise<StockImage | null>>()
-  const findSteamImage = createSteamImageSearch()
+  const storeSearches = [createSteamImageSearch(), createAppStoreImageSearch()]
   // Nobody confirms rights before an auto-publish, so a candidate that would need it is skipped
   // in favour of the next real one; AI stays the last resort.
-  const clearCandidate = (image: StockImage, publisher = false) =>
-    rightsClear({ ...creditAsset(image.credit, publisher), rightsConfirmedAt: null }, image.url)
+  const clearCandidate = (image: StockImage) =>
+    rightsClear({ ...creditAsset(image.credit, fromStore(image)), rightsConfirmedAt: null }, image.url)
   const findExistingImage = async (
     query: string,
     type: ArticleObject['images'][number]['type'],
@@ -154,12 +156,13 @@ export const finalizeArticle = async (
   ): Promise<{ image: StockImage; kind: ImageKind; source: ArticleMediaSource } | null> => {
     const clear = clearOnly ? clearCandidate : undefined
     // `acceptImage` records the pick, so it runs only once the candidate passed every other check.
-    const pick = (publisher: boolean) => (image: StockImage) =>
-      (!clear || clear(image, publisher)) && acceptImage(image)
-    const official = await findPressImage(officialImages, query, pick(false), officialImageCache)
+    const pick = (image: StockImage) => (!clear || clear(image)) && acceptImage(image)
+    const official = await findPressImage(officialImages, query, pick, officialImageCache)
     if (official) return { image: official, kind: 'illustration', source: 'official' }
-    const screenshot = await findSteamImage(query, pick(true))
-    if (screenshot) return { image: screenshot, kind: 'illustration', source: 'screenshot' }
+    for (const search of storeSearches) {
+      const screenshot = await search(query, pick)
+      if (screenshot) return { image: screenshot, kind: 'illustration', source: 'screenshot' }
+    }
     const hit = await findStockImage(type, query, undefined, clear)
     if (hit && acceptImage(hit.image)) return { ...hit, source: 'library' }
     // A named subject has real photos even when the scene the writer described does not; that beats
@@ -213,7 +216,6 @@ export const finalizeArticle = async (
       const registered = await registerMedia(
         hit ? { ...hit.image, kind: hit.kind } : { ...generated!, kind: 'ai' as const },
         query,
-        fromPublisher(hit?.source),
       )
       articleCoverMediaId = registered.mediaId ?? null
       if (generated) acceptImage({ url: articleImageUrl })
@@ -264,7 +266,7 @@ export const finalizeArticle = async (
         return null
       }
 
-      let registered = await registerMedia(resolved.image, img.query, fromPublisher(resolved.source))
+      let registered = await registerMedia(resolved.image, img.query)
       // Inline images are optional: an auto-published article replaces or drops one it cannot clear.
       if (requireClearRights && !registered.rightsClear) {
         const generated =

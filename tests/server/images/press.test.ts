@@ -36,6 +36,18 @@ describe('official first-party media', () => {
     expect(pickPressImage(images, 'Divinity battle', accept)?.url).toContain('/battle.jpg')
   })
 
+  it('takes screenshots a store page serves from its own CDN', () => {
+    const images = parsePressImages(
+      `<body>
+        <img src="https://play-lh.googleusercontent.com/shot-1=w1052-h592" alt="Screenshot image">
+        <img src="https://lh3.googleusercontent.com/private-photo=w1052" alt="Someone's photo">
+      </body>`,
+      'https://play.google.com/store/apps/details?id=com.example',
+    )
+
+    expect(images.map((image) => image.url)).toEqual(['https://play-lh.googleusercontent.com/shot-1=w1052-h592'])
+  })
+
   it('credits a declared licence only to the images it covers', () => {
     const images = parsePressImages(
       `<head>

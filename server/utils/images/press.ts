@@ -5,6 +5,7 @@ import { youtubeVideoId } from '~~/shared/utils/youtube'
 import type { StockImage } from './types'
 
 import { putToCdn } from '../storage'
+import { storeMediaSource } from './stores'
 import { fetchPublicUrl, readLimitedBody } from './publicFetch'
 import { optimizeGeneratedImage, IMMUTABLE_IMAGE_CACHE_CONTROL } from './optimize'
 
@@ -164,7 +165,8 @@ export const parsePressImages = (html: string, source: string): StockImage[] => 
     .sort((a, b) => b.priority - a.priority)
     .flatMap(({ raw, alt, publisherDeclared, ...own }) => {
       const url = imageUrl(raw, source)
-      if (!url || seen.has(url) || (!publisherDeclared && !relatedHost(url, page))) return []
+      // A store page serves its screenshots from the store CDN, which is publisher media in its own right.
+      if (!url || seen.has(url) || (!publisherDeclared && !relatedHost(url, page) && !storeMediaSource(url))) return []
       seen.add(url)
       // A page-wide licence speaks for the site's own files, not for assets it embeds from elsewhere.
       const pageWide = !own.license && relatedHost(url, page)

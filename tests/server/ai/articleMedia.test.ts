@@ -12,6 +12,7 @@ const { steamSearch } = vi.hoisted(() => ({
   steamSearch: vi.fn<(query: string, accept: (image: any) => boolean) => Promise<any>>(async () => null),
 }))
 vi.mock('../../../server/utils/images/steam', () => ({ createSteamImageSearch: () => steamSearch }))
+vi.mock('../../../server/utils/images/appStore', () => ({ createAppStoreImageSearch: () => async () => null }))
 vi.mock('ai', async (importOriginal) => ({
   ...(await importOriginal<typeof import('ai')>()),
   generateText: vi.fn(),
@@ -356,6 +357,22 @@ describe('auto-published media rights', () => {
       }
       return accept(image) ? image : null
     })
+
+  it('files a re-hosted store image as publisher media by its original address', async () => {
+    library(null)
+    steamSearch.mockImplementation(async (_query, accept) => {
+      const url = `https://cdn.topiqu.test/article-images/official-${++n}.jpg`
+      const image = {
+        url,
+        alt: 'The Witcher 4',
+        credit: { source: 'Official media', sourceUrl: 'https://cdn1.epicgames.com/offer/witcher/key-art.jpg' },
+      }
+      return accept(image) ? image : null
+    })
+    const result = await finalizeArticle(object(), 'en', auto)
+    expect(result.articleImageUrl).toContain('official-')
+    expect(register.mock.calls[0]?.[0].origin).toBe('PUBLISHER')
+  })
 
   it('uses credited Steam screenshots on autopilot and files them as publisher media', async () => {
     library(null)
