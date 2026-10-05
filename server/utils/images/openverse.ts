@@ -46,16 +46,25 @@ export const openverseImage = (result: OpenverseResult): StockImage | null => {
   }
 }
 
-export const pickOpenverseImage = (results: OpenverseResult[], query?: string): StockImage | null => {
+export const pickOpenverseImage = (
+  results: OpenverseResult[],
+  query?: string,
+  accept?: (image: StockImage) => boolean,
+): StockImage | null => {
   results = query ? results.filter((result) => matchesImageQuery(result.title, query)) : results
-  const landscape = results.find((result) => !!result.width && !!result.height && result.width > result.height)
+  const landscape = (result: OpenverseResult) => !!result.width && !!result.height && result.width > result.height
 
-  return openverseImage(landscape ?? results[0] ?? {})
+  for (const result of [...results.filter(landscape), ...results.filter((result) => !landscape(result))]) {
+    const image = openverseImage(result)
+    if (image && (!accept || accept(image))) return image
+  }
+
+  return null
 }
 
 export const openverse: ImageProvider = {
   name: 'openverse',
-  search: async (query) => {
+  search: async (query, accept) => {
     try {
       const url = new URL(SEARCH_URL)
       url.search = new URLSearchParams({
@@ -69,7 +78,7 @@ export const openverse: ImageProvider = {
       // Anonymous access is heavily rate-limited; registering a client raises the ceiling.
       const data = await fetchJson(url, { headers: imageApiHeaders() })
 
-      return pickOpenverseImage(data?.results ?? [], query)
+      return pickOpenverseImage(data?.results ?? [], query, accept)
     } catch (error) {
       console.error('[images/openverse] search failed:', error)
 

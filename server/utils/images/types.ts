@@ -16,7 +16,8 @@ export interface StockImage {
 
 export interface ImageProvider {
   name: string
-  search: (query: string) => Promise<StockImage | null>
+  /** Returns the best candidate `accept` allows; without it, the best candidate. */
+  search: (query: string, accept?: (image: StockImage) => boolean) => Promise<StockImage | null>
 }
 
 /** A resolved image, ready to be rendered into the body. */

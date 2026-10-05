@@ -37,7 +37,7 @@ describe('findStockImage', () => {
       chains({ photo: [first, provider('openverse', hit('openverse'))] }),
     )
 
-    expect(first.search).toHaveBeenCalledWith('q')
+    expect(first.search).toHaveBeenCalledWith('q', undefined)
     expect(result).toMatchObject({ kind: 'photo', image: { url: 'https://openverse/x.jpg' } })
   })
 
@@ -46,8 +46,8 @@ describe('findStockImage', () => {
     const stock = provider('openverse', null)
     const query = 'The Witcher 4 Ciri screenshot'
     expect(await findStockImage('photo', query, { photo: [archive], stock: [stock] })).toBeNull()
-    expect(archive.search).toHaveBeenCalledExactlyOnceWith(query)
-    expect(stock.search).toHaveBeenCalledExactlyOnceWith(query)
+    expect(archive.search).toHaveBeenCalledExactlyOnceWith(query, undefined)
+    expect(stock.search).toHaveBeenCalledExactlyOnceWith(query, undefined)
   })
 
   it('relabels a photo that only stock could answer as an illustration', async () => {
@@ -61,7 +61,7 @@ describe('findStockImage', () => {
     const photo = provider('wikimedia', hit('wikimedia'))
 
     expect(await findStockImage('generate', 'q', chains({ photo: [photo] }))).toMatchObject({ kind: 'illustration' })
-    expect(photo.search).toHaveBeenCalledWith('q')
+    expect(photo.search).toHaveBeenCalledWith('q', undefined)
   })
 
   it('returns null when every provider is empty', async () => {

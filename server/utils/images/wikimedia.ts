@@ -64,10 +64,10 @@ export const wikimediaImage = (page: CommonsPage): StockImage | null => {
 }
 
 /**
- * Landscape first — the body renders one image per full-width paragraph. Picks on the raw fields
- * so only the winner's credit HTML is ever parsed, rather than every candidate's.
+ * Landscape first — the body renders one image per full-width paragraph. Ranks on the raw fields
+ * so credit HTML is parsed only for the candidates actually tried.
  */
-export const pickWikimediaPage = (pages: CommonsPage[], query?: string): CommonsPage | null => {
+const rankWikimediaPages = (pages: CommonsPage[], query?: string): CommonsPage[] => {
   pages = query
     ? pages.filter((page) =>
         matchesImageQuery([page.title, metaText(page, 'ImageDescription')].filter(Boolean).join(' '), query),
@@ -76,24 +76,31 @@ export const pickWikimediaPage = (pages: CommonsPage[], query?: string): Commons
   const usable = [...pages]
     .sort((a, b) => (a.index ?? 0) - (b.index ?? 0))
     .filter((page) => !!page.imageinfo?.[0]?.url && RASTER.has(page.imageinfo[0]?.mime ?? ''))
-
-  const landscape = usable.find((page) => {
+  const landscape = (page: CommonsPage) => {
     const info = page.imageinfo?.[0]
     return !!info?.width && !!info.height && info.width > info.height
-  })
+  }
 
-  return landscape ?? usable[0] ?? null
+  return [...usable.filter(landscape), ...usable.filter((page) => !landscape(page))]
 }
 
-export const pickWikimediaImage = (pages: CommonsPage[], query?: string): StockImage | null => {
-  const page = pickWikimediaPage(pages, query)
+/** `accept` lets a caller skip candidates it cannot use, e.g. ones whose licence needs a person to confirm. */
+export const pickWikimediaImage = (
+  pages: CommonsPage[],
+  query?: string,
+  accept?: (image: StockImage) => boolean,
+): StockImage | null => {
+  for (const page of rankWikimediaPages(pages, query)) {
+    const image = wikimediaImage(page)
+    if (image && (!accept || accept(image))) return image
+  }
 
-  return page ? wikimediaImage(page) : null
+  return null
 }
 
 export const wikimedia: ImageProvider = {
   name: 'wikimedia',
-  search: async (query) => {
+  search: async (query, accept) => {
     try {
       const url = new URL(SEARCH_URL)
       url.search = new URLSearchParams({
@@ -111,7 +118,7 @@ export const wikimedia: ImageProvider = {
 
       const data = await fetchJson(url, { headers: imageApiHeaders() })
 
-      return pickWikimediaImage(data?.query?.pages ?? [], query)
+      return pickWikimediaImage(data?.query?.pages ?? [], query, accept)
     } catch (error) {
       console.error('[images/wikimedia] search failed:', error)
 

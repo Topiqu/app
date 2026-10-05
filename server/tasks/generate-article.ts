@@ -311,6 +311,7 @@ Respond ONLY in valid JSON (schema required).
           variant: topic?.variant,
           modules: cronModules,
           editorialReview: true,
+          requireClearRights: client.autoRelease && client.publishToWeb,
         }))
       } catch (err) {
         await logAction({

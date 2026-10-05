@@ -59,6 +59,15 @@ describe('media rights analysis', () => {
     )
   })
 
+  it('clears publisher media only with its source', () => {
+    const occurrence = { key: 'cover', placement: 'cover' as const, url: '/steam.jpg', mediaId: 'pub' }
+    const publisher = asset({ id: 'pub', origin: 'PUBLISHER', sourceUrl: 'https://store.steampowered.com/app/1' })
+    const codes = (record: MediaAssetRecord) => mediaRightsIssues(occurrence, record).map((issue) => issue.code)
+
+    expect(codes(publisher)).toEqual([])
+    expect(codes({ ...publisher, sourceUrl: null })).toContain('missing-source')
+  })
+
   it('requires source, author, license and attribution for Creative Commons media', () => {
     const occurrence = { key: 'body', placement: 'body' as const, url: '/cc.jpg', mediaId: 'cc' }
     const codes = mediaRightsIssues(

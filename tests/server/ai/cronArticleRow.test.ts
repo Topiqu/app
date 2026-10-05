@@ -72,6 +72,8 @@ describe('generate-article cron row', () => {
     expect(task).toContain("const status = releasable && !releaseAt ? 'published' : 'draft'")
     expect(task).toContain('const coverApproved = Boolean(generated.articleImageUrl)')
     expect(task).toContain('mediaReport.counts.needsAttention === 0')
+    // Nobody confirms image rights before an auto-publish, so media is chosen to need no confirmation.
+    expect(task).toContain('requireClearRights: client.autoRelease && client.publishToWeb')
     // Every failed gate counts as a hold, not only the editorial review.
     expect(task).toContain('heldFromAutoRelease: client.autoRelease && client.publishToWeb && !releasable')
   })
