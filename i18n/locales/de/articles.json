@@ -431,11 +431,11 @@
         "researchOff": "ohne Recherche",
         "modulesLabel": "Artikelbausteine",
         "elapsed": "Vergangen: {seconds} s",
-        "waitingWriting": "Seit {seconds} s hat der Autor keinen weiteren Text gesendet. Nach 30 s ohne Daten wird das Schreiben automatisch beendet.",
+        "waitingWriting": "Seit {seconds} s kam kein neuer Text. Nach 30 s ohne Text wird das Schreiben beendet.",
         "waitingResearch": "Die Quellenprüfung dauert länger als üblich. Der Vorgang läuft noch und kann sicher gestoppt werden.",
         "waitingImages": "Die Vorbereitung eines Bildes kann bis zu 45 s dauern. Falls der Dienst kein Bild liefert, wird der Artikel ohne Bild abgeschlossen.",
         "reservedDuringRun": "Vorübergehend reserviert: {count} Artikel",
-        "writerIdleError": "Die Generierung wurde gestoppt, weil der Autor 30 Sekunden lang keine Daten gesendet hat.",
+        "writerIdleError": "Die Generierung wurde gestoppt: 30 Sekunden lang kam kein Text. Versuche es erneut.",
         "writerDeadlineError": "Die Generierung wurde nach Erreichen des 90-Sekunden-Limits für das Schreiben gestoppt.",
         "output": {
           "news": "Nachrichtenbericht",

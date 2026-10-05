@@ -49,17 +49,17 @@
       "connectDescription": "Topiqu fordert nur Lesezugriff an und nutzt die Daten für Artikelkennzahlen und Optimierungsvorschläge.",
       "connect": "Google-Konto verbinden",
       "disconnect": "Verbindung trennen",
-      "noProperty": "Search-Console-Property auswählen",
+      "noProperty": "Website in der Search Console auswählen",
       "chooseProperty": "Welche Website gehört zu diesem Projekt?",
-      "choosePlaceholder": "Property auswählen",
+      "choosePlaceholder": "Website auswählen",
       "lastSync": "Letzte Synchronisierung:",
       "autopilotTitle": "SEO-Autopilot",
-      "autopilotDescription": "Aktiviere automatische CTR-Verbesserungen und gezielte Inhaltsaktualisierungen. Pro Tag wird höchstens ein Artikel geändert; derselbe Artikel frühestens nach 7 Tagen und dasselbe Artikel-Suchanfragen-Paar nach 30 Tagen. Neue geplante Artikel nutzen bisher nicht abgedeckte Suchanfragen und beachten weiterhin deine Veröffentlichungseinstellungen.",
+      "autopilotDescription": "Aktiviere automatische Überarbeitungen von Titel und Teaser bei Artikeln mit niedriger Klickrate sowie gezielte Inhaltsaktualisierungen. Pro Tag wird höchstens ein Artikel geändert; derselbe Artikel frühestens nach 7 Tagen und dasselbe Artikel-Suchanfragen-Paar nach 30 Tagen. Neue geplante Artikel nutzen bisher nicht abgedeckte Suchanfragen und beachten weiterhin deine Veröffentlichungseinstellungen.",
       "autopilotLastRun": "Zuletzt geprüft:",
       "rollback": "Rückgängig machen",
       "rollbackSuccess": "Die letzte automatische Änderung wurde rückgängig gemacht.",
       "actions": {
-        "SEO_AUTOPILOT_CTR_OPTIMIZED": "Suchergebnistext optimiert",
+        "SEO_AUTOPILOT_CTR_OPTIMIZED": "Titel und Teaser überarbeitet",
         "SEO_AUTOPILOT_CONTENT_REFRESHED": "Inhalt erweitert"
       }
     },
@@ -242,13 +242,13 @@
       "premiumTitle": "Integrationen für Premium",
       "premiumDescription": "Erweiterte Integrationen im Premium-Tarif.",
       "gscDescription": "Nutze Suchleistung für konkrete Content-Chancen.",
-      "gscBenefitOne": "Sieh Suchanfragen, Klicks, CTR und durchschnittliche Positionen deiner Artikel.",
-      "gscBenefitTwo": "Topiqu erkennt Inhalte nahe den Spitzenpositionen und mit ungewöhnlich niedriger CTR.",
+      "gscBenefitOne": "Sieh Suchanfragen, Klicks, Klickrate und durchschnittliche Positionen deiner Artikel.",
+      "gscBenefitTwo": "Topiqu erkennt Inhalte knapp unter den Spitzenpositionen und Artikel, die in den Ergebnissen selten angeklickt werden.",
       "gscStepOne": "Verbinde ein Google-Konto mit Zugriff auf die Search Console.",
-      "gscStepTwo": "Wähle die Property für diese Website aus.",
+      "gscStepTwo": "Wähle die Website aus, die zu diesem Projekt gehört.",
       "gscStepThree": "Topiqu synchronisiert täglich die endgültigen Leistungsdaten.",
       "analyticsDescription": "Füge der von Topiqu veröffentlichten Website deine eigene GA4-Messung hinzu.",
-      "analyticsBenefitOne": "Die Besuchsdaten bleiben in deiner eigenen Google-Analytics-Property.",
+      "analyticsBenefitOne": "Die Besuchsdaten bleiben in deinem eigenen Google-Analytics-Konto.",
       "analyticsBenefitTwo": "Aktiviere die Messung, ohne Vorlagen oder Quellcode zu bearbeiten.",
       "analyticsStepOne": "Öffne in Google Analytics Verwaltung → Datenstreams.",
       "analyticsStepTwo": "Kopiere die Mess-ID im Format G-XXXXXXXXXX.",
@@ -955,7 +955,7 @@
         "placeholder": "Unternehmensbeschreibung (z. B. deine Mission oder dein Slogan)"
       },
       "content": {
-        "title": "Inhaltsbriefing",
+        "title": "Redaktionelle Vorgaben",
         "description": "Jeder von der KI generierte Artikel basiert auf diesen Einstellungen.",
         "direction": {
           "title": "Ausrichtung",

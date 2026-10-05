@@ -431,11 +431,11 @@
         "researchOff": "sans recherche",
         "modulesLabel": "Éléments de l'article",
         "elapsed": "Temps écoulé : {seconds} s",
-        "waitingWriting": "L'auteur n'a pas envoyé de nouveau texte depuis {seconds} s. La rédaction s'arrête automatiquement après 30 s sans données.",
+        "waitingWriting": "Aucun nouveau texte depuis {seconds} s. La rédaction s'arrête après 30 s sans texte.",
         "waitingResearch": "La vérification des sources prend plus de temps que prévu. La tâche est toujours active et peut être arrêtée sans risque.",
         "waitingImages": "La préparation d'une image peut prendre jusqu'à 45 s. Si le service n'en fournit pas, l'article sera terminé sans image.",
         "reservedDuringRun": "Réservé temporairement : {count} article",
-        "writerIdleError": "La génération s'est arrêtée car l'auteur n'a envoyé aucune donnée pendant 30 secondes.",
+        "writerIdleError": "La génération s'est arrêtée : aucun texte reçu pendant 30 secondes. Réessayez.",
         "writerDeadlineError": "La génération s'est arrêtée après avoir atteint la limite de rédaction de 90 secondes.",
         "output": {
           "news": "Actualité",
