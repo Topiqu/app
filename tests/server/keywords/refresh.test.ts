@@ -252,8 +252,8 @@ describe('suggestions', () => {
 })
 
 describe('credit reservation and limits', () => {
-  it('allows Premium and Custom with 15 preparations monthly', () => {
-    expect(refreshAllowance('PREMIUM')).toEqual({ allowed: true, monthly: 15 })
+  it('allows Premium 25 preparations monthly and Custom 15', () => {
+    expect(refreshAllowance('PREMIUM')).toEqual({ allowed: true, monthly: 25 })
     expect(refreshAllowance('CUSTOM')).toEqual({ allowed: true, monthly: 15 })
     expect(refreshAllowance('PRO')).toEqual({ allowed: false, monthly: 0 })
   })
@@ -275,7 +275,7 @@ describe('credit reservation and limits', () => {
     expect(reserve).not.toHaveBeenCalled()
   })
   it('checks the allowance again while holding the lock and releases a losing reservation', async () => {
-    mocks.tx.contentAction.count.mockResolvedValue(15)
+    mocks.tx.contentAction.count.mockResolvedValue(25)
     await expect(queueContentAction(mocks.scoped, action, 'PREMIUM', NOW)).rejects.toMatchObject({ statusCode: 429 })
     expect(settle).toHaveBeenCalledWith(operation, false, { contentActionId: 'action1' })
   })

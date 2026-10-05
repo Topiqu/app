@@ -10,12 +10,12 @@ import {
 describe('article allowance policy', () => {
   it('keeps the trial and plan quantities explicit', () => {
     expect(TRIAL_ARTICLE_CREDITS).toBe(5)
-    expect(PLAN_ARTICLE_CREDITS).toEqual({ PRO: 20, PREMIUM: 30 })
+    expect(PLAN_ARTICLE_CREDITS).toEqual({ PRO: 30, PREMIUM: 50 })
   })
 
   it('does not grant articles to plans outside the paid AI catalog', () => {
-    expect(articleCreditsForPlan('PRO')).toBe(20)
-    expect(articleCreditsForPlan('PREMIUM')).toBe(30)
+    expect(articleCreditsForPlan('PRO')).toBe(30)
+    expect(articleCreditsForPlan('PREMIUM')).toBe(50)
     expect(articleCreditsForPlan('BASIC')).toBe(0)
     expect(articleCreditsForPlan(null)).toBe(0)
   })

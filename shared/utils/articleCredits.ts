@@ -1,9 +1,9 @@
-export const ARTICLE_CREDIT_POLICY_VERSION = '2026-09-articles-v1'
+export const ARTICLE_CREDIT_POLICY_VERSION = '2026-10-articles-v2'
 export const TRIAL_ARTICLE_CREDITS = 5
 
 export const PLAN_ARTICLE_CREDITS = {
-  PRO: 20,
-  PREMIUM: 30,
+  PRO: 30,
+  PREMIUM: 50,
 } as const
 
 export type ArticleCreditPlan = keyof typeof PLAN_ARTICLE_CREDITS

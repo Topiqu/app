@@ -153,6 +153,13 @@ export async function grantPlanArticleCredits(
 ) {
   const amount = articleCreditsForPlan(input.plan)
   if (amount <= 0) return
+  // Replayed billing events keep their original grant even if the allowance policy changed.
+  const previous = await tx.articleCreditGrant.findUnique({ where: { idempotencyKey: input.idempotencyKey } })
+  if (previous) {
+    if (previous.clientSiteId !== input.clientSiteId || previous.source !== 'PLAN')
+      throw createError({ statusCode: 409, message: 'Article credit grant key already used' })
+    return previous
+  }
   // Downgrades never claw back articles already granted.
   const active = await tx.articleCreditGrant.aggregate({
     where: { clientSiteId: input.clientSiteId, source: 'PLAN', expiresAt: { gt: input.periodStart } },
