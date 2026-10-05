@@ -725,6 +725,7 @@
           "CREATIVE_COMMONS": "Creative Commons",
           "PUBLIC_DOMAIN": "Volné dílo / public domain",
           "EXTERNAL": "Z jiného webu",
+          "PUBLISHER": "Oficiální materiál vydavatele (např. Steam)",
           "OTHER": "Jiný původ"
         },
         "publishTitle": "Před publikací zkontrolujte práva k médiím",

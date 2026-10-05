@@ -143,7 +143,7 @@ export const researchTopic = async (
         Then a "Sources:" section listing the full URLs you actually retrieved, one per line.
         ${
           imagesRequested
-            ? 'Also identify up to four official first-party product, news, press, media or download pages owned by the subject\'s developer, publisher or organisation. Open each page before returning it. After Sources, write each suitable page on its own line as exactly "OFFICIAL MEDIA: <owner> — <full URL>". A verified official page may serve assets from its own CDN; do not list image URLs, search pages, social networks, fan sites or third-party news sites.'
+            ? 'Also identify up to four official first-party product, news, press, media or download pages owned by the subject\'s developer, publisher or organisation. Open each page before returning it. After Sources, write each suitable page on its own line as exactly "OFFICIAL MEDIA: <owner> — <full URL>". A verified official page may serve assets from its own CDN. The subject\'s own product page on Steam, the Epic Games Store, GOG, the App Store or Google Play also qualifies, with the store as owner. Do not list image URLs, search pages, social networks, fan sites or third-party news sites.'
             : ''
         }
         Only list URLs you actually retrieved. Never invent, guess, or reconstruct a URL.

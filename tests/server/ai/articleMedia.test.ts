@@ -2,13 +2,17 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { streamArticle } from '../../../server/utils/ai/article'
 import { findStockImage } from '../../../server/utils/images/chain'
-import { finalizeArticle } from '../../../server/utils/ai/articleMedia'
+import { finalizeArticle, stockOrigin } from '../../../server/utils/ai/articleMedia'
 import { applyContentSlots, dropAuthoredImages } from '../../../shared/utils/contentSlots'
 
 vi.mock('../../../server/utils/images/chain', () => ({
   findStockImage: vi.fn(),
 }))
-vi.mock('../../../server/utils/images/steam', () => ({ createSteamImageSearch: () => async () => null }))
+const { steamSearch } = vi.hoisted(() => ({
+  steamSearch: vi.fn<(query: string, accept: (image: any) => boolean) => Promise<any>>(async () => null),
+}))
+vi.mock('../../../server/utils/images/steam', () => ({ createSteamImageSearch: () => steamSearch }))
+vi.mock('../../../server/utils/images/appStore', () => ({ createAppStoreImageSearch: () => async () => null }))
 vi.mock('ai', async (importOriginal) => ({
   ...(await importOriginal<typeof import('ai')>()),
   generateText: vi.fn(),
@@ -45,6 +49,7 @@ const hit = (id: string) => ({
 
 beforeEach(() => {
   vi.mocked(findStockImage).mockReset()
+  steamSearch.mockReset()
   vi.stubGlobal('getServerTranslator', async () => (key: string) => key)
   vi.stubGlobal('dropBlankLines', (content: string) => content)
   vi.stubGlobal('applyContentSlots', applyContentSlots)
@@ -158,7 +163,7 @@ describe('article media finalization', () => {
       images: [],
     }
     const result = await finalizeArticle(object, 'en', { allowGeneratedImages: true })
-    expect(findStockImage).toHaveBeenLastCalledWith('photo', 'Jeseniky mountains')
+    expect(findStockImage).toHaveBeenLastCalledWith('photo', 'Jeseniky mountains', undefined, undefined)
     expect(result.articleImageUrl).toBe('https://images.test/mountains')
     expect(result.articleImageCredit?.kind).toBe('illustration')
     expect(generateImage).not.toHaveBeenCalled()
@@ -186,8 +191,14 @@ describe('article media finalization', () => {
       images: [],
     }
     const result = await finalizeArticle(object, 'en', { allowGeneratedImages: true })
-    expect(findStockImage).toHaveBeenNthCalledWith(1, 'photo', 'Andrej Babis Petr Pavel 2026 meeting')
-    expect(findStockImage).toHaveBeenNthCalledWith(2, 'photo', 'Andrej Babis')
+    expect(findStockImage).toHaveBeenNthCalledWith(
+      1,
+      'photo',
+      'Andrej Babis Petr Pavel 2026 meeting',
+      undefined,
+      undefined,
+    )
+    expect(findStockImage).toHaveBeenNthCalledWith(2, 'photo', 'Andrej Babis', undefined, undefined)
     expect(result.articleImageCredit?.kind).toBe('illustration')
     expect(generateImage).not.toHaveBeenCalled()
   })
@@ -234,10 +245,155 @@ it('prefers a real photo of a named subject over AI and reports where every imag
     ],
   }
   const result = await finalizeArticle(object, 'en', { allowGeneratedImages: true, onMedia })
-  expect(findStockImage).toHaveBeenNthCalledWith(2, 'photo', 'Andrej Babis')
+  expect(findStockImage).toHaveBeenNthCalledWith(2, 'photo', 'Andrej Babis', undefined, undefined)
   expect(result.articleImageUrl).toBe('https://images.test/babis')
   expect(generateImage).toHaveBeenCalledTimes(1)
   expect(onMedia).toHaveBeenLastCalledWith(
     expect.objectContaining({ stage: 'complete', found: 2, total: 3, cover: 'library', slots: ['ai', null] }),
   )
+})
+
+describe('auto-published media rights', () => {
+  let n = 0
+  const register = vi.fn(async (input: Record<string, any>) => ({
+    id: `asset-${input.url}`,
+    url: input.url,
+    deliveryUrl: input.deliveryUrl,
+    origin: input.origin,
+    sourceUrl: input.sourceUrl ?? null,
+    author: input.author ?? null,
+    license: input.license ?? null,
+    attribution: input.attribution ?? null,
+    attributionRequired: input.attributionRequired ?? false,
+    rightsConfirmedAt: null,
+    metadataSignals: null,
+  }))
+  const object = () => ({
+    ...draft(),
+    content: '<h2>Ciri</h2>[[IMAGE1]][[IMAGE2]]',
+    images: [
+      { type: 'photo' as const, query: 'Witcher 4 Ciri', caption: '' },
+      { type: 'generate' as const, query: 'abstract quest map', caption: '' },
+    ],
+  })
+  // Unlicensed stock registers as EXTERNAL, which needs a person to confirm permission.
+  const unclear = () => hit(`stock-${++n}`)
+  const free = () => {
+    const found = hit(`free-${++n}`)
+    return { ...found, image: { ...found.image, credit: { ...found.image.credit, license: 'CC0 1.0' } } }
+  }
+  /** Each search offers an unclear candidate first, then `fallback` when the caller filters. */
+  const library = (fallback: (() => ReturnType<typeof hit>) | null) =>
+    vi.mocked(findStockImage).mockImplementation(async (_intent, _query, _chains, accept) => {
+      const first = unclear()
+      if (!accept || accept(first.image)) return first
+      const next = fallback?.()
+      return next && accept(next.image) ? next : null
+    })
+  const auto = { clientSiteId: 'site', allowGeneratedImages: true, requireClearRights: true }
+
+  beforeEach(() => {
+    n = 0
+    register.mockClear()
+    vi.stubGlobal('registerMediaAsset', register)
+    vi.mocked(generateImage).mockImplementation(
+      async () => ({ url: `https://images.test/ai-${++n}`, width: 1200, height: 800 }) as never,
+    )
+  })
+
+  it('takes the next real image with clear rights before any AI', async () => {
+    library(free)
+    const result = await finalizeArticle(object(), 'en', auto)
+    expect(result.articleImageUrl).toContain('images.test/free-')
+    expect(result.content.match(/<img /g)).toHaveLength(2)
+    expect(result.content).not.toContain('images.test/stock-')
+    expect(generateImage).not.toHaveBeenCalled()
+  })
+
+  it('falls back to AI only when no real image is clear, and never for a photo slot', async () => {
+    library(null)
+    const result = await finalizeArticle(object(), 'en', auto)
+    expect(result.articleImageCredit?.kind).toBe('ai')
+    expect(result.content.match(/<img /g)).toHaveLength(1)
+    expect(result.content).toContain('images.test/ai-')
+  })
+
+  it('keeps an unclear real cover for review when no illustration is available', async () => {
+    library(null)
+    const result = await finalizeArticle(object(), 'en', { clientSiteId: 'site', requireClearRights: true })
+    expect(result.articleImageUrl).toContain('images.test/stock-')
+    expect(result.content).not.toContain('<img')
+  })
+
+  it('keeps the first found images when a person reviews the article', async () => {
+    library(free)
+    const result = await finalizeArticle(object(), 'en', { clientSiteId: 'site', allowGeneratedImages: true })
+    expect(result.articleImageUrl).toContain('images.test/stock-')
+    expect(result.content.match(/images\.test\/free-/g)).toBeNull()
+    expect(generateImage).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    ['public domain', { license: 'Public Domain Mark 1.0' }],
+    ['CC0 without an author', { license: 'CC0 1.0' }],
+    ['credited CC BY', { license: 'CC BY-SA 4.0', author: 'Jan Novák' }],
+  ])('uses %s stock without confirmation', async (_, credit) => {
+    vi.mocked(findStockImage).mockImplementation(async () => {
+      const found = hit(`free-${++n}`)
+      return { ...found, image: { ...found.image, credit: { ...found.image.credit, ...credit } } }
+    })
+    const result = await finalizeArticle(object(), 'en', auto)
+    expect(result.content.match(/<img /g)).toHaveLength(2)
+    expect(generateImage).not.toHaveBeenCalled()
+  })
+
+  const steam = () =>
+    steamSearch.mockImplementation(async (_query, accept) => {
+      const url = `https://shared.steamstatic.com/ss_${++n}.jpg`
+      const image = {
+        url,
+        alt: 'The Witcher 4',
+        credit: { source: 'The Witcher 4 — CD Projekt (Steam)', sourceUrl: url },
+      }
+      return accept(image) ? image : null
+    })
+
+  it('files a re-hosted store image as publisher media by its original address', async () => {
+    library(null)
+    steamSearch.mockImplementation(async (_query, accept) => {
+      const url = `https://cdn.topiqu.test/article-images/official-${++n}.jpg`
+      const image = {
+        url,
+        alt: 'The Witcher 4',
+        credit: { source: 'Official media', sourceUrl: 'https://cdn1.epicgames.com/offer/witcher/key-art.jpg' },
+      }
+      return accept(image) ? image : null
+    })
+    const result = await finalizeArticle(object(), 'en', auto)
+    expect(result.articleImageUrl).toContain('official-')
+    expect(register.mock.calls[0]?.[0].origin).toBe('PUBLISHER')
+  })
+
+  it('uses credited Steam screenshots on autopilot and files them as publisher media', async () => {
+    library(null)
+    steam()
+    const result = await finalizeArticle(object(), 'en', auto)
+    expect(result.articleImageUrl).toContain('steamstatic.com')
+    expect(result.content.match(/<img /g)).toHaveLength(2)
+    expect(register.mock.calls.every(([input]) => input.origin === 'PUBLISHER')).toBe(true)
+    expect(generateImage).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    ['Public Domain Mark 1.0', 'PUBLIC_DOMAIN'],
+    ['PD-US', 'PUBLIC_DOMAIN'],
+    ['CC0 1.0', 'PUBLIC_DOMAIN'],
+    ['CC BY-SA 4.0', 'CREATIVE_COMMONS'],
+    ['CC BY-NC 2.0', 'EXTERNAL'],
+    ['CC BY-NC-SA 4.0', 'EXTERNAL'],
+    ['GFDL', 'EXTERNAL'],
+    [undefined, 'EXTERNAL'],
+  ])('classifies %s as %s', (license, origin) => {
+    expect(stockOrigin(license)).toBe(origin)
+  })
 })

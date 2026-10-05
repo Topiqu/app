@@ -102,6 +102,7 @@ model Article with Base, Ownable {
     aiCitations      AiCitation[]
     aiOpportunities  AiVisibilityOpportunity[]
     keywordClusters  KeywordCluster[]
+    contentActions   ContentAction[]
     aiPrompts        AiVisibilityPrompt[]
     pollResults      PollResult[]
     polls            Poll[]
@@ -132,6 +133,7 @@ model Article with Base, Ownable {
     @@allow('read', auth().id == userId)
     @@allow('read', clientSite.tenantMemberships?[userId == auth().id && role == 'OWNER' && deletedAt == null])
     @@allow('read', auth().role == 'superadmin')
+    @@allow('update', auth().role == 'superadmin')
     @@allow('all', auth().role == 'admin' && clientSiteId == auth().clientSiteId)
     @@unique([slug, clientSiteId])
     @@index([title, excerpt, clientSiteId, articleSeriesId, seriesOrder])

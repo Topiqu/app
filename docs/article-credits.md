@@ -2,14 +2,16 @@
 
 Customers buy and spend articles, never model tokens. One successful manual or scheduled generation costs exactly one article regardless of research depth, model, output length, or selected media. Translation, prompt enhancement, sentiment, and other supporting AI features do not spend articles.
 
-The current policy is versioned as `2026-09-articles-v1`:
+The current policy is versioned as `2026-10-articles-v2`:
 
 - Trial: 5 articles, valid until the trial ends.
-- PRO: 20 articles per month.
-- PREMIUM: 30 articles per month.
+- PRO: 30 articles per month.
+- PREMIUM: 50 articles per month.
 - Add-ons: 5 / 12 / 25 articles; purchased articles do not expire.
 
 Plan articles expire at the end of their monthly allowance period and are consumed before non-expiring purchases. Annual subscriptions are billed annually but receive a new monthly grant from the `grant-annual-article-credits` task. The Stripe invoice webhook creates the first grant and monthly invoices create subsequent grants. A mid-period upgrade grants only the difference to the new plan allowance; a downgrade does not claw back articles already granted.
+
+This replaces `2026-09-articles-v1` (PRO: 20, PREMIUM: 30). New allowance grants use the current policy; existing grants keep their amount, remaining balance, expiry, and recorded policy version. Replayed billing events do not change an already-issued grant. No data migration or retroactive top-up is required for this quota change.
 
 ## Reservations and concurrency
 

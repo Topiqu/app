@@ -54,6 +54,7 @@
       </dl>
 
       <KeywordsResults />
+      <KeywordsActions />
       <KeywordsPlan />
     </template>
   </div>

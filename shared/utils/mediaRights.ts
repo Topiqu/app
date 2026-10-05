@@ -68,7 +68,7 @@ export const mediaRightsIssues = (occurrence: ArticleMediaOccurrence, asset: Med
     if (['EXTERNAL_AI', 'LICENSED_STOCK', 'EXTERNAL', 'OTHER'].includes(asset.origin) && !confirmed)
       issues.push({ code: 'permission-unconfirmed', severity: 'warning' })
     if (
-      ['LICENSED_STOCK', 'CREATIVE_COMMONS', 'PUBLIC_DOMAIN', 'EXTERNAL'].includes(asset.origin) &&
+      ['LICENSED_STOCK', 'CREATIVE_COMMONS', 'PUBLIC_DOMAIN', 'EXTERNAL', 'PUBLISHER'].includes(asset.origin) &&
       !present(asset.sourceUrl)
     )
       issues.push({ code: 'missing-source', severity: 'warning' })

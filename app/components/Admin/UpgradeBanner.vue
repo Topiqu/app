@@ -19,6 +19,9 @@
       @click="dismiss"
     />
     <template #description>
+      <p v-if="status?.trial.repeatInbox" class="mt-1 text-sm leading-relaxed">
+        {{ $t('admin.upgrade.repeatInbox') }}
+      </p>
       <ul class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 mt-1">
         <li v-for="feature in features" :key="feature" class="flex items-start gap-2 text-sm leading-relaxed">
           <UIcon size="16" name="mdi:check-circle" class="mt-0.5 shrink-0" />

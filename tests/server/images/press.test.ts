@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
 import { createImageSelection } from '../../../server/utils/images/selection'
-import { parsePressImages, pickPressImage, youtubeThumbnailImage } from '../../../server/utils/images/press'
+import {
+  ccLicenseName,
+  parsePressImages,
+  pickPressImage,
+  youtubeThumbnailImage,
+} from '../../../server/utils/images/press'
 
 describe('official first-party media', () => {
   it('discovers structured and press-download assets without a publisher allowlist', () => {
@@ -29,6 +34,47 @@ describe('official first-party media', () => {
     const accept = createImageSelection()
     expect(pickPressImage(images, 'Larian Divinity hero', accept)?.url).toContain('/hero.jpg')
     expect(pickPressImage(images, 'Divinity battle', accept)?.url).toContain('/battle.jpg')
+  })
+
+  it('takes screenshots a store page serves from its own CDN', () => {
+    const images = parsePressImages(
+      `<body>
+        <img src="https://play-lh.googleusercontent.com/shot-1=w1052-h592" alt="Screenshot image">
+        <img src="https://lh3.googleusercontent.com/private-photo=w1052" alt="Someone's photo">
+      </body>`,
+      'https://play.google.com/store/apps/details?id=com.example',
+    )
+
+    expect(images.map((image) => image.url)).toEqual(['https://play-lh.googleusercontent.com/shot-1=w1052-h592'])
+  })
+
+  it('credits a declared licence only to the images it covers', () => {
+    const images = parsePressImages(
+      `<head>
+        <meta property="og:image" content="https://cdn.larian.com/divinity/hero.jpg">
+        <script type="application/ld+json">{"@type":"ImageObject","contentUrl":"https://assets.example-cdn.com/divinity/map.jpg","license":"https://creativecommons.org/publicdomain/zero/1.0/"}</script>
+      </head><body>
+        <a rel="license" href="https://creativecommons.org/licenses/by/4.0/">Some rights reserved</a>
+        <a class="press-download" href="https://agency.example.com/photo.jpg">Download photo</a>
+      </body>`,
+      'https://larian.com/news/divinity-revealed',
+    )
+    const licenseOf = (part: string) => images.find((image) => image.url.includes(part))?.credit.license
+
+    expect(licenseOf('hero.jpg')).toBe('CC BY 4.0')
+    expect(licenseOf('map.jpg')).toBe('CC0 1.0')
+    // An asset the page only links to from another host does not inherit the page's licence.
+    expect(licenseOf('agency.example.com')).toBeUndefined()
+  })
+
+  it.each([
+    ['https://creativecommons.org/licenses/by-sa/4.0/', 'CC BY-SA 4.0'],
+    ['https://creativecommons.org/licenses/by-nc/2.0/deed.cs', 'CC BY-NC 2.0'],
+    ['https://creativecommons.org/publicdomain/zero/1.0/', 'CC0 1.0'],
+    ['https://creativecommons.org/publicdomain/mark/1.0/', 'Public Domain Mark'],
+    ['https://example.com/terms', undefined],
+  ])('names %s', (href, name) => {
+    expect(ccLicenseName(href)).toBe(name)
   })
 
   it('derives a thumbnail only from a valid YouTube video URL', () => {

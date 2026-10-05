@@ -153,7 +153,7 @@ const originItems = computed(() =>
   })),
 )
 const needsSource = computed(() =>
-  ['LICENSED_STOCK', 'CREATIVE_COMMONS', 'PUBLIC_DOMAIN', 'EXTERNAL'].includes(form.origin),
+  ['LICENSED_STOCK', 'CREATIVE_COMMONS', 'PUBLIC_DOMAIN', 'EXTERNAL', 'PUBLISHER'].includes(form.origin),
 )
 const needsDetails = computed(() => ['LICENSED_STOCK', 'CREATIVE_COMMONS', 'PUBLIC_DOMAIN'].includes(form.origin))
 const formatBytes = (bytes: number) =>

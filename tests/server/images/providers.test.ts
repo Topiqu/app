@@ -83,6 +83,16 @@ describe('pickWikimediaImage', () => {
     expect(pickWikimediaImage([portrait])).not.toBeNull()
   })
 
+  it('moves past candidates the caller refuses', () => {
+    const refused = { ...commonsPage(), index: 1 }
+    const next = commonsPage({ thumburl: 'https://upload.wikimedia.org/next.jpg' })
+    next.index = 2
+
+    expect(pickWikimediaImage([refused, next], undefined, (image) => image.url.includes('next'))!.url).toBe(
+      'https://upload.wikimedia.org/next.jpg',
+    )
+  })
+
   it('returns null for an empty or unusable result set', () => {
     expect(pickWikimediaImage([])).toBeNull()
     expect(pickWikimediaImage([commonsPage({ mime: 'image/svg+xml' })])).toBeNull()
@@ -114,5 +124,17 @@ describe('openverseImage', () => {
 
     expect(pickOpenverseImage(results)!.url).toBe('https://x/landscape.jpg')
     expect(pickOpenverseImage([])).toBeNull()
+  })
+
+  it('moves past candidates the caller refuses, landscape first', () => {
+    const results = [
+      { url: 'https://x/portrait.jpg', width: 600, height: 900 },
+      { url: 'https://x/refused.jpg', width: 1600, height: 900 },
+    ]
+
+    expect(pickOpenverseImage(results, undefined, (image) => !image.url.includes('refused'))!.url).toBe(
+      'https://x/portrait.jpg',
+    )
+    expect(pickOpenverseImage(results, undefined, () => false)).toBeNull()
   })
 })

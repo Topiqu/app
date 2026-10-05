@@ -8,11 +8,12 @@
       "cta": "Upgrade to {plan}",
       "loading": "Opening checkout…",
       "error": "Could not open checkout. Please try again.",
+      "repeatInbox": "The free trial is one per inbox, and this one has already used it. The blog therefore starts on Free – unlock AI articles with the plan below.",
       "toPro": {
         "title": "Grow your blog with the PRO plan",
         "description": "AI generation, scheduled publishing, advanced SEO and a custom domain.",
         "features": [
-          "20 AI articles per month with optional add-ons",
+          "30 AI articles per month with optional add-ons",
           "Advanced SEO optimization",
           "Import of existing articles",
           "Custom domain"
@@ -22,7 +23,7 @@
         "title": "Maximum power with the PREMIUM plan",
         "description": "Everything in PRO plus sentiment analysis, Search Console and priority indexing.",
         "features": [
-          "30 AI articles per month with optional add-ons",
+          "50 AI articles per month with optional add-ons",
           "AI Sentiment & automatic images",
           "Priority indexing and sourcing",
           "Custom emojis & branding",

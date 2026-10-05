@@ -148,7 +148,7 @@ describe.skipIf(process.env.AI_EVAL !== '1')('keyword opportunity eval', () => {
   it.concurrent.each(cases)(
     '$id',
     async (testCase) => {
-      const decisions = await assessOpportunities(
+      const { accepted: decisions } = await assessOpportunities(
         { id: 'eval', language: testCase.language, focus: testCase.focus, audience: testCase.audience },
         testCase.candidates,
         testCase.articles,

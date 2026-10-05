@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
+import { matchesStoreTitle } from '../../../server/utils/images/stores'
 import { createImageSelection } from '../../../server/utils/images/selection'
-import { createSteamImageSearch, matchesSteamGame, steamScreenshots } from '../../../server/utils/images/steam'
+import { createSteamImageSearch, steamScreenshots } from '../../../server/utils/images/steam'
 
 afterEach(() => vi.unstubAllGlobals())
 const screenshot = (id: string) =>
@@ -9,13 +10,13 @@ const screenshot = (id: string) =>
 
 describe('official game screenshot catalogue', () => {
   it('matches a game despite scene instructions but does not substitute sequels, DLC or bonus packs', () => {
-    expect(matchesSteamGame('Cyberpunk 2077', 'Cyberpunk 2077 Night City official screenshot')).toBe(true)
-    expect(matchesSteamGame('Cyberpunk 2077', 'Cyberpunk 2077 Update 2.0 gameplay screenshot')).toBe(true)
-    expect(matchesSteamGame('Cyberpunk 2077', 'Cyberpunk 2 screenshot')).toBe(false)
-    expect(matchesSteamGame('The Witcher 3', 'The Witcher 4 Ciri screenshot')).toBe(false)
-    expect(matchesSteamGame('Cyberpunk 2077 REDmod', 'Cyberpunk 2077 screenshot')).toBe(false)
-    expect(matchesSteamGame('Cyberpunk 2077: Phantom Liberty', 'Cyberpunk 2077 Night City')).toBe(false)
-    expect(matchesSteamGame('Divinity', 'Divinity Original Sin 3 screenshot')).toBe(false)
+    expect(matchesStoreTitle('Cyberpunk 2077', 'Cyberpunk 2077 Night City official screenshot')).toBe(true)
+    expect(matchesStoreTitle('Cyberpunk 2077', 'Cyberpunk 2077 Update 2.0 gameplay screenshot')).toBe(true)
+    expect(matchesStoreTitle('Cyberpunk 2077', 'Cyberpunk 2 screenshot')).toBe(false)
+    expect(matchesStoreTitle('The Witcher 3', 'The Witcher 4 Ciri screenshot')).toBe(false)
+    expect(matchesStoreTitle('Cyberpunk 2077 REDmod', 'Cyberpunk 2077 screenshot')).toBe(false)
+    expect(matchesStoreTitle('Cyberpunk 2077: Phantom Liberty', 'Cyberpunk 2077 Night City')).toBe(false)
+    expect(matchesStoreTitle('Divinity', 'Divinity Original Sin 3 screenshot')).toBe(false)
   })
 
   it('uses only actual screenshot fields on the Steam CDN and keeps the original game in its credit', () => {

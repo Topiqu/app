@@ -235,6 +235,7 @@ const visibleLedger = computed(() => ledger.value.filter((entry) => entry.amount
 const ledgerReason = (entry: { reason: string }) => {
   if (entry.reason === 'MANUAL_ARTICLE') return t('common.wallet.reasons.manualArticle')
   if (entry.reason === 'SCHEDULED_ARTICLE') return t('common.wallet.reasons.scheduledArticle')
+  if (entry.reason === 'CONTENT_REFRESH') return t('common.wallet.reasons.contentRefresh')
   if (entry.reason === 'Article credits expired') return ''
   return entry.reason
 }

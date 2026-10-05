@@ -17,7 +17,8 @@
       "reservedHint": "Jede Generierung reserviert 1 Artikel. Bei einem Fehler wird er freigegeben.",
       "reasons": {
         "manualArticle": "Manuell erstellter Artikel",
-        "scheduledArticle": "Automatisch erstellter Artikel"
+        "scheduledArticle": "Automatisch erstellter Artikel",
+        "contentRefresh": "Artikel-Aktualisierung"
       },
       "periodUsage": "Verwendet in {period}",
       "expires": "Gültig bis",
@@ -116,6 +117,36 @@
       "notRanked": "nicht in den Top 30",
       "entered": "neu in den Top 30",
       "empty": "Noch nichts zu messen. Die erste Position messen wir 7 Tage nach Veröffentlichung eines Plan-Artikels."
+    },
+    "contentActions": {
+      "title": "Zu verbessern",
+      "description": "Artikel, denen eine Überarbeitung bei Google helfen kann. Den Vorschlag erstellen wir für 1 Credit, Sie übernehmen ihn nach Prüfung.",
+      "usage": "Diesen Monat {used} / {monthly} Überarbeitungen",
+      "empty": "Noch nichts zu verbessern. Vorschläge erscheinen, wenn Artikel einen Monat in der Suche sind.",
+      "type": {
+        "REFRESH": "Aktualisierung",
+        "EXPAND": "Erweiterung"
+      },
+      "keyword": "Suchanfrage: {keyword}",
+      "reasonRefresh": "Der Artikel steht um Platz {position}. Eine bessere Antwort kann ihn auf die erste Seite bringen.",
+      "changed": "Etwa {percent} % des Textes ändern sich.",
+      "preparing": "Die Überarbeitung wird vorbereitet, meist dauert es ein paar Minuten.",
+      "prepareFailed": "Die Überarbeitung konnte nicht vorbereitet werden; der Credit wurde zurückgebucht.",
+      "prepare": "Überarbeitung vorbereiten (1 Credit)",
+      "retry": "Erneut versuchen",
+      "upgrade": "In Premium verfügbar",
+      "dismiss": "Überspringen",
+      "preview": "Vorschau",
+      "apply": "Übernehmen",
+      "discard": "Verwerfen",
+      "rollback": "Rückgängig",
+      "rollbackTitle": "Überarbeitung rückgängig machen?",
+      "rollbackMessage": "Der Artikel kehrt zur Fassung vor der Überarbeitung zurück. Der Credit wird nicht erstattet.",
+      "applied": "Die Überarbeitung ist im Artikel.",
+      "failed": "Die Aktion ist fehlgeschlagen.",
+      "measuring": "Das Ergebnis messen wir um den {date}.",
+      "result": "Platz {before} → {after}",
+      "resultAfter": "Platz nach der Überarbeitung: {after}"
     },
     "keywords": {
       "title": "Themen",

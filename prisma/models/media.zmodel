@@ -12,6 +12,7 @@ enum MediaOrigin {
     CREATIVE_COMMONS
     PUBLIC_DOMAIN
     EXTERNAL
+    PUBLISHER
     OTHER
 }
 

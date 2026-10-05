@@ -1,7 +1,9 @@
 import type { Language } from '~~/generated/zenstack/models'
-import type { CoverCredit, ImageKind } from '~~/shared/utils/imageCredit'
+import type { MediaAssetRecord } from '~~/shared/types/mediaRights'
+import type { CoverCredit, ImageCredit, ImageKind } from '~~/shared/utils/imageCredit'
 import type { ArticleMediaProgress, ArticleMediaSource } from '~~/shared/utils/articleGeneration'
 
+import { mediaRightsIssues } from '~~/shared/utils/mediaRights'
 import { stripUntrustedIframes, youtubeEmbedUrl } from '~~/shared/utils/youtube'
 
 import type { ArticleObject } from './articleConfig'
@@ -9,12 +11,39 @@ import type { ArticleImage, StockImage } from '../images/types'
 
 import { escapeHtml } from '../sanitize'
 import { findStockImage } from '../images/chain'
+import { storeMediaSource } from '../images/stores'
 import { createSteamImageSearch } from '../images/steam'
+import { createAppStoreImageSearch } from '../images/appStore'
 import { buildImageHtml, type CaptionLabels } from '../images/caption'
 import { createImageSelection, photoSubjectQuery } from '../images/selection'
 import { findPressImage, loadPressImages, youtubeThumbnailImage } from '../images/press'
 
 type FinalizeImage = { slot: number; html: string }
+
+// Openverse labels `CC0` and `Public Domain Mark`, Commons `Public domain` or `PD-…`; none needs an author.
+const PUBLIC_DOMAIN_LICENSE = /^(cc0|public domain|pd\b)/i
+
+/** Only a CC licence counts as Creative Commons; anything unrecognised needs a person to confirm it. */
+export const stockOrigin = (license?: string) => {
+  const name = license?.trim() ?? ''
+  if (PUBLIC_DOMAIN_LICENSE.test(name)) return 'PUBLIC_DOMAIN' as const
+  // A tenant blog is commercial use, which NC licences forbid.
+  return /^cc[\s-]/i.test(name) && !/\bnc\b/i.test(name) ? ('CREATIVE_COMMONS' as const) : ('EXTERNAL' as const)
+}
+
+/** The rights fields a found image registers with; the candidate filter judges the same record. */
+const creditAsset = (credit?: ImageCredit, publisher = false) => {
+  const origin = publisher ? ('PUBLISHER' as const) : stockOrigin(credit?.license)
+  return {
+    origin,
+    sourceUrl: credit?.sourceUrl,
+    author: credit?.author,
+    license: credit?.license,
+    licenseUrl: credit?.licenseUrl,
+    attribution: credit ? [credit.author, credit.license, credit.source].filter(Boolean).join(' · ') : null,
+    attributionRequired: origin === 'CREATIVE_COMMONS',
+  }
+}
 
 const coverIllustrationPrompt = (subject: string) =>
   `Atmospheric editorial illustration evoking ${subject}. No people, faces, logos, text or depiction of a specific real event.`
@@ -25,6 +54,8 @@ export type FinalizeCallbacks = {
   allowGeneratedImages?: boolean
   officialMediaPages?: readonly string[]
   clientSiteId?: string
+  /** Set when the article publishes without a human, so no one could confirm an image's rights. */
+  requireClearRights?: boolean
 }
 
 /** Falls back to English wording rather than dropping the disclosure when a key is missing. */
@@ -50,6 +81,7 @@ export const finalizeArticle = async (
     allowGeneratedImages = false,
     officialMediaPages = [],
     clientSiteId,
+    requireClearRights = false,
   } = callbacks
   const generateImageOptions = {
     outputDir: 'article-images',
@@ -72,11 +104,19 @@ export const finalizeArticle = async (
   }
 
   const acceptImage = createImageSelection()
-  const registerMedia = async (image: ArticleImage, searchHint?: string) => {
-    if (!clientSiteId) return image
-    const credit = image.credit
-    const creativeCommons = Boolean(credit?.license?.toUpperCase().startsWith('CC'))
-    const origin = image.kind === 'ai' ? 'TOPIQU_AI' : creativeCommons ? 'CREATIVE_COMMONS' : 'EXTERNAL'
+  // Store media is uploaded by the publisher for promotion, whichever provider found it. Official pages are
+  // re-hosted on our CDN, so the original address survives only as the credit's source.
+  const fromStore = (image: Pick<ArticleImage, 'url' | 'credit'>) =>
+    [image.url, image.credit?.sourceUrl].some((url) => !!url && !!storeMediaSource(url))
+  const rightsClear = (asset: Partial<MediaAssetRecord>, url: string) =>
+    !mediaRightsIssues({ key: url, placement: 'body', url }, asset as MediaAssetRecord).some(
+      (issue) => issue.severity === 'warning',
+    )
+  const registerMedia = async (
+    image: ArticleImage,
+    searchHint?: string,
+  ): Promise<ArticleImage & { mediaId?: string; rightsClear: boolean }> => {
+    if (!clientSiteId) return { ...image, rightsClear: true }
     const asset = await registerMediaAsset({
       clientSiteId,
       url: image.url,
@@ -87,18 +127,14 @@ export const finalizeArticle = async (
       mimeType: image.mimeType,
       sizeBytes: image.sizeBytes,
       contentHash: image.contentHash,
-      origin,
-      sourceUrl: credit?.sourceUrl,
-      author: credit?.author,
-      license: credit?.license,
-      licenseUrl: credit?.licenseUrl,
-      attribution: credit ? [credit.author, credit.license, credit.source].filter(Boolean).join(' · ') : null,
-      attributionRequired: creativeCommons,
+      ...creditAsset(image.credit, image.kind !== 'ai' && fromStore(image)),
+      ...(image.kind === 'ai' && { origin: 'TOPIQU_AI' as const }),
       width: image.width,
       height: image.height,
       metadataSignals: image.kind === 'ai' && searchHint ? { generationPrompt: searchHint } : undefined,
     })
-    return { ...image, mediaId: asset.id }
+    // The same rule the publish gate applies, on the asset as registered (a reused one may be confirmed).
+    return { ...image, mediaId: asset.id, rightsClear: rightsClear(asset as MediaAssetRecord, image.url) }
   }
   const officialImages = [
     ...(await loadPressImages([...officialMediaPages])),
@@ -108,22 +144,32 @@ export const finalizeArticle = async (
     }),
   ]
   const officialImageCache = new Map<string, Promise<StockImage | null>>()
-  const findSteamImage = createSteamImageSearch()
+  const storeSearches = [createSteamImageSearch(), createAppStoreImageSearch()]
+  // Nobody confirms rights before an auto-publish, so a candidate that would need it is skipped
+  // in favour of the next real one; AI stays the last resort.
+  const clearCandidate = (image: StockImage) =>
+    rightsClear({ ...creditAsset(image.credit, fromStore(image)), rightsConfirmedAt: null }, image.url)
   const findExistingImage = async (
     query: string,
     type: ArticleObject['images'][number]['type'],
+    clearOnly = requireClearRights,
   ): Promise<{ image: StockImage; kind: ImageKind; source: ArticleMediaSource } | null> => {
-    const official = await findPressImage(officialImages, query, acceptImage, officialImageCache)
+    const clear = clearOnly ? clearCandidate : undefined
+    // `acceptImage` records the pick, so it runs only once the candidate passed every other check.
+    const pick = (image: StockImage) => (!clear || clear(image)) && acceptImage(image)
+    const official = await findPressImage(officialImages, query, pick, officialImageCache)
     if (official) return { image: official, kind: 'illustration', source: 'official' }
-    const screenshot = await findSteamImage(query, acceptImage)
-    if (screenshot) return { image: screenshot, kind: 'illustration', source: 'screenshot' }
-    const hit = await findStockImage(type, query)
+    for (const search of storeSearches) {
+      const screenshot = await search(query, pick)
+      if (screenshot) return { image: screenshot, kind: 'illustration', source: 'screenshot' }
+    }
+    const hit = await findStockImage(type, query, undefined, clear)
     if (hit && acceptImage(hit.image)) return { ...hit, source: 'library' }
     // A named subject has real photos even when the scene the writer described does not; that beats
     // an AI illustration of any intent.
     const subject = photoSubjectQuery(query)
     if (subject) {
-      const portrait = await findStockImage('photo', subject)
+      const portrait = await findStockImage('photo', subject, undefined, clear)
       if (portrait && acceptImage(portrait.image)) return { ...portrait, kind: 'illustration', source: 'library' }
     }
     return null
@@ -149,15 +195,21 @@ export const finalizeArticle = async (
   if (object.coverImage) {
     const { query, broaderQuery, type } = object.coverImage
     const broader = broaderQuery?.trim()
-    const exact = await findExistingImage(query, type)
-    // A broader subject is a real photo of something else, so it is credited as illustrative.
-    const related = exact || !broader || broader === query ? null : await findExistingImage(broader, 'photo')
-    const hit = exact ?? (related && { ...related, kind: 'illustration' as const })
+    const findCover = async (clearOnly: boolean) => {
+      const exact = await findExistingImage(query, type, clearOnly)
+      // A broader subject is a real photo of something else, so it is credited as illustrative.
+      const related =
+        exact || !broader || broader === query ? null : await findExistingImage(broader, 'photo', clearOnly)
+      return exact ?? (related && { ...related, kind: 'illustration' as const })
+    }
+    let hit = await findCover(requireClearRights)
     // An article without a cover goes unread, so the cover alone falls back to a labelled AI
     // illustration even for a photo subject — one that shows no person, logo, text or real event.
     const generated = hit
       ? null
       : await tryGenerateImage(type === 'photo' ? coverIllustrationPrompt(broader || query) : query)
+    // With no illustration either, a real cover that needs confirming still beats none; the article waits.
+    if (!hit && !generated && requireClearRights) hit = await findCover(false)
     articleImageUrl = hit?.image.url ?? generated?.url ?? ''
     if (articleImageUrl) {
       articleImageCredit = hit ? { kind: hit.kind, credit: hit.image.credit } : { kind: 'ai' }
@@ -214,7 +266,19 @@ export const finalizeArticle = async (
         return null
       }
 
-      const registered = await registerMedia(resolved.image, img.query)
+      let registered = await registerMedia(resolved.image, img.query)
+      // Inline images are optional: an auto-published article replaces or drops one it cannot clear.
+      if (requireClearRights && !registered.rightsClear) {
+        const generated =
+          img.type === 'photo' ? null : await tryGenerateImage(img.query, { filenameSuffix: idx.toString() })
+        if (!generated || !acceptImage(generated)) {
+          slotSources[idx] = null
+          reportMedia('content')
+          return null
+        }
+        registered = await registerMedia({ ...generated, kind: 'ai' }, img.query)
+        slotSources[idx] = 'ai'
+      }
       const image = {
         slot: idx + 1,
         // A requested caption describes the desired asset, not the asset that was actually

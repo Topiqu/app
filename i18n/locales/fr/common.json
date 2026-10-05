@@ -17,7 +17,8 @@
       "reservedHint": "Chaque génération réserve 1 article. Il est libéré en cas d'échec.",
       "reasons": {
         "manualArticle": "Article créé manuellement",
-        "scheduledArticle": "Article créé automatiquement"
+        "scheduledArticle": "Article créé automatiquement",
+        "contentRefresh": "Mise à jour d’article"
       },
       "periodUsage": "Utilisés pendant {period}",
       "expires": "Valable jusqu'au",
@@ -116,6 +117,36 @@
       "notRanked": "hors du top 30",
       "entered": "nouveau dans le top 30",
       "empty": "Rien à mesurer pour l’instant. Nous mesurons la première position 7 jours après la publication d’un article du plan."
+    },
+    "contentActions": {
+      "title": "À améliorer",
+      "description": "Les articles qu’une mise à jour peut aider sur Google. Nous préparons la proposition pour 1 crédit, vous l’appliquez après vérification.",
+      "usage": "Ce mois-ci {used} / {monthly} mises à jour",
+      "empty": "Rien à améliorer pour l’instant. Les suggestions apparaissent quand les articles ont passé un mois dans la recherche.",
+      "type": {
+        "REFRESH": "Mise à jour",
+        "EXPAND": "Extension"
+      },
+      "keyword": "Requête : {keyword}",
+      "reasonRefresh": "L’article se situe autour de la position {position}. Une meilleure réponse peut le faire passer en première page.",
+      "changed": "Environ {percent} % du texte change.",
+      "preparing": "Préparation de la mise à jour, en général quelques minutes.",
+      "prepareFailed": "La mise à jour n’a pas pu être préparée ; le crédit a été restitué.",
+      "prepare": "Préparer la mise à jour (1 crédit)",
+      "retry": "Réessayer",
+      "upgrade": "Disponible avec Premium",
+      "dismiss": "Ignorer",
+      "preview": "Aperçu",
+      "apply": "Appliquer",
+      "discard": "Abandonner",
+      "rollback": "Annuler",
+      "rollbackTitle": "Annuler la mise à jour ?",
+      "rollbackMessage": "L’article revient à sa version d’avant la mise à jour. Le crédit n’est pas restitué.",
+      "applied": "La mise à jour est en ligne dans l’article.",
+      "failed": "L’action a échoué.",
+      "measuring": "Nous mesurerons le résultat vers le {date}.",
+      "result": "Position {before} → {after}",
+      "resultAfter": "Position après la mise à jour : {after}"
     },
     "keywords": {
       "title": "Sujets",

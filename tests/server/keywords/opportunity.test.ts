@@ -56,7 +56,7 @@ describe('keyword opportunities', () => {
       [{ ...candidate('kyselé espresso'), organic }],
       [{ title: 'Domácí káva', excerpt: 'Přehled metod přípravy.' }],
     )
-    expect(result.map((entry) => entry.index)).toEqual([0])
+    expect(result.accepted.map((entry) => entry.index)).toEqual([0])
     const call = vi.mocked(generateText).mock.calls[0]![0]
     expect(call.prompt).toContain('Teplota a hrubost mletí')
     expect(call.prompt).toContain('Přehled metod přípravy.')
@@ -81,7 +81,29 @@ describe('keyword opportunities', () => {
       ['nové', 'pokryté', 'synonymum', 'login', 'checkout'].map(candidate),
       [{ title: 'Pokryté' }],
     )
-    expect(result.map((entry) => entry.index)).toEqual([0])
+    expect(result.accepted.map((entry) => entry.index)).toEqual([0])
+  })
+
+  it('turns a covered need the covering article misses into an expansion of that article', async () => {
+    vi.mocked(generateText).mockResolvedValue({
+      output: {
+        decisions: [
+          decision(1, { write: false, coveredBy: 2, extendsArticle: true, angle: 'Jaký mlýnek na espresso?' }),
+          decision(2, { write: false, coveredBy: 1, extendsArticle: false }),
+          decision(3, { write: false, coveredBy: 9, extendsArticle: true }),
+        ],
+      },
+      usage: {},
+    } as never)
+    const result = await assessOpportunities(
+      site,
+      ['mlýnek na espresso', 'domácí káva', 'vymyšlený článek'].map(candidate),
+      [{ title: 'Domácí káva' }, { title: 'Espresso doma' }],
+    )
+    expect(result.accepted).toEqual([])
+    expect(result.expansions).toEqual([
+      { index: 0, article: 1, angle: 'Jaký mlýnek na espresso?', reason: expect.any(String) },
+    ])
   })
 
   it('fails closed on an incomplete assessment instead of replacing the usable plan', async () => {
@@ -95,7 +117,7 @@ describe('keyword opportunities', () => {
   })
 
   it('does not call the model for an empty candidate list', async () => {
-    await expect(assessOpportunities(site, [], [])).resolves.toEqual([])
+    await expect(assessOpportunities(site, [], [])).resolves.toEqual({ accepted: [], expansions: [] })
     expect(generateText).not.toHaveBeenCalled()
   })
 })

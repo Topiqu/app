@@ -134,7 +134,15 @@ export const registerMediaAsset = async (input: RegisterMediaInput) => {
         contentHash: reusable.contentHash || values.contentHash,
         width: reusable.width || values.width,
         height: reusable.height || values.height,
-        origin: reusable.origin === 'UNKNOWN' && input.origin ? input.origin : reusable.origin,
+        // Generation used to file publisher and public-domain finds as EXTERNAL; a re-find knows better.
+        origin:
+          input.origin &&
+          (reusable.origin === 'UNKNOWN' ||
+            (reusable.origin === 'EXTERNAL' &&
+              !reusable.rightsConfirmedAt &&
+              ['PUBLISHER', 'PUBLIC_DOMAIN', 'CREATIVE_COMMONS'].includes(input.origin)))
+            ? input.origin
+            : reusable.origin,
         sourceUrl: reusable.sourceUrl || values.sourceUrl,
         author: merged.author,
         license: merged.license,

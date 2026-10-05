@@ -1,4 +1,7 @@
+import type { H3Event } from 'h3'
+
 import crypto from 'crypto'
+import { isIP } from 'node:net'
 
 const CHALLENGE_TTL_MS = 5 * 60 * 1000
 const VERIFIED_TTL_MS = 30 * 60 * 1000
@@ -68,4 +71,19 @@ export const verifyVerifiedToken = (token: string, email: string): boolean => {
   if (!data || data.t !== 'verified') return false
   if (typeof data.exp !== 'number' || data.exp < Date.now()) return false
   return data.e === email.toLowerCase()
+}
+
+const LANDING_SIG_MAX_SKEW_MS = 5 * 60 * 1000
+
+/** The landing calls checkout server-to-server, so the visitor's IP only arrives in its signed header. */
+export const landingClientIp = (event: H3Event): string | null => {
+  const ip = getHeader(event, 'x-landing-client-ip')?.trim()
+  const timestamp = getHeader(event, 'x-landing-timestamp')
+  const sig = getHeader(event, 'x-landing-sig')
+  if (!ip || !isIP(ip) || !timestamp || !sig) return null
+  if (!(Math.abs(Date.now() - Number(timestamp)) <= LANDING_SIG_MAX_SKEW_MS)) return null
+  // Non-hex input decodes to a shorter buffer, which timingSafeEqual throws on.
+  if (!/^[0-9a-f]{64}$/.test(sig)) return null
+  const expected = crypto.createHmac('sha256', getSecret()).update(`${timestamp}.${ip}`).digest('hex')
+  return crypto.timingSafeEqual(Buffer.from(sig, 'hex'), Buffer.from(expected, 'hex')) ? ip : null
 }

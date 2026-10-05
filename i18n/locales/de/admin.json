@@ -8,11 +8,12 @@
       "cta": "Auf {plan} upgraden",
       "loading": "Kasse wird geöffnet…",
       "error": "Die Kasse konnte nicht geöffnet werden. Bitte versuchen Sie es erneut.",
+      "repeatInbox": "Die Testphase gibt es einmal pro E-Mail-Postfach, und dieses hat sie bereits genutzt. Der Blog startet daher im Tarif Free – KI-Artikel schalten Sie mit dem Tarif unten frei.",
       "toPro": {
         "title": "Mit dem PRO-Tarif Ihren Blog ausbauen",
         "description": "KI-Generierung, geplante Veröffentlichungen, erweitertes SEO und eine eigene Domain.",
         "features": [
-          "20 KI-Artikel pro Monat mit optionalen Zusatzpaketen",
+          "30 KI-Artikel pro Monat mit optionalen Zusatzpaketen",
           "Erweiterte SEO-Optimierung",
           "Import vorhandener Artikel",
           "Eigene Domain"
@@ -22,7 +23,7 @@
         "title": "Maximale Leistung mit dem PREMIUM-Tarif",
         "description": "Alles aus PRO plus Stimmungsanalyse, Search Console und bevorzugte Indexierung.",
         "features": [
-          "30 KI-Artikel pro Monat mit optionalen Zusatzpaketen",
+          "50 KI-Artikel pro Monat mit optionalen Zusatzpaketen",
           "KI-Stimmungsanalyse und automatische Bilder",
           "Bevorzugte Indexierung und Quellensuche",
           "Eigene Emojis und Branding",

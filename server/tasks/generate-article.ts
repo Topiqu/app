@@ -311,6 +311,7 @@ Respond ONLY in valid JSON (schema required).
           variant: topic?.variant,
           modules: cronModules,
           editorialReview: true,
+          requireClearRights: client.autoRelease && client.publishToWeb,
         }))
       } catch (err) {
         await logAction({
@@ -595,8 +596,9 @@ Respond ONLY in valid JSON (schema required).
             title: article.title,
             generatedWordCount,
             valueEvent,
-            heldFromAutoRelease: client.autoRelease && !qualityApproved,
+            heldFromAutoRelease: client.autoRelease && client.publishToWeb && !releasable,
             scheduledFor: releaseAt?.toISOString() ?? null,
+            mediaApproved,
             coverApproved,
             editorialReview: generated.editorialReview,
             researchApproved,

@@ -7,6 +7,7 @@ export const MEDIA_ORIGINS = [
   'CREATIVE_COMMONS',
   'PUBLIC_DOMAIN',
   'EXTERNAL',
+  'PUBLISHER',
   'OTHER',
 ] as const
 

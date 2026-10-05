@@ -725,6 +725,7 @@
           "CREATIVE_COMMONS": "Creative Commons",
           "PUBLIC_DOMAIN": "Gemeinfrei",
           "EXTERNAL": "Von einer anderen Website",
+          "PUBLISHER": "Offizielles Material des Publishers (z. B. Steam)",
           "OTHER": "Sonstiges"
         },
         "publishTitle": "Bildrechte vor der Veröffentlichung prüfen",

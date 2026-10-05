@@ -153,6 +153,13 @@ export async function grantPlanArticleCredits(
 ) {
   const amount = articleCreditsForPlan(input.plan)
   if (amount <= 0) return
+  // Replayed billing events keep their original grant even if the allowance policy changed.
+  const previous = await tx.articleCreditGrant.findUnique({ where: { idempotencyKey: input.idempotencyKey } })
+  if (previous) {
+    if (previous.clientSiteId !== input.clientSiteId || previous.source !== 'PLAN')
+      throw createError({ statusCode: 409, message: 'Article credit grant key already used' })
+    return previous
+  }
   // Downgrades never claw back articles already granted.
   const active = await tx.articleCreditGrant.aggregate({
     where: { clientSiteId: input.clientSiteId, source: 'PLAN', expiresAt: { gt: input.periodStart } },
@@ -262,7 +269,7 @@ export async function adjustArticleCredits(input: {
 
 export async function reserveArticleCredit(
   clientSiteId: string,
-  action: 'MANUAL_ARTICLE' | 'SCHEDULED_ARTICLE',
+  action: 'MANUAL_ARTICLE' | 'SCHEDULED_ARTICLE' | 'CONTENT_REFRESH',
   key: string = randomUUID(),
   metadata: JsonValue = {},
 ) {
@@ -311,8 +318,9 @@ export async function settleArticleCredit(
   operation: Pick<ArticleCreditOperation, 'id' | 'clientSiteId'>,
   charge: boolean,
   metadata: JsonValue = {},
+  transaction?: Tx,
 ) {
-  return prisma.$transaction(async (tx) => {
+  const write = async (tx: Tx) => {
     await lockWallet(tx, operation.clientSiteId)
     const current = await tx.articleCreditOperation.findFirstOrThrow({
       where: { id: operation.id, clientSiteId: operation.clientSiteId },
@@ -354,7 +362,8 @@ export async function settleArticleCredit(
       },
     })
     return getArticleCreditWallet(operation.clientSiteId, tx)
-  })
+  }
+  return transaction ? write(transaction) : prisma.$transaction(write)
 }
 
 export async function getArticleCreditWallet(clientSiteId: string, transaction?: Tx) {
@@ -375,7 +384,7 @@ export async function getArticleCreditWallet(clientSiteId: string, transaction?:
 
 export async function withArticleCreditReservation<T>(
   clientSiteId: string,
-  action: 'MANUAL_ARTICLE' | 'SCHEDULED_ARTICLE',
+  action: 'MANUAL_ARTICLE' | 'SCHEDULED_ARTICLE' | 'CONTENT_REFRESH',
   work: (operation: ArticleCreditOperation) => Promise<T>,
   options: {
     key?: string

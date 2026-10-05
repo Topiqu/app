@@ -8,11 +8,12 @@
       "cta": "Přejít na {plan}",
       "loading": "Otevírám platbu…",
       "error": "Platbu se nepodařilo otevřít. Zkuste to prosím znovu.",
+      "repeatInbox": "Zkušební verze je jedna na e-mailovou schránku a tato ji už využila. Blog proto začíná na tarifu Free – AI články odemknete tarifem níže.",
       "toPro": {
         "title": "Posuňte svůj blog s plánem PRO",
         "description": "AI generování, plánované publikování, pokročilé SEO a vlastní doména.",
         "features": [
-          "20 AI článků měsíčně s možností dokoupení dalších",
+          "30 AI článků měsíčně s možností dokoupení dalších",
           "Pokročilá SEO optimalizace",
           "Import existujících článků",
           "Vlastní doména"
@@ -22,7 +23,7 @@
         "title": "Maximální výkon s plánem PREMIUM",
         "description": "Vše z PRO plus analýza sentimentu, Search Console a prioritní indexace.",
         "features": [
-          "30 AI článků měsíčně s možností dokoupení dalších",
+          "50 AI článků měsíčně s možností dokoupení dalších",
           "AI Sentiment & automatické obrázky",
           "Prioritní indexace a zdrojování",
           "Vlastní emoji & branding",

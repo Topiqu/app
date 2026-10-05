@@ -49,6 +49,7 @@
       "CREATIVE_COMMONS": "Creative Commons",
       "PUBLIC_DOMAIN": "Public domain",
       "EXTERNAL": "External source",
+      "PUBLISHER": "Official publisher media",
       "OTHER": "Other"
     }
   }

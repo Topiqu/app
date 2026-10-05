@@ -5,6 +5,7 @@ import { youtubeVideoId } from '~~/shared/utils/youtube'
 import type { StockImage } from './types'
 
 import { putToCdn } from '../storage'
+import { storeMediaSource } from './stores'
 import { fetchPublicUrl, readLimitedBody } from './publicFetch'
 import { optimizeGeneratedImage, IMMUTABLE_IMAGE_CACHE_CONTROL } from './optimize'
 
@@ -49,15 +50,30 @@ const relatedHost = (asset: string, page: URL) => {
   return pageParts.slice(-2).join('.') === assetParts.slice(-2).join('.')
 }
 
-const jsonLdImages = (value: unknown): string[] => {
+/** A Creative Commons deed URL names its licence exactly; link text often does not. */
+export const ccLicenseName = (href: string | undefined) => {
+  const path = href?.match(/creativecommons\.org\/(licenses|publicdomain)\/([a-z-]+)(?:\/(\d\.\d))?/i)
+  if (!path) return undefined
+  const [, kind, code, version] = path
+  if (kind!.toLowerCase() === 'publicdomain')
+    return code!.toLowerCase() === 'zero' ? `CC0 ${version ?? '1.0'}` : 'Public Domain Mark'
+  return ['CC', code!.toUpperCase(), version].filter(Boolean).join(' ')
+}
+
+type JsonLdImage = { url: string; license?: string; licenseUrl?: string }
+
+/** schema.org lets an ImageObject declare its own `license`, which beats any page-wide claim. */
+const jsonLdImages = (value: unknown): JsonLdImage[] => {
   if (Array.isArray(value)) return value.flatMap(jsonLdImages)
   if (!value || typeof value !== 'object') return []
   const record = value as Record<string, unknown>
-  const own = ['image', 'contentUrl', 'thumbnailUrl'].flatMap((key) => {
+  const license = typeof record.license === 'string' ? ccLicenseName(record.license) : undefined
+  const licenseUrl = license ? (record.license as string) : undefined
+  const own = ['image', 'contentUrl', 'thumbnailUrl'].flatMap((key): JsonLdImage[] => {
     const item = record[key]
-    if (typeof item === 'string') return [item]
+    if (typeof item === 'string') return [{ url: item, license, licenseUrl }]
     const url = item && typeof item === 'object' ? (item as Record<string, unknown>).url : null
-    if (typeof url === 'string') return [url]
+    if (typeof url === 'string') return [{ url }]
     return []
   })
   return [...own, ...Object.values(record).flatMap(jsonLdImages)]
@@ -72,8 +88,15 @@ export const parsePressImages = (html: string, source: string): StockImage[] => 
   const site = $('meta[property="og:site_name"]').attr('content')?.trim() || page.hostname.replace(/^www\./, '')
   const licenseLink = $('a[rel~="license"], link[rel~="license"]').first()
   const licenseUrl = linkedHttpsUrl(licenseLink.attr('href'), source) ?? undefined
-  const license = licenseLink.text().replace(/\s+/g, ' ').trim() || undefined
-  const candidates: Array<{ raw?: string; alt?: string; priority: number; publisherDeclared?: boolean }> = [
+  const pageLicense = ccLicenseName(licenseUrl) ?? (licenseLink.text().replace(/\s+/g, ' ').trim() || undefined)
+  const candidates: Array<{
+    raw?: string
+    alt?: string
+    priority: number
+    publisherDeclared?: boolean
+    license?: string
+    licenseUrl?: string
+  }> = [
     {
       raw: $('meta[property="og:image"]').attr('content'),
       alt: $('meta[property="og:image:alt"]').attr('content'),
@@ -96,8 +119,8 @@ export const parsePressImages = (html: string, source: string): StockImage[] => 
   ]
   $('script[type="application/ld+json"]').each((_, element) => {
     try {
-      jsonLdImages(JSON.parse($(element).text())).forEach((raw) =>
-        candidates.push({ raw, alt: title, priority: 2, publisherDeclared: true }),
+      jsonLdImages(JSON.parse($(element).text())).forEach(({ url: raw, license, licenseUrl }) =>
+        candidates.push({ raw, alt: title, priority: 2, publisherDeclared: true, license, licenseUrl }),
       )
     } catch {
       // Invalid analytics JSON-LD does not invalidate the page's normal image metadata.
@@ -140,10 +163,15 @@ export const parsePressImages = (html: string, source: string): StockImage[] => 
   const seen = new Set<string>()
   return candidates
     .sort((a, b) => b.priority - a.priority)
-    .flatMap(({ raw, alt, publisherDeclared }) => {
+    .flatMap(({ raw, alt, publisherDeclared, ...own }) => {
       const url = imageUrl(raw, source)
-      if (!url || seen.has(url) || (!publisherDeclared && !relatedHost(url, page))) return []
+      // A store page serves its screenshots from the store CDN, which is publisher media in its own right.
+      if (!url || seen.has(url) || (!publisherDeclared && !relatedHost(url, page) && !storeMediaSource(url))) return []
       seen.add(url)
+      // A page-wide licence speaks for the site's own files, not for assets it embeds from elsewhere.
+      const pageWide = !own.license && relatedHost(url, page)
+      const license = own.license ?? (pageWide ? pageLicense : undefined)
+      const imageLicenseUrl = own.license ? (linkedHttpsUrl(own.licenseUrl, source) ?? undefined) : undefined
       return [
         {
           url,
@@ -154,7 +182,7 @@ export const parsePressImages = (html: string, source: string): StockImage[] => 
             source: 'Official media',
             sourceUrl: url,
             license,
-            licenseUrl,
+            licenseUrl: imageLicenseUrl ?? (pageWide ? licenseUrl : undefined),
           },
         },
       ]

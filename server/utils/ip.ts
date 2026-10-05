@@ -57,7 +57,9 @@ export const getIp = (event: H3Event): string =>
   clientIp(event.node.req.headers) ?? event.node.req.socket?.remoteAddress ?? '127.0.0.1'
 
 /** Peppered: an IPv4 is four bytes, so a bare hash in a cache key is enumerable back to the address. */
-export const ipKey = (event: H3Event): string =>
+export const pepperIp = (ip: string): string =>
   createHmac('sha256', process.env.AUTH_SECRET || 'missing-auth-secret')
-    .update(getIp(event))
+    .update(ip)
     .digest('hex')
+
+export const ipKey = (event: H3Event): string => pepperIp(getIp(event))

@@ -26,6 +26,7 @@ export const generateArticle = async (
     allowGeneratedImages?: boolean
     editorialReview?: boolean
     knowledgeQuery?: string | null
+    requireClearRights?: boolean
   },
 ) => {
   const {
@@ -100,6 +101,7 @@ export const generateArticle = async (
     allowGeneratedImages,
     officialMediaPages,
     clientSiteId,
+    requireClearRights: opts?.requireClearRights,
   })
 
   return { ...finalized, usage: first.usage, researchTokens, research, knowledge, editorialTokens, editorialReview }
