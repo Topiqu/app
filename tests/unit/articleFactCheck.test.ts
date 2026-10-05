@@ -70,4 +70,14 @@ describe('article fact-check helpers', () => {
     expect(source.content).toContain('three times faster')
     expect(source.content).not.toContain('Navigation')
   })
+
+  it('keeps redline deletions and insertions distinguishable', () => {
+    const source = extractReadableSource(`
+      <html><body><main><p>Stavební dozor vyžaduje alespoň<del> 3 roky</del><ins> 5 let</ins> praxe při provádění staveb.</p>
+      <p>Rušené ustanovení zní <s>původní text</s> a <strike>jiný text</strike>; prázdná značka<del> </del> zmizí.</p></main></body></html>
+    `)
+    expect(source.content).toContain('alespoň [deleted: 3 roky] [inserted: 5 let] praxe')
+    expect(source.content).toContain('[deleted: původní text] a [deleted: jiný text];')
+    expect(source.content).toContain('prázdná značka zmizí')
+  })
 })

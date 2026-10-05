@@ -74,6 +74,8 @@ Verdicts have narrow meanings:
 - contradicted: a supplied source directly conflicts with the claim.
 - unverifiable: the statement looks factual but cannot responsibly be checked from this material or by this method. Do not use it merely because support is absent.
 
+Source text may contain redline markers "[deleted: …]" and "[inserted: …]" (e.g. a law shown with a pending amendment). Each side is a different version; only the page itself (labels such as draft/proposal/"after the amendment", effective dates) tells which one is in force. A claim presenting one side as current or valid law is supported only when the source establishes that side is in force; if the source does not establish it, use partial; if the source shows the claimed wording is not yet in force and the current wording differs, use contradicted. Quote markers verbatim in evidence.
+
 Every supported, partial, or contradicted verdict must cite at least one supplied sourceIndex and a short evidence excerpt. Never invent evidence, URLs, or source indexes. Explain partial/contradicted/unsupported verdicts precisely. Consider publication dates only for genuinely time-sensitive claims; age alone does not make a source bad. Write explanations in ${LANGUAGE_NAMES[input.language]}. Do not claim truth or certainty beyond the supplied sources.`,
     prompt: JSON.stringify({
       title: input.title,
