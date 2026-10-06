@@ -411,6 +411,7 @@
       "sessionInvalidOrRevoked": "Relace byla zrušena nebo neexistuje",
       "invalidTotp": "Neplatný TOTP kód",
       "passwordChangeFailed": "Změna hesla selhala",
+      "reauthRequired": "Z bezpečnostních důvodů se znovu přihlaste a akci zopakujte.",
       "roleChangeForbidden": "Změna role není povolena",
       "featureNotInPlan": "Tato funkce není dostupná ve vašem tarifu",
       "aiRequired": "Nejdřív zapněte AI",

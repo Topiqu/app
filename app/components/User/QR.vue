@@ -3,7 +3,7 @@
     <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <div class="flex min-w-0 items-start gap-3">
         <UIcon
-          :name="enabled ? 'mdi:shield-check-outline' : showForm ? 'mdi:shield-key-outline' : 'mdi:shield-outline'"
+          :name="enabled ? 'mdi:shield-check-outline' : otpauthUrl ? 'mdi:shield-key-outline' : 'mdi:shield-outline'"
           class="mt-0.5 size-5 shrink-0"
           :class="enabled ? 'text-emerald-600 dark:text-emerald-400' : 'text-neutral-400 dark:text-neutral-500'"
           aria-hidden="true"
@@ -20,7 +20,7 @@
       </div>
 
       <UButton
-        v-if="!enabled && !showForm"
+        v-if="!enabled && !otpauthUrl"
         :disabled="isLoading"
         :loading="isLoading"
         icon="mdi:shield-lock-outline"
@@ -31,95 +31,78 @@
       </UButton>
     </div>
 
-    <template v-if="otpauthUrl">
-      <UserTotpQr :otpauthUrl="otpauthUrl" />
+    <UserTotpQr v-if="otpauthUrl" :otpauthUrl />
 
-      <div v-if="showForm" class="mx-auto max-w-[22rem]">
-        <AppFormLabel :forId="totpInputId" :text="$t('profile.verificationCodeLabel')" />
-        <UInput
-          :id="totpInputId"
-          v-model="totpCode"
-          type="tel"
-          name="totpCode"
-          pattern="[0-9]*"
-          inputmode="numeric"
-          autocomplete="one-time-code"
-          :placeholder="$t('profile.enterTotpCode')"
-          class="mt-1"
-          @keyup.enter="verifyTotpCode"
-        />
-        <p v-if="error" class="mt-2 text-xs text-red-600 dark:text-red-400" role="alert">{{ error }}</p>
-        <UButton
-          :disabled="isLoading || !totpCode"
-          :loading="isLoading"
-          icon="mdi:check-circle-outline"
-          color="success"
-          class="mt-3 w-full"
-          @click="verifyTotpCode"
-        >
-          {{ $t('profile.verify2FA') }}
-        </UButton>
-      </div>
-
-      <div v-else-if="enabled" class="flex justify-end border-t border-neutral-200 pt-4 dark:border-neutral-800">
-        <UButton
-          :disabled="isLoading"
-          :loading="isLoading"
-          icon="mdi:shield-off-outline"
-          color="error"
-          variant="ghost"
-          @click="disable2FA"
-        >
-          {{ $t('profile.disable2FA') }}
-        </UButton>
-      </div>
-    </template>
+    <form
+      v-if="otpauthUrl || enabled"
+      class="mx-auto max-w-[22rem]"
+      :class="{ 'border-t border-neutral-200 pt-4 dark:border-neutral-800': !otpauthUrl }"
+      @submit.prevent="otpauthUrl ? verifyTotpCode() : disable2FA()"
+    >
+      <AppFormLabel :forId="totpInputId" :text="$t('profile.verificationCodeLabel')" />
+      <UInput
+        :id="totpInputId"
+        v-model="totpCode"
+        type="tel"
+        name="totpCode"
+        pattern="[0-9]*"
+        inputmode="numeric"
+        autocomplete="one-time-code"
+        :placeholder="$t('profile.enterTotpCode')"
+        class="mt-1"
+      />
+      <p v-if="error" class="mt-2 text-xs text-red-600 dark:text-red-400" role="alert">{{ error }}</p>
+      <UButton
+        type="submit"
+        :disabled="isLoading || !totpCode"
+        :loading="isLoading"
+        :icon="otpauthUrl ? 'mdi:check-circle-outline' : 'mdi:shield-off-outline'"
+        :color="otpauthUrl ? 'success' : 'error'"
+        :variant="otpauthUrl ? 'solid' : 'soft'"
+        class="mt-3 w-full"
+      >
+        {{ otpauthUrl ? $t('profile.verify2FA') : $t('profile.disable2FA') }}
+      </UButton>
+    </form>
   </div>
 </template>
 
 <script setup lang="ts">
-const { enabled, otpauthUrl, userId } = defineProps<{
-  enabled: boolean
-  otpauthUrl: string
-  userId: string
-}>()
-
-const emit = defineEmits<{
-  (e: 'update:enabled', value: boolean): void
-  (e: 'update:otpauthUrl' | 'error', value: string): void
-}>()
+const enabled = defineModel<boolean>('enabled', { required: true })
+const { userId } = defineProps<{ userId: string }>()
+const emit = defineEmits<{ error: [message: string] }>()
 
 const confirm = useConfirm()
 const totpInputId = useId()
 const isLoading = shallowRef(false)
-const showForm = shallowRef(false)
+const otpauthUrl = shallowRef('')
+const totpSetup = shallowRef('')
 const totpCode = shallowRef('')
 const error = shallowRef<string | null>(null)
 
 const statusTitle = computed(() => {
-  if (enabled) return $t('profile.twoFactorEnabledStatus')
-  if (showForm.value) return $t('profile.twoFactorSetupTitle')
+  if (enabled.value) return $t('profile.twoFactorEnabledStatus')
+  if (otpauthUrl.value) return $t('profile.twoFactorSetupTitle')
   return $t('profile.twoFactorDisabledTitle')
 })
 
 const statusDescription = computed(() => {
-  if (enabled) return $t('profile.twoFactorEnabledDescription')
-  if (showForm.value) return $t('profile.twoFactorSetupDescription')
+  if (enabled.value) return $t('profile.twoFactorEnabledDescription')
+  if (otpauthUrl.value) return $t('profile.twoFactorSetupDescription')
   return $t('profile.twoFactorDisabledDescription')
 })
+
+const patch = (body: Record<string, string>) =>
+  $fetch(`/api/users/${userId}` as `/api/users/:id`, { method: 'PATCH', body })
 
 async function enable2FA() {
   try {
     isLoading.value = true
-    const response = await $fetch(`/api/users/${userId}` as `/api/users/:id`, {
-      method: 'PATCH',
-      body: { totpAction: 'enable' },
-    })
-    if (!('otpauthUrl' in response))
+    const response = await patch({ totpAction: 'enable' })
+    if (!('totpSetup' in response))
       throw createError({ statusCode: 500, statusMessage: 'Invalid response from server' })
-    emit('update:otpauthUrl', response.otpauthUrl)
-    showForm.value = true
-    emit('update:enabled', false)
+    otpauthUrl.value = response.otpauthUrl
+    totpSetup.value = response.totpSetup
   } catch (err: any) {
     emit('error', fetchErrorMessage(err, $t('common.messages.operationFailed')))
   } finally {
@@ -132,16 +115,9 @@ async function verifyTotpCode() {
 
   try {
     isLoading.value = true
-    const response = await $fetch(`/api/users/${userId}` as `/api/users/:id`, {
-      method: 'PATCH',
-      body: { totpCode: totpCode.value },
-    })
-    if (!('verified' in response) || !response.verified)
-      throw createError({ statusCode: 500, statusMessage: 'Invalid response from server' })
-
+    await patch({ totpCode: totpCode.value, totpSetup: totpSetup.value })
     reset()
-    emit('update:enabled', true)
-    emit('error', '')
+    enabled.value = true
   } catch (err: any) {
     error.value = fetchErrorMessage(err, $t('common.messages.operationFailed'))
   } finally {
@@ -150,6 +126,8 @@ async function verifyTotpCode() {
 }
 
 async function disable2FA() {
+  if (!totpCode.value || isLoading.value) return
+
   const confirmed = await confirm({
     title: $t('profile.disable2FAConfirmTitle'),
     message: $t('profile.disable2FAConfirmText'),
@@ -162,23 +140,19 @@ async function disable2FA() {
 
   try {
     isLoading.value = true
-    await $fetch(`/api/users/${userId}`, {
-      method: 'PATCH',
-      body: { totpSecret: null },
-    })
+    await patch({ totpAction: 'disable', totpCode: totpCode.value })
     reset()
-    emit('update:enabled', false)
-    emit('update:otpauthUrl', '')
-    emit('error', '')
+    enabled.value = false
   } catch (err: any) {
-    emit('error', fetchErrorMessage(err, $t('common.messages.operationFailed')))
+    error.value = fetchErrorMessage(err, $t('common.messages.operationFailed'))
   } finally {
     isLoading.value = false
   }
 }
 
 function reset() {
-  showForm.value = false
+  otpauthUrl.value = ''
+  totpSetup.value = ''
   totpCode.value = ''
   error.value = null
 }

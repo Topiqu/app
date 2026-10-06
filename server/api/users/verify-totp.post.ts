@@ -1,5 +1,3 @@
-import { authenticator } from 'otplib'
-
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const { challenge, token } = await readBody(event)
@@ -13,9 +11,7 @@ export default defineEventHandler(async (event) => {
   })
   if (!user?.totpSecret) throw createError({ statusCode: 401, message: t('common.errors.invalidCredentials')! })
 
-  const isValid = authenticator.verify({
-    token: String(token).replace(/\s/g, ''),
-    secret: user.totpSecret,
-  })
-  return { isValid }
+  const result = await checkTotpCode(userId, user.totpSecret, String(token))
+  if (result === 'limited') throw createError({ statusCode: 429, message: t('common.errors.tooManyRequests')! })
+  return { isValid: result === 'ok' }
 })

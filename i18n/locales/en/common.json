@@ -476,6 +476,7 @@
       "followNotFound": "You are not following this user",
       "invalidTotp": "Invalid TOTP code",
       "passwordChangeFailed": "Password change failed",
+      "reauthRequired": "For your security, sign in again and then retry.",
       "roleChangeForbidden": "Changing role is not allowed",
       "featureNotInPlan": "This feature is not available on your plan",
       "aiRequired": "Enable AI first",

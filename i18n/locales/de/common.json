@@ -476,6 +476,7 @@
       "followNotFound": "Du folgst diesem Benutzer nicht",
       "invalidTotp": "Ungültiger TOTP-Code",
       "passwordChangeFailed": "Passwortänderung fehlgeschlagen",
+      "reauthRequired": "Melden Sie sich aus Sicherheitsgründen erneut an und versuchen Sie es dann noch einmal.",
       "roleChangeForbidden": "Die Rolle darf nicht geändert werden",
       "featureNotInPlan": "Diese Funktion ist in deinem Tarif nicht verfügbar",
       "aiRequired": "Aktiviere zuerst die KI",

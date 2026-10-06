@@ -170,14 +170,7 @@
             :title="$t('profile.twoFactorAuth')"
             :description="$t('profile.twoFactorDescription')"
           >
-            <UserQR
-              :enabled="is2FAEnabled"
-              :otpauthUrl="otpauthUrl"
-              :userId="user?.user.id ?? ''"
-              @update:enabled="is2FAEnabled = $event"
-              @update:otpauthUrl="otpauthUrl = $event"
-              @error="onTwoFAError"
-            />
+            <UserQR v-model:enabled="is2FAEnabled" :userId="user?.user.id ?? ''" @error="onTwoFAError" />
           </Panel>
 
           <Panel id="sessions-section" :title="$t('profile.sessions')" :description="$t('profile.sessionsDescription')">
@@ -304,14 +297,12 @@ const activityTab = shallowRef<'likedArticles' | 'comments'>('likedArticles')
 const originalProfile = shallowRef<Profile | null>(null)
 const isDirty = shallowRef(false)
 const showOldPassword = shallowRef(false)
-const otpauthUrl = shallowRef('')
 const profileForm = shallowReactive<Profile>({} as Profile)
 const passwordForm = shallowReactive({ oldPassword: '', newPassword: '', confirmNewPassword: '' })
 
 const { data: userData, refresh } = await useFetch(`/api/users/${user.value?.user?.id}/account`)
 
-const is2FAEnabled = shallowRef(!!userData.value?.totpSecret)
-otpauthUrl.value = userData.value?.otpauthUrl || ''
+const is2FAEnabled = shallowRef(!!userData.value?.totpEnabled)
 
 if (userData.value) {
   const loaded = { ...userData.value, handle: toHandle(userData.value.username) }
@@ -430,7 +421,6 @@ async function updateProfile() {
     originalProfile.value = { ...profileForm }
     draft.clear()
     isDirty.value = false
-    otpauthUrl.value = userData.value?.otpauthUrl || ''
   } finally {
     isLoading.value = false
   }
@@ -443,6 +433,8 @@ async function handleChangePassword() {
     await changePassword(passwordForm.oldPassword, passwordForm.newPassword)
     // Mutate in place — reassigning the binding would drop the reactive proxy the form is bound to.
     Object.assign(passwordForm, { oldPassword: '', newPassword: '', confirmNewPassword: '' })
+  } catch (err) {
+    toast.add({ color: 'error', title: fetchErrorMessage(err, $t('common.errors.passwordChangeFailed')) })
   } finally {
     isLoading.value = false
   }

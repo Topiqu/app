@@ -1,5 +1,3 @@
-import { authenticator } from 'otplib'
-
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const user = (await getServerSession(event))?.user
@@ -85,11 +83,6 @@ export default defineEventHandler(async (event) => {
     0,
   )
 
-  let otpauthUrl = ''
-  if (userData.totpSecret) {
-    otpauthUrl = authenticator.keyuri(userData.username, 'Topiqu', userData.totpSecret)
-  }
-
   return {
     id: userData.id,
     username: userData.username,
@@ -112,8 +105,7 @@ export default defineEventHandler(async (event) => {
     theme: userData.theme,
     hasPassword: !!userData.password,
     passwordChangedAt: passwordLog?.createdAt.toISOString() ?? null,
-    totpSecret: userData.totpSecret,
-    otpauthUrl,
+    totpEnabled: !!userData.totpSecret,
     likedArticles: userData.articleReactions.map((r) => ({ id: r.article.id })),
     sessions: userData.sessions.map((s) => ({
       id: s.id,

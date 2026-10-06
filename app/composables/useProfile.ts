@@ -13,7 +13,7 @@ export type Profile = Omit<Partial<User>, 'createdAt' | 'updatedAt' | 'deletedAt
   dislikesCount: number
   likedArticles: { id: string }[]
   sessions: Session[]
-  totpSecret?: string | null
+  totpEnabled?: boolean
   createdAt: string
   updatedAt?: string
   deletedAt?: string
