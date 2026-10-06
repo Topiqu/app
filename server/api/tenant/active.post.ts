@@ -1,7 +1,6 @@
 import { z } from 'zod'
 export default defineEventHandler(async (event) => {
   const user = await requireUser(event)
-  if (!user.sessionId) throw createError({ statusCode: 401, message: 'Active session required' })
   const { clientSiteId } = await readValidatedBody(event, z.object({ clientSiteId: z.string().min(1) }).parse)
   const membership = await prisma.tenantMembership.findUnique({
     where: { clientSiteId_userId: { clientSiteId, userId: user.id } },
@@ -14,7 +13,7 @@ export default defineEventHandler(async (event) => {
   if (!membership || membership.deletedAt || membership.clientSite.deletedAt)
     throw createError({ statusCode: 403, message: 'Tenant membership required' })
   const session = await prisma.session.findFirst({
-    where: { id: user.sessionId, userId: user.id, revoked: false },
+    where: { id: user.sessionId, userId: user.id },
     select: { clientSiteId: true },
   })
   if (!session) throw createError({ statusCode: 401, message: 'Active session required' })

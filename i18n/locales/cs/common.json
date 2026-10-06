@@ -49,17 +49,17 @@
       "connectDescription": "Topiqu získá pouze přístup ke čtení a použije data pro metriky článků a návrhy optimalizací.",
       "connect": "Připojit Google účet",
       "disconnect": "Odpojit",
-      "noProperty": "Vyberte Search Console property",
+      "noProperty": "Vyberte web v Search Console",
       "chooseProperty": "Který web patří k tomuto projektu?",
-      "choosePlaceholder": "Vyberte property",
+      "choosePlaceholder": "Vyberte web",
       "lastSync": "Poslední synchronizace:",
       "autopilotTitle": "SEO Autopilot",
-      "autopilotDescription": "Zapněte automatické úpravy CTR a cílené rozšiřování obsahu. Denně se změní nejvýše jeden článek, každý článek má 7denní pauzu a stejná dvojice článku a dotazu 30denní. Nové plánované články využívají nepokrytou poptávku a dál respektují nastavení publikace.",
+      "autopilotDescription": "Zapněte automatické přepisy titulku a perexu u článků s nízkou mírou prokliku a cílené rozšiřování obsahu. Denně se změní nejvýše jeden článek, každý článek má 7denní pauzu a stejná dvojice článku a dotazu 30denní. Nové plánované články využívají nepokrytou poptávku a dál respektují nastavení publikace.",
       "autopilotLastRun": "Poslední kontrola:",
       "rollback": "Vrátit",
       "rollbackSuccess": "Poslední automatická změna byla vrácena.",
       "actions": {
-        "SEO_AUTOPILOT_CTR_OPTIMIZED": "Optimalizován snippet",
+        "SEO_AUTOPILOT_CTR_OPTIMIZED": "Přepsán titulek a perex",
         "SEO_AUTOPILOT_CONTENT_REFRESHED": "Rozšířen obsah"
       }
     },
@@ -90,8 +90,7 @@
       "title": "Další na řadě",
       "description": "Automatické články berou témata shora. Připněte, co chcete dřív, a přeskočte, co nechcete.",
       "empty": "Plán se sestaví před dalším automatickým článkem.",
-      "volume": "≈ {count} hledání měsíčně",
-      "volumeUnknown": "hledanost neznámá",
+      "volumeUnknown": "neznámá",
       "difficulty": {
         "easy": "nižší konkurence",
         "medium": "střední konkurence",
@@ -108,7 +107,8 @@
       "loadFailed": "Plán témat se nepodařilo načíst.",
       "pinned": "Připnuto",
       "unpin": "Odepnout {keyword}",
-      "skipped": "Přeskočená témata ({count})"
+      "skipped": "Přeskočená témata ({count})",
+      "volumeUnit": "hledání/měs."
     },
     "keywordResults": {
       "title": "Jak si články vedou",
@@ -156,17 +156,21 @@
       "openSettings": "Otevřít nastavení AI",
       "stats": {
         "demand": {
-          "label": "Hledanost napsaných témat",
-          "hint": "{count} témat napsáno · měsíčně"
+          "label": "Hledanost pokrytých témat",
+          "hint": "hledání měsíčně · žádné téma | hledání měsíčně · {n} téma | hledání měsíčně · {n} témata | hledání měsíčně · {n} témat",
+          "empty": "Zatím žádný článek z plánu",
+          "info": "Kolikrát měsíčně lidé v Googlu hledají témata, o kterých už vyšel článek z plánu. Ukazuje, jak velkou poptávku vaše články pokrývají."
         },
         "top10": {
           "label": "V top 10 Googlu",
           "hint": "z měřených článků",
-          "pending": "první měření 7 dní po vydání"
+          "pending": "První měření 7 dní po vydání",
+          "info": "Kolik článků z plánu je na první stránce Googlu (1.–10. místo). Pozice měříme 7, 30, 60 a 90 dní po vydání."
         },
         "queued": {
-          "label": "Připraveno v plánu",
-          "hint": "témat čeká na článek"
+          "label": "Témata v plánu",
+          "hint": "čekají na článek",
+          "info": "Automatické články berou tato témata postupně shora. Pořadí změníte připnutím nebo přeskočením v seznamu Další na řadě."
         }
       }
     },
@@ -238,13 +242,13 @@
       "premiumTitle": "Integrace v plánu Premium",
       "premiumDescription": "Pokročilé integrace dostupné v plánu Premium.",
       "gscDescription": "Proměňte výkon ve vyhledávání na konkrétní obsahové příležitosti.",
-      "gscBenefitOne": "Uvidíte dotazy, kliknutí, CTR a průměrné pozice článků.",
-      "gscBenefitTwo": "Topiqu odhalí obsah těsně pod nejlepšími pozicemi a nízké CTR.",
+      "gscBenefitOne": "Uvidíte dotazy, kliknutí, míru prokliku a průměrné pozice článků.",
+      "gscBenefitTwo": "Topiqu odhalí obsah těsně pod nejlepšími pozicemi a články, na které se ve výsledcích málo kliká.",
       "gscStepOne": "Připojte Google účet s přístupem k Search Console.",
-      "gscStepTwo": "Vyberte property odpovídající tomuto webu.",
+      "gscStepTwo": "Vyberte web, který k tomuto projektu patří.",
       "gscStepThree": "Topiqu začne denně synchronizovat finalizovaná data.",
       "analyticsDescription": "Přidejte vlastní GA4 měření na web publikovaný přes Topiqu.",
-      "analyticsBenefitOne": "Návštěvnost zůstává ve vaší vlastní Google Analytics property.",
+      "analyticsBenefitOne": "Data o návštěvnosti zůstávají ve vašem vlastním účtu Google Analytics.",
       "analyticsBenefitTwo": "Měření zapnete bez zásahu do šablony nebo zdrojového kódu.",
       "analyticsStepOne": "V Google Analytics otevřete Administrace → Datové streamy.",
       "analyticsStepTwo": "Zkopírujte Measurement ID ve formátu G-XXXXXXXXXX.",
@@ -407,6 +411,8 @@
       "sessionInvalidOrRevoked": "Relace byla zrušena nebo neexistuje",
       "invalidTotp": "Neplatný TOTP kód",
       "passwordChangeFailed": "Změna hesla selhala",
+      "reauthRequired": "Z bezpečnostních důvodů se znovu přihlaste a akci zopakujte.",
+      "ownerCannotDeactivate": "Vlastníte blog, takže účet nejde deaktivovat. Nejdřív deaktivujte blog.",
       "roleChangeForbidden": "Změna role není povolena",
       "featureNotInPlan": "Tato funkce není dostupná ve vašem tarifu",
       "aiRequired": "Nejdřív zapněte AI",
@@ -951,7 +957,7 @@
         "placeholder": "Popis blogu (např. vaše mise nebo slogan)"
       },
       "content": {
-        "title": "Obsahový brief",
+        "title": "Redakční zadání",
         "description": "Z těchto údajů vychází AI u každého generovaného článku.",
         "direction": {
           "title": "Zadání",
@@ -1448,7 +1454,8 @@
         "managePlan": "Spravovat tarif",
         "open": "Otevřít Topiqu"
       }
-    }
+    },
+    "statHint": "Co znamená „{label}“"
   },
   "error": {
     "generic": "Něco se pokazilo. Zkuste to prosím znovu."

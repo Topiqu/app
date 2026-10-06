@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
   if (!id) throw createError({ statusCode: 400, message: t('common.errors.missing')! })
 
-  const user = (await getServerSession(event))?.user
+  const user = await getSessionUser(event)
   // Was the client's FingerprintJS visitorId, read from the body — which let a caller pick its own
   // identity (rotate it and inflate the count) and never matched the cookie every read resolves.
   const sessionId = user ? null : issueAnonSession(event)

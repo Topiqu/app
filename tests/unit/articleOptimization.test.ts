@@ -45,13 +45,27 @@ describe('article optimization', () => {
   })
 
   it('shares exact optimization requirements with article generation', () => {
-    const instructions = articleGenerationOptimizationInstructions('news.test')
+    const instructions = articleGenerationOptimizationInstructions()
 
     expect(instructions).toContain('30-65 characters')
     expect(instructions).toContain('70-160 characters')
     expect(instructions).toContain('at or below 120 words')
-    expect(instructions).toContain('https://news.test')
+    expect(instructions).toContain('Never link to this publication yourself')
     expect(instructions).toContain('Never invent a URL')
+  })
+
+  it('counts only links to an article as internal linking', () => {
+    const status = (content: string) => find(analyzeArticleOptimization(input({ content })), 'internal-link').status
+
+    expect(status('<h2>Heading here</h2><p>Visit <a href="/cs">the homepage</a>.</p>')).toBe('warning')
+    expect(status('<h2>Heading here</h2><p>Visit <a href="https://topiqu.test/">us</a>.</p>')).toBe('warning')
+    expect(status('<h2>Heading here</h2><p>Read <a href="/cs/clanky/kompost">about compost</a>.</p>')).toBe('passed')
+    expect(status('<h2>Heading here</h2><p>Read <a href="https://topiqu.test/en/articles/compost#tips">this</a>.</p>')).toBe(
+      'passed',
+    )
+    expect(status('<h2>Heading here</h2><p>Read <a href="https://other.test/cs/clanky/kompost">this</a>.</p>')).toBe(
+      'warning',
+    )
   })
 
   it('treats a blank article as dependency-safe', () => {

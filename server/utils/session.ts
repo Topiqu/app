@@ -1,122 +1,81 @@
-import type { RequestInternal } from 'next-auth'
-import type { User } from '~~/generated/zenstack/models'
+import type { SessionUser } from '~~/shared/types/auth'
 
 import { UAParser } from 'ua-parser-js'
 
 import { clientIp } from './ip'
 
-export const generateSessionToken = async (
-  user: Pick<User, 'id' | 'clientSiteId'>,
-  req: Pick<RequestInternal, 'body' | 'query' | 'headers' | 'method'>,
-) => {
-  const ipAddress = clientIp(req.headers ?? {})
+type RequestHeaders = Record<string, string | string[] | undefined>
 
-  const userAgent = req.headers?.['user-agent'] ?? null
-  const parser = new UAParser(userAgent)
-  const { device, os, browser } = parser.getResult()
+export const headerRecord = (headers: Headers | undefined): RequestHeaders =>
+  headers ? Object.fromEntries(headers.entries()) : {}
 
-  const deviceName = device?.model ?? device?.vendor ?? device?.type ?? 'Desktop'
-  const osName = os?.name ? `${os.name} ${os.version ?? ''}`.trim() : null
-  const browserName = browser?.name ? `${browser.name} ${browser.version ?? ''}`.trim() : null
+/** Device and location columns for a new `Session` row. */
+export const sessionDevice = async (headers: RequestHeaders) => {
+  const ip = clientIp(headers) ?? null
+  const rawUserAgent = headers['user-agent']
+  const userAgent = (Array.isArray(rawUserAgent) ? rawUserAgent[0] : rawUserAgent)?.slice(0, 500) || null
+  const { device, os, browser } = new UAParser(userAgent ?? undefined).getResult()
 
-  const existingSession = await prisma.session.findFirst({
-    where: {
-      userId: user.id,
-      revoked: false,
-      deletedAt: null,
-      device: deviceName,
-      os: osName,
-      browser: browserName,
-    },
-    select: { id: true, ip: true, clientSiteId: true },
-  })
-
-  const memberships = await prisma.tenantMembership.findMany({
-    where: { userId: user.id, deletedAt: null, clientSite: { deletedAt: null } },
-    select: { clientSiteId: true },
-    orderBy: { createdAt: 'asc' },
-  })
-  const clientSiteId =
-    memberships.find((membership) => membership.clientSiteId === existingSession?.clientSiteId)?.clientSiteId ??
-    memberships.find((membership) => membership.clientSiteId === user.clientSiteId)?.clientSiteId ??
-    memberships[0]?.clientSiteId ??
-    null
-
-  let sessionId: string
-
-  if (existingSession) {
-    sessionId = existingSession.id
-
-    const dataToUpdate: any = { lastUsedAt: new Date(), clientSiteId }
-
-    if (existingSession.ip !== ipAddress) {
-      dataToUpdate.ip = ipAddress
-      if (ipAddress) {
-        const geo = await resolveGeo(ipAddress)
-        dataToUpdate.city = geo.city
-        dataToUpdate.region = geo.region
-        dataToUpdate.country = geo.country
-      } else {
-        dataToUpdate.city = null
-        dataToUpdate.region = null
-        dataToUpdate.country = null
-      }
-    }
-
-    await prisma.session.update({
-      where: { id: sessionId },
-      data: dataToUpdate,
-    })
-  } else {
-    let geo: any = { city: null, region: null, country: null }
-    if (ipAddress) {
-      geo = await resolveGeo(ipAddress)
-    }
-
-    const session = await prisma.session.create({
-      data: {
-        userId: user.id,
-        ip: ipAddress,
-        userAgent: userAgent || null,
-        device: deviceName,
-        os: osName,
-        browser: browserName,
-        city: geo.city,
-        region: geo.region,
-        country: geo.country,
-        lastUsedAt: new Date(),
-        revoked: false,
-        clientSiteId,
-      },
-    })
-
-    sessionId = session.id
-
-    try {
-      await logAction({
-        action: 'SESSION_CREATE',
-        userId: user.id,
-        ip: ipAddress ?? undefined,
-        metadata: {
-          sessionId,
-          device: deviceName,
-          os: osName ?? undefined,
-          browser: browserName ?? undefined,
-          city: geo.city ?? undefined,
-          region: geo.region ?? undefined,
-          country: geo.country ?? undefined,
-        },
-      })
-    } catch (err) {
-      await logger.error('audit:SESSION_CREATE failed', {
-        source: 'audit',
-        action: 'SESSION_CREATE',
-        userId: user.id,
-        sessionId,
-        error: err instanceof Error ? err.message : String(err),
-      })
-    }
+  return {
+    ip,
+    userAgent,
+    device: (device?.model ?? device?.vendor ?? device?.type ?? 'Desktop').slice(0, 100),
+    os: os?.name ? `${os.name} ${os.version ?? ''}`.trim().slice(0, 100) : null,
+    browser: browser?.name ? `${browser.name} ${browser.version ?? ''}`.trim().slice(0, 100) : null,
+    ...(ip ? await resolveGeo(ip) : { city: null, region: null, country: null }),
   }
+}
 
-  return sessionId
+/** The tenant a new session opens in: the last one used, else the user's home site, else the oldest membership. */
+export const initialTenant = async (userId: string): Promise<string | null> => {
+  const [lastSession, user, memberships] = await Promise.all([
+    prisma.session.findFirst({
+      where: { userId, clientSiteId: { not: null } },
+      orderBy: { lastUsedAt: 'desc' },
+      select: { clientSiteId: true },
+    }),
+    prisma.user.findUnique({ where: { id: userId }, select: { clientSiteId: true } }),
+    prisma.tenantMembership.findMany({
+      where: { userId, deletedAt: null, clientSite: { deletedAt: null } },
+      select: { clientSiteId: true },
+      orderBy: { createdAt: 'asc' },
+    }),
+  ])
+  const ids = memberships.map((membership) => membership.clientSiteId)
+
+  return [lastSession?.clientSiteId, user?.clientSiteId].find((id) => id && ids.includes(id)) ?? ids[0] ?? null
+}
+
+export const uniqueUsername = async (name: string | undefined, email: string) => {
+  const base = (name || email.split('@')[0] || '').trim().slice(0, 36)
+  const username = base.length >= 3 ? base : 'user'
+  const taken = await prisma.user.findUnique({ where: { username }, select: { id: true } })
+  return taken ? `${username}_${Date.now()}` : username
+}
+
+/** Resolves role, plan and tenant from the session's active tenant on every read, as the JWT callback did. */
+export const toSessionUser = async (
+  user: { id: string; name: string; email: string; image?: string | null; role?: string | null },
+  session: { id: string; clientSiteId?: string | null },
+): Promise<SessionUser> => {
+  const membership = session.clientSiteId
+    ? await prisma.tenantMembership.findUnique({
+        where: { clientSiteId_userId: { clientSiteId: session.clientSiteId, userId: user.id } },
+        select: { deletedAt: true, clientSite: { select: { plan: true } } },
+      })
+    : null
+  const active = membership !== null && membership.deletedAt === null
+  if (session.clientSiteId && !active)
+    await prisma.session.update({ where: { id: session.id }, data: { clientSiteId: null } })
+
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role === 'superadmin' ? 'superadmin' : active ? 'admin' : 'reader',
+    clientSiteId: active ? session.clientSiteId! : '',
+    plan: active ? membership.clientSite.plan : 'BASIC',
+    avatarUrl: user.image ?? null,
+    sessionId: session.id,
+  }
 }

@@ -140,6 +140,7 @@ export default defineMonitoredTask({
             usage,
           },
         })
+        if (finalStatus === 'PUBLISHED') await announceArticle(row.article.id, row.clientSiteId)
         processed++
       } catch (e: any) {
         await prisma.articleTranslation.update({

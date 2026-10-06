@@ -28,7 +28,6 @@ export default defineEventHandler(async (event) => {
     return { accepted: false }
   }
   const user = await requireUser(event)
-  if (!user.sessionId) throw createError({ statusCode: 401, message: 'Active session required' })
   if (invitationEmail(user.email) !== invitation.email)
     throw createError({
       statusCode: 403,

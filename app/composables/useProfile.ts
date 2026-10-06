@@ -1,6 +1,6 @@
 import type { User, Session as _Session } from '~~/generated/zenstack/models'
 
-export type Session = Omit<_Session, 'createdAt' | 'updatedAt' | 'deletedAt' | 'lastUsedAt'> & {
+export type Session = Omit<_Session, 'createdAt' | 'updatedAt' | 'deletedAt' | 'lastUsedAt' | 'token' | 'expiresAt'> & {
   lastUsedAt?: string
 }
 
@@ -13,7 +13,7 @@ export type Profile = Omit<Partial<User>, 'createdAt' | 'updatedAt' | 'deletedAt
   dislikesCount: number
   likedArticles: { id: string }[]
   sessions: Session[]
-  totpSecret?: string | null
+  totpEnabled?: boolean
   createdAt: string
   updatedAt?: string
   deletedAt?: string
@@ -48,7 +48,9 @@ export function useProfile() {
     patchSelf({ password: newPassword, oldPass: oldPassword })
 
   async function deactivateAccount() {
-    await patchSelf({ deletedAt: new Date().toISOString() })
+    const id = user.value?.user?.id
+    if (!id) throw new Error('User not authenticated')
+    await $fetch(`/api/users/${id}` as `/api/users/:id`, { method: 'DELETE' })
     await signOut()
   }
 

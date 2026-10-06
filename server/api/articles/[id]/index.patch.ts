@@ -1,4 +1,5 @@
 import { DbNull } from '@zenstackhq/orm'
+import { articlePath } from '~~/shared/utils/routes'
 import { articleSlug } from '~~/shared/utils/articleSlug'
 import { ArticleStatus } from '~~/generated/zenstack/models'
 import { ArticleUpdateSchema } from '~~/shared/databaseSchemas'
@@ -42,6 +43,11 @@ export default defineEventHandler(async (event) => {
       imageUrl: true,
       coverMediaId: true,
       content: true,
+      title: true,
+      excerpt: true,
+      answer: true,
+      keyTakeaways: true,
+      faq: true,
       language: true,
       clientSite: { select: { publishToWeb: true } },
     },
@@ -135,6 +141,10 @@ export default defineEventHandler(async (event) => {
   if (previousArticle.aiInvolvement === 'FULL' && data.content && data.content !== previousArticle.content) {
     data.aiInvolvement = 'ASSIST'
   }
+  // Server-owned: edits before the first publication are not modifications any reader saw.
+  delete data.contentUpdatedAt
+  const textChanged = changesReaderText(previousArticle, data)
+  if (previousArticle.publishedAt && textChanged) data.contentUpdatedAt = currentDate
 
   const article = await db
     .$transaction(async (tx) => {
@@ -218,6 +228,15 @@ export default defineEventHandler(async (event) => {
       isPublished ? (wasPublished ? 'ARTICLE_UPDATED' : 'ARTICLE_PUBLISHED') : 'ARTICLE_UNPUBLISHED',
       { id: article.id, clientSiteId: article.clientSiteId, slug: article.slug, language: article.language },
     )
+
+  // Tag or cover edits change nothing an engine indexes, so they are not announced.
+  if ((wasPublished || isPublished) && (wasPublished !== isPublished || textChanged || previousSlug)) {
+    const removedPaths = [
+      ...(previousSlug && previousArticle.publishedAt ? [articlePath(article.language, previousSlug)] : []),
+      ...(isPublished ? [] : await articlePublicPaths(article.id, article.clientSiteId)),
+    ]
+    void announceArticle(article.id, article.clientSiteId, removedPaths)
+  }
 
   return { success: true }
 })

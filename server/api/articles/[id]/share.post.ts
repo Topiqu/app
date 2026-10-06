@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
   if (!id) throw createError({ statusCode: 400, message: t('common.errors.missing')! })
 
   const { platform, visitorId } = await readValidatedBody(event, BodySchema.parse)
-  const user = (await getServerSession(event))?.user
+  const user = await getSessionUser(event)
 
   if (!user?.id && !visitorId) throw createError({ statusCode: 400, message: 'Missing visitor identification' })
 

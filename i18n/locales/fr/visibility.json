@@ -6,12 +6,15 @@
     "methodology": "Les visites des robots IA et les lecteurs provenant de services d’IA constituent un trafic réel vers votre site. Les applications sans référent ne peuvent pas être comptabilisées : ces chiffres sont donc un minimum. Les citations sont mesurées sur un échantillon récurrent de vos questions suivies, pas sur toutes les conversations privées avec une IA.",
     "window": "{days} derniers jours",
     "metrics": {
-      "coverage": "Cité dans les réponses IA",
+      "coverage": "Citations dans les réponses IA",
       "coverageNote": "{owned} réponses sur {total}",
-      "referrals": "Visites provenant de l’IA",
-      "referralsNote": "Articles : {count}",
+      "referrals": "Lecteurs venus de l'IA",
+      "referralsNote": "aucune visite pour l'instant | sur {n} article | sur {n} articles",
       "fetches": "Visites de robots IA",
-      "fetchesNote": "Pages : {count}"
+      "fetchesNote": "aucune page pour l'instant | {n} page | {n} pages différentes",
+      "coverageHint": "Chaque semaine, nous posons vos questions suivies aux moteurs de recherche IA (ChatGPT, Gemini, Perplexity…). Ce chiffre indique combien de réponses renvoyaient vers votre site.",
+      "referralsHint": "Personnes arrivées sur votre site en cliquant sur un lien dans une réponse IA. Certaines applications n'indiquent pas d'où vient la visite : le chiffre réel peut être plus élevé.",
+      "fetchesHint": "Nombre de fois où les robots des entreprises d'IA (OpenAI, Google, Anthropic…) ont téléchargé vos pages pour y puiser des réponses ou s'entraîner. Ce ne sont pas des personnes, mais cela montre que l'IA lit votre contenu."
     },
     "emptyValue": "Pas encore mesuré",
     "onboarding": {
@@ -73,13 +76,13 @@
     },
     "domains": {
       "title": "Qui est cité à votre place",
-      "description": "Part des réponses IA qui citent chaque site. Un concurrent est un site cité pour plusieurs de vos questions.",
+      "description": "Sites vers lesquels l'IA renvoie pour vos questions suivies. Le pourcentage est la part des réponses qui citent le site.",
       "you": "Vous",
       "competitors": "Concurrents",
       "references": "Sources générales",
       "referencesHint": "Wikipédia, forums et organismes publics. Un article ne les dépassera pas, mais ils montrent où l'IA puise.",
       "others": "Autres sites cités",
-      "prompts": "Questions : {count}",
+      "prompts": "aucune question | {n} question | {n} questions",
       "markCompetitor": "Marquer comme concurrent",
       "unmark": "Retirer le marquage",
       "hide": "Masquer",

@@ -6,12 +6,15 @@
     "methodology": "Návštěvy AI botů a čtenářů z AI jsou skutečný provoz na vašem webu. Aplikace, které neposílají referrer, započítat nelze, takže jde o spodní hranici. Citace jsou pravidelný vzorek vašich sledovaných otázek, ne přehled všech soukromých konverzací s AI.",
     "window": "Posledních {days} dní",
     "metrics": {
-      "coverage": "Citováno v odpovědích AI",
+      "coverage": "Citace v odpovědích AI",
       "coverageNote": "{owned} z {total} odpovědí",
-      "referrals": "Návštěvy z AI",
-      "referralsNote": "Články: {count}",
-      "fetches": "Návštěvy AI botů",
-      "fetchesNote": "Stránky: {count}"
+      "referrals": "Čtenáři z AI",
+      "referralsNote": "zatím nikdo nepřišel | přišli na {n} článek | přišli na {n} články | přišli na {n} článků",
+      "fetches": "Návštěvy AI robotů",
+      "fetchesNote": "zatím žádná stránka | {n} stránka | {n} různé stránky | {n} různých stránek",
+      "coverageHint": "Každý týden pokládáme vaše sledované otázky AI vyhledávačům (ChatGPT, Gemini, Perplexity…). Číslo ukazuje, kolik odpovědí odkazovalo na váš web.",
+      "referralsHint": "Lidé, kteří na váš web přišli kliknutím na odkaz v odpovědi AI. Některé aplikace neprozradí, odkud návštěva přišla, takže skutečné číslo může být vyšší.",
+      "fetchesHint": "Kolikrát si roboti AI firem (OpenAI, Google, Anthropic…) stáhli vaše stránky, aby z nich mohli odpovídat nebo se učit. Nejsou to lidé, ale ukazují, že AI váš obsah čte."
     },
     "emptyValue": "Zatím neměřeno",
     "onboarding": {
@@ -73,13 +76,13 @@
     },
     "domains": {
       "title": "Koho AI cituje místo vás",
-      "description": "Podíl odpovědí AI, které daný web citují. Konkurent je web citovaný u více vašich otázek.",
+      "description": "Weby, na které AI odkazuje u vašich sledovaných otázek. Procento říká, v kolika odpovědích daný web zazněl.",
       "you": "Vy",
       "competitors": "Konkurence",
       "references": "Obecné zdroje",
       "referencesHint": "Wikipedie, diskuze a úřady. Článkem je nepřetlačíte, ale ukazují, odkud AI čerpá.",
       "others": "Další citované weby",
-      "prompts": "Otázky: {count}",
+      "prompts": "žádná otázka | {n} otázka | {n} otázky | {n} otázek",
       "markCompetitor": "Označit jako konkurenta",
       "unmark": "Zrušit označení",
       "hide": "Skrýt",

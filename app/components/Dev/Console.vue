@@ -247,7 +247,7 @@ const commitUrl = computed(() =>
 const { copy, copied } = useClipboard({ copiedDuring: 1200 })
 const copyCommit = () => meta.value?.hashFull && copy(meta.value.hashFull)
 
-const { data: auth, signIn, getSession } = useAuth()
+const { data: auth, getSession } = useAuth()
 const currentUser = computed(() => (auth.value as { user?: { email?: string } } | null)?.user?.email ?? 'guest')
 const isGuest = computed(() => currentUser.value === 'guest')
 const dbStatusClass = computed(() =>
@@ -273,8 +273,7 @@ const impersonate = async (email: string) => {
   busy.value = true
   try {
     const { token } = await $fetch<{ token: string }>('/api/_dev/impersonate', { method: 'POST', body: { email } })
-    const result = await signIn('credentials', { loginToken: token, redirect: false })
-    if (result?.error) throw new Error(result.error)
+    await $fetch('/api/auth/sign-in/token', { method: 'POST', body: { token } })
     reloadNuxtApp({ force: true })
   } catch {
     busy.value = false

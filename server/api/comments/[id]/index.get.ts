@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
   const articleId = getRouterParam(event, 'id')
   if (!articleId) throw createError({ statusCode: 400, message: t('common.errors.articleIdRequired')! })
 
-  const user = (await getServerSession(event))?.user
+  const user = await getSessionUser(event)
   const db = await getEnhancedPrisma(user)
 
   const article = await db.article.findUnique({

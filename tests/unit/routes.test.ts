@@ -9,6 +9,7 @@ import {
   AUTH_SEGMENTS,
   LOCALIZED_SEGMENTS,
   markdownPath,
+  parseArticlePath,
   tagPath,
 } from '../../shared/utils/routes'
 
@@ -62,6 +63,16 @@ describe('public paths', () => {
 
   it('encodes slugs so a diacritic or a slash cannot break out of the segment', () => {
     expect(articlePath('cs', 'češtin a/b')).toBe('/cs/clanky/%C4%8De%C5%A1tin%20a%2Fb')
+  })
+
+  it('parses an article path back into language and slug', () => {
+    expect(parseArticlePath(articlePath('cs', 'češtin a/b'))).toEqual({ language: 'cs', slug: 'češtin a/b' })
+    expect(parseArticlePath('/de/artikel/neu/?ref=x#top')).toEqual({ language: 'de', slug: 'neu' })
+    expect(parseArticlePath('/cs')).toBeNull()
+    expect(parseArticlePath('/cs/articles/wrong-segment')).toBeNull()
+    expect(parseArticlePath('/xx/clanky/unknown-locale')).toBeNull()
+    expect(parseArticlePath('/cs/clanky/slug/extra')).toBeNull()
+    expect(parseArticlePath('/cs/clanky/%E0%A4%A')).toBeNull()
   })
 
   it('prefixes the markdown variant instead of suffixing the page URL', () => {

@@ -35,6 +35,17 @@ export const extractReadableSource = (
     : $('main').first().length
       ? $('main').first()
       : $('body')
+  // Redlines (amendment drafts, consolidation diffs) carry the change only in markup; plain .text()
+  // merges "<del>3 roky</del><ins>5 let</ins>" into "3 roky 5 let". Which side is in force is page-specific.
+  for (const [selector, label] of [
+    ['del, s, strike', 'deleted'],
+    ['ins', 'inserted'],
+  ] as const) {
+    root.find(selector).each((_, node) => {
+      const [, before, text, after] = /^(\s*)([\s\S]*?)(\s*)$/.exec($(node).text())!
+      if (text) $(node).text(`${before}[${label}: ${text}]${after}`)
+    })
+  }
   const content = root
     .find('h1, h2, h3, h4, p, li, blockquote, td, th')
     .toArray()

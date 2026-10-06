@@ -34,17 +34,17 @@ describe('shouldIssueVerificationCode', () => {
 describe('unverified accounts cannot sign in with a password', () => {
   const source = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf8')
 
-  it('rejects at the authorize() boundary, after the password is proven', () => {
-    const code = source('server/api/auth/[...].ts')
-    const passwordCheck = code.indexOf('await argon.verify(user.password, password)')
-    const verifiedCheck = code.indexOf("failure !== 'email_unverified'")
+  it('rejects at the credentials sign-in boundary, after the password is proven', () => {
+    const code = source('server/utils/auth.ts')
+    const passwordCheck = code.indexOf('await argon.verify(user.password, parsed.data.password)')
+    const verifiedCheck = code.indexOf("failure === 'email_unverified'")
 
     expect(passwordCheck).toBeGreaterThan(-1)
     expect(verifiedCheck).toBeGreaterThan(passwordCheck)
   })
 
   it('selects emailVerified so the guard cannot read undefined', () => {
-    expect(source('server/api/auth/[...].ts')).toContain('emailVerified: true,')
+    expect(source('server/utils/auth.ts')).toContain('emailVerified: true }')
   })
 
   it('rejects at the totp pre-flight with a machine-readable code', () => {
@@ -64,7 +64,7 @@ describe('the resend endpoint is safe to expose unauthenticated', () => {
   const source = readFileSync(resolve(process.cwd(), 'server/api/auth/resend-verification.post.ts'), 'utf8')
 
   it('never resolves a session, so a locked-out user can reach it', () => {
-    expect(source).not.toContain('getServerSession')
+    expect(source).not.toContain('getSessionUser')
     expect(source).not.toContain('requireUser')
   })
 

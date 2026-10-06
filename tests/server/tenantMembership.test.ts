@@ -103,7 +103,7 @@ describe('tenant boundary wiring', () => {
     const endpoint = source('server/api/tenant/active.post.ts')
     expect(endpoint).toContain('prisma.session.update')
     expect(endpoint).not.toContain('prisma.user.update')
-    expect(source('server/api/auth/[...].ts')).toContain('activeSession?.clientSiteId')
+    expect(source('server/utils/session.ts')).toContain('session.clientSiteId')
   })
 
   it('creates self-service blogs as Basic tenants owned by the current user', () => {
@@ -125,9 +125,9 @@ describe('tenant boundary wiring', () => {
   })
 
   it('revalidates kicked sessions and protects analytics and tags', () => {
-    const auth = source('server/api/auth/[...].ts')
-    expect(auth).toContain('prisma.tenantMembership.findUnique')
-    expect(auth).toContain("token.role = hasActiveTenant ? 'admin' : 'reader'")
+    const session = source('server/utils/session.ts')
+    expect(session).toContain('prisma.tenantMembership.findUnique')
+    expect(session).toContain("active ? 'admin' : 'reader'")
     expect(source('server/api/tenant/members/[id].delete.ts')).toContain('prisma.session.updateMany')
     for (const file of ['server/api/stats/dashboard.ts', 'server/api/tags/index.get.ts']) {
       expect(source(file)).toContain('requireTenantScope')
@@ -218,11 +218,10 @@ describe('invitation onboarding wiring', () => {
 
   it('keeps the invitation URL as the OAuth callback and accepts the verified OAuth email', () => {
     const form = source('app/components/Auth/Form.vue')
-    const auth = source('server/api/auth/[...].ts')
+    const auth = source('server/utils/auth.ts')
     expect(form).toContain('resolveAuthRedirect(window.location.href, props.redirectTo)')
-    expect(form).toContain('callbackUrl: finalRedirectUrl')
-    expect(auth).toContain('verifiedGoogleEmail(profile)')
-    expect(auth).toContain('verifiedGitHubEmail(emails)')
+    expect(form).toContain('callbackURL: finalRedirectUrl')
+    expect(auth).toContain("if (!user.emailVerified) throw reject('FORBIDDEN', 'oauth_email_unverified')")
     expect(source('server/api/invitations/[token].post.ts')).toContain(
       'invitationEmail(user.email) !== invitation.email',
     )

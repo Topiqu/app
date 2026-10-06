@@ -123,6 +123,7 @@ beforeEach(() => {
   vi.stubGlobal('syncArticleTranslationQueue', vi.fn().mockResolvedValue(undefined))
   vi.stubGlobal('invalidateFeed', vi.fn().mockResolvedValue(undefined))
   vi.stubGlobal('enqueueArticleWebhook', vi.fn().mockResolvedValue(undefined))
+  vi.stubGlobal('announceArticle', vi.fn().mockResolvedValue(undefined))
   providers.dataForSeo.mockResolvedValue({
     cost: 0.002,
     result: {
@@ -439,7 +440,9 @@ describe('apply and rollback', () => {
       article: { ...prepared, sources: snapshot.sources, status: 'published' },
     })
     await rollbackContentAction(mocks.scoped, { ...action, status: 'APPLIED', proposal: prepared, snapshot }, 'user1')
-    expect(mocks.tx.article.updateMany).toHaveBeenCalledWith(expect.objectContaining({ data: snapshot }))
+    expect(mocks.tx.article.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { ...snapshot, contentUpdatedAt: expect.any(Date) } }),
+    )
     expect(mocks.tx.contentAction.updateMany).toHaveBeenCalledWith({
       where: { id: 'action1', clientSiteId: 'site1', status: 'APPLIED' },
       data: { status: 'ROLLED_BACK' },

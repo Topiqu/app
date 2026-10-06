@@ -26,7 +26,6 @@ const schema = z.object({
 export default defineEventHandler(async (event) => {
   const user = await requireUser(event)
   if (user.role === 'ai') throw createError({ statusCode: 403, message: 'AI users cannot create blogs' })
-  if (!user.sessionId) throw createError({ statusCode: 401, message: 'Active session required' })
 
   const allowed = await consumeRateLimit(`tenant-create:${user.id}`, 5, 60 * 60)
   if (!allowed)
@@ -57,7 +56,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const session = await prisma.session.findFirst({
-    where: { id: user.sessionId, userId: user.id, revoked: false, deletedAt: null },
+    where: { id: user.sessionId, userId: user.id },
     select: { id: true },
   })
   if (!session) throw createError({ statusCode: 401, message: 'Active session required' })

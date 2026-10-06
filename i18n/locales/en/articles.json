@@ -431,11 +431,11 @@
         "researchOff": "without research",
         "modulesLabel": "Article components",
         "elapsed": "Elapsed {seconds}s",
-        "waitingWriting": "The author has not sent more text for {seconds}s. Writing stops automatically after 30s without data.",
+        "waitingWriting": "No new text for {seconds}s. Writing stops after 30s without text.",
         "waitingResearch": "Source verification is taking longer than usual. The run is still active and can be stopped safely.",
         "waitingImages": "Preparing an image can take up to 45s. If the service does not return one, the article will finish without it.",
         "reservedDuringRun": "Temporarily held: {count} article",
-        "writerIdleError": "Generation stopped because the writer sent no data for 30 seconds.",
+        "writerIdleError": "Generation stopped: no text arrived for 30 seconds. Try again.",
         "writerDeadlineError": "Generation stopped after reaching the 90-second writing limit.",
         "output": {
           "news": "News report",
@@ -573,7 +573,7 @@
           "youtube": {
             "running": "Searching for a verified video.",
             "found": "Found: {title}",
-            "notUsed": "Found “{title}”, but the writer did not place it in the article.",
+            "notUsed": "Found “{title}”, but it was not used in the article.",
             "researchOff": "Not searched: videos are only looked up during web research.",
             "noCandidates": "Research found no relevant video.",
             "rejected": "Candidate videos failed YouTube verification (removed or private).",
@@ -816,9 +816,9 @@
             "recommendation": "Start at H2 and continue without jumps, for example H2, H3, then back to H2."
           },
           "internal-link": {
-            "title": "The article has no internal link",
-            "description": "The body does not link to another page on the same website.",
-            "recommendation": "Link a relevant phrase to a related article or page on your website."
+            "title": "No link to a related article",
+            "description": "The body does not link to another article on this website. A link to the homepage does not count.",
+            "recommendation": "If another of your articles naturally follows on from this text, link a phrase that describes it. If none does, leave the link out."
           },
           "external-link": {
             "title": "The article has no external link",

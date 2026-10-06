@@ -1,4 +1,4 @@
-import type { User } from 'next-auth'
+import type { SessionUser } from '~~/shared/types/auth'
 
 import { PolicyPlugin } from '@zenstackhq/plugin-policy'
 
@@ -6,12 +6,4 @@ import { PolicyPlugin } from '@zenstackhq/plugin-policy'
 // keeps the audit advisory lock inside the same policy-enhanced transaction as its write.
 const policyDb = prisma.$use(new PolicyPlugin({ dangerouslyAllowRawSql: true }))
 
-export const getEnhancedPrisma = async (user?: User) =>
-  policyDb.$setAuth(
-    user
-      ? {
-          ...user,
-          email: user.email ?? undefined,
-        }
-      : undefined,
-  )
+export const getEnhancedPrisma = async (user?: SessionUser | null) => policyDb.$setAuth(user ?? undefined)

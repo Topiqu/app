@@ -24,24 +24,12 @@ onMounted(async () => {
   if (!provider) return navigateTo('/')
 
   try {
-    const res = await $fetch<{ csrfToken: string }>('/api/auth/csrf')
-    if (!res?.csrfToken) return window.location.replace('/')
-
-    const signinRes = await $fetch<{ url?: string }>(`/api/auth/signin/${provider}`, {
+    // Better Auth rejects a callbackURL outside `trustedOrigins`, so a foreign return address fails here.
+    const { url } = await $fetch<{ url: string }>('/api/auth/sign-in/social', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        csrfToken: res.csrfToken,
-        callbackUrl,
-        json: 'true',
-      }).toString(),
+      body: { provider, callbackURL: callbackUrl },
     })
-
-    if (signinRes?.url) {
-      window.location.replace(signinRes.url)
-    } else {
-      window.location.replace('/')
-    }
+    window.location.replace(url)
   } catch {
     window.location.replace('/')
   }

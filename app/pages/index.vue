@@ -297,7 +297,8 @@
       <UEmpty v-else icon="mdi:file-search-outline" :title="$t('articles.noResults.message')" />
 
       <div v-if="hasMore" class="text-center pt-4">
-        <UButton :disabled="pending" :loading="pending" @click="loadMore">
+        <!-- A real link, so crawlers reach every page; with JavaScript the click appends in place. -->
+        <UButton :to="nextPageTo" :disabled="pending" :loading="pending" @click.prevent="loadMore">
           {{ $t('common.pagination.next') }}
         </UButton>
       </div>
@@ -372,7 +373,9 @@ const feedAd = computed(() => adProviderFor(clientSite, { marketing: marketingGr
 const { data: feat, pending: featPending } = await useFetch(`/api/articles/featured/${clientSite?.name}`, {
   query: { locale },
 })
-const page = shallowRef<number>(1)
+const route = useRoute()
+const requestedPage = () => Math.max(1, Number.parseInt(String(route.query.page ?? ''), 10) || 1)
+const page = shallowRef<number>(requestedPage())
 const limit = shallowRef<number>(15)
 const selectedTag = shallowRef<string>('')
 const searchQuery = shallowRef<string>('')
@@ -464,6 +467,18 @@ const debouncedRefresh = useDebounceFn(() => {
 }, 400)
 
 watch([selectedTag, searchQuery], debouncedRefresh)
+
+// Back/forward between `?page=` URLs reuses this component instance.
+watch(
+  () => route.query.page,
+  () => {
+    page.value = requestedPage()
+    articleMap.value.clear()
+    hasMore.value = true
+    refresh()
+  },
+)
+const nextPageTo = computed(() => ({ query: { ...route.query, page: page.value + 1 } }))
 
 const allArticles = computed(() => Array.from(articleMap.value.values()))
 const hasFilters = computed(() => Boolean(searchQuery.value || selectedTag.value))
@@ -558,8 +573,11 @@ const isOwner = computed(() => {
 
 const hasPublishedArticles = computed(() => (feat.value?.totalArticles ?? 0) > 0)
 
+// A page past the end lists nothing and would be indexed as a thin copy of the homepage.
+const isPastLastPage = computed(() => requestedPage() > 1 && !pending.value && !feed.value?.items?.length)
+
 useSeoMeta({
-  robots: () => (hasPublishedArticles.value ? 'index, follow' : 'noindex, follow'),
+  robots: () => (hasPublishedArticles.value && !isPastLastPage.value ? 'index, follow' : 'noindex, follow'),
 })
 
 const loadMore = async () => {

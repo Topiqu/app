@@ -27,7 +27,7 @@ const localePath = useLocalePath()
 const appRedirect =
   useRequestURL().hostname.replace(/^www\./, '') === 'app.topiqu.com' ? localePath({ name: 'start' }) : undefined
 const toast = useToast()
-const { signIn, getSession, data } = useAuth()
+const { getSession, data } = useAuth()
 
 const initialMode = computed(() => (route.query.mode === 'register' ? 'register' : 'login'))
 const invitationRedirect = computed(() =>
@@ -40,9 +40,7 @@ if (route.query.redirect?.length) navigateTo(route.query.redirect.toString(), { 
 
 const finishOnboardingLogin = async (token: string) => {
   try {
-    const result = await signIn('credentials', { loginToken: token, redirect: false })
-    if (result?.error) throw new Error(result.error)
-
+    await $fetch('/api/auth/sign-in/token', { method: 'POST', body: { token } })
     await getSession()
     const role = data.value?.user?.role
     toast.add({ color: 'success', title: $t('common.auth.loginSuccess') })

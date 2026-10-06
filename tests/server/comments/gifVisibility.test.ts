@@ -37,7 +37,7 @@ describe('comment GIF visibility', () => {
     vi.stubGlobal('defineEventHandler', (handler: unknown) => handler)
     vi.stubGlobal('useServerI18n', async () => ({ translate: (key: string) => key }))
     vi.stubGlobal('getRouterParam', () => 'article-1')
-    vi.stubGlobal('getServerSession', async () => null)
+    vi.stubGlobal('getSessionUser', async () => null)
     vi.stubGlobal('getEnhancedPrisma', async () => db)
     vi.stubGlobal('getPagination', async () => ({ skip: 0, take: 5 }))
     vi.stubGlobal('getQuery', () => ({}))

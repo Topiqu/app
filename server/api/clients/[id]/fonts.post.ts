@@ -6,7 +6,7 @@ const MAX_FONT_BYTES = 2 * 1024 * 1024
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
   if (!id) throw createError({ statusCode: 400, statusMessage: 'Missing client site' })
-  const user = (await getServerSession(event))?.user
+  const user = await getSessionUser(event)
   if (!user || (user.role !== 'admin' && user.role !== 'superadmin'))
     throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
   if (user.role !== 'superadmin') await requireTenantScope(event, 'TENANT_SETTINGS', id)

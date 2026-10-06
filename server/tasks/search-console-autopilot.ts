@@ -122,11 +122,12 @@ export default defineMonitoredTask({
           })
           await prisma.article.update({
             where: { id: article.id },
-            data: { title: generated.result.title, excerpt: generated.result.excerpt },
+            data: { title: generated.result.title, excerpt: generated.result.excerpt, contentUpdatedAt: new Date() },
           })
           await syncArticleTranslationQueue(prisma, article.id, connection.clientSiteId, { contentChanged: true })
           await invalidateFeed(connection.clientSiteId)
           await enqueueArticleWebhook('ARTICLE_UPDATED', { id: article.id, clientSiteId: connection.clientSiteId })
+          await announceArticle(article.id, connection.clientSiteId)
           await logAction({
             action: 'SEO_AUTOPILOT_CTR_OPTIMIZED',
             clientSiteId: connection.clientSiteId,
@@ -168,6 +169,7 @@ export default defineMonitoredTask({
             where: { id: article.id },
             data: {
               content,
+              contentUpdatedAt: new Date(),
               totalWords: metrics.totalWords,
               savedAmount: metrics.savedAmount,
               savedTimeMinutes: metrics.savedTimeMinutes,
@@ -176,6 +178,7 @@ export default defineMonitoredTask({
           await syncArticleTranslationQueue(prisma, article.id, connection.clientSiteId, { contentChanged: true })
           await invalidateFeed(connection.clientSiteId)
           await enqueueArticleWebhook('ARTICLE_UPDATED', { id: article.id, clientSiteId: connection.clientSiteId })
+          await announceArticle(article.id, connection.clientSiteId)
           await logAction({
             action: 'SEO_AUTOPILOT_CONTENT_REFRESHED',
             clientSiteId: connection.clientSiteId,

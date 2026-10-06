@@ -3,7 +3,7 @@ import { AVATAR_CONTENT_TYPE, avatarKeyFromUrl, moderateAvatar, prepareAvatar } 
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
-  const sessionUser = (await getServerSession(event))?.user
+  const sessionUser = await getSessionUser(event)
   if (!sessionUser) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
   const parts = await readMultipartFormData(event)

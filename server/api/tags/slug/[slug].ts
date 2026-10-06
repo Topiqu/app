@@ -1,7 +1,7 @@
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
 
-  const user = (await getServerSession(event))?.user
+  const user = await getSessionUser(event)
 
   const tagName = decodeURIComponent(getRouterParam(event, 'slug')?.trim() ?? '')
   if (!tagName) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })

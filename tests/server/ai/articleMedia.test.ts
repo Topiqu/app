@@ -146,6 +146,26 @@ describe('article media finalization', () => {
     expect(result.articleImageCredit?.kind).toBe('ai')
   })
 
+  it('captions a generated body image with its instruction, never a searched one', async () => {
+    vi.mocked(findStockImage)
+      .mockResolvedValueOnce(hit('cover'))
+      .mockResolvedValueOnce(hit('body'))
+      .mockResolvedValue(null)
+    vi.mocked(generateImage).mockResolvedValue({ url: 'https://images.test/ai', width: 1200, height: 800 } as never)
+    const object = {
+      ...draft(),
+      content: '<p>a</p>[[IMAGE1]][[IMAGE2]]',
+      images: [
+        { type: 'photo' as const, query: 'Witcher 4 Ciri', caption: 'An invented scene the writer has not seen.' },
+        { type: 'generate' as const, query: 'construction site inspection', caption: 'Inspector checking rebar' },
+      ],
+    }
+    const result = await finalizeArticle(object, 'en', { allowGeneratedImages: true })
+    expect(result.content).toContain('alt="Inspector checking rebar"')
+    expect(result.content).toContain('</span>Inspector checking rebar</figcaption>')
+    expect(result.content).not.toContain('invented scene')
+  })
+
   it('does not generate when an existing cover was found, even with permission', async () => {
     vi.mocked(findStockImage).mockResolvedValue(hit('existing'))
     const object = { ...draft(), coverImage: aiCover(), images: [] }

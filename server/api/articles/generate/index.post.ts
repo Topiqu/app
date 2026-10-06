@@ -12,7 +12,7 @@ import {
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
-  const user = (await getServerSession(event))?.user
+  const user = await getSessionUser(event)
 
   if (!user || !user.clientSiteId) {
     throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
@@ -176,6 +176,7 @@ export default defineEventHandler(async (event) => {
             modules: options?.modules,
             allowGeneratedImages: options?.allowGeneratedImages !== false,
             useKnowledge: options?.useKnowledge !== false,
+            articleId,
           })
           const { result, finalize, researchTokens, research, researchSources, knowledge } = generation
           recoverySnapshot.sources = researchSources
@@ -289,7 +290,8 @@ export default defineEventHandler(async (event) => {
             client.humanWordsPerHour,
           )
 
-          const apiTokens = (usage.totalTokens || 0) + researchTokens + generation.editorialTokens
+          const apiTokens =
+            (usage.totalTokens || 0) + researchTokens + generation.editorialTokens + generation.linkTokens
           await recordAiUsage(
             clientSiteId,
             apiTokens,
@@ -300,6 +302,7 @@ export default defineEventHandler(async (event) => {
               usage,
               researchTokens,
               editorialTokens: generation.editorialTokens,
+              linkTokens: generation.linkTokens,
               editorialReview: generation.editorialReview,
               metrics,
               aiInvolvement: 'ASSIST',

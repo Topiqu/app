@@ -45,7 +45,7 @@ describe('credential login wiring', () => {
   const source = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf8')
 
   it('limits and logs both the public preflight and direct authorize endpoint', () => {
-    for (const path of ['server/api/users/totp.post.ts', 'server/api/auth/[...].ts']) {
+    for (const path of ['server/api/users/totp.post.ts', 'server/utils/auth.ts']) {
       const code = source(path)
       expect(code).toContain('checkLoginRateLimit')
       expect(code).toContain('logLoginFailure')
@@ -54,16 +54,16 @@ describe('credential login wiring', () => {
   })
 
   it('records success and lastLogin only at the server authentication boundary', () => {
-    const auth = source('server/api/auth/[...].ts')
+    const auth = source('server/utils/auth.ts')
     const form = source('app/components/Auth/Form.vue')
     expect(auth).toContain('data: { lastLogin: new Date() }')
     expect(auth).toContain('logLoginSuccess')
     expect(form).not.toContain('lastLogin: Date.now()')
   })
 
-  it('does not continue after NextAuth returns a failed sign-in result', () => {
+  it('does not continue after a failed sign-in', () => {
     const form = source('app/components/Auth/Form.vue')
-    expect(form).toMatch(/if \(result\?\.error\)\s+throw createError/)
+    expect(form).toContain('throw createError({ statusCode: e?.statusCode || 401, message: $t(key) })')
     expect(form.match(/signInWithCredentials\(/g)).toHaveLength(3)
   })
 })

@@ -2,7 +2,7 @@ import { randomBytes } from 'crypto'
 import { domainVerificationDefaults, normalizeDomain } from '~~/shared/utils/domain'
 
 export default defineEventHandler(async (event) => {
-  const user = (await getServerSession(event))?.user
+  const user = await getSessionUser(event)
   if (!user?.id) throw createError({ statusCode: 401, message: 'Unauthorized' })
   if (!user.clientSiteId || !['admin', 'superadmin'].includes(user.role))
     throw createError({ statusCode: 403, message: 'Forbidden' })

@@ -150,7 +150,7 @@ const props = defineProps<{
 
 const toast = useToast()
 const theme = useThemeStore()
-const { data, signIn } = useAuth()
+const { data, getSession } = useAuth()
 const { setLocale } = useI18n()
 const localePath = useLocalePath()
 const afterSignIn = (role: string) => {
@@ -201,10 +201,19 @@ const totpDigits = computed<string[]>({
   set: (value) => (form.value.totpCode = value.join('')),
 })
 
-const signInWithCredentials = async (credentials: Record<string, string>) => {
-  const result = await signIn('credentials', { ...credentials, redirect: false })
-  if (result?.error)
-    throw createError({ statusCode: result.status || 401, message: $t('common.errors.invalidCredentials') })
+const credentialErrors: Record<string, string> = {
+  email_not_verified: 'common.errors.emailNotVerified',
+  rate_limited: 'common.errors.tooManyRequests',
+}
+
+const signInWithCredentials = async (credentials: { email: string; password: string; totp?: string }) => {
+  try {
+    await $fetch('/api/auth/sign-in/credentials', { method: 'POST', body: credentials })
+  } catch (e: any) {
+    const key = credentialErrors[e?.data?.code] ?? 'common.errors.invalidCredentials'
+    throw createError({ statusCode: e?.statusCode || 401, message: $t(key) })
+  }
+  await getSession()
 }
 
 const isPasswordFormValid = computed(() => {
@@ -337,22 +346,14 @@ const handleSocialAuth = async (provider: 'google' | 'github') => {
       return
     }
 
-    const result = await signIn(provider, {
-      callbackUrl: finalRedirectUrl,
-      external: true,
+    const { url } = await $fetch<{ url: string }>('/api/auth/sign-in/social', {
+      method: 'POST',
+      body: { provider, callbackURL: finalRedirectUrl },
     })
-
-    if (result?.error) {
-      const errorKey = provider === 'google' ? 'common.auth.googleSignInFailed' : 'common.auth.githubSignInFailed'
-      return toast.add({ color: 'error', title: $t(errorKey) })
-    }
-
-    const user = await $fetch(`/api/users/${data.value?.user.id}` as `/api/users/:id`)
-    setLocale(user.language)
-    theme.mode = user.theme
-    form.value = init
-  } catch (e: any) {
-    toast.add({ color: 'error', title: fetchErrorMessage(e, $t('common.messages.operationFailed')) })
+    window.location.href = url
+  } catch {
+    const errorKey = provider === 'google' ? 'common.auth.googleSignInFailed' : 'common.auth.githubSignInFailed'
+    toast.add({ color: 'error', title: $t(errorKey) })
   }
 }
 </script>

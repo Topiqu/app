@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { logAuthError } from '../../../server/utils/authErrorLogger'
-import { fetchGitHubOAuthResource } from '../../../server/utils/githubOAuth'
 import { sanitizeAuthErrorMessage } from '../../../server/utils/authErrorMessage'
 
 const betterStack = vi.hoisted(() => ({ error: vi.fn().mockResolvedValue(undefined) }))
@@ -68,22 +67,5 @@ describe('OAuth diagnostics', () => {
     expect(sanitizeAuthErrorMessage('failed test-sensitive-value')).toBe('failed [redacted]')
     expect(sanitizeAuthErrorMessage('word '.repeat(200)).length).toBe(600)
     vi.unstubAllEnvs()
-  })
-
-  it('reports GitHub email HTTP failure instead of treating it as an empty email list', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('private response', { status: 403 })))
-    await expect(fetchGitHubOAuthResource('emails', 'secret')).rejects.toThrow('GitHub emails HTTP 403')
-  })
-
-  it('sends an explicit user agent and returns successful responses', async () => {
-    const fetcher = vi.fn().mockResolvedValue(new Response(JSON.stringify({ id: 12 })))
-    vi.stubGlobal('fetch', fetcher)
-    expect(await fetchGitHubOAuthResource('profile', 'secret')).toEqual({ id: 12 })
-    expect(fetcher.mock.calls[0][1].headers['User-Agent']).toBe('Topiqu')
-  })
-
-  it('rejects malformed email responses', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}')))
-    await expect(fetchGitHubOAuthResource('emails', 'secret')).rejects.toThrow('GitHub emails invalid response')
   })
 })

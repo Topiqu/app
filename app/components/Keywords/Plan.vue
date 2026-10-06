@@ -7,8 +7,9 @@
 
     <p
       v-if="!queued.length"
-      class="rounded-(--topiqu-surface-radius) border border-dashed border-default px-4 py-3 text-sm text-muted"
+      class="flex items-center gap-2 rounded-(--topiqu-surface-radius) border border-dashed border-default px-4 py-3 text-sm text-muted"
     >
+      <UIcon name="mdi:playlist-clock" class="size-4 shrink-0" aria-hidden="true" />
       {{ $t('common.keywordPlan.empty') }}
     </p>
     <ul
@@ -16,9 +17,10 @@
       class="divide-y divide-default overflow-hidden rounded-(--topiqu-surface-radius) border border-default bg-default"
     >
       <KeywordsPlanItem
-        v-for="cluster in queued"
+        v-for="(cluster, index) in queued"
         :key="cluster.id"
         :cluster
+        :position="index + 1"
         :busy="busy === cluster.id"
         @toggle="toggle(cluster, $event)"
       />

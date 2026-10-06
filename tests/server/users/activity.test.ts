@@ -33,7 +33,7 @@ describe('user activity article visibility', () => {
     db.comment.findMany.mockResolvedValue([])
     vi.stubGlobal('defineEventHandler', (handler: unknown) => handler)
     vi.stubGlobal('useServerI18n', async () => ({ translate: (key: string) => key }))
-    vi.stubGlobal('getServerSession', async () => ({ user: { id: 'user-1' } }))
+    vi.stubGlobal('getSessionUser', async () => ({ id: 'user-1' }))
     vi.stubGlobal('getEnhancedPrisma', async () => db)
     vi.stubGlobal('getQuery', () => ({ page: '1', limit: '10', sort: 'createdAt:desc' }))
     vi.stubGlobal('getPagination', async () => ({ skip: 0, take: 10 }))

@@ -6,7 +6,7 @@ const EVENT_LIMIT = 20
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
-  const user = (await getServerSession(event))?.user
+  const user = await getSessionUser(event)
   if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
   // `Log` policy already scopes reads to `auth().id == userId`; the explicit filter keeps the

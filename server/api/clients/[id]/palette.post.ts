@@ -8,7 +8,7 @@ const RASTER_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/gi
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
   if (!id) throw createError({ statusCode: 400, statusMessage: 'Missing client site' })
-  const user = (await getServerSession(event))?.user
+  const user = await getSessionUser(event)
   if (!user || (user.role !== 'admin' && user.role !== 'superadmin'))
     throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
   if (user.role !== 'superadmin') await requireTenantScope(event, 'TENANT_SETTINGS', id)

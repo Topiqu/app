@@ -30,7 +30,6 @@
         </div>
 
         <UButton
-          v-if="!session.revoked"
           size="sm"
           color="neutral"
           variant="ghost"
@@ -40,9 +39,6 @@
         >
           {{ $t('common.actions.revoke') }}
         </UButton>
-        <span v-else class="shrink-0 self-start text-xs text-neutral-400 dark:text-neutral-500 sm:self-auto">
-          {{ $t('profile.sessionRevoked') }}
-        </span>
       </li>
     </ul>
 
@@ -87,14 +83,8 @@ function deviceLabel(session: { device: string | null; os: string | null }) {
 async function revokeSession(sessionId: string) {
   try {
     emit('update:isLoading', true)
-    await $fetch(`/api/sessions/${sessionId}`, {
-      method: 'PATCH',
-      body: { revoked: true },
-    })
-    emit(
-      'update:sessions',
-      (sessions ?? []).map((s) => (s.id === sessionId ? { ...s, revoked: true } : s)),
-    )
+    await $fetch(`/api/sessions/${sessionId}`, { method: 'DELETE' })
+    emit('update:sessions', (sessions ?? []).filter((s) => s.id !== sessionId))
     if (sessionId === currentSessionId) emit('signOut')
     toast.add({ color: 'success', title: $t('profile.sessionRevokedSuccess') })
   } catch (err: any) {

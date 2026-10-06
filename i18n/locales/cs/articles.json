@@ -431,11 +431,11 @@
         "researchOff": "bez výzkumu",
         "modulesLabel": "Součásti článku",
         "elapsed": "Uplynulo {seconds} s",
-        "waitingWriting": "Autor {seconds} s neposlal další část textu. Psaní se automaticky zastaví po 30 s bez dat.",
+        "waitingWriting": "Už {seconds} s nepřišel další text. Po 30 s bez textu se psaní zastaví.",
         "waitingResearch": "Ověřování zdrojů trvá déle než obvykle. Běh je stále aktivní a lze jej bezpečně zastavit.",
         "waitingImages": "Příprava obrázku může trvat až 45 s. Pokud jej služba nedodá, článek se dokončí bez něj.",
         "reservedDuringRun": "Dočasně blokováno: {count} článek",
-        "writerIdleError": "Generování bylo zastaveno: autor 30 sekund neposlal žádná data.",
+        "writerIdleError": "Generování se zastavilo: 30 sekund nepřišel žádný text. Zkuste to znovu.",
         "writerDeadlineError": "Generování bylo zastaveno po dosažení 90sekundového limitu psaní.",
         "output": {
           "news": "Zpráva",
@@ -573,7 +573,7 @@
           "youtube": {
             "running": "Hledám ověřené video.",
             "found": "Nalezeno: {title}",
-            "notUsed": "Nalezeno „{title}“, ale autor ho do článku nevložil.",
+            "notUsed": "Nalezeno „{title}“, ale v článku se nepoužilo.",
             "researchOff": "Nehledáno: video se hledá jen při rešerši na webu.",
             "noCandidates": "Rešerše nenašla žádné relevantní video.",
             "rejected": "Nalezená videa neprošla ověřením na YouTube (smazaná nebo soukromá).",
@@ -816,9 +816,9 @@
             "recommendation": "Začněte na H2 a pokračujte bez skoků, například H2, H3 a zpět na H2."
           },
           "internal-link": {
-            "title": "Chybí interní odkaz",
-            "description": "Článek neodkazuje na žádnou další stránku stejného webu.",
-            "recommendation": "Propojte vhodnou část textu se souvisejícím článkem nebo stránkou vašeho webu."
+            "title": "Chybí odkaz na související článek",
+            "description": "Text neodkazuje na žádný jiný článek tohoto webu. Odkaz na úvodní stránku se nepočítá.",
+            "recommendation": "Pokud na text přirozeně navazuje jiný váš článek, propojte s ním frázi, která popisuje jeho obsah. Když žádný nenavazuje, odkaz nepřidávejte."
           },
           "external-link": {
             "title": "Chybí externí odkaz",

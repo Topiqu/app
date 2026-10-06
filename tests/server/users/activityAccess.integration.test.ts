@@ -119,7 +119,7 @@ describe.skipIf(!enabled)('activity access on PostgreSQL', () => {
   const activity = async (id: string) => {
     vi.stubGlobal('defineEventHandler', (handler: unknown) => handler)
     vi.stubGlobal('useServerI18n', async () => ({ translate: (key: string) => key }))
-    vi.stubGlobal('getServerSession', async () => ({ user: auth(id) }))
+    vi.stubGlobal('getSessionUser', async () => auth(id))
     vi.stubGlobal('getEnhancedPrisma', async () => asUser(id))
     vi.stubGlobal('getQuery', () => ({ sort: 'createdAt:desc' }))
     vi.stubGlobal('getPagination', async () => ({ skip: 0, take: 10 }))

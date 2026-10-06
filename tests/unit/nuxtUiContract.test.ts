@@ -123,7 +123,7 @@ describe('Nuxt UI template contract', () => {
                     .at(-1) ?? '',
               ),
             ),
-            ...[...source.matchAll(/\bconst\s+\[([^\]]+)\]\s*=\s*createReusableTemplate\(/g)].flatMap((match) =>
+            ...[...source.matchAll(/\bconst\s+\[([^\]]+)\]\s*=\s*createReusableTemplate(?:<[^>]*>)?\(/g)].flatMap((match) =>
               (match[1] ?? '').split(',').map((name) => name.trim()),
             ),
           ])

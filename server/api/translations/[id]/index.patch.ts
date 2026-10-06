@@ -94,5 +94,7 @@ export default defineEventHandler(async (event) => {
     metadata: { translationId: updated.id, articleId: translation.articleId, language: updated.language },
   })
 
+  if (updated.status === 'PUBLISHED') void announceArticle(translation.articleId, user.clientSiteId!)
+
   return { translation: updated }
 })

@@ -14,7 +14,7 @@ type SeoArticle = {
   language?: string | null
   publishedAt?: string | Date | null
   createdAt?: string | Date | null
-  updatedAt?: string | Date | null
+  contentUpdatedAt?: string | Date | null
   readingTime?: number | null
   totalWords?: number | null
   sources?: string[] | null
@@ -105,7 +105,9 @@ export function useArticleSeo(
       image: () => article.value?.imageUrl || undefined,
       // `createdAt` is when the draft was opened, not when it went live.
       datePublished: () => isoDate(article.value?.publishedAt ?? article.value?.createdAt),
-      dateModified: () => isoDate(article.value?.updatedAt),
+      // Not `updatedAt`: every view and status flip moves it, which would claim a fresh edit.
+      dateModified: () =>
+        isoDate(article.value?.contentUpdatedAt ?? article.value?.publishedAt ?? article.value?.createdAt),
       inLanguage: () => article.value?.language || undefined,
       wordCount: () => article.value?.totalWords || undefined,
       timeRequired: () => (article.value?.readingTime ? `PT${article.value.readingTime}M` : undefined),

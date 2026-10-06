@@ -281,10 +281,10 @@ export const finalizeArticle = async (
       }
       const image = {
         slot: idx + 1,
-        // A requested caption describes the desired asset, not the asset that was actually
-        // retrieved or generated. Publishing it as observed fact (or alt text) would turn an
-        // image-search instruction into a hallucinated claim. Provider metadata remains safe.
-        html: buildImageHtml(registered, '', labels),
+        // A requested caption describes the desired asset, not the one a search retrieved, so it
+        // would turn an image-search instruction into a hallucinated claim; provider metadata stays.
+        // A generated picture was made from this instruction, so its caption describes an illustration.
+        html: buildImageHtml(registered, registered.kind === 'ai' ? img.caption : '', labels),
         resolved: registered,
       }
       mediaFound += 1

@@ -2,6 +2,7 @@ import { createRequire } from 'node:module'
 import { defineNuxtModule } from 'nuxt/kit'
 
 import { IMAGE_HOSTS } from './shared/utils/imageHosts'
+import { LOCALIZED_SEGMENTS } from './shared/utils/routes'
 import { AI_GROUNDING_TOKENS, ANSWER_ENGINE_BOTS } from './shared/utils/crawlers'
 
 const APP_ENV = process.env.APP_ENV || process.env.VERCEL_ENV || process.env.NODE_ENV || 'development'
@@ -73,6 +74,19 @@ const PRIVATE_PATHS = [
 
 /** Headroom for crawler bursts on the public read surfaces, over the global 70 / 10 s. */
 const CRAWL_LIMIT = { tokensPerInterval: 300, interval: 10 * 1000 }
+
+// Derived from the route segments, so a new locale or a renamed route cannot fall back to 70 / 10 s.
+const CRAWL_ROUTES = Object.fromEntries(
+  Object.entries(LOCALIZED_SEGMENTS).flatMap(([kind, segments]) =>
+    Object.entries(segments).flatMap(([language, segment]) => [
+      [`/${language}`, { security: { rateLimiter: CRAWL_LIMIT } }],
+      [
+        `/${language}/${segment}/**`,
+        { security: { rateLimiter: CRAWL_LIMIT, ...(kind === 'article' ? { xssValidator: false as const } : {}) } },
+      ],
+    ]),
+  ),
+)
 
 export default defineNuxtConfig({
   compatibilityDate: '2026-05-21',
@@ -151,8 +165,7 @@ export default defineNuxtConfig({
       : undefined,
     preset: 'bun',
     imports: {
-      presets: [{ from: '#auth', imports: ['getServerSession'] }],
-      dirs: ['server/utils', '#auth'],
+      dirs: ['server/utils'],
     },
     externals: {
       inline: [
@@ -173,7 +186,7 @@ export default defineNuxtConfig({
   },
 
   imports: {
-    dirs: ['utils', '#auth', 'server/shared/consts'],
+    dirs: ['utils', 'server/shared/consts'],
   },
   vite: {
     optimizeDeps: {
@@ -192,7 +205,6 @@ export default defineNuxtConfig({
     '@pinia/colada-nuxt',
     '@vueuse/nuxt',
     '@vueuse/motion/nuxt',
-    '@sidebase/nuxt-auth',
     '@vite-pwa/nuxt',
     '@unlok-co/nuxt-stripe',
     'pinia-plugin-persistedstate/nuxt',
@@ -340,11 +352,6 @@ export default defineNuxtConfig({
     server: { key: process.env.STRIPE_SK },
   },
 
-  auth: {
-    provider: { type: 'authjs', trustHost: true },
-    originEnvKey: 'AUTH_ORIGIN',
-  },
-
   qrcode: {
     options: {
       variant: 'pixelated',
@@ -429,15 +436,16 @@ export default defineNuxtConfig({
     '/**/__og-image__/**': { security: { xssValidator: false, headers: false } },
     // A crawler works through a sitemap in bursts. At the global 70 requests / 10 s it starts
     // collecting 429s partway down the list, and the pages behind them silently never get indexed.
-    '/cs/clanky/**': { security: { xssValidator: false, rateLimiter: CRAWL_LIMIT } },
-    '/en/articles/**': { security: { xssValidator: false, rateLimiter: CRAWL_LIMIT } },
+    ...CRAWL_ROUTES,
+    '/md/**': { security: { rateLimiter: CRAWL_LIMIT } },
+    '/indexnow.txt': { security: { rateLimiter: CRAWL_LIMIT } },
     '/api/onboarding/send-code': {
       security: { rateLimiter: { tokensPerInterval: 5, interval: 60 * 60 * 1000 } },
     },
     '/api/onboarding/verify-code': {
       security: { rateLimiter: { tokensPerInterval: 10, interval: 60 * 60 * 1000 } },
     },
-    '/api/auth/callback/credentials': {
+    '/api/auth/sign-in/**': {
       security: { rateLimiter: { tokensPerInterval: IS_BROWSER_TEST ? 10_000 : 10, interval: 60 * 1000 } },
     },
     '/api/users/totp': {

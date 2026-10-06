@@ -6,7 +6,7 @@ const PRICE_BY_PLAN: Record<'PRO' | 'PREMIUM', Record<'month' | 'year', string |
 }
 
 export default defineEventHandler(async (event) => {
-  const user = (await getServerSession(event))?.user
+  const user = await getSessionUser(event)
   if (!user) {
     throw createError({ statusCode: 401, message: 'Unauthorized' })
   }

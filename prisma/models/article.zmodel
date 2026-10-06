@@ -87,6 +87,8 @@ model Article with Base, Ownable {
     savedAmount      Float             @default(0.0)
     savedTimeMinutes Int               @default(0)
     publishedAt      DateTime?
+    // Last reader-visible text change after publication; `updatedAt` also moves on every view and status flip.
+    contentUpdatedAt DateTime?
     articleSeriesId  String?
     articleSeries    ArticleSeries?    @relation(fields: [articleSeriesId], references: [id], onDelete: SetNull)
     seriesOrder      Int?              @default(0)

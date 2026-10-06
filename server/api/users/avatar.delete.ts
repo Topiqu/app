@@ -3,7 +3,7 @@ import { avatarKeyFromUrl } from '~~/server/utils/avatar'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
-  const sessionUser = (await getServerSession(event))?.user
+  const sessionUser = await getSessionUser(event)
   if (!sessionUser) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
   const current = await prisma.user.findUnique({ where: { id: sessionUser.id }, select: { avatarUrl: true } })

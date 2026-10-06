@@ -1,8 +1,6 @@
-import { authenticator } from 'otplib'
-
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
-  const user = (await getServerSession(event))?.user
+  const user = await getSessionUser(event)
   if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
   const { id } = getRouterParams(event)
@@ -49,7 +47,7 @@ export default defineEventHandler(async (event) => {
         },
       },
       sessions: {
-        where: { revoked: false },
+        where: { expiresAt: { gt: new Date() } },
         select: {
           id: true,
           ip: true,
@@ -62,7 +60,6 @@ export default defineEventHandler(async (event) => {
           country: true,
           lastUsedAt: true,
           clientSiteId: true,
-          revoked: true,
           userId: true,
         },
       },
@@ -84,11 +81,6 @@ export default defineEventHandler(async (event) => {
     (sum, c) => sum + c.reactions.filter((r) => r.type === 'DISLIKE').length,
     0,
   )
-
-  let otpauthUrl = ''
-  if (userData.totpSecret) {
-    otpauthUrl = authenticator.keyuri(userData.username, 'Topiqu', userData.totpSecret)
-  }
 
   return {
     id: userData.id,
@@ -112,8 +104,7 @@ export default defineEventHandler(async (event) => {
     theme: userData.theme,
     hasPassword: !!userData.password,
     passwordChangedAt: passwordLog?.createdAt.toISOString() ?? null,
-    totpSecret: userData.totpSecret,
-    otpauthUrl,
+    totpEnabled: !!userData.totpSecret,
     likedArticles: userData.articleReactions.map((r) => ({ id: r.article.id })),
     sessions: userData.sessions.map((s) => ({
       id: s.id,
@@ -127,7 +118,6 @@ export default defineEventHandler(async (event) => {
       country: s.country,
       lastUsedAt: s.lastUsedAt.toISOString(),
       clientSiteId: s.clientSiteId,
-      revoked: s.revoked,
       userId: s.userId,
     })),
   }

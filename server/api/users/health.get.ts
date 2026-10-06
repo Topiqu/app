@@ -1,14 +1,13 @@
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
-  const session = await getServerSession(event)
-  const user = session?.user
+  const user = await getSessionUser(event)
   if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
   const dbUser = await prisma.user.findUnique({
     where: { id: user.id },
     omit: { password: false, totpSecret: false },
     include: {
-      sessions: { where: { revoked: false }, orderBy: { lastUsedAt: 'desc' } },
+      sessions: { where: { expiresAt: { gt: new Date() } }, select: { country: true } },
       bans: { where: { expiresAt: { gt: new Date() } } },
     },
   })

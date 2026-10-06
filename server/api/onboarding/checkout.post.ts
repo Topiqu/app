@@ -36,7 +36,20 @@ const schema = z.object({
   verifiedToken: z.string().min(1),
   selectedPlan: z.enum(['PRO', 'PREMIUM']).nullable().optional(),
   billingInterval: z.enum(['month', 'year']).default('month'),
+  // Not `website`: that name is the landing's bot honeypot.
+  websiteUrl: z.string().trim().max(2048).optional(),
 })
+
+/** Only a valid http(s) address is kept; a typo must not cost the visitor their sign-up. */
+const websiteUrl = (raw?: string) => {
+  if (!raw) return null
+  try {
+    const url = new URL(/^https?:\/\//i.test(raw) ? raw : `https://${raw}`)
+    return ['http:', 'https:'].includes(url.protocol) && url.hostname.includes('.') ? url.href : null
+  } catch {
+    return null
+  }
+}
 
 export default defineEventHandler(async (event) => {
   const body = await readValidatedBody(event, schema.parse)
@@ -122,6 +135,7 @@ export default defineEventHandler(async (event) => {
           brandGradient: parseBrandGradient(body.brandGradient) ?? undefined,
           typographyPreset: body.typographyPreset ?? 'MODERN',
           tagline: body.tagline || null,
+          websiteUrl: websiteUrl(body.websiteUrl),
           ...domainVerificationDefaults(fullSubdomain, randomBytes(24).toString('base64url')),
           // The trial is a real plan, not a UI state — `firstPaidAt` stays null as the paid
           // marker, and `trial-expiry` drops a card-less tenant back to BASIC after TRIAL_DAYS.

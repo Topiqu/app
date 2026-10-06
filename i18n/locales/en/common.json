@@ -49,17 +49,17 @@
       "connectDescription": "Topiqu requests read-only access and uses the data for article metrics and optimization recommendations.",
       "connect": "Connect Google account",
       "disconnect": "Disconnect",
-      "noProperty": "Choose a Search Console property",
+      "noProperty": "Choose a site in Search Console",
       "chooseProperty": "Which website belongs to this project?",
-      "choosePlaceholder": "Choose a property",
+      "choosePlaceholder": "Choose a site",
       "lastSync": "Last sync:",
       "autopilotTitle": "SEO Autopilot",
-      "autopilotDescription": "Opt in to automatic CTR fixes and focused content refreshes. At most one article is changed per day, with a 7-day article cooldown and 30 days for the same article-query pair. Scheduled new articles use uncovered search demand and still follow your publishing settings.",
+      "autopilotDescription": "Opt in to automatic title and excerpt rewrites for articles with a low click-through rate, and to focused content refreshes. At most one article is changed per day, with a 7-day article cooldown and 30 days for the same article-query pair. Scheduled new articles use uncovered search demand and still follow your publishing settings.",
       "autopilotLastRun": "Last checked:",
       "rollback": "Undo",
       "rollbackSuccess": "The last autonomous change was reverted.",
       "actions": {
-        "SEO_AUTOPILOT_CTR_OPTIMIZED": "Snippet optimized",
+        "SEO_AUTOPILOT_CTR_OPTIMIZED": "Title and excerpt rewritten",
         "SEO_AUTOPILOT_CONTENT_REFRESHED": "Content expanded"
       }
     },
@@ -90,8 +90,7 @@
       "title": "Up next",
       "description": "Automated articles take topics from the top. Pin what you want sooner and skip what you don’t want.",
       "empty": "The plan is built before the next automated article.",
-      "volume": "≈ {count} searches a month",
-      "volumeUnknown": "search volume unknown",
+      "volumeUnknown": "unknown",
       "difficulty": {
         "easy": "lower competition",
         "medium": "medium competition",
@@ -108,7 +107,8 @@
       "loadFailed": "The topic plan could not be loaded.",
       "pinned": "Pinned",
       "unpin": "Unpin {keyword}",
-      "skipped": "Skipped topics ({count})"
+      "skipped": "Skipped topics ({count})",
+      "volumeUnit": "searches/mo"
     },
     "keywordResults": {
       "title": "How articles perform",
@@ -157,16 +157,20 @@
       "stats": {
         "demand": {
           "label": "Search demand covered",
-          "hint": "{count} topics written · per month"
+          "hint": "searches a month · no topics | searches a month · {n} topic | searches a month · {n} topics",
+          "empty": "No article from the plan yet",
+          "info": "How often people search Google each month for topics that already have an article from the plan. It shows how much demand your articles cover."
         },
         "top10": {
           "label": "In Google top 10",
-          "hint": "of tracked articles",
-          "pending": "first check 7 days after publishing"
+          "hint": "of measured articles",
+          "pending": "First check 7 days after publishing",
+          "info": "How many plan articles are on Google's first page (positions 1–10). We check 7, 30, 60 and 90 days after publishing."
         },
         "queued": {
-          "label": "Ready in the plan",
-          "hint": "topics waiting for an article"
+          "label": "Topics in the plan",
+          "hint": "waiting for an article",
+          "info": "Scheduled articles take these topics from the top down. Pin or skip topics in Up next to change the order."
         }
       }
     },
@@ -238,13 +242,13 @@
       "premiumTitle": "Integrations on Premium",
       "premiumDescription": "Advanced integrations available on the Premium plan.",
       "gscDescription": "Turn search performance into concrete content opportunities.",
-      "gscBenefitOne": "See article queries, clicks, CTR, and average positions.",
-      "gscBenefitTwo": "Topiqu identifies content near top positions and unusually low CTR.",
+      "gscBenefitOne": "See article queries, clicks, click-through rate and average positions.",
+      "gscBenefitTwo": "Topiqu finds content just below the top positions and articles that get few clicks in results.",
       "gscStepOne": "Connect a Google account with Search Console access.",
-      "gscStepTwo": "Choose the property that belongs to this website.",
+      "gscStepTwo": "Choose the site that belongs to this project.",
       "gscStepThree": "Topiqu starts syncing finalized performance data every day.",
       "analyticsDescription": "Add your own GA4 measurement to the website published by Topiqu.",
-      "analyticsBenefitOne": "Traffic data remains in your own Google Analytics property.",
+      "analyticsBenefitOne": "Traffic data stays in your own Google Analytics account.",
       "analyticsBenefitTwo": "Enable measurement without editing templates or source code.",
       "analyticsStepOne": "In Google Analytics, open Admin → Data streams.",
       "analyticsStepTwo": "Copy the Measurement ID in the G-XXXXXXXXXX format.",
@@ -472,6 +476,8 @@
       "followNotFound": "You are not following this user",
       "invalidTotp": "Invalid TOTP code",
       "passwordChangeFailed": "Password change failed",
+      "reauthRequired": "For your security, sign in again and then retry.",
+      "ownerCannotDeactivate": "You own a blog, so this account cannot be deactivated. Deactivate the blog first.",
       "roleChangeForbidden": "Changing role is not allowed",
       "featureNotInPlan": "This feature is not available on your plan",
       "aiRequired": "Enable AI first",
@@ -951,7 +957,7 @@
         "placeholder": "Company description (e.g., your mission or slogan)"
       },
       "content": {
-        "title": "Content brief",
+        "title": "Editorial brief",
         "description": "Every article the AI generates starts from these settings.",
         "direction": {
           "title": "Direction",
@@ -1448,7 +1454,8 @@
         "managePlan": "Manage plan",
         "open": "Open Topiqu"
       }
-    }
+    },
+    "statHint": "What “{label}” means"
   },
   "error": {
     "generic": "Something went wrong. Please try again."
