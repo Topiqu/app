@@ -19,7 +19,7 @@ export default defineSitemapEventHandler(async (event) => {
     select: {
       slug: true,
       language: true,
-      updatedAt: true,
+      contentUpdatedAt: true,
       publishedAt: true,
       createdAt: true,
       user: { select: { username: true } },
@@ -37,12 +37,13 @@ export default defineSitemapEventHandler(async (event) => {
   const urls: SitemapUrl[] = [{ loc: homePath(primary), changefreq: 'daily', priority: 1 }]
 
   for (const article of articles) {
-    const languages: { language: Language; slug: string; updatedAt: Date | null }[] = [
-      { language: article.language, slug: article.slug, updatedAt: article.updatedAt },
+    // A translation row is rewritten only by translating, so its own `updatedAt` stays honest.
+    const languages: { language: Language; slug: string; lastmod: Date }[] = [
+      { language: article.language, slug: article.slug, lastmod: articleModifiedAt(article) },
       ...article.translations.map((tr) => ({
         language: tr.language as Language,
         slug: tr.slug!,
-        updatedAt: tr.updatedAt,
+        lastmod: tr.updatedAt ?? articleModifiedAt(article),
       })),
     ]
 
@@ -59,7 +60,7 @@ export default defineSitemapEventHandler(async (event) => {
     for (const entry of languages) {
       urls.push({
         loc: articlePath(entry.language, entry.slug),
-        lastmod: entry.updatedAt ?? article.publishedAt ?? article.createdAt,
+        lastmod: entry.lastmod,
         changefreq: 'weekly',
         priority: 0.8,
         ...(alternatives.length ? { alternatives: [...alternatives, ...xDefault] } : {}),

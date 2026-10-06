@@ -42,6 +42,11 @@ export default defineEventHandler(async (event) => {
       imageUrl: true,
       coverMediaId: true,
       content: true,
+      title: true,
+      excerpt: true,
+      answer: true,
+      keyTakeaways: true,
+      faq: true,
       language: true,
       clientSite: { select: { publishToWeb: true } },
     },
@@ -135,6 +140,10 @@ export default defineEventHandler(async (event) => {
   if (previousArticle.aiInvolvement === 'FULL' && data.content && data.content !== previousArticle.content) {
     data.aiInvolvement = 'ASSIST'
   }
+  // Server-owned: edits before the first publication are not modifications any reader saw.
+  delete data.contentUpdatedAt
+  const textChanged = changesReaderText(previousArticle, data)
+  if (previousArticle.publishedAt && textChanged) data.contentUpdatedAt = currentDate
 
   const article = await db
     .$transaction(async (tx) => {

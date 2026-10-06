@@ -6,6 +6,7 @@ const PUBLIC_FIELDS = {
   createdAt: true,
   updatedAt: true,
   publishedAt: true,
+  contentUpdatedAt: true,
   userId: true,
   slug: true,
   language: true,

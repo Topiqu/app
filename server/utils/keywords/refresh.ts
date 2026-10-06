@@ -652,6 +652,7 @@ export const applyContentAction = async (
         title: proposal.title,
         excerpt: proposal.excerpt,
         content: proposal.content,
+        contentUpdatedAt: now,
         totalWords: metrics.totalWords,
         readingTime: metrics.readingTime,
         sources: [...new Set([...target.article.sources, ...proposal.sources])],
@@ -717,7 +718,7 @@ export const rollbackContentAction = async (
         status: 'published',
         deletedAt: null,
       },
-      data: snapshot,
+      data: { ...snapshot, contentUpdatedAt: new Date() },
     })
     if (!updated.count) throw createError({ statusCode: 409, message: 'The article changed meanwhile' })
   })

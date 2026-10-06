@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
     content: string
     publishedAt: Date | null
     createdAt: Date
-    updatedAt: Date | null
+    contentUpdatedAt: Date | null
     sources: string[]
     answer: string | null
     keyTakeaways: string[]
@@ -41,7 +41,7 @@ export default defineEventHandler(async (event) => {
       status: true,
       publishedAt: true,
       createdAt: true,
-      updatedAt: true,
+      contentUpdatedAt: true,
       sources: true,
       answer: true,
       keyTakeaways: true,
@@ -65,7 +65,7 @@ export default defineEventHandler(async (event) => {
     ...(article.excerpt ? [`> ${article.excerpt}`, ''] : []),
     `Source: ${requestOrigin(event)}${event.path.replace(/^\/md/, '').replace(/\.md$/, '')}`,
     `Published: ${published.toISOString().slice(0, 10)}`,
-    ...(article.updatedAt ? [`Updated: ${article.updatedAt.toISOString().slice(0, 10)}`] : []),
+    ...(article.contentUpdatedAt ? [`Updated: ${article.contentUpdatedAt.toISOString().slice(0, 10)}`] : []),
     ...(article.user?.username ? [`Author: ${article.user.username}`] : []),
     ...(tags.length ? [`Tags: ${tags.join(', ')}`] : []),
     '',

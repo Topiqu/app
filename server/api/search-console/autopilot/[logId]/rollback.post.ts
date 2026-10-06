@@ -69,7 +69,10 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  await db.article.update({ where: { id: article.id }, data })
+  await db.article.update({
+    where: { id: article.id },
+    data: { ...data, ...(article.status === 'published' ? { contentUpdatedAt: new Date() } : {}) },
+  })
   if (article.status === 'published') {
     await syncArticleTranslationQueue(db, article.id, user.clientSiteId!, { contentChanged: true })
     await invalidateFeed(user.clientSiteId!)
