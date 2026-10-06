@@ -27,6 +27,7 @@ model User with Base {
     lastLogin                     DateTime?         @default(now())
     language                      Language          @default(en)
     sessions                      Session[]         @relation("UserSessions")
+    accounts                      Account[]
     clientSiteId                  String?
     theme                         ThemeOption       @default(light)
     clientSite                    ClientSite?       @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
@@ -94,7 +95,10 @@ model TenantInvitation with Base {
     @@allow('all', auth().role == 'superadmin')
 }
 
+// Better Auth session. Revoking one deletes the row; only the auth adapter sees `token`.
 model Session with Base {
+    token      String   @unique @omit
+    expiresAt  DateTime
     ip         String?  @length(0, 45)
     userAgent  String?  @length(0, 500)
     device     String?  @length(0, 100)
@@ -104,14 +108,39 @@ model Session with Base {
     region     String?  @length(0, 100)
     country    String?  @length(0, 100)
     lastUsedAt DateTime @default(now())
-    revoked    Boolean  @default(false)
     userId     String
     user       User     @relation(fields: [userId], references: [id], onDelete: Cascade, name: "UserSessions")
     clientSiteId String?
     clientSite   ClientSite? @relation("SessionActiveTenant", fields: [clientSiteId], references: [id], onDelete: SetNull)
-    @@allow('all', auth().id == userId || auth().role == 'superadmin')
+    @@allow('read,update,delete', auth().id == userId)
+    @@allow('all', auth().role == 'superadmin')
     @@index([userId, lastUsedAt])
     @@index([clientSiteId])
+}
+
+// Better Auth OAuth identity. Credentials stay on `User.password`, so there is no credential row.
+model Account with Base {
+    accountId             String
+    providerId            String
+    userId                String
+    user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    accessToken           String?   @omit
+    refreshToken          String?   @omit
+    idToken               String?   @omit
+    accessTokenExpiresAt  DateTime?
+    refreshTokenExpiresAt DateTime?
+    scope                 String?
+    password              String?   @omit
+    @@unique([providerId, accountId])
+    @@index([userId])
+}
+
+// Better Auth OAuth state.
+model Verification with Base {
+    identifier String
+    value      String   @omit
+    expiresAt  DateTime
+    @@index([identifier])
 }
 
 model Follow {
