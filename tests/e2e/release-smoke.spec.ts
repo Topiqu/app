@@ -50,3 +50,16 @@ test('production article assets stay loadable across service-worker activation',
   expect(serviceWorker.headers()['cache-control']).toContain('no-store')
   expect(await serviceWorker.text()).not.toMatch(/createHandlerBoundToURL\((['"])\/\1\)/)
 })
+
+// Plain requests, no browser: only the server-rendered auth state can decide this redirect.
+test('a signed-in session survives server rendering', async ({ request, baseURL }) => {
+  const signIn = await request.post('/api/auth/sign-in/credentials', {
+    headers: { origin: baseURL! },
+    data: { email: 'reader@test.local', password: 'test1234' },
+  })
+  expect(signIn.ok(), 'credentials sign-in must open a session').toBe(true)
+
+  const profile = await request.get('/cs/uzivatel', { maxRedirects: 0 })
+  expect(profile.status(), 'SSR must see the session instead of redirecting to sign-in').toBe(200)
+  expect(await profile.text()).toContain('reader@test.local')
+})
