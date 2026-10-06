@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
   if (!id) throw createError({ statusCode: 400, message: 'Missing article ID' })
 
-  const user = (await getServerSession(event))?.user
+  const user = await getSessionUser(event)
   const sessionId = user?.id ?? issueAnonSession(event)
   const parsed = z
     .object({ referrer: z.string().max(2048).optional() })

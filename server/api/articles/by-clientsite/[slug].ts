@@ -2,7 +2,7 @@ import { articleExcerpt } from '~~/shared/utils/articleBlocks'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
-  const user = (await getServerSession(event))?.user
+  const user = await getSessionUser(event)
   const slug = decodeURIComponent(getRouterParam(event, 'slug')!.trim())
 
   if (!slug) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })

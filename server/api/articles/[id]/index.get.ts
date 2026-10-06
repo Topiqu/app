@@ -67,7 +67,7 @@ const articleSelect = (isAdmin: boolean, viewer: { userId?: string; sessionId?: 
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
-  const user = (await getServerSession(event))?.user
+  const user = await getSessionUser(event)
   const slug = getRouterParam(event, 'id')
   if (!slug) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
   const sessionId = readAnonSession(event)

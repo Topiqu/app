@@ -1,6 +1,6 @@
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
-  const user = (await getServerSession(event))?.user
+  const user = await getSessionUser(event)
   if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
   const userId = getRouterParam(event, 'id')
@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
   }
 
   await db.user.update({ where: { id: userId }, data: { deletedAt: new Date() } })
-  await db.session.updateMany({ where: { userId, revoked: false }, data: { revoked: true } })
+  await db.session.deleteMany({ where: { userId } })
 
   await invalidateAuthor(userId)
   await logAction({

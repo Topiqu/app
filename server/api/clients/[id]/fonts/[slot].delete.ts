@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
   const slot = getRouterParam(event, 'slot')
   if (!id || (slot !== 'heading' && slot !== 'body'))
     throw createError({ statusCode: 400, statusMessage: 'Invalid font slot' })
-  const user = (await getServerSession(event))?.user
+  const user = await getSessionUser(event)
   if (!user || (user.role !== 'admin' && user.role !== 'superadmin'))
     throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
   if (user.role !== 'superadmin') await requireTenantScope(event, 'TENANT_SETTINGS', id)

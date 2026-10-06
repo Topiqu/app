@@ -3,7 +3,7 @@ import { domainVerificationDefaults, isManagedDomain, isValidDomain, normalizeDo
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
-  const session = (await getServerSession(event))?.user
+  const session = await getSessionUser(event)
   if (!session || session.role !== 'superadmin')
     throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 

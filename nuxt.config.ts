@@ -206,7 +206,6 @@ export default defineNuxtConfig({
     '@pinia/colada-nuxt',
     '@vueuse/nuxt',
     '@vueuse/motion/nuxt',
-    '@sidebase/nuxt-auth',
     '@vite-pwa/nuxt',
     '@unlok-co/nuxt-stripe',
     'pinia-plugin-persistedstate/nuxt',
@@ -354,11 +353,6 @@ export default defineNuxtConfig({
     server: { key: process.env.STRIPE_SK },
   },
 
-  auth: {
-    provider: { type: 'authjs', trustHost: true },
-    originEnvKey: 'AUTH_ORIGIN',
-  },
-
   qrcode: {
     options: {
       variant: 'pixelated',
@@ -452,7 +446,7 @@ export default defineNuxtConfig({
     '/api/onboarding/verify-code': {
       security: { rateLimiter: { tokensPerInterval: 10, interval: 60 * 60 * 1000 } },
     },
-    '/api/auth/callback/credentials': {
+    '/api/auth/sign-in/**': {
       security: { rateLimiter: { tokensPerInterval: IS_BROWSER_TEST ? 10_000 : 10, interval: 60 * 1000 } },
     },
     '/api/users/totp': {

@@ -1,11 +1,11 @@
 export default defineEventHandler(async (event) => {
-  const session = await getServerSession(event)
-  if (!session?.user?.id) throw createError({ statusCode: 401, message: 'Unauthorized' })
+  const actor = await getSessionUser(event)
+  if (!actor) throw createError({ statusCode: 401, message: 'Unauthorized' })
 
-  const db = await getEnhancedPrisma(session.user)
+  const db = await getEnhancedPrisma(actor)
 
   const user = await db.user.findUnique({
-    where: { id: session.user.id },
+    where: { id: actor.id },
   })
 
   if (!user || !user.clientSiteId) {

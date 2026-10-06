@@ -2,7 +2,7 @@ import { randomBytes } from 'crypto'
 
 export default defineEventHandler(async (e) => {
   const { translate: t } = await useServerI18n(e)
-  const user = (await getServerSession(e))?.user
+  const user = await getSessionUser(e)
   if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
   const { emailVerified } =

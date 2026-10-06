@@ -6,7 +6,7 @@ import { randomBytes } from 'crypto'
 // first save has to be able to bring it into existence itself.
 export async function resolveAiUser(event: H3Event, clientSiteId: string, create = false) {
   const { translate: t } = await useServerI18n(event)
-  const user = (await getServerSession(event))?.user
+  const user = await getSessionUser(event)
   if (!user || !['admin', 'superadmin'].includes(user.role))
     throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 

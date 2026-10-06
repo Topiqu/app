@@ -25,7 +25,7 @@ const safeFilenamePart = (value: string) =>
 
 export default defineEventHandler(async (event) => {
   let { translate: t } = await useServerI18n(event)
-  const user = (await getServerSession(event))?.user
+  const user = await getSessionUser(event)
   if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
   const db = await getEnhancedPrisma(user)
   const userDb = await db.user.findUnique({

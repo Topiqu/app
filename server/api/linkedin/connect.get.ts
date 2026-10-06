@@ -6,7 +6,7 @@ import { getLinkedInRedirectUri } from '../../utils/linkedin/redirectUri'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
-  const user = (await getServerSession(event))?.user
+  const user = await getSessionUser(event)
   if (!user || (user.role !== 'admin' && user.role !== 'superadmin')) {
     throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
   }

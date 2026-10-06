@@ -1,7 +1,5 @@
 import type { H3Event } from 'h3'
-import type { User } from 'next-auth'
-
-type Role = User['role']
+import type { SessionRole as Role, SessionUser } from '~~/shared/types/auth'
 
 const ROLE_RANK: Record<Role, number> = { reader: 0, ai: 0, admin: 1, superadmin: 2 }
 
@@ -11,16 +9,9 @@ interface RequireUserOptions {
   clientSite?: boolean
 }
 
-const resolveUser = async (event: H3Event): Promise<User | undefined> => {
-  if (event.context.authUser) return event.context.authUser as User
-  const user = (await getServerSession(event))?.user
-  if (user) event.context.authUser = user
-  return user
-}
-
-export const requireUser = async (event: H3Event, opts: RequireUserOptions = {}): Promise<User> => {
+export const requireUser = async (event: H3Event, opts: RequireUserOptions = {}): Promise<SessionUser> => {
   const { translate: t } = await useServerI18n(event)
-  const user = await resolveUser(event)
+  const user = await getSessionUser(event)
 
   if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 

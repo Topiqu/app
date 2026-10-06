@@ -8,11 +8,11 @@ const REAUTH_WINDOW_MS = 10 * 60 * 1000
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
-  const user = (await getServerSession(event))?.user
+  const user = await getSessionUser(event)
   if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
   const db = await getEnhancedPrisma(user)
-  const { id } = getRouterParams(event)
+  const { id } = getRouterParams(event) as { id: string }
 
   if (user.id !== id && user.role !== 'superadmin')
     throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
@@ -84,7 +84,7 @@ export default defineEventHandler(async (event) => {
       // No current password to check, so a recent sign-in is the only proof the owner is at the keyboard.
       const session = user.sessionId
         ? await prisma.session.findFirst({
-            where: { id: user.sessionId, userId: id, revoked: false },
+            where: { id: user.sessionId, userId: id },
             select: { createdAt: true },
           })
         : null

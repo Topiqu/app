@@ -2,7 +2,7 @@ import { randomBytes } from 'crypto'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
-  const session = (await getServerSession(event))?.user
+  const session = await getSessionUser(event)
   const clientId = getRouterParam(event, 'id')
 
   if (!session) {

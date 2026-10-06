@@ -1,6 +1,6 @@
 import type { H3Event } from 'h3'
 
-import { sessionCookieDomain } from './sessionGuard'
+import { sessionCookieDomain } from './authCookie'
 
 // Every OAuth connect starts on the tenant's own host — `middleware/admin.ts` pushes admins there —
 // while the provider redirects back to APP_URL, i.e. app.topiqu.com. A host-only cookie is never sent

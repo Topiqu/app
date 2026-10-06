@@ -2,7 +2,7 @@ import { randomUUID } from 'crypto'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
-  const user = (await getServerSession(event))?.user
+  const user = await getSessionUser(event)
 
   const articleId = getRouterParam(event, 'id')
   if (!articleId) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })

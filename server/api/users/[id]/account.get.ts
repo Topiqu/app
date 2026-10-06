@@ -1,6 +1,6 @@
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
-  const user = (await getServerSession(event))?.user
+  const user = await getSessionUser(event)
   if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
   const { id } = getRouterParams(event)
@@ -47,7 +47,7 @@ export default defineEventHandler(async (event) => {
         },
       },
       sessions: {
-        where: { revoked: false },
+        where: { expiresAt: { gt: new Date() } },
         select: {
           id: true,
           ip: true,
@@ -60,7 +60,6 @@ export default defineEventHandler(async (event) => {
           country: true,
           lastUsedAt: true,
           clientSiteId: true,
-          revoked: true,
           userId: true,
         },
       },
@@ -119,7 +118,6 @@ export default defineEventHandler(async (event) => {
       country: s.country,
       lastUsedAt: s.lastUsedAt.toISOString(),
       clientSiteId: s.clientSiteId,
-      revoked: s.revoked,
       userId: s.userId,
     })),
   }

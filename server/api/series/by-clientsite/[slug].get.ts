@@ -81,7 +81,7 @@ export default defineEventHandler(async (event) => {
   const gen = await feedGen(clientSite.id)
   const shelf = await cached(`series:v${gen}:${clientSite.id}:loc=${locale ?? '_def'}`, 600, buildSeries)
 
-  const user = (await getServerSession(event))?.user
+  const user = await getSessionUser(event)
   // Same identity `view.post.ts` writes: the user id when signed in, the anon cookie otherwise.
   const viewer = user?.id ?? readAnonSession(event)
   const partIds = shelf.flatMap((series) => series.parts.map((part) => part.id))

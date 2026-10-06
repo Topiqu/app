@@ -1,4 +1,3 @@
-import type { RequestInternal } from 'next-auth'
 
 import { createHmac } from 'node:crypto'
 
@@ -18,7 +17,7 @@ export const credentialFailure = (
   return null
 }
 
-type AuthRequest = Pick<RequestInternal, 'headers'>
+type AuthRequest = { headers?: Record<string, string | string[] | undefined> }
 
 export const normalizeLoginEmail = (email: string) => email.trim().toLowerCase()
 
