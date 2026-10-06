@@ -18,10 +18,10 @@
       <p v-if="action.status === 'READY' && action.proposal" class="mt-1 text-xs text-muted">
         {{ $t('common.contentActions.changed', { percent: action.proposal.changed }) }}
       </p>
-      <p v-if="action.status === 'QUEUED'" class="mt-2 flex items-center gap-2 text-xs text-muted">
-        <UIcon name="mdi:loading" class="size-4 animate-spin" aria-hidden="true" />
-        {{ $t('common.contentActions.preparing') }}
-      </p>
+      <div v-if="action.status === 'QUEUED'" class="mt-2 max-w-48 space-y-1">
+        <p class="text-xs text-muted">{{ $t('common.contentActions.preparing') }}</p>
+        <UProgress size="xs" :aria-label="$t('common.contentActions.preparing')" />
+      </div>
       <p v-if="action.status === 'FAILED'" class="mt-2 text-xs text-error">
         {{ $t('common.contentActions.prepareFailed') }}
       </p>
