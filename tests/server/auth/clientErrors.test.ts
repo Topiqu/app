@@ -15,6 +15,16 @@ describe('client auth errors', () => {
     expect(authErrorKey(url.searchParams.get('error'))).toBe('common.auth.providerEmailUnverified')
   })
 
+  it.each([
+    ['account_not_linked', 'common.auth.localEmailUnverified'],
+    ['email_not_found', 'common.auth.providerEmailUnverified'],
+    ['account_deactivated', 'common.auth.oauthFailed'],
+    ['constructor', 'common.auth.oauthFailed'],
+  ])('maps the Better Auth code %s to %s', (code, key) => {
+    const url = new URL(authErrorRedirect(code, 'en'), 'https://app.topiqu.com')
+    expect(authErrorKey(url.searchParams.get('error'))).toBe(key)
+  })
+
   it('does not reflect arbitrary server messages or redirect destinations', () => {
     expect(authErrorRedirect('secret https://untrusted.example', '//untrusted.example')).toBe(
       '/en/auth?error=OAuthCallback',

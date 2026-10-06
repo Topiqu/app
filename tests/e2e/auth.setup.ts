@@ -24,11 +24,11 @@ for (const role of ['reader', 'admin', 'super'] as const) {
     await passwordInput.fill(password)
     await passwordInput.blur()
     const [response] = await Promise.all([
-      page.waitForResponse((candidate) => candidate.url().includes('/api/auth/callback/credentials')),
+      page.waitForResponse((candidate) => candidate.url().includes('/api/auth/sign-in/credentials')),
       page.getByRole('button', { name: 'Log In', exact: true }).last().click(),
     ])
     if (!response.ok()) throw new Error(`Credentials callback failed with ${response.status()}.`)
-    const session = await page.request.get('/api/auth/session')
+    const session = await page.request.get('/api/auth/get-session')
     const sessionBody = (await session.json()) as { user?: { role?: string } }
     if (!sessionBody.user) throw new Error('Credentials callback did not establish a session.')
     await page.context().storageState({ path: statePath })

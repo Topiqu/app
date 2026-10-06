@@ -70,7 +70,7 @@ test.beforeEach(async ({ page }) => {
   await page.getByLabel('Email').fill(email)
   await page.getByRole('textbox', { name: 'Password', exact: true }).fill('test1234')
   await Promise.all([
-    page.waitForResponse((response) => response.url().includes('/api/auth/callback/credentials')),
+    page.waitForResponse((response) => response.url().includes('/api/auth/sign-in/credentials')),
     page.getByRole('button', { name: 'Log In', exact: true }).last().click(),
   ])
 })

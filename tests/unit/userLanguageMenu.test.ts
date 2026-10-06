@@ -14,7 +14,7 @@ const { auth, locale, saveProfile, setLocale } = vi.hoisted(() => ({
   setLocale: vi.fn(),
 }))
 
-mockNuxtImport('useAuth', () => () => ({ data: auth }))
+mockNuxtImport('useAuth', () => () => ({ data: auth, signOut: vi.fn() }))
 mockNuxtImport('useProfile', () => () => ({ saveProfile }))
 mockNuxtImport('useI18n', () => () => ({ locale, setLocale, t: (key: string) => key }))
 

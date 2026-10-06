@@ -15,11 +15,11 @@ describe('DELETE /api/users/:id', () => {
     vi.stubGlobal('defineEventHandler', (handler: unknown) => handler)
     vi.stubGlobal('createError', createError)
     vi.stubGlobal('useServerI18n', async () => ({ translate: (key: string) => key }))
-    vi.stubGlobal('getServerSession', async () => ({ user: options.actor }))
+    vi.stubGlobal('getSessionUser', async () => options.actor)
     vi.stubGlobal('getRouterParam', () => options.targetId)
     vi.stubGlobal('getEnhancedPrisma', async () => ({
       user: { findFirst: vi.fn(async () => ({ clientSiteId: 'site-1' })), update },
-      session: { updateMany: revoke },
+      session: { deleteMany: revoke },
     }))
     vi.stubGlobal('prisma', { tenantMembership: { count } })
     vi.stubGlobal('invalidateAuthor', vi.fn())
@@ -36,7 +36,7 @@ describe('DELETE /api/users/:id', () => {
     const { run, update, revoke } = await setup({ actor: { id: 'u1', role: 'reader' }, targetId: 'u1' })
     await run()
     expect(update).toHaveBeenCalledWith({ where: { id: 'u1' }, data: { deletedAt: expect.any(Date) } })
-    expect(revoke).toHaveBeenCalledWith({ where: { userId: 'u1', revoked: false }, data: { revoked: true } })
+    expect(revoke).toHaveBeenCalledWith({ where: { userId: 'u1' } })
   })
 
   it('refuses to deactivate someone else unless superadmin', async () => {

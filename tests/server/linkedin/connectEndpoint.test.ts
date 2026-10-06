@@ -20,7 +20,7 @@ describe('GET /api/linkedin/connect', () => {
     setOAuthState.mockClear()
     vi.stubGlobal('defineEventHandler', (handler: unknown) => handler)
     vi.stubGlobal('useServerI18n', async () => ({ translate: (key: string) => key }))
-    vi.stubGlobal('getServerSession', async () => ({ user: { role: 'admin', clientSiteId: 'site-1' } }))
+    vi.stubGlobal('getSessionUser', async () => ({ role: 'admin', clientSiteId: 'site-1' }))
     vi.stubGlobal('requireTenantScope', vi.fn())
     vi.stubGlobal('getQuery', () => query)
     vi.stubGlobal('getCookie', (_event: unknown, name: string) => cookies[name])

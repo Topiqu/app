@@ -22,7 +22,7 @@ describe('homepage series and discussions', () => {
   it('adds reading progress outside the shared cache', () => {
     const cacheCall = series.indexOf('await cached(')
     expect(cacheCall).toBeGreaterThan(-1)
-    expect(series.indexOf('getServerSession')).toBeGreaterThan(cacheCall)
+    expect(series.indexOf('getSessionUser')).toBeGreaterThan(cacheCall)
     expect(series).toContain('sessionId: viewer')
   })
 

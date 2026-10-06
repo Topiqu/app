@@ -105,7 +105,7 @@ describe('PATCH /api/users/:id 2FA and password', () => {
 
     vi.stubGlobal('defineEventHandler', (handler: unknown) => handler)
     vi.stubGlobal('useServerI18n', async () => ({ translate: (key: string) => key }))
-    vi.stubGlobal('getServerSession', async () => ({ user: actor }))
+    vi.stubGlobal('getSessionUser', async () => actor)
     vi.stubGlobal('getRouterParams', () => ({ id: options.targetId ?? actor.id }))
     vi.stubGlobal('readValidatedBody', async (_event: unknown, parse: (value: unknown) => unknown) =>
       parse(options.body),

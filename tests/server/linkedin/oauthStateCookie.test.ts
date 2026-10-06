@@ -4,7 +4,7 @@ const setCookie = vi.fn()
 const deleteCookie = vi.fn()
 const getCookie = vi.fn(() => 'state-value')
 
-vi.mock('../../../server/utils/sessionGuard', () => ({ sessionCookieDomain: '.topiqu.com' }))
+vi.mock('../../../server/utils/authCookie', () => ({ sessionCookieDomain: '.topiqu.com' }))
 
 describe('OAuth state cookie', () => {
   beforeEach(() => {

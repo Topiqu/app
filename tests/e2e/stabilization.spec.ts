@@ -301,7 +301,7 @@ test.describe('admin stabilization', () => {
   test('brand kit persists and the preview matches the public publication', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'desktop-light-en', 'Mutating brand roundtrip runs once')
     await preparePage(page)
-    const session = (await (await page.request.get('/api/auth/session')).json()) as { user: { clientSiteId: string } }
+    const session = (await (await page.request.get('/api/auth/get-session')).json()) as { user: { clientSiteId: string } }
     const id = session.user.clientSiteId
     const original = (await (await page.request.get(`/api/clients/${id}`)).json()) as {
       tagline: string | null
