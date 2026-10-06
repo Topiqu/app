@@ -1,6 +1,6 @@
 import type { User, Session as _Session } from '~~/generated/zenstack/models'
 
-export type Session = Omit<_Session, 'createdAt' | 'updatedAt' | 'deletedAt' | 'lastUsedAt'> & {
+export type Session = Omit<_Session, 'createdAt' | 'updatedAt' | 'deletedAt' | 'lastUsedAt' | 'token' | 'expiresAt'> & {
   lastUsedAt?: string
 }
 

@@ -25,7 +25,7 @@ const logout = async () => {
   loading.value = true
 
   try {
-    await signOut({ redirect: true, callbackUrl: window.location.origin })
+    await signOut({ callbackUrl: window.location.origin })
   } catch (error: any) {
     toast.add({ color: 'error', title: $t('common.messages.operationFailed'), description: error.data?.message })
   } finally {
