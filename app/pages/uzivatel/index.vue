@@ -449,7 +449,12 @@ async function confirmDeactivate() {
     cancelText: $t('common.actions.cancel'),
     variant: 'danger',
   })
-  if (answer) await deactivateAccount()
+  if (!answer) return
+  try {
+    await deactivateAccount()
+  } catch (err) {
+    toast.add({ color: 'error', title: fetchErrorMessage(err, $t('common.messages.operationFailed')) })
+  }
 }
 
 async function exportToPDF() {

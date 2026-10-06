@@ -477,6 +477,7 @@
       "invalidTotp": "Ungültiger TOTP-Code",
       "passwordChangeFailed": "Passwortänderung fehlgeschlagen",
       "reauthRequired": "Melden Sie sich aus Sicherheitsgründen erneut an und versuchen Sie es dann noch einmal.",
+      "ownerCannotDeactivate": "Sie besitzen einen Blog, daher kann dieses Konto nicht deaktiviert werden. Deaktivieren Sie zuerst den Blog.",
       "roleChangeForbidden": "Die Rolle darf nicht geändert werden",
       "featureNotInPlan": "Diese Funktion ist in deinem Tarif nicht verfügbar",
       "aiRequired": "Aktiviere zuerst die KI",

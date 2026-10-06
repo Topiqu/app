@@ -477,6 +477,7 @@
       "invalidTotp": "Code TOTP invalide",
       "passwordChangeFailed": "Échec du changement de mot de passe",
       "reauthRequired": "Par sécurité, reconnectez-vous puis réessayez.",
+      "ownerCannotDeactivate": "Vous êtes propriétaire d’un blog, ce compte ne peut donc pas être désactivé. Désactivez d’abord le blog.",
       "roleChangeForbidden": "Le changement de rôle n'est pas autorisé",
       "featureNotInPlan": "Cette fonctionnalité n'est pas disponible avec votre offre",
       "aiRequired": "Activez d'abord l'IA",

@@ -412,6 +412,7 @@
       "invalidTotp": "Neplatný TOTP kód",
       "passwordChangeFailed": "Změna hesla selhala",
       "reauthRequired": "Z bezpečnostních důvodů se znovu přihlaste a akci zopakujte.",
+      "ownerCannotDeactivate": "Vlastníte blog, takže účet nejde deaktivovat. Nejdřív deaktivujte blog.",
       "roleChangeForbidden": "Změna role není povolena",
       "featureNotInPlan": "Tato funkce není dostupná ve vašem tarifu",
       "aiRequired": "Nejdřív zapněte AI",

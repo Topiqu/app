@@ -48,7 +48,9 @@ export function useProfile() {
     patchSelf({ password: newPassword, oldPass: oldPassword })
 
   async function deactivateAccount() {
-    await patchSelf({ deletedAt: new Date().toISOString() })
+    const id = user.value?.user?.id
+    if (!id) throw new Error('User not authenticated')
+    await $fetch(`/api/users/${id}` as `/api/users/:id`, { method: 'DELETE' })
     await signOut()
   }
 
