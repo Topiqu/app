@@ -8,11 +8,11 @@ export interface AuthSession {
 const fetchSession = async (): Promise<AuthSession | null> => {
   if (import.meta.client) return $fetch<AuthSession | null>('/api/auth/get-session')
 
-  // Better Auth extends an aging session by re-issuing its cookie; pass that on to the browser.
-  const response = await $fetch.raw<AuthSession | null>('/api/auth/get-session', {
-    headers: useRequestHeaders(['cookie']),
-  })
+  // Read both before the await: the Nuxt context is gone once it resumes.
+  const headers = useRequestHeaders(['cookie'])
   const res = useRequestEvent()?.node.res
+  // Better Auth extends an aging session by re-issuing its cookie; pass that on to the browser.
+  const response = await $fetch.raw<AuthSession | null>('/api/auth/get-session', { headers })
   for (const cookie of response.headers.getSetCookie()) res?.appendHeader('set-cookie', cookie)
   return response._data ?? null
 }
