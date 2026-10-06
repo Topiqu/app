@@ -431,6 +431,7 @@ export default defineNuxtConfig({
     // collecting 429s partway down the list, and the pages behind them silently never get indexed.
     '/cs/clanky/**': { security: { xssValidator: false, rateLimiter: CRAWL_LIMIT } },
     '/en/articles/**': { security: { xssValidator: false, rateLimiter: CRAWL_LIMIT } },
+    '/indexnow.txt': { security: { rateLimiter: CRAWL_LIMIT } },
     '/api/onboarding/send-code': {
       security: { rateLimiter: { tokensPerInterval: 5, interval: 60 * 60 * 1000 } },
     },

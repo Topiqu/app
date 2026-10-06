@@ -585,6 +585,7 @@ const publishChange = async (articleId: string, clientSiteId: string, status: st
     syncArticleTranslationQueue(prisma, articleId, clientSiteId, { contentChanged: true }),
     invalidateFeed(clientSiteId),
     enqueueArticleWebhook('ARTICLE_UPDATED', { id: articleId, clientSiteId }),
+    announceArticle(articleId, clientSiteId),
   ])
   for (const result of results)
     if (result.status === 'rejected') console.error('[content-actions] Publication notification failed:', result.reason)

@@ -77,6 +77,7 @@ export default defineEventHandler(async (event) => {
     await syncArticleTranslationQueue(db, article.id, user.clientSiteId!, { contentChanged: true })
     await invalidateFeed(user.clientSiteId!)
     await enqueueArticleWebhook('ARTICLE_UPDATED', { id: article.id, clientSiteId: user.clientSiteId! })
+    void announceArticle(article.id, user.clientSiteId!)
   }
   await logAction({
     action: 'SEO_AUTOPILOT_ROLLED_BACK',

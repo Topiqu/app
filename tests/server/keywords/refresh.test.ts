@@ -123,6 +123,7 @@ beforeEach(() => {
   vi.stubGlobal('syncArticleTranslationQueue', vi.fn().mockResolvedValue(undefined))
   vi.stubGlobal('invalidateFeed', vi.fn().mockResolvedValue(undefined))
   vi.stubGlobal('enqueueArticleWebhook', vi.fn().mockResolvedValue(undefined))
+  vi.stubGlobal('announceArticle', vi.fn().mockResolvedValue(undefined))
   providers.dataForSeo.mockResolvedValue({
     cost: 0.002,
     result: {

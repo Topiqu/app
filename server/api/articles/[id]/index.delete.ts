@@ -9,10 +9,13 @@ export default defineEventHandler(async (event) => {
   if (!article) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
   if (article.userId !== user.id && !hasTenantScope(membership, 'ARTICLE_WRITE_OTHERS'))
     throw createError({ statusCode: 403, message: t('common.errors.articleEditForbidden')! })
+  // Read first: translations cascade away with the article.
+  const removedPaths = await articlePublicPaths(id, user.clientSiteId!)
   const deleted = await db.article.delete({ where: { id } })
   if (deleted.status === 'published') {
     await invalidateFeed(deleted.clientSiteId)
     await enqueueArticleWebhook('ARTICLE_DELETED', deleted)
   }
+  void announceArticle(deleted.id, deleted.clientSiteId, removedPaths)
   return { success: true }
 })

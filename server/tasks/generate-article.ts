@@ -587,6 +587,7 @@ Respond ONLY in valid JSON (schema required).
           console.error('[generate-article] Notification error:', err)
         })
         await enqueueArticleWebhook('ARTICLE_PUBLISHED', { id: article.id, clientSiteId })
+        await announceArticle(article.id, clientSiteId)
       } else {
         await logAction({
           action: 'CRON_ARTICLE_SAVED_AS_DRAFT',
