@@ -165,8 +165,7 @@ export default defineNuxtConfig({
       : undefined,
     preset: 'bun',
     imports: {
-      presets: [{ from: '#auth', imports: ['getServerSession'] }],
-      dirs: ['server/utils', '#auth'],
+      dirs: ['server/utils'],
     },
     externals: {
       inline: [
@@ -187,7 +186,7 @@ export default defineNuxtConfig({
   },
 
   imports: {
-    dirs: ['utils', '#auth', 'server/shared/consts'],
+    dirs: ['utils', 'server/shared/consts'],
   },
   vite: {
     optimizeDeps: {

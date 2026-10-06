@@ -23,10 +23,10 @@ declare module 'h3' {
 
 // Production pins no AUTH_ORIGIN: the OAuth redirect_uri follows the request host, which the tenant
 // hop (`oauth-start`) always makes app.topiqu.com. The host list keeps a forged Host header out.
-const devOrigins = isSecureAuth ? [] : ['http://localhost:3000', 'http://127.0.0.1:4173']
+const devOrigins = isSecureAuth ? [] : ['http://localhost:*', 'http://127.0.0.1:*']
 const baseURL = process.env.AUTH_ORIGIN || {
-  allowedHosts: ['topiqu.com', '*.topiqu.com', ...devOrigins.map((url) => new URL(url).host)],
-  fallback: isSecureAuth ? 'https://app.topiqu.com' : devOrigins[0],
+  allowedHosts: ['topiqu.com', '*.topiqu.com', ...devOrigins.map((url) => url.replace('http://', ''))],
+  fallback: isSecureAuth ? 'https://app.topiqu.com' : 'http://localhost:3000',
   protocol: isSecureAuth ? ('https' as const) : ('http' as const),
 }
 const trustedOrigins = ['https://topiqu.com', 'https://*.topiqu.com', ...devOrigins]
