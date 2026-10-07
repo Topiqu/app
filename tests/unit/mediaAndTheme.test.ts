@@ -1,7 +1,8 @@
 // @vitest-environment nuxt
 
-import { nextTick } from 'vue'
 import { mount } from '@vue/test-utils'
+import { createSSRApp, nextTick } from 'vue'
+import { renderToString } from 'vue/server-renderer'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import AppMedia from '../../app/components/AppMedia.vue'
@@ -11,6 +12,18 @@ import { resolveTenantTheme, tenantThemeStyle } from '../../shared/utils/tenantT
 afterEach(() => vi.useRealTimers())
 
 describe('stable media and theme controls', () => {
+  it('does not treat a priority image as failed merely because SSR ran for over two seconds', async () => {
+    vi.useFakeTimers()
+    const props = { alt: 'Server hero', src: 'https://media.example/ssr-hero.webp', priority: true }
+    const render = () => renderToString(createSSRApp(AppMedia, props))
+    expect(await render()).toContain('<img')
+
+    vi.advanceTimersByTime(5000)
+    await nextTick()
+
+    expect(await render()).toContain('<img')
+  })
+
   it('leaves an offscreen lazy image alone instead of timing it out', async () => {
     vi.useFakeTimers()
     const wrapper = mount(AppMedia, {
@@ -33,6 +46,7 @@ describe('stable media and theme controls', () => {
       global: { stubs: { UIcon: true, USkeleton: true } },
     })
 
+    await nextTick()
     vi.advanceTimersByTime(2000)
     await nextTick()
 

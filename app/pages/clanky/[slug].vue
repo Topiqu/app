@@ -114,33 +114,33 @@
         />
       </template>
 
-      <template #sidebar>
-        <!-- The rail is `display: none` below lg, so the AdSense unit mounts only once it has width. -->
-        <ClientOnly v-if="sidebarAd === 'adsense'">
+      <template v-if="sidebarAd" #sidebar>
+        <!-- This independent rail sits to the right of the TOC on wide screens. -->
+        <ClientOnly>
           <AdSenseSlot
-            v-if="isDesktop"
+            v-if="sidebarAd === 'adsense' && isAdDesktop"
             :key="`article-sidebar-adsense-${data.id}`"
             :adSlot="sidebarAdsenseSlot"
             format="vertical"
             :fullWidthResponsive="false"
             class="min-h-[618px]"
           />
+          <AdSlot
+            v-else-if="sidebarAd === 'gam' && isAdDesktop"
+            :key="`article-sidebar-${data.id}`"
+            adUnitPath="/article/sidebar"
+            slotId="article-sidebar-ad"
+            :sizes="[
+              [160, 600],
+              [120, 600],
+            ]"
+            :sizeMapping="articleSidebarMapping"
+            :targeting="{ article_id: data.id, placement: 'sidebar' }"
+            width="160px"
+            height="600px"
+            showLabel
+          />
         </ClientOnly>
-        <AdSlot
-          v-else-if="sidebarAd === 'gam'"
-          :key="`article-sidebar-${data.id}`"
-          adUnitPath="/article/sidebar"
-          slotId="article-sidebar-ad"
-          :sizes="[
-            [160, 600],
-            [120, 600],
-          ]"
-          :sizeMapping="articleSidebarMapping"
-          :targeting="{ article_id: data.id, placement: 'sidebar' }"
-          width="160px"
-          height="600px"
-          showLabel
-        />
       </template>
     </ArticleView>
   </div>
@@ -171,12 +171,16 @@ const clientSite = await useClientSite()
 const { marketingGranted } = useConsent(() => clientSite)
 const adsense = useRuntimeConfig().public
 const sidebarAdsenseSlot = String(adsense.adsenseArticleSidebarSlot || '')
-const adFor = (adsenseSlot: string) => adProviderFor(clientSite, { marketing: marketingGranted.value, adsenseSlot })
+const adsenseStatus = useAdSenseStatus()
+const adFor = (adsenseSlot: string) => {
+  const provider = adProviderFor(clientSite, { marketing: marketingGranted.value, adsenseSlot })
+  return provider === 'adsense' && adsenseStatus.value === 'error' ? null : provider
+}
 const sidebarAd = computed(() => adFor(sidebarAdsenseSlot))
 const bodyAd = computed(() => adFor(String(adsense.adsenseArticleBodySlot || '')))
-const isDesktop = useMediaQuery('(min-width: 1024px)')
+const isAdDesktop = useMediaQuery('(min-width: 1280px)')
 const articleSidebarMapping: GamSizeMapping[] = [
-  { viewport: [1024, 0], sizes: [[160, 600]] },
+  { viewport: [1280, 0], sizes: [[160, 600]] },
   { viewport: [0, 0], sizes: [] },
 ]
 const slug = computed(() => route.params.slug as string)
