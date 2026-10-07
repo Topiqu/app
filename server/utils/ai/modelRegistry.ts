@@ -19,6 +19,8 @@ export const AI_MODELS = {
   keywordSeeds: { provider: 'openai', id: 'gpt-6-luna' },
   topicScope: { provider: 'openai', id: 'gpt-5.6-luna' },
   keywordOpportunity: { provider: 'openai', id: 'gpt-5.6-luna' },
+  backlinkMatch: { provider: 'openai', id: 'gpt-5.6-luna' },
+  backlinkOutreach: { provider: 'openai', id: 'gpt-6-luna' },
 } as const satisfies Record<string, { provider: AiProvider; id: string }>
 
 export const AI_IMAGE_MODELS = {

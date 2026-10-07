@@ -40,4 +40,7 @@ export const queryKeys = {
   contentActions: {
     list: ['content-actions'] as const,
   },
+  backlinks: {
+    list: ['backlinks'] as const,
+  },
 } as const

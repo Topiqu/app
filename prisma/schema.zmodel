@@ -18,6 +18,7 @@ import "./models/knowledge"
 import "./models/shopify"
 import "./models/webhook"
 import "./models/keywordPlan"
+import "./models/backlink"
 
 datasource db {
     provider  = "postgresql"

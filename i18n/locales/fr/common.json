@@ -327,7 +327,8 @@
       "dashboard": "Tableau de bord",
       "media": "Médiathèque",
       "knowledge": "Base de connaissances",
-      "keywords": "Sujets"
+      "keywords": "Sujets",
+      "backlinks": "Backlinks"
     },
     "links": {
       "terms": "Conditions d'utilisation",

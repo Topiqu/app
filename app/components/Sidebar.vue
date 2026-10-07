@@ -138,6 +138,11 @@ const navigationItems = computed<NavigationMenuItem[]>(() => {
       to: localePath({ name: 'admin-keywords' }),
     },
     {
+      label: $t('common.navigation.backlinks'),
+      icon: 'mdi:link-variant',
+      to: localePath({ name: 'admin-backlinks' }),
+    },
+    {
       label: $t('articles.addArticle'),
       icon: 'mdi:pencil',
       to: localePath({ name: 'admin-editor-id', params: { id: 'new' } }),

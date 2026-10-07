@@ -327,7 +327,8 @@
       "dashboard": "Übersicht",
       "media": "Medienbibliothek",
       "knowledge": "Wissensbasis",
-      "keywords": "Themen"
+      "keywords": "Themen",
+      "backlinks": "Backlinks"
     },
     "links": {
       "terms": "Nutzungsbedingungen",

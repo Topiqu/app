@@ -80,6 +80,7 @@ describe('knowledge product feeds', () => {
     expect(products[0]).toMatchObject({
       externalId: 'tee',
       name: 'Tričko Basic',
+      brand: 'Acme',
       // The in-stock variant's link, not the first variant's.
       url: 'https://shop.example.cz/tricko-m',
       price: '349.50',

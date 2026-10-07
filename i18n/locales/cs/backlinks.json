@@ -1,0 +1,88 @@
+{
+  "backlinks": {
+    "title": "Zpětné odkazy",
+    "description": "Weby, které o vás píšou nebo by měly, a odkazy, které na váš web už vedou.",
+    "refresh": "Hledat znovu",
+    "running": "Hledáme stránky…",
+    "started": "Hledání běží. Výsledky se tu objeví během pár minut.",
+    "refreshedAt": "Naposledy hledáno {date}",
+    "nextRefresh": "Znovu hledat můžete {date}",
+    "neverRefreshed": "Zatím jsme nehledali. Hledání běží jednou měsíčně samo.",
+    "loadFailed": "Zpětné odkazy se nepodařilo načíst.",
+    "failed": "Akce se nepovedla. Zkuste to prosím znovu.",
+    "unavailable": "Hledání odkazů teď není dostupné. Ověřené odkazy dál kontrolujeme.",
+    "disabledTitle": "Zpětné odkazy jsou součástí tarifů Pro a Premium",
+    "disabledDescription": "Najdeme weby, které o vás píšou bez odkazu, a ověříme každý odkaz, který získáte.",
+    "upgrade": "Zobrazit tarify",
+    "policy": "Odkazy nekupujeme ani nevyměňujeme, Google je za to trestá. Hledáme jen stránky, které o vás už píšou nebo vás mají důvod uvést, a vy jim napíšete sami.",
+    "stats": {
+      "live": {
+        "label": "Ověřené odkazy",
+        "hint": "z toho předává hodnotu: {n}",
+        "info": "Stránky jiných webů, na kterých jsme odkaz na váš web opravdu našli. Každý týden ho kontrolujeme znovu. Odkazy označené nofollow vyhledávačům hodnotu nepředávají, návštěvníky ale přivedou."
+      },
+      "won": {
+        "label": "Získané odkazy",
+        "hint": "z vašich žádostí",
+        "info": "Kolik webů přidalo odkaz poté, co jste jim napsali. Počítáme jen odkazy, které jsme na stránce sami ověřili."
+      },
+      "open": {
+        "label": "Příležitosti",
+        "hint": "čekají na vás nebo na odpověď",
+        "info": "Stránky, které vás zmiňují bez odkazu, a výrobci, jejichž značky prodáváte. Každou si projděte a rozhodněte se, jestli napíšete."
+      }
+    },
+    "opportunities": {
+      "title": "Příležitosti",
+      "description": "Stránky, kde má odkaz na váš web smysl. Napište autorovi nebo vlastníkovi webu a požádejte o něj.",
+      "empty": "Zatím žádné příležitosti. Jakmile nějaké najdeme, objeví se tady.",
+      "suppliersLocked": "Stránky výrobců značek, které prodáváte, hledáme v tarifu Premium.",
+      "kind": {
+        "UNLINKED_MENTION": "Zmínka bez odkazu",
+        "SUPPLIER": "Výrobce"
+      },
+      "reason": {
+        "mention": "Stránka zmiňuje „{term}“, ale na váš web neodkazuje.",
+        "dealers": "Výrobce značky {brand} uvádí prodejce a vy mezi nimi nejste. | Výrobce značky {brand} uvádí prodejce a vy mezi nimi nejste. Prodáváte {n} jeho produkt. | Výrobce značky {brand} uvádí prodejce a vy mezi nimi nejste. Prodáváte {n} jeho produkty. | Výrobce značky {brand} uvádí prodejce a vy mezi nimi nejste. Prodáváte {n} jeho produktů.",
+        "official": "Oficiální web značky {brand}. Zeptejte se, jestli uvádí prodejce. | Oficiální web značky {brand}. Prodáváte {n} jeho produkt, zeptejte se, jestli uvádí prodejce. | Oficiální web značky {brand}. Prodáváte {n} jeho produkty, zeptejte se, jestli uvádí prodejce. | Oficiální web značky {brand}. Prodáváte {n} jeho produktů, zeptejte se, jestli uvádí prodejce."
+      },
+      "sent": "Odesláno",
+      "sentOn": "Napsali jste {date}. Stránku kontrolujeme každý týden.",
+      "contact": "Kontakt",
+      "markSent": "Mám odesláno",
+      "checkNow": "Zkontrolovat",
+      "dismiss": "Skrýt",
+      "check": {
+        "won": "Odkaz je na stránce. Započítali jsme ho.",
+        "missing": "Odkaz na stránce zatím není.",
+        "unreadable": "Stránku se teď nepodařilo načíst. Zkusíme to znovu.",
+        "expired": "Ani po 60 dnech odkaz na stránce není, příležitost jsme uzavřeli."
+      }
+    },
+    "draft": {
+      "write": "Napsat e-mail",
+      "open": "Zobrazit e-mail",
+      "title": "Návrh e-mailu",
+      "description": "Odešlete ho ze své schránky a upravte podle sebe. Topiqu za vás nikomu nepíše.",
+      "subject": "Předmět",
+      "body": "Text",
+      "rewrite": "Napsat znovu",
+      "copy": "Kopírovat",
+      "copied": "Zkopírováno",
+      "openMail": "Otevřít v e-mailu",
+      "failed": "Návrh e-mailu se nepodařilo napsat."
+    },
+    "links": {
+      "title": "Ověřené odkazy",
+      "description": "Odkazy na váš web, které jsme na stránkách našli. Každý týden je kontrolujeme znovu.",
+      "empty": "Zatím jsme žádný odkaz neověřili.",
+      "anchor": "Text odkazu: {anchor}",
+      "since": "Od {date}",
+      "lostOn": "Zmizel {date}",
+      "earned": "Z vaší žádosti",
+      "followed": "Předává hodnotu",
+      "nofollow": "nofollow",
+      "lost": "Ztracený"
+    }
+  }
+}

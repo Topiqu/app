@@ -15,6 +15,7 @@ import "./generation"
 import "./shopify"
 import "./webhook"
 import "./keywordPlan"
+import "./backlink"
 
 enum GenerationFrequency {
     NONE
@@ -146,6 +147,12 @@ model ClientSite with Base {
     keywordPlanProfile   String?
     /// Country code or GLOBAL (`shared/utils/keywordPlan.ts`); NULL = the article language's home market.
     keywordMarket        String?             @length(0, 8)
+    backlinkOpportunities BacklinkOpportunity[]
+    backlinks            Backlink[]
+    /// Last discovery that completed at least one source.
+    backlinksRefreshedAt DateTime?
+    /// Claim and cooldown of paid discovery.
+    backlinksAttemptedAt DateTime?
     webhookDeliveries    WebhookDelivery[]
     aiSeriesEnabled      Boolean             @default(false)
     keywords             Json?
