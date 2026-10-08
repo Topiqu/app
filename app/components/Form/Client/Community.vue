@@ -37,6 +37,23 @@
         </div>
         <USwitch :id="gifsId" v-model="commentGifsEnabled" :aria-describedby="gifsHelpId" />
       </div>
+
+      <div v-if="emoji" class="flex items-start gap-4 p-5 sm:p-6">
+        <div class="grid size-10 shrink-0 place-items-center rounded-xl bg-elevated text-muted" aria-hidden="true">
+          <UIcon name="mdi:emoticon-outline" class="size-5" />
+        </div>
+        <div class="min-w-0 flex-1">
+          <p class="text-sm font-semibold text-highlighted">{{ $t('emoji.manage') }}</p>
+          <p :id="emojiHelpId" class="mt-1 text-sm leading-5 text-muted">
+            {{ $t('common.preferences.community.emojiHelp') }}
+          </p>
+        </div>
+        <EmojiCreate>
+          <UButton color="neutral" variant="soft" icon="mdi:emoticon-plus-outline" :aria-describedby="emojiHelpId">
+            {{ $t('emoji.manageAction') }}
+          </UButton>
+        </EmojiCreate>
+      </div>
     </div>
   </section>
 </template>
@@ -46,6 +63,9 @@ const commentsId = useId()
 const commentsHelpId = useId()
 const gifsId = useId()
 const gifsHelpId = useId()
+const emojiHelpId = useId()
+
+const { emoji = false } = defineProps<{ emoji?: boolean }>()
 
 const commentsEnabled = defineModel<boolean>('commentsEnabled', { required: true })
 const commentGifsEnabled = defineModel<boolean>('commentGifsEnabled', { required: true })

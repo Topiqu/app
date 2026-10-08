@@ -26,7 +26,6 @@
     </template>
     <template v-if="auth?.user?.role === 'admin'">
       <TagsCreate v-model="tagsOpen" />
-      <StatsDialog v-model="statsOpen" />
     </template>
     <ClientCreate v-if="auth?.user?.role === 'superadmin'" v-model="clientCreateOpen" />
     <UserList v-if="auth?.user?.role === 'superadmin'" v-model="userListOpen" />
@@ -40,18 +39,17 @@ const route = useRoute()
 const clientSite = await useLiveClientSite()
 const isSidebarOpen = shallowRef<boolean>(false)
 const tagsOpen = useState('dashboard-tags-open', () => false)
-const statsOpen = useState('dashboard-stats-open', () => false)
 const clientCreateOpen = useState('dashboard-client-create-open', () => false)
 const userListOpen = useState('dashboard-user-list-open', () => false)
 const shell = computed(() => resolvePageShell(route.meta.shell))
 const showDashboard = computed(() => canRenderDashboardShell(auth.value?.user.role, route.meta.dashboardSidebar))
 const isPublicationSurface = computed(() => {
+  return Boolean(clientSite.value && shell.value === 'publication')
+})
 const { locale } = useI18n()
 const announcement = computed(() =>
   isPublicationSurface.value ? activeAnnouncement(clientSite.value?.widgets ?? [], locale.value) : null,
 )
-  return Boolean(clientSite.value && shell.value === 'publication')
-})
 const publicationStyle = computed(() => {
   if (!isPublicationSurface.value) return undefined
   return tenantThemeStyle(clientSite.value?.theme, clientSite.value?.typographyPreset, {

@@ -325,13 +325,15 @@
     "poweredBy": "Erstellt mit",
     "breadcrumbs": "Navigationspfad",
     "navigation": {
-      "publication": "Website ansehen",
-      "settings": "Website-Einstellungen",
+      "publication": "Website öffnen",
+      "settings": "Einstellungen",
       "dashboard": "Übersicht",
-      "media": "Medienbibliothek",
-      "knowledge": "Wissensbasis",
-      "keywords": "Themen",
-      "backlinks": "Backlinks"
+      "media": "Medien",
+      "knowledge": "Quellen für die KI",
+      "keywords": "Themenplan",
+      "backlinks": "Backlinks",
+      "stats": "Statistiken",
+      "write": "Artikel schreiben"
     },
     "links": {
       "terms": "Nutzungsbedingungen",
@@ -1156,12 +1158,13 @@
         }
       },
       "community": {
-        "title": "Kommentare und GIFs",
+        "title": "Kommentare und Reaktionen",
         "description": "Steuern Sie die Diskussion unter allen Artikeln dieser Publikation.",
         "comments": "Kommentare erlauben",
         "commentsHelp": "Wenn deaktiviert, werden Kommentare und Antworten unter allen Artikeln geschlossen. Bestehende Kommentare bleiben sichtbar. Einzelne Artikel können ihre Diskussion weiterhin separat schließen.",
         "gifs": "GIFs in Kommentaren erlauben",
-        "gifsHelp": "Wenn deaktiviert, werden vorhandene GIFs ausgeblendet und neue Anhänge blockiert. Der Kommentartext bleibt sichtbar."
+        "gifsHelp": "Wenn deaktiviert, werden vorhandene GIFs ausgeblendet und neue Anhänge blockiert. Der Kommentartext bleibt sichtbar.",
+        "emojiHelp": "Eigene Bilder, mit denen Leser auf Kommentare reagieren können."
       },
       "publicationChannels": {
         "title": "Publikationskanäle",

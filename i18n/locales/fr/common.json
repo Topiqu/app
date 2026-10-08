@@ -325,13 +325,15 @@
     "poweredBy": "Créé avec",
     "breadcrumbs": "Fil d'Ariane",
     "navigation": {
-      "publication": "Voir le site",
-      "settings": "Paramètres du site",
+      "publication": "Ouvrir le site",
+      "settings": "Paramètres",
       "dashboard": "Tableau de bord",
-      "media": "Médiathèque",
-      "knowledge": "Base de connaissances",
-      "keywords": "Sujets",
-      "backlinks": "Backlinks"
+      "media": "Médias",
+      "knowledge": "Sources pour l’IA",
+      "keywords": "Plan de sujets",
+      "backlinks": "Backlinks",
+      "stats": "Statistiques",
+      "write": "Écrire un article"
     },
     "links": {
       "terms": "Conditions d'utilisation",
@@ -1156,12 +1158,13 @@
         }
       },
       "community": {
-        "title": "Commentaires et GIFs",
+        "title": "Commentaires et réactions",
         "description": "Gérez la discussion sous tous les articles de cette publication.",
         "comments": "Autoriser les commentaires",
         "commentsHelp": "La désactivation ferme les commentaires et les réponses sous tous les articles. Les commentaires existants restent visibles. Chaque article peut aussi fermer sa propre discussion.",
         "gifs": "Autoriser les GIFs dans les commentaires",
-        "gifsHelp": "La désactivation masque les GIFs existants et bloque les nouvelles pièces jointes. Le texte des commentaires reste visible."
+        "gifsHelp": "La désactivation masque les GIFs existants et bloque les nouvelles pièces jointes. Le texte des commentaires reste visible.",
+        "emojiHelp": "Vos propres images, avec lesquelles les lecteurs réagissent aux commentaires."
       },
       "publicationChannels": {
         "title": "Canaux de publication",

@@ -325,13 +325,15 @@
     "poweredBy": "Made with",
     "breadcrumbs": "Breadcrumbs",
     "navigation": {
-      "publication": "View site",
-      "settings": "Site settings",
+      "publication": "Open site",
+      "settings": "Settings",
       "dashboard": "Dashboard",
-      "media": "Media library",
-      "knowledge": "Knowledge",
-      "keywords": "Topics",
-      "backlinks": "Backlinks"
+      "media": "Media",
+      "knowledge": "AI sources",
+      "keywords": "Topic plan",
+      "backlinks": "Backlinks",
+      "stats": "Statistics",
+      "write": "Write article"
     },
     "links": {
       "terms": "Terms of Service",
@@ -1156,12 +1158,13 @@
         }
       },
       "community": {
-        "title": "Comments and GIFs",
+        "title": "Comments and reactions",
         "description": "Control discussion across all articles in this publication.",
         "comments": "Allow comments",
         "commentsHelp": "Turning this off closes comments and replies on every article. Existing comments remain visible. Individual articles can still close their own discussion.",
         "gifs": "Allow GIFs in comments",
-        "gifsHelp": "Turning this off hides existing GIFs and prevents attaching new ones. Comment text remains visible."
+        "gifsHelp": "Turning this off hides existing GIFs and prevents attaching new ones. Comment text remains visible.",
+        "emojiHelp": "Your own images readers can react to comments with."
       },
       "publicationChannels": {
         "title": "Publication channels",

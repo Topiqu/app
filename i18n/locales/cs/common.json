@@ -325,13 +325,15 @@
     "poweredBy": "Vytvořeno pomocí",
     "breadcrumbs": "Drobečková navigace",
     "navigation": {
-      "publication": "Zobrazit web",
-      "settings": "Nastavení webu",
+      "publication": "Otevřít web",
+      "settings": "Nastavení",
       "dashboard": "Přehled",
-      "media": "Knihovna médií",
-      "knowledge": "Znalosti",
-      "keywords": "Témata",
-      "backlinks": "Zpětné odkazy"
+      "media": "Média",
+      "knowledge": "Podklady pro AI",
+      "keywords": "Plán témat",
+      "backlinks": "Zpětné odkazy",
+      "stats": "Statistiky",
+      "write": "Napsat článek"
     },
     "links": {
       "terms": "Obchodní podmínky",
@@ -1156,12 +1158,13 @@
         }
       },
       "community": {
-        "title": "Komentáře a GIFy",
+        "title": "Komentáře a reakce",
         "description": "Řiďte diskuzi pod všemi články této publikace.",
         "comments": "Povolit komentáře",
         "commentsHelp": "Vypnutím uzavřete komentáře i odpovědi pod všemi články. Stávající komentáře zůstanou viditelné. Jednotlivé články mohou mít diskuzi uzavřenou samostatně.",
         "gifs": "Povolit GIFy v komentářích",
-        "gifsHelp": "Vypnutím skryjete dosavadní GIFy a zabráníte přidávání nových. Text komentářů zůstane viditelný."
+        "gifsHelp": "Vypnutím skryjete dosavadní GIFy a zabráníte přidávání nových. Text komentářů zůstane viditelný.",
+        "emojiHelp": "Vlastní obrázky, kterými můžou čtenáři reagovat na komentáře."
       },
       "publicationChannels": {
         "title": "Publikační kanály",

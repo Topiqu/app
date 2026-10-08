@@ -40,9 +40,15 @@
             </UButton>
           </UTooltip>
         </div>
+        <div v-if="canAddEmoji" class="mt-3">
+          <UButton size="sm" color="neutral" variant="soft" icon="mdi:plus" block @click="(close(), (createOpen = true))">
+            {{ $t('emoji.addCustom') }}
+          </UButton>
+        </div>
       </div>
     </template>
   </UPopover>
+  <EmojiCreate v-if="canAddEmoji" v-model="createOpen" />
 </template>
 
 <script setup lang="ts">
@@ -76,6 +82,14 @@ const {
 
 watch(open, (isOpen) => {
   if (isOpen && session.value?.user) void refresh()
+})
+
+// New emoji go to the session's tenant, so the shortcut is for its admins and only on their own blog.
+const site = await useClientSite()
+const createOpen = shallowRef(false)
+const canAddEmoji = computed(() => {
+  const user = session.value?.user
+  return user?.role === 'admin' && user.plan !== 'BASIC' && !!site && site.id === user.clientSiteId
 })
 
 const toggleEmoji = async (emojiId: string, close: () => void) => {

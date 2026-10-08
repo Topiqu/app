@@ -32,8 +32,18 @@
 
     <template #default="{ collapsed }">
       <TenantSwitcher v-if="auth?.user?.role === 'admin'" :collapsed="collapsed" />
+      <!-- The most frequent action, so a button rather than one more place in the list. -->
+      <UButton
+        v-if="auth?.user?.role === 'admin'"
+        :to="localePath({ name: 'admin-editor-id', params: { id: 'new' } })"
+        icon="mdi:pencil-plus-outline"
+        :label="collapsed ? undefined : $t('common.navigation.write')"
+        :aria-label="$t('common.navigation.write')"
+        :square="collapsed"
+        :ui="{ base: collapsed ? 'self-center' : 'w-full justify-center' }"
+      />
       <UNavigationMenu
-        :items="navigationItems"
+        :items="navigation"
         orientation="vertical"
         :collapsed="collapsed"
         :ui="{ link: collapsed ? 'size-10 mx-auto justify-center p-0' : 'min-h-10 justify-start' }"
@@ -42,40 +52,20 @@
 
     <template #footer="{ collapsed }">
       <div class="flex w-full flex-col gap-1">
-        <template v-if="auth?.user?.role === 'admin'">
-          <UButton
-            class="text-muted hover:text-highlighted"
-            icon="mdi:tag-outline"
-            color="neutral"
-            variant="ghost"
-            :label="collapsed ? undefined : $t('articles.tags.manageTags')"
-            :square="collapsed"
-            :ui="{ base: collapsed ? 'self-center' : 'w-full justify-start' }"
-            @click="tagsOpen = true"
-          />
-          <EmojiCreate v-if="auth?.user?.plan !== 'BASIC'">
-            <UButton
-              class="text-muted hover:text-highlighted"
-              icon="mdi:emoticon"
-              color="neutral"
-              variant="ghost"
-              :label="collapsed ? undefined : $t('emoji.create')"
-              :square="collapsed"
-              :ui="{ base: collapsed ? 'self-center' : 'w-full justify-start' }"
-            />
-          </EmojiCreate>
-          <UButton
-            class="text-muted hover:text-highlighted"
-            icon="mdi:chart-bar"
-            color="neutral"
-            variant="ghost"
-            :label="collapsed ? undefined : $t('stats.title')"
-            :square="collapsed"
-            :ui="{ base: collapsed ? 'self-center' : 'w-full justify-start' }"
-            @click="statsOpen = true"
-          />
-        </template>
-        <template v-else-if="auth?.user?.role === 'superadmin'">
+        <UButton
+          class="text-muted hover:text-highlighted"
+          icon="mdi:open-in-new"
+          color="neutral"
+          variant="ghost"
+          :to="siteUrl"
+          target="_blank"
+          :disabled="!siteUrl"
+          :label="collapsed ? undefined : $t('common.navigation.publication')"
+          :aria-label="$t('common.navigation.publication')"
+          :square="collapsed"
+          :ui="{ base: collapsed ? 'self-center' : 'w-full justify-start' }"
+        />
+        <template v-if="auth?.user?.role === 'superadmin'">
           <UButton
             icon="mdi:account-plus"
             color="neutral"
@@ -107,58 +97,36 @@ import type { NavigationMenuItem } from '@nuxt/ui'
 const isOpen = defineModel<boolean>('isOpen')
 const { data: auth } = useAuth()
 const localePath = useLocalePath()
-const tagsOpen = useState('dashboard-tags-open', () => false)
-const statsOpen = useState('dashboard-stats-open', () => false)
 const clientCreateOpen = useState('dashboard-client-create-open', () => false)
 const userListOpen = useState('dashboard-user-list-open', () => false)
 
 const { data: clientStatus } = await useClientSiteStatus()
+const siteUrl = computed(() => publicationUrl(clientStatus.value))
 
-const navigationItems = computed<NavigationMenuItem[]>(() => {
-  const publication = {
-    label: $t('common.navigation.publication'),
-    icon: 'mdi:newspaper-variant-outline',
-    to: publicationUrl(clientStatus.value),
-    external: true,
-    disabled: !publicationUrl(clientStatus.value),
-  }
-  if (auth.value?.user.role === 'superadmin') {
-    return [{ label: $t('master.title'), icon: 'mdi:home', to: localePath({ name: 'master' }) }, publication]
-  }
+// Groups render with a divider between them: home, content, reach, settings.
+const navigation = computed<NavigationMenuItem[][]>(() => {
+  if (auth.value?.user.role === 'superadmin')
+    return [[{ label: $t('master.title'), icon: 'mdi:view-dashboard-outline', to: localePath({ name: 'master' }) }]]
+
   return [
-    { label: $t('common.navigation.dashboard'), icon: 'mdi:home', to: localePath({ name: 'admin' }) },
-    {
-      label: $t('visibility.title'),
-      icon: 'mdi:radar',
-      to: localePath({ name: 'admin-visibility' }),
-    },
-    {
-      label: $t('common.navigation.keywords'),
-      icon: 'mdi:target',
-      to: localePath({ name: 'admin-keywords' }),
-    },
-    {
-      label: $t('common.navigation.backlinks'),
-      icon: 'mdi:link-variant',
-      to: localePath({ name: 'admin-backlinks' }),
-    },
-    {
-      label: $t('articles.addArticle'),
-      icon: 'mdi:pencil',
-      to: localePath({ name: 'admin-editor-id', params: { id: 'new' } }),
-    },
-    {
-      label: $t('common.navigation.media'),
-      icon: 'mdi:image-multiple-outline',
-      to: localePath({ name: 'admin-media' }),
-    },
-    {
-      label: $t('common.navigation.knowledge'),
-      icon: 'mdi:book-open-page-variant-outline',
-      to: localePath({ name: 'admin-knowledge' }),
-    },
-    { label: $t('common.navigation.settings'), icon: 'mdi:cog', to: localePath({ name: 'settings' }) },
-    publication,
+    [
+      { label: $t('common.navigation.dashboard'), icon: 'mdi:view-dashboard-outline', to: localePath({ name: 'admin' }) },
+      { label: $t('common.navigation.stats'), icon: 'mdi:chart-line', to: localePath({ name: 'admin-stats' }) },
+    ],
+    [
+      { label: $t('common.navigation.keywords'), icon: 'mdi:lightbulb-on-outline', to: localePath({ name: 'admin-keywords' }) },
+      { label: $t('common.navigation.media'), icon: 'mdi:image-multiple-outline', to: localePath({ name: 'admin-media' }) },
+      {
+        label: $t('common.navigation.knowledge'),
+        icon: 'mdi:book-open-page-variant-outline',
+        to: localePath({ name: 'admin-knowledge' }),
+      },
+    ],
+    [
+      { label: $t('visibility.title'), icon: 'mdi:radar', to: localePath({ name: 'admin-visibility' }) },
+      { label: $t('common.navigation.backlinks'), icon: 'mdi:link-variant', to: localePath({ name: 'admin-backlinks' }) },
+    ],
+    [{ label: $t('common.navigation.settings'), icon: 'mdi:cog-outline', to: localePath({ name: 'settings' }) }],
   ]
 })
 </script>

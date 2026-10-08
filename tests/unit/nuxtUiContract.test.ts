@@ -289,7 +289,7 @@ describe('Nuxt UI template contract', () => {
       'app/components/Form/Client/LogoUploader.vue',
       'app/components/Notification/Bar.vue',
       'app/components/Settings/Members.vue',
-      'app/components/Stats/Dialog.vue',
+      'app/components/Stats/Dashboard.vue',
       'app/components/TenantCreate.vue',
       'app/components/User/AccountHealth.vue',
       'app/components/User/Activity.vue',
@@ -335,7 +335,7 @@ describe('Nuxt UI template contract', () => {
       'app/components/Landing/Hero.vue',
       'app/components/Form/Client/Billing.vue',
       'app/components/Form/Client/SearchConsole.vue',
-      'app/components/Stats/Dialog.vue',
+      'app/components/Stats/Dashboard.vue',
       'app/components/User/Activity.vue',
     ])
     expect(failuresFor(/\banimate-pulse\b/i, allowlist)).toEqual([])

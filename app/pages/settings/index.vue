@@ -84,6 +84,7 @@
             v-if="can('TENANT_SETTINGS')"
             v-model:commentsEnabled="form.commentsEnabled"
             v-model:commentGifsEnabled="form.commentGifsEnabled"
+            :emoji="!isBasic"
             class="mt-10"
           />
         </section>
@@ -185,8 +186,8 @@
         <section v-if="showBilling" v-show="activeTab === 'billing'">
           <FormClientBilling :client="client ?? null" :rate="rate" />
         </section>
-        <section v-show="activeTab === 'members'"><LazySettingsMembers /></section>
         <section v-if="activeTab === 'widgets'"><LazyFormClientWidgets /></section>
+        <section v-show="activeTab === 'members'"><LazySettingsMembers /></section>
       </div>
     </div>
 
@@ -270,9 +271,9 @@ const tabs = computed<TabItem[]>(() => {
   if (can('INTEGRATION_CONTROL')) {
     t.push({ id: 'integrations', labelKey: 'common.preferences.tabs.integrations', icon: 'mdi:puzzle-outline' })
   }
-  if (can('AI_USE')) t.push({ id: 'ai', labelKey: 'common.preferences.tabs.ai', icon: 'mdi:robot-outline' })
   if (can('TENANT_SETTINGS'))
     t.push({ id: 'widgets', labelKey: 'common.preferences.tabs.widgets', icon: 'mdi:widgets-outline' })
+  if (can('AI_USE')) t.push({ id: 'ai', labelKey: 'common.preferences.tabs.ai', icon: 'mdi:robot-outline' })
   t.push({ id: 'members', labelKey: 'common.preferences.tabs.members', icon: 'mdi:account-group-outline' })
   if (showBilling.value && can('BILLING_CHANGE'))
     t.push({ id: 'billing', labelKey: 'common.preferences.tabs.billing', icon: 'mdi:credit-card-outline' })
