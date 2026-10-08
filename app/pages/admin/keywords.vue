@@ -45,8 +45,15 @@
     <template v-else>
       <AppStatTiles :items="stats" />
 
-      <KeywordsResults />
-      <KeywordsActions />
+      <KeywordsResults v-if="data.results.length" />
+      <KeywordsActions v-if="contentActions?.actions.length" />
+      <p
+        v-if="waitingNote"
+        class="flex items-center gap-2 rounded-(--topiqu-surface-radius) border border-dashed border-default px-4 py-3 text-sm text-muted"
+      >
+        <UIcon name="mdi:chart-timeline-variant" class="size-4 shrink-0" aria-hidden="true" />
+        {{ waitingNote }}
+      </p>
       <KeywordsPlan />
     </template>
   </div>
@@ -65,6 +72,16 @@ const marketId = useId()
 const savingMarket = shallowRef(false)
 
 const { data, error, isPending, refetch } = useKeywordPlan()
+const { data: contentActions } = useContentActions()
+
+// Empty results and suggestions collapse into one line instead of two empty cards.
+const waitingNote = computed(() => {
+  const noResults = !data.value?.results.length
+  const noActions = contentActions.value?.actions.length === 0
+  if (noResults && noActions) return t('common.keywords.waiting')
+  if (noResults) return t('common.keywordResults.empty')
+  return noActions ? t('common.contentActions.empty') : null
+})
 
 const marketItems = computed(() => {
   const regions = new Intl.DisplayNames([locale.value], { type: 'region' })

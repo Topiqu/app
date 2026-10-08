@@ -88,6 +88,7 @@
     },
     "keywordPlan": {
       "title": "Als Nächstes",
+      "topic": "Thema",
       "description": "Automatische Artikel nehmen Themen von oben. Heften Sie an, was früher kommen soll, und überspringen Sie, was Sie nicht wollen.",
       "empty": "Der Plan entsteht vor dem nächsten automatischen Artikel.",
       "volumeUnknown": "unbekannt",
@@ -108,7 +109,8 @@
       "pinned": "Angeheftet",
       "unpin": "{keyword} lösen",
       "skipped": "Übersprungene Themen ({count})",
-      "volumeUnit": "Suchen/Monat"
+      "volumeUnit": "Suchen/Monat",
+      "showAll": "Alle Themen ({count})"
     },
     "keywordResults": {
       "title": "Wie die Artikel abschneiden",
@@ -151,6 +153,7 @@
     "keywords": {
       "title": "Themen",
       "description": "Wonach Menschen in Ihrem Bereich wirklich suchen. Automatische Artikel decken diese Themen nach und nach ab, und wir messen ihre Google-Position.",
+      "waiting": "Google-Positionen messen wir 7 Tage nach dem ersten Artikel aus dem Plan; Verbesserungsvorschläge folgen nach einem Monat in der Suche.",
       "disabledTitle": "Automatische Artikel aktivieren",
       "disabledDescription": "Der Themenplan wählt Themen nach echter Suchnachfrage und misst danach die Google-Positionen. Er arbeitet mit automatischen Artikeln.",
       "openSettings": "KI-Einstellungen öffnen",

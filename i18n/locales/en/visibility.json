@@ -48,7 +48,8 @@
         "ARTICLE": "From an article",
         "COMMENT": "From readers"
       },
-      "schedule": "Checked weekly"
+      "schedule": "Checked weekly",
+      "showAll": "Show all ({count})"
     },
     "outcome": {
       "UNCHECKED": "Not checked yet",
@@ -66,13 +67,10 @@
       "response": "Answer"
     },
     "opportunities": {
-      "title": "Where AI overlooks you",
-      "description": "Questions where AI keeps citing other sites instead of yours.",
       "update": "Improve article",
       "create": "Create article",
-      "dismiss": "Dismiss",
-      "evidence": "Your site: {owned}/{samples} · other sources: {external}/{samples}",
-      "domains": "Sources being cited: {domains}"
+      "dismiss": "Dismiss suggestion",
+      "citing": "AI cites:"
     },
     "domains": {
       "title": "Who gets cited instead of you",

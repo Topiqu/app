@@ -88,6 +88,7 @@
     },
     "keywordPlan": {
       "title": "Up next",
+      "topic": "Topic",
       "description": "Automated articles take topics from the top. Pin what you want sooner and skip what you don’t want.",
       "empty": "The plan is built before the next automated article.",
       "volumeUnknown": "unknown",
@@ -108,7 +109,8 @@
       "pinned": "Pinned",
       "unpin": "Unpin {keyword}",
       "skipped": "Skipped topics ({count})",
-      "volumeUnit": "searches/mo"
+      "volumeUnit": "searches/mo",
+      "showAll": "All topics ({count})"
     },
     "keywordResults": {
       "title": "How articles perform",
@@ -151,6 +153,7 @@
     "keywords": {
       "title": "Topics",
       "description": "What people in your field actually search for. Automated articles cover these topics step by step, and we measure where they land on Google.",
+      "waiting": "We measure Google positions 7 days after the first planned article goes live; update suggestions arrive after a month in search.",
       "disabledTitle": "Turn on automated articles",
       "disabledDescription": "The topic plan picks what to write from real search demand, then tracks Google rankings. It works with automated articles.",
       "openSettings": "Open AI settings",

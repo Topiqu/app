@@ -3,17 +3,27 @@ import type { DropdownMenuItem } from '@nuxt/ui'
 
 import { promptOutcome, runOutcome } from '~~/shared/utils/aiVisibility'
 
-import type { VisibilityPrompt } from '~/types/visibility'
+import type { VisibilityOverview, VisibilityPrompt } from '~/types/visibility'
 const props = defineProps<{
   prompt: VisibilityPrompt
+  /** Open opportunity: AI keeps citing other sites for this question. */
+  opportunity?: VisibilityOverview['opportunities'][number]
   canSample: boolean
   running: boolean
   disabled: boolean
   actions: DropdownMenuItem[][]
 }>()
 const emit = defineEmits<{ run: [] }>()
+const localePath = useLocalePath()
 const open = shallowRef(false)
 const outcome = computed(() => promptOutcome(props.prompt.latestRuns))
+const counted = computed(() => outcome.value.status === 'CITED' || outcome.value.status === 'NOT_CITED')
+const citing = computed(() => props.opportunity?.citedDomains.slice(0, 3) ?? [])
+const citingRest = computed(() => (props.opportunity?.citedDomains.length ?? 0) - citing.value.length)
+const opportunityLink = computed(() => ({
+  path: localePath({ name: 'admin-editor-id', params: { id: props.opportunity?.article?.slug ?? 'new' } }),
+  query: { ai: '1', prompt: props.prompt.text },
+}))
 const tones: Record<string, string> = {
   UNCHECKED: 'bg-accented',
   RUNNING: 'bg-info',
@@ -23,7 +33,7 @@ const tones: Record<string, string> = {
 }
 </script>
 <template>
-  <div class="flex min-w-0 items-start gap-2">
+  <div class="group/row flex min-w-0 items-start gap-2">
     <UCollapsible v-model:open="open" class="min-w-0 flex-1">
       <UButton
         type="button"
@@ -32,9 +42,9 @@ const tones: Record<string, string> = {
         :ui="{ base: 'group/prompt h-auto min-h-10 w-full items-start justify-start px-0 py-1' }"
       >
         <span class="flex w-full items-start gap-3 text-left">
-          <span class="mt-2 size-2.5 shrink-0 rounded-full" :class="tones[outcome.status]" aria-hidden="true" />
+          <span class="mt-1.5 size-2.5 shrink-0 rounded-full" :class="tones[outcome.status]" aria-hidden="true" />
           <span class="min-w-0 flex-1">
-            <span class="flex min-w-0 items-center gap-2">
+            <span class="flex min-w-0 items-start gap-2">
               <span
                 class="min-w-0 flex-1 whitespace-normal text-sm font-medium leading-5 text-highlighted"
                 :class="{ 'line-clamp-2 sm:line-clamp-1': !open }"
@@ -43,15 +53,33 @@ const tones: Record<string, string> = {
               <UBadge v-if="!prompt.active" color="warning" variant="subtle" size="sm" icon="mdi:pause">
                 {{ $t('visibility.prompts.paused') }}
               </UBadge>
-            </span>
-            <span class="mt-0.5 flex items-center gap-1 text-xs text-muted">
-              {{ $t(`visibility.outcome.${outcome.status}`, outcome) }}
+              <UBadge
+                v-if="counted"
+                :color="outcome.status === 'CITED' ? 'success' : 'neutral'"
+                variant="soft"
+                size="sm"
+                class="shrink-0 tabular-nums"
+                :title="$t(`visibility.outcome.${outcome.status}`, outcome)"
+              >
+                <span aria-hidden="true">{{ outcome.cited }}/{{ outcome.checked }}</span>
+                <span class="sr-only">{{ $t(`visibility.outcome.${outcome.status}`, outcome) }}</span>
+              </UBadge>
+              <span v-else class="shrink-0 text-xs leading-5 text-muted">
+                {{ $t(`visibility.outcome.${outcome.status}`, outcome) }}
+              </span>
               <UIcon
                 v-if="prompt.latestRuns.length"
                 name="mdi:chevron-down"
-                class="size-4 transition-transform group-data-[state=open]/prompt:rotate-180"
+                class="mt-0.5 size-4 shrink-0 text-muted transition-transform group-data-[state=open]/prompt:rotate-180"
                 aria-hidden="true"
               />
+            </span>
+            <span v-if="citing.length" class="mt-1 flex min-w-0 flex-wrap items-center gap-1 text-xs text-muted">
+              {{ $t('visibility.opportunities.citing') }}
+              <UBadge v-for="domain in citing" :key="domain" color="neutral" variant="outline" size="sm">
+                {{ domain }}
+              </UBadge>
+              <span v-if="citingRest > 0" class="tabular-nums">+{{ citingRest }}</span>
             </span>
           </span>
         </span>
@@ -59,6 +87,7 @@ const tones: Record<string, string> = {
 
       <template #content>
         <p class="py-2 text-xs text-muted">
+          <template v-if="counted">{{ $t(`visibility.outcome.${outcome.status}`, outcome) }} · </template>
           {{ prompt.language.toUpperCase() }} · {{ $t(`visibility.prompts.sources.${prompt.source}`) }}
         </p>
         <ul class="mt-2 divide-y divide-default border-t border-default">
@@ -131,6 +160,19 @@ const tones: Record<string, string> = {
 
     <div class="flex shrink-0 items-center gap-1">
       <UButton
+        v-if="opportunity"
+        :to="opportunityLink"
+        size="sm"
+        variant="soft"
+        :icon="opportunity.article ? 'mdi:file-edit-outline' : 'mdi:plus'"
+        :aria-label="$t(opportunity.article ? 'visibility.opportunities.update' : 'visibility.opportunities.create')"
+      >
+        <span class="hidden sm:inline">
+          {{ $t(opportunity.article ? 'visibility.opportunities.update' : 'visibility.opportunities.create') }}
+        </span>
+      </UButton>
+      <!-- Desktop reveals it on hover/focus; opacity alone keeps it reachable by keyboard and touch. -->
+      <UButton
         v-if="canSample"
         size="sm"
         color="neutral"
@@ -138,6 +180,11 @@ const tones: Record<string, string> = {
         icon="mdi:radar"
         :loading="running"
         :disabled="!prompt.active || disabled"
+        :class="
+          running
+            ? undefined
+            : 'transition-opacity lg:opacity-0 lg:group-hover/row:opacity-100 lg:group-focus-within/row:opacity-100'
+        "
         :aria-label="$t('visibility.prompts.run')"
         @click="emit('run')"
       >

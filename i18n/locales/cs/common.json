@@ -88,6 +88,7 @@
     },
     "keywordPlan": {
       "title": "Další na řadě",
+      "topic": "Téma",
       "description": "Automatické články berou témata shora. Připněte, co chcete dřív, a přeskočte, co nechcete.",
       "empty": "Plán se sestaví před dalším automatickým článkem.",
       "volumeUnknown": "neznámá",
@@ -108,7 +109,8 @@
       "pinned": "Připnuto",
       "unpin": "Odepnout {keyword}",
       "skipped": "Přeskočená témata ({count})",
-      "volumeUnit": "hledání/měs."
+      "volumeUnit": "hledání/měs.",
+      "showAll": "Všechna témata ({count})"
     },
     "keywordResults": {
       "title": "Jak si články vedou",
@@ -151,6 +153,7 @@
     "keywords": {
       "title": "Témata",
       "description": "O čem lidé ve vašem oboru opravdu hledají. Automatické články tato témata postupně pokrývají a my měříme, kde se v Googlu umístí.",
+      "waiting": "Pozice v Googlu změříme 7 dní po vydání prvního článku z plánu, návrhy úprav přibudou po měsíci ve vyhledávání.",
       "disabledTitle": "Zapněte automatické články",
       "disabledDescription": "Plán témat vybírá, o čem psát, podle skutečné hledanosti a pak měří pozice v Googlu. Pracuje s automatickými články.",
       "openSettings": "Otevřít nastavení AI",

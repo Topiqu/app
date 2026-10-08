@@ -23,9 +23,10 @@
           aria-hidden="true"
         />
       </summary>
-      <p class="mb-5 mt-1 max-w-2xl text-sm text-muted">{{ $t('visibility.domains.description') }}</p>
+      <p class="mb-5 mt-1 text-xs text-muted">{{ $t('visibility.domains.description') }}</p>
 
-      <div class="grid gap-x-10 gap-y-6" :class="references && primary.length ? 'lg:grid-cols-[minmax(0,1fr)_16rem]' : ''">
+      <!-- The page sets this beside traffic, so the reference aside stacks below instead of a third column. -->
+      <div class="grid gap-y-6">
         <div v-if="primary.length" class="flex min-w-0 flex-col gap-6">
           <div v-for="group in primary" :key="group.key" class="min-w-0">
             <h3 class="text-sm font-semibold text-highlighted">{{ $t(`visibility.domains.${group.key}`) }}</h3>
@@ -56,7 +57,10 @@
                   <ReuseActions :row />
                 </div>
                 <div class="mt-1.5 mr-9 h-1 overflow-hidden rounded-full bg-accented" aria-hidden="true">
-                  <div class="h-full rounded-full bg-neutral-400 dark:bg-neutral-500" :style="{ width: `${row.share * 100}%` }" />
+                  <div
+                    class="h-full rounded-full bg-neutral-400 dark:bg-neutral-500"
+                    :style="{ width: `${row.share * 100}%` }"
+                  />
                 </div>
               </li>
             </ul>
@@ -68,8 +72,23 @@
           <h3 class="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted">
             <UIcon name="mdi:bookshelf" class="size-4" aria-hidden="true" />
             {{ $t('visibility.domains.references') }}
+            <UPopover :content="{ align: 'start' }">
+              <UButton
+                square
+                size="xs"
+                color="neutral"
+                variant="ghost"
+                icon="mdi:information-outline"
+                class="-my-1"
+                :aria-label="$t('common.statHint', { label: $t('visibility.domains.references') })"
+              />
+              <template #content>
+                <p class="max-w-72 p-3 text-sm font-normal normal-case leading-6 tracking-normal">
+                  {{ $t('visibility.domains.referencesHint') }}
+                </p>
+              </template>
+            </UPopover>
           </h3>
-          <p class="mt-1 text-xs leading-5 text-muted">{{ $t('visibility.domains.referencesHint') }}</p>
           <ul class="mt-2">
             <li v-for="row in references.rows" :key="row.domain" class="flex items-center gap-2 py-1 text-sm">
               <span class="min-w-0 flex-1 truncate text-muted">{{ row.domain }}</span>

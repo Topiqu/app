@@ -48,7 +48,8 @@
         "ARTICLE": "Z článku",
         "COMMENT": "Od čtenářů"
       },
-      "schedule": "Ověřujeme každý týden"
+      "schedule": "Ověřujeme každý týden",
+      "showAll": "Zobrazit všechny ({count})"
     },
     "outcome": {
       "UNCHECKED": "Zatím neověřeno",
@@ -66,13 +67,10 @@
       "response": "Odpověď"
     },
     "opportunities": {
-      "title": "Kde vás AI přehlíží",
-      "description": "Otázky, u kterých AI opakovaně cituje jiné weby a vás ne.",
       "update": "Vylepšit článek",
       "create": "Vytvořit článek",
-      "dismiss": "Skrýt",
-      "evidence": "Váš web: {owned}/{samples} · jiné zdroje: {external}/{samples}",
-      "domains": "Citované zdroje: {domains}"
+      "dismiss": "Skrýt doporučení",
+      "citing": "AI cituje:"
     },
     "domains": {
       "title": "Koho AI cituje místo vás",
