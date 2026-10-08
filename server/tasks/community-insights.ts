@@ -58,8 +58,7 @@ export default defineMonitoredTask({
           .map((c) => c.content.slice(0, 180))
           .join('\n---\n')
 
-        let newInsight: any = site.communityInsight
-        let logMetadata: any = {}
+        let newInsight: any
 
         try {
           const { output: object, usage } = await generateText({
@@ -82,7 +81,6 @@ export default defineMonitoredTask({
             Write 1–2 sentence summary (MAX 250 CHARS). Add short suggestion if needed, relevant to client's focus and audience: ${site.focus}, ${site.audience}.
           `.trim(),
             output: Output.object({ schema: insightSchema }),
-            temperature: 0,
             maxRetries: 1,
           })
 
@@ -100,7 +98,7 @@ export default defineMonitoredTask({
             sarcasm: current.sarcasm,
             topPoints: current.topPoints,
           }
-          logMetadata = {
+          const logMetadata = {
             usage,
             avgScore: current.avgScore,
             topEmotion: current.topEmotion,

@@ -36,7 +36,6 @@ export const detectSentiment = async (text: string, plan: ClientPlan) => {
         : `Analyze sentiment with 3-tier label. Score -1 to 1. Return ONLY valid JSON.`,
     prompt: text.slice(0, 1000),
     output: Output.object({ schema }),
-    temperature: 0,
   })
 
   return { object, usage }
