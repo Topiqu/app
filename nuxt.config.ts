@@ -170,7 +170,11 @@ export default defineNuxtConfig({
       dirs: ['server/utils'],
     },
     externals: {
+      // IPX loads this via createRequire; tracing otherwise only copies srvx's Bun entry.
+      traceInclude: ['srvx/node'],
       inline: [
+        // Match Windows paths too: https://github.com/nuxt/nuxt/issues/36467
+        /[\\/]node_modules[\\/]nuxt[\\/]dist[\\/]/,
         'html-encoding-sniffer',
         '@exodus/bytes',
         'uncrypto',
@@ -191,8 +195,15 @@ export default defineNuxtConfig({
     dirs: ['utils', 'server/shared/consts'],
   },
   vite: {
+    build: {
+      rolldownOptions: {
+        output: {
+          minify: IS_PROD ? { compress: { dropConsole: true, dropDebugger: true } } : undefined,
+        },
+      },
+    },
     optimizeDeps: {
-      include: ['@fingerprintjs/fingerprintjs', 'chart.js', 'fast-deep-equal', 'vue-chartjs', 'vue-qrcode-reader'],
+      include: ['@fingerprintjs/fingerprintjs', 'chart.js', 'fast-deep-equal', 'vue-chartjs'],
     },
   },
 
@@ -201,12 +212,10 @@ export default defineNuxtConfig({
     '@nuxt/ui',
     '@nuxtjs/i18n',
     '@nuxt/image',
-    '@nuxt/scripts',
     '@nuxtjs/seo',
     '@pinia/nuxt',
     '@pinia/colada-nuxt',
     '@vueuse/nuxt',
-    '@vueuse/motion/nuxt',
     '@vite-pwa/nuxt',
     '@unlok-co/nuxt-stripe',
     'pinia-plugin-persistedstate/nuxt',
@@ -364,6 +373,8 @@ export default defineNuxtConfig({
   },
 
   security: {
+    // Vite 8 uses the Oxc minifier above; the module still injects esbuild.drop.
+    removeLoggers: false,
     // Sentry injects per-build debug IDs after Vite has named hashed chunks. SRI can therefore
     // bind SSR HTML to a different body served under the same chunk URL across deployments.
     sri: false,
