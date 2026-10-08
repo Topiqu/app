@@ -1,5 +1,7 @@
 import type { ClientSite, SocialPlatform } from '~~/generated/zenstack/models'
 
+import type { PublicWidget } from './widgets'
+
 // A tenant changes `domain` only through the verified swap in `/api/domain/pending`.
 export const PRIVILEGED_CLIENT_SITE_FIELDS = ['plan', 'domain'] as const
 
@@ -106,10 +108,16 @@ export const publicClientSiteSelect = {
   ...fieldMask(PUBLIC_CLIENT_SITE_FIELDS),
   // Feeds `Organization.sameAs`, on the payload the app already fetches.
   socials: { select: { platform: true, url: true } },
+  widgets: {
+    where: { active: true, deletedAt: null },
+    select: { id: true, kind: true, slot: true, languages: true, config: true },
+    orderBy: { position: 'asc' },
+  },
 } as const
 
 export type PublicClientSiteField = (typeof PUBLIC_CLIENT_SITE_FIELDS)[number]
 
 export type PublicClientSite = Pick<ClientSite, PublicClientSiteField> & {
   socials: { platform: SocialPlatform; url: string }[]
+  widgets: PublicWidget[]
 }

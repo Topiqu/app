@@ -1,0 +1,158 @@
+{
+  "widgets": {
+    "title": "Widgets",
+    "description": "Annonces, appels à l’action, cours, météo et contenu personnalisé aux endroits choisis de votre blog.",
+    "empty": "Aucun widget pour l’instant.",
+    "item": "Widget {n} : {kind}",
+    "add": "Ajouter un widget",
+    "preview": "Aperçu",
+    "hidden": "Masqué hors de votre offre",
+    "slot": "Emplacement",
+    "moveUp": "Monter",
+    "moveDown": "Descendre",
+    "active": "Afficher",
+    "languages": "Langues",
+    "languagesHint": "Sans sélection, dans toutes les langues du site",
+    "startsAt": "Afficher à partir du",
+    "endsAt": "Afficher jusqu’au",
+    "optional": "Facultatif",
+    "tone": "Couleur",
+    "tones": {
+      "info": "Neutre",
+      "accent": "Couleur de la marque",
+      "warning": "Avertissement"
+    },
+    "link": {
+      "url": "Lien",
+      "label": "Texte du lien",
+      "hint": "https://… ou un chemin de votre site, p. ex. /fr/articles/…"
+    },
+    "kinds": {
+      "ANNOUNCEMENT": "Annonce",
+      "DIVIDER": "Séparateur de sections",
+      "CTA": "Appel à l’action",
+      "PRICE": "Cours et prix",
+      "WEATHER": "Météo",
+      "HTML": "HTML personnalisé"
+    },
+    "slots": {
+      "BAR": "Barre en haut",
+      "HOME_TOP": "Accueil – sous l’introduction",
+      "HOME_MIDDLE": "Accueil – avant les articles",
+      "HOME_BOTTOM": "Accueil – en bas",
+      "ARTICLE_END": "Article – sous le texte",
+      "FOOTER": "Tout le site – au-dessus du pied de page"
+    },
+    "locked": {
+      "plan": "Disponible à partir de l’offre Pro",
+      "domain": "Nécessite un domaine propre vérifié"
+    },
+    "gallery": {
+      "title": "Ajouter un widget",
+      "description": "Choisissez un modèle. Tout reste modifiable."
+    },
+    "presets": {
+      "announcement": { "name": "Annonce", "hint": "Une barre au-dessus du contenu pour les nouveautés et offres" },
+      "dividerLine": { "name": "Séparateur – ligne", "hint": "Une ligne discrète entre les sections" },
+      "dividerDots": { "name": "Séparateur – points", "hint": "Une ligne pointillée" },
+      "dividerWave": { "name": "Séparateur – vague", "hint": "Une vague aux couleurs de votre marque" },
+      "ctaNewsletter": {
+        "name": "Newsletter",
+        "hint": "Une invitation à s’abonner",
+        "title": "Ne manquez pas les prochains articles",
+        "text": "Des nouvelles et des conseils de temps en temps, directement dans votre boîte mail.",
+        "button": "S’abonner"
+      },
+      "ctaContact": {
+        "name": "Contact",
+        "hint": "Une invitation à prendre contact",
+        "title": "Besoin d’aide ?",
+        "text": "Écrivez-nous, nous vous répondrons au plus vite.",
+        "button": "Nous contacter"
+      },
+      "priceBitcoin": { "name": "Bitcoin", "hint": "Le prix actuel du bitcoin" },
+      "priceCrypto": { "name": "Cryptomonnaies", "hint": "Bitcoin, Ethereum et Solana" },
+      "priceFiat": { "name": "Taux de change", "hint": "Euro, dollar, livre, zloty" },
+      "weather": { "name": "Météo", "hint": "Les prévisions pour votre ville" },
+      "html": { "name": "HTML personnalisé", "hint": "Un code d’intégration, un formulaire ou votre propre contenu" }
+    },
+    "announcement": {
+      "label": "Annonce",
+      "close": "Fermer l’annonce",
+      "text": "Texte",
+      "dismissible": "Les lecteurs peuvent la fermer",
+      "placeholder": "Texte de votre annonce"
+    },
+    "divider": {
+      "style": "Style",
+      "label": "Libellé",
+      "styles": {
+        "line": "Ligne",
+        "dots": "Points",
+        "wave": "Vague",
+        "space": "Espace seul"
+      }
+    },
+    "cta": {
+      "title": "Titre",
+      "text": "Texte",
+      "button": "Texte du bouton",
+      "image": "Image",
+      "pickImage": "Choisir une image",
+      "changeImage": "Changer l’image",
+      "removeImage": "Retirer l’image"
+    },
+    "price": {
+      "label": "Cours et prix",
+      "source": "Taux : BCE, crypto : Coinbase · mis à jour",
+      "assets": "Que montrer",
+      "assetsHint": "6 éléments au plus",
+      "quote": "Prix en"
+    },
+    "weather": {
+      "source": "Données météo : MET Norway",
+      "place": "Lieu",
+      "placeHint": "Recherchez une ville",
+      "search": "Rechercher une ville…",
+      "days": "Jours",
+      "attribution": "Recherche de lieux : © OpenStreetMap. Prévisions : MET Norway.",
+      "thunder": "Orages",
+      "sleet": "Neige fondue",
+      "snow": "Neige",
+      "heavyRain": "Fortes pluies",
+      "rain": "Pluie",
+      "fog": "Brouillard",
+      "partlyCloudy": "Partiellement nuageux",
+      "cloudy": "Nuageux",
+      "clear": "Dégagé"
+    },
+    "html": {
+      "sandboxTitle": "S’exécute dans un cadre isolé",
+      "sandboxText": "Le code n’a accès ni à la page, ni à la connexion des lecteurs, ni aux cookies. Les intégrations qui ont besoin de leurs propres cookies ou du localStorage peuvent donc ne pas fonctionner.",
+      "title": "Nom",
+      "titleHint": "Pour les lecteurs d’écran",
+      "height": "Hauteur (px)",
+      "heightHint": "Valeur initiale ; le cadre s’adapte ensuite au contenu",
+      "code": "Code HTML"
+    },
+    "errors": {
+      "ANNOUNCEMENT_OVERLAP": "Le widget {n} chevauche une autre annonce active dans la même langue et la même période.",
+      "SLOT_FULL": "Widget {n} : un emplacement accepte au plus 3 widgets actifs.",
+      "SLOT_KIND": "Le widget {n} ne peut pas aller à l’emplacement choisi.",
+      "field": "Widget {n} : vérifiez le champ « {field} »."
+    },
+    "fields": {
+      "text": "Texte",
+      "url": "Lien",
+      "label": "Texte du lien",
+      "endsAt": "Afficher jusqu’au",
+      "title": "Titre",
+      "html": "Code HTML",
+      "assets": "Que montrer",
+      "quote": "Prix en",
+      "name": "Lieu",
+      "height": "Hauteur",
+      "style": "Style"
+    }
+  }
+}

@@ -99,6 +99,7 @@
           </div>
           <LazyArticleFeedback :articleId="data.id" class="w-full sm:max-w-xl" />
         </div>
+        <WidgetSlot name="ARTICLE_END" class="mt-8" />
       </template>
 
       <template #related>

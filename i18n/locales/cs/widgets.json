@@ -1,0 +1,158 @@
+{
+  "widgets": {
+    "title": "Widgety",
+    "description": "Oznámení, výzvy k akci, kurzy, počasí a vlastní obsah na vybraných místech blogu.",
+    "empty": "Zatím žádné widgety.",
+    "item": "Widget {n}: {kind}",
+    "add": "Přidat widget",
+    "preview": "Náhled",
+    "hidden": "Skrytý mimo váš tarif",
+    "slot": "Umístění",
+    "moveUp": "Posunout výš",
+    "moveDown": "Posunout níž",
+    "active": "Zobrazovat",
+    "languages": "Jazyky",
+    "languagesHint": "Bez výběru ve všech jazycích webu",
+    "startsAt": "Zobrazit od",
+    "endsAt": "Zobrazit do",
+    "optional": "Nepovinné",
+    "tone": "Barva",
+    "tones": {
+      "info": "Neutrální",
+      "accent": "Barva značky",
+      "warning": "Upozornění"
+    },
+    "link": {
+      "url": "Odkaz",
+      "label": "Text odkazu",
+      "hint": "https://… nebo cesta na vašem webu, např. /cs/clanky/…"
+    },
+    "kinds": {
+      "ANNOUNCEMENT": "Oznámení",
+      "DIVIDER": "Oddělovač sekcí",
+      "CTA": "Výzva k akci",
+      "PRICE": "Kurzy a ceny",
+      "WEATHER": "Počasí",
+      "HTML": "Vlastní HTML"
+    },
+    "slots": {
+      "BAR": "Lišta nahoře",
+      "HOME_TOP": "Homepage – pod úvodem",
+      "HOME_MIDDLE": "Homepage – před články",
+      "HOME_BOTTOM": "Homepage – dole",
+      "ARTICLE_END": "Článek – pod textem",
+      "FOOTER": "Celý web – nad patičkou"
+    },
+    "locked": {
+      "plan": "Dostupné od tarifu Pro",
+      "domain": "Vyžaduje ověřenou vlastní doménu"
+    },
+    "gallery": {
+      "title": "Přidat widget",
+      "description": "Vyberte předlohu. Vše jde potom upravit."
+    },
+    "presets": {
+      "announcement": { "name": "Oznámení", "hint": "Lišta nad obsahem pro novinky a akce" },
+      "dividerLine": { "name": "Oddělovač – linka", "hint": "Jemná čára mezi sekcemi" },
+      "dividerDots": { "name": "Oddělovač – tečky", "hint": "Tečkovaná linka" },
+      "dividerWave": { "name": "Oddělovač – vlnka", "hint": "Vlnovka v barvě značky" },
+      "ctaNewsletter": {
+        "name": "Newsletter",
+        "hint": "Pozvánka k odběru novinek",
+        "title": "Nenechte si ujít další články",
+        "text": "Novinky a tipy jednou za čas přímo do vaší schránky.",
+        "button": "Odebírat"
+      },
+      "ctaContact": {
+        "name": "Kontakt",
+        "hint": "Výzva k poptávce nebo konzultaci",
+        "title": "Potřebujete s něčím pomoct?",
+        "text": "Napište nám a ozveme se vám co nejdřív.",
+        "button": "Kontaktujte nás"
+      },
+      "priceBitcoin": { "name": "Bitcoin", "hint": "Aktuální cena bitcoinu" },
+      "priceCrypto": { "name": "Kryptoměny", "hint": "Bitcoin, Ethereum a Solana" },
+      "priceFiat": { "name": "Kurzy měn", "hint": "Euro, dolar, libra, zlotý" },
+      "weather": { "name": "Počasí", "hint": "Předpověď pro vaše město" },
+      "html": { "name": "Vlastní HTML", "hint": "Embed kód, formulář nebo vlastní obsah" }
+    },
+    "announcement": {
+      "label": "Oznámení",
+      "close": "Zavřít oznámení",
+      "text": "Text",
+      "dismissible": "Čtenář může oznámení zavřít",
+      "placeholder": "Text vašeho oznámení"
+    },
+    "divider": {
+      "style": "Styl",
+      "label": "Popisek",
+      "styles": {
+        "line": "Linka",
+        "dots": "Tečky",
+        "wave": "Vlnka",
+        "space": "Jen mezera"
+      }
+    },
+    "cta": {
+      "title": "Nadpis",
+      "text": "Text",
+      "button": "Text tlačítka",
+      "image": "Obrázek",
+      "pickImage": "Vybrat obrázek",
+      "changeImage": "Změnit obrázek",
+      "removeImage": "Odebrat obrázek"
+    },
+    "price": {
+      "label": "Kurzy a ceny",
+      "source": "Kurzy ECB, kryptoměny Coinbase · aktualizováno",
+      "assets": "Co zobrazit",
+      "assetsHint": "Nejvýš 6 položek",
+      "quote": "Cena v měně"
+    },
+    "weather": {
+      "source": "Data o počasí: MET Norway",
+      "place": "Místo",
+      "placeHint": "Vyhledejte město",
+      "search": "Hledat město…",
+      "days": "Počet dní",
+      "attribution": "Vyhledávání míst: © OpenStreetMap. Předpověď: MET Norway.",
+      "thunder": "Bouřky",
+      "sleet": "Déšť se sněhem",
+      "snow": "Sníh",
+      "heavyRain": "Silný déšť",
+      "rain": "Déšť",
+      "fog": "Mlha",
+      "partlyCloudy": "Polojasno",
+      "cloudy": "Oblačno",
+      "clear": "Jasno"
+    },
+    "html": {
+      "sandboxTitle": "Běží v izolovaném rámečku",
+      "sandboxText": "Kód nemá přístup ke stránce, přihlášení čtenářů ani k cookies. Embedy, které potřebují vlastní cookies nebo localStorage, proto nemusí fungovat.",
+      "title": "Název",
+      "titleHint": "Pro čtečky obrazovky",
+      "height": "Výška (px)",
+      "heightHint": "Výchozí, rámeček se pak přizpůsobí obsahu",
+      "code": "HTML kód"
+    },
+    "errors": {
+      "ANNOUNCEMENT_OVERLAP": "Widget {n} se překrývá s jiným aktivním oznámením ve stejném jazyce a čase.",
+      "SLOT_FULL": "Widget {n}: na jednom místě mohou být aktivní nejvýš 3 widgety.",
+      "SLOT_KIND": "Widget {n} nejde umístit na zvolené místo.",
+      "field": "Widget {n}: zkontrolujte pole „{field}“."
+    },
+    "fields": {
+      "text": "Text",
+      "url": "Odkaz",
+      "label": "Text odkazu",
+      "endsAt": "Zobrazit do",
+      "title": "Nadpis",
+      "html": "HTML kód",
+      "assets": "Co zobrazit",
+      "quote": "Cena v měně",
+      "name": "Místo",
+      "height": "Výška",
+      "style": "Styl"
+    }
+  }
+}

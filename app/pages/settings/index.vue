@@ -186,6 +186,7 @@
           <FormClientBilling :client="client ?? null" :rate="rate" />
         </section>
         <section v-show="activeTab === 'members'"><LazySettingsMembers /></section>
+        <section v-if="activeTab === 'widgets'"><LazyFormClientWidgets /></section>
       </div>
     </div>
 
@@ -270,6 +271,8 @@ const tabs = computed<TabItem[]>(() => {
     t.push({ id: 'integrations', labelKey: 'common.preferences.tabs.integrations', icon: 'mdi:puzzle-outline' })
   }
   if (can('AI_USE')) t.push({ id: 'ai', labelKey: 'common.preferences.tabs.ai', icon: 'mdi:robot-outline' })
+  if (can('TENANT_SETTINGS'))
+    t.push({ id: 'widgets', labelKey: 'common.preferences.tabs.widgets', icon: 'mdi:widgets-outline' })
   t.push({ id: 'members', labelKey: 'common.preferences.tabs.members', icon: 'mdi:account-group-outline' })
   if (showBilling.value && can('BILLING_CHANGE'))
     t.push({ id: 'billing', labelKey: 'common.preferences.tabs.billing', icon: 'mdi:credit-card-outline' })

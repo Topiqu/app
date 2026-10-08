@@ -16,6 +16,7 @@ import "./shopify"
 import "./webhook"
 import "./keywordPlan"
 import "./backlink"
+import "./widget"
 
 enum GenerationFrequency {
     NONE
@@ -137,6 +138,7 @@ model ClientSite with Base {
     articleGenerationSessions ArticleGenerationSession[]
     knowledgeSources     KnowledgeSource[]
     webhooks             Webhook[]
+    widgets              SiteWidget[]
     keywordClusters      KeywordCluster[]
     contentActions       ContentAction[]
     /// Last successful DataForSEO rebuild.

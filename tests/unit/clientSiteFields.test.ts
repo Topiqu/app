@@ -91,7 +91,7 @@ describe('public client site read projection', () => {
 
     // Relations are opt-in by name and each one is its own projection, so they are listed here
     // rather than in the scalar whitelist.
-    const RELATIONS = ['socials']
+    const RELATIONS = ['socials', 'widgets']
 
     expect(Object.keys(publicClientSiteSelect)).toEqual([...PUBLIC_CLIENT_SITE_FIELDS, ...RELATIONS])
     for (const field of unclassified) {

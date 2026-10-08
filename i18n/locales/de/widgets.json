@@ -1,0 +1,158 @@
+{
+  "widgets": {
+    "title": "Widgets",
+    "description": "Ankündigungen, Handlungsaufrufe, Kurse, Wetter und eigene Inhalte an ausgewählten Stellen Ihres Blogs.",
+    "empty": "Noch keine Widgets.",
+    "item": "Widget {n}: {kind}",
+    "add": "Widget hinzufügen",
+    "preview": "Vorschau",
+    "hidden": "Außerhalb Ihres Tarifs ausgeblendet",
+    "slot": "Platzierung",
+    "moveUp": "Nach oben",
+    "moveDown": "Nach unten",
+    "active": "Anzeigen",
+    "languages": "Sprachen",
+    "languagesHint": "Ohne Auswahl in allen Sprachen der Website",
+    "startsAt": "Anzeigen ab",
+    "endsAt": "Anzeigen bis",
+    "optional": "Optional",
+    "tone": "Farbe",
+    "tones": {
+      "info": "Neutral",
+      "accent": "Markenfarbe",
+      "warning": "Warnung"
+    },
+    "link": {
+      "url": "Link",
+      "label": "Linktext",
+      "hint": "https://… oder ein Pfad auf Ihrer Website, z. B. /de/artikel/…"
+    },
+    "kinds": {
+      "ANNOUNCEMENT": "Ankündigung",
+      "DIVIDER": "Abschnittstrenner",
+      "CTA": "Handlungsaufruf",
+      "PRICE": "Kurse und Preise",
+      "WEATHER": "Wetter",
+      "HTML": "Eigenes HTML"
+    },
+    "slots": {
+      "BAR": "Leiste oben",
+      "HOME_TOP": "Startseite – unter der Einleitung",
+      "HOME_MIDDLE": "Startseite – vor den Artikeln",
+      "HOME_BOTTOM": "Startseite – unten",
+      "ARTICLE_END": "Artikel – unter dem Text",
+      "FOOTER": "Ganze Website – über der Fußzeile"
+    },
+    "locked": {
+      "plan": "Ab dem Pro-Tarif verfügbar",
+      "domain": "Erfordert eine verifizierte eigene Domain"
+    },
+    "gallery": {
+      "title": "Widget hinzufügen",
+      "description": "Wählen Sie eine Vorlage. Alles bleibt bearbeitbar."
+    },
+    "presets": {
+      "announcement": { "name": "Ankündigung", "hint": "Eine Leiste über den Inhalten für Neuigkeiten und Aktionen" },
+      "dividerLine": { "name": "Trenner – Linie", "hint": "Eine dezente Linie zwischen Abschnitten" },
+      "dividerDots": { "name": "Trenner – Punkte", "hint": "Eine gepunktete Linie" },
+      "dividerWave": { "name": "Trenner – Welle", "hint": "Eine Welle in Ihrer Markenfarbe" },
+      "ctaNewsletter": {
+        "name": "Newsletter",
+        "hint": "Eine Einladung zum Abonnieren",
+        "title": "Verpassen Sie keine neuen Artikel",
+        "text": "Neuigkeiten und Tipps ab und zu direkt in Ihr Postfach.",
+        "button": "Abonnieren"
+      },
+      "ctaContact": {
+        "name": "Kontakt",
+        "hint": "Ein Aufruf zur Kontaktaufnahme",
+        "title": "Brauchen Sie Unterstützung?",
+        "text": "Schreiben Sie uns, wir melden uns schnellstmöglich.",
+        "button": "Kontakt aufnehmen"
+      },
+      "priceBitcoin": { "name": "Bitcoin", "hint": "Der aktuelle Bitcoin-Preis" },
+      "priceCrypto": { "name": "Kryptowährungen", "hint": "Bitcoin, Ethereum und Solana" },
+      "priceFiat": { "name": "Wechselkurse", "hint": "Euro, Dollar, Pfund, Złoty" },
+      "weather": { "name": "Wetter", "hint": "Eine Vorhersage für Ihre Stadt" },
+      "html": { "name": "Eigenes HTML", "hint": "Ein Embed-Code, ein Formular oder eigene Inhalte" }
+    },
+    "announcement": {
+      "label": "Ankündigung",
+      "close": "Ankündigung schließen",
+      "text": "Text",
+      "dismissible": "Leser können sie schließen",
+      "placeholder": "Text Ihrer Ankündigung"
+    },
+    "divider": {
+      "style": "Stil",
+      "label": "Beschriftung",
+      "styles": {
+        "line": "Linie",
+        "dots": "Punkte",
+        "wave": "Welle",
+        "space": "Nur Abstand"
+      }
+    },
+    "cta": {
+      "title": "Überschrift",
+      "text": "Text",
+      "button": "Schaltflächentext",
+      "image": "Bild",
+      "pickImage": "Bild wählen",
+      "changeImage": "Bild ändern",
+      "removeImage": "Bild entfernen"
+    },
+    "price": {
+      "label": "Kurse und Preise",
+      "source": "Kurse: EZB, Krypto: Coinbase · aktualisiert",
+      "assets": "Was anzeigen",
+      "assetsHint": "Höchstens 6 Einträge",
+      "quote": "Preis in"
+    },
+    "weather": {
+      "source": "Wetterdaten: MET Norway",
+      "place": "Ort",
+      "placeHint": "Suchen Sie eine Stadt",
+      "search": "Stadt suchen…",
+      "days": "Tage",
+      "attribution": "Ortssuche: © OpenStreetMap. Vorhersage: MET Norway.",
+      "thunder": "Gewitter",
+      "sleet": "Schneeregen",
+      "snow": "Schnee",
+      "heavyRain": "Starkregen",
+      "rain": "Regen",
+      "fog": "Nebel",
+      "partlyCloudy": "Teilweise bewölkt",
+      "cloudy": "Bewölkt",
+      "clear": "Klar"
+    },
+    "html": {
+      "sandboxTitle": "Läuft in einem isolierten Rahmen",
+      "sandboxText": "Der Code hat keinen Zugriff auf die Seite, die Anmeldung der Leser oder Cookies. Embeds, die eigene Cookies oder localStorage brauchen, funktionieren daher eventuell nicht.",
+      "title": "Name",
+      "titleHint": "Für Screenreader",
+      "height": "Höhe (px)",
+      "heightHint": "Anfangswert; der Rahmen passt sich dann dem Inhalt an",
+      "code": "HTML-Code"
+    },
+    "errors": {
+      "ANNOUNCEMENT_OVERLAP": "Widget {n} überschneidet sich mit einer anderen aktiven Ankündigung in derselben Sprache und Zeit.",
+      "SLOT_FULL": "Widget {n}: An einer Stelle sind höchstens 3 aktive Widgets möglich.",
+      "SLOT_KIND": "Widget {n} kann nicht an der gewählten Stelle platziert werden.",
+      "field": "Widget {n}: Bitte das Feld „{field}“ prüfen."
+    },
+    "fields": {
+      "text": "Text",
+      "url": "Link",
+      "label": "Linktext",
+      "endsAt": "Anzeigen bis",
+      "title": "Überschrift",
+      "html": "HTML-Code",
+      "assets": "Was anzeigen",
+      "quote": "Preis in",
+      "name": "Ort",
+      "height": "Höhe",
+      "style": "Stil"
+    }
+  }
+}

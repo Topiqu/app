@@ -11,13 +11,17 @@
       <Sidebar v-model:isOpen="isSidebarOpen" />
       <UDashboardPanel>
         <div class="topiqu-dashboard-scroll min-h-0 flex-1 overflow-y-auto">
+          <WidgetBar v-if="announcement" :announcement />
           <UMain :class="shell === 'dashboard' ? 'h-full min-h-full' : ''"><slot /></UMain>
+          <WidgetSlot v-if="isPublicationSurface" name="FOOTER" class="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8" />
           <Footer v-if="shell !== 'dashboard'" />
         </div>
       </UDashboardPanel>
     </UDashboardGroup>
     <template v-else>
+      <WidgetBar v-if="announcement" :announcement />
       <UMain class="flex min-h-0 flex-1 flex-col"><slot /></UMain>
+      <WidgetSlot v-if="isPublicationSurface" name="FOOTER" class="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8" />
       <Footer />
     </template>
     <template v-if="auth?.user?.role === 'admin'">
@@ -42,6 +46,10 @@ const userListOpen = useState('dashboard-user-list-open', () => false)
 const shell = computed(() => resolvePageShell(route.meta.shell))
 const showDashboard = computed(() => canRenderDashboardShell(auth.value?.user.role, route.meta.dashboardSidebar))
 const isPublicationSurface = computed(() => {
+const { locale } = useI18n()
+const announcement = computed(() =>
+  isPublicationSurface.value ? activeAnnouncement(clientSite.value?.widgets ?? [], locale.value) : null,
+)
   return Boolean(clientSite.value && shell.value === 'publication')
 })
 const publicationStyle = computed(() => {

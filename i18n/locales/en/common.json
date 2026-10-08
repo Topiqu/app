@@ -714,7 +714,8 @@
         "integrations": "Integrations",
         "ai": "AI",
         "billing": "Billing",
-        "members": "Members"
+        "members": "Members",
+        "widgets": "Widgets"
       },
       "softGate": {
         "contentTitle": "You can prepare your content strategy now",

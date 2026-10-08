@@ -14,3 +14,12 @@ export const formatDateInput = (value: DateValue | null | undefined, time: boole
   if (!value) return ''
   return time ? toCalendarDateTime(value).toString().slice(0, 16) : value.toString().slice(0, 10)
 }
+
+/** An ISO instant as the local wall time `AppDateInput` edits, `''` when unset. */
+export const isoToDateInput = (iso: string | null | undefined) => {
+  if (!iso) return ''
+  const date = new Date(iso)
+  return new Date(date.getTime() - date.getTimezoneOffset() * 60_000).toISOString().slice(0, 16)
+}
+
+export const dateInputToIso = (value: string) => (value ? new Date(value).toISOString() : null)

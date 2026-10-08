@@ -714,7 +714,8 @@
         "integrations": "Intégrations",
         "ai": "IA",
         "billing": "Facturation",
-        "members": "Membres"
+        "members": "Membres",
+        "widgets": "Widgets"
       },
       "softGate": {
         "contentTitle": "Vous pouvez déjà préparer votre stratégie de contenu",
