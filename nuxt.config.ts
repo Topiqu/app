@@ -170,8 +170,9 @@ export default defineNuxtConfig({
       dirs: ['server/utils'],
     },
     externals: {
-      // IPX loads this via createRequire; tracing otherwise only copies srvx's Bun entry.
-      traceInclude: ['srvx/node'],
+      // IPX loads srvx/node via createRequire, and tracing alone copies only srvx's Bun entry. Nitro wants a
+      // file path here; a bare specifier is resolved against the project root and fails the build.
+      traceInclude: [createRequire(import.meta.url).resolve('srvx/node')],
       inline: [
         // Match Windows paths too: https://github.com/nuxt/nuxt/issues/36467
         /[\\/]node_modules[\\/]nuxt[\\/]dist[\\/]/,
