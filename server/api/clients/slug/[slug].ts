@@ -1,3 +1,4 @@
+import { publicWidgets } from '~~/shared/utils/widgets'
 import { isManagedDomain } from '~~/shared/utils/domain'
 import { publicClientSiteSelect } from '~~/shared/utils/clientSiteFields'
 
@@ -21,5 +22,5 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, message: 'Blog nenalezen' })
   }
 
-  return clientSite
+  return { ...clientSite, widgets: publicWidgets(clientSite.widgets, clientSite) }
 })

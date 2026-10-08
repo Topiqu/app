@@ -168,12 +168,12 @@ describe('consent integration contracts', () => {
 
     expect(article.match(/<AdSlot/g)).toHaveLength(1)
     expect(article.match(/<AdSenseSlot/g)).toHaveLength(1)
-    expect(article).toContain('<template #sidebar>')
+    expect(article).toContain('<template v-if="sidebarAd" #sidebar>')
     expect(article).toContain('adUnitPath="/article/sidebar"')
     expect(article).toContain('{ viewport: [0, 0], sizes: [] }')
     expect(article).toContain('adProviderFor(clientSite, { marketing: marketingGranted.value')
-    // AdSense throws on the zero-width rail hidden below lg.
-    expect(article).toMatch(/<ClientOnly v-if="sidebarAd === 'adsense'">\s*<AdSenseSlot\s+v-if="isDesktop"/)
+    // Both providers mount only once the separate rail is visible and has width.
+    expect(article).toMatch(/<ClientOnly>\s*<AdSenseSlot\s+v-if="sidebarAd === 'adsense' && isAdDesktop"/)
     expect(source('app/components/AdSlot.vue')).toContain('if (!defined)')
   })
 })

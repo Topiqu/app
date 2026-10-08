@@ -11,18 +11,21 @@
       <Sidebar v-model:isOpen="isSidebarOpen" />
       <UDashboardPanel>
         <div class="topiqu-dashboard-scroll min-h-0 flex-1 overflow-y-auto">
+          <WidgetBar v-if="announcement" :announcement />
           <UMain :class="shell === 'dashboard' ? 'h-full min-h-full' : ''"><slot /></UMain>
+          <WidgetSlot v-if="isPublicationSurface" name="FOOTER" class="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8" />
           <Footer v-if="shell !== 'dashboard'" />
         </div>
       </UDashboardPanel>
     </UDashboardGroup>
     <template v-else>
+      <WidgetBar v-if="announcement" :announcement />
       <UMain class="flex min-h-0 flex-1 flex-col"><slot /></UMain>
+      <WidgetSlot v-if="isPublicationSurface" name="FOOTER" class="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8" />
       <Footer />
     </template>
     <template v-if="auth?.user?.role === 'admin'">
       <TagsCreate v-model="tagsOpen" />
-      <StatsDialog v-model="statsOpen" />
     </template>
     <ClientCreate v-if="auth?.user?.role === 'superadmin'" v-model="clientCreateOpen" />
     <UserList v-if="auth?.user?.role === 'superadmin'" v-model="userListOpen" />
@@ -36,7 +39,6 @@ const route = useRoute()
 const clientSite = await useLiveClientSite()
 const isSidebarOpen = shallowRef<boolean>(false)
 const tagsOpen = useState('dashboard-tags-open', () => false)
-const statsOpen = useState('dashboard-stats-open', () => false)
 const clientCreateOpen = useState('dashboard-client-create-open', () => false)
 const userListOpen = useState('dashboard-user-list-open', () => false)
 const shell = computed(() => resolvePageShell(route.meta.shell))
@@ -44,6 +46,10 @@ const showDashboard = computed(() => canRenderDashboardShell(auth.value?.user.ro
 const isPublicationSurface = computed(() => {
   return Boolean(clientSite.value && shell.value === 'publication')
 })
+const { locale } = useI18n()
+const announcement = computed(() =>
+  isPublicationSurface.value ? activeAnnouncement(clientSite.value?.widgets ?? [], locale.value) : null,
+)
 const publicationStyle = computed(() => {
   if (!isPublicationSurface.value) return undefined
   return tenantThemeStyle(clientSite.value?.theme, clientSite.value?.typographyPreset, {

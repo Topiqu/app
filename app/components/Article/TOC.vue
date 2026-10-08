@@ -40,14 +40,9 @@
     </ClientOnly>
 
     <aside
-      v-if="state.headings.length || $slots.sidebar"
-      class="sticky hidden min-w-0 self-start overflow-y-auto overscroll-contain lg:block"
-      :class="
-        hasDashboardChrome
-          ? 'top-6 max-h-[calc(100dvh-3rem)]'
-          : 'top-[calc(var(--topiqu-header-height)+1.5rem)] max-h-[calc(100dvh-var(--topiqu-header-height)-3rem)]'
-      "
-      :aria-label="String($t(state.headings.length ? 'articles.tableOfContents.title' : 'common.advertisement'))"
+      v-if="state.headings.length"
+      class="sticky top-[var(--article-sticky-top)] hidden max-h-[var(--article-rail-height)] min-w-0 self-start overflow-y-auto overscroll-contain lg:col-start-2 lg:block"
+      :aria-label="String($t('articles.tableOfContents.title'))"
     >
       <div v-if="state.headings.length">
         <h2 class="flex items-center gap-2 text-sm font-semibold text-highlighted">
@@ -123,9 +118,6 @@
           </div>
         </div>
       </div>
-      <div v-if="$slots.sidebar" :class="state.headings.length ? 'mt-3' : ''">
-        <slot name="sidebar" />
-      </div>
     </aside>
   </div>
 </template>
@@ -134,8 +126,6 @@
 import type { SharePlatform } from '~~/generated/zenstack/models'
 
 const state = useArticleScrollState()
-const { data: auth } = useAuth()
-const hasDashboardChrome = computed(() => ['admin', 'superadmin'].includes(auth.value?.user?.role || ''))
 const isMobileOpen = shallowRef(false)
 const reducedMotion = usePreferredReducedMotion()
 const toast = useToast()

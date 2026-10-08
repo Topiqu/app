@@ -1,5 +1,5 @@
-import { createHmac, timingSafeEqual } from 'node:crypto'
 import { authenticator } from 'otplib'
+import { createHmac, timingSafeEqual } from 'node:crypto'
 
 const LOGIN_TTL_MS = 5 * 60 * 1000
 const SETUP_TTL_MS = 10 * 60 * 1000

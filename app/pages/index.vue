@@ -180,6 +180,8 @@
       </Transition>
     </section>
 
+    <WidgetSlot name="HOME_TOP" />
+
     <section v-if="tags.length" class="space-y-5" aria-labelledby="topic-explorer-title">
       <h2 id="topic-explorer-title" class="text-2xl font-bold tracking-tight text-highlighted">
         {{ $t('articles.home.exploreTopics') }}
@@ -231,6 +233,8 @@
     </section>
 
     <HomeSeries v-if="clientSite?.name" :site="clientSite.name" />
+
+    <WidgetSlot name="HOME_MIDDLE" />
 
     <section v-if="showFeed" id="articles" class="space-y-6">
       <div class="flex items-baseline justify-between gap-4 border-b border-default pb-3">
@@ -329,6 +333,8 @@
         </ol>
       </aside>
     </section>
+
+    <WidgetSlot name="HOME_BOTTOM" />
 
     <ClientSocials v-if="clientSite?.id" :clientSiteId="clientSite.id" />
   </div>

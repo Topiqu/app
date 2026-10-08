@@ -88,6 +88,7 @@
     },
     "keywordPlan": {
       "title": "Up next",
+      "topic": "Topic",
       "description": "Automated articles take topics from the top. Pin what you want sooner and skip what you don’t want.",
       "empty": "The plan is built before the next automated article.",
       "volumeUnknown": "unknown",
@@ -108,7 +109,8 @@
       "pinned": "Pinned",
       "unpin": "Unpin {keyword}",
       "skipped": "Skipped topics ({count})",
-      "volumeUnit": "searches/mo"
+      "volumeUnit": "searches/mo",
+      "showAll": "All topics ({count})"
     },
     "keywordResults": {
       "title": "How articles perform",
@@ -151,6 +153,7 @@
     "keywords": {
       "title": "Topics",
       "description": "What people in your field actually search for. Automated articles cover these topics step by step, and we measure where they land on Google.",
+      "waiting": "We measure Google positions 7 days after the first planned article goes live; update suggestions arrive after a month in search.",
       "disabledTitle": "Turn on automated articles",
       "disabledDescription": "The topic plan picks what to write from real search demand, then tracks Google rankings. It works with automated articles.",
       "openSettings": "Open AI settings",
@@ -322,12 +325,15 @@
     "poweredBy": "Made with",
     "breadcrumbs": "Breadcrumbs",
     "navigation": {
-      "publication": "View site",
-      "settings": "Site settings",
+      "publication": "Open site",
+      "settings": "Settings",
       "dashboard": "Dashboard",
-      "media": "Media library",
-      "knowledge": "Knowledge",
-      "keywords": "Topics"
+      "media": "Media",
+      "knowledge": "AI sources",
+      "keywords": "Topic plan",
+      "backlinks": "Backlinks",
+      "stats": "Statistics",
+      "write": "Write article"
     },
     "links": {
       "terms": "Terms of Service",
@@ -713,7 +719,8 @@
         "integrations": "Integrations",
         "ai": "AI",
         "billing": "Billing",
-        "members": "Members"
+        "members": "Members",
+        "widgets": "Widgets"
       },
       "softGate": {
         "contentTitle": "You can prepare your content strategy now",
@@ -1151,12 +1158,13 @@
         }
       },
       "community": {
-        "title": "Comments and GIFs",
+        "title": "Comments and reactions",
         "description": "Control discussion across all articles in this publication.",
         "comments": "Allow comments",
         "commentsHelp": "Turning this off closes comments and replies on every article. Existing comments remain visible. Individual articles can still close their own discussion.",
         "gifs": "Allow GIFs in comments",
-        "gifsHelp": "Turning this off hides existing GIFs and prevents attaching new ones. Comment text remains visible."
+        "gifsHelp": "Turning this off hides existing GIFs and prevents attaching new ones. Comment text remains visible.",
+        "emojiHelp": "Your own images readers can react to comments with."
       },
       "publicationChannels": {
         "title": "Publication channels",

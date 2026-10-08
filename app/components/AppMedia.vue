@@ -86,6 +86,7 @@ const { currentSrc, usingOriginal, handleError, handleLoad } = useImageFallback(
   () => originalSrc,
 )
 const hasLoaded = shallowRef(false)
+const mounted = shallowRef(false)
 const mediaRoot = useTemplateRef<HTMLElement>('mediaRoot')
 const isVisible = useElementVisibility(mediaRoot)
 // The original only shows after the optimized URL failed, so it goes to the browser directly, not through IPX.
@@ -119,12 +120,15 @@ watch(currentSrc, () => {
 // rest of the session. Arm the stall guard only once the image is actually on screen.
 watchEffect(() => {
   clearLoadTimeout()
+  // SSR never loads an image. Starting this timer there poisons later renders with false failures.
+  if (!mounted.value) return
   if (!currentSrc.value || hasLoaded.value) return
   if (!priority && !isVisible.value) return
   loadTimeout = setTimeout(handleMediaError, priority ? 2000 : 4000)
 })
 
 onMounted(() => {
+  mounted.value = true
   const image = mediaRoot.value?.querySelector('img')
   if (!image?.complete) return
   if (image.naturalWidth > 0) handleMediaLoad()

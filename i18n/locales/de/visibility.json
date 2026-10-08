@@ -48,7 +48,8 @@
         "ARTICLE": "Aus einem Artikel",
         "COMMENT": "Von Lesern"
       },
-      "schedule": "Wöchentlich geprüft"
+      "schedule": "Wöchentlich geprüft",
+      "showAll": "Alle anzeigen ({count})"
     },
     "outcome": {
       "UNCHECKED": "Noch nicht geprüft",
@@ -66,13 +67,10 @@
       "response": "Antwort"
     },
     "opportunities": {
-      "title": "Wo KI Sie übersieht",
-      "description": "Fragen, bei denen KI weiterhin andere Websites statt Ihrer zitiert.",
       "update": "Artikel verbessern",
       "create": "Artikel erstellen",
-      "dismiss": "Ausblenden",
-      "evidence": "Ihre Website: {owned}/{samples} · andere Quellen: {external}/{samples}",
-      "domains": "Zitierte Quellen: {domains}"
+      "dismiss": "Empfehlung ausblenden",
+      "citing": "KI zitiert:"
     },
     "domains": {
       "title": "Wer statt Ihnen zitiert wird",

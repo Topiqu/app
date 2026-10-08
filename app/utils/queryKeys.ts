@@ -28,6 +28,9 @@ export const queryKeys = {
     all: ['visibility'] as const,
     overview: ['visibility', 'overview'] as const,
   },
+  widgets: {
+    all: ['widgets'] as const,
+  },
   webhooks: {
     all: ['webhooks'] as const,
   },
@@ -39,5 +42,8 @@ export const queryKeys = {
   },
   contentActions: {
     list: ['content-actions'] as const,
+  },
+  backlinks: {
+    list: ['backlinks'] as const,
   },
 } as const

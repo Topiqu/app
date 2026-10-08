@@ -1,6 +1,6 @@
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
 import { createError } from 'h3'
+import { resolve } from 'node:path'
+import { readFileSync } from 'node:fs'
 import { authenticator } from 'otplib'
 import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'

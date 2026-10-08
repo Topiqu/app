@@ -18,7 +18,7 @@ const EXPIRY_SKEW_SECONDS = 120
 
 let cachedToken: { value: string; expiresAtMs: number } | null = null
 
-export const parseServiceAccountKey = (raw: string): GamServiceAccountKey => {
+const parseServiceAccountKey = (raw: string): GamServiceAccountKey => {
   const trimmed = raw.trim()
   const json = trimmed.startsWith('{') ? trimmed : Buffer.from(trimmed, 'base64').toString('utf8')
 
@@ -41,7 +41,7 @@ export const parseServiceAccountKey = (raw: string): GamServiceAccountKey => {
 
 const base64Url = (input: string): string => Buffer.from(input, 'utf8').toString('base64url')
 
-export const buildAssertion = (key: GamServiceAccountKey, nowSeconds: number): string => {
+const buildAssertion = (key: GamServiceAccountKey, nowSeconds: number): string => {
   const header = base64Url(JSON.stringify({ alg: 'RS256', typ: 'JWT' }))
   const claims = base64Url(
     JSON.stringify({
@@ -90,8 +90,4 @@ export const getGamAccessToken = async (): Promise<string> => {
   }
 
   return cachedToken.value
-}
-
-export const resetGamTokenCache = (): void => {
-  cachedToken = null
 }

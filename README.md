@@ -1,160 +1,105 @@
-<h1 align="center">
-  <a href="https://topiqu.com" target="_blank">
-    <img align="center" src="https://skillicons.dev/icons?i=nuxt,vue,vite,ts,bun,sass,postgres,docker,aws,stripe" /><br/><br/>
-    <span>Topiqu AI Blog</span>
-  </a>
-</h1>
+# Topiqu AI Blog
 
-### **Welcome** to <a href="https://topiqu.com" target="_blank">**Topiqu AI Blog**</a>! 👋
+A multi-tenant publishing platform with an AI-assisted Tiptap editor, article translations, community features, client sites, Stripe billing and AI visibility monitoring.
 
-A modern full-stack TypeScript blogging platform. Topiqu pairs a rich Tiptap-based editor with OpenAI-powered content generation and per-language article translation, real-time SSE notifications, multi-tenant client sites with custom domains, Stripe billing, and a robust permission layer authored in ZenStack.
+## Stack
 
-## ✨ Features
+| Area              | Technology                                                                      |
+| ----------------- | ------------------------------------------------------------------------------- |
+| Application       | Nuxt 4, Vue 3.5, TypeScript                                                     |
+| UI                | Nuxt UI 4, Tailwind CSS 4, Reka UI                                              |
+| State and queries | Pinia, Pinia Colada                                                             |
+| Authentication    | Better Auth, ZenStack adapter, argon2, OTP / 2FA                                |
+| Data              | ZenStack ORM 3, PostgreSQL with pgvector, optional Redis / Valkey cache         |
+| Editor            | Tiptap 3 and custom extensions                                                  |
+| AI                | AI SDK 7, OpenAI Responses API; native search adapters for visibility providers |
+| Billing           | Stripe subscriptions and credit top-ups                                         |
+| Media and email   | AWS S3 / Rekognition / SES, Sharp, MJML 5, PDFKit, Takumi OG images             |
+| Localization      | English, Czech, German and French                                               |
+| Checks            | Vitest, Nuxt Test Utils, jsdom, Playwright, ESLint, Prettier, vue-tsc           |
+| Runtime           | Bun 1.4.2, pinned in package.json, .prototools, CI and Docker                   |
 
-- 📝 **Rich Editor** — Tiptap 3 with custom extensions (`Poll`, `slashCommand`, `indent`), autosave, drafts, and quick release flow
-- 🤖 **AI (OpenAI)** — article generation, content enhancement, sentiment analysis, auto-image suggestions and LinkedIn post generator via `@ai-sdk/openai`; token consumption metered per `ClientSite` plan
-- 🌍 **Article translations** — per-language `ArticleTranslation` sidecar with `OFF` / `MANUAL` / `AUTO` / `HYBRID` modes; HYBRID holds machine translations at `READY` for human review before publishing. Language is a tab in the editor, listings and article pages resolve per locale, and real `hreflang` + per-locale canonicals are emitted once a translation is published
-- 🔔 **Realtime** — Server-Sent Events notification system with an event publisher
-- 🏢 **Multi-tenant client sites** — per-tenant subdomains, custom apex domains with DNS (CNAME) verification, plan-gated white-labeling
-- 💳 **Billing** — Stripe subscriptions (`PRO` / `PREMIUM`) + ad-hoc token top-ups, webhook-driven plan changes, monthly / annual cycles
-- 🔐 **Auth & Security** — `@sidebase/nuxt-auth`, argon2 hashing, OTP / 2FA (`otplib`), `nuxt-security`, DOMPurify, zxcvbn password strength, FingerprintJS, content-checker profanity filter
-- 🛡️ **Row-level access control** — ZenStack policies in `schema.zmodel` enforced server-side via `getEnhancedPrisma(user)`
-- 🌐 **i18n** — Full Czech / English localization (`@nuxtjs/i18n`); Czech-language route slugs
-- 🎨 **Theming** — UnoCSS utility-first, SCSS partials, persisted theme store, custom emojis & branding (plan-gated)
-- 🔎 **SEO** — `@nuxtjs/seo`, dynamic OG images via Takumi, sitemap, schema.org metadata, priority indexing & sourcing per plan
-- 📊 **Analytics & Charts** — Chart.js + vue-chartjs, `nuxt-gtag` (GA4), GAM ad integration, `allowAds` plan gate
-- 📄 **PDF / OG rendering** — no browser runtime: OG images via `@takumi-rs/*` (Rust/WASM) + `nuxt-og-image`, PDF export via `pdfkit`
-- ⚡ **Caching** — Redis cache-aside (`server/utils/cache.ts`) with generation-counter invalidation; degrades gracefully to no caching when unconfigured
-- 🩺 **Observability** — `@sentry/nuxt` error tracking + session replay, ingested by Better Stack
-- 📧 **Transactional Email** — MJML templates rendered and sent via AWS SES
-- ☁️ **AWS** — S3 storage (uploads), Rekognition (image moderation), SES (mail)
-- ⏱️ **Scheduled tasks** — Nitro `tasks/` for community insights, article generation and draining the translation queue (`enableCron` gate)
-- 📱 **PWA** — Installable, offline-capable via `@vite-pwa/nuxt`
-- 🧩 **Headless UI** — `@headlessui/vue` + `@floating-ui/dom` + Tippy.js for accessible overlays, dropdowns, dialogs
-- ... and more
+[MAP.md](./MAP.md) documents the architecture. [CLAUDE.md](./CLAUDE.md) defines project conventions. The [maintenance report](./docs/maintenance-2026-10-08.md) records dependency and model decisions.
 
-## 🧱 Tech Stack
+## Local setup
 
-| Layer            | Technology                                                                               |
-| ---------------- | ---------------------------------------------------------------------------------------- |
-| **Framework**    | [Nuxt 4](https://nuxt.com) (Vue 3.5, Composition API)                                    |
-| **Language**     | TypeScript (strict)                                                                      |
-| **Styling**      | [UnoCSS](https://unocss.dev) + SCSS                                                      |
-| **i18n**         | [`@nuxtjs/i18n`](https://i18n.nuxtjs.org) — `en`, `cs`                                   |
-| **Auth**         | [`@sidebase/nuxt-auth`](https://auth.sidebase.io)                                        |
-| **ORM / Schema** | [ZenStack ORM v3](https://zenstack.dev) (PostgreSQL dialect + access policy)             |
-| **Database**     | PostgreSQL (via Docker Compose)                                                          |
-| **Editor**       | [Tiptap 3](https://tiptap.dev) with custom extensions                                    |
-| **AI**           | [Vercel AI SDK](https://sdk.vercel.ai) + [`@ai-sdk/xai`](https://x.ai) (Grok)            |
-| **Billing**      | [Stripe](https://stripe.com) via `@unlok-co/nuxt-stripe` (subscriptions + token top-ups) |
-| **SEO**          | `@nuxtjs/seo`, `nuxt-og-image`, `nuxt-gtag`                                              |
-| **Cloud**        | AWS (S3, Rekognition, SES), Stripe, Vercel                                               |
-| **Testing**      | [Vitest](https://vitest.dev) + `@nuxt/test-utils` + `happy-dom`                          |
-| **Tooling**      | ESLint, Prettier, vue-tsc                                                                |
+Install Bun 1.4.2, Node 24.21.0 and Docker. The runtime versions are pinned in `.prototools` and `.node-version`; Node is needed for Vue type checking and browser tests. Copy [.env.example](./.env.example) to `.env` and configure the services needed for your work. `bun run dev` starts Nuxt; start the local database and cache explicitly.
 
-## 📂 Project Structure
-
-```
-app/         Nuxt app layer (pages, components, composables, stores, layouts)
-server/      Nitro server (API routes, scheduled tasks, utils)
-shared/      Cross-cutting code (runtime Zod schemas, utils) shared by app & server
-prisma/      ZenStack source (schema.zmodel) and SQL migrations
-generated/   Ignored ZenStack client types and schema metadata
-extensions/  Custom Tiptap editor extensions
-emails/      MJML email templates
-scripts/     Dev-only verification scripts (ai:smoke, db:seed-tokens)
-i18n/        Locale files (en, cs)
-types/       Ambient TS types
-public/      Static assets
+```sh
+bun install --frozen-lockfile
+bun run zenstack:generate
+bun run db:up
+bun run db:migrate:deploy
+bun run db:seed
+bun --bun run dev
 ```
 
-See [`MAP.md`](./MAP.md) for the complete architecture reference — it is the single source of truth.
+ZenStack generates ignored schema metadata and TypeScript types in `generated/zenstack/`. The application uses ZenStack ORM directly; Prisma is an internal migration dependency of the ZenStack CLI.
 
-## 🛠️ Installation
-
-**Requirements**
-
-- 📦 [Bun](https://bun.sh) (recommended) — Node-compatible package manager & runtime
-- 🐳 [Docker](https://www.docker.com) — used by `predev` to spin up PostgreSQL
-- 🔑 A configured `.env` — copy [`.env.example`](./.env.example) and fill it in (Auth, AWS, Stripe, AI keys, etc.)
-
-**Install & run in dev mode**
-
-```bash
-bun install            # installs deps + runs `nuxt prepare`
-bun zenstack:generate  # generates the ZenStack client schema and types
-bun db:migrate:deploy  # applies migrations to the DB
-bun dev                # spins up Postgres via docker, starts Nuxt dev server
+```sh
+bun run db:down    # stop local services
+bun run db:reset   # delete local database/cache volumes and recreate them
+bun run db:fresh   # reset, migrate and seed
 ```
 
-**Database management**
+## Verification
 
-```bash
-bun db:up      # start Postgres container
-bun db:down    # stop Postgres container
-bun db:reset   # wipe volumes & restart fresh
-bun db:fresh   # reset + migrate + seed
-bun db:seed    # seed initial data
+Generate the ZenStack artifacts before checking a fresh checkout. Use `bun run test` to run Vitest.
+
+```sh
+bun run zenstack:generate
+bun run lint
+bun run typecheck
+bun run openapi:check
+bun run test
+bun run test:watch
+bun run test:coverage
+bun run prettier
 ```
 
-**Dev verification scripts** — see [`MAP.md`](./MAP.md) §1
+PostgreSQL integration and browser tests require a separate disposable database in `TEST_DATABASE_URL`; they can apply migrations and clear test data. Never point this variable at a development or production database you want to keep.
 
-```bash
-bun ai:smoke        # hit OpenAI directly with the ids in modelRegistry.ts (no DB, no dev server)
-bun db:seed-tokens  # top a local ClientSite up to 50k tokens so the generate-article cron picks it up
+```sh
+bun x --no-install playwright install chromium webkit
+bun run test:e2e
+bun run test:e2e:release
 ```
 
-**Build**
+Live AI checks call provider APIs and consume credits. Model IDs are centralized in `server/utils/ai/modelRegistry.ts`.
 
-```bash
-bun run build    # server build (ZenStack generate + Nuxt build)
-bun build:docker # container build (migrations run separately during release)
-bun generate    # static site generation
-bun preview     # preview production build
+```sh
+bun run ai:smoke
+bun run eval:ai
+bun run knowledge:eval
 ```
 
-## 🧪 Testing
+## Production build
 
-Run `bun zenstack:generate` first on a fresh checkout — the app imports the generated ZenStack
-schema and types. Most tests need no database; PostgreSQL integration tests use `TEST_DATABASE_URL`.
-
-```bash
-bun test           # run vitest once
-bun test:watch     # watch mode
-bun test:coverage  # coverage report (v8)
-bun typecheck      # vue-tsc strict typecheck
+```sh
+bun --bun run build    # generate ZenStack artifacts, then build Nuxt
+bun run build:docker  # alias for the same build
+bun --bun run preview
+bun run release       # apply database migrations to DATABASE_URL
 ```
 
-## 🧹 Linting & Formatting
+The Dockerfile uses the same pinned Bun version and installs from the frozen lockfile, including the compatibility patch in `patches/`. Its prerelease stage currently runs `bun release` with the supplied `DATABASE_URL` before building. The final image contains only `.output` and starts `server/index.mjs` with Bun. CI applies migrations to its disposable database before the production browser smoke tests.
 
-ESLint (`@nuxt/eslint`) + Prettier are enforced project-wide.
+When invoking Nuxt through Node instead of Bun, use a supported Node version (`^22.21.0`, `^24.11.0` or `>=26.0.0`).
 
-```bash
-bun lint           # check
-bun lint:fix       # auto-fix
-bun prettier       # check formatting
-bun prettier:fix   # apply formatting
-bun fmt            # lint:fix + prettier:fix
+## Source layout
+
+```text
+app/                 Pages, components, composables, stores and styles
+server/              Nitro APIs, routes, tasks and server utilities
+shared/              Shared schemas, types and utilities
+prisma/              ZenStack source schema and SQL migrations
+generated/zenstack/  Generated ORM schema and types (ignored)
+extensions/          Custom Tiptap extensions
+emails/              MJML templates and translations
+i18n/                Application translations for en, cs, de and fr
+scripts/             Verification, backfill and maintenance commands
+tests/               Unit, server, database, evaluation and browser tests
+patches/             Reproducible dependency compatibility patches
 ```
 
-## 🤝 Conventions
-
-- Follow the rules in [`CLAUDE.md`](./CLAUDE.md) — Staff-Level Nuxt 4 / Vue 3.5 standards.
-- Every structural change **must** be reflected in [`MAP.md`](./MAP.md).
-- All user-facing strings **must** use `$t('key')` — no raw text in templates.
-- Prefer Vue 3.5 macros (`defineModel`, `useTemplateRef`, …) and VueUse composables over manual `ref()` / `reactive()`.
-- **Vue SFC order:** `<template>` first, then `<script setup lang="ts">`, then `<style>` (avoid `<style>` blocks whenever possible — prefer pure UnoCSS).
-- **Server API:** prefer the ZenStack-enhanced client (`getEnhancedPrisma(user)`) over raw `prisma` so access policies from `schema.zmodel` are enforced — fall back to raw `prisma` only when policies must be bypassed intentionally.
-- **Error responses:** use `createError({ statusCode, message })` with i18n keys via `useServerI18n` where applicable.
-- **Naming & comments:** name things after what they literally are (mirror the domain vocabulary), skip ceremony words (`enforce…Invariant`, `…Handler`, `…Manager`), and keep a comment only when it says something the code cannot. Architectural prose belongs in `MAP.md`.
-- **Don't "modernize" without reason** — keep changes terse and scoped to the task; refactors require explicit approval.
-- Significant changes should be covered by Vitest tests.
-
----
-
-<p align="center">
-    <span>Made with ❤️ by</span>
-    <a href="https://github.com/bigjohnn1" target="_blank">@bigjohnn1</a>
-    <span>&</span>
-    <a href="https://github.com/germondai" target="_blank">@germondai</a>
-</p>
+Use translated UI strings, Vue Composition API with `script setup` and TypeScript, and template-first SFCs. Prefer Nuxt UI components and Tailwind utilities. Update `MAP.md` when changing the structure or adding functionality.

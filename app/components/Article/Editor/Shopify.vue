@@ -23,7 +23,9 @@ const ready = computed(
   () => visible.value && data.value?.connection?.status === 'CONNECTED' && Boolean(data.value.connection.blogId),
 )
 const pending = computed(() => ['QUEUED', 'PUBLISHING'].includes(publication.value?.status || ''))
-const canPost = computed(() => ready.value && !busy.value && !pending.value && !loadFailed.value && !loadingPublication.value)
+const canPost = computed(
+  () => ready.value && !busy.value && !pending.value && !loadFailed.value && !loadingPublication.value,
+)
 const canSend = computed(() => canPost.value && Boolean(props.articleId) && !props.disabled)
 const color = computed(() => {
   const status = publication.value?.status
@@ -171,7 +173,9 @@ defineExpose({ ready, publication, blog: computed(() => data.value?.connection?.
           />
           <UAlert v-if="loadFailed" color="error" :title="$t('common.shopify.actionFailed')">
             <template #actions>
-              <UButton color="neutral" variant="soft" @click="loadPublication">{{ $t('common.shopify.retry') }}</UButton>
+              <UButton color="neutral" variant="soft" @click="loadPublication">{{
+                $t('common.shopify.retry')
+              }}</UButton>
             </template>
           </UAlert>
           <div class="flex flex-wrap items-center gap-2">
@@ -201,7 +205,7 @@ defineExpose({ ready, publication, blog: computed(() => data.value?.connection?.
             </template>
             <UButton
               v-if="publication?.shopifyArticleId"
-              :to="`https://${data?.connection?.shop}/admin/articles/${publication.shopifyArticleId.split('/').at(-1)}`"
+              :to="`https://${data?.connection?.shop}/admin/articles/${publication?.shopifyArticleId?.split('/').at(-1)}`"
               target="_blank"
               rel="noopener noreferrer"
               color="neutral"

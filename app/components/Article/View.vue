@@ -1,5 +1,18 @@
 <template>
-  <div class="mx-auto grid max-w-[var(--topiqu-article-width)] gap-10 lg:grid-cols-[minmax(0,1fr)_15rem]">
+  <div
+    class="mx-auto grid max-w-[var(--topiqu-article-width)] gap-10 lg:grid-cols-[minmax(0,1fr)_15rem]"
+    :class="
+      $slots.sidebar
+        ? 'xl:max-w-[calc(var(--topiqu-article-width)+12.5rem)] xl:grid-cols-[minmax(0,1fr)_15rem_10rem]'
+        : ''
+    "
+    :style="{
+      '--article-sticky-top': hasDashboardChrome ? '1.5rem' : 'calc(var(--topiqu-header-height) + 1.5rem)',
+      '--article-rail-height': hasDashboardChrome
+        ? 'calc(100dvh - 3rem)'
+        : 'calc(100dvh - var(--topiqu-header-height) - 3rem)',
+    }"
+  >
     <div class="article-reading-column flex min-w-0 flex-col gap-8 pt-4">
       <slot name="top" />
 
@@ -85,11 +98,15 @@
       <slot name="comments" />
     </div>
 
-    <ArticleTOC @share="emit('share', $event)">
-      <template v-if="$slots.sidebar" #sidebar>
-        <slot name="sidebar" />
-      </template>
-    </ArticleTOC>
+    <ArticleTOC @share="emit('share', $event)" />
+
+    <aside
+      v-if="$slots.sidebar"
+      class="sticky top-[var(--article-sticky-top)] hidden min-w-0 self-start xl:col-start-3 xl:block"
+      :aria-label="String($t('common.advertisement'))"
+    >
+      <slot name="sidebar" />
+    </aside>
   </div>
 </template>
 
@@ -152,6 +169,8 @@ const { article, discloseAi = false } = defineProps<{
 const emit = defineEmits<{ follow: []; share: [platform: SharePlatform] }>()
 
 const localePath = useLocalePath()
+const { data: auth } = useAuth()
+const hasDashboardChrome = computed(() => ['admin', 'superadmin'].includes(auth.value?.user?.role || ''))
 const sourcesOpen = shallowRef(true)
 const sources = computed(() => article.sources.filter((source) => source.trim()))
 

@@ -88,6 +88,7 @@
     },
     "keywordPlan": {
       "title": "Další na řadě",
+      "topic": "Téma",
       "description": "Automatické články berou témata shora. Připněte, co chcete dřív, a přeskočte, co nechcete.",
       "empty": "Plán se sestaví před dalším automatickým článkem.",
       "volumeUnknown": "neznámá",
@@ -108,7 +109,8 @@
       "pinned": "Připnuto",
       "unpin": "Odepnout {keyword}",
       "skipped": "Přeskočená témata ({count})",
-      "volumeUnit": "hledání/měs."
+      "volumeUnit": "hledání/měs.",
+      "showAll": "Všechna témata ({count})"
     },
     "keywordResults": {
       "title": "Jak si články vedou",
@@ -151,6 +153,7 @@
     "keywords": {
       "title": "Témata",
       "description": "O čem lidé ve vašem oboru opravdu hledají. Automatické články tato témata postupně pokrývají a my měříme, kde se v Googlu umístí.",
+      "waiting": "Pozice v Googlu změříme 7 dní po vydání prvního článku z plánu, návrhy úprav přibudou po měsíci ve vyhledávání.",
       "disabledTitle": "Zapněte automatické články",
       "disabledDescription": "Plán témat vybírá, o čem psát, podle skutečné hledanosti a pak měří pozice v Googlu. Pracuje s automatickými články.",
       "openSettings": "Otevřít nastavení AI",
@@ -322,12 +325,15 @@
     "poweredBy": "Vytvořeno pomocí",
     "breadcrumbs": "Drobečková navigace",
     "navigation": {
-      "publication": "Zobrazit web",
-      "settings": "Nastavení webu",
+      "publication": "Otevřít web",
+      "settings": "Nastavení",
       "dashboard": "Přehled",
-      "media": "Knihovna médií",
-      "knowledge": "Znalosti",
-      "keywords": "Témata"
+      "media": "Média",
+      "knowledge": "Podklady pro AI",
+      "keywords": "Plán témat",
+      "backlinks": "Zpětné odkazy",
+      "stats": "Statistiky",
+      "write": "Napsat článek"
     },
     "links": {
       "terms": "Obchodní podmínky",
@@ -713,7 +719,8 @@
         "integrations": "Integrace",
         "ai": "AI",
         "billing": "Fakturace",
-        "members": "Členové"
+        "members": "Členové",
+        "widgets": "Widgety"
       },
       "softGate": {
         "contentTitle": "Obsahovou strategii si můžete připravit už nyní",
@@ -1151,12 +1158,13 @@
         }
       },
       "community": {
-        "title": "Komentáře a GIFy",
+        "title": "Komentáře a reakce",
         "description": "Řiďte diskuzi pod všemi články této publikace.",
         "comments": "Povolit komentáře",
         "commentsHelp": "Vypnutím uzavřete komentáře i odpovědi pod všemi články. Stávající komentáře zůstanou viditelné. Jednotlivé články mohou mít diskuzi uzavřenou samostatně.",
         "gifs": "Povolit GIFy v komentářích",
-        "gifsHelp": "Vypnutím skryjete dosavadní GIFy a zabráníte přidávání nových. Text komentářů zůstane viditelný."
+        "gifsHelp": "Vypnutím skryjete dosavadní GIFy a zabráníte přidávání nových. Text komentářů zůstane viditelný.",
+        "emojiHelp": "Vlastní obrázky, kterými můžou čtenáři reagovat na komentáře."
       },
       "publicationChannels": {
         "title": "Publikační kanály",

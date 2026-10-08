@@ -1,0 +1,158 @@
+{
+  "widgets": {
+    "title": "Widgets",
+    "description": "Announcements, calls to action, rates, weather and your own content in chosen places on your blog.",
+    "empty": "No widgets yet.",
+    "item": "Widget {n}: {kind}",
+    "add": "Add widget",
+    "preview": "Preview",
+    "hidden": "Hidden outside your plan",
+    "slot": "Placement",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "active": "Show",
+    "languages": "Languages",
+    "languagesHint": "None selected means every language of the site",
+    "startsAt": "Show from",
+    "endsAt": "Show until",
+    "optional": "Optional",
+    "tone": "Color",
+    "tones": {
+      "info": "Neutral",
+      "accent": "Brand color",
+      "warning": "Warning"
+    },
+    "link": {
+      "url": "Link",
+      "label": "Link text",
+      "hint": "https://… or a path on your site, e.g. /en/articles/…"
+    },
+    "kinds": {
+      "ANNOUNCEMENT": "Announcement",
+      "DIVIDER": "Section divider",
+      "CTA": "Call to action",
+      "PRICE": "Rates and prices",
+      "WEATHER": "Weather",
+      "HTML": "Custom HTML"
+    },
+    "slots": {
+      "BAR": "Top bar",
+      "HOME_TOP": "Homepage – below the intro",
+      "HOME_MIDDLE": "Homepage – before articles",
+      "HOME_BOTTOM": "Homepage – bottom",
+      "ARTICLE_END": "Article – below the text",
+      "FOOTER": "Whole site – above the footer"
+    },
+    "locked": {
+      "plan": "Available from the Pro plan",
+      "domain": "Requires a verified own domain"
+    },
+    "gallery": {
+      "title": "Add widget",
+      "description": "Pick a starting point. Everything stays editable."
+    },
+    "presets": {
+      "announcement": { "name": "Announcement", "hint": "A bar above the content for news and offers" },
+      "dividerLine": { "name": "Divider – line", "hint": "A subtle line between sections" },
+      "dividerDots": { "name": "Divider – dots", "hint": "A dotted line" },
+      "dividerWave": { "name": "Divider – wave", "hint": "A wave in your brand color" },
+      "ctaNewsletter": {
+        "name": "Newsletter",
+        "hint": "An invitation to subscribe",
+        "title": "Don't miss the next articles",
+        "text": "News and tips now and then, straight to your inbox.",
+        "button": "Subscribe"
+      },
+      "ctaContact": {
+        "name": "Contact",
+        "hint": "A prompt to get in touch",
+        "title": "Need a hand with something?",
+        "text": "Write to us and we'll get back to you soon.",
+        "button": "Contact us"
+      },
+      "priceBitcoin": { "name": "Bitcoin", "hint": "The current bitcoin price" },
+      "priceCrypto": { "name": "Cryptocurrencies", "hint": "Bitcoin, Ethereum and Solana" },
+      "priceFiat": { "name": "Exchange rates", "hint": "Euro, dollar, pound, zloty" },
+      "weather": { "name": "Weather", "hint": "A forecast for your city" },
+      "html": { "name": "Custom HTML", "hint": "An embed code, a form or your own content" }
+    },
+    "announcement": {
+      "label": "Announcement",
+      "close": "Close announcement",
+      "text": "Text",
+      "dismissible": "Readers can close it",
+      "placeholder": "Your announcement text"
+    },
+    "divider": {
+      "style": "Style",
+      "label": "Label",
+      "styles": {
+        "line": "Line",
+        "dots": "Dots",
+        "wave": "Wave",
+        "space": "Space only"
+      }
+    },
+    "cta": {
+      "title": "Heading",
+      "text": "Text",
+      "button": "Button text",
+      "image": "Image",
+      "pickImage": "Choose image",
+      "changeImage": "Change image",
+      "removeImage": "Remove image"
+    },
+    "price": {
+      "label": "Rates and prices",
+      "source": "Rates: ECB, crypto: Coinbase · updated",
+      "assets": "What to show",
+      "assetsHint": "Up to 6 items",
+      "quote": "Price in"
+    },
+    "weather": {
+      "source": "Weather data: MET Norway",
+      "place": "Place",
+      "placeHint": "Search for a city",
+      "search": "Search for a city…",
+      "days": "Days",
+      "attribution": "Place search: © OpenStreetMap. Forecast: MET Norway.",
+      "thunder": "Thunderstorms",
+      "sleet": "Sleet",
+      "snow": "Snow",
+      "heavyRain": "Heavy rain",
+      "rain": "Rain",
+      "fog": "Fog",
+      "partlyCloudy": "Partly cloudy",
+      "cloudy": "Cloudy",
+      "clear": "Clear"
+    },
+    "html": {
+      "sandboxTitle": "Runs in an isolated frame",
+      "sandboxText": "The code cannot reach the page, readers' sign-in or cookies. Embeds that need their own cookies or localStorage may therefore not work.",
+      "title": "Name",
+      "titleHint": "For screen readers",
+      "height": "Height (px)",
+      "heightHint": "Initial; the frame then fits its content",
+      "code": "HTML code"
+    },
+    "errors": {
+      "ANNOUNCEMENT_OVERLAP": "Widget {n} overlaps another active announcement in the same language and time.",
+      "SLOT_FULL": "Widget {n}: one placement can hold at most 3 active widgets.",
+      "SLOT_KIND": "Widget {n} cannot go in the chosen placement.",
+      "field": "Widget {n}: check the “{field}” field."
+    },
+    "fields": {
+      "text": "Text",
+      "url": "Link",
+      "label": "Link text",
+      "endsAt": "Show until",
+      "title": "Heading",
+      "html": "HTML code",
+      "assets": "What to show",
+      "quote": "Price in",
+      "name": "Place",
+      "height": "Height",
+      "style": "Style"
+    }
+  }
+}

@@ -31,6 +31,9 @@
           {{ $t('common.labels.filters') }}
           <UBadge v-if="activeFilterCount" color="primary" variant="solid">{{ activeFilterCount }}</UBadge>
         </UButton>
+        <UButton class="shrink-0" color="neutral" variant="soft" icon="mdi:tag-multiple-outline" @click="tagsOpen = true">
+          {{ $t('articles.tags.manageTags') }}
+        </UButton>
         <div v-if="rows.length" class="shrink-0">
           <Exports :articles="rows" />
         </div>
@@ -294,6 +297,7 @@ const route = useRoute()
 const toast = useToast()
 const { invalidateArticleLists, invalidateArticlesAndStats } = useCacheInvalidation()
 const confirm = useConfirm()
+const tagsOpen = useState('dashboard-tags-open', () => false)
 const localePath = useLocalePath()
 const { data: clientSite } = await useClientSiteStatus()
 const sourceLanguage = (article: ArticleWithDetails): Language => article.language ?? clientSite.value?.language ?? 'en'

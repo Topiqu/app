@@ -2,6 +2,8 @@
   "emoji": {
     "manage": "Vlastní emoji",
     "create": "Vytvořit emoji",
+    "addCustom": "Přidat vlastní",
+    "manageAction": "Spravovat emoji",
     "createMany": "Přidat emoji ({count})",
     "shortcodePlaceholder": "např. úsměv",
     "addTitle": "Přidat nové emoji",

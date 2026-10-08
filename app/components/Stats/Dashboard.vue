@@ -1,22 +1,7 @@
 <template>
-  <UModal
-    v-model:open="open"
-    :title="$t('stats.title')"
-    :ui="{
-      content:
-        'stats-dialog flex max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-none flex-col max-sm:size-full max-sm:max-h-none max-sm:rounded-none sm:w-[min(72rem,calc(100vw-3rem))]',
-      header: 'shrink-0',
-      body: 'min-h-0 flex-1 overflow-y-auto p-5 sm:p-6',
-      footer: 'shrink-0',
-    }"
-  >
-    <template #default="actions">
-      <slot v-bind="actions" />
-    </template>
-
-    <template #header="{ close }">
-      <div class="flex w-full min-w-0 items-center justify-between gap-3">
-        <h2 class="truncate text-lg font-semibold text-highlighted">{{ $t('stats.title') }}</h2>
+  <div class="space-y-6">
+    <header class="flex w-full min-w-0 items-center justify-between gap-3">
+        <h1 class="truncate text-2xl font-bold tracking-tight text-highlighted">{{ $t('stats.title') }}</h1>
         <div class="flex items-center gap-2">
           <USelect
             v-model="range"
@@ -28,18 +13,17 @@
             size="sm"
           />
           <UButton
-            icon="mdi:close"
             color="neutral"
-            variant="ghost"
-            square
-            :aria-label="$t('common.close')"
-            @click="close"
+            variant="soft"
+            icon="mdi:refresh"
+            :loading="isRefreshing"
+            :aria-label="$t('common.messages.retry')"
+            @click="refetch()"
           />
         </div>
-      </div>
-    </template>
+    </header>
 
-    <template #body>
+    <section>
       <div v-if="pending" class="space-y-8" :aria-label="$t('stats.loading')" aria-busy="true">
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-4">
           <div v-for="i in 4" :key="i" class="space-y-2">
@@ -91,9 +75,7 @@
               {{ $t('stats.upgradePrompt.description') }}
             </p>
           </div>
-          <!-- Closing first, the way TrialEnded/TrialExpired do it — the dialog is not dismissed
-               by navigation and would otherwise sit on top of the billing tab it just opened. -->
-          <UButton :to="localePath({ name: 'settings', query: { tab: 'billing' } })" @click="open = false">
+          <UButton :to="localePath({ name: 'settings', query: { tab: 'billing' } })">
             {{ $t('stats.upgradePrompt.button') }}
           </UButton>
         </div>
@@ -434,27 +416,12 @@
           {{ $t('stats.charts.trackingSince', { date: formatDate(stats.trackingSince) }) }}
         </p>
       </div>
-    </template>
+    </section>
 
-    <template #footer="{ close }">
-      <div class="flex w-full items-center justify-between gap-4">
-        <p v-if="stats.generatedAt" class="text-xs text-neutral-400 dark:text-neutral-500">
-          {{ $t('stats.updatedAt') }} <NuxtTime :datetime="stats.generatedAt" timeStyle="short" :locale />
-        </p>
-        <div class="ml-auto flex items-center gap-2">
-          <UButton
-            color="neutral"
-            variant="soft"
-            icon="mdi:refresh"
-            :loading="isRefreshing"
-            :aria="$t('common.messages.retry')"
-            @click="refetch()"
-          />
-          <UButton size="lg" color="neutral" variant="soft" @click="close">{{ $t('common.close') }}</UButton>
-        </div>
-      </div>
-    </template>
-  </UModal>
+    <p v-if="stats.generatedAt" class="text-xs text-neutral-400 dark:text-neutral-500">
+      {{ $t('stats.updatedAt') }} <NuxtTime :datetime="stats.generatedAt" timeStyle="short" :locale />
+    </p>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -471,7 +438,6 @@ type CommunityInsight = InternalApi['/api/clients/sentiment']['get']
 // rather than restating the server's constant and drifting from it.
 const COLLAPSED_TAGS = 3
 
-const open = defineModel<boolean>()
 const { data: authData } = useAuth()
 const { locale, t } = useI18n()
 const localePath = useLocalePath()
@@ -498,7 +464,6 @@ const {
 } = useQuery({
   key: () => [...queryKeys.stats.dashboard, range.value],
   query: () => requestFetch<DashboardStats>('/api/stats/dashboard', { query: { range: range.value } }),
-  enabled: () => !!open.value,
 })
 
 const loadFailed = computed(() => !!error.value && !dashboard.value)
@@ -506,7 +471,7 @@ const loadFailed = computed(() => !!error.value && !dashboard.value)
 const { data: rawInsight } = useQuery({
   key: () => queryKeys.stats.sentiment,
   query: () => requestFetch<CommunityInsight>('/api/clients/sentiment'),
-  enabled: () => !!open.value && !isBasicPlan.value,
+  enabled: () => !isBasicPlan.value,
 })
 
 // `toLocaleString()` with no argument follows the browser locale, not the app's — a Czech UI on a

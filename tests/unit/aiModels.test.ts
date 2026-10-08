@@ -4,6 +4,7 @@ import { imageExtension } from '../../server/utils/ai/image'
 import {
   AI_IMAGE_MODELS,
   AI_MODELS,
+  AI_VISIBILITY_MODELS,
   aiImageModelId,
   aiImageModelProvider,
   aiModelId,
@@ -11,6 +12,10 @@ import {
 } from '../../server/utils/ai/modelRegistry'
 
 const ALL_ENTRIES = [...Object.entries(AI_MODELS), ...Object.entries(AI_IMAGE_MODELS)]
+const ACTIVE_MODEL_IDS = [
+  ...ALL_ENTRIES.map(([task, { id }]) => [task, id] as const),
+  ...Object.entries(AI_VISIBILITY_MODELS),
+]
 
 const RETIRED_MODEL_IDS = [
   'grok-4-1-fast',
@@ -30,13 +35,13 @@ const RETIRED_MODEL_PATTERNS = [/^imagen-/]
 
 describe('AI model registry', () => {
   it('never points a task at a retired xAI model', () => {
-    for (const [task, { id }] of ALL_ENTRIES) {
+    for (const [task, id] of ACTIVE_MODEL_IDS) {
       expect(RETIRED_MODEL_IDS, `task "${task}" uses retired model "${id}"`).not.toContain(id)
     }
   })
 
   it('never points a task at a model Google is retiring on 2026-08-17', () => {
-    for (const [task, { id }] of ALL_ENTRIES) {
+    for (const [task, id] of ACTIVE_MODEL_IDS) {
       for (const pattern of RETIRED_MODEL_PATTERNS) {
         expect(pattern.test(id), `task "${task}" uses retired model "${id}"`).toBe(false)
       }
@@ -86,16 +91,24 @@ describe('AI model registry', () => {
       'articleEditor',
       'linkedinPost',
       'factCheck',
+      'topicScope',
+      'keywordOpportunity',
+      'backlinkMatch',
     ] as const) {
       expect(aiModelId(task), task).toBe('gpt-5.6-luna')
     }
     for (const task of [
       'translation',
       'promptEnhance',
+      'textEdit',
       'sentiment',
       'communityInsight',
       'visibility',
+      'visibilityPrompts',
       'knowledgeSelect',
+      'articleLinks',
+      'keywordSeeds',
+      'backlinkOutreach',
     ] as const) {
       expect(aiModelId(task), task).toBe('gpt-6-luna')
     }

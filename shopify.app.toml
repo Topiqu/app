@@ -1,5 +1,5 @@
 # Shopify app configuration, released with `shopify app deploy`. A deploy replaces the whole
-# Dev Dashboard config, so keep scopes in sync with SHOPIFY_SCOPES in server/utils/shopify/config.ts.
+# Dev Dashboard config. Scope declarations below are the source of truth for app releases.
 client_id = "efd8f683d6a61ef92d7c635c2ea6bcd5"
 name = "Topiqu"
 application_url = "https://app.topiqu.com/shopify"

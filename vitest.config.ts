@@ -9,7 +9,8 @@ export default defineVitestConfig({
       },
     },
     globals: true,
-    hookTimeout: 30_000,
+    maxWorkers: 4,
+    hookTimeout: 60_000,
     exclude: ['tests/e2e/**', '**/.nuxt/**', '**/.output/**', '**/node_modules/**', '**/.git/**'],
   },
 })

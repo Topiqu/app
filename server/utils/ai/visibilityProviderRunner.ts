@@ -10,8 +10,8 @@ import type {
   VisibilitySource,
 } from './visibilityProviderParsing'
 
-import { aiModelId } from './modelRegistry'
 import { aiModel, aiWebSearchTool } from './models'
+import { AI_VISIBILITY_MODELS } from './modelRegistry'
 import {
   parseAnthropicResult,
   parseGoogleResult,
@@ -38,24 +38,15 @@ export type VisibilityProviderConfig = {
 const SYSTEM_PROMPT =
   'Answer the user query naturally and impartially as an AI search assistant. Search the live web before answering. Do not favor or suppress any named brand or domain. Cite the sources that support the answer. Keep it under 250 words, as an AI search answer would be.'
 
-const MODELS = {
-  ANTHROPIC: 'claude-sonnet-5',
-  GOOGLE: 'gemini-3.8-flash',
-  META: 'muse-spark-1.3',
-  MISTRAL: 'mistral-medium-latest',
-  OPENAI: aiModelId('visibility'),
-  XAI: 'grok-4.6',
-} as const satisfies Record<AiVisibilityProvider, string>
-
 const providerCandidates = (): VisibilityProviderConfig[] => {
   const config = useRuntimeConfig()
   return [
-    { provider: 'OPENAI', model: MODELS.OPENAI, apiKey: config.openAi.apiKey || '' },
-    { provider: 'ANTHROPIC', model: MODELS.ANTHROPIC, apiKey: config.anthropic.apiKey || '' },
-    { provider: 'XAI', model: MODELS.XAI, apiKey: config.xai.apiKey || '' },
-    { provider: 'GOOGLE', model: MODELS.GOOGLE, apiKey: config.googleGenerativeAi.apiKey || '' },
-    { provider: 'META', model: MODELS.META, apiKey: config.metaModel.apiKey || '' },
-    { provider: 'MISTRAL', model: MODELS.MISTRAL, apiKey: config.mistral.apiKey || '' },
+    { provider: 'OPENAI', model: AI_VISIBILITY_MODELS.OPENAI, apiKey: config.openAi.apiKey || '' },
+    { provider: 'ANTHROPIC', model: AI_VISIBILITY_MODELS.ANTHROPIC, apiKey: config.anthropic.apiKey || '' },
+    { provider: 'XAI', model: AI_VISIBILITY_MODELS.XAI, apiKey: config.xai.apiKey || '' },
+    { provider: 'GOOGLE', model: AI_VISIBILITY_MODELS.GOOGLE, apiKey: config.googleGenerativeAi.apiKey || '' },
+    { provider: 'META', model: AI_VISIBILITY_MODELS.META, apiKey: config.metaModel.apiKey || '' },
+    { provider: 'MISTRAL', model: AI_VISIBILITY_MODELS.MISTRAL, apiKey: config.mistral.apiKey || '' },
   ]
 }
 

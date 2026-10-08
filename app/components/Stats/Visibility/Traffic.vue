@@ -19,9 +19,9 @@ const number = (value: number) => new Intl.NumberFormat(locale.value).format(val
       </summary>
       <div
         v-if="referrals.byChannel.length || crawlers.byBot.length"
-        class="grid divide-y divide-default md:grid-cols-2 md:divide-x md:divide-y-0"
+        class="grid divide-y divide-default md:grid-cols-2 md:divide-x md:divide-y-0 lg:grid-cols-1 lg:divide-x-0 lg:divide-y"
       >
-        <div class="py-3 md:pr-5 md:last:pl-5 md:last:pr-0">
+        <div class="py-3 md:pr-5 md:last:pl-5 md:last:pr-0 lg:px-0 lg:last:pl-0">
           <h3 class="text-sm font-medium text-muted">{{ $t('visibility.traffic.referrals') }}</h3>
           <dl v-if="referrals.byChannel.length" class="mt-2 divide-y divide-default">
             <div
@@ -35,7 +35,7 @@ const number = (value: number) => new Intl.NumberFormat(locale.value).format(val
           </dl>
           <p v-else class="mt-2 text-sm text-muted">{{ $t('visibility.traffic.none') }}</p>
         </div>
-        <div class="py-3 md:pr-5 md:last:pl-5 md:last:pr-0">
+        <div class="py-3 md:pr-5 md:last:pl-5 md:last:pr-0 lg:px-0 lg:last:pl-0">
           <h3 class="text-sm font-medium text-muted">{{ $t('visibility.traffic.crawlers') }}</h3>
           <dl v-if="crawlers.byBot.length" class="mt-2 divide-y divide-default">
             <div v-for="bot in crawlers.byBot" :key="bot.bot" class="flex items-center justify-between gap-4 py-2.5">

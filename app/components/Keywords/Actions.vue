@@ -12,15 +12,8 @@
       </p>
     </div>
 
-    <p
-      v-if="!actions.length"
-      class="flex items-center gap-2 rounded-(--topiqu-surface-radius) border border-dashed border-default px-4 py-3 text-sm text-muted"
-    >
-      <UIcon name="mdi:auto-fix" class="size-4 shrink-0" aria-hidden="true" />
-      {{ $t('common.contentActions.empty') }}
-    </p>
+    <!-- The page renders this only with suggestions; it owns the empty state. -->
     <ul
-      v-else
       class="divide-y divide-default overflow-hidden rounded-(--topiqu-surface-radius) border border-default bg-default"
     >
       <KeywordsActionItem

@@ -5,15 +5,8 @@
       <p class="mt-1 text-sm text-muted">{{ $t('common.keywordResults.description') }}</p>
     </div>
 
-    <p
-      v-if="!results.length"
-      class="flex items-center gap-2 rounded-(--topiqu-surface-radius) border border-dashed border-default px-4 py-3 text-sm text-muted"
-    >
-      <UIcon name="mdi:chart-timeline-variant" class="size-4 shrink-0" aria-hidden="true" />
-      {{ $t('common.keywordResults.empty') }}
-    </p>
+    <!-- The page renders this only with results; it owns the empty state. -->
     <ul
-      v-else
       class="divide-y divide-default overflow-hidden rounded-(--topiqu-surface-radius) border border-default bg-default"
     >
       <li v-for="result in results" :key="result.id" class="flex items-center gap-3 px-4 py-3">

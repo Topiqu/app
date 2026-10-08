@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
-import type { StatTile } from '~/components/AppStatTiles.vue'
 
 import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
 import { isLanguage, type Language } from '~~/shared/utils/language'
 
+import type { StatTile } from '~/components/AppStatTiles.vue'
 import type {
   VisibilityOverview as Overview,
   VisibilityPrompt as Prompt,
@@ -91,7 +91,23 @@ const languageItems = computed(() =>
     value: language,
   })),
 )
-const openOpportunities = computed(() => data.value?.opportunities.filter((item) => item.status === 'OPEN') ?? [])
+const PROMPT_PREVIEW = 5
+const showAllPrompts = shallowRef(false)
+// At most one opportunity per prompt (unique in the schema), so it lives on the prompt's row.
+const opportunityByPrompt = computed(
+  () =>
+    new Map(
+      (data.value?.opportunities ?? []).flatMap((item) => (item.status === 'OPEN' ? [[item.prompt.id, item]] : [])),
+    ),
+)
+const sortedPrompts = computed(() =>
+  [...(data.value?.prompts ?? [])].sort(
+    (a, b) => Number(opportunityByPrompt.value.has(b.id)) - Number(opportunityByPrompt.value.has(a.id)),
+  ),
+)
+const visiblePrompts = computed(() =>
+  showAllPrompts.value ? sortedPrompts.value : sortedPrompts.value.slice(0, PROMPT_PREVIEW),
+)
 const domainGroups = computed(() =>
   (['competitors', 'references', 'others'] as const)
     .map((key) => ({ key, rows: data.value?.domains[key] ?? [] }))
@@ -144,13 +160,22 @@ const togglePrompt = (id: string, active: boolean) =>
     t('visibility.messages.saved'),
   )
 const removePrompt = (id: string) => mutate(() => apiFetch(`/api/ai-visibility/prompts/${id}`, { method: 'DELETE' }))
-const promptActions = (prompt: Prompt): DropdownMenuItem[][] => [
+const promptActions = (prompt: Prompt, opportunity?: Opportunity): DropdownMenuItem[][] => [
   [
     {
       label: t(prompt.active ? 'visibility.prompts.pause' : 'visibility.prompts.resume'),
       icon: prompt.active ? 'mdi:pause' : 'mdi:play',
       onSelect: () => togglePrompt(prompt.id, !prompt.active),
     },
+    ...(opportunity
+      ? [
+          {
+            label: t('visibility.opportunities.dismiss'),
+            icon: 'mdi:lightbulb-off-outline',
+            onSelect: () => setOpportunity(opportunity.id, 'DISMISSED'),
+          },
+        ]
+      : []),
   ],
   // A removed generated question would only be generated again; pausing is what retires it.
   ...(prompt.source === 'MANUAL'
@@ -196,10 +221,6 @@ const domainActions = (row: CitedDomain): DropdownMenuItem[][] => [
 ]
 const setOpportunity = (id: string, status: 'DISMISSED' | 'RESOLVED' | 'OPEN') =>
   mutate(() => apiFetch(`/api/ai-visibility/opportunities/${id}`, { method: 'PATCH', body: { status } }))
-const opportunityLink = (opportunity: Opportunity) => ({
-  path: localePath({ name: 'admin-editor-id', params: { id: opportunity.article?.slug ?? 'new' } }),
-  query: { ai: '1', prompt: opportunity.prompt.text },
-})
 </script>
 
 <template>
@@ -316,13 +337,14 @@ const opportunityLink = (opportunity: Opportunity) => ({
           </div>
 
           <ul v-if="data.prompts.length" class="divide-y divide-default">
-            <li v-for="prompt in data.prompts" :key="prompt.id" class="px-4 py-2.5">
+            <li v-for="prompt in visiblePrompts" :key="prompt.id" class="px-4 py-2.5">
               <StatsVisibilityPromptRow
-                :prompt="prompt"
-                :canSample="canSample"
+                :prompt
+                :opportunity="opportunityByPrompt.get(prompt.id)"
+                :canSample
                 :running="runningPrompt === prompt.id"
                 :disabled="runningPrompt !== null"
-                :actions="promptActions(prompt)"
+                :actions="promptActions(prompt, opportunityByPrompt.get(prompt.id))"
                 @run="runPrompt(prompt.id)"
               />
             </li>
@@ -330,63 +352,34 @@ const opportunityLink = (opportunity: Opportunity) => ({
           <p v-else class="px-5 py-10 text-center text-sm text-muted">
             {{ $t(canSample ? 'visibility.onboarding.pending' : 'visibility.onboarding.description') }}
           </p>
-        </section>
-
-        <section
-          v-if="openOpportunities.length"
-          class="rounded-(--topiqu-surface-radius) border border-default bg-default"
-        >
-          <div class="border-b border-default px-5 py-4">
-            <h2 class="text-lg font-semibold text-highlighted">{{ $t('visibility.opportunities.title') }}</h2>
-            <p class="text-sm text-muted">{{ $t('visibility.opportunities.description') }}</p>
-          </div>
-          <ul class="divide-y divide-default">
-            <li
-              v-for="opportunity in openOpportunities"
-              :key="opportunity.id"
-              class="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center"
+          <div v-if="sortedPrompts.length > PROMPT_PREVIEW" class="border-t border-default px-4 py-2">
+            <UButton
+              size="sm"
+              color="neutral"
+              variant="link"
+              :trailingIcon="showAllPrompts ? 'mdi:chevron-up' : 'mdi:chevron-down'"
+              :aria-expanded="showAllPrompts"
+              @click="showAllPrompts = !showAllPrompts"
             >
-              <div class="min-w-0 flex-1">
-                <h3 class="font-medium leading-6 text-highlighted">{{ opportunity.prompt.text }}</h3>
-                <p class="mt-0.5 text-xs text-muted">
-                  {{
-                    $t('visibility.opportunities.evidence', {
-                      owned: opportunity.ownedHits,
-                      external: opportunity.externalHits,
-                      samples: opportunity.sampleSize,
-                    })
-                  }}
-                </p>
-                <p v-if="opportunity.citedDomains.length" class="mt-0.5 line-clamp-1 text-xs text-muted">
-                  {{ $t('visibility.opportunities.domains', { domains: opportunity.citedDomains.join(', ') }) }}
-                </p>
-              </div>
-              <div class="flex shrink-0 gap-2">
-                <UButton
-                  :to="opportunityLink(opportunity)"
-                  size="sm"
-                  color="neutral"
-                  variant="outline"
-                  :icon="opportunity.article ? 'mdi:file-edit-outline' : 'mdi:plus'"
-                >
-                  {{ $t(opportunity.article ? 'visibility.opportunities.update' : 'visibility.opportunities.create') }}
-                </UButton>
-                <UButton size="sm" color="neutral" variant="ghost" @click="setOpportunity(opportunity.id, 'DISMISSED')">
-                  {{ $t('visibility.opportunities.dismiss') }}
-                </UButton>
-              </div>
-            </li>
-          </ul>
+              {{
+                showAllPrompts
+                  ? $t('common.actions.showLess')
+                  : $t('visibility.prompts.showAll', { count: sortedPrompts.length })
+              }}
+            </UButton>
+          </div>
         </section>
 
-        <StatsVisibilitySources
-          :groups="domainGroups"
-          :hidden="data.domains.hidden"
-          :ownShare="ownShare"
-          :actions="domainActions"
-          @restore="markDomain($event, null)"
-        />
-        <StatsVisibilityTraffic :referrals="data.referrals" :crawlers="data.crawlers" />
+        <div class="grid gap-x-10 lg:grid-cols-2 lg:items-start">
+          <StatsVisibilitySources
+            :groups="domainGroups"
+            :hidden="data.domains.hidden"
+            :ownShare
+            :actions="domainActions"
+            @restore="markDomain($event, null)"
+          />
+          <StatsVisibilityTraffic :referrals="data.referrals" :crawlers="data.crawlers" />
+        </div>
       </template>
 
       <UAlert

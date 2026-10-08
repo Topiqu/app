@@ -1,0 +1,68 @@
+import "./base"
+import "./client"
+
+enum BacklinkOpportunityKind {
+    UNLINKED_MENTION
+    SUPPLIER
+}
+
+enum BacklinkOpportunityStatus {
+    OPEN
+    SENT
+    WON
+    DISMISSED
+    EXPIRED
+}
+
+/// A page that should link to the tenant: it mentions the business without a link, or it is the
+/// manufacturer of a brand the shop sells. Found by `server/utils/backlinks/discover.ts`.
+model BacklinkOpportunity with Base {
+    clientSiteId String
+    clientSite   ClientSite                @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    kind         BacklinkOpportunityKind
+    status       BacklinkOpportunityStatus @default(OPEN)
+    sourceUrl    String                    @length(1, 2048)
+    sourceDomain String                    @length(1, 253)
+    title        String?                   @length(0, 500)
+    /// UNLINKED_MENTION `{ snippet, language, published }`; SUPPLIER `{ brand, products, page }`.
+    evidence     Json
+    /// The tenant page the link should point to.
+    targetUrl    String                    @length(1, 2048)
+    /// Same-host contact page found on the source; personal e-mail addresses are never collected.
+    contactUrl   String?                   @length(0, 2048)
+    /// `{ subject, body }`, written on request.
+    draft        Json?
+    sentAt       DateTime?
+    decidedAt    DateTime?
+    nextCheckAt  DateTime?
+    backlinks    Backlink[]
+
+    @@unique([clientSiteId, kind, sourceUrl])
+    @@index([clientSiteId, status])
+    @@index([status, nextCheckAt])
+    @@allow('read', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
+    @@allow('update', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
+}
+
+/// A verified link from another site to the tenant, re-read weekly; two misses in a row mark it lost.
+model Backlink with Base {
+    clientSiteId  String
+    clientSite    ClientSite           @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    opportunityId String?
+    opportunity   BacklinkOpportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+    sourceUrl     String               @length(1, 2048)
+    sourceDomain  String               @length(1, 253)
+    targetUrl     String               @length(1, 2048)
+    /// `nofollow`, `sponsored`, `ugc`; empty = followed.
+    rel           String[]
+    anchor        String?              @length(0, 300)
+    firstSeenAt   DateTime
+    lastSeenAt    DateTime
+    lostAt        DateTime?
+    missedChecks  Int                  @default(0)
+    nextCheckAt   DateTime?
+
+    @@unique([clientSiteId, sourceUrl])
+    @@index([nextCheckAt])
+    @@allow('read', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
+}

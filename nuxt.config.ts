@@ -161,6 +161,8 @@ export default defineNuxtConfig({
           '20 * * * *': ['shopify-billing'],
           '0 5 * * *': ['ai-visibility-monitor'],
           '30 5 * * *': ['keyword-rank'],
+          '0 6 * * *': ['backlink-discovery'],
+          '30 6 * * *': ['backlink-check'],
         }
       : undefined,
     preset: 'bun',
@@ -168,7 +170,12 @@ export default defineNuxtConfig({
       dirs: ['server/utils'],
     },
     externals: {
+      // IPX loads srvx/node via createRequire, and tracing alone copies only srvx's Bun entry. Nitro wants a
+      // file path here; a bare specifier is resolved against the project root and fails the build.
+      traceInclude: [createRequire(import.meta.url).resolve('srvx/node')],
       inline: [
+        // Match Windows paths too: https://github.com/nuxt/nuxt/issues/36467
+        /[\\/]node_modules[\\/]nuxt[\\/]dist[\\/]/,
         'html-encoding-sniffer',
         '@exodus/bytes',
         'uncrypto',
@@ -189,8 +196,15 @@ export default defineNuxtConfig({
     dirs: ['utils', 'server/shared/consts'],
   },
   vite: {
+    build: {
+      rolldownOptions: {
+        output: {
+          minify: IS_PROD ? { compress: { dropConsole: true, dropDebugger: true } } : undefined,
+        },
+      },
+    },
     optimizeDeps: {
-      include: ['@fingerprintjs/fingerprintjs', 'chart.js', 'fast-deep-equal', 'vue-chartjs', 'vue-qrcode-reader'],
+      include: ['@fingerprintjs/fingerprintjs', 'chart.js', 'fast-deep-equal', 'vue-chartjs'],
     },
   },
 
@@ -199,12 +213,10 @@ export default defineNuxtConfig({
     '@nuxt/ui',
     '@nuxtjs/i18n',
     '@nuxt/image',
-    '@nuxt/scripts',
     '@nuxtjs/seo',
     '@pinia/nuxt',
     '@pinia/colada-nuxt',
     '@vueuse/nuxt',
-    '@vueuse/motion/nuxt',
     '@vite-pwa/nuxt',
     '@unlok-co/nuxt-stripe',
     'pinia-plugin-persistedstate/nuxt',
@@ -362,6 +374,8 @@ export default defineNuxtConfig({
   },
 
   security: {
+    // Vite 8 uses the Oxc minifier above; the module still injects esbuild.drop.
+    removeLoggers: false,
     // Sentry injects per-build debug IDs after Vite has named hashed chunks. SRI can therefore
     // bind SSR HTML to a different body served under the same chunk URL across deployments.
     sri: false,
@@ -439,6 +453,8 @@ export default defineNuxtConfig({
     ...CRAWL_ROUTES,
     '/md/**': { security: { rateLimiter: CRAWL_LIMIT } },
     '/indexnow.txt': { security: { rateLimiter: CRAWL_LIMIT } },
+    // HTML widget frames set their own sandboxing CSP; the global policy would block the tenant's scripts.
+    '/widgets/**': { security: { headers: false, xssValidator: false } },
     '/api/onboarding/send-code': {
       security: { rateLimiter: { tokensPerInterval: 5, interval: 60 * 60 * 1000 } },
     },
@@ -477,6 +493,8 @@ export default defineNuxtConfig({
           'en/visibility.json',
           'en/media.json',
           'en/knowledge.json',
+          'en/backlinks.json',
+          'en/widgets.json',
           'master_en.json',
         ],
       },
@@ -501,6 +519,8 @@ export default defineNuxtConfig({
           'cs/visibility.json',
           'cs/media.json',
           'cs/knowledge.json',
+          'cs/backlinks.json',
+          'cs/widgets.json',
           'master_cs.json',
         ],
       },
@@ -525,6 +545,8 @@ export default defineNuxtConfig({
           'de/visibility.json',
           'de/media.json',
           'de/knowledge.json',
+          'de/backlinks.json',
+          'de/widgets.json',
           'master_de.json',
         ],
       },
@@ -549,6 +571,8 @@ export default defineNuxtConfig({
           'fr/visibility.json',
           'fr/media.json',
           'fr/knowledge.json',
+          'fr/backlinks.json',
+          'fr/widgets.json',
           'master_fr.json',
         ],
       },

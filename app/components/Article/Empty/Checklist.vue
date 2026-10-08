@@ -27,13 +27,13 @@
     <p v-if="site?.domain" class="mt-3 flex flex-wrap items-center gap-x-2 border-t border-default pt-3 text-sm">
       <span class="text-muted">{{ $t('articles.empty.owner.address') }}</span>
       <UButton
-        :to="`https://${site.domain}`"
+        :to="`https://${site?.domain}`"
         target="_blank"
         color="neutral"
         variant="link"
         size="sm"
         trailingIcon="mdi:open-in-new"
-        :label="site.domain"
+        :label="site?.domain"
       />
     </p>
   </UCard>

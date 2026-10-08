@@ -1,3 +1,5 @@
+import type { AiVisibilityProvider } from '~~/generated/zenstack/models'
+
 export type AiProvider = 'openai'
 
 export const AI_MODELS = {
@@ -19,7 +21,18 @@ export const AI_MODELS = {
   keywordSeeds: { provider: 'openai', id: 'gpt-6-luna' },
   topicScope: { provider: 'openai', id: 'gpt-5.6-luna' },
   keywordOpportunity: { provider: 'openai', id: 'gpt-5.6-luna' },
+  backlinkMatch: { provider: 'openai', id: 'gpt-5.6-luna' },
+  backlinkOutreach: { provider: 'openai', id: 'gpt-6-luna' },
 } as const satisfies Record<string, { provider: AiProvider; id: string }>
+
+export const AI_VISIBILITY_MODELS = {
+  ANTHROPIC: 'claude-sonnet-5',
+  GOOGLE: 'gemini-3.8-flash',
+  META: 'muse-spark-1.3',
+  MISTRAL: 'mistral-medium-latest',
+  OPENAI: AI_MODELS.visibility.id,
+  XAI: 'grok-4.6',
+} as const satisfies Record<AiVisibilityProvider, string>
 
 export const AI_IMAGE_MODELS = {
   articleImage: { provider: 'openai', id: 'gpt-image-2.5-flare' },

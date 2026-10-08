@@ -14,6 +14,7 @@ FROM base AS install
 RUN mkdir -p /temp
 
 COPY package.json bun.lock /temp/
+COPY patches /temp/patches
 
 RUN --mount=type=cache,target=/root/.bun/install/cache,sharing=locked \
     cd /temp && bun --bun install --shamefully-hoist --frozen-lockfile

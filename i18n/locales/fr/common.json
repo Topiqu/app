@@ -88,6 +88,7 @@
     },
     "keywordPlan": {
       "title": "À venir",
+      "topic": "Sujet",
       "description": "Les articles automatiques prennent les sujets par le haut. Épinglez ce que vous voulez plus tôt et ignorez ce que vous ne voulez pas.",
       "empty": "Le plan sera établi avant le prochain article automatique.",
       "volumeUnknown": "inconnue",
@@ -108,7 +109,8 @@
       "pinned": "Épinglé",
       "unpin": "Désépingler {keyword}",
       "skipped": "Sujets ignorés ({count})",
-      "volumeUnit": "recherches/mois"
+      "volumeUnit": "recherches/mois",
+      "showAll": "Tous les sujets ({count})"
     },
     "keywordResults": {
       "title": "Performance des articles",
@@ -151,6 +153,7 @@
     "keywords": {
       "title": "Sujets",
       "description": "Ce que les gens recherchent vraiment dans votre domaine. Les articles automatiques couvrent ces sujets peu à peu, et nous mesurons leur position sur Google.",
+      "waiting": "Nous mesurons les positions Google 7 jours après la publication du premier article du plan ; les suggestions de mise à jour arrivent après un mois dans les résultats.",
       "disabledTitle": "Activez les articles automatiques",
       "disabledDescription": "Le plan de sujets choisit quoi écrire selon la demande de recherche réelle, puis suit les positions sur Google. Il fonctionne avec les articles automatiques.",
       "openSettings": "Ouvrir les réglages IA",
@@ -322,12 +325,15 @@
     "poweredBy": "Créé avec",
     "breadcrumbs": "Fil d'Ariane",
     "navigation": {
-      "publication": "Voir le site",
-      "settings": "Paramètres du site",
+      "publication": "Ouvrir le site",
+      "settings": "Paramètres",
       "dashboard": "Tableau de bord",
-      "media": "Médiathèque",
-      "knowledge": "Base de connaissances",
-      "keywords": "Sujets"
+      "media": "Médias",
+      "knowledge": "Sources pour l’IA",
+      "keywords": "Plan de sujets",
+      "backlinks": "Backlinks",
+      "stats": "Statistiques",
+      "write": "Écrire un article"
     },
     "links": {
       "terms": "Conditions d'utilisation",
@@ -713,7 +719,8 @@
         "integrations": "Intégrations",
         "ai": "IA",
         "billing": "Facturation",
-        "members": "Membres"
+        "members": "Membres",
+        "widgets": "Widgets"
       },
       "softGate": {
         "contentTitle": "Vous pouvez déjà préparer votre stratégie de contenu",
@@ -1151,12 +1158,13 @@
         }
       },
       "community": {
-        "title": "Commentaires et GIFs",
+        "title": "Commentaires et réactions",
         "description": "Gérez la discussion sous tous les articles de cette publication.",
         "comments": "Autoriser les commentaires",
         "commentsHelp": "La désactivation ferme les commentaires et les réponses sous tous les articles. Les commentaires existants restent visibles. Chaque article peut aussi fermer sa propre discussion.",
         "gifs": "Autoriser les GIFs dans les commentaires",
-        "gifsHelp": "La désactivation masque les GIFs existants et bloque les nouvelles pièces jointes. Le texte des commentaires reste visible."
+        "gifsHelp": "La désactivation masque les GIFs existants et bloque les nouvelles pièces jointes. Le texte des commentaires reste visible.",
+        "emojiHelp": "Vos propres images, avec lesquelles les lecteurs réagissent aux commentaires."
       },
       "publicationChannels": {
         "title": "Canaux de publication",

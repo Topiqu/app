@@ -107,6 +107,7 @@ model KnowledgeProduct {
     clientSiteId String
     externalId   String                       @length(1, 128)
     name         String                       @length(1, 200)
+    brand        String?                      @length(0, 100)
     url          String                       @length(1, 2048)
     price        Decimal?                     @db.Decimal(12, 2)
     currency     String?                      @length(3, 3)

@@ -29,21 +29,35 @@
           </template>
         </UPopover>
       </div>
-      <p class="flex min-w-0 items-center gap-1.5 text-xs text-muted">
-        <span v-if="cluster.pillar" class="truncate">{{ cluster.pillar }}</span>
-        <span v-if="cluster.pillar && level" aria-hidden="true">·</span>
-        <span v-if="level" class="flex shrink-0 items-center gap-1">
+      <p
+        v-if="cluster.pillar || (showDifficulty && level)"
+        class="mt-0.5 flex min-w-0 items-center gap-2 text-xs text-muted"
+      >
+        <UBadge v-if="cluster.pillar" color="neutral" variant="soft" size="sm" class="min-w-0">
+          <span class="truncate">{{ cluster.pillar }}</span>
+        </UBadge>
+        <span v-if="showDifficulty && level" class="flex shrink-0 items-center gap-1">
           <span class="size-1.5 rounded-full" :class="levelColor[level]" aria-hidden="true" />
           {{ $t(`common.keywordPlan.difficulty.${level}`) }}
         </span>
       </p>
     </div>
-    <p class="w-20 shrink-0 text-right leading-tight">
+    <p class="w-24 shrink-0 text-right">
       <span class="block text-sm font-medium tabular-nums" :class="cluster.volume ? 'text-highlighted' : 'text-muted'">
         {{ cluster.volume ? `≈ ${volume}` : '—' }}
+        <span class="sr-only">
+          {{ $t(cluster.volume ? 'common.keywordPlan.volumeUnit' : 'common.keywordPlan.volumeUnknown') }}
+        </span>
       </span>
-      <span class="block text-xs text-muted">
-        {{ $t(cluster.volume ? 'common.keywordPlan.volumeUnit' : 'common.keywordPlan.volumeUnknown') }}
+      <span
+        v-if="cluster.volume && maxVolume"
+        class="mt-1 block h-1 overflow-hidden rounded-full bg-accented"
+        aria-hidden="true"
+      >
+        <span
+          class="ml-auto block h-full rounded-full bg-primary/70"
+          :style="{ width: `${(cluster.volume / maxVolume) * 100}%` }"
+        />
       </span>
     </p>
     <UTooltip v-if="cluster.status !== 'SKIPPED'" :text="pinLabel">
@@ -78,7 +92,14 @@
 import { difficultyLevel } from '~~/shared/utils/keywordPlan'
 
 /** `position` is the queue order; skipped topics have none. */
-const props = defineProps<{ cluster: KeywordPlanCluster; busy: boolean; position?: number }>()
+const props = defineProps<{
+  cluster: KeywordPlanCluster
+  busy: boolean
+  position?: number
+  /** Largest volume in the plan; the bar is relative to it. */
+  maxVolume: number
+  showDifficulty: boolean
+}>()
 const emit = defineEmits<{ toggle: [target: Exclude<KeywordPlanStatus, 'OPEN'>] }>()
 
 const { t, locale } = useI18n()

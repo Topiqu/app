@@ -153,9 +153,9 @@ describe('tenant boundary wiring', () => {
     expect(endpoint).toContain('canEditOthers ? {}')
   })
 
-  it('does not fetch protected statistics before the dialog is opened', () => {
-    const dialog = source('app/components/Stats/Dialog.vue')
-    expect(dialog).toContain('enabled: () => !!open.value')
+  it('loads protected statistics only on the admin-guarded page', () => {
+    expect(source('app/pages/admin/stats.vue')).toContain("middleware: 'admin'")
+    expect(source('app/layouts/default.vue')).not.toContain('<StatsDashboard')
   })
 
   it('keeps scheduled and published article states mutually exclusive', () => {

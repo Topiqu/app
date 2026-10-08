@@ -16,6 +16,7 @@ import { fetchPublicUrl } from '../images/publicFetch'
 export type FeedProduct = {
   externalId: string
   name: string
+  brand: string | null
   url: string
   price: string | null
   currency: string | null
@@ -41,7 +42,7 @@ export type RawVariant = {
   params: [string, string][]
 }
 
-type Variant = Omit<FeedProduct, 'text' | 'textHash'> & {
+type Variant = Omit<FeedProduct, 'brand' | 'text' | 'textHash'> & {
   groupId: string
   description: string
   brand: string
@@ -199,6 +200,7 @@ export const mergeVariants = (variants: readonly Variant[]): FeedProduct[] => {
     return {
       externalId: groupId,
       name: first.name,
+      brand: first.brand || null,
       url: best.url,
       price,
       currency: price ? first.currency : null,

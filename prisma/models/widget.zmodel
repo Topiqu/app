@@ -1,0 +1,30 @@
+import "./base"
+import "./client"
+
+enum WidgetKind {
+    ANNOUNCEMENT
+    DIVIDER
+    CTA
+    PRICE
+    WEATHER
+    HTML
+}
+
+/// `slot` is a key from the registry in `shared/utils/widgets.ts`, not an enum: slots follow the layout, and a
+/// slot the layout drops falls back at render instead of needing a migration.
+model SiteWidget with Base {
+    clientSiteId String
+    clientSite   ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    kind         WidgetKind
+    slot         String     @length(1, 40)
+    position     Int        @default(0)
+    active       Boolean    @default(true)
+    /// Empty means every language of the site.
+    languages    Language[]
+    /// Validated per `kind` by `widgetConfigSchema`.
+    config       Json
+
+    @@index([clientSiteId])
+    @@allow('read', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
+    @@allow('create, update, delete', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
+}

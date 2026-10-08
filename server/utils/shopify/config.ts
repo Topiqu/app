@@ -1,5 +1,3 @@
-// Must equal the scopes released in the Dev Dashboard. Inventory webhook subscriptions need read_inventory.
-export const SHOPIFY_SCOPES = 'read_products,read_inventory,read_content,write_content'
 export const SHOPIFY_API_VERSION = '2026-07'
 
 export const normalizeShopifyShop = (value: unknown): string | null => {

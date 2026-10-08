@@ -1,37 +1,13 @@
-import type { AiEmbeddingTask, AiImageTask, AiProvider, AiTask } from './modelRegistry'
+import type { AiEmbeddingTask, AiImageTask, AiTask } from './modelRegistry'
 
 import openAi from './openai'
-import { AI_EMBEDDING_MODELS, AI_IMAGE_MODELS, AI_MODELS } from './modelRegistry'
+import { aiEmbeddingModelId, aiImageModelId, aiModelId } from './modelRegistry'
 
-const TEXT_PROVIDERS: Record<AiProvider, (id: string) => ReturnType<typeof openAi>> = {
-  openai: (id) => openAi(id),
-}
+export const aiModel = (task: AiTask) => openAi.responses(aiModelId(task))
 
-const IMAGE_PROVIDERS: Record<AiProvider, (id: string) => ReturnType<typeof openAi.image>> = {
-  openai: (id) => openAi.image(id),
-}
+export const aiImageModel = (task: AiImageTask) => openAi.image(aiImageModelId(task))
 
-export const aiModel = (task: AiTask) => {
-  const { provider, id } = AI_MODELS[task]
-
-  return TEXT_PROVIDERS[provider](id)
-}
-
-export const aiImageModel = (task: AiImageTask) => {
-  const { provider, id } = AI_IMAGE_MODELS[task]
-
-  return IMAGE_PROVIDERS[provider](id)
-}
-
-const EMBEDDING_PROVIDERS: Record<AiProvider, (id: string) => ReturnType<typeof openAi.embedding>> = {
-  openai: (id) => openAi.embedding(id),
-}
-
-export const aiEmbeddingModel = (task: AiEmbeddingTask) => {
-  const { provider, id } = AI_EMBEDDING_MODELS[task]
-
-  return EMBEDDING_PROVIDERS[provider](id)
-}
+export const aiEmbeddingModel = (task: AiEmbeddingTask) => openAi.embedding(aiEmbeddingModelId(task))
 
 export const aiWebSearchTool = (searchContextSize: 'low' | 'medium' | 'high' = 'high') =>
   openAi.tools.webSearch({ searchContextSize })

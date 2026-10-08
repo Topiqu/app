@@ -1,3 +1,4 @@
+import { publicWidgets } from '~~/shared/utils/widgets'
 import { publicClientSiteSelect } from '~~/shared/utils/clientSiteFields'
 
 export default defineEventHandler(async (event) => {
@@ -11,5 +12,6 @@ export default defineEventHandler(async (event) => {
     },
   })
 
-  return user?.clientSite ?? null
+  const site = user?.clientSite
+  return site ? { ...site, widgets: publicWidgets(site.widgets, site) } : null
 })

@@ -2,6 +2,8 @@
   "emoji": {
     "manage": "Eigene Emojis",
     "create": "Emoji erstellen",
+    "addCustom": "Eigenes hinzufügen",
+    "manageAction": "Emoji verwalten",
     "createMany": "Emojis hinzufügen ({count})",
     "shortcodePlaceholder": "z. B. lächeln",
     "addTitle": "Neue Emojis hinzufügen",

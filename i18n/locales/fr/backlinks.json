@@ -1,0 +1,88 @@
+{
+  "backlinks": {
+    "title": "Backlinks",
+    "description": "Les sites qui parlent de vous ou devraient le faire, et les liens qui mènent déjà à votre site.",
+    "refresh": "Relancer la recherche",
+    "running": "Recherche des pages…",
+    "started": "La recherche est en cours. Les résultats apparaîtront ici d’ici quelques minutes.",
+    "refreshedAt": "Dernière recherche le {date}",
+    "nextRefresh": "Nouvelle recherche possible le {date}",
+    "neverRefreshed": "Pas encore de recherche. Elle se lance d’elle-même une fois par mois.",
+    "loadFailed": "Impossible de charger les backlinks.",
+    "failed": "L’action a échoué. Veuillez réessayer.",
+    "unavailable": "La recherche de liens est indisponible pour le moment. Les liens vérifiés restent contrôlés.",
+    "disabledTitle": "Les backlinks font partie des forfaits Pro et Premium",
+    "disabledDescription": "Nous trouvons les sites qui vous citent sans lien et vérifions chaque lien obtenu.",
+    "upgrade": "Voir les forfaits",
+    "policy": "Nous n’achetons ni n’échangeons de liens, Google le sanctionne. Nous trouvons seulement les pages qui parlent déjà de vous ou ont une raison de vous citer, et c’est vous qui leur écrivez.",
+    "stats": {
+      "live": {
+        "label": "Liens vérifiés",
+        "hint": "dont transmettant de la valeur : {n}",
+        "info": "Pages d’autres sites où nous avons réellement trouvé un lien vers votre site. Nous les revérifions chaque semaine. Les liens nofollow ne transmettent pas de valeur aux moteurs de recherche, mais amènent des visiteurs."
+      },
+      "won": {
+        "label": "Liens obtenus",
+        "hint": "grâce à vos demandes",
+        "info": "Combien de sites ont ajouté un lien après votre message. Seuls comptent les liens que nous avons vérifiés nous-mêmes sur la page."
+      },
+      "open": {
+        "label": "Opportunités",
+        "hint": "en attente de vous ou d’une réponse",
+        "info": "Pages qui vous citent sans lien, et fabricants des marques que vous vendez. Examinez-les et décidez si vous écrivez."
+      }
+    },
+    "opportunities": {
+      "title": "Opportunités",
+      "description": "Pages où un lien vers votre site a du sens. Écrivez à l’auteur ou au propriétaire du site pour le demander.",
+      "empty": "Aucune opportunité pour l’instant. Elles apparaîtront ici dès que nous en trouverons.",
+      "suppliersLocked": "Les pages des fabricants des marques que vous vendez sont recherchées avec le forfait Premium.",
+      "kind": {
+        "UNLINKED_MENTION": "Mention sans lien",
+        "SUPPLIER": "Fabricant"
+      },
+      "reason": {
+        "mention": "La page cite « {term} » mais ne renvoie pas vers votre site.",
+        "dealers": "Le fabricant {brand} liste ses revendeurs et vous n’en faites pas partie. | Le fabricant {brand} liste ses revendeurs et vous n’en faites pas partie. Vous vendez {n} de ses produits. | Le fabricant {brand} liste ses revendeurs et vous n’en faites pas partie. Vous vendez {n} de ses produits.",
+        "official": "Le site officiel de {brand}. Demandez s’il liste ses revendeurs. | Le site officiel de {brand}. Vous vendez {n} de ses produits ; demandez s’il liste ses revendeurs. | Le site officiel de {brand}. Vous vendez {n} de ses produits ; demandez s’il liste ses revendeurs."
+      },
+      "sent": "Envoyé",
+      "sentOn": "Vous avez écrit le {date}. Nous vérifions la page chaque semaine.",
+      "contact": "Contact",
+      "markSent": "C’est envoyé",
+      "checkNow": "Vérifier",
+      "dismiss": "Masquer",
+      "check": {
+        "won": "Le lien est sur la page. Nous l’avons comptabilisé.",
+        "missing": "Le lien n’est pas encore sur la page.",
+        "unreadable": "Impossible de charger la page pour le moment. Nous réessaierons.",
+        "expired": "Toujours aucun lien après 60 jours, l’opportunité est close."
+      }
+    },
+    "draft": {
+      "write": "Rédiger l’e-mail",
+      "open": "Voir l’e-mail",
+      "title": "Brouillon d’e-mail",
+      "description": "Envoyez-le depuis votre propre messagerie et adaptez-le. Topiqu n’écrit jamais à personne à votre place.",
+      "subject": "Objet",
+      "body": "Message",
+      "rewrite": "Rédiger à nouveau",
+      "copy": "Copier",
+      "copied": "Copié",
+      "openMail": "Ouvrir dans la messagerie",
+      "failed": "Impossible de rédiger le brouillon d’e-mail."
+    },
+    "links": {
+      "title": "Liens vérifiés",
+      "description": "Liens vers votre site trouvés sur les pages. Nous les revérifions chaque semaine.",
+      "empty": "Nous n’avons encore vérifié aucun lien.",
+      "anchor": "Texte du lien : {anchor}",
+      "since": "Depuis le {date}",
+      "lostOn": "Disparu le {date}",
+      "earned": "Grâce à votre demande",
+      "followed": "Transmet de la valeur",
+      "nofollow": "nofollow",
+      "lost": "Perdu"
+    }
+  }
+}

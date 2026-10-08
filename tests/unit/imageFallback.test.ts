@@ -1,7 +1,23 @@
-import { describe, expect, it } from 'vitest'
 import { effectScope, nextTick, ref } from 'vue'
+import { mockNuxtImport } from '@nuxt/test-utils/runtime'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { useImageFallback } from '../../app/composables/useImageFallback'
+
+const context = vi.hoisted(() => ({
+  states: new Map<string, ReturnType<typeof ref>>(),
+  isHydrating: false,
+}))
+mockNuxtImport('useState', () => (key: string, init: () => unknown) => {
+  if (!context.states.has(key)) context.states.set(key, ref(init()))
+  return context.states.get(key)
+})
+mockNuxtImport('useNuxtApp', () => () => context)
+
+beforeEach(() => {
+  context.states.clear()
+  context.isHydrating = false
+})
 
 const run = <T>(fn: () => T) => {
   const scope = effectScope()
@@ -56,5 +72,29 @@ describe('useImageFallback', () => {
     await nextTick()
     expect(state.currentSrc.value).toBe('f.webp')
     stop()
+  })
+
+  it('does not share a failed source with another Nuxt app or SSR request', () => {
+    const first = run(() => useImageFallback('isolated.webp'))
+    first.state.handleError()
+    first.stop()
+
+    context.states.clear()
+    const second = run(() => useImageFallback('isolated.webp'))
+    expect(second.state.currentSrc.value).toBe('isolated.webp')
+    second.stop()
+  })
+
+  it('preserves the SSR image when another component fails the same URL during hydration', () => {
+    const first = run(() => useImageFallback('hydration.webp'))
+    first.state.handleError()
+    first.stop()
+
+    context.isHydrating = true
+    const second = run(() => useImageFallback('hydration.webp', 'hydration.webp'))
+    expect(second.state.currentSrc.value).toBe('hydration.webp')
+    second.state.handleError()
+    expect(second.state.currentSrc.value).toBeNull()
+    second.stop()
   })
 })

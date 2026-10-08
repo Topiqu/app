@@ -123,22 +123,23 @@ const feedProductLimit = async ({ id, clientSiteId }: FeedSource) => {
 
 /** Facts only; a row whose facts did not change is not rewritten. */
 const upsertProducts = (source: FeedSource, products: readonly FeedProduct[]) => prisma.$executeRaw`
-  INSERT INTO "KnowledgeProduct" ("id", "updatedAt", "sourceId", "clientSiteId", "externalId", "name", "url", "price", "currency", "availability")
-  SELECT gen_random_uuid()::text, now(), ${source.id}, ${source.clientSiteId}, t.external_id, t.name, t.url, t.price::numeric,
+  INSERT INTO "KnowledgeProduct" ("id", "updatedAt", "sourceId", "clientSiteId", "externalId", "name", "brand", "url", "price", "currency", "availability")
+  SELECT gen_random_uuid()::text, now(), ${source.id}, ${source.clientSiteId}, t.external_id, t.name, t.brand, t.url, t.price::numeric,
          t.currency, t.availability::"KnowledgeProductAvailability"
   FROM unnest(
     ${products.map((product) => product.externalId)}::text[],
     ${products.map((product) => product.name)}::text[],
+    ${products.map((product) => product.brand)}::text[],
     ${products.map((product) => product.url)}::text[],
     ${products.map((product) => product.price)}::text[],
     ${products.map((product) => product.currency)}::text[],
     ${products.map((product) => product.availability)}::text[]
-  ) AS t(external_id, name, url, price, currency, availability)
+  ) AS t(external_id, name, brand, url, price, currency, availability)
   ON CONFLICT ("sourceId", "externalId") DO UPDATE SET
-    "name" = EXCLUDED."name", "url" = EXCLUDED."url", "price" = EXCLUDED."price",
+    "name" = EXCLUDED."name", "brand" = EXCLUDED."brand", "url" = EXCLUDED."url", "price" = EXCLUDED."price",
     "currency" = EXCLUDED."currency", "availability" = EXCLUDED."availability", "updatedAt" = now()
-  WHERE ("KnowledgeProduct"."name", "KnowledgeProduct"."url", "KnowledgeProduct"."price", "KnowledgeProduct"."currency", "KnowledgeProduct"."availability")
-    IS DISTINCT FROM (EXCLUDED."name", EXCLUDED."url", EXCLUDED."price", EXCLUDED."currency", EXCLUDED."availability")`
+  WHERE ("KnowledgeProduct"."name", "KnowledgeProduct"."brand", "KnowledgeProduct"."url", "KnowledgeProduct"."price", "KnowledgeProduct"."currency", "KnowledgeProduct"."availability")
+    IS DISTINCT FROM (EXCLUDED."name", EXCLUDED."brand", EXCLUDED."url", EXCLUDED."price", EXCLUDED."currency", EXCLUDED."availability")`
 
 /** Embeds one batch and swaps its chunks; `textHash` moves in the same transaction as the chunk. */
 const embedProducts = async (source: FeedSource, batch: readonly FeedProduct[], ids: readonly string[]) => {

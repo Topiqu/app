@@ -48,7 +48,8 @@
         "ARTICLE": "Depuis un article",
         "COMMENT": "Des lecteurs"
       },
-      "schedule": "Vérifié chaque semaine"
+      "schedule": "Vérifié chaque semaine",
+      "showAll": "Tout afficher ({count})"
     },
     "outcome": {
       "UNCHECKED": "Pas encore vérifié",
@@ -66,13 +67,10 @@
       "response": "Réponse"
     },
     "opportunities": {
-      "title": "Là où l’IA vous ignore",
-      "description": "Questions pour lesquelles l’IA cite d’autres sites au lieu du vôtre.",
       "update": "Améliorer l’article",
       "create": "Créer un article",
-      "dismiss": "Ignorer",
-      "evidence": "Votre site : {owned}/{samples} · autres sources : {external}/{samples}",
-      "domains": "Sources citées : {domains}"
+      "dismiss": "Ignorer la suggestion",
+      "citing": "L’IA cite :"
     },
     "domains": {
       "title": "Qui est cité à votre place",

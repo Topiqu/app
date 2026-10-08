@@ -16,6 +16,7 @@ import {
   applyContentAction,
   articleHash,
   queueContentAction,
+  refreshAllowance,
   rollbackContentAction,
   suggestRefresh,
 } from '../../../server/utils/keywords/refresh'
@@ -35,6 +36,7 @@ describe.skipIf(!enabled)('article updates on PostgreSQL', () => {
     vi.stubGlobal('invalidateFeed', vi.fn().mockResolvedValue(undefined))
     vi.stubGlobal('enqueueArticleWebhook', vi.fn().mockResolvedValue(undefined))
     vi.stubGlobal('logAction', vi.fn().mockResolvedValue(undefined))
+    vi.stubGlobal('announceArticle', vi.fn().mockResolvedValue(undefined))
   })
   afterAll(async () => {
     await db?.$disconnect()
@@ -92,7 +94,7 @@ describe.skipIf(!enabled)('article updates on PostgreSQL', () => {
   it('enforces the last monthly slot across two different actions', async () => {
     const t = await tenant()
     await db!.contentAction.createMany({
-      data: Array.from({ length: 14 }, (_, i) => ({
+      data: Array.from({ length: refreshAllowance('PREMIUM').monthly - 1 }, (_, i) => ({
         clientSiteId: t.site.id,
         articleId: t.article.id,
         keyword: `done ${i}`,
