@@ -104,7 +104,7 @@ const block = ($: cheerio.CheerioAPI, node: AnyNode): string => {
       // Poll blocks carry their question and options in attributes, not in the markup.
       if (el.attribs['data-type'] === 'poll') {
         const question = el.attribs['data-question'] ?? ''
-        let options: { label?: string }[] = []
+        let options: { label?: string }[]
         try {
           options = JSON.parse(el.attribs['data-options'] ?? '[]')
         } catch {

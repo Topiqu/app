@@ -33,7 +33,7 @@ const getSesClient = () => {
   return sesClient
 }
 
-export const getEmailLocaleMessages = async (locale: Language): Promise<Messages> => {
+const getEmailLocaleMessages = async (locale: Language): Promise<Messages> => {
   if (!messageCache.has(locale)) {
     try {
       const messages = await useStorage('assets:emails:locales').getItem(`${locale}.json`)
@@ -46,7 +46,7 @@ export const getEmailLocaleMessages = async (locale: Language): Promise<Messages
   return messageCache.get(locale)
 }
 
-export const getEmailTemplate = async (id: string): Promise<string> => {
+const getEmailTemplate = async (id: string): Promise<string> => {
   if (!templateCache.has(id)) {
     try {
       const item = await useStorage('assets:emails:templates').getItemRaw(`${id}.mjml`)
@@ -116,7 +116,7 @@ export const sendEmail = async ({ event, to, template, data, lang: forcedLang }:
   }
   parsedMjml = parsedMjml.replace(/\{t:([^}]+)\}/g, (_, key: string) => translate(key, enrichedData))
 
-  let finalHtml = ''
+  let finalHtml: string
   try {
     const { html: rawHtml, errors } = await mjml2html(parsedMjml, {
       validationLevel: 'soft',
@@ -128,11 +128,7 @@ export const sendEmail = async ({ event, to, template, data, lang: forcedLang }:
 
     finalHtml = rawHtml
   } catch (error) {
-    console.error('================ FATAL MJML ERROR ================')
-    console.error('CHYBA:', error)
-    console.error('--- CO SE PŘESNĚ POSLALO DO KOMPILÁTORU: ---')
-    console.error(parsedMjml)
-    console.error('==================================================')
+    console.error('[MJML Compilation Error]:', { template, error })
     throw createError('MJML compilation failed due to a syntax or parser error.')
   }
 

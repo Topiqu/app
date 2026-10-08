@@ -39,5 +39,3 @@ export const findStockImage = async (
 
   return stock ? { image: stock, kind: 'illustration' } : null
 }
-
-export const findCoverImage = (query: string) => openverse.search(query)

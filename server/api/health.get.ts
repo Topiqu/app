@@ -1,5 +1,5 @@
 export default defineEventHandler(async (event) => {
-  let db = false
+  let db: boolean
   try {
     await prisma.$queryRaw`SELECT 1`
     db = true

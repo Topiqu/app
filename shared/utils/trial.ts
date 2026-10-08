@@ -1,6 +1,5 @@
 export const TRIAL_DAYS = 14
 export const TRIAL_PLAN = 'PREMIUM'
-export const EXPIRED_TRIAL_TOKEN_LIMIT = 100
 
 export interface TrialInfo {
   plan?: string | null

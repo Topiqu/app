@@ -123,8 +123,8 @@ describe('Nuxt UI template contract', () => {
                     .at(-1) ?? '',
               ),
             ),
-            ...[...source.matchAll(/\bconst\s+\[([^\]]+)\]\s*=\s*createReusableTemplate(?:<[^>]*>)?\(/g)].flatMap((match) =>
-              (match[1] ?? '').split(',').map((name) => name.trim()),
+            ...[...source.matchAll(/\bconst\s+\[([^\]]+)\]\s*=\s*createReusableTemplate(?:<[^>]*>)?\(/g)].flatMap(
+              (match) => (match[1] ?? '').split(',').map((name) => name.trim()),
             ),
           ])
           return [...templateOf(source).matchAll(/<([A-Z][A-Za-z0-9]*)[\s/>]/g)]
@@ -280,7 +280,6 @@ describe('Nuxt UI template contract', () => {
 
   it('keeps visual utility classes off Nuxt UI primitives', () => {
     const allowlist = new Set([
-      'app/components/Article/Editor/Chip.vue',
       'app/components/Article/Editor/LanguageTabs.vue',
       'app/components/Emoji/Create.vue',
       'app/components/Form/Client/AI.vue',
@@ -372,7 +371,6 @@ describe('Nuxt UI template contract', () => {
       'app/components/Article/TOC.vue',
       'app/components/Landing/Hero.vue',
       'app/components/Article/SkeletonCard.vue',
-      'app/components/Article/Editor/Popover.vue',
       'app/components/Form/Client/AI.vue',
       'app/components/Tiptap/Editor.vue',
       // TipTap owns this floating boundary; its two views share a local, reduced-motion transition.
@@ -384,7 +382,6 @@ describe('Nuxt UI template contract', () => {
     ])
     const transitionAllowlist = new Set([
       'app/components/AdSlot.vue',
-      'app/components/Article/Editor/Popover.vue',
       'app/components/File/TiptapImage.vue',
       'app/components/Form/Client/AI.vue',
       'app/components/Network/Indicator.vue',

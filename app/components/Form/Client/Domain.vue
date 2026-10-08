@@ -3,32 +3,51 @@
     <h3 :id="headingId" class="text-base font-semibold text-highlighted">{{ $t('common.domain.title') }}</h3>
     <UCard>
       <UProgress v-if="isPending" :aria-label="$t('common.loading')" />
-      <div v-else-if="data" class="space-y-4">
+      <div v-if="data && !isPending" class="space-y-4">
         <p class="text-sm text-muted">
           {{ $t('common.domain.current') }}
-          <a :href="`https://${data.domain}`" target="_blank" rel="noopener" class="font-medium text-highlighted underline">
+          <a
+            :href="`https://${data.domain}`"
+            target="_blank"
+            rel="noopener"
+            class="font-medium text-highlighted underline"
+          >
             {{ data.domain }}
           </a>
         </p>
 
-        <UAlert v-if="switchedTo" color="success" variant="soft" :title="$t('common.domain.switched', { domain: switchedTo })">
+        <UAlert
+          v-if="switchedTo"
+          color="success"
+          variant="soft"
+          :title="$t('common.domain.switched', { domain: switchedTo })"
+        >
           <template #actions>
-            <UButton color="neutral" variant="soft" trailingIcon="mdi:open-in-new" :to="`https://${switchedTo}${route.fullPath}`">
+            <UButton
+              color="neutral"
+              variant="soft"
+              trailingIcon="mdi:open-in-new"
+              :to="`https://${switchedTo}${route.fullPath}`"
+            >
               {{ $t('common.domain.open') }}
             </UButton>
           </template>
         </UAlert>
 
-        <template v-else-if="data.pending">
-          <p class="text-sm">{{ $t('common.domain.pendingIntro', { domain: data.pending.domain }) }}</p>
+        <template v-else-if="data?.pending">
+          <p class="text-sm">{{ $t('common.domain.pendingIntro', { domain: data?.pending?.domain }) }}</p>
           <dl class="divide-y divide-default rounded-lg border border-default text-sm">
-            <div v-for="record in records" :key="record.type" class="grid gap-1 p-3 sm:grid-cols-[4.5rem_1fr_1fr] sm:gap-3">
+            <div
+              v-for="record in records"
+              :key="record.type"
+              class="grid gap-1 p-3 sm:grid-cols-[4.5rem_1fr_1fr] sm:gap-3"
+            >
               <dt class="font-medium text-highlighted">{{ record.type }}</dt>
               <dd class="break-all font-mono text-xs">{{ record.name }}</dd>
               <dd class="break-all font-mono text-xs">{{ record.value }}</dd>
             </div>
           </dl>
-          <p class="text-xs text-muted">{{ $t('common.domain.keepsServing', { domain: data.domain }) }}</p>
+          <p class="text-xs text-muted">{{ $t('common.domain.keepsServing', { domain: data?.domain }) }}</p>
           <UAlert v-if="notYet" color="warning" variant="soft" :title="$t('common.domain.notYet')" />
           <div class="flex flex-wrap gap-2">
             <UButton :loading="busy === 'verify'" :disabled="!!busy" @click="verify">
@@ -40,7 +59,11 @@
           </div>
         </template>
 
-        <form v-else-if="data.canUseCustomDomain" class="flex flex-col gap-2 sm:flex-row sm:items-end" @submit.prevent="request">
+        <form
+          v-else-if="data?.canUseCustomDomain"
+          class="flex flex-col gap-2 sm:flex-row sm:items-end"
+          @submit.prevent="request"
+        >
           <div class="min-w-0 flex-1">
             <UFormField :label="$t('common.domain.newDomain')" :error="error">
               <UInput v-model="domain" class="w-full" placeholder="blog.example.com" />
@@ -119,7 +142,9 @@ const request = () =>
 
 const verify = () =>
   run('verify', async () => {
-    const result = await $fetch<{ verified: boolean; domain?: string }>('/api/domain/pending/verify', { method: 'POST' })
+    const result = await $fetch<{ verified: boolean; domain?: string }>('/api/domain/pending/verify', {
+      method: 'POST',
+    })
     notYet.value = !result.verified
     if (result.verified && result.domain) switchedTo.value = result.domain
   })

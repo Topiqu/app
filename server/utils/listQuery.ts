@@ -7,7 +7,11 @@ const order = z.enum(['asc', 'desc']).default('desc')
 const normalize = (input: Record<string, unknown>) =>
   Object.fromEntries(Object.entries(input).map(([key, value]) => [key, Array.isArray(value) ? value[0] : value]))
 
-export const articleListQuerySchema = z
+const validDateRange = (value: { dateFrom?: string; dateTo?: string }) =>
+  !value.dateFrom || !value.dateTo || value.dateFrom <= value.dateTo
+const dateRangeError = { message: 'dateFrom must not be after dateTo', path: ['dateTo'] }
+
+const articleListQuerySchema = z
   .object({
     query: z.string().trim().max(200).optional(),
     status: z.enum(['draft', 'published', 'archived']).optional(),
@@ -16,12 +20,9 @@ export const articleListQuerySchema = z
     sort: z.enum(['title', 'status', 'createdAt']).default('createdAt'),
     order,
   })
-  .refine((value) => !value.dateFrom || !value.dateTo || value.dateFrom <= value.dateTo, {
-    message: 'dateFrom must not be after dateTo',
-    path: ['dateTo'],
-  })
+  .refine(validDateRange, dateRangeError)
 
-export const clientListQuerySchema = z
+const clientListQuerySchema = z
   .object({
     query: z.string().trim().max(200).optional(),
     name: z.string().trim().max(200).optional(),
@@ -33,10 +34,7 @@ export const clientListQuerySchema = z
     sort: z.enum(['name', 'domain', 'plan', 'createdAt']).default('createdAt'),
     order,
   })
-  .refine((value) => !value.dateFrom || !value.dateTo || value.dateFrom <= value.dateTo, {
-    message: 'dateFrom must not be after dateTo',
-    path: ['dateTo'],
-  })
+  .refine(validDateRange, dateRangeError)
 
 const parseQuery = <T>(schema: z.ZodType<T>, input: Record<string, unknown>): T => {
   const result = schema.safeParse(normalize(input))

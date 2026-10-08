@@ -31,7 +31,7 @@ const loadLocaleMessages = async (locale: Locale): Promise<Messages> => {
   return merged
 }
 
-export const getServerLocaleMessages = async (locale: Locale): Promise<Messages> => {
+const getServerLocaleMessages = async (locale: Locale): Promise<Messages> => {
   if (!messageCache.has(locale)) {
     let messages = await loadLocaleMessages(locale)
     if (!Object.keys(messages).length && locale !== 'en') messages = await loadLocaleMessages('en')

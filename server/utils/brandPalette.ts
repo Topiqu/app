@@ -20,7 +20,7 @@ export const suggestBrandColors = async (bytes: Uint8Array) => {
     const low = Math.min(red, green, blue)
     const difference = high - low
     if (difference < 0.16 || high < 0.18 || high > 0.95) continue
-    let hue = 0
+    let hue: number
     if (high === red) hue = ((green - blue) / difference) % 6
     else if (high === green) hue = (blue - red) / difference + 2
     else hue = (red - green) / difference + 4

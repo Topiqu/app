@@ -831,9 +831,9 @@ const titleModel = computed({
 
 const excerptModel = computed({
   get: () => (tr.isSource ? editedArticle.value.excerpt : tr.draft.excerpt),
-  set: (value: string) => {
+  set: (value: string | null) => {
     if (tr.isSource) editedArticle.value.excerpt = value
-    else tr.draft.excerpt = value
+    else tr.draft.excerpt = value ?? ''
   },
 })
 
