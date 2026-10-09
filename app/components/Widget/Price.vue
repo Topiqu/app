@@ -14,16 +14,19 @@
 </template>
 
 <script setup lang="ts">
-import type { PriceConfig } from '~~/shared/utils/widgets'
+import type { PriceConfig, PriceData } from '~~/shared/utils/widgets'
 
-const { id, config } = defineProps<{ id: string; config: PriceConfig }>()
+// The editor's preview has no saved `id` and passes `data` itself.
+const { id, config, data: given } = defineProps<{ id?: string; config: PriceConfig; data?: PriceData | null }>()
 const { locale } = useI18n()
 
 // Client-only: live values must not freeze into the SSR HTML; the fixed row height keeps CLS at zero.
-const { data } = useLazyFetch<{ quote: string; prices: { asset: string; value: number }[]; asOf: string }>(
-  `/api/widgets/${id}/data`,
-  { server: false, key: `widget-data-${id}` },
-)
+const { data: fetched } = useLazyFetch<PriceData>(`/api/widgets/${id}/data`, {
+  server: false,
+  key: `widget-data-${id}`,
+  immediate: !!id,
+})
+const data = computed(() => given ?? fetched.value)
 
 const format = (asset: string) => {
   const value = data.value?.prices.find((price) => price.asset === asset)?.value

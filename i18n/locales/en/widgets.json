@@ -6,6 +6,8 @@
     "item": "Widget {n}: {kind}",
     "add": "Add widget",
     "preview": "Preview",
+    "previewIncomplete": "The preview appears once the settings are filled in.",
+    "slotUsage": "{active}/{max} active",
     "hidden": "Hidden outside your plan",
     "slot": "Placement",
     "moveUp": "Move up",
@@ -133,13 +135,16 @@
       "titleHint": "For screen readers",
       "height": "Height (px)",
       "heightHint": "Initial; the frame then fits its content",
-      "code": "HTML code"
+      "code": "HTML code",
+      "openSaved": "Open saved version",
+      "openSavedHint": "Opens on your domain in the same isolated frame readers get. Unsaved changes are not included.",
+      "saveToPreview": "A preview is available once the widget is saved and active."
     },
     "errors": {
-      "ANNOUNCEMENT_OVERLAP": "Widget {n} overlaps another active announcement in the same language and time.",
-      "SLOT_FULL": "Widget {n}: one placement can hold at most 3 active widgets.",
-      "SLOT_KIND": "Widget {n} cannot go in the chosen placement.",
-      "field": "Widget {n}: check the “{field}” field."
+      "ANNOUNCEMENT_OVERLAP": "{widget}: overlaps another active announcement in the same language and time.",
+      "SLOT_FULL": "{widget}: one placement can hold at most 3 active widgets.",
+      "SLOT_KIND": "{widget}: this widget cannot go in the chosen placement.",
+      "field": "{widget}: check the “{field}” field."
     },
     "fields": {
       "text": "Text",

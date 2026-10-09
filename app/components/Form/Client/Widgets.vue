@@ -9,81 +9,127 @@
     <template v-else>
       <p v-if="!items.length" class="text-sm text-muted">{{ $t('widgets.empty') }}</p>
 
-      <article
-        v-for="(item, index) in items"
-        :key="item.key"
-        class="overflow-hidden rounded-lg border border-default"
-        :aria-label="$t('widgets.item', { n: index + 1, kind: $t(`widgets.kinds.${item.kind}`) })"
+      <section
+        v-for="group in groups"
+        :key="group.slot"
+        class="space-y-3"
+        :aria-labelledby="`widget-slot-${group.slot}`"
       >
-        <header class="flex flex-wrap items-center gap-2 border-b border-default px-4 py-3">
-          <UIcon :name="WIDGET_ICONS[item.kind]" class="size-5 text-muted" aria-hidden="true" />
-          <span class="font-medium text-highlighted">{{ $t(`widgets.kinds.${item.kind}`) }}</span>
-          <UBadge v-if="!allowed.includes(item.kind)" color="warning" variant="soft">
-            {{ $t('widgets.hidden') }}
+        <header class="flex items-center gap-2">
+          <h4 :id="`widget-slot-${group.slot}`" class="text-sm font-semibold text-highlighted">
+            {{ slotLabel(group.slot) }}
+          </h4>
+          <UBadge
+            v-if="group.slot !== 'BAR'"
+            :color="group.active > MAX_PER_SLOT ? 'error' : 'neutral'"
+            variant="soft"
+            size="sm"
+          >
+            {{ $t('widgets.slotUsage', { active: group.active, max: MAX_PER_SLOT }) }}
           </UBadge>
-          <div class="ms-auto flex flex-wrap items-center gap-1">
-            <USelect
-              v-if="item.kind !== 'ANNOUNCEMENT'"
-              v-model="item.slot"
-              :items="slotItems(item.kind)"
-              size="sm"
-              class="w-44"
-              :aria-label="$t('widgets.slot')"
-            />
-            <UButton
-              icon="mdi:arrow-up"
-              size="sm"
-              color="neutral"
-              variant="ghost"
-              :disabled="index === 0"
-              :aria-label="$t('widgets.moveUp')"
-              @click="move(index, -1)"
-            />
-            <UButton
-              icon="mdi:arrow-down"
-              size="sm"
-              color="neutral"
-              variant="ghost"
-              :disabled="index === items.length - 1"
-              :aria-label="$t('widgets.moveDown')"
-              @click="move(index, 1)"
-            />
-            <USwitch v-model="item.active" :aria-label="$t('widgets.active')" class="mx-1" />
-            <UButton
-              icon="mdi:trash-can-outline"
-              size="sm"
-              color="error"
-              variant="ghost"
-              :aria-label="$t('common.actions.delete')"
-              @click="items.splice(index, 1)"
-            />
-          </div>
         </header>
 
-        <WidgetBar v-if="item.kind === 'ANNOUNCEMENT'" :announcement="barPreview(item)" preview />
-        <div class="space-y-4 p-4">
-          <FormClientWidgetAnnouncement v-if="item.kind === 'ANNOUNCEMENT'" v-model:config="item.config" />
-          <FormClientWidgetDivider v-else-if="item.kind === 'DIVIDER'" v-model:config="item.config" />
-          <FormClientWidgetCta v-else-if="item.kind === 'CTA'" v-model:config="item.config" />
-          <FormClientWidgetPrice v-else-if="item.kind === 'PRICE'" v-model:config="item.config" />
-          <FormClientWidgetWeather v-else-if="item.kind === 'WEATHER'" v-model:config="item.config" />
-          <FormClientWidgetHtml v-else-if="item.kind === 'HTML'" v-model:config="item.config" />
+        <article
+          v-for="({ item, index }, at) in group.entries"
+          :key="item.key"
+          :data-widget-key="item.key"
+          tabindex="-1"
+          class="overflow-hidden rounded-lg border outline-none"
+          :class="item.key === invalidKey ? 'border-error ring-1 ring-error' : 'border-default'"
+          :aria-label="$t('widgets.item', { n: at + 1, kind: $t(`widgets.kinds.${item.kind}`) })"
+          :aria-describedby="item.key === invalidKey ? errorId : undefined"
+        >
+          <header class="flex flex-wrap items-center gap-2 border-b border-default px-4 py-3">
+            <UIcon :name="WIDGET_ICONS[item.kind]" class="size-5 text-muted" aria-hidden="true" />
+            <span class="font-medium text-highlighted">{{ $t(`widgets.kinds.${item.kind}`) }}</span>
+            <UBadge v-if="!allowed.includes(item.kind)" color="warning" variant="soft">
+              {{ $t('widgets.hidden') }}
+            </UBadge>
+            <div class="ms-auto flex flex-wrap items-center gap-1">
+              <USelect
+                v-if="item.kind !== 'ANNOUNCEMENT'"
+                :modelValue="item.slot"
+                :items="slotItems(item.kind)"
+                size="sm"
+                class="w-44"
+                :aria-label="$t('widgets.slot')"
+                @update:modelValue="setSlot(index, $event)"
+              />
+              <UButton
+                icon="mdi:arrow-up"
+                size="sm"
+                color="neutral"
+                variant="ghost"
+                :disabled="at === 0"
+                :aria-label="$t('widgets.moveUp')"
+                @click="move(group.entries, at, -1)"
+              />
+              <UButton
+                icon="mdi:arrow-down"
+                size="sm"
+                color="neutral"
+                variant="ghost"
+                :disabled="at === group.entries.length - 1"
+                :aria-label="$t('widgets.moveDown')"
+                @click="move(group.entries, at, 1)"
+              />
+              <USwitch v-model="item.active" :aria-label="$t('widgets.active')" class="mx-1" />
+              <UButton
+                icon="mdi:trash-can-outline"
+                size="sm"
+                color="error"
+                variant="ghost"
+                :aria-label="$t('common.actions.delete')"
+                @click="items.splice(index, 1)"
+              />
+            </div>
+          </header>
 
-          <UFormField :label="$t('widgets.languages')" :hint="$t('widgets.languagesHint')">
-            <UCheckboxGroup v-model="item.languages" :items="languageItems" orientation="horizontal" />
-          </UFormField>
+          <WidgetBar v-if="item.kind === 'ANNOUNCEMENT'" :announcement="barPreview(item)" preview />
+          <div class="space-y-4 p-4">
+            <p v-if="item.key === invalidKey" :id="errorId" class="text-sm text-error" role="alert">{{ error }}</p>
 
-          <div v-if="item.kind === 'DIVIDER' || item.kind === 'CTA'" class="space-y-2">
-            <p class="text-xs font-medium uppercase tracking-wide text-muted">{{ $t('widgets.preview') }}</p>
-            <div class="rounded-lg border border-dashed border-default p-4">
-              <WidgetDivider v-if="item.kind === 'DIVIDER'" :config="item.config" />
-              <WidgetCta v-else-if="item.kind === 'CTA'" :config="ctaPreview(item.config)" />
+            <FormClientWidgetAnnouncement v-if="item.kind === 'ANNOUNCEMENT'" v-model:config="item.config" />
+            <FormClientWidgetDivider v-else-if="item.kind === 'DIVIDER'" v-model:config="item.config" />
+            <FormClientWidgetCta v-else-if="item.kind === 'CTA'" v-model:config="item.config" />
+            <FormClientWidgetPrice v-else-if="item.kind === 'PRICE'" v-model:config="item.config" />
+            <FormClientWidgetWeather v-else-if="item.kind === 'WEATHER'" v-model:config="item.config" />
+            <FormClientWidgetHtml v-else-if="item.kind === 'HTML'" v-model:config="item.config" />
+
+            <UFormField :label="$t('widgets.languages')" :hint="$t('widgets.languagesHint')">
+              <UCheckboxGroup v-model="item.languages" :items="languageItems" orientation="horizontal" />
+            </UFormField>
+
+            <div v-if="item.kind !== 'ANNOUNCEMENT'" class="space-y-2">
+              <p class="text-xs font-medium uppercase tracking-wide text-muted">{{ $t('widgets.preview') }}</p>
+              <div v-if="item.kind === 'HTML'" class="flex flex-wrap items-center gap-3">
+                <UButton
+                  v-if="savedFrameUrl(item)"
+                  :to="savedFrameUrl(item)"
+                  target="_blank"
+                  external
+                  color="neutral"
+                  variant="soft"
+                  size="sm"
+                  icon="mdi:open-in-new"
+                >
+                  {{ $t('widgets.html.openSaved') }}
+                </UButton>
+                <p class="text-xs text-muted">
+                  {{ $t(savedFrameUrl(item) ? 'widgets.html.openSavedHint' : 'widgets.html.saveToPreview') }}
+                </p>
+              </div>
+              <div v-else class="rounded-lg border border-dashed border-default p-4">
+                <WidgetDivider v-if="item.kind === 'DIVIDER'" :config="item.config" />
+                <WidgetCta v-else-if="item.kind === 'CTA'" :config="ctaPreview(item.config)" />
+                <FormClientWidgetLivePreview v-else :widget="item" />
+              </div>
             </div>
           </div>
-        </div>
-      </article>
+        </article>
+      </section>
 
-      <p v-if="error" class="text-sm text-error" role="alert">{{ error }}</p>
+      <p v-if="error && !invalidKey" class="text-sm text-error" role="alert">{{ error }}</p>
 
       <div class="flex flex-wrap gap-2">
         <UButton
@@ -111,8 +157,10 @@ import type { Language } from '~~/shared/utils/language'
 
 import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
 import {
+  MAX_PER_SLOT,
   MAX_WIDGETS,
   WIDGET_SLOTS,
+  resolveWidgetSlot,
   widgetsInputSchema,
   type CtaConfig,
   type WidgetKind,
@@ -121,7 +169,14 @@ import {
 
 import { WIDGET_ICONS, WIDGET_PRESETS, type WidgetDraft } from '~/utils/widgetPresets'
 
-type StoredWidget = { id: string; kind: WidgetKind; slot: string; active: boolean; languages: Language[]; config: unknown }
+type StoredWidget = {
+  id: string
+  kind: WidgetKind
+  slot: string
+  active: boolean
+  languages: Language[]
+  config: unknown
+}
 
 const { t } = useI18n()
 const toast = useToast()
@@ -133,6 +188,7 @@ const { data, isPending, refetch } = useQuery({
 })
 const allowed = computed(() => data.value?.allowed ?? [])
 
+const slotLabel = (slot: string) => t(`widgets.slots.${slot}`, slot)
 const languageItems = computed(() => LANGUAGE_OPTIONS.map((value) => ({ value, label: t(`languages.${value}`) })))
 const slotItems = (kind: WidgetKind) =>
   (Object.keys(WIDGET_SLOTS) as WidgetSlot[])
@@ -143,16 +199,37 @@ const items = ref<WidgetDraft[]>([])
 const pristine = shallowRef('[]')
 const dirty = computed(() => JSON.stringify(items.value) !== pristine.value)
 const error = shallowRef('')
+const invalidKey = shallowRef('')
+const errorId = useId()
 const saving = shallowRef(false)
 const galleryOpen = shallowRef(false)
 
 watch(
   () => data.value?.widgets,
   (widgets) => {
-    items.value = (widgets ?? []).map((widget) => ({ ...widget, key: widget.id }) as WidgetDraft)
+    items.value = (widgets ?? []).map(
+      (widget) => ({ ...widget, slot: resolveWidgetSlot(widget.slot) ?? widget.slot, key: widget.id }) as WidgetDraft,
+    )
     pristine.value = JSON.stringify(items.value)
   },
   { immediate: true },
+)
+watch(
+  items,
+  () => {
+    error.value = ''
+    invalidKey.value = ''
+  },
+  { deep: true },
+)
+
+// The array order is `position`. Grouped by slot, only the order within a slot shows, so moves swap
+// neighbours of one slot. A slot the layout no longer has still gets a group, or its widgets would hide.
+const groups = computed(() =>
+  [...new Set([...Object.keys(WIDGET_SLOTS), ...items.value.map((item) => item.slot)])].flatMap((slot) => {
+    const entries = items.value.flatMap((item, index) => (item.slot === slot ? [{ item, index }] : []))
+    return entries.length ? [{ slot, entries, active: entries.filter(({ item }) => item.active).length }] : []
+  }),
 )
 
 let created = 0
@@ -170,10 +247,26 @@ function add(presetId: string) {
   } as WidgetDraft)
 }
 
-function move(index: number, by: -1 | 1) {
-  const [item] = items.value.splice(index, 1)
-  items.value.splice(index + by, 0, item!)
+function move(entries: { index: number }[], at: number, by: -1 | 1) {
+  const from = entries[at]!.index
+  const to = entries[at + by]!.index
+  const item = items.value[from]!
+  items.value[from] = items.value[to]!
+  items.value[to] = item
 }
+
+// A widget moved to another slot lands at its end.
+function setSlot(index: number, slot: string) {
+  const [item] = items.value.splice(index, 1)
+  item!.slot = slot
+  items.value.push(item!)
+}
+
+// The HTML frame is served only on the tenant's own domain, and only for a saved, active widget.
+const savedFrameUrl = (item: WidgetDraft) =>
+  item.id && item.active && allowed.value.includes('HTML') && site.value?.domain
+    ? `https://${site.value.domain}/widgets/${item.id}`
+    : undefined
 
 const barPreview = (item: Extract<WidgetDraft, { kind: 'ANNOUNCEMENT' }>) => ({
   ...item.config,
@@ -194,21 +287,29 @@ const toInput = ({ key: _key, ...draft }: WidgetDraft) => {
   return draft
 }
 
-const issueMessage = (issue: z.core.$ZodIssue) => {
-  const n = Number(issue.path[1]) + 1
+const issueMessage = (issue: z.core.$ZodIssue, item: WidgetDraft | undefined) => {
+  const widget = item ? `${t(`widgets.kinds.${item.kind}`)} · ${slotLabel(item.slot)}` : ''
   if (['ANNOUNCEMENT_OVERLAP', 'SLOT_FULL', 'SLOT_KIND'].includes(issue.message))
-    return t(`widgets.errors.${issue.message}`, { n })
+    return t(`widgets.errors.${issue.message}`, { widget })
   const field = issue.path.findLast((part) => typeof part === 'string' && part !== 'config')
-  return t(`widgets.errors.field`, { n, field: t(`widgets.fields.${String(field)}`, String(field)) })
+  return t(`widgets.errors.field`, { widget, field: t(`widgets.fields.${String(field)}`, String(field)) })
 }
 
 async function save() {
   const parsed = widgetsInputSchema.safeParse({ widgets: items.value.map(toInput) })
   if (!parsed.success) {
-    error.value = issueMessage(parsed.error.issues[0]!)
+    const issue = parsed.error.issues[0]!
+    const item = items.value[Number(issue.path[1])]
+    error.value = issueMessage(issue, item)
+    invalidKey.value = item?.key ?? ''
+    await nextTick()
+    const card = document.querySelector<HTMLElement>(`[data-widget-key="${CSS.escape(invalidKey.value)}"]`)
+    card?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    card?.focus({ preventScroll: true })
     return
   }
   error.value = ''
+  invalidKey.value = ''
   saving.value = true
   try {
     await $fetch('/api/widgets', { method: 'PUT', body: parsed.data })

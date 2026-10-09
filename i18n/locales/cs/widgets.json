@@ -6,6 +6,8 @@
     "item": "Widget {n}: {kind}",
     "add": "Přidat widget",
     "preview": "Náhled",
+    "previewIncomplete": "Náhled se zobrazí po vyplnění nastavení.",
+    "slotUsage": "{active}/{max} aktivní",
     "hidden": "Skrytý mimo váš tarif",
     "slot": "Umístění",
     "moveUp": "Posunout výš",
@@ -133,13 +135,16 @@
       "titleHint": "Pro čtečky obrazovky",
       "height": "Výška (px)",
       "heightHint": "Výchozí, rámeček se pak přizpůsobí obsahu",
-      "code": "HTML kód"
+      "code": "HTML kód",
+      "openSaved": "Otevřít uloženou verzi",
+      "openSavedHint": "Otevře se na vaší doméně ve stejném izolovaném rámečku jako pro čtenáře. Neuložené změny tam nejsou.",
+      "saveToPreview": "Náhled bude k dispozici po uložení aktivního widgetu."
     },
     "errors": {
-      "ANNOUNCEMENT_OVERLAP": "Widget {n} se překrývá s jiným aktivním oznámením ve stejném jazyce a čase.",
-      "SLOT_FULL": "Widget {n}: na jednom místě mohou být aktivní nejvýš 3 widgety.",
-      "SLOT_KIND": "Widget {n} nejde umístit na zvolené místo.",
-      "field": "Widget {n}: zkontrolujte pole „{field}“."
+      "ANNOUNCEMENT_OVERLAP": "{widget}: překrývá se s jiným aktivním oznámením ve stejném jazyce a čase.",
+      "SLOT_FULL": "{widget}: na jednom místě mohou být aktivní nejvýš 3 widgety.",
+      "SLOT_KIND": "{widget}: tento widget nejde umístit na zvolené místo.",
+      "field": "{widget}: zkontrolujte pole „{field}“."
     },
     "fields": {
       "text": "Text",
