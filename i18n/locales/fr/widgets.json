@@ -6,6 +6,8 @@
     "item": "Widget {n} : {kind}",
     "add": "Ajouter un widget",
     "preview": "Aperçu",
+    "previewIncomplete": "L’aperçu s’affiche une fois les réglages remplis.",
+    "slotUsage": "{active}/{max} actifs",
     "hidden": "Masqué hors de votre offre",
     "slot": "Emplacement",
     "moveUp": "Monter",
@@ -133,13 +135,16 @@
       "titleHint": "Pour les lecteurs d’écran",
       "height": "Hauteur (px)",
       "heightHint": "Valeur initiale ; le cadre s’adapte ensuite au contenu",
-      "code": "Code HTML"
+      "code": "Code HTML",
+      "openSaved": "Ouvrir la version enregistrée",
+      "openSavedHint": "S’ouvre sur votre domaine dans le même cadre isolé que pour les lecteurs. Les modifications non enregistrées n’y figurent pas.",
+      "saveToPreview": "Un aperçu est disponible une fois le widget enregistré et actif."
     },
     "errors": {
-      "ANNOUNCEMENT_OVERLAP": "Le widget {n} chevauche une autre annonce active dans la même langue et la même période.",
-      "SLOT_FULL": "Widget {n} : un emplacement accepte au plus 3 widgets actifs.",
-      "SLOT_KIND": "Le widget {n} ne peut pas aller à l’emplacement choisi.",
-      "field": "Widget {n} : vérifiez le champ « {field} »."
+      "ANNOUNCEMENT_OVERLAP": "{widget} : chevauche une autre annonce active dans la même langue et la même période.",
+      "SLOT_FULL": "{widget} : un emplacement accepte au plus 3 widgets actifs.",
+      "SLOT_KIND": "{widget} : ce widget ne peut pas aller à l’emplacement choisi.",
+      "field": "{widget} : vérifiez le champ « {field} »."
     },
     "fields": {
       "text": "Texte",

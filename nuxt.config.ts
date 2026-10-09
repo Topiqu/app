@@ -196,10 +196,14 @@ export default defineNuxtConfig({
     dirs: ['utils', 'server/shared/consts'],
   },
   vite: {
-    build: {
-      rolldownOptions: {
-        output: {
-          minify: IS_PROD ? { compress: { dropConsole: true, dropDebugger: true } } : undefined,
+    // Client only: Nitro re-bundles the SSR output, and Oxc's mangled names there collided with an
+    // import binding ("The symbol has already been declared"), failing the production build.
+    $client: {
+      build: {
+        rolldownOptions: {
+          output: {
+            minify: IS_PROD ? { compress: { dropConsole: true, dropDebugger: true } } : undefined,
+          },
         },
       },
     },

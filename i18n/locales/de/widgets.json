@@ -6,6 +6,8 @@
     "item": "Widget {n}: {kind}",
     "add": "Widget hinzufügen",
     "preview": "Vorschau",
+    "previewIncomplete": "Die Vorschau erscheint, sobald die Einstellungen ausgefüllt sind.",
+    "slotUsage": "{active}/{max} aktiv",
     "hidden": "Außerhalb Ihres Tarifs ausgeblendet",
     "slot": "Platzierung",
     "moveUp": "Nach oben",
@@ -133,13 +135,16 @@
       "titleHint": "Für Screenreader",
       "height": "Höhe (px)",
       "heightHint": "Anfangswert; der Rahmen passt sich dann dem Inhalt an",
-      "code": "HTML-Code"
+      "code": "HTML-Code",
+      "openSaved": "Gespeicherte Version öffnen",
+      "openSavedHint": "Öffnet sich auf Ihrer Domain im selben isolierten Rahmen wie für Leser. Nicht gespeicherte Änderungen sind nicht enthalten.",
+      "saveToPreview": "Eine Vorschau ist verfügbar, sobald das Widget gespeichert und aktiv ist."
     },
     "errors": {
-      "ANNOUNCEMENT_OVERLAP": "Widget {n} überschneidet sich mit einer anderen aktiven Ankündigung in derselben Sprache und Zeit.",
-      "SLOT_FULL": "Widget {n}: An einer Stelle sind höchstens 3 aktive Widgets möglich.",
-      "SLOT_KIND": "Widget {n} kann nicht an der gewählten Stelle platziert werden.",
-      "field": "Widget {n}: Bitte das Feld „{field}“ prüfen."
+      "ANNOUNCEMENT_OVERLAP": "{widget}: überschneidet sich mit einer anderen aktiven Ankündigung in derselben Sprache und Zeit.",
+      "SLOT_FULL": "{widget}: An einer Stelle sind höchstens 3 aktive Widgets möglich.",
+      "SLOT_KIND": "{widget}: Dieses Widget kann nicht an der gewählten Stelle platziert werden.",
+      "field": "{widget}: Bitte das Feld „{field}“ prüfen."
     },
     "fields": {
       "text": "Text",

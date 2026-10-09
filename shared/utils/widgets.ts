@@ -59,7 +59,10 @@ export const ANNOUNCEMENT_TONES = ['info', 'accent', 'warning'] as const
 export const announcementConfigSchema = z
   .object({
     text: z.string().trim().min(1).max(200),
-    link: z.object({ url: link, label: z.string().trim().min(1).max(40) }).nullable().default(null),
+    link: z
+      .object({ url: link, label: z.string().trim().min(1).max(40) })
+      .nullable()
+      .default(null),
     tone: z.enum(ANNOUNCEMENT_TONES).default('info'),
     dismissible: z.boolean().default(true),
     startsAt: instant,
@@ -80,7 +83,10 @@ export const ctaConfigSchema = z.object({
   text: z.string().trim().max(280).default(''),
   button: z.object({ url: link, label: z.string().trim().min(1).max(40) }),
   // `url` is filled by the server from the tenant's own media asset, never taken from the body.
-  image: z.object({ assetId: z.string().min(1), url: z.string().optional(), alt: z.string().max(200).default('') }).nullable().default(null),
+  image: z
+    .object({ assetId: z.string().min(1), url: z.string().optional(), alt: z.string().max(200).default('') })
+    .nullable()
+    .default(null),
   tone: z.enum(['info', 'accent']).default('accent'),
 })
 export type CtaConfig = z.infer<typeof ctaConfigSchema>
@@ -89,7 +95,10 @@ export const FIAT = ['EUR', 'USD', 'GBP', 'PLN', 'CZK', 'CHF', 'HUF', 'SEK', 'NO
 export const CRYPTO = ['BTC', 'ETH', 'SOL'] as const
 export const priceConfigSchema = z
   .object({
-    assets: z.array(z.enum([...CRYPTO, ...FIAT])).min(1).max(6),
+    assets: z
+      .array(z.enum([...CRYPTO, ...FIAT]))
+      .min(1)
+      .max(6),
     quote: z.enum(FIAT),
   })
   .refine((c) => !c.assets.includes(c.quote), { path: ['assets'] })
@@ -107,7 +116,10 @@ export type WeatherConfig = z.infer<typeof weatherConfigSchema>
 
 export const htmlConfigSchema = z.object({
   title: z.string().trim().min(1).max(80),
-  html: z.string().min(1).refine((html) => new TextEncoder().encode(html).length <= MAX_HTML_BYTES),
+  html: z
+    .string()
+    .min(1)
+    .refine((html) => new TextEncoder().encode(html).length <= MAX_HTML_BYTES),
   height: z.number().int().min(40).max(2000).default(240),
 })
 export type HtmlConfig = z.infer<typeof htmlConfigSchema>
@@ -121,7 +133,25 @@ export const WIDGET_CONFIG_SCHEMAS = {
   HTML: htmlConfigSchema,
 } as const satisfies Record<WidgetKind, z.ZodType>
 
-const base = { id: z.string().optional(), slot: z.string(), active: z.boolean(), languages: z.array(LanguageSchema).max(4) }
+export type PriceData = { quote: string; prices: { asset: string; value: number }[]; asOf: string }
+export type WeatherData = {
+  current: { temp: number; symbol: string | null } | null
+  days: { date: string; min: number; max: number; symbol: string | null }[]
+}
+
+/** Kinds whose live data the editor can preview before saving. */
+export const widgetPreviewSchema = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('PRICE'), config: priceConfigSchema }),
+  z.object({ kind: z.literal('WEATHER'), config: weatherConfigSchema }),
+])
+export type WidgetPreview = z.infer<typeof widgetPreviewSchema>
+
+const base = {
+  id: z.string().optional(),
+  slot: z.string(),
+  active: z.boolean(),
+  languages: z.array(LanguageSchema).max(4),
+}
 const widgetInputSchema = z.discriminatedUnion('kind', [
   z.object({ ...base, kind: z.literal('ANNOUNCEMENT'), config: announcementConfigSchema }),
   z.object({ ...base, kind: z.literal('DIVIDER'), config: dividerConfigSchema }),
@@ -144,16 +174,22 @@ export const widgetsInputSchema = z
     const perSlot = new Map<string, number>()
     widgets.forEach((widget, i) => {
       const kinds: readonly string[] = WIDGET_SLOTS[widget.slot as WidgetSlot] ?? []
-      if (!kinds.includes(widget.kind)) ctx.addIssue({ code: 'custom', message: 'SLOT_KIND', path: ['widgets', i, 'slot'] })
+      if (!kinds.includes(widget.kind))
+        ctx.addIssue({ code: 'custom', message: 'SLOT_KIND', path: ['widgets', i, 'slot'] })
       const count = (perSlot.get(widget.slot) ?? 0) + (widget.active && widget.slot !== 'BAR' ? 1 : 0)
       perSlot.set(widget.slot, count)
       if (count > MAX_PER_SLOT) ctx.addIssue({ code: 'custom', message: 'SLOT_FULL', path: ['widgets', i, 'slot'] })
     })
 
     // One bar per reader: two active announcements may share a language only in different time windows.
-    const bars = widgets.filter((w) => w.active && w.kind === 'ANNOUNCEMENT') as Extract<WidgetInput, { kind: 'ANNOUNCEMENT' }>[]
+    const bars = widgets.filter((w) => w.active && w.kind === 'ANNOUNCEMENT') as Extract<
+      WidgetInput,
+      { kind: 'ANNOUNCEMENT' }
+    >[]
     bars.forEach((a, i) => {
-      if (bars.slice(0, i).some((b) => languagesOverlap(a.languages, b.languages) && windowsOverlap(a.config, b.config)))
+      if (
+        bars.slice(0, i).some((b) => languagesOverlap(a.languages, b.languages) && windowsOverlap(a.config, b.config))
+      )
         ctx.addIssue({ code: 'custom', message: 'ANNOUNCEMENT_OVERLAP', path: ['widgets', widgets.indexOf(a)] })
     })
   })

@@ -3,7 +3,11 @@
     <div class="flex items-center justify-between gap-4">
       <h2 :id="titleId" class="font-semibold text-highlighted">{{ config.place.name }}</h2>
       <p v-if="data?.current" class="flex items-center gap-2 text-2xl font-bold tabular-nums">
-        <UIcon :name="look(data.current.symbol).icon" class="size-7" :aria-label="$t(look(data.current.symbol).label)" />
+        <UIcon
+          :name="look(data.current.symbol).icon"
+          class="size-7"
+          :aria-label="$t(look(data.current.symbol).label)"
+        />
         {{ temperature(data.current.temp) }}
       </p>
       <span v-else class="h-8 w-20" aria-hidden="true" />
@@ -25,18 +29,19 @@
 </template>
 
 <script setup lang="ts">
-import type { WeatherConfig } from '~~/shared/utils/widgets'
+import type { WeatherConfig, WeatherData } from '~~/shared/utils/widgets'
 
-type Forecast = {
-  current: { temp: number; symbol: string | null } | null
-  days: { date: string; min: number; max: number; symbol: string | null }[]
-}
-
-const { id, config } = defineProps<{ id: string; config: WeatherConfig }>()
+// The editor's preview has no saved `id` and passes `data` itself.
+const { id, config, data: given } = defineProps<{ id?: string; config: WeatherConfig; data?: WeatherData | null }>()
 const { locale } = useI18n()
 const titleId = useId()
 
-const { data } = useLazyFetch<Forecast>(`/api/widgets/${id}/data`, { server: false, key: `widget-data-${id}` })
+const { data: fetched } = useLazyFetch<WeatherData>(`/api/widgets/${id}/data`, {
+  server: false,
+  key: `widget-data-${id}`,
+  immediate: !!id,
+})
+const data = computed(() => given ?? fetched.value)
 const days = computed(() => Array.from({ length: config.days }, (_, index) => data.value?.days[index]))
 
 // MET Norway symbol codes (`lightrainshowers_day`, …), grouped from most to least specific.
