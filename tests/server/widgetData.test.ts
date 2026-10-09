@@ -55,7 +55,7 @@ describe('widgetForecast', () => {
         properties: {
           timeseries: [
             point('2026-10-08T10:00:00Z', 12, 'rain'),
-            point('2026-10-08T12:00:00Z', 15, 'partlycloudy_day'),
+            point('2026-10-08T11:00:00Z', 15, 'partlycloudy_day'),
             point('2026-10-09T06:00:00Z', 4),
             point('2026-10-09T12:00:00Z', 9, 'clearsky_day'),
           ],
@@ -69,6 +69,27 @@ describe('widgetForecast', () => {
     expect(forecast.days).toEqual([
       { date: '2026-10-08', min: 12, max: 15, symbol: 'partlycloudy_day' },
       { date: '2026-10-09', min: 4, max: 9, symbol: 'clearsky_day' },
+    ])
+  })
+
+  it('splits days at the place’s local midnight, not at UTC midnight', async () => {
+    const { widgetForecast } = await load({
+      'https://api.met.no/': {
+        properties: {
+          timeseries: [
+            point('2026-10-08T18:00:00Z', 20, 'clearsky_day'),
+            point('2026-10-09T06:00:00Z', 14, 'rain'),
+            point('2026-10-09T12:00:00Z', 22, 'cloudy'),
+          ],
+        },
+      },
+    })
+    // Honolulu is ten to eleven hours behind UTC: 06:00Z on the 9th is still the evening of the 8th there.
+    const forecast = await widgetForecast({ place: { name: 'Honolulu', lat: 21.3, lon: -157.86 }, days: 2 })
+
+    expect(forecast.days).toEqual([
+      { date: '2026-10-08', min: 14, max: 20, symbol: 'clearsky_day' },
+      { date: '2026-10-09', min: 22, max: 22, symbol: 'cloudy' },
     ])
   })
 })
