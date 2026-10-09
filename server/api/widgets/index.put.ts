@@ -25,15 +25,26 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  await db.$transaction(async (tx) => {
+  const removed = await db.$transaction(async (tx) => {
     const kept = widgets.flatMap((widget) => (widget.id ? [widget.id] : []))
-    await tx.siteWidget.deleteMany({ where: { clientSiteId, id: { notIn: kept } } })
+    const gone = await tx.siteWidget.findMany({
+      where: { clientSiteId, deletedAt: null, id: { notIn: kept } },
+      select: { id: true, kind: true },
+    })
+    if (gone.length)
+      await tx.siteWidget.updateMany({
+        where: { clientSiteId, id: { in: gone.map((w) => w.id) } },
+        data: { deletedAt: new Date() },
+      })
     for (const [position, { id, ...widget }] of widgets.entries()) {
       const data = { ...widget, position }
-      // A body id only addresses this tenant's rows; anything else becomes a new widget.
-      const { count } = id ? await tx.siteWidget.updateMany({ where: { id, clientSiteId }, data }) : { count: 0 }
+      // A body id only addresses this tenant's live rows; anything else becomes a new widget.
+      const { count } = id
+        ? await tx.siteWidget.updateMany({ where: { id, clientSiteId, deletedAt: null }, data })
+        : { count: 0 }
       if (!count) await tx.siteWidget.create({ data: { ...data, clientSiteId } })
     }
+    return gone
   })
 
   await logAction({
@@ -41,7 +52,7 @@ export default defineEventHandler(async (event) => {
     userId: user.id,
     clientSiteId,
     ip: getIp(event),
-    metadata: { count: widgets.length, kinds: [...new Set(widgets.map((w) => w.kind))] },
+    metadata: { count: widgets.length, kinds: [...new Set(widgets.map((w) => w.kind))], removed },
   })
   return { widgets: await listSiteWidgets(db, clientSiteId) }
 })
