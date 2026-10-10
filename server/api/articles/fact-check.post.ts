@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
   await requireTenantScope(event, 'AI_USE', user.clientSiteId)
   await ensureMinAccountAge(event, user.id)
   await requireAiPlan(user.clientSiteId, t('common.errors.featureNotInPlan')!)
-  if (!useRuntimeConfig().openAi.apiKey)
+  if (!useRuntimeConfig().anthropic.apiKey)
     throw createError({
       statusCode: 503,
       message: 'AI service is not configured',

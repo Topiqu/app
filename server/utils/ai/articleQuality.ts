@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { load } from 'cheerio'
 import { generateText, Output } from 'ai'
 
+import { aiReasoning } from './reasoning'
 import { AUTHORIAL_REASONING, ILLUSTRATIVE_STORY } from './editorialPolicy'
 import { extractResearchUrls, researchEvidence, retrievedResearchSources } from './researchEvidence'
 
@@ -203,10 +204,10 @@ export const reviewArticle = async (draft: ReviewDraft, context: ReviewContext) 
   if (context.verifyFacts ?? !!context.researchBrief) {
     const verification = await generateText({
       model: aiModel('articleResearch'),
-      tools: { web_search: aiWebSearchTool('high') as never },
+      tools: { web_search: aiWebSearchTool('articleResearch', 'high') as never },
       toolChoice: 'required',
       maxOutputTokens: 6000,
-      providerOptions: { openai: { reasoningEffort: 'medium' } },
+      providerOptions: aiReasoning('medium'),
       abortSignal: context.abortSignal
         ? AbortSignal.any([context.abortSignal, AbortSignal.timeout(120_000)])
         : AbortSignal.timeout(120_000),
@@ -265,7 +266,7 @@ firstPartyKnowledge is the publisher's own material, dated per entry. A claim ab
   const { output: object, usage } = await generateText({
     model: aiModel('articleEditor'),
     maxOutputTokens: 2000,
-    providerOptions: { openai: { reasoningEffort: 'low' } },
+    providerOptions: aiReasoning('low'),
     abortSignal: context.abortSignal
       ? AbortSignal.any([context.abortSignal, AbortSignal.timeout(30_000)])
       : AbortSignal.timeout(30_000),

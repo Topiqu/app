@@ -10,6 +10,7 @@ import type {
   VisibilitySource,
 } from './visibilityProviderParsing'
 
+import { aiReasoning } from './reasoning'
 import { aiModel, aiWebSearchTool } from './models'
 import { AI_VISIBILITY_MODELS } from './modelRegistry'
 import {
@@ -89,9 +90,9 @@ const runOpenAi = async (config: VisibilityProviderConfig, prompt: string): Prom
     prompt,
     maxOutputTokens: 1400,
     toolChoice: 'required',
-    tools: { web_search: aiWebSearchTool('medium') as never },
+    tools: { web_search: aiWebSearchTool('visibility', 'medium') as never },
     abortSignal: AbortSignal.timeout(60_000),
-    providerOptions: { openai: { reasoningEffort: 'low' } },
+    providerOptions: aiReasoning('low'),
   })
   return {
     provider: config.provider,
@@ -115,7 +116,9 @@ const runAnthropic = async (config: VisibilityProviderConfig, prompt: string): P
     config.apiKey,
     {
       model: config.model,
-      max_tokens: 1400,
+      // Haiku thinks out of the same pool; 1400 is the answer's share.
+      max_tokens: 1400 + 4000,
+      output_config: { effort: 'low' },
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: prompt }],
       tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 5 }],

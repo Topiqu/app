@@ -5,6 +5,7 @@
     "": {
       "name": "topiqu-blog",
       "dependencies": {
+        "@ai-sdk/anthropic": "4.0.77",
         "@ai-sdk/openai": "4.0.89",
         "@aws-sdk/client-rekognition": "^3.1147.0",
         "@aws-sdk/client-s3": "^3.1147.0",
@@ -138,6 +139,8 @@
   },
   "packages": {
     "@acemir/cssom": ["@acemir/cssom@0.9.31", "", {}, "sha512-ZnR3GSaH+/vJ0YlHau21FjfLYjMpYVIzTD8M8vIEQvIGxeOXyXdzCI140rrCY862p/C/BbzWsjc1dgnM9mkoTA=="],
+
+    "@ai-sdk/anthropic": ["@ai-sdk/anthropic@4.0.77", "", { "dependencies": { "@ai-sdk/provider": "4.0.25", "@ai-sdk/provider-utils": "5.0.57" }, "peerDependencies": { "zod": "^3.25.76 || ^4.1.8" } }, "sha512-u9HNWJaFVVOnRSx0yfUaWL3oIJQfS4dduHLViaSrpsHJjz8E5WMsLk43g/n4eTpnn0cfFkMHuwFQDgwKot6Gew=="],
 
     "@ai-sdk/gateway": ["@ai-sdk/gateway@4.0.108", "", { "dependencies": { "@ai-sdk/provider": "4.0.25", "@ai-sdk/provider-utils": "5.0.57", "@vercel/oidc": "3.2.0" }, "peerDependencies": { "zod": "^3.25.76 || ^4.1.8" } }, "sha512-UgtnyyuIpMSzhha89MAK6c2pTeQW8s9jLSmDeYI92NzqDsoyEYFZ/lYAXTXLUQxA25j5iTWPEnzGVl5adIy+8w=="],
 

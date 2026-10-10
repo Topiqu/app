@@ -50,68 +50,33 @@ describe('AI model registry', () => {
 
   it('declares a known provider and a non-empty id for every task', () => {
     for (const [task, { provider, id }] of ALL_ENTRIES) {
-      expect(['openai'], `task "${task}"`).toContain(provider)
+      expect(['openai', 'anthropic'], `task "${task}"`).toContain(provider)
       expect(id.trim(), `task "${task}"`).not.toBe('')
     }
   })
 
-  it('routes every task through OpenAI so only OPENAI_API_KEY is required at runtime', () => {
-    for (const [task, { provider }] of ALL_ENTRIES) {
-      expect(provider, `task "${task}"`).toBe('openai')
+  it('runs every text task on Claude Haiku 5.5 except the ChatGPT visibility probe', () => {
+    for (const [task, { provider, id }] of Object.entries(AI_MODELS)) {
+      if (task === 'visibility') continue
+      expect(provider, task).toBe('anthropic')
+      expect(id, task).toBe('claude-haiku-5-5')
     }
   })
 
-  it('researches with a text model, not an image model', () => {
-    expect(aiModelProvider('articleResearch')).toBe('openai')
-    expect(aiModelId('articleResearch')).toBe('gpt-5.6-luna')
-    expect(aiModelId('articleResearch')).not.toMatch(/^gpt-image-/)
+  it('measures ChatGPT visibility with an OpenAI model', () => {
+    expect(aiModelProvider('visibility')).toBe('openai')
+    expect(AI_VISIBILITY_MODELS.OPENAI).toBe(aiModelId('visibility'))
+    expect(aiModelId('visibility')).toMatch(/^gpt-/)
   })
 
-  it('routes the independent article copy desk through a text model', () => {
-    expect(aiModelProvider('articleEditor')).toBe('openai')
-    expect(aiModelId('articleEditor')).toBe('gpt-5.6-luna')
+  it('measures Claude visibility with Haiku, not a costlier tier', () => {
+    expect(AI_VISIBILITY_MODELS.ANTHROPIC).toBe('claude-haiku-5-5')
   })
 
   it('generates article images with an OpenAI image model', () => {
     expect(aiImageModelProvider('articleImage')).toBe('openai')
     expect(aiImageModelId('articleImage')).toMatch(/^gpt-image-/)
     expect(aiImageModelId('articleImage')).toBe('gpt-image-2.5-flare')
-  })
-
-  it('keeps the token-heavy translation task on a low-cost tier', () => {
-    expect(aiModelProvider('translation')).toBe('openai')
-    expect(aiModelId('translation')).toBe('gpt-6-luna')
-  })
-
-  it('keeps editorial work on GPT-5.6 Luna and routes routine tasks to GPT-6 Luna', () => {
-    for (const task of [
-      'topicSelection',
-      'articleResearch',
-      'articleWriter',
-      'articleEditor',
-      'linkedinPost',
-      'factCheck',
-      'topicScope',
-      'keywordOpportunity',
-      'backlinkMatch',
-    ] as const) {
-      expect(aiModelId(task), task).toBe('gpt-5.6-luna')
-    }
-    for (const task of [
-      'translation',
-      'promptEnhance',
-      'textEdit',
-      'sentiment',
-      'communityInsight',
-      'visibility',
-      'visibilityPrompts',
-      'knowledgeSelect',
-      'articleLinks',
-      'keywordSeeds',
-      'backlinkOutreach',
-    ] as const) {
-      expect(aiModelId(task), task).toBe('gpt-6-luna')
-    }
   })
 })
 

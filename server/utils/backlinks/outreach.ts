@@ -5,6 +5,8 @@ import { generateText, Output } from 'ai'
 
 import type { MatchSite } from './match'
 
+import { aiReasoning } from '../ai/reasoning'
+
 const RULES = `
 Write a short, polite e-mail asking the owner of a web page to add one link to a business.
 Write in the requested language, plain text, no markdown, at most 120 words in the body.
@@ -42,7 +44,7 @@ export const draftOutreach = async (site: MatchSite, target: OutreachTarget, use
   const result = await generateText({
     model: aiModel('backlinkOutreach'),
     maxOutputTokens: 800,
-    providerOptions: { openai: { reasoningEffort: 'none' } },
+    providerOptions: aiReasoning('none'),
     instructions: RULES,
     prompt: `Language: ${language}
 Business: ${site.name}

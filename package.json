@@ -43,6 +43,7 @@
     "stats:backfill-generations": "bun run scripts/backfill-generation-word-counts.ts"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "4.0.77",
     "@ai-sdk/openai": "4.0.89",
     "@aws-sdk/client-rekognition": "^3.1147.0",
     "@aws-sdk/client-s3": "^3.1147.0",
