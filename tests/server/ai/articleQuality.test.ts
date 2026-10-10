@@ -47,6 +47,12 @@ describe('article copy desk', () => {
       }).success,
     ).toBe(false)
   })
+
+  it('accepts a verbose review, whose caps the provider does not enforce', () => {
+    const issue = { code: 'missing_specifics', note: 'Name the passage. '.repeat(30) }
+
+    expect(editorialReviewSchema.safeParse({ approved: false, issues: Array(8).fill(issue) }).success).toBe(true)
+  })
 })
 
 describe('verification audit', () => {
