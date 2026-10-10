@@ -6,7 +6,7 @@
           {{ $t('legal.tos.title') }}
         </h1>
         <p class="text-muted">
-          {{ $t('legal.lastUpdated', { date: '1. 1. 2026' }) }}
+          {{ $t('legal.lastUpdated', { date: $t('legal.updatedAt') }) }}
         </p>
       </header>
 
