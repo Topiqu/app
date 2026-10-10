@@ -9,7 +9,7 @@
       <svg
         v-for="side in config.label ? 2 : 1"
         :key="side"
-        class="h-2 min-w-0 flex-1 text-[var(--client-accent,currentColor)]"
+        class="h-2 min-w-6 flex-1 text-[var(--client-accent,currentColor)]"
         viewBox="0 0 120 8"
         preserveAspectRatio="none"
         aria-hidden="true"
@@ -25,7 +25,12 @@
           vector-effect="non-scaling-stroke"
         />
       </svg>
-      <span v-if="config.label" class="shrink-0 text-xs font-semibold uppercase tracking-widest">{{ config.label }}</span>
+      <span
+        v-if="config.label"
+        class="min-w-0 max-w-[75%] text-center text-xs font-semibold uppercase tracking-widest text-balance break-words"
+      >
+        {{ config.label }}
+      </span>
     </template>
   </div>
 </template>

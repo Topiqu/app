@@ -3,6 +3,7 @@ import type { SearchResult } from '~~/shared/utils/keywordOpportunity'
 import { z } from 'zod'
 import { generateText, Output } from 'ai'
 
+import { aiReasoning } from '../ai/reasoning'
 import { siteProfile, type ScopeSite } from './scope'
 
 export type OpportunityCandidate = {
@@ -91,7 +92,7 @@ export const assessOpportunities = async (
   const result = await generateText({
     model: aiModel('keywordOpportunity'),
     maxOutputTokens: 3000 + candidates.length * 180,
-    providerOptions: { openai: { reasoningEffort: 'low', reasoningSummary: null } },
+    providerOptions: aiReasoning('low'),
     instructions: RULES,
     prompt: `${siteProfile(site)}
 Assessment date: ${new Date().toISOString().slice(0, 10)}. Do not frame an old release as upcoming news.

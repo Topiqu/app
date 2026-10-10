@@ -22,6 +22,17 @@
           <strong class="text-lg text-primary">Topiqu</strong>
         </NuxtLink>
         <span v-else class="text-sm font-semibold text-highlighted">{{ clientSite.name }}</span>
+        <div class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm">
+          <NuxtLink
+            :to="localePath({ name: 'privacy' })"
+            class="text-muted hover:text-highlighted focus-visible:outline-2 focus-visible:outline-primary"
+          >
+            {{ $t('common.consent.moreInfo') }}
+          </NuxtLink>
+          <ULink as="button" type="button" @click="settingsOpen = true">
+            {{ $t('common.consent.openSettings') }}
+          </ULink>
+        </div>
       </div>
     </UFooter>
   </div>
@@ -29,6 +40,8 @@
 
 <script setup lang="ts">
 const clientSite = await useClientSite()
+const localePath = useLocalePath()
+const settingsOpen = useConsentSettingsOpen()
 
 // Free blogs are the referral channel; the landing's analytics attribute sign-ups by these UTM tags.
 const poweredByUrl = `https://topiqu.com/?${new URLSearchParams({

@@ -153,6 +153,10 @@ describe('Nuxt UI template contract', () => {
       'app/components/Client/Version.vue',
       'app/components/Form/Client/AI.vue',
       'app/components/Form/Client/Billing.vue',
+      // A transparent button covers a live widget preview that holds headings and links, which may not
+      // sit inside a button, so the tile's action cannot wrap its content.
+      'app/components/Form/Client/Widget/Library.vue',
+      'app/components/Form/Client/Widgets.vue',
       'app/components/Gif/Selector.vue',
       'app/components/TenantCreate.vue',
     ])

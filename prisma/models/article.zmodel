@@ -69,7 +69,7 @@ model Article with Base, Ownable {
     title            String            @length(1, 255, "Titulek musí mít 1–255 znaků")
     excerpt          String?           @length(0, 500, "Perex může mít max. 500 znaků")
     content          String            @length(1, 50000, "Článek překročil délku znaků")
-    imageUrl         String?           @length(0, 255, "URL obrázku musí mít max. 255 znaků")
+    imageUrl         String?           @length(0, 2048, "URL obrázku musí mít max. 2048 znaků")
     /// Cover provenance as `CoverCredit` — the kind (photo/illustration/ai) plus the library's
     /// attribution. Body images carry theirs inside `content`; the cover is a bare URL, so
     /// without this there is nowhere to disclose a generated hero or credit a licensed one.
@@ -186,7 +186,7 @@ model ArticleSeries with Base {
     name         String     @length(1, 255, "Název série musí mít 1–255 znaků")
     slug         String     @length(1, 100, "Slug série musí mít 1–100 znaků")
     description  String?    @length(0, 500)
-    imageUrl     String?    @length(0, 255)
+    imageUrl     String?    @length(0, 2048)
     createdByAi  Boolean    @default(false)
 
     clientSiteId String

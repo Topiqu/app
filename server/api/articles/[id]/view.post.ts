@@ -6,8 +6,7 @@ export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
   if (!id) throw createError({ statusCode: 400, message: 'Missing article ID' })
 
-  const user = await getSessionUser(event)
-  const sessionId = user?.id ?? issueAnonSession(event)
+  if (!articleAnalyticsAllowed(event)) return { success: true, counted: false }
   const parsed = z
     .object({ referrer: z.string().max(2048).optional() })
     .safeParse(await readBody(event).catch(() => ({})))
@@ -17,9 +16,17 @@ export default defineEventHandler(async (event) => {
   // then reported as readership.
   const article = await prisma.article.findFirst({
     where: { id, status: 'published' },
-    select: { id: true, clientSiteId: true },
+    select: {
+      id: true,
+      clientSiteId: true,
+      clientSite: { select: { id: true, plan: true, allowGtag: true, gtagId: true, gamNetworkCode: true } },
+    },
   })
   if (!article) return { success: false, counted: false }
+  if (!articleAnalyticsAllowed(event, article.clientSite)) return { success: true, counted: false }
+
+  const user = await getSessionUser(event)
+  const sessionId = user?.id ?? issueAnalyticsSession(event)
 
   const viewedOn = new Date()
   viewedOn.setUTCHours(0, 0, 0, 0)

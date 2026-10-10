@@ -1,6 +1,14 @@
+import { isValidDomain } from '~~/shared/utils/domain'
+
 export default defineNuxtRouteMiddleware((to) => {
   if (useRequestURL().hostname.replace(/^www\./, '') !== 'app.topiqu.com') return
   if (!String(to.name ?? '').startsWith('index')) return
+  if (
+    to.query.widgetPreview === '1' &&
+    typeof to.query.widgetPreviewSite === 'string' &&
+    isValidDomain(to.query.widgetPreviewSite)
+  )
+    return
 
   const { data } = useAuth()
   const localePath = useLocalePath()

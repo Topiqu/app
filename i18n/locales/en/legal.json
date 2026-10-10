@@ -1,176 +1,140 @@
 {
   "legal": {
     "lastUpdated": "Last updated: {date}",
-    "updatedAt": "10 August 2026",
+    "updatedAt": "10 October 2026",
     "placeholderNote": "The postal address is deliberately omitted — ARES is linked instead and the address is given on request.",
     "tos": {
       "title": "Terms of Service",
       "description": "Terms governing the use of the Topiqu platform, subscriptions and AI-generated content.",
       "sections": [
         {
-          "icon": "mdi:office-building",
-          "iconColor": "text-blue-500",
-          "title": "1. Provider and Scope",
-          "content": "The Topiqu service (\"Service\") is operated by <strong>Vojtěch Benjamín Tomaník</strong>, a sole trader registered in the Czech Trade Licensing Register, Business ID (IČO) <strong>24088765</strong> (\"we\", \"us\", \"Provider\").<br><br>The registered place of business and scope of trade are publicly available, always current, in the Czech business register ARES: <a href='https://ares.gov.cz/ekonomicke-subjekty?ico=24088765' target='_blank' rel='noopener noreferrer' class='text-blue-600 dark:text-blue-400 underline'>ares.gov.cz</a>. We will also give you the postal address on request at the e-mail below.<br><br>Contact: <a href='mailto:support&#64;topiqu.com' class='text-blue-600 dark:text-blue-400 underline'>support&#64;topiqu.com</a><br><br>These Terms govern the contract between the Provider and you as the user (\"you\", \"User\") regarding the use of the Service, including the website, the editor, AI content generation, publishing to connected social accounts, and any paid plans. By creating an account you agree to be bound by these Terms and by our <a href='/en/privacy-policy' class='text-blue-600 dark:text-blue-400 underline'>Privacy Policy</a>.<br><br>If you use the Service as a business (in the course of your trade or profession), the consumer-specific provisions of Sections 5 and 13 do not apply to you."
-        },
-        {
           "icon": "mdi:account-key",
           "iconColor": "text-indigo-500",
-          "title": "2. Account and Registration",
-          "content": "To use the Service you must create an account and provide a valid email address. You must be at least 16 years old, or have the consent of your legal guardian.<br><ul class='list-disc pl-5 mt-2 space-y-1'><li>You are responsible for keeping your credentials confidential and for all activity under your account.</li><li>You must provide accurate information and keep it up to date.</li><li>We recommend enabling two-factor authentication, which the Service supports.</li><li>Accounts are personal. You may invite additional users to your workspace under the limits of your plan, but you may not share a single set of credentials.</li></ul><br>Notify us without undue delay at <a href='mailto:support&#64;topiqu.com' class='text-blue-600 dark:text-blue-400 underline'>support&#64;topiqu.com</a> if you suspect unauthorised access."
+          "title": "1. Account",
+          "content": "By creating an account you enter into a contract to use Topiqu and accept these terms. You must be at least 16. You are responsible for your login details and for all activity under your account; report suspected misuse to support&#64;topiqu.com."
         },
         {
           "icon": "mdi:credit-card-outline",
           "iconColor": "text-emerald-500",
-          "title": "3. Plans, Pricing and Payment",
-          "content": "The Service is offered in a free tier and in paid plans (currently <strong>PRO</strong> and <strong>PREMIUM</strong>), billed monthly or annually. Paid plans may additionally be topped up with one-off article packs. One successful AI generation uses one article.<br><ul class='list-disc pl-5 mt-2 space-y-1'><li>Current prices are those displayed at the time of ordering. Prices are stated including VAT where VAT applies.</li><li>Payments are processed by <strong>Stripe Payments Europe, Ltd.</strong> We do not store your full card details.</li><li>Subscriptions <strong>renew automatically</strong> for the same period until cancelled. You may cancel at any time in your account settings, effective at the end of the current billing period.</li><li>Articles included with a plan are valid for the applicable monthly period. Purchased articles do not expire and are non-refundable once consumed.</li><li>If a payment fails, we may suspend access to paid features after notifying you.</li></ul><br>We may change prices with reasonable advance notice sent to your registered email. Changes apply from your next billing period; if you disagree, you may cancel before it starts."
+          "title": "2. Plans and payments",
+          "content": "<ul class='list-disc pl-5 mt-2 space-y-1'><li>The prices shown at checkout apply, including VAT where applicable. Payments are processed by Stripe.</li><li>Subscriptions renew automatically. You can cancel at any time in settings, effective at the end of the billing period.</li><li>One successful AI generation uses one article. Plan articles are valid for their monthly period; purchased articles do not expire.</li><li>If a payment fails, we may suspend paid features after notifying you.</li></ul>We announce price changes in advance by email. They apply from the next period, and you can cancel before then."
         },
         {
           "icon": "mdi:keyboard-return",
           "iconColor": "text-amber-500",
-          "title": "4. Right of Withdrawal (Consumers)",
-          "content": "If you are a consumer in the EU, you have the right to withdraw from the contract within <strong>14 days</strong> of its conclusion, without giving any reason, by notifying us at <a href='mailto:support&#64;topiqu.com' class='text-blue-600 dark:text-blue-400 underline'>support&#64;topiqu.com</a>.<br><br><strong>Important:</strong> the Service is digital content supplied immediately. By ticking the box at checkout you expressly request that performance begin during the withdrawal period and acknowledge that <strong>you thereby lose your right of withdrawal</strong> once the Service has been fully supplied, in accordance with Section 1837 of the Czech Civil Code.<br><br>If performance has begun but is not yet complete when you withdraw, you owe us a proportionate amount for what has been supplied. Refunds are returned by the same payment method within 14 days."
+          "title": "3. Withdrawal (consumers)",
+          "content": "Consumers may withdraw from the contract within 14 days of concluding it by emailing support&#64;topiqu.com. If you asked for the service to start immediately when ordering, you lose the right of withdrawal once the service has been fully provided. If you withdraw while the service is in progress, you pay for the part already provided. We refund within 14 days using the same payment method."
         },
         {
           "icon": "mdi:file-document-edit",
           "iconColor": "text-purple-500",
-          "title": "5. Your Content",
-          "content": "You retain <strong>all ownership</strong> of the articles, images, and other material you upload or create using the Service (\"Your Content\"). We claim no ownership of it.<br><br>You grant us a non-exclusive, worldwide, royalty-free licence to host, store, reproduce, adapt, and transmit Your Content <strong>solely to the extent necessary to operate the Service</strong> — for example to render your site, generate translations, produce AI suggestions you request, and publish to social accounts you have connected. This licence ends when you delete the content or your account, except for backups which expire on the schedule set out in our Privacy Policy.<br><br>You warrant that you hold the necessary rights to Your Content and that it does not infringe third-party rights."
-        },
-        {
-          "icon": "mdi:robot-outline",
-          "iconColor": "text-cyan-500",
-          "title": "6. AI-Generated Content",
-          "content": "The Service uses third-party large language models to generate, translate, enhance, and analyse text and to suggest images. You direct this generation; the output is treated as Your Content.<br><ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>AI output can be wrong.</strong> It may contain factual errors, fabricated citations, outdated information, or bias. You are solely responsible for reviewing and fact-checking anything before you publish it.</li><li><strong>No warranty of originality or exclusivity.</strong> Similar prompts may produce similar output for other users. We do not warrant that AI output is original, non-infringing, or protectable by copyright.</li><li><strong>You are the publisher.</strong> Liability for published content — including defamation, IP infringement, and regulatory compliance such as advertising disclosure — rests with you.</li><li>Automated publishing modes still execute under your account and on your instruction. Configure the review mode you are comfortable with.</li></ul><br>We do not permit AI features to be used to generate unlawful content, disinformation presented as fact, or content impersonating a real person."
+          "title": "4. Your content and AI",
+          "content": "Your content, including AI output, belongs to you. You grant us a non-exclusive, royalty-free licence to store, adapt and publish it as far as needed to run the service; it ends when the content or account is deleted. AI output can be inaccurate or similar to output for other users, so review it before publishing. You are responsible for what you publish and for holding the rights to it."
         },
         {
           "icon": "mdi:share-variant",
           "iconColor": "text-sky-500",
-          "title": "7. Connected Social Accounts",
-          "content": "You may connect a LinkedIn personal profile or Company Page so that the Service can publish on your behalf and read engagement statistics for posts it created.<br><ul class='list-disc pl-5 mt-2 space-y-1'><li>You must hold the necessary rights to publish to the connected account. For a Company Page this means being an authorised administrator of that Page.</li><li>Your use of LinkedIn remains subject to LinkedIn's own terms. Nothing here overrides them.</li><li>You can disconnect at any time in your settings, and independently revoke our access in your LinkedIn account settings. Disconnecting deletes the stored access tokens.</li><li>We are not responsible for changes, outages, rate limits, or account actions on the third-party platform.</li></ul>"
+          "title": "5. Connected services",
+          "content": "For connected accounts such as LinkedIn or Shopify, you must be authorised to publish, and their use is governed by their own terms. We are not responsible for their outages, limits or actions against your account. You can disconnect at any time in settings."
         },
         {
           "icon": "mdi:cancel",
           "iconColor": "text-red-500",
-          "title": "8. Acceptable Use",
-          "content": "You must not use the Service to:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li>publish unlawful, infringing, defamatory, or deceptive content;</li><li>publish content that is discriminatory, harassing, or sexually exploitative of minors;</li><li>send spam or engage in coordinated inauthentic behaviour on connected platforms;</li><li>circumvent plan limits, rate limits, or service usage metering;</li><li>probe, scan, or attack the Service or attempt to access data belonging to other tenants;</li><li>scrape the Service or resell access without our written agreement;</li><li>upload malware or use the Service to distribute it.</li></ul><br>We may suspend or terminate accounts that breach this Section. Where the breach is not serious and can be remedied, we will normally give you notice and an opportunity to fix it first."
-        },
-        {
-          "icon": "mdi:server-network",
-          "iconColor": "text-teal-500",
-          "title": "9. Availability and Changes",
-          "content": "We aim for high availability but the Service is provided <strong>without a guaranteed uptime commitment</strong> unless a separate written SLA has been agreed with you.<br><br>We may modify, add, or discontinue features. For changes that materially reduce the functionality of a paid plan, we will give you reasonable advance notice and you may cancel with a pro-rata refund of the unused prepaid period.<br><br>Planned maintenance will be announced in advance where reasonably possible. Third-party outages (payment provider, AI provider, social platforms) are outside our control."
+          "title": "6. Prohibited use",
+          "content": "You must not use the service for:<ul class='list-disc pl-5 mt-2 space-y-1'><li>unlawful, misleading, defamatory, discriminatory or harassing content;</li><li>spam or coordinated inauthentic behaviour;</li><li>circumventing limits, attacking the service or accessing other customers’ data;</li><li>automated scraping or reselling access without our agreement.</li></ul>Violations can lead to suspension or termination. Where a violation can be remedied, we will warn you first."
         },
         {
           "icon": "mdi:scale-balance",
           "iconColor": "text-orange-500",
-          "title": "10. Liability",
-          "content": "Nothing in these Terms limits liability that cannot be limited by law — in particular liability for damage caused intentionally or by gross negligence, or for harm to a person's natural rights.<br><br>Subject to that:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li>We are not liable for indirect or consequential loss, lost profit, lost revenue, or loss of goodwill.</li><li>We are not liable for loss arising from AI output you published without review, from content you were not entitled to publish, or from action taken against you by a third-party platform.</li><li>For business users, our aggregate liability arising in any 12-month period is limited to the fees you paid us in that period.</li></ul><br>You are responsible for keeping your own copies of business-critical content. Export functions are provided for this purpose."
+          "title": "7. Availability and liability",
+          "content": "We provide the service without guaranteed availability and may change its features. If we materially reduce a paid plan, we will notify you and you can cancel with a pro-rata refund. We are not liable for indirect loss, lost profit or damage caused by content published without review. Towards businesses, our liability is limited to the amount paid in the last 12 months. Liability that cannot be limited by law is unaffected."
         },
         {
           "icon": "mdi:door-open",
           "iconColor": "text-rose-500",
-          "title": "11. Term and Termination",
-          "content": "You may terminate at any time by cancelling your subscription and deleting your account in settings.<br><br>We may terminate this contract on reasonable notice, or immediately in the event of a serious breach of Section 8, non-payment after a reminder, or where required by law.<br><br>On termination your right to use the Service ends. Export your content before deleting your account — after deletion, data is removed on the schedule described in our <a href='/en/privacy-policy' class='text-blue-600 dark:text-blue-400 underline'>Privacy Policy</a> and cannot be restored. If we terminate without cause, we refund the unused prepaid period pro rata."
+          "title": "8. Termination",
+          "content": "You can end the contract at any time by deleting your account. We may terminate with reasonable notice, or immediately for a serious breach or non-payment. If we terminate through no fault of yours, we refund the unused part of your subscription. Export your content before deleting your account; it cannot be restored afterwards."
         },
         {
           "icon": "mdi:gavel",
           "iconColor": "text-slate-500",
-          "title": "12. Governing Law and Disputes",
-          "content": "These Terms are governed by the law of the Czech Republic, excluding its conflict-of-law rules. For consumers, this choice does not deprive you of the protection of mandatory provisions of the law of your country of habitual residence.<br><br>The courts of the Czech Republic have jurisdiction. Consumers may also sue, and may only be sued, in the courts of their country of residence.<br><br><strong>Out-of-court resolution:</strong> consumers may address a dispute to the Czech Trade Inspection Authority (Česká obchodní inspekce), Štěpánská 796/44, 110 00 Prague 1, <a href='https://www.coi.cz' target='_blank' rel='noopener noreferrer' class='text-blue-600 dark:text-blue-400 underline'>www.coi.cz</a>. We are always willing to try to resolve a complaint directly first — write to <a href='mailto:support&#64;topiqu.com' class='text-blue-600 dark:text-blue-400 underline'>support&#64;topiqu.com</a>."
+          "title": "9. Governing law and changes",
+          "content": "These terms are governed by Czech law; consumers keep the protection of the law of their country of residence. Disputes are decided by Czech courts, and consumers may also contact the Czech Trade Inspection Authority (www.coi.cz). We announce material changes in advance by email and in the app. If you disagree, you can end the contract before they take effect. If one provision is invalid, the rest remain in force."
         },
         {
-          "icon": "mdi:update",
-          "iconColor": "text-gray-500",
-          "title": "13. Changes to These Terms",
-          "content": "We may update these Terms. We will notify you by email and in the application reasonably in advance of a material change taking effect.<br><br>If you do not accept the change, you may terminate before it takes effect and receive a pro-rata refund of any unused prepaid period. Continuing to use the Service after the effective date constitutes acceptance.<br><br>If any provision is held invalid, the remainder stays in force."
+          "icon": "mdi:office-building",
+          "iconColor": "text-blue-500",
+          "title": "10. Operator",
+          "content": "Topiqu is operated by Vojtěch Benjamín Tomaník, sole trader, company ID 24088765, Czech Republic. The registered address is listed in the ARES register (ares.gov.cz) and available on request. Contact: support&#64;topiqu.com."
         }
       ]
     },
     "privacy": {
       "title": "Privacy Policy",
-      "description": "How Topiqu collects, uses, shares and retains personal data, including data from connected LinkedIn accounts.",
+      "description": "What personal data Topiqu processes, why, who receives it and how long it is kept.",
       "sections": [
-        {
-          "icon": "mdi:office-building",
-          "iconColor": "text-indigo-500",
-          "title": "1. Who We Are",
-          "content": "The controller of your personal data is <strong>Vojtěch Benjamín Tomaník</strong>, a sole trader registered in the Czech Trade Licensing Register, Business ID (IČO) <strong>24088765</strong>, Czech Republic. The registered place of business is publicly available in the ARES register: <a href='https://ares.gov.cz/ekonomicke-subjekty?ico=24088765' target='_blank' rel='noopener noreferrer' class='text-indigo-600 dark:text-indigo-400 underline'>ares.gov.cz</a>, and we will give it to you directly on request.<br><br>Privacy contact: <a href='mailto:privacy&#64;topiqu.com' class='text-indigo-600 dark:text-indigo-400 underline'>privacy&#64;topiqu.com</a><br><br>We have not appointed a Data Protection Officer. We are not required to: our processing is not large-scale systematic monitoring of individuals, and we do not process special categories of data as a core activity. You can always reach a human at the address above.<br><br>This policy covers the Topiqu website, the onboarding flow, and the Topiqu application including any tenant site you operate with it."
-        },
         {
           "icon": "mdi:database-search",
           "iconColor": "text-sky-500",
-          "title": "2. What We Collect",
-          "content": "We collect only what the Service needs to function:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>Account data</strong> — username, email address, password (stored only as an an irreversible hash, never in plain text), optional bio and avatar, language and theme preference, notification preferences.</li><li><strong>Authentication data</strong> — email verification codes, and if you enable it, a two-factor authentication secret.</li><li><strong>Session and security data</strong> — IP address, user agent, device, operating system, browser, and approximate location derived from IP (city, region, country). This powers the \"active sessions\" screen so you can spot and revoke unfamiliar logins.</li><li><strong>Audit log</strong> — security-relevant actions with a timestamp, your user ID and IP, stored in a tamper-evident hash chain.</li><li><strong>Content</strong> — articles, drafts, translations, comments, reactions, polls, media you upload.</li><li><strong>Billing data</strong> — plan, billing period, transaction identifiers and invoices. Card details are handled by Stripe and never reach our servers.</li><li><strong>Connected account data</strong> — see Section 4.</li><li><strong>Onboarding data</strong> — the site name, requested domain, username and email you enter before your account exists.</li></ul><br>We do <strong>not</strong> sell personal data, and we do not build advertising profiles from your content."
-        },
-        {
-          "icon": "mdi:scale-balance",
-          "iconColor": "text-emerald-500",
-          "title": "3. Why We Process It, and on What Legal Basis",
-          "content": "Under Article 6(1) GDPR:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>Performance of a contract</strong> (Art. 6(1)(b)) — creating and running your account, hosting and publishing your content, AI generation you request, publishing to accounts you connect, billing.</li><li><strong>Legitimate interests</strong> (Art. 6(1)(f)) — keeping the Service secure and available, preventing abuse and fraud, diagnosing errors, defending legal claims. We have weighed these against your rights; you may object at any time (Section 9).</li><li><strong>Consent</strong> (Art. 6(1)(a)) — analytics and advertising cookies, and marketing emails. You may withdraw consent at any time, without affecting prior processing.</li><li><strong>Legal obligation</strong> (Art. 6(1)(c)) — retaining accounting and tax records.</li></ul>"
-        },
-        {
-          "icon": "mdi:linkedin",
-          "iconColor": "text-blue-600",
-          "title": "4. LinkedIn Integration",
-          "content": "If you choose to connect a LinkedIn personal profile or Company Page, we process the following <strong>only for the purpose of publishing on your behalf and reporting back the results</strong>:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>Your LinkedIn identifier (URN)</strong> — the member URN for a personal profile, or the organization URN for a Company Page. This is required to address the publishing API and is the only profile identifier we retain.</li><li><strong>Access and refresh tokens</strong> plus their expiry, stored encrypted at rest and not exposed to the browser.</li><li><strong>Posts we publish for you</strong> and the total counts of reactions and comments on them. We do not retrieve or store who reacted or commented.</li></ul><br>We request only the permissions needed to publish on your behalf and to read statistics for posts we created. LinkedIn shows you the exact scope when you connect, before you approve it.<br><br><strong>Retention.</strong> We retain LinkedIn data within the limits set by the LinkedIn API Terms of Use. Engagement figures are reduced to aggregate counters and the raw records are discarded. Tokens and the URN are kept only while the connection is active, because they are what makes publishing possible.<br><br><strong>We never</strong> read your LinkedIn inbox, connections, or feed; we do not import your contacts; and we do not use LinkedIn data to train AI models or for advertising.<br><br><strong>How to revoke.</strong> Disconnect the account in Topiqu settings — this deletes the tokens and the URN. You can independently revoke our access at any time in the privacy settings of your LinkedIn account."
-        },
-        {
-          "icon": "mdi:shopping-outline",
-          "iconColor": "text-emerald-500",
-          "title": "4a. Shopify Integration",
-          "content": "When you install the Topiqu Shopify app, we process your store identity and encrypted tokens, including while the installation is awaiting connection to a Topiqu workspace. Once connected, we process the following data solely to operate the features you enable:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>Store identity</strong> — the store ID, name, Shopify domain and storefront URL, to identify and link the store to your Topiqu workspace.</li><li><strong>Product catalogue</strong> — products and variants (including descriptions, prices, URLs and attributes), collections and inventory availability, to synchronize your knowledge sources and create relevant articles. Relevant catalogue information may be sent to our AI provider as described in Section 5.</li><li><strong>Blog and publication data</strong> — blog IDs and titles, author settings, IDs and URLs of articles published through Topiqu, publication status and synchronization metadata, to publish and update your content.</li><li><strong>Access credentials</strong> — access and refresh tokens, stored encrypted using AES-256-GCM, together with their expiry times and granted permissions, to authenticate requests to Shopify.</li><li><strong>App subscription status</strong> — the Shopify app plan linked to your workspace, to apply its features and limits.</li></ul><br><strong>We do not request, import or store Shopify customer or order records.</strong> The integration requests access only to products, inventory and blog content.<br><br><strong>Uninstallation and deletion.</strong> When Shopify notifies us that the app has been uninstalled (<code>app/uninstalled</code>), we delete the stored tokens and pending installation record, revoke the connection and stop queued publishing. When we receive Shopify's <code>shop/redact</code> request, we delete the store connection and installation records and their associated synchronized catalogue and publication metadata. Shopify normally sends this request 48 hours after uninstallation. You can also request deletion at <a href='mailto:privacy&#64;topiqu.com' class='text-indigo-600 dark:text-indigo-400 underline'>privacy&#64;topiqu.com</a>.<br><br>Articles you have created in your Topiqu workspace are governed by the account and content retention rules in Section 8; removing the integration does not delete articles already published in your Shopify store. Deleted data in backups expires with the backup rotation described in Section 8."
+          "title": "1. What we process and why",
+          "content": "We process only the data the service needs:<ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>Account</strong> — name, email, password hash, settings and, if enabled, your two-factor key. Basis: contract.</li><li><strong>Content</strong> — articles, drafts, comments, media and Knowledge. Basis: contract.</li><li><strong>Payments</strong> — plan, transactions and invoices; card details are handled by Stripe. Basis: contract and accounting obligations.</li><li><strong>Security</strong> — IP address, device, approximate location, sessions and audit log. Basis: legitimate interest in protecting accounts and the service.</li><li><strong>Analytics and advertising</strong> — only with your consent, see Cookies.</li></ul>We do not sell your data or build advertising profiles from it."
         },
         {
           "icon": "mdi:robot-outline",
           "iconColor": "text-cyan-500",
-          "title": "5. AI Processing",
-          "content": "When you use a generation, translation, enhancement, or analysis feature, the relevant text is transmitted to our AI provider (OpenAI) to produce the result.<br><ul class='list-disc pl-5 mt-2 space-y-1'><li>We use the provider's API under terms which state that API inputs and outputs are <strong>not used to train their models</strong>.</li><li>Please do not paste personal data of third parties, credentials, or confidential material into AI prompts. You control what is sent.</li><li>We store the resulting content in your workspace and an internal technical usage counter for operations and cost control. We do not retain a separate copy of prompts beyond what is needed to render your drafts.</li><li>No AI feature makes a decision producing legal effects about you. Automated publishing modes execute your own configured instructions and can be switched to manual review at any time.</li><li><strong>Knowledge (beta).</strong> Text you add to Knowledge — notes, the extracted text of uploaded documents and fetched web pages — is sent to OpenAI when it is added and whenever it changes, to build a search index, and relevant passages are sent again when an article is written. We store only the extracted text and its index, not the uploaded file. Web pages are fetched again about once a week. Both are kept until you delete the source. Anything in Knowledge may be used in your published articles, so do not add confidential material or personal data.</li></ul>"
+          "title": "2. AI processing",
+          "content": "When you generate, translate or analyse content, and when Knowledge is indexed, we send the relevant text to AI model providers. Under their terms, inputs and outputs are not used to train models. AI makes no decisions with legal effects about you. Do not put confidential information or third parties’ personal data into prompts or Knowledge."
+        },
+        {
+          "icon": "mdi:linkedin",
+          "iconColor": "text-blue-600",
+          "title": "3. LinkedIn connection",
+          "content": "If you connect LinkedIn, we store the profile or page identifier (URN) and encrypted access tokens, solely to publish on your behalf. For posts we publish, we keep only aggregate reaction and comment counts, not who reacted. We do not read your messages, contacts or feed, and we do not use the data for advertising or AI training. We keep tokens and the URN only while connected, and other LinkedIn data only within the limits of the LinkedIn API Terms. We keep tokens and the URN only while connected, and other LinkedIn data only within the limits of the LinkedIn API Terms. We keep tokens and the URN only while connected, and other LinkedIn data only within the limits of the LinkedIn API Terms. We keep tokens and the URN only while connected, and other LinkedIn data only within the limits of the LinkedIn API Terms. Disconnecting in settings deletes the tokens and URN; you can also revoke access directly on LinkedIn."
+        },
+        {
+          "icon": "mdi:google",
+          "iconColor": "text-blue-500",
+          "title": "4. Google Search Console connection",
+          "content": "If you connect Google Search Console, we request read-only access (webmasters.readonly). We receive your Google account identifier and email, the property you select and search-performance data (page, query, date, clicks, impressions, CTR, position), and use them only for the Search Console features in your workspace: reports, optimisation suggestions and, only when you expressly ask, AI-assisted recommendations. We cannot change your Google settings. We do not sell Google user data or use it for advertising or to train general-purpose AI models; if an AI feature needs to send it to an AI model provider, we tell you beforehand. Our use of data from Google APIs adheres to the <a href='https://developers.google.com/terms/api-services-user-data-policy' target='_blank' rel='noopener noreferrer' class='underline'>Google API Services User Data Policy</a>, including the Limited Use requirements. The refresh token is stored encrypted. Disconnecting in settings deletes the token and stops syncing; previously synced data is deleted with the workspace or on request to privacy&#64;topiqu.com. You can also revoke access in your Google Account."
+        },
+        {
+          "icon": "mdi:shopping-outline",
+          "iconColor": "text-emerald-500",
+          "title": "5. Shopify connection",
+          "content": "The Topiqu app for Shopify processes the store identification, encrypted tokens, the product catalogue (products, variants, collections, inventory) and blog and published-article data, only for the features you enable. Catalogue data may be sent to AI model providers. We do not read or store customers or orders. On uninstall we delete the tokens, and on Shopify’s request (shop/redact, usually 48 hours after uninstall) also the synced catalogue and connection records. Articles already published in your store remain."
         },
         {
           "icon": "mdi:cookie",
           "iconColor": "text-amber-500",
-          "title": "6. Cookies and Analytics",
-          "content": "<strong>Technical cookies</strong> provide security and the website's basic operation and cannot be disabled.<br><br><strong>Analytics cookies</strong> help evaluate website usage. <strong>Marketing cookies</strong> are used to display and measure advertising where advertising is active. Analytics and marketing services are not loaded without your consent.<br><br>You can change your choice at any time through the <em>Cookie settings</em> button on the website or in its footer."
+          "title": "6. Cookies",
+          "content": "Essential cookies handle sign-in, security, language and storing your cookie choice for 180 days. Analytics cookies (Topiqu statistics for 30 days and, where enabled, Google Analytics 4) and advertising cookies (Google AdSense or Ad Manager, non-personalised ads only) run only with your consent. You can change your choice under Cookie settings in the site footer."
         },
         {
           "icon": "mdi:share-variant",
           "iconColor": "text-orange-500",
-          "title": "7. Who We Share Data With",
-          "content": "We do not sell your data and we do not disclose it except to the processors below, each bound by a data processing agreement under Article 28 GDPR:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>Stripe</strong> — payment processing and invoicing (IE / US)</li><li><strong>OpenAI</strong> — AI generation, translation and analysis (US)</li><li><strong>LinkedIn</strong> — publishing to accounts you connect (IE / US)</li><li><strong>Amazon Web Services</strong> — storage of uploaded media and delivery of transactional e-mail; Frankfurt region (EU)</li><li><strong>Cloudflare</strong> — CDN, bot protection and network security (US)</li><li><strong>Sentry</strong> — error monitoring and diagnostics (US)</li><li><strong>Google</strong> — analytics and advertising, <em>only with your consent</em> (US)</li></ul><br>We may also disclose data where required by law, or to establish or defend legal claims. If we ever receive a government request, we disclose only what is legally required and, where we are permitted to do so, we will tell you.<br><br><strong>Transfers outside the EEA.</strong> Some processors are established in the United States. Those transfers rely on the EU Standard Contractual Clauses and, where applicable, the EU–US Data Privacy Framework."
+          "title": "7. Who receives data",
+          "content": "We share data only with processors bound by contracts under Art. 28 GDPR: Stripe (payments), AI model providers, LinkedIn (only when connected), Amazon Web Services (storage and email, EU), Cloudflare (CDN and security), Sentry (error diagnostics) and Google (analytics and advertising, only with consent). Some are based in the US; these transfers rely on the EU Standard Contractual Clauses or the EU–US Data Privacy Framework. We also disclose data where the law requires it."
         },
         {
           "icon": "mdi:timer-sand",
           "iconColor": "text-violet-500",
-          "title": "8. How Long We Keep It",
-          "content": "We keep data only for as long as we need it for the purpose it was collected for. The criteria we apply:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>Account and content</strong> — for the life of the account; removed without undue delay once it is deleted.</li><li><strong>Backups</strong> — rolling and overwritten, so deleted content disappears with the next rotation.</li><li><strong>Sessions and security records</strong> — as long as needed to protect accounts and investigate abuse.</li><li><strong>Connected account data</strong> — retained and deleted as described in the relevant integration section above; Shopify tokens are deleted on uninstallation and the remaining integration records on the shop/redact request.</li><li><strong>Verification codes</strong> — discarded once used or expired.</li><li><strong>Accounting and tax records</strong> — for the period required by law.</li><li><strong>Analytics</strong> — for the period configured in the relevant service, and only if you consented.</li></ul>"
+          "title": "8. How long we keep data",
+          "content": "Account and content for as long as the account exists; after it is closed we delete them without undue delay, and they leave backups as these rotate. Security records for as long as needed to protect accounts, accounting records for the period required by law, and analytics data only with consent."
         },
         {
           "icon": "mdi:account-check",
           "iconColor": "text-green-500",
-          "title": "9. Your Rights",
-          "content": "Under the GDPR you have the right to:<br><ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>Access</strong> — obtain a copy of the data we hold about you (Art. 15)</li><li><strong>Rectification</strong> — correct inaccurate data (Art. 16)</li><li><strong>Erasure</strong> — have your data deleted (Art. 17)</li><li><strong>Restriction</strong> — limit how we process it (Art. 18)</li><li><strong>Portability</strong> — receive your data in a machine-readable format, or have it sent to another provider (Art. 20)</li><li><strong>Object</strong> — object to processing based on legitimate interests (Art. 21)</li><li><strong>Withdraw consent</strong> — at any time, without affecting prior processing (Art. 7(3))</li></ul><br>Most of these you can exercise yourself: your profile page allows you to edit or export your data and to delete your account. Otherwise write to <a href='mailto:privacy&#64;topiqu.com' class='text-indigo-600 dark:text-indigo-400 underline'>privacy&#64;topiqu.com</a>. We respond within one month; the request is free unless it is manifestly unfounded or excessive.<br><br><strong>Right to complain.</strong> You may lodge a complaint with the Czech Data Protection Authority — Úřad pro ochranu osobních údajů, Pplk. Sochora 27, 170 00 Prague 7, <a href='https://www.uoou.cz' target='_blank' rel='noopener noreferrer' class='text-indigo-600 dark:text-indigo-400 underline'>www.uoou.cz</a> — or with the authority in your country of residence."
+          "title": "9. Your rights",
+          "content": "You have the right to access, rectify, erase, restrict and port your data, to object to processing based on legitimate interest, and to withdraw consent at any time. You can do most of this yourself in your profile (edit, export, delete account); otherwise write to privacy&#64;topiqu.com and we will reply within a month. You may lodge a complaint with the Czech Office for Personal Data Protection (www.uoou.cz) or your local supervisory authority."
         },
         {
-          "icon": "mdi:lock",
-          "iconColor": "text-emerald-500",
-          "title": "10. Security",
-          "content": "We apply technical and organisational measures appropriate to the processing — encryption in transit and at rest for sensitive data, passwords stored only as an irreversible hash, optional two-factor authentication, separation of each customer's data, and access control.<br><br>No system is perfectly secure. If a breach occurs that is likely to result in a high risk to your rights, we will notify you without undue delay."
-        },
-        {
-          "icon": "mdi:account-child",
-          "iconColor": "text-pink-500",
-          "title": "11. Children",
-          "content": "The Service is not directed at children under 16 and we do not knowingly collect their personal data. If you believe a child has provided us data, contact <a href='mailto:privacy&#64;topiqu.com' class='text-indigo-600 dark:text-indigo-400 underline'>privacy&#64;topiqu.com</a> and we will delete it."
-        },
-        {
-          "icon": "mdi:update",
-          "iconColor": "text-gray-500",
-          "title": "12. Changes to This Policy",
-          "content": "We may update this policy. The current version is always at this address with the date of last revision at the top.<br><br>For material changes — a new purpose, a new category of data, or a new processor in a third country — we will notify you by email or in the application reasonably in advance. Where the change requires consent, we will ask for it before it takes effect.<br><br>Questions: <a href='mailto:privacy&#64;topiqu.com' class='text-indigo-600 dark:text-indigo-400 underline'>privacy&#64;topiqu.com</a>"
+          "icon": "mdi:office-building",
+          "iconColor": "text-indigo-500",
+          "title": "10. Controller",
+          "content": "The controller is Vojtěch Benjamín Tomaník, company ID 24088765, Czech Republic. The registered address is listed in the ARES register (ares.gov.cz). Contact: privacy&#64;topiqu.com. We announce material changes to this policy by email or in the app."
         }
       ],
-      "updatedAt": "1 October 2026"
+      "updatedAt": "10 October 2026"
     }
   }
 }

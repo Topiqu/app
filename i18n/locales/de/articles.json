@@ -651,7 +651,7 @@
         "errorTitle": "Die Prüfung konnte nicht abgeschlossen werden",
         "error": {
           "invalid-request": "Der aktuelle Artikel konnte nicht für die Prüfung vorbereitet werden. Lade den Editor neu und versuche es erneut.",
-          "not-configured": "Der KI-Dienst ist in dieser Umgebung nicht konfiguriert. Ein Administrator muss OPENAI_API_KEY festlegen.",
+          "not-configured": "Der KI-Dienst ist in dieser Umgebung nicht konfiguriert. Ein Administrator muss ANTHROPIC_API_KEY festlegen.",
           "not-in-plan": "Die Faktenprüfung ist in deinem Tarif nicht verfügbar oder du darfst sie nicht verwenden.",
           "rate-limited": "Es wurden zu viele Prüfungen angefordert. Warte einen Moment und versuche es erneut.",
           "service-unavailable": "Der KI-Dienst ist vorübergehend nicht verfügbar. Versuche die Prüfung später erneut.",

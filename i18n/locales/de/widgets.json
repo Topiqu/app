@@ -3,6 +3,10 @@
     "title": "Widgets",
     "description": "Ankündigungen, Handlungsaufrufe, Kurse, Wetter und eigene Inhalte an ausgewählten Stellen Ihres Blogs.",
     "empty": "Noch keine Widgets.",
+    "emptyHint": "Wählen Sie aus der Bibliothek: Ankündigungen, Handlungsaufforderungen, Live-Kurse, Wetter und mehr.",
+    "edit": "{name} bearbeiten",
+    "done": "Fertig",
+    "allLanguages": "Alle Sprachen",
     "item": "Widget {n}: {kind}",
     "add": "Widget hinzufügen",
     "preview": "Vorschau",
@@ -10,8 +14,8 @@
     "slotUsage": "{active}/{max} aktiv",
     "hidden": "Außerhalb Ihres Tarifs ausgeblendet",
     "slot": "Platzierung",
-    "moveUp": "Nach oben",
-    "moveDown": "Nach unten",
+    "moveEarlier": "Nach vorne",
+    "moveLater": "Nach hinten",
     "active": "Anzeigen",
     "languages": "Sprachen",
     "languagesHint": "Ohne Auswahl in allen Sprachen der Website",
@@ -49,9 +53,18 @@
       "plan": "Ab dem Pro-Tarif verfügbar",
       "domain": "Erfordert eine verifizierte eigene Domain"
     },
-    "gallery": {
-      "title": "Widget hinzufügen",
-      "description": "Wählen Sie eine Vorlage. Alles bleibt bearbeitbar."
+    "library": {
+      "title": "Widget-Bibliothek",
+      "description": "Wählen Sie ein Widget und passen Sie es an. Alles bleibt bearbeitbar.",
+      "samplePlace": "Berlin",
+      "categories": {
+        "all": "Alle",
+        "notice": "Ankündigungen",
+        "layout": "Layout",
+        "action": "Handlungsaufrufe",
+        "data": "Live-Daten",
+        "custom": "Eigene"
+      }
     },
     "presets": {
       "announcement": { "name": "Ankündigung", "hint": "Eine Leiste über den Inhalten für Neuigkeiten und Aktionen" },
@@ -78,7 +91,64 @@
       "weather": { "name": "Wetter", "hint": "Eine Vorhersage für Ihre Stadt" },
       "html": { "name": "Eigenes HTML", "hint": "Ein Embed-Code, ein Formular oder eigene Inhalte" }
     },
+    "placement": {
+      "title": "Platzierungsvorschau",
+      "show": "Wo es erscheint",
+      "choose": "Platzieren: {slot}",
+      "frameTitle": "Vorschau der tatsächlichen Seite mit Widget",
+      "expand": "Vorschau vergrößern",
+      "desktop": "Desktop",
+      "mobile": "Mobil",
+      "loading": "Seite wird geladen…",
+      "noArticle": "Veröffentlichen Sie einen Artikel, um die Widget-Platzierung darin anzuzeigen.",
+      "realPage": "Die tatsächliche Seite Ihrer Website mit markierter Widget-Platzierung. Scrollen Sie, um die Seite zu erkunden.",
+      "pages": {
+        "home": "Startseite",
+        "article": "Artikel"
+      },
+      "hints": {
+        "BAR": "Unter der Kopfzeile der Website, auf jeder Seite.",
+        "HOME_TOP": "Auf der Startseite unter der Einleitung, vor Themen und empfohlenen Artikeln.",
+        "HOME_MIDDLE": "Auf der Startseite zwischen empfohlenen Artikeln und der Hauptartikelliste.",
+        "HOME_BOTTOM": "Am Ende des Startseiteninhalts, vor Social-Media-Links und dem Fußbereich.",
+        "ARTICLE_END": "Unter Artikelinhalt und Feedback, vor verwandten Artikeln und Kommentaren.",
+        "FOOTER": "Direkt über dem Fußbereich auf allen Seiten der Website."
+      }
+    },
     "announcement": {
+      "appearance": "Aussehen",
+      "alignment": "Ausrichtung",
+      "alignments": {
+        "start": "Links",
+        "center": "Mittig"
+      },
+      "textSize": "Textgröße",
+      "textSizes": {
+        "sm": "Klein",
+        "base": "Mittel",
+        "lg": "Groß"
+      },
+      "spacing": "Höhe der Leiste",
+      "spacings": {
+        "compact": "Kompakt",
+        "comfortable": "Großzügig"
+      },
+      "linkStyle": "Link-Darstellung",
+      "linkStyles": {
+        "text": "Textlink",
+        "button": "Schaltfläche"
+      },
+      "customColors": "Eigene Farben",
+      "backgroundColor": "Hintergrundfarbe",
+      "textColor": "Textfarbe",
+      "formatting": "Textformatierung",
+      "formattingHint": "Markieren Sie einen Textabschnitt, um ihn zu formatieren oder einen Link einzufügen.",
+      "bold": "Fett",
+      "italic": "Kursiv",
+      "inlineLink": "Link im Text",
+      "applyLink": "Link einfügen",
+      "removeLink": "Link entfernen",
+      "clearFormatting": "Formatierung entfernen",
       "label": "Ankündigung",
       "close": "Ankündigung schließen",
       "text": "Text",
@@ -147,6 +217,12 @@
       "field": "{widget}: Bitte das Feld „{field}“ prüfen."
     },
     "fields": {
+      "alignment": "Ausrichtung",
+      "textSize": "Textgröße",
+      "spacing": "Höhe der Leiste",
+      "linkStyle": "Link-Darstellung",
+      "background": "Hintergrundfarbe",
+      "richText": "Formatierter Text",
       "text": "Text",
       "url": "Link",
       "label": "Linktext",

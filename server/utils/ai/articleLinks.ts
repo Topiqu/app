@@ -8,6 +8,7 @@ import { isTag, isText, type AnyNode, type Text } from 'domhandler'
 import { articleLinkTarget } from '~~/shared/utils/articleOptimization'
 
 import { escapeHtml } from '../sanitize'
+import { aiReasoning } from './reasoning'
 
 export const MAX_ARTICLE_LINKS = 3
 const CANDIDATE_POOL = 200
@@ -153,7 +154,7 @@ export const linkArticle = async (
       model: aiModel('articleLinks'),
       output: Output.object({ schema: articleLinksSchema }),
       maxOutputTokens: 1000,
-      providerOptions: { openai: { reasoningEffort: 'low' } },
+      providerOptions: aiReasoning('low'),
       instructions:
         'You are a careful editor who adds internal links only where they genuinely help the reader. Return only valid JSON.',
       prompt: linksPrompt(article.title, paragraphs, candidates),

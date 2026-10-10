@@ -51,7 +51,7 @@ describe('Figure', () => {
 
     expect(out).toBe(
       '<figure class="article-image"><img src="https://cdn/x.jpg" alt="Hardware" width="1280" height="800" data-media-id="m1">' +
-        '<figcaption><span data-ai-disclosure="">Ilustrační obrázek (AI): </span>Hardware</figcaption></figure>',
+        '<figcaption><span data-ai-disclosure="">Ilustrační obrázek (AI)</span></figcaption></figure>',
     )
   })
 

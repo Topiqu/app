@@ -138,7 +138,7 @@
       "title": "So verwendet die KI diese Quelle",
       "useInternal": "Die KI darf Fakten und Zahlen aus dieser Quelle in veröffentlichten Artikeln verwenden, ohne sie zu verlinken.",
       "usePublic": "Die KI darf Fakten und Zahlen aus dieser Quelle in veröffentlichten Artikeln verwenden und sie als Quelle verlinken.",
-      "processing": "Der Inhalt wird beim Hinzufügen, bei Änderungen und beim Schreiben von Artikeln durch einen externen KI-Anbieter (OpenAI) verarbeitet. Wir speichern nur den extrahierten Text, bis du die Quelle löschst.",
+      "processing": "Der Inhalt wird beim Hinzufügen, bei Änderungen und beim Schreiben von Artikeln durch einen externen Anbieter von KI-Modellen verarbeitet. Wir speichern nur den extrahierten Text, bis du die Quelle löschst.",
       "confirm": "Ich bestätige, dass diese Quelle keine vertraulichen Informationen, Geschäftsgeheimnisse oder personenbezogenen Daten enthält, die nicht in einem öffentlichen Artikel erscheinen dürfen."
     },
     "feed": {

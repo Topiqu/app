@@ -5,38 +5,44 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { useArticleShare } from '../../app/composables/useArticleShare'
 
-const { state, fetch } = vi.hoisted(() => ({ state: { user: null as { id: string } | null }, fetch: vi.fn() }))
+const { state, fetch } = vi.hoisted(() => ({ state: { granted: true }, fetch: vi.fn() }))
 
-vi.mock('@fingerprintjs/fingerprintjs', () => ({
-  default: { load: async () => ({ get: async () => ({ visitorId: 'fp-1' }) }) },
-}))
 mockNuxtImport('$fetch', () => fetch)
-mockNuxtImport('useAuth', () => () => ({ data: { value: { user: state.user } } }))
+mockNuxtImport('useAnalyticsConsent', () => () => ({
+  get value() {
+    return state.granted
+  },
+}))
 
 const source = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf8')
 
 describe('useArticleShare', () => {
   beforeEach(() => {
+    state.granted = true
     fetch.mockReset().mockResolvedValue({ shared: 3 })
   })
 
-  it('sends the fingerprint for anonymous visitors', async () => {
-    state.user = null
+  it('records a permitted share without sending a browser identity', async () => {
     expect(await useArticleShare()('a1', 'TWITTER')).toBe(3)
     expect(fetch).toHaveBeenCalledWith('/api/articles/a1/share', {
       method: 'POST',
-      body: { platform: 'TWITTER', visitorId: 'fp-1' },
+      body: { platform: 'TWITTER' },
     })
   })
 
-  it('identifies signed-in users by session and swallows failures', async () => {
-    state.user = { id: 'u1' }
+  it('lets the server resolve the identity and swallows measurement failures', async () => {
     await useArticleShare()('a1', 'OTHER')
-    expect(fetch.mock.calls[0]![1].body).toEqual({ platform: 'OTHER', visitorId: null })
+    expect(fetch.mock.calls[0]![1].body).toEqual({ platform: 'OTHER' })
 
     fetch.mockRejectedValueOnce(new Error('500'))
     vi.spyOn(console, 'warn').mockImplementation(() => {})
     expect(await useArticleShare()('a1', 'OTHER')).toBeUndefined()
+  })
+
+  it('does not send statistics after analytics is rejected', async () => {
+    state.granted = false
+    expect(await useArticleShare()('a1', 'OTHER')).toBeUndefined()
+    expect(fetch).not.toHaveBeenCalled()
   })
 
   it('tracks every share surface through the composable', () => {

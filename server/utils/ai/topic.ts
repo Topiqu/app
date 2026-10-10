@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { generateText, Output } from 'ai'
 
+import { aiReasoning } from './reasoning'
 import {
   allowedModulesFor,
   ARTICLE_FORMAT_NAMES,
@@ -161,7 +162,7 @@ export const pickArticleTopic = async (input: TopicInput) => {
   const { output: object, usage } = await generateText({
     model: aiModel('topicSelection'),
     maxOutputTokens: 2000,
-    providerOptions: { openai: { reasoningEffort: 'low', reasoningSummary: null } },
+    providerOptions: aiReasoning('low'),
     instructions: `
       You are an editor choosing what a blog should publish next.
       Return the topic and angle in the client's language, but keep searchQuery in English.

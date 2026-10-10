@@ -651,7 +651,7 @@
         "errorTitle": "Kontrolu se nepodařilo dokončit",
         "error": {
           "invalid-request": "Aktuální článek se nepodařilo připravit ke kontrole. Obnovte editor a zkuste to znovu.",
-          "not-configured": "AI služba není v tomto prostředí nakonfigurovaná. Správce musí nastavit OPENAI_API_KEY.",
+          "not-configured": "AI služba není v tomto prostředí nakonfigurovaná. Správce musí nastavit ANTHROPIC_API_KEY.",
           "not-in-plan": "Kontrola faktů není dostupná pro váš tarif nebo k ní nemáte oprávnění.",
           "rate-limited": "Proběhlo příliš mnoho kontrol. Chvíli počkejte a zkuste to znovu.",
           "service-unavailable": "AI služba je dočasně nedostupná. Zkuste kontrolu spustit později.",

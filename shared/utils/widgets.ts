@@ -43,7 +43,7 @@ export const widgetAllowed = (kind: WidgetKind, site: WidgetSite) => {
 }
 
 // Relative paths stay on the tenant's site; `//host` is protocol-relative, so it is not one.
-const isSafeLink = (url: string) => {
+export const isSafeWidgetLink = (url: string) => {
   if (/^\/(?![/\\])/.test(url)) return true
   try {
     return new URL(url).protocol === 'https:'
@@ -51,24 +51,59 @@ const isSafeLink = (url: string) => {
     return false
   }
 }
-const link = z.string().trim().min(1).max(2048).refine(isSafeLink)
+const link = z.string().trim().min(1).max(2048).refine(isSafeWidgetLink)
 const instant = z.iso.datetime({ offset: true }).nullable().default(null)
 
 export const ANNOUNCEMENT_TONES = ['info', 'accent', 'warning'] as const
+export const ANNOUNCEMENT_ALIGNMENTS = ['start', 'center'] as const
+export const ANNOUNCEMENT_TEXT_SIZES = ['sm', 'base', 'lg'] as const
+export const ANNOUNCEMENT_SPACINGS = ['compact', 'comfortable'] as const
+export const ANNOUNCEMENT_LINK_STYLES = ['text', 'button'] as const
+
+const announcementColor = z.string().regex(/^#[0-9a-fA-F]{6}$/)
+export const announcementAppearanceSchema = z.object({
+  alignment: z.enum(ANNOUNCEMENT_ALIGNMENTS).default('center'),
+  textSize: z.enum(ANNOUNCEMENT_TEXT_SIZES).default('sm'),
+  spacing: z.enum(ANNOUNCEMENT_SPACINGS).default('compact'),
+  linkStyle: z.enum(ANNOUNCEMENT_LINK_STYLES).default('text'),
+  colors: z.object({ background: announcementColor, text: announcementColor }).nullable().default(null),
+})
+export type AnnouncementAppearance = z.infer<typeof announcementAppearanceSchema>
+export const DEFAULT_ANNOUNCEMENT_APPEARANCE = announcementAppearanceSchema.parse({})
+
+export const announcementTextRunSchema = z.object({
+  text: z.string().min(1).max(200),
+  bold: z.boolean().default(false),
+  italic: z.boolean().default(false),
+  url: link.nullable().default(null),
+})
+export type AnnouncementTextRun = z.infer<typeof announcementTextRunSchema>
 
 export const announcementConfigSchema = z
   .object({
     text: z.string().trim().min(1).max(200),
+    richText: z.array(announcementTextRunSchema).min(1).max(200).nullable().default(null),
     link: z
       .object({ url: link, label: z.string().trim().min(1).max(40) })
       .nullable()
       .default(null),
     tone: z.enum(ANNOUNCEMENT_TONES).default('info'),
+    appearance: announcementAppearanceSchema.prefault({}),
     dismissible: z.boolean().default(true),
     startsAt: instant,
     endsAt: instant,
   })
   .refine((c) => !c.startsAt || !c.endsAt || Date.parse(c.startsAt) < Date.parse(c.endsAt), { path: ['endsAt'] })
+  .refine(
+    (c) =>
+      !c.richText ||
+      (c.richText.map((run) => run.text).join('').length <= 200 &&
+        c.richText
+          .map((run) => run.text)
+          .join('')
+          .trim() === c.text),
+    { path: ['richText'] },
+  )
 export type AnnouncementConfig = z.infer<typeof announcementConfigSchema>
 
 export const DIVIDER_STYLES = ['line', 'dots', 'wave', 'space'] as const
@@ -152,7 +187,7 @@ const base = {
   active: z.boolean(),
   languages: z.array(LanguageSchema).max(4),
 }
-const widgetInputSchema = z.discriminatedUnion('kind', [
+export const widgetInputSchema = z.discriminatedUnion('kind', [
   z.object({ ...base, kind: z.literal('ANNOUNCEMENT'), config: announcementConfigSchema }),
   z.object({ ...base, kind: z.literal('DIVIDER'), config: dividerConfigSchema }),
   z.object({ ...base, kind: z.literal('CTA'), config: ctaConfigSchema }),
@@ -227,8 +262,19 @@ export const activeAnnouncement = (widgets: readonly PublicWidget[], locale: str
 }
 
 /** Changes with the visible text, so an edited bar shows again to readers who closed the old one. */
-export const announcementKey = (id: string, config: Pick<AnnouncementConfig, 'text' | 'link'>) => {
+export const announcementKey = (
+  id: string,
+  config: Pick<AnnouncementConfig, 'text' | 'link'> & { richText?: AnnouncementTextRun[] | null },
+) => {
   let hash = 0x811c9dc5
-  for (const char of JSON.stringify([config.text, config.link])) hash = Math.imul(hash ^ char.charCodeAt(0), 0x01000193)
+  // Keep existing dismissal keys for plain announcements; an inline link change is new content.
+  const links: { text: string; url: string | null }[] = []
+  for (const run of config.richText ?? []) {
+    const previous = links.at(-1)
+    if (previous && previous.url === run.url) previous.text += run.text
+    else links.push({ text: run.text, url: run.url })
+  }
+  const content = links.some((run) => run.url) ? [config.text, config.link, links] : [config.text, config.link]
+  for (const char of JSON.stringify(content)) hash = Math.imul(hash ^ char.charCodeAt(0), 0x01000193)
   return `${id}.${(hash >>> 0).toString(36)}`
 }

@@ -3,6 +3,8 @@ import type { Language } from '~~/generated/zenstack/models'
 import { z } from 'zod'
 import { generateText, Output } from 'ai'
 
+import { aiReasoning } from '../ai/reasoning'
+
 export type MatchSite = {
   id: string
   name: string
@@ -29,7 +31,7 @@ export const mentionsBusiness = async (site: MatchSite, items: { title: string; 
   const result = await generateText({
     model: aiModel('backlinkMatch'),
     maxOutputTokens: Math.max(400, items.length * 8),
-    providerOptions: { openai: { reasoningEffort: 'none' } },
+    providerOptions: aiReasoning('none'),
     instructions: MENTION_RULES,
     prompt: `${profile(site)}\n\n## PAGES\n${items
       .map((item, index) => `${index + 1}. ${item.title.slice(0, 200)} — ${item.snippet.slice(0, 400)}`)
@@ -69,7 +71,7 @@ export const supplierPages = async (site: MatchSite, brands: { brand: string; re
   const result = await generateText({
     model: aiModel('backlinkMatch'),
     maxOutputTokens: 300 + brands.length * 60,
-    providerOptions: { openai: { reasoningEffort: 'none' } },
+    providerOptions: aiReasoning('none'),
     instructions: SUPPLIER_RULES,
     prompt: `${profile(site)}\n\n${brands
       .map(

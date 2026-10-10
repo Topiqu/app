@@ -3,6 +3,10 @@
     "title": "Widgets",
     "description": "Announcements, calls to action, rates, weather and your own content in chosen places on your blog.",
     "empty": "No widgets yet.",
+    "emptyHint": "Pick one from the library: announcements, calls to action, live rates, weather and more.",
+    "edit": "Edit {name}",
+    "done": "Done",
+    "allLanguages": "All languages",
     "item": "Widget {n}: {kind}",
     "add": "Add widget",
     "preview": "Preview",
@@ -10,8 +14,8 @@
     "slotUsage": "{active}/{max} active",
     "hidden": "Hidden outside your plan",
     "slot": "Placement",
-    "moveUp": "Move up",
-    "moveDown": "Move down",
+    "moveEarlier": "Move earlier",
+    "moveLater": "Move later",
     "active": "Show",
     "languages": "Languages",
     "languagesHint": "None selected means every language of the site",
@@ -49,9 +53,18 @@
       "plan": "Available from the Pro plan",
       "domain": "Requires a verified own domain"
     },
-    "gallery": {
-      "title": "Add widget",
-      "description": "Pick a starting point. Everything stays editable."
+    "library": {
+      "title": "Widget library",
+      "description": "Pick a widget and fine-tune it. Everything stays editable.",
+      "samplePlace": "London",
+      "categories": {
+        "all": "All",
+        "notice": "Announcements",
+        "layout": "Layout",
+        "action": "Calls to action",
+        "data": "Live data",
+        "custom": "Custom"
+      }
     },
     "presets": {
       "announcement": { "name": "Announcement", "hint": "A bar above the content for news and offers" },
@@ -78,7 +91,64 @@
       "weather": { "name": "Weather", "hint": "A forecast for your city" },
       "html": { "name": "Custom HTML", "hint": "An embed code, a form or your own content" }
     },
+    "placement": {
+      "title": "Placement preview",
+      "show": "Where it appears",
+      "choose": "Place: {slot}",
+      "frameTitle": "Actual page preview with widget",
+      "expand": "Expand preview",
+      "desktop": "Desktop",
+      "mobile": "Mobile",
+      "loading": "Loading page…",
+      "noArticle": "Publish an article to preview its widget placement.",
+      "realPage": "The actual page on your website with the widget placement highlighted. Scroll to explore the page.",
+      "pages": {
+        "home": "Homepage",
+        "article": "Article"
+      },
+      "hints": {
+        "BAR": "Below the website header, on every page.",
+        "HOME_TOP": "On the homepage below the introduction, before topics and recommended articles.",
+        "HOME_MIDDLE": "On the homepage between recommended articles and the main article list.",
+        "HOME_BOTTOM": "At the end of the homepage content, before social links and the footer.",
+        "ARTICLE_END": "Below article content and feedback, before related articles and comments.",
+        "FOOTER": "Just above the footer on every page of the website."
+      }
+    },
     "announcement": {
+      "appearance": "Appearance",
+      "alignment": "Alignment",
+      "alignments": {
+        "start": "Left",
+        "center": "Center"
+      },
+      "textSize": "Text size",
+      "textSizes": {
+        "sm": "Small",
+        "base": "Medium",
+        "lg": "Large"
+      },
+      "spacing": "Bar height",
+      "spacings": {
+        "compact": "Compact",
+        "comfortable": "Spacious"
+      },
+      "linkStyle": "Link appearance",
+      "linkStyles": {
+        "text": "Text link",
+        "button": "Button"
+      },
+      "customColors": "Custom colors",
+      "backgroundColor": "Background color",
+      "textColor": "Text color",
+      "formatting": "Text formatting",
+      "formattingHint": "Select part of the text to format it or insert a link.",
+      "bold": "Bold",
+      "italic": "Italic",
+      "inlineLink": "Link in text",
+      "applyLink": "Insert link",
+      "removeLink": "Remove link",
+      "clearFormatting": "Clear formatting",
       "label": "Announcement",
       "close": "Close announcement",
       "text": "Text",
@@ -147,6 +217,12 @@
       "field": "{widget}: check the “{field}” field."
     },
     "fields": {
+      "alignment": "Alignment",
+      "textSize": "Text size",
+      "spacing": "Bar height",
+      "linkStyle": "Link appearance",
+      "background": "Background color",
+      "richText": "Formatted text",
       "text": "Text",
       "url": "Link",
       "label": "Link text",

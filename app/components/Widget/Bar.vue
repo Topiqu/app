@@ -2,19 +2,33 @@
   <aside
     v-if="visible"
     :aria-label="$t('widgets.announcement.label')"
-    class="relative border-b text-sm"
-    :class="TONES[announcement.tone]"
+    class="relative border-b"
+    :class="[TEXT_SIZES[appearance.textSize], appearance.colors ? 'border-transparent' : TONES[announcement.tone]]"
+    :style="
+      appearance.colors ? { backgroundColor: appearance.colors.background, color: appearance.colors.text } : undefined
+    "
   >
     <div
-      class="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-3 gap-y-1 py-2 pl-4"
-      :class="announcement.dismissible ? 'pr-12' : 'pr-4'"
+      class="mx-auto flex max-w-7xl flex-wrap items-center gap-x-3 gap-y-1 pl-4"
+      :class="[
+        appearance.alignment === 'center' ? 'justify-center text-center' : 'justify-start text-start',
+        appearance.spacing === 'comfortable' ? 'py-4' : 'py-2',
+        announcement.dismissible ? 'pr-12' : 'pr-4',
+      ]"
     >
-      <p class="text-center text-pretty">{{ announcement.text }}</p>
+      <p class="min-w-0 whitespace-pre-line text-pretty break-words">
+        <WidgetAnnouncementText :text="announcement.text" :runs="announcement.richText" />
+      </p>
       <NuxtLink
         v-if="announcement.link"
         :to="announcement.link.url"
         :target="external ? '_blank' : undefined"
-        class="whitespace-nowrap font-semibold underline underline-offset-2"
+        class="max-w-full font-semibold break-words outline-offset-4 focus-visible:outline-2 focus-visible:outline-current"
+        :class="
+          appearance.linkStyle === 'button'
+            ? 'inline-flex items-center justify-center rounded-md bg-current/10 px-3 py-1.5 text-center ring-1 ring-current/25 transition-colors hover:bg-current/20'
+            : 'underline underline-offset-2'
+        "
       >
         {{ announcement.link.label }}
       </NuxtLink>
@@ -33,12 +47,24 @@
 </template>
 
 <script setup lang="ts">
-import type { AnnouncementConfig } from '~~/shared/utils/widgets'
+import {
+  DEFAULT_ANNOUNCEMENT_APPEARANCE,
+  type AnnouncementAppearance,
+  type AnnouncementConfig,
+  type AnnouncementTextRun,
+} from '~~/shared/utils/widgets'
 
 const { announcement, preview = false } = defineProps<{
-  announcement: Pick<AnnouncementConfig, 'text' | 'link' | 'tone' | 'dismissible'> & { id: string }
+  announcement: Pick<AnnouncementConfig, 'text' | 'link' | 'tone' | 'dismissible'> & {
+    id: string
+    appearance?: AnnouncementAppearance
+    richText?: AnnouncementTextRun[] | null
+  }
   preview?: boolean
 }>()
+
+const appearance = computed(() => ({ ...DEFAULT_ANNOUNCEMENT_APPEARANCE, ...announcement.appearance }))
+const TEXT_SIZES = { sm: 'text-sm', base: 'text-base', lg: 'text-lg' } as const
 
 const TONES = {
   info: 'border-default bg-elevated text-highlighted',

@@ -3,6 +3,10 @@
     "title": "Widgety",
     "description": "Oznámení, výzvy k akci, kurzy, počasí a vlastní obsah na vybraných místech blogu.",
     "empty": "Zatím žádné widgety.",
+    "emptyHint": "Vyberte si z knihovny: oznámení, výzvy k akci, živé kurzy, počasí a další.",
+    "edit": "Upravit {name}",
+    "done": "Hotovo",
+    "allLanguages": "Všechny jazyky",
     "item": "Widget {n}: {kind}",
     "add": "Přidat widget",
     "preview": "Náhled",
@@ -10,8 +14,8 @@
     "slotUsage": "{active}/{max} aktivní",
     "hidden": "Skrytý mimo váš tarif",
     "slot": "Umístění",
-    "moveUp": "Posunout výš",
-    "moveDown": "Posunout níž",
+    "moveEarlier": "Posunout dopředu",
+    "moveLater": "Posunout dozadu",
     "active": "Zobrazovat",
     "languages": "Jazyky",
     "languagesHint": "Bez výběru ve všech jazycích webu",
@@ -49,9 +53,18 @@
       "plan": "Dostupné od tarifu Pro",
       "domain": "Vyžaduje ověřenou vlastní doménu"
     },
-    "gallery": {
-      "title": "Přidat widget",
-      "description": "Vyberte předlohu. Vše jde potom upravit."
+    "library": {
+      "title": "Knihovna widgetů",
+      "description": "Vyberte widget a doladíte ho. Vše jde potom upravit.",
+      "samplePlace": "Praha",
+      "categories": {
+        "all": "Vše",
+        "notice": "Oznámení",
+        "layout": "Rozvržení",
+        "action": "Výzvy k akci",
+        "data": "Živá data",
+        "custom": "Vlastní"
+      }
     },
     "presets": {
       "announcement": { "name": "Oznámení", "hint": "Lišta nad obsahem pro novinky a akce" },
@@ -78,7 +91,64 @@
       "weather": { "name": "Počasí", "hint": "Předpověď pro vaše město" },
       "html": { "name": "Vlastní HTML", "hint": "Embed kód, formulář nebo vlastní obsah" }
     },
+    "placement": {
+      "title": "Náhled umístění",
+      "show": "Kde se zobrazí",
+      "choose": "Umístit: {slot}",
+      "frameTitle": "Náhled skutečné stránky s widgetem",
+      "expand": "Zvětšit náhled",
+      "desktop": "Počítač",
+      "mobile": "Mobil",
+      "loading": "Načítání stránky…",
+      "noArticle": "Pro náhled umístění v článku nejprve publikujte článek.",
+      "realPage": "Skutečná stránka vašeho webu se zvýrazněným místem pro widget. Náhledem můžete posouvat.",
+      "pages": {
+        "home": "Homepage",
+        "article": "Článek"
+      },
+      "hints": {
+        "BAR": "Lišta pod záhlavím webu. Zobrazuje se na všech stránkách.",
+        "HOME_TOP": "Na úvodní stránce pod úvodem webu, před tématy a doporučenými články.",
+        "HOME_MIDDLE": "Na úvodní stránce mezi doporučenými články a hlavním seznamem článků.",
+        "HOME_BOTTOM": "Na konci obsahu homepage, před odkazy na sociální sítě a patičkou.",
+        "ARTICLE_END": "Pod obsahem článku a zpětnou vazbou, před souvisejícími články a komentáři.",
+        "FOOTER": "Těsně nad patičkou na všech stránkách webu."
+      }
+    },
     "announcement": {
+      "appearance": "Vzhled",
+      "alignment": "Zarovnání",
+      "alignments": {
+        "start": "Doleva",
+        "center": "Na střed"
+      },
+      "textSize": "Velikost textu",
+      "textSizes": {
+        "sm": "Malý",
+        "base": "Střední",
+        "lg": "Velký"
+      },
+      "spacing": "Výška lišty",
+      "spacings": {
+        "compact": "Úsporná",
+        "comfortable": "Vzdušná"
+      },
+      "linkStyle": "Zobrazení odkazu",
+      "linkStyles": {
+        "text": "Textový odkaz",
+        "button": "Tlačítko"
+      },
+      "customColors": "Vlastní barvy",
+      "backgroundColor": "Barva pozadí",
+      "textColor": "Barva textu",
+      "formatting": "Formátování textu",
+      "formattingHint": "Označte část textu a upravte její formátování nebo vložte odkaz.",
+      "bold": "Tučné",
+      "italic": "Kurzíva",
+      "inlineLink": "Odkaz v textu",
+      "applyLink": "Vložit odkaz",
+      "removeLink": "Odebrat odkaz",
+      "clearFormatting": "Zrušit formátování",
       "label": "Oznámení",
       "close": "Zavřít oznámení",
       "text": "Text",
@@ -147,6 +217,12 @@
       "field": "{widget}: zkontrolujte pole „{field}“."
     },
     "fields": {
+      "alignment": "Zarovnání",
+      "textSize": "Velikost textu",
+      "spacing": "Výška lišty",
+      "linkStyle": "Zobrazení odkazu",
+      "background": "Barva pozadí",
+      "richText": "Formátovaný text",
       "text": "Text",
       "url": "Odkaz",
       "label": "Text odkazu",

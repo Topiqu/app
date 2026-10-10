@@ -6,6 +6,7 @@ import { keywordOpportunity } from '~~/shared/utils/keywordOpportunity'
 
 import { rankHistoryFor } from './rank'
 import { suggestExpansions } from './refresh'
+import { aiReasoning } from '../ai/reasoning'
 import { serpSignals, type SerpItem } from './serp'
 import { assessOpportunities } from './opportunity'
 import { dataForSeo, hasDataForSeo } from './dataforseo'
@@ -254,7 +255,7 @@ const deriveSeeds = async (site: PlanSite, titles: string[]) => {
   const result = await generateText({
     model: aiModel('keywordSeeds'),
     maxOutputTokens: 600,
-    providerOptions: { openai: { reasoningEffort: 'none' } },
+    providerOptions: aiReasoning('none'),
     instructions:
       "List short search phrases for distinct subtopics inside this blog's exact focus, including specific reader problems and comparisons. Use the blog language. Avoid generic umbrella categories and do not invent trending names or search volumes.",
     prompt: `${siteProfile(site)}\nRecent titles:\n${

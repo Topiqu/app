@@ -1,5 +1,3 @@
-import { randomUUID } from 'crypto'
-
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const user = await getSessionUser(event)
@@ -8,7 +6,7 @@ export default defineEventHandler(async (event) => {
   if (!articleId) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
   const body = await readBody(event)
-  const { isHelpful, reason, sessionId: clientSessionId } = body
+  const { isHelpful, reason } = body
   if (typeof isHelpful !== 'boolean') throw createError({ statusCode: 400, message: t('common.errors.missing')! })
 
   const db = await getEnhancedPrisma(user)
@@ -18,8 +16,7 @@ export default defineEventHandler(async (event) => {
 
   let finalSessionId: string | null = null
   if (!user) {
-    finalSessionId = clientSessionId || getCookie(event, 'client_session_id') || randomUUID()
-    setCookie(event, 'client_session_id', finalSessionId!, { maxAge: 60 * 60 * 24 * 365, sameSite: 'lax' })
+    finalSessionId = issueAnonSession(event)
   }
 
   const whereClause = user ? { articleId, userId: user.id } : { articleId, sessionId: finalSessionId, userId: null }

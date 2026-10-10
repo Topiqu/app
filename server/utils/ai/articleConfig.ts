@@ -10,6 +10,7 @@ import {
   optimizationScoringConfig,
 } from '~~/shared/utils/articleOptimization'
 
+import { aiReasoning } from './reasoning'
 import { researchTopic } from './researchEvidence'
 import { editorialPolicy } from './editorialPolicy'
 import { AUTHOR_ACCOUNT_RULE } from './articleQuality'
@@ -382,7 +383,7 @@ export const buildArticleConfig = async (
     },
     config: {
       model: aiModel('articleWriter'),
-      providerOptions: { openai: { reasoningEffort: 'medium' } },
+      providerOptions: aiReasoning('medium'),
       maxOutputTokens: 8000,
       instructions,
       prompt,

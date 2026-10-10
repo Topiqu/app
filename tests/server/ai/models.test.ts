@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { generateText, Output } from 'ai'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { aiReasoning } from '../../../server/utils/ai/reasoning'
 import { aiModel, aiWebSearchTool } from '../../../server/utils/ai/models'
 
 const { requests } = vi.hoisted(() => ({ requests: [] as { url: string; body: Record<string, any> }[] }))
@@ -51,38 +52,114 @@ vi.mock('../../../server/utils/ai/openai', async () => {
   }
 })
 
-describe('OpenAI model integration', () => {
+vi.mock('../../../server/utils/ai/anthropic', async () => {
+  const { createAnthropic } = await import('@ai-sdk/anthropic')
+  return {
+    default: createAnthropic({
+      apiKey: 'test-key',
+      fetch: async (url, init) => {
+        const body = JSON.parse(init?.body as string)
+        requests.push({ url: String(url), body })
+        return new Response(
+          JSON.stringify({
+            id: 'msg_test',
+            type: 'message',
+            role: 'assistant',
+            model: body.model,
+            content: [
+              { type: 'server_tool_use', id: 'srvtoolu_test', name: 'web_search', input: { query: 'test' } },
+              {
+                type: 'web_search_tool_result',
+                tool_use_id: 'srvtoolu_test',
+                content: [
+                  {
+                    type: 'web_search_result',
+                    url: 'https://example.com/source',
+                    title: 'Source',
+                    encrypted_content: 'enc',
+                    page_age: null,
+                  },
+                ],
+              },
+              { type: 'text', text: '{"title":"Verified"}' },
+            ],
+            stop_reason: 'end_turn',
+            stop_sequence: null,
+            usage: { input_tokens: 10, output_tokens: 12, server_tool_use: { web_search_requests: 1 } },
+          }),
+          { headers: { 'content-type': 'application/json' } },
+        )
+      },
+    }),
+  }
+})
+
+describe('AI model integration', () => {
   beforeEach(() => {
     requests.length = 0
   })
 
-  it.each([
-    { task: 'articleResearch', model: 'gpt-5.6-luna' },
-    { task: 'articleWriter', model: 'gpt-5.6-luna' },
-    { task: 'translation', model: 'gpt-6-luna' },
-  ] as const)('uses the configured $model for $task through Responses', async ({ task, model }) => {
-    const result = await generateText({
-      model: aiModel(task),
-      prompt: 'Create a structured answer with a source.',
-      output: Output.object({ schema: z.object({ title: z.string() }) }),
-      maxOutputTokens: 3000,
-      providerOptions: { openai: { reasoningEffort: 'medium' } },
-      toolChoice: 'required',
-      tools: { web_search: aiWebSearchTool('medium') },
+  it.each(['articleResearch', 'articleWriter', 'translation'] as const)(
+    'sends %s to Claude Haiku 5.5 with effort, structured output and web search',
+    async (task) => {
+      const result = await generateText({
+        model: aiModel(task),
+        prompt: 'Create a structured answer with a source.',
+        output: Output.object({ schema: z.object({ title: z.string() }) }),
+        maxOutputTokens: 3000,
+        providerOptions: aiReasoning('medium'),
+        toolChoice: 'required',
+        tools: { web_search: aiWebSearchTool(task, 'medium') },
+      })
+
+      expect(requests).toHaveLength(1)
+      expect(requests[0]?.url).toBe('https://api.anthropic.com/v1/messages')
+      expect(requests[0]?.body).toMatchObject({
+        model: 'claude-haiku-5-5',
+        // The call-site budget plus headroom for adaptive thinking, which shares `max_tokens`.
+        max_tokens: 11_000,
+        tool_choice: { type: 'any' },
+        tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 5 }],
+        output_config: { effort: 'medium', format: { type: 'json_schema' } },
+      })
+      expect(requests[0]?.body).not.toHaveProperty('temperature')
+      expect(result.output).toEqual({ title: 'Verified' })
+      expect(result.sources.map((source) => source.sourceType === 'url' && source.url)).toEqual([
+        'https://example.com/source',
+      ])
+      expect(result.usage.totalTokens).toBe(22)
+    },
+  )
+
+  it('turns Haiku thinking off for reasoning-free routes', async () => {
+    await generateText({
+      model: aiModel('keywordSeeds'),
+      prompt: 'List seeds.',
+      maxOutputTokens: 600,
+      providerOptions: aiReasoning('none'),
     })
 
-    expect(requests).toHaveLength(1)
+    expect(requests[0]?.body).toMatchObject({
+      max_tokens: 600,
+      thinking: { type: 'disabled' },
+      output_config: { effort: 'low' },
+    })
+  })
+
+  it('keeps the ChatGPT visibility probe on OpenAI Responses with OpenAI web search', async () => {
+    await generateText({
+      model: aiModel('visibility'),
+      prompt: 'Answer with a source.',
+      providerOptions: aiReasoning('low'),
+      toolChoice: 'required',
+      tools: { web_search: aiWebSearchTool('visibility', 'medium') },
+    })
+
     expect(requests[0]?.url).toBe('https://api.openai.com/v1/responses')
     expect(requests[0]?.body).toMatchObject({
-      model,
-      reasoning: { effort: 'medium' },
-      max_output_tokens: 3000,
-      tool_choice: 'required',
+      model: 'gpt-6-luna',
+      reasoning: { effort: 'low' },
       tools: [{ type: 'web_search', search_context_size: 'medium' }],
-      text: { format: { type: 'json_schema', strict: true, schema: { additionalProperties: false } } },
     })
-    expect(result.output).toEqual({ title: 'Verified' })
-    expect(result.toolResults.some((tool) => tool.toolName === 'web_search')).toBe(true)
-    expect(result.usage.totalTokens).toBe(22)
   })
 })

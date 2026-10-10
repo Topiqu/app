@@ -11,6 +11,7 @@ import type { DatabaseClient } from '../database'
 
 import { serpSignals } from './serp'
 import { dataForSeo } from './dataforseo'
+import { aiReasoning } from '../ai/reasoning'
 import { blogPosition, isArticleUrl } from './rank'
 import { activeFeatureFilter } from '../planFeatures'
 import { researchTopic } from '../ai/researchEvidence'
@@ -291,7 +292,7 @@ export const draftContentEdit = async (
     model: aiModel('articleWriter'),
     maxOutputTokens: 8000,
     abortSignal: AbortSignal.timeout(120_000),
-    providerOptions: { openai: { reasoningEffort: 'medium' } },
+    providerOptions: aiReasoning('medium'),
     instructions: EDIT_RULES,
     prompt: [
       `Language: ${article.language.toUpperCase()}`,

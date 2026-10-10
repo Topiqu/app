@@ -3,6 +3,8 @@ import type { ResearchDepth, YoutubeOutcome } from '~~/shared/utils/articleGener
 import { generateText } from 'ai'
 import { youtubeVideoId } from '~~/shared/utils/youtube'
 
+import { aiReasoning } from './reasoning'
+
 export const extractResearchUrls = (text: string) =>
   (text.replace(/(?<!^)(https?:\/\/)/g, ' $1').match(/https?:\/\/[^\s)\]}>,`"'<>*]+/g) ?? []).map((url) =>
     url.replace(/[.;]+$/, ''),
@@ -75,7 +77,7 @@ const researchYoutube = async (
       instructions: `Search for existing, directly relevant YouTube videos about the topic. Prefer the official developer, publisher, manufacturer, institution or named subject's channel. Return up to three full youtube.com/watch or youtu.be URLs you actually opened, ordered by relevance; return NONE if no suitable video was retrieved. Never guess a video id or transform a channel/search URL into a watch URL.`,
       prompt,
       maxOutputTokens: 250,
-      tools: { web_search: aiWebSearchTool('low') as never },
+      tools: { web_search: aiWebSearchTool('articleResearch', 'low') as never },
       abortSignal: signal,
     })
     const candidates = [
@@ -152,8 +154,8 @@ export const researchTopic = async (
       `.trim(),
       prompt,
       maxOutputTokens: researchConfig.maxOutputTokens,
-      providerOptions: { openai: { reasoningEffort: 'medium' } },
-      tools: { web_search: aiWebSearchTool(researchConfig.searchContextSize) as never },
+      providerOptions: aiReasoning('medium'),
+      tools: { web_search: aiWebSearchTool('articleResearch', researchConfig.searchContextSize) as never },
       abortSignal: researchSignal,
     })
     const youtubeResearch = youtubeRequested ? researchYoutube(prompt, abortSignal) : Promise.resolve(null)

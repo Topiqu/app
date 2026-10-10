@@ -78,7 +78,7 @@ ZenStack generates ignored schema metadata and TypeScript types in `generated/ze
 | **State & queries** | Pinia · Pinia Colada                   |
 | **Data**            | ZenStack ORM 3 · PostgreSQL · pgvector |
 | **Editor**          | Tiptap 3 with custom extensions        |
-| **AI**              | AI SDK 7 · OpenAI Responses API        |
+| **AI**              | AI SDK 7 · Claude Haiku 5.5 · OpenAI   |
 | **Runtime**         | Bun 1.4.2 · Node 24.21.0               |
 
 <details>

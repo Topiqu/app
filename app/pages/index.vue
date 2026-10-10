@@ -368,13 +368,18 @@ interface HomeArticle {
 }
 
 const { data: auth } = useAuth()
-const hasDashboardChrome = computed(() => ['admin', 'superadmin'].includes(auth.value?.user?.role || ''))
+const preview = useWidgetPagePreview()
+const hasDashboardChrome = computed(
+  () => !preview.active.value && ['admin', 'superadmin'].includes(auth.value?.user?.role || ''),
+)
 const localePath = useLocalePath()
 const { locale } = useI18n()
 const clientSite = await useClientSite()
 const { marketingGranted } = useConsent(() => clientSite)
 const adsenseSlot = String(useRuntimeConfig().public.adsenseFeedSlot || '')
-const feedAd = computed(() => adProviderFor(clientSite, { marketing: marketingGranted.value, adsenseSlot }))
+const feedAd = computed(() =>
+  preview.active.value ? null : adProviderFor(clientSite, { marketing: marketingGranted.value, adsenseSlot }),
+)
 
 const { data: feat, pending: featPending } = await useFetch(`/api/articles/featured/${clientSite?.name}`, {
   query: { locale },
@@ -583,7 +588,12 @@ const hasPublishedArticles = computed(() => (feat.value?.totalArticles ?? 0) > 0
 const isPastLastPage = computed(() => requestedPage() > 1 && !pending.value && !feed.value?.items?.length)
 
 useSeoMeta({
-  robots: () => (hasPublishedArticles.value && !isPastLastPage.value ? 'index, follow' : 'noindex, follow'),
+  robots: () =>
+    preview.active.value
+      ? 'noindex, nofollow'
+      : hasPublishedArticles.value && !isPastLastPage.value
+        ? 'index, follow'
+        : 'noindex, follow',
 })
 
 const loadMore = async () => {

@@ -5,6 +5,7 @@ import { embed, generateText, Output } from 'ai'
 import { isKnowledgeStale, knowledgeAsOf, KNOWLEDGE_STALE_MONTHS } from '~~/shared/utils/knowledge'
 
 import { toPgVector } from './indexing'
+import { aiReasoning } from '../ai/reasoning'
 import { aiEmbeddingModelId } from '../ai/modelRegistry'
 
 const CANDIDATES = 40
@@ -225,7 +226,7 @@ const selectRelevant = async (topic: string, shortlist: readonly KnowledgeCandid
     model: aiModel('knowledgeSelect'),
     output: Output.object({ schema: selectionSchema }),
     maxOutputTokens: 600,
-    providerOptions: { openai: { reasoningEffort: 'low' } },
+    providerOptions: aiReasoning('low'),
     abortSignal: abortSignal
       ? AbortSignal.any([abortSignal, AbortSignal.timeout(20_000)])
       : AbortSignal.timeout(20_000),

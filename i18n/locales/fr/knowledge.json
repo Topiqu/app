@@ -138,7 +138,7 @@
       "title": "Comment l'IA utilisera cette source",
       "useInternal": "L'IA peut utiliser les faits et chiffres de cette source dans vos articles publiés, sans créer de lien vers elle.",
       "usePublic": "L'IA peut utiliser les faits et chiffres de cette source dans vos articles publiés et créer un lien vers elle comme source.",
-      "processing": "Le contenu est traité par un fournisseur d'IA externe (OpenAI) lors de son ajout, de chaque modification et de la rédaction des articles. Nous ne conservons que le texte extrait, jusqu'à ce que vous supprimiez la source.",
+      "processing": "Le contenu est traité par un fournisseur externe de modèles d'IA lors de son ajout, de chaque modification et de la rédaction des articles. Nous ne conservons que le texte extrait, jusqu'à ce que vous supprimiez la source.",
       "confirm": "Je confirme que cette source ne contient aucune information confidentielle, aucun secret commercial ni aucune donnée personnelle qui ne doivent pas apparaître dans un article public."
     },
     "feed": {

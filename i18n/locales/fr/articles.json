@@ -651,7 +651,7 @@
         "errorTitle": "La vérification n'a pas pu être terminée",
         "error": {
           "invalid-request": "L'article actuel n'a pas pu être préparé pour la vérification. Rechargez l'éditeur et réessayez.",
-          "not-configured": "Le service d'IA n'est pas configuré dans cet environnement. Un administrateur doit définir OPENAI_API_KEY.",
+          "not-configured": "Le service d'IA n'est pas configuré dans cet environnement. Un administrateur doit définir ANTHROPIC_API_KEY.",
           "not-in-plan": "La vérification des faits n'est pas disponible avec votre offre ou vous n'êtes pas autorisé à l'utiliser.",
           "rate-limited": "Trop de vérifications ont été demandées. Patientez un instant et réessayez.",
           "service-unavailable": "Le service d'IA est temporairement indisponible. Relancez la vérification plus tard.",

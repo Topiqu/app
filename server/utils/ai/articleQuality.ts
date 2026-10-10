@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { load } from 'cheerio'
 import { generateText, Output } from 'ai'
 
+import { aiReasoning } from './reasoning'
 import { AUTHORIAL_REASONING, ILLUSTRATIVE_STORY } from './editorialPolicy'
 import { extractResearchUrls, researchEvidence, retrievedResearchSources } from './researchEvidence'
 
@@ -18,16 +19,21 @@ const editorialIssueCode = z.enum([
   'broken_structure',
 ])
 
+// The caps live in the descriptions and are applied by `reviewArticle`: Anthropic structured output
+// does not enforce length limits, and one long note must not fail the whole generation.
 export const editorialReviewSchema = z.object({
   approved: z.boolean().describe('True only when the draft is ready to publish without substantive editing'),
   issues: z
     .array(
       z.object({
         code: editorialIssueCode,
-        note: z.string().min(10).max(300).describe('A precise edit instruction naming the defective passage'),
+        note: z
+          .string()
+          .min(10)
+          .describe('A precise edit instruction naming the defective passage, at most 300 characters'),
       }),
     )
-    .max(6),
+    .describe('At most 6 issues, the most serious first'),
 })
 
 export type EditorialReview = (typeof editorialReviewSchema)['_output']
@@ -203,10 +209,10 @@ export const reviewArticle = async (draft: ReviewDraft, context: ReviewContext) 
   if (context.verifyFacts ?? !!context.researchBrief) {
     const verification = await generateText({
       model: aiModel('articleResearch'),
-      tools: { web_search: aiWebSearchTool('high') as never },
+      tools: { web_search: aiWebSearchTool('articleResearch', 'high') as never },
       toolChoice: 'required',
       maxOutputTokens: 6000,
-      providerOptions: { openai: { reasoningEffort: 'medium' } },
+      providerOptions: aiReasoning('medium'),
       abortSignal: context.abortSignal
         ? AbortSignal.any([context.abortSignal, AbortSignal.timeout(120_000)])
         : AbortSignal.timeout(120_000),
@@ -265,7 +271,7 @@ firstPartyKnowledge is the publisher's own material, dated per entry. A claim ab
   const { output: object, usage } = await generateText({
     model: aiModel('articleEditor'),
     maxOutputTokens: 2000,
-    providerOptions: { openai: { reasoningEffort: 'low' } },
+    providerOptions: aiReasoning('low'),
     abortSignal: context.abortSignal
       ? AbortSignal.any([context.abortSignal, AbortSignal.timeout(30_000)])
       : AbortSignal.timeout(30_000),
@@ -312,7 +318,7 @@ Do not fail a draft for personal style preferences, a short recap, mild repetiti
 
   const editorialIssues =
     object.approved || object.issues.length
-      ? object.issues
+      ? object.issues.map((issue) => ({ ...issue, note: issue.note.slice(0, 300) }))
       : [{ code: 'broken_structure' as const, note: 'The draft was rejected without a usable edit instruction.' }]
 
   // Style suggestions must not turn an otherwise usable generation into a paid failure.

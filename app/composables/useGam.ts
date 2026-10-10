@@ -27,6 +27,8 @@ const loadGpt = (site: GamSite) =>
     script.onload = () =>
       window.googletag.cmd.push(() => {
         const pubads = window.googletag.pubads()
+        // Personalized inventory needs a certified CMP; this integration serves NPA only.
+        pubads.setPrivacySettings({ nonPersonalizedAds: true })
         pubads.enableSingleRequest()
         pubads.collapseEmptyDivs(true)
         pubads.enableLazyLoad({ fetchMarginPercent: 200, renderMarginPercent: 100, mobileScaling: 2.0 })
@@ -39,8 +41,9 @@ const loadGpt = (site: GamSite) =>
   })
 
 export const useGamAds = (site: GamSite | null) => {
+  const marketingGranted = useMarketingConsent()
   const initialize = () => {
-    if (!import.meta.client || !site?.gamNetworkCode) return Promise.resolve(false)
+    if (!import.meta.client || !site?.gamNetworkCode || !marketingGranted.value) return Promise.resolve(false)
     ready ??= loadGpt(site).then((ok) => {
       if (!ok) ready = null
       return ok
@@ -55,7 +58,7 @@ export const useGamAds = (site: GamSite | null) => {
     targeting?: Record<string, string | string[]>,
     sizeMapping?: GamSizeMapping[],
   ) => {
-    if (!(await initialize())) return false
+    if (!(await initialize()) || !marketingGranted.value) return false
 
     window.googletag.cmd.push(() => {
       const tag = window.googletag

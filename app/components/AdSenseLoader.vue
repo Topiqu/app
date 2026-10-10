@@ -26,6 +26,10 @@ watch(
     status.value = 'loading'
     if (!ready) return
 
+    const adWindow = window as unknown as { adsbygoogle?: unknown[] & { requestNonPersonalizedAds?: number } }
+    const queue = (adWindow.adsbygoogle ??= [])
+    queue.requestNonPersonalizedAds = 1
+
     // AdSense validates its head tag. Unhead adds data-hid and event marker attributes,
     // so insert a plain script only after hydration and attach listeners through the DOM.
     const element = document.createElement('script')

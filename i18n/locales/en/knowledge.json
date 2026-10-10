@@ -138,7 +138,7 @@
       "title": "How AI will use this source",
       "useInternal": "AI may use the facts and figures in this source in your published articles, without linking to it.",
       "usePublic": "AI may use the facts and figures in this source in your published articles and may link to it as a source.",
-      "processing": "The content is processed by an external AI provider (OpenAI) when it is added, whenever it changes and when articles are written. We keep only the extracted text, until you delete the source.",
+      "processing": "The content is processed by an external AI model provider when it is added, whenever it changes and when articles are written. We keep only the extracted text, until you delete the source.",
       "confirm": "I confirm this source contains no confidential information, trade secrets or personal data that must not appear in a public article."
     },
     "feed": {

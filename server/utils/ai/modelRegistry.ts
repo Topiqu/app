@@ -1,32 +1,35 @@
 import type { AiVisibilityProvider } from '~~/generated/zenstack/models'
 
-export type AiProvider = 'openai'
+export type AiProvider = 'openai' | 'anthropic'
+
+const HAIKU = { provider: 'anthropic', id: 'claude-haiku-5-5' } as const
 
 export const AI_MODELS = {
-  topicSelection: { provider: 'openai', id: 'gpt-5.6-luna' },
-  articleResearch: { provider: 'openai', id: 'gpt-5.6-luna' },
-  articleWriter: { provider: 'openai', id: 'gpt-5.6-luna' },
-  articleEditor: { provider: 'openai', id: 'gpt-5.6-luna' },
-  linkedinPost: { provider: 'openai', id: 'gpt-5.6-luna' },
-  translation: { provider: 'openai', id: 'gpt-6-luna' },
-  promptEnhance: { provider: 'openai', id: 'gpt-6-luna' },
-  textEdit: { provider: 'openai', id: 'gpt-6-luna' },
-  sentiment: { provider: 'openai', id: 'gpt-6-luna' },
-  communityInsight: { provider: 'openai', id: 'gpt-6-luna' },
+  topicSelection: HAIKU,
+  articleResearch: HAIKU,
+  articleWriter: HAIKU,
+  articleEditor: HAIKU,
+  linkedinPost: HAIKU,
+  translation: HAIKU,
+  promptEnhance: HAIKU,
+  textEdit: HAIKU,
+  sentiment: HAIKU,
+  communityInsight: HAIKU,
+  // Measures what ChatGPT answers, so it has to stay on an OpenAI model.
   visibility: { provider: 'openai', id: 'gpt-6-luna' },
-  visibilityPrompts: { provider: 'openai', id: 'gpt-6-luna' },
-  factCheck: { provider: 'openai', id: 'gpt-5.6-luna' },
-  knowledgeSelect: { provider: 'openai', id: 'gpt-6-luna' },
-  articleLinks: { provider: 'openai', id: 'gpt-6-luna' },
-  keywordSeeds: { provider: 'openai', id: 'gpt-6-luna' },
-  topicScope: { provider: 'openai', id: 'gpt-5.6-luna' },
-  keywordOpportunity: { provider: 'openai', id: 'gpt-5.6-luna' },
-  backlinkMatch: { provider: 'openai', id: 'gpt-5.6-luna' },
-  backlinkOutreach: { provider: 'openai', id: 'gpt-6-luna' },
+  visibilityPrompts: HAIKU,
+  factCheck: HAIKU,
+  knowledgeSelect: HAIKU,
+  articleLinks: HAIKU,
+  keywordSeeds: HAIKU,
+  topicScope: HAIKU,
+  keywordOpportunity: HAIKU,
+  backlinkMatch: HAIKU,
+  backlinkOutreach: HAIKU,
 } as const satisfies Record<string, { provider: AiProvider; id: string }>
 
 export const AI_VISIBILITY_MODELS = {
-  ANTHROPIC: 'claude-sonnet-5',
+  ANTHROPIC: HAIKU.id,
   GOOGLE: 'gemini-3.8-flash',
   META: 'muse-spark-1.3',
   MISTRAL: 'mistral-medium-latest',

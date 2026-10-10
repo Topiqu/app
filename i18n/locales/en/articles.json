@@ -651,7 +651,7 @@
         "errorTitle": "The check could not be completed",
         "error": {
           "invalid-request": "The current article could not be prepared for checking. Reload the editor and try again.",
-          "not-configured": "The AI service is not configured in this environment. An administrator must set OPENAI_API_KEY.",
+          "not-configured": "The AI service is not configured in this environment. An administrator must set ANTHROPIC_API_KEY.",
           "not-in-plan": "Fact-checking is not available for your plan or you do not have permission to use it.",
           "rate-limited": "Too many checks were requested. Wait a moment and try again.",
           "service-unavailable": "The AI service is temporarily unavailable. Try running the check later.",

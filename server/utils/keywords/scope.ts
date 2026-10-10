@@ -3,6 +3,8 @@ import type { Language } from '~~/generated/zenstack/models'
 import { z } from 'zod'
 import { generateText, Output } from 'ai'
 
+import { aiReasoning } from '../ai/reasoning'
+
 export type ScopeSite = {
   id: string
   language: Language
@@ -47,7 +49,7 @@ export const inScope = async (site: ScopeSite, items: string[], usageAction: str
   const result = await generateText({
     model: aiModel('topicScope'),
     maxOutputTokens: Math.max(400, items.length * 8),
-    providerOptions: { openai: { reasoningEffort: 'none' } },
+    providerOptions: aiReasoning('none'),
     instructions: SCOPE_RULES,
     prompt: `${siteProfile(site)}\n\n## ITEMS\n${items.map((item, index) => `${index + 1}. ${item}`).join('\n')}`,
     output: Output.object({ schema: scopeSchema }),
