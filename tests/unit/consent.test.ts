@@ -17,7 +17,7 @@ const source = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf
 
 describe('tenant consent capabilities', () => {
   it('offers first-party view statistics on every tenant publication', () => {
-    expect(consentCapabilities({ plan: 'BASIC' })).toEqual({
+    expect(consentCapabilities({ plan: 'BASIC' })).toMatchObject({
       analytics: true,
       googleAnalytics: false,
       marketing: true,
@@ -68,6 +68,7 @@ describe('stored consent', () => {
       version: CONSENT_VERSION,
       analytics: true,
       marketing: false,
+      configuration: '',
       services: { internalAnalytics: true, googleAnalytics: false, marketing: false },
       decidedAt: '2026-08-24T12:00:00.000Z',
     })
@@ -87,6 +88,23 @@ describe('stored consent', () => {
     expect(consentCovers(null, analyticsOnly)).toBe(false)
     expect(consentCovers({ version: 0, analytics: true }, analyticsOnly)).toBe(false)
     expect(hasAnalyticsConsent('granted')).toBe(false)
+  })
+
+  it('does not extend a granted category to newly added services or another tenant', () => {
+    const site = { id: 'site-1', plan: 'PRO' }
+    const decision = createConsentDecision(consentCapabilities(site), { analytics: true, marketing: true })
+    expect(hasAnalyticsConsent(decision, consentCapabilities({ ...site, allowGtag: true, gtagId: 'G-NEW123' }))).toBe(
+      false,
+    )
+    expect(hasAnalyticsConsent(decision, consentCapabilities({ ...site, id: 'site-2' }))).toBe(false)
+  })
+
+  it('requires a new decision when a Google property or advertising provider changes', () => {
+    const site = { id: 'site-1', plan: 'PRO', allowGtag: true, gtagId: 'G-ONE123', gamNetworkCode: '123' }
+    const decision = createConsentDecision(consentCapabilities(site), { analytics: true, marketing: true })
+    expect(consentCovers(decision, consentCapabilities({ ...site, gtagId: 'G-TWO456' }))).toBe(false)
+    expect(hasMarketingConsent(decision, consentCapabilities({ ...site, gamNetworkCode: '456' }))).toBe(false)
+    expect(hasMarketingConsent(decision, consentCapabilities({ ...site, plan: 'BASIC' }))).toBe(false)
   })
 })
 
@@ -125,9 +143,11 @@ describe('consent integration contracts', () => {
   })
 
   it('mounts one global consent manager and gates analytics and advertising', () => {
-    expect(source('app/app.vue')).toContain('<ConsentManager :site="clientSite" :enabled="isPublicationSurface" />')
-    expect(source('app/composables/useArticleTracking.ts')).toContain('hasAnalyticsConsent(consentDecision.value)')
-    expect(source('app/app.vue')).toContain('platformAdsEnabledForPlan(clientSite?.plan) && marketingGranted')
+    expect(source('app/app.vue')).toMatch(
+      /<ConsentManager\b[^>]*:site="liveClientSite"[^>]*:enabled="isPublicationSurface"/,
+    )
+    expect(source('app/composables/useArticleTracking.ts')).toContain('useAnalyticsConsent()')
+    expect(source('app/app.vue')).toContain('platformAdsEnabledForPlan(liveClientSite?.plan) && marketingGranted')
     expect(source('app/composables/useGam.ts')).not.toContain('EnabledForPlan(client.plan)')
     const footer = source('app/components/Footer.vue')
     expect(footer).not.toContain('v-if="hasOptionalServices"')
@@ -149,7 +169,9 @@ describe('consent integration contracts', () => {
     )
     expect(source('app/assets/styles/main.css')).toContain('body:has(.bottom-action-bar) .back-to-top')
     expect(source('app/components/ConsentManager.vue')).toContain('window.location.reload()')
-    expect(source('app/components/ConsentManager.vue')).toContain("const adConsent = marketing ? 'granted' : 'denied'")
+    expect(source('app/composables/useGoogleAnalyticsConsent.ts')).toContain(
+      "const adConsent = marketing ? 'granted' : 'denied'",
+    )
     expect(source('i18n/locales/cs/common.json')).not.toContain('Počítá zobrazení článků')
   })
 

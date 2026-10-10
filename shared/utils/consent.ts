@@ -1,7 +1,8 @@
 import { platformAdsEnabledForPlan, tenantGamEnabled } from './advertising'
 
 export const CONSENT_COOKIE = 'topiqu_consent'
-export const CONSENT_VERSION = 2 as const
+export const CONSENT_VERSION = 3 as const
+export const CONSENT_MAX_AGE = 60 * 60 * 24 * 180
 
 export type ConsentLauncher = 'client-version' | 'cookie-button' | 'none'
 
@@ -16,6 +17,7 @@ export const consentLauncherFor = (
 }
 
 export interface ConsentSite {
+  id?: string | null
   plan?: string | null
   gtagId?: string | null
   allowGtag?: boolean | null
@@ -26,12 +28,14 @@ export interface ConsentCapabilities {
   analytics: boolean
   googleAnalytics: boolean
   marketing: boolean
+  configuration?: string
 }
 
 export interface ConsentDecision {
   version: typeof CONSENT_VERSION
   analytics: boolean
   marketing: boolean
+  configuration: string
   services: {
     internalAnalytics: boolean
     googleAnalytics: boolean
@@ -49,11 +53,17 @@ export const consentCapabilities = (site?: ConsentSite | null): ConsentCapabilit
     site.plan !== 'BASIC' && site.allowGtag && site.gtagId?.trim() && GA4_ID.test(site.gtagId.trim()),
   )
   const marketing = platformAdsEnabledForPlan(site.plan) || tenantGamEnabled(site.gamNetworkCode)
+  const advertising = platformAdsEnabledForPlan(site.plan)
+    ? 'adsense'
+    : tenantGamEnabled(site.gamNetworkCode)
+      ? `gam:${site.gamNetworkCode!.trim()}`
+      : null
 
   return {
     analytics: true,
     googleAnalytics,
     marketing,
+    configuration: JSON.stringify([site.id ?? null, googleAnalytics ? site.gtagId!.trim() : null, advertising]),
   }
 }
 
@@ -64,6 +74,7 @@ export const isConsentDecision = (value: unknown): value is ConsentDecision => {
     decision.version === CONSENT_VERSION &&
     typeof decision.analytics === 'boolean' &&
     typeof decision.marketing === 'boolean' &&
+    typeof decision.configuration === 'string' &&
     typeof decision.decidedAt === 'string' &&
     Boolean(decision.services) &&
     typeof decision.services?.internalAnalytics === 'boolean' &&
@@ -74,6 +85,7 @@ export const isConsentDecision = (value: unknown): value is ConsentDecision => {
 
 export const consentCovers = (decision: unknown, capabilities: ConsentCapabilities) => {
   if (!isConsentDecision(decision)) return false
+  if (decision.configuration !== (capabilities.configuration ?? '')) return false
   if (capabilities.analytics && !decision.services.internalAnalytics) return false
   if (capabilities.googleAnalytics && !decision.services.googleAnalytics) return false
   if (capabilities.marketing && !decision.services.marketing) return false
@@ -88,6 +100,7 @@ export const createConsentDecision = (
   version: CONSENT_VERSION,
   analytics: capabilities.analytics && choices.analytics,
   marketing: capabilities.marketing && choices.marketing,
+  configuration: capabilities.configuration ?? '',
   services: {
     internalAnalytics: capabilities.analytics,
     googleAnalytics: capabilities.googleAnalytics,
@@ -96,6 +109,14 @@ export const createConsentDecision = (
   decidedAt,
 })
 
-export const hasAnalyticsConsent = (decision: unknown) => isConsentDecision(decision) && decision.analytics
+export const hasAnalyticsConsent = (decision: unknown, capabilities?: ConsentCapabilities) =>
+  isConsentDecision(decision) &&
+  decision.analytics &&
+  decision.services.internalAnalytics &&
+  (!capabilities || consentCovers(decision, capabilities))
 
-export const hasMarketingConsent = (decision: unknown) => isConsentDecision(decision) && decision.marketing
+export const hasMarketingConsent = (decision: unknown, capabilities?: ConsentCapabilities) =>
+  isConsentDecision(decision) &&
+  decision.marketing &&
+  decision.services.marketing &&
+  (!capabilities || consentCovers(decision, capabilities))

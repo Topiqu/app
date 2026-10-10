@@ -208,7 +208,7 @@ export default defineNuxtConfig({
       },
     },
     optimizeDeps: {
-      include: ['@fingerprintjs/fingerprintjs', 'chart.js', 'fast-deep-equal', 'vue-chartjs'],
+      include: ['chart.js', 'fast-deep-equal', 'vue-chartjs'],
     },
   },
 
@@ -233,7 +233,7 @@ export default defineNuxtConfig({
 
   gtag: {
     initMode: 'manual',
-    config: { cookie_domain: 'none' },
+    config: { cookie_domain: 'none', allow_google_signals: false, allow_ad_personalization_signals: false },
     initCommands: [['consent', 'default', { ...CONSENT_DEFAULT }]],
   },
 

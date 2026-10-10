@@ -97,10 +97,6 @@ const votedCookie = useCookie<boolean | string>(`feedback_voted_${props.articleI
   sameSite: 'lax',
 })
 
-const sessionCookie = useCookie('client_session_id', { maxAge: 60 * 60 * 24 * 365 })
-if (!sessionCookie.value)
-  sessionCookie.value = crypto.randomUUID?.() ?? Math.random().toString(36).substring(2) + Date.now().toString(36)
-
 const hasVoted = computed(() => !!votedCookie.value)
 
 const submitVote = async (isHelpful: boolean) => {
@@ -108,7 +104,7 @@ const submitVote = async (isHelpful: boolean) => {
   try {
     await $fetch(`/api/articles/${props.articleId}/feedback`, {
       method: 'POST',
-      body: { isHelpful, reason: isHelpful ? null : reasonText.value, sessionId: sessionCookie.value },
+      body: { isHelpful, reason: isHelpful ? null : reasonText.value },
     })
     votedCookie.value = isHelpful ? 'helpful' : 'unhelpful'
     if (isHelpful) toast.add({ color: 'success', title: $t('feedback.thanks_short') })

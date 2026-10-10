@@ -15,7 +15,7 @@ const runtime = vi.hoisted(() => ({
   resize: null as (() => void) | null,
 }))
 const status = shallowRef<AdSenseStatus>('idle')
-const adWindow = window as unknown as { adsbygoogle?: unknown[] }
+const adWindow = window as unknown as { adsbygoogle?: unknown[] & { requestNonPersonalizedAds?: number } }
 const wrappers: ReturnType<typeof mount>[] = []
 
 mockNuxtImport('useAdSenseStatus', () => () => status)
@@ -64,6 +64,7 @@ describe('AdSense lifecycle', () => {
     const script = adScript()!
     expect(script.src).toContain('adsbygoogle.js?client=ca-pub-')
     expect(script.getAttributeNames().sort()).toEqual(['async', 'crossorigin', 'src'])
+    expect(adWindow.adsbygoogle?.requestNonPersonalizedAds).toBe(1)
     script.dispatchEvent(new Event('load'))
     expect(status.value).toBe('ready')
   })
@@ -78,7 +79,7 @@ describe('AdSense lifecycle', () => {
 
     expect(status.value).toBe('error')
     expect(slot.attributes('style')).toContain('display: none')
-    expect(adWindow.adsbygoogle).toBeUndefined()
+    expect(adWindow.adsbygoogle).toHaveLength(0)
   })
 
   it('does not reactivate ads if the pending script completes after consent is revoked', async () => {

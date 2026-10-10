@@ -1,42 +1,66 @@
 export function useArticleTracking(articleIdRef: Ref<string | undefined>) {
-  const consentDecision = useConsentDecision()
-  const lastViewedAt = useSessionStorage<number | null>(
-    computed(() => `viewed-${articleIdRef.value ?? 'pending'}`),
-    null,
-  )
-
+  const analyticsGranted = useAnalyticsConsent()
   let viewPending = false
+  let request: AbortController | undefined
 
-  const recordView = () => {
-    if (!articleIdRef.value || !import.meta.client) return
+  const recordView = async () => {
+    const id = articleIdRef.value
+    if (!id || !import.meta.client || !analyticsGranted.value) return
+    const key = `viewed-${id}`
     const now = Date.now()
-
-    if (lastViewedAt.value && now - lastViewedAt.value < 1000 * 60 * 30) return
-
+    let lastViewedAt = 0
     try {
-      $fetch(`/api/articles/${articleIdRef.value}/view`, {
+      lastViewedAt = Number(window.sessionStorage.getItem(key)) || 0
+    } catch {
+      /* Storage may be unavailable. */
+    }
+    if (lastViewedAt && now - lastViewedAt < 1000 * 60 * 30) return
+    request?.abort()
+    const controller = new AbortController()
+    request = controller
+    try {
+      const result = await $fetch<{ counted: boolean }>(`/api/articles/${id}/view`, {
         method: 'POST',
         body: { referrer: document.referrer || undefined },
+        signal: controller.signal,
       })
-      lastViewedAt.value = now
+      if (result.counted && analyticsGranted.value) {
+        try {
+          window.sessionStorage.setItem(key, String(now))
+        } catch {
+          /* Optional cache. */
+        }
+      }
     } catch {
-      // Ignored
+      /* Measurement must not interrupt reading. */
+    } finally {
+      if (request === controller) request = undefined
     }
   }
 
   const trackView = () => {
-    if (!hasAnalyticsConsent(consentDecision.value)) {
+    if (!analyticsGranted.value) {
       viewPending = true
       return
     }
-    recordView()
+    void recordView()
   }
 
-  watch(consentDecision, () => {
-    if (!viewPending || !hasAnalyticsConsent(consentDecision.value)) return
+  watch(analyticsGranted, (granted) => {
+    if (!granted) {
+      request?.abort()
+      try {
+        for (const key of Object.keys(window.sessionStorage))
+          if (key.startsWith('viewed-')) window.sessionStorage.removeItem(key)
+      } catch {
+        /* Storage may be unavailable. */
+      }
+      return
+    }
+    if (!viewPending) return
     viewPending = false
-    recordView()
+    void recordView()
   })
-
+  onBeforeUnmount(() => request?.abort())
   return { trackView }
 }
