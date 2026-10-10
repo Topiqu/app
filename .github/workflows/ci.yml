@@ -194,6 +194,9 @@ jobs:
 
       - name: Build production output
         run: bun run build:docker
+        # `nuxt build` runs on Node here (the image builds on Bun) and sits near the default heap.
+        env:
+          NODE_OPTIONS: --max-old-space-size=6144
 
       - name: Install browser engines
         run: bunx playwright install --with-deps chromium webkit
