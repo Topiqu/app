@@ -19,7 +19,19 @@
       </UDashboardPanel>
     </UDashboardGroup>
     <template v-else>
-      <WidgetBar v-if="announcement" :announcement />
+      <WidgetPagePreviewSlot
+        v-if="preview.active.value"
+        name="BAR"
+        :hasContent="Boolean(previewAnnouncement || announcement)"
+      >
+        <FormClientWidgetPreview v-if="previewAnnouncement" :widget="previewAnnouncement" />
+        <WidgetBar
+          v-else-if="announcement && announcement.id !== preview.state.value.editingId"
+          :announcement
+          preview
+        />
+      </WidgetPagePreviewSlot>
+      <WidgetBar v-else-if="announcement" :announcement />
       <UMain class="flex min-h-0 flex-1 flex-col"><slot /></UMain>
       <WidgetSlot v-if="isPublicationSurface" name="FOOTER" class="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8" />
       <Footer />
@@ -36,19 +48,25 @@
 <script setup lang="ts">
 const { data: auth } = useAuth()
 const route = useRoute()
+const preview = useWidgetPagePreview()
 const clientSite = await useLiveClientSite()
 const isSidebarOpen = shallowRef<boolean>(false)
 const tagsOpen = useState('dashboard-tags-open', () => false)
 const clientCreateOpen = useState('dashboard-client-create-open', () => false)
 const userListOpen = useState('dashboard-user-list-open', () => false)
 const shell = computed(() => resolvePageShell(route.meta.shell))
-const showDashboard = computed(() => canRenderDashboardShell(auth.value?.user.role, route.meta.dashboardSidebar))
+const showDashboard = computed(
+  () => !preview.active.value && canRenderDashboardShell(auth.value?.user.role, route.meta.dashboardSidebar),
+)
 const isPublicationSurface = computed(() => {
   return Boolean(clientSite.value && shell.value === 'publication')
 })
 const { locale } = useI18n()
 const announcement = computed(() =>
   isPublicationSurface.value ? activeAnnouncement(clientSite.value?.widgets ?? [], locale.value) : null,
+)
+const previewAnnouncement = computed(() =>
+  preview.state.value.widget?.kind === 'ANNOUNCEMENT' ? preview.state.value.widget : null,
 )
 const publicationStyle = computed(() => {
   if (!isPublicationSurface.value) return undefined

@@ -163,6 +163,7 @@ import type { GamSizeMapping } from '~/composables/useGam'
 definePageMeta({ shell: 'publication' })
 
 const route = useRoute()
+const preview = useWidgetPagePreview()
 const toast = useToast()
 const localePath = useLocalePath()
 const canonicalOrigin = useCanonicalOrigin()
@@ -174,6 +175,7 @@ const adsense = useRuntimeConfig().public
 const sidebarAdsenseSlot = String(adsense.adsenseArticleSidebarSlot || '')
 const adsenseStatus = useAdSenseStatus()
 const adFor = (adsenseSlot: string) => {
+  if (preview.active.value) return null
   const provider = adProviderFor(clientSite, { marketing: marketingGranted.value, adsenseSlot })
   return provider === 'adsense' && adsenseStatus.value === 'error' ? null : provider
 }
@@ -199,7 +201,14 @@ const { data, refresh, error, status } = await useFetch(`/api/articles/${slug.va
 
 const movedTo = (error.value?.data as { data?: { movedTo?: string } } | undefined)?.data?.movedTo
 if (movedTo)
-  await navigateTo(localePath({ name: 'clanky-slug', params: { slug: movedTo } }), { redirectCode: 301, replace: true })
+  await navigateTo(
+    localePath({
+      name: 'clanky-slug',
+      params: { slug: movedTo },
+      query: preview.active.value ? route.query : undefined,
+    }),
+    { redirectCode: 301, replace: true },
+  )
 
 // Landing on this locale with another language's slug (browser-language detection, an old link,
 // a hand-edited URL) silently renders the source body. Send it to the real translation instead.
@@ -207,10 +216,17 @@ if (movedTo)
 // permanent redirect would then pin visitors to a URL that 404s.
 const redirectSlug = localeRedirectSlug(locale.value, data.value?.language, data.value?.alternates ?? [])
 if (redirectSlug) {
-  await navigateTo(localePath({ name: 'clanky-slug', params: { slug: redirectSlug } }), {
-    redirectCode: 302,
-    replace: true,
-  })
+  await navigateTo(
+    localePath({
+      name: 'clanky-slug',
+      params: { slug: redirectSlug },
+      query: preview.active.value ? route.query : undefined,
+    }),
+    {
+      redirectCode: 302,
+      replace: true,
+    },
+  )
 }
 
 const { data: follows, refresh: refreshFollows } = await useFetch<User[]>('/api/follows/followed')
@@ -387,7 +403,7 @@ watchEffect(() => {
 })
 
 onMounted(() => {
-  trackView()
+  if (!preview.active.value) trackView()
   articleLikeBus.on(toggleArticleLike)
 })
 

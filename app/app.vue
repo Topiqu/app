@@ -2,21 +2,24 @@
   <UApp :locale="uiLocale">
     <NuxtLoadingIndicator class="z-top" :color="loadingColor" />
     <NuxtRouteAnnouncer />
-    <NetworkIndicator />
-    <AppOptimisticStatus />
+    <NetworkIndicator v-if="!isWidgetPagePreview" />
+    <AppOptimisticStatus v-if="!isWidgetPagePreview" />
 
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
 
-    <ConsentManager :site="clientSite" :enabled="isPublicationSurface" />
-    <AdSenseLoader :enabled="isPublicationSurface && platformAdsEnabledForPlan(clientSite?.plan) && marketingGranted" />
+    <ConsentManager v-if="!isWidgetPagePreview" :site="liveClientSite" :enabled="isPublicationSurface" />
+    <AdSenseLoader
+      v-if="!isWidgetPagePreview"
+      :enabled="isPublicationSurface && platformAdsEnabledForPlan(liveClientSite?.plan) && marketingGranted"
+    />
 
-    <DevOnly v-if="!isBrowserTest">
+    <DevOnly v-if="!isBrowserTest && !isWidgetPagePreview">
       <DevConsole />
     </DevOnly>
 
-    <ClientOnly>
+    <ClientOnly v-if="!isWidgetPagePreview">
       <ClientVersion v-if="consentLauncher === 'client-version'" />
       <ConsentSettingsButton v-else-if="consentLauncher === 'cookie-button'" />
       <ArticleGenerationActivity />
@@ -36,6 +39,9 @@ import { activeBrandGradient, gradientCss } from '~~/shared/utils/publicationBra
 
 const reqUrl = useRequestURL()
 const route = useRoute()
+const { active: isWidgetPagePreview } = useWidgetPagePreview()
+useWidgetPagePreviewBridge()
+useHead(() => ({ meta: isWidgetPagePreview.value ? [{ name: 'robots', content: 'noindex, nofollow' }] : [] }))
 const clientSite = await useClientSite()
 const liveClientSite = await useLiveClientSite()
 const i18nHead = useLocaleHead()
@@ -45,7 +51,7 @@ const { data: auth } = useAuth()
 const uiLocales = { cs, de, en, fr }
 const uiLocale = computed(() => uiLocales[locale.value as keyof typeof uiLocales] ?? en)
 const isBrowserTest = Boolean(useRuntimeConfig().public.browserTest)
-const { marketingGranted } = useConsent(() => clientSite)
+const { marketingGranted } = useConsent(() => liveClientSite.value)
 
 const isArticleRoute = computed(() => String(route.name ?? '').startsWith('clanky-slug'))
 const isPublicationSurface = computed(() => resolvePageShell(route.meta.shell) === 'publication')

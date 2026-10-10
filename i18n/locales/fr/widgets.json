@@ -3,6 +3,10 @@
     "title": "Widgets",
     "description": "Annonces, appels à l’action, cours, météo et contenu personnalisé aux endroits choisis de votre blog.",
     "empty": "Aucun widget pour l’instant.",
+    "emptyHint": "Choisissez dans la bibliothèque : annonces, appels à l’action, cours en direct, météo et plus encore.",
+    "edit": "Modifier {name}",
+    "done": "Terminé",
+    "allLanguages": "Toutes les langues",
     "item": "Widget {n} : {kind}",
     "add": "Ajouter un widget",
     "preview": "Aperçu",
@@ -10,8 +14,8 @@
     "slotUsage": "{active}/{max} actifs",
     "hidden": "Masqué hors de votre offre",
     "slot": "Emplacement",
-    "moveUp": "Monter",
-    "moveDown": "Descendre",
+    "moveEarlier": "Déplacer avant",
+    "moveLater": "Déplacer après",
     "active": "Afficher",
     "languages": "Langues",
     "languagesHint": "Sans sélection, dans toutes les langues du site",
@@ -49,9 +53,18 @@
       "plan": "Disponible à partir de l’offre Pro",
       "domain": "Nécessite un domaine propre vérifié"
     },
-    "gallery": {
-      "title": "Ajouter un widget",
-      "description": "Choisissez un modèle. Tout reste modifiable."
+    "library": {
+      "title": "Bibliothèque de widgets",
+      "description": "Choisissez un widget et ajustez-le. Tout reste modifiable.",
+      "samplePlace": "Paris",
+      "categories": {
+        "all": "Tous",
+        "notice": "Annonces",
+        "layout": "Mise en page",
+        "action": "Appels à l’action",
+        "data": "Données en direct",
+        "custom": "Personnalisé"
+      }
     },
     "presets": {
       "announcement": { "name": "Annonce", "hint": "Une barre au-dessus du contenu pour les nouveautés et offres" },
@@ -78,7 +91,64 @@
       "weather": { "name": "Météo", "hint": "Les prévisions pour votre ville" },
       "html": { "name": "HTML personnalisé", "hint": "Un code d’intégration, un formulaire ou votre propre contenu" }
     },
+    "placement": {
+      "title": "Aperçu du placement",
+      "show": "Où il apparaît",
+      "choose": "Placer : {slot}",
+      "frameTitle": "Aperçu de la page réelle avec le widget",
+      "expand": "Agrandir l’aperçu",
+      "desktop": "Ordinateur",
+      "mobile": "Mobile",
+      "loading": "Chargement de la page…",
+      "noArticle": "Publiez un article pour prévisualiser le placement du widget dans un article.",
+      "realPage": "La page réelle de votre site avec l’emplacement du widget mis en évidence. Faites défiler pour explorer la page.",
+      "pages": {
+        "home": "Accueil",
+        "article": "Article"
+      },
+      "hints": {
+        "BAR": "Sous l’en-tête du site, sur toutes les pages.",
+        "HOME_TOP": "Sur l’accueil sous l’introduction, avant les thèmes et articles recommandés.",
+        "HOME_MIDDLE": "Sur l’accueil entre les articles recommandés et la liste principale des articles.",
+        "HOME_BOTTOM": "À la fin du contenu de l’accueil, avant les liens sociaux et le pied de page.",
+        "ARTICLE_END": "Sous le contenu de l’article et les retours, avant les articles connexes et les commentaires.",
+        "FOOTER": "Juste au-dessus du pied de page sur toutes les pages du site."
+      }
+    },
     "announcement": {
+      "appearance": "Apparence",
+      "alignment": "Alignement",
+      "alignments": {
+        "start": "À gauche",
+        "center": "Centré"
+      },
+      "textSize": "Taille du texte",
+      "textSizes": {
+        "sm": "Petit",
+        "base": "Moyen",
+        "lg": "Grand"
+      },
+      "spacing": "Hauteur de la barre",
+      "spacings": {
+        "compact": "Compacte",
+        "comfortable": "Aérée"
+      },
+      "linkStyle": "Affichage du lien",
+      "linkStyles": {
+        "text": "Lien texte",
+        "button": "Bouton"
+      },
+      "customColors": "Couleurs personnalisées",
+      "backgroundColor": "Couleur de fond",
+      "textColor": "Couleur du texte",
+      "formatting": "Mise en forme du texte",
+      "formattingHint": "Sélectionnez une partie du texte pour la mettre en forme ou insérer un lien.",
+      "bold": "Gras",
+      "italic": "Italique",
+      "inlineLink": "Lien dans le texte",
+      "applyLink": "Insérer le lien",
+      "removeLink": "Supprimer le lien",
+      "clearFormatting": "Effacer la mise en forme",
       "label": "Annonce",
       "close": "Fermer l’annonce",
       "text": "Texte",
@@ -147,6 +217,12 @@
       "field": "{widget} : vérifiez le champ « {field} »."
     },
     "fields": {
+      "alignment": "Alignement",
+      "textSize": "Taille du texte",
+      "spacing": "Hauteur de la barre",
+      "linkStyle": "Affichage du lien",
+      "background": "Couleur de fond",
+      "richText": "Texte mis en forme",
       "text": "Texte",
       "url": "Lien",
       "label": "Texte du lien",

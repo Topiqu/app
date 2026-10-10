@@ -22,6 +22,56 @@ const bar = (overrides: Partial<WidgetInput> = {}, configOverrides: Record<strin
 })
 
 describe('announcementConfigSchema', () => {
+  it('keeps older announcements readable with their original appearance', () => {
+    const parsed = announcementConfigSchema.parse(config())
+    expect(parsed.richText).toBeNull()
+    expect(parsed.appearance).toEqual({
+      alignment: 'center',
+      textSize: 'sm',
+      spacing: 'compact',
+      linkStyle: 'text',
+      colors: null,
+    })
+  })
+
+  it('retains custom appearance and inline links when saving a widget', () => {
+    const appearance = {
+      alignment: 'start',
+      textSize: 'lg',
+      spacing: 'comfortable',
+      linkStyle: 'button',
+      colors: { background: '#112233', text: '#FFFFFF' },
+    }
+    const richText = [
+      { text: 'Big ', bold: true },
+      { text: 'news', italic: true, url: '/en' },
+    ]
+    const parsed = widgetsInputSchema.parse({ widgets: [bar({}, { appearance, richText })] }).widgets[0]!
+    expect(parsed.kind).toBe('ANNOUNCEMENT')
+    expect(parsed.config).toMatchObject({ appearance, richText })
+  })
+
+  it.each(['red', '#abc', 'url(https://example.com/image)', '#ZZZZZZ'])(
+    'rejects %s as a custom CSS color',
+    (background) => {
+      expect(
+        announcementConfigSchema.safeParse(config({ appearance: { colors: { background, text: '#FFFFFF' } } })).success,
+      ).toBe(false)
+    },
+  )
+
+  it('validates the actual formatted text and every inline link', () => {
+    expect(announcementConfigSchema.safeParse(config({ richText: [{ text: 'Different text' }] })).success).toBe(false)
+    expect(
+      announcementConfigSchema.safeParse(config({ richText: [{ text: 'Big news', url: 'javascript:alert(1)' }] }))
+        .success,
+    ).toBe(false)
+    expect(
+      announcementConfigSchema.safeParse(config({ text: 'x'.repeat(201), richText: [{ text: 'x'.repeat(201) }] }))
+        .success,
+    ).toBe(false)
+  })
+
   it.each(['https://shop.example.com/sale', '/cs/clanky/novinka'])('accepts %s as a link', (url) => {
     expect(announcementConfigSchema.safeParse(config({ link: { url, label: 'More' } })).success).toBe(true)
   })
@@ -52,10 +102,7 @@ describe('widgetsInputSchema', () => {
   it('allows bars that differ in language, time window or activity', () => {
     expect(overlap([bar({ languages: ['cs'] }), bar({ languages: ['en'] })])).toBeFalsy()
     expect(
-      overlap([
-        bar({}, { endsAt: '2026-10-10T00:00:00.000Z' }),
-        bar({}, { startsAt: '2026-10-10T00:00:00.000Z' }),
-      ]),
+      overlap([bar({}, { endsAt: '2026-10-10T00:00:00.000Z' }), bar({}, { startsAt: '2026-10-10T00:00:00.000Z' })]),
     ).toBeFalsy()
     expect(overlap([bar(), bar({ active: false })])).toBeFalsy()
   })
@@ -67,7 +114,10 @@ describe('widgetsInputSchema', () => {
 
 describe('activeAnnouncement', () => {
   const now = Date.parse('2026-10-08T12:00:00.000Z')
-  const widget = (overrides: Partial<PublicWidget> = {}, configOverrides: Record<string, unknown> = {}): PublicWidget => ({
+  const widget = (
+    overrides: Partial<PublicWidget> = {},
+    configOverrides: Record<string, unknown> = {},
+  ): PublicWidget => ({
     id: 'w1',
     kind: 'ANNOUNCEMENT',
     slot: 'BAR',
@@ -94,6 +144,17 @@ describe('activeAnnouncement', () => {
 })
 
 describe('announcementKey', () => {
+  it('changes for inline link destinations while keeping formatting-only changes dismissed', () => {
+    const base = { text: 'Hello', link: null }
+    const formatted = { ...base, richText: [{ text: 'Hello', bold: true, italic: false, url: null }] }
+    expect(announcementKey('w1', base)).toBe(announcementKey('w1', formatted))
+    const linked = { ...base, richText: [{ text: 'Hello', bold: true, italic: false, url: '/en' }] }
+    expect(announcementKey('w1', base)).not.toBe(announcementKey('w1', linked))
+    expect(announcementKey('w1', linked)).toBe(
+      announcementKey('w1', { ...linked, richText: [{ ...linked.richText[0]!, bold: false, italic: true }] }),
+    )
+  })
+
   it('changes with the visible text, not with the styling', () => {
     const base = { text: 'Hello', link: null }
     expect(announcementKey('w1', base)).toBe(announcementKey('w1', { ...base }))
@@ -148,9 +209,14 @@ describe('widgetsInputSchema slots', () => {
   })
 
   it('caps active widgets per slot', () => {
-    const issues = widgetsInputSchema.safeParse({ widgets: Array.from({ length: 4 }, () => cta('HOME_TOP')) }).error?.issues
+    const issues = widgetsInputSchema.safeParse({ widgets: Array.from({ length: 4 }, () => cta('HOME_TOP')) }).error
+      ?.issues
     expect(issues?.some((issue) => issue.message === 'SLOT_FULL')).toBe(true)
-    expect(widgetsInputSchema.safeParse({ widgets: [...Array.from({ length: 3 }, () => cta('HOME_TOP')), cta('HOME_TOP', false)] }).success).toBe(true)
+    expect(
+      widgetsInputSchema.safeParse({
+        widgets: [...Array.from({ length: 3 }, () => cta('HOME_TOP')), cta('HOME_TOP', false)],
+      }).success,
+    ).toBe(true)
   })
 
   it('keeps dividers on the homepage', () => {
@@ -159,7 +225,13 @@ describe('widgetsInputSchema slots', () => {
   })
 
   it('refuses a price in its own currency', () => {
-    const price = { kind: 'PRICE', slot: 'FOOTER', active: true, languages: [], config: { assets: ['EUR'], quote: 'EUR' } }
+    const price = {
+      kind: 'PRICE',
+      slot: 'FOOTER',
+      active: true,
+      languages: [],
+      config: { assets: ['EUR'], quote: 'EUR' },
+    }
     expect(widgetsInputSchema.safeParse({ widgets: [price] }).success).toBe(false)
   })
 })

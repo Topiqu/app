@@ -1,8 +1,10 @@
 <template>
   <section class="rounded-2xl border border-default bg-elevated p-5" :aria-labelledby="titleId">
     <div class="flex items-center justify-between gap-4">
-      <h2 :id="titleId" class="font-semibold text-highlighted">{{ config.place.name }}</h2>
-      <p v-if="data?.current" class="flex items-center gap-2 text-2xl font-bold tabular-nums">
+      <h2 :id="titleId" class="min-w-0 truncate font-semibold text-highlighted" :title="config.place.name">
+        {{ config.place.name }}
+      </h2>
+      <p v-if="data?.current" class="flex shrink-0 items-center gap-2 text-2xl font-bold tabular-nums">
         <UIcon
           :name="look(data.current.symbol).icon"
           class="size-7"
@@ -10,18 +12,22 @@
         />
         {{ temperature(data.current.temp) }}
       </p>
-      <span v-else class="h-8 w-20" aria-hidden="true" />
+      <span v-else class="h-8 w-20 shrink-0" aria-hidden="true" />
     </div>
-    <ol class="mt-4 grid gap-2" :style="{ gridTemplateColumns: `repeat(${config.days}, minmax(0, 1fr))` }">
-      <li v-for="(day, index) in days" :key="day?.date ?? index" class="flex flex-col items-center gap-1 text-sm">
+    <ol class="mt-4 grid gap-1" :style="{ gridTemplateColumns: `repeat(${config.days}, minmax(0, 1fr))` }">
+      <li
+        v-for="(day, index) in days"
+        :key="day?.date ?? index"
+        class="flex min-w-0 flex-col items-center gap-1 rounded-lg py-2 text-sm"
+        :class="{ 'bg-muted': index === 0 }"
+      >
         <template v-if="day">
-          <span class="text-muted">{{ weekday(day.date) }}</span>
+          <span class="text-xs font-medium text-muted">{{ weekday(day.date) }}</span>
           <UIcon :name="look(day.symbol).icon" class="size-6" :aria-label="$t(look(day.symbol).label)" />
-          <span class="tabular-nums">
-            {{ temperature(day.max) }} <span class="text-muted">{{ temperature(day.min) }}</span>
-          </span>
+          <span class="font-semibold tabular-nums">{{ temperature(day.max) }}</span>
+          <span class="text-xs tabular-nums text-muted">{{ temperature(day.min) }}</span>
         </template>
-        <span v-else class="h-16" aria-hidden="true" />
+        <span v-else class="h-22" aria-hidden="true" />
       </li>
     </ol>
     <p class="mt-3 text-xs text-muted">{{ $t('widgets.weather.source') }}</p>

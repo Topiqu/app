@@ -55,6 +55,25 @@ describe('PUT /api/widgets', () => {
     expect(tx.siteWidget.updateMany).not.toHaveBeenCalled()
   })
 
+  it('writes formatted announcements and their appearance into the saved configuration', async () => {
+    const appearance = {
+      alignment: 'start',
+      textSize: 'lg',
+      spacing: 'comfortable',
+      linkStyle: 'button',
+      colors: { background: '#112233', text: '#FFFFFF' },
+    }
+    const richText = [{ text: 'Hello', bold: true, italic: false, url: '/en' }]
+    const widget = { ...bar('w1', 'Hello'), config: { text: 'Hello', appearance, richText } }
+    const { run, tx } = await setup({ widgets: [widget] })
+    await run()
+    expect(tx.siteWidget.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ config: expect.objectContaining({ appearance, richText }) }),
+      }),
+    )
+  })
+
   it('replaces the set in order and pins every write to the caller’s tenant', async () => {
     const { run, tx } = await setup({ widgets: [bar('w1', 'first'), bar(undefined, 'second')] })
     await run()

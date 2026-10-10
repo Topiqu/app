@@ -2,6 +2,8 @@ import type { TrialState } from '~~/shared/utils/trial'
 import type { Language } from '~~/shared/utils/language'
 import type { PublicClientSite } from '~~/shared/utils/clientSiteFields'
 
+import { isValidDomain, normalizeDomain } from '~~/shared/utils/domain'
+
 export interface ClientSiteStatus {
   id: string
   name: string
@@ -44,11 +46,26 @@ export interface ClientSiteStatus {
 
 const ROOT_DOMAINS = ['topiqu.com', 'app.topiqu.com', '127.0.0.1']
 
-// Null on the platform's own hosts — they serve no tenant, so there is nothing to fetch, cache or refresh.
-const tenantHostname = () => {
-  const hostname = (useRequestURL().hostname ?? '').split(':')[0]?.replace(/^www\./, '') ?? ''
+/**
+ * Platform hosts resolve a tenant only inside the widget preview, using the same public site endpoint.
+ * A tenant domain ignores the preview query: it must never render another tenant's chrome.
+ */
+export const resolveTenantHostname = (
+  host: string,
+  query: { widgetPreview?: unknown; widgetPreviewSite?: unknown },
+) => {
+  const requestHostname = host.split(':')[0]?.replace(/^www\./, '') ?? ''
+  const previewSite =
+    typeof query.widgetPreviewSite === 'string' ? normalizeDomain(query.widgetPreviewSite).replace(/^www\./, '') : null
+  const previewHostname =
+    ROOT_DOMAINS.includes(requestHostname) && query.widgetPreview === '1' && previewSite && isValidDomain(previewSite)
+      ? previewSite
+      : null
+  const hostname = previewHostname ?? requestHostname
   return ROOT_DOMAINS.includes(hostname) ? null : hostname
 }
+
+const tenantHostname = () => resolveTenantHostname(useRequestURL().hostname ?? '', useRoute().query)
 
 const clientSiteKey = (hostname: string) => `clientsite-${hostname}`
 
@@ -56,11 +73,15 @@ const fetchClientSite = async () => {
   const hostname = tenantHostname()
   if (!hostname) return null
 
-  return await useAsyncData(clientSiteKey(hostname), () => $fetch<PublicClientSite>(`/api/clients/slug/${hostname}`), {
-    // A manual refresh must bypass the payload, or refreshClientSite() would keep handing back the stale copy.
-    getCachedData: (key, nuxtApp, ctx) =>
-      ctx.cause === 'refresh:manual' ? undefined : (nuxtApp.payload.data[key] ?? nuxtApp.static.data[key]),
-  })
+  return await useAsyncData(
+    clientSiteKey(hostname),
+    () => $fetch<PublicClientSite>(`/api/clients/slug/${encodeURIComponent(hostname)}`),
+    {
+      // A manual refresh must bypass the payload, or refreshClientSite() would keep handing back the stale copy.
+      getCachedData: (key, nuxtApp, ctx) =>
+        ctx.cause === 'refresh:manual' ? undefined : (nuxtApp.payload.data[key] ?? nuxtApp.static.data[key]),
+    },
+  )
 }
 
 export const useClientSite = async () => (await fetchClientSite())?.data.value ?? null

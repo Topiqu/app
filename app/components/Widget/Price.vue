@@ -1,12 +1,14 @@
 <template>
   <section class="rounded-2xl border border-default bg-elevated p-5" :aria-label="$t('widgets.price.label')">
-    <ul class="grid gap-3">
-      <li v-for="asset in config.assets" :key="asset" class="flex items-baseline justify-between gap-4">
-        <span class="font-semibold text-highlighted">{{ asset }}</span>
-        <span class="tabular-nums text-default">{{ format(asset) }}</span>
+    <ul class="grid grid-cols-[repeat(auto-fill,minmax(min(100%,9rem),1fr))] gap-x-6 gap-y-4">
+      <li v-for="asset in config.assets" :key="asset" class="min-w-0">
+        <span class="block text-xs font-semibold uppercase tracking-wider text-muted">{{ asset }}</span>
+        <span class="block truncate text-lg font-semibold tabular-nums text-highlighted" :title="format(asset)">
+          {{ format(asset) }}
+        </span>
       </li>
     </ul>
-    <p class="mt-3 text-xs text-muted">
+    <p class="mt-4 text-xs text-muted">
       {{ $t('widgets.price.source') }}
       <NuxtTime v-if="data?.asOf" :datetime="data.asOf" hour="2-digit" minute="2-digit" />
     </p>
@@ -28,13 +30,15 @@ const { data: fetched } = useLazyFetch<PriceData>(`/api/widgets/${id}/data`, {
 })
 const data = computed(() => given ?? fetched.value)
 
+// Currency formats join groups with no-break spaces, so a long value cannot wrap; fewer decimals keep
+// it within the tile.
 const format = (asset: string) => {
   const value = data.value?.prices.find((price) => price.asset === asset)?.value
   if (value === undefined) return '—'
   return new Intl.NumberFormat(locale.value, {
     style: 'currency',
     currency: config.quote,
-    maximumFractionDigits: value < 10 ? 4 : 2,
+    maximumFractionDigits: value >= 1000 ? 0 : value < 10 ? 4 : 2,
   }).format(value)
 }
 </script>
