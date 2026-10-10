@@ -202,7 +202,7 @@
                 />
               </UFormField>
 
-              <UCollapsible :defaultOpen="true" class="space-y-3">
+              <UCollapsible :defaultOpen="true">
                 <UButton
                   color="neutral"
                   variant="soft"
@@ -213,6 +213,7 @@
                 />
                 <template #content>
                   <FormClientWidgetPlacement
+                    class="mt-3"
                     :modelValue="editing.item.slot"
                     :kind="editing.item.kind"
                     :widget="editing.item"

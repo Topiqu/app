@@ -8,19 +8,20 @@
       selected ? 'outline-2 outline-offset-4 outline-primary' : 'outline-1 outline-dashed outline-accented',
     ]"
   >
-    <button
-      type="button"
+    <UButton
       :data-widget-preview-select="name"
-      class="absolute left-3 top-2 z-10 flex items-center gap-2 rounded-md bg-default px-3 py-1 text-sm font-semibold shadow-sm ring-1 ring-default enabled:hover:bg-elevated disabled:cursor-default"
-      :class="selected ? 'text-primary' : 'text-muted'"
+      class="absolute left-3 top-2 z-10"
+      :color="selected ? 'primary' : 'neutral'"
+      variant="outline"
+      size="sm"
+      :icon="selected ? 'mdi:check-circle' : 'mdi:map-marker-outline'"
       :disabled="!selectable"
       :aria-pressed="selected"
       :aria-label="$t('widgets.placement.choose', { slot: $t(`widgets.slots.${name}`) })"
       @click="select"
     >
-      <UIcon :name="selected ? 'mdi:check-circle' : 'mdi:map-marker-outline'" class="size-4" aria-hidden="true" />
       {{ $t(`widgets.slots.${name}`) }}
-    </button>
+    </UButton>
     <slot />
   </section>
   <slot v-else />

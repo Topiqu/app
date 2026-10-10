@@ -18,9 +18,9 @@ beforeEach(() => {
 })
 
 describe('app entry routing', () => {
-  const run = async (name = 'index___en', hash = '') => {
+  const run = async (name = 'index___en', hash = '', query: Record<string, string> = {}) => {
     const { default: middleware } = await import('../../app/middleware/app-entry.global')
-    return middleware({ name, hash } as never, {} as never)
+    return middleware({ name, hash, query } as never, {} as never)
   }
 
   it('sends anonymous legacy article links to login', async () => {
@@ -39,6 +39,12 @@ describe('app entry routing', () => {
       state.hostname = host
       await run()
     }
+    expect(navigateTo).not.toHaveBeenCalled()
+  })
+
+  it('lets the widget editor preview a tenant homepage on the app host', async () => {
+    state.user = { role: 'admin' }
+    await run('index___en', '', { widgetPreview: '1', widgetPreviewSite: 'journal.example.com' })
     expect(navigateTo).not.toHaveBeenCalled()
   })
 

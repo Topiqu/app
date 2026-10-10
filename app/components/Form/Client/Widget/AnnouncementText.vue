@@ -1,6 +1,6 @@
 <template>
   <div
-    class="announcement-editor overflow-hidden rounded-md border border-accented bg-default focus-within:ring-2 focus-within:ring-primary"
+    class="overflow-hidden rounded-md border border-accented bg-default focus-within:ring-2 focus-within:ring-primary"
   >
     <div
       class="flex items-center gap-1 border-b border-default px-2 py-1"
@@ -112,7 +112,13 @@ const editor = useEditor({
     CharacterCount.configure({ limit: 200 }),
   ],
   editorProps: {
-    attributes: { role: 'textbox', 'aria-label': t('widgets.announcement.text'), 'aria-multiline': 'true' },
+    attributes: {
+      role: 'textbox',
+      'aria-label': t('widgets.announcement.text'),
+      'aria-multiline': 'true',
+      class:
+        'min-h-20 p-3 outline-none wrap-anywhere [&_strong]:font-bold [&_em]:italic [&_a]:underline [&_a]:underline-offset-2',
+    },
   },
   onUpdate: ({ editor }) => {
     const runs = announcementRuns(editor.getJSON())
@@ -150,22 +156,3 @@ function removeLink() {
   linkOpen.value = false
 }
 </script>
-
-<style scoped>
-.announcement-editor :deep(.tiptap) {
-  min-height: 5rem;
-  padding: 0.75rem;
-  outline: none;
-  overflow-wrap: anywhere;
-}
-.announcement-editor :deep(strong) {
-  font-weight: 700;
-}
-.announcement-editor :deep(em) {
-  font-style: italic;
-}
-.announcement-editor :deep(a) {
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-</style>

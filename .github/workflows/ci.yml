@@ -75,6 +75,9 @@ jobs:
 
       - name: Typecheck
         run: bun run typecheck
+        # vue-tsc outgrew Node's default heap on the runner (OOM since 2026-10-09).
+        env:
+          NODE_OPTIONS: --max-old-space-size=6144
 
   test:
     name: Test

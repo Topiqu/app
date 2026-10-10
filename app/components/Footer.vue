@@ -29,9 +29,9 @@
           >
             {{ $t('common.consent.moreInfo') }}
           </NuxtLink>
-          <UButton color="neutral" variant="link" size="sm" class="p-0 text-muted" @click="settingsOpen = true">
+          <ULink as="button" type="button" @click="settingsOpen = true">
             {{ $t('common.consent.openSettings') }}
-          </UButton>
+          </ULink>
         </div>
       </div>
     </UFooter>

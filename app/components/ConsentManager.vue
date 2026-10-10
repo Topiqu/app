@@ -18,7 +18,9 @@
       <UButton
         color="neutral"
         variant="soft"
-        class="h-auto min-h-11 justify-center whitespace-normal py-2.5 text-center"
+        block
+        size="lg"
+        class="h-auto min-h-11 whitespace-normal text-center"
         :ui="{ label: 'whitespace-normal' }"
         @click="rejectAll"
       >
@@ -27,7 +29,9 @@
       <UButton
         color="neutral"
         variant="soft"
-        class="h-auto min-h-11 justify-center whitespace-normal py-2.5 text-center"
+        block
+        size="lg"
+        class="h-auto min-h-11 whitespace-normal text-center"
         :ui="{ label: 'whitespace-normal' }"
         @click="acceptAll"
       >
@@ -36,7 +40,9 @@
       <UButton
         color="neutral"
         variant="ghost"
-        class="h-auto min-h-11 justify-center whitespace-normal py-2.5 text-center"
+        block
+        size="lg"
+        class="h-auto min-h-11 whitespace-normal text-center"
         :ui="{ label: 'whitespace-normal' }"
         @click="settingsOpen = true"
       >

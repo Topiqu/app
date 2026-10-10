@@ -18,12 +18,7 @@
       }"
       @load="loaded"
     />
-    <div v-if="loading" class="absolute inset-0 grid place-items-center bg-default/90 text-sm text-muted">
-      <span class="flex items-center gap-2">
-        <UIcon name="mdi:loading" class="size-5 animate-spin" aria-hidden="true" />
-        {{ $t('widgets.placement.loading') }}
-      </span>
-    </div>
+    <USkeleton v-if="loading" class="absolute inset-0" :aria-label="$t('widgets.placement.loading')" />
   </div>
 </template>
 

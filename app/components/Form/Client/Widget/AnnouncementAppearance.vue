@@ -20,7 +20,7 @@
     <UFormField v-if="!customColors" :label="$t('widgets.tone')">
       <USelect v-model="tone" :items="toneItems" class="w-full" />
     </UFormField>
-    <USwitch v-model="customColors" :label="$t('widgets.announcement.customColors')" />
+    <USwitch :id="customColorsId" v-model="customColors" :label="$t('widgets.announcement.customColors')" />
     <div v-if="customColors" class="grid gap-4 sm:grid-cols-2">
       <UFormField :label="$t('widgets.announcement.backgroundColor')">
         <FormClientBrandColorInput v-model="backgroundColor" :label="$t('widgets.announcement.backgroundColor')" />
@@ -74,6 +74,7 @@ const textSize = field('textSize')
 const spacing = field('spacing')
 const linkStyle = field('linkStyle')
 
+const customColorsId = useId()
 const customColors = computed({
   get: () => appearance.value.colors !== null,
   set: (enabled: boolean) =>

@@ -16,7 +16,7 @@
     <FormClientWidgetAnnouncementAppearance v-model="appearance" v-model:tone="config.tone" />
 
     <div class="space-y-4 border-t border-default pt-5">
-      <USwitch v-model="config.dismissible" :label="$t('widgets.announcement.dismissible')" />
+      <USwitch :id="dismissibleId" v-model="config.dismissible" :label="$t('widgets.announcement.dismissible')" />
       <div class="grid gap-4 sm:grid-cols-2">
         <UFormField :label="$t('widgets.startsAt')">
           <AppDateInput v-model="startsAt" time />
@@ -33,6 +33,7 @@
 import { DEFAULT_ANNOUNCEMENT_APPEARANCE, type AnnouncementConfig } from '~~/shared/utils/widgets'
 
 const config = defineModel<AnnouncementConfig>('config', { required: true })
+const dismissibleId = useId()
 const appearance = computed({
   get: () => ({ ...DEFAULT_ANNOUNCEMENT_APPEARANCE, ...config.value.appearance }),
   set: (appearance) => (config.value = { ...config.value, appearance }),

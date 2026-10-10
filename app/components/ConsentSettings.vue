@@ -45,14 +45,16 @@
     </template>
     <template #footer>
       <div class="flex w-full flex-col gap-2">
-        <UButton class="min-h-11 justify-center" @click="emit('save', { ...draft })">
+        <UButton block size="lg" class="min-h-11" @click="emit('save', { ...draft })">
           {{ $t('common.consent.save') }}
         </UButton>
         <div class="grid gap-2 sm:grid-cols-2">
           <UButton
             color="neutral"
             variant="soft"
-            class="h-auto min-h-11 justify-center whitespace-normal py-2.5 text-center"
+            block
+            size="lg"
+            class="h-auto min-h-11 whitespace-normal text-center"
             :ui="{ label: 'whitespace-normal' }"
             @click="emit('reject')"
           >
@@ -61,7 +63,9 @@
           <UButton
             color="neutral"
             variant="soft"
-            class="h-auto min-h-11 justify-center whitespace-normal py-2.5 text-center"
+            block
+            size="lg"
+            class="h-auto min-h-11 whitespace-normal text-center"
             :ui="{ label: 'whitespace-normal' }"
             @click="emit('accept')"
           >
