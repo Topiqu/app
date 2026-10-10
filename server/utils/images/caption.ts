@@ -37,14 +37,17 @@ export const renderCredit = (credit: ImageCredit, labels: CaptionLabels) => {
 
 /** The same `<figure>` shape the editor's `Figure` node writes (`extensions/figure.ts`). */
 export const buildImageHtml = (image: ArticleImage, caption: string, labels: CaptionLabels) => {
+  const trimmed = caption.trim()
+  // A generated picture documents nothing: its description only makes alt text, and under the
+  // image it would just repeat it. The figure keeps the disclosure label alone.
+  const shown = image.kind === 'ai' ? '' : trimmed
   const prefix =
     image.kind === 'ai'
-      ? `<span data-ai-disclosure>${escapeHtml(labels.ai)}${caption.trim() ? ': ' : ''}</span>`
+      ? `<span data-ai-disclosure>${escapeHtml(labels.ai)}</span>`
       : image.kind === 'illustration'
-        ? `${escapeHtml(labels.illustration)}${caption.trim() ? ': ' : ''}`
+        ? `${escapeHtml(labels.illustration)}${shown ? ': ' : ''}`
         : ''
-  const trimmed = caption.trim()
-  const text = `${prefix}${trimmed ? escapeHtml(trimmed) : ''}`
+  const text = `${prefix}${shown ? escapeHtml(shown) : ''}`
   const credit = image.credit ? renderCredit(image.credit, labels) : ''
   const line = [text, credit].filter(Boolean).join(' — ')
 

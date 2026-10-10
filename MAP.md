@@ -585,7 +585,7 @@ The app had **zero runtime observability**: when something broke for a real user
 
 - Game image discovery now queries the official Steam store screenshot catalogue before Openverse/Wikimedia or synthesis, independently of the text citation list (`server/utils/images/steam.ts`). Exact game-name/number matching prevents substituting prior installments, and per-article catalogue caches supply distinct assets for cover and body. Credits always identify the original game and publisher; catalogue shots are labelled illustrations rather than inheriting unverified scene descriptions.
 
-- Body image captions (`ai/articleMedia.ts` → `images/caption.ts`): the writer's caption describes the image it asked for, so only a freshly generated (`kind: 'ai'`) picture uses it as caption and `alt`; searched photos keep provider metadata and the credit line. A tenant with `discloseAiContent` off loses the AI label span in `Article/Parsed.vue`.
+- Body image captions (`ai/articleMedia.ts` → `images/caption.ts`): the writer's caption describes the image it asked for, so only a freshly generated (`kind: 'ai'`) picture uses it, as `alt` only; its figcaption holds just the AI label span, which `Article/Parsed.vue` strips (and then drops the empty caption) for a tenant with `discloseAiContent` off. Searched photos keep provider metadata and the credit line.
 
 ## Shopify article publishing
 

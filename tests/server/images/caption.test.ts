@@ -60,13 +60,14 @@ describe('buildImageHtml', () => {
     )
   })
 
-  // Only the AI label is wrapped: `data-ai-disclosure` is what `Parsed.vue` strips and
-  // `[slug].vue` hides when a tenant turns disclosure off, so the span must hold the label and
-  // its separator and nothing else — the caption itself has to survive the strip.
-  it('labels a generated picture as AI and never prints a credit for it', () => {
+  // `data-ai-disclosure` is what `Parsed.vue` strips when a tenant turns disclosure off, leaving
+  // an empty caption it drops. The description lives in alt only: under the image it just repeats it.
+  it('labels a generated picture as AI and keeps its description in alt only', () => {
     const html = buildImageHtml(image({ kind: 'ai', width: 1280, height: 800 }), 'Hardware budoucnosti', LABELS)
 
-    expect(html).toContain('<span data-ai-disclosure>Ilustrační obrázek (AI): </span>Hardware budoucnosti')
+    expect(html).toContain('alt="Hardware budoucnosti"')
+    expect(html).toContain('<figcaption><span data-ai-disclosure>Ilustrační obrázek (AI)</span></figcaption>')
+    expect(html.match(/Hardware budoucnosti/g)).toHaveLength(1)
     expect(html).toContain('width="1280" height="800"')
     expect(html).not.toContain('foto:')
   })

@@ -146,7 +146,7 @@ describe('article media finalization', () => {
     expect(result.articleImageCredit?.kind).toBe('ai')
   })
 
-  it('captions a generated body image with its instruction, never a searched one', async () => {
+  it('describes a generated body image with its instruction, never a searched one', async () => {
     vi.mocked(findStockImage)
       .mockResolvedValueOnce(hit('cover'))
       .mockResolvedValueOnce(hit('body'))
@@ -162,7 +162,7 @@ describe('article media finalization', () => {
     }
     const result = await finalizeArticle(object, 'en', { allowGeneratedImages: true })
     expect(result.content).toContain('alt="Inspector checking rebar"')
-    expect(result.content).toContain('</span>Inspector checking rebar</figcaption>')
+    expect(result.content).toContain('<figcaption><span data-ai-disclosure>articles.image.ai</span></figcaption>')
     expect(result.content).not.toContain('invented scene')
   })
 
