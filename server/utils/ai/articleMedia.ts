@@ -13,6 +13,7 @@ import { escapeHtml } from '../sanitize'
 import { findStockImage } from '../images/chain'
 import { storeMediaSource } from '../images/stores'
 import { createSteamImageSearch } from '../images/steam'
+import { auditArticleStep } from '../articleGenerationAudit'
 import { createAppStoreImageSearch } from '../images/appStore'
 import { buildImageHtml, type CaptionLabels } from '../images/caption'
 import { createImageSelection, photoSubjectQuery } from '../images/selection'
@@ -48,6 +49,7 @@ const creditAsset = (credit?: ImageCredit, publisher = false) => {
 const coverIllustrationPrompt = (subject: string) =>
   `Atmospheric editorial illustration evoking ${subject}. No people, faces, logos, text or depiction of a specific real event.`
 export type FinalizeCallbacks = {
+  audit?: import('../articleGenerationAudit').ArticleGenerationAudit
   onImage?: (image: FinalizeImage) => void
   onMedia?: (progress: ArticleMediaProgress) => void
   abortSignal?: AbortSignal
@@ -82,6 +84,7 @@ export const finalizeArticle = async (
     officialMediaPages = [],
     clientSiteId,
     requireClearRights = false,
+    audit,
   } = callbacks
   const generateImageOptions = {
     outputDir: 'article-images',
@@ -95,7 +98,13 @@ export const finalizeArticle = async (
   const tryGenerateImage = async (prompt: string, opts?: { filenameSuffix?: string }) => {
     if (!allowGeneratedImages) return null
     try {
-      const { url, width, height } = await generateImage(prompt, { ...generateImageOptions, ...opts, abortSignal })
+      const { url, width, height } = await auditArticleStep(
+        audit,
+        'image_generation',
+        () => generateImage(prompt, { ...generateImageOptions, ...opts, abortSignal }),
+        () => ({}),
+        { slot: opts?.filenameSuffix ?? 'cover' },
+      )
       return { url, width, height }
     } catch (error) {
       await reportCaughtError('Article image generation failed', error, { prompt })

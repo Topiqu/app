@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { randomUUID } from 'node:crypto'
 import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
 import { articleWriterStream } from '~~/server/utils/ai/articleStream'
+import { auditArticleStep, createArticleGenerationAudit } from '~~/server/utils/articleGenerationAudit'
 import {
   ARTICLE_GENERATION_FORMATS,
   ARTICLE_GENERATION_MODULES,
@@ -53,19 +54,15 @@ export default defineEventHandler(async (event) => {
     if (!sourceArticle) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
   }
   const attemptId = randomUUID()
-  const auditAttempt = async (action: string, metadata: Record<string, unknown> = {}) => {
-    try {
-      await logAction({
-        action,
-        userId: user.id,
-        clientSiteId,
-        ip: getIp(event),
-        metadata: { attemptId, ...metadata },
-      })
-    } catch (error) {
-      await reportCaughtError('Manual generation audit logging failed', error, { action, attemptId, clientSiteId })
-    }
-  }
+  const audit = createArticleGenerationAudit({
+    attemptId,
+    mode: 'manual',
+    userId: user.id,
+    clientSiteId,
+    articleId,
+    ip: getIp(event),
+  })
+  const auditAttempt = audit.record
 
   await auditAttempt('MANUAL_GENERATION_STARTED', {
     promptLength: prompt.length,
@@ -77,10 +74,15 @@ export default defineEventHandler(async (event) => {
     useKnowledge: options?.useKnowledge !== false,
   })
 
-  const client = await prisma.clientSite.findUnique({
-    where: { id: clientSiteId },
-    select: { plan: true, humanHourlyRateUsd: true, humanWordsPerHour: true },
-  })
+  const client = await prisma.clientSite
+    .findUnique({
+      where: { id: clientSiteId },
+      select: { plan: true, humanHourlyRateUsd: true, humanWordsPerHour: true },
+    })
+    .catch(async (error) => {
+      await auditAttempt('MANUAL_GENERATION_FAILED', { stage: 'preflight', reason: 'client_lookup_failed' })
+      throw error
+    })
 
   if (!client) {
     await auditAttempt('MANUAL_GENERATION_FAILED', { stage: 'preflight', reason: 'client_not_found' })
@@ -102,6 +104,7 @@ export default defineEventHandler(async (event) => {
   let lastRecoveryCheckpointAt = 0
   let writerWaitTimer: ReturnType<typeof setTimeout> | undefined
   let timedOutStage: 'writer_idle' | 'writer_deadline' | null = null
+  let writingAuditStep: Awaited<ReturnType<typeof audit.startStep>> | undefined
 
   const encoder = new TextEncoder()
   let clientAlive = true
@@ -118,6 +121,8 @@ export default defineEventHandler(async (event) => {
   // into the operation so spend can be segmented per model — numbers measured against one model say
   // nothing after a provider switch.
   const runConfig = {
+    mode: 'manual',
+    articleId: articleId ?? null,
     format: options?.format ?? null,
     modules: options?.modules ?? [],
     researchDepth: options?.research.enabled ? options.research.depth : null,
@@ -127,17 +132,38 @@ export default defineEventHandler(async (event) => {
   }
 
   const generationOptions = options ?? defaultArticleGenerationOptions()
-  const articleReservation = await reserveArticleCredit(clientSiteId, 'MANUAL_ARTICLE', attemptId, runConfig)
+  let articleReservation: Awaited<ReturnType<typeof reserveArticleCredit>>
   try {
-    recoverySession = await createGenerationSession({
-      attemptId,
-      clientSiteId,
-      userId: user.id,
-      articleOperationId: articleReservation.id,
-      prompt,
-      options: { ...generationOptions, sourceArticleId: articleId ?? null },
-    })
+    articleReservation = await auditArticleStep(
+      audit,
+      'reservation',
+      () => reserveArticleCredit(clientSiteId, 'MANUAL_ARTICLE', attemptId, runConfig),
+      (operation) => ({ articleOperationId: operation.id }),
+    )
   } catch (error) {
+    await auditAttempt('MANUAL_GENERATION_REJECTED', {
+      stage: 'reservation',
+      reason: 'article_credit_reservation_failed',
+    })
+    throw error
+  }
+  try {
+    recoverySession = await auditArticleStep(
+      audit,
+      'session',
+      () =>
+        createGenerationSession({
+          attemptId,
+          clientSiteId,
+          userId: user.id,
+          articleOperationId: articleReservation.id,
+          prompt,
+          options: { ...generationOptions, sourceArticleId: articleId ?? null },
+        }),
+      (session) => ({ sessionId: session.id }),
+    )
+  } catch (error) {
+    await auditAttempt('MANUAL_GENERATION_FAILED', { stage: 'session', reason: 'session_creation_failed' })
     await settleArticleCredit(articleReservation, false, { ...runConfig, stage: 'session' })
     throw error
   }
@@ -177,6 +203,7 @@ export default defineEventHandler(async (event) => {
             allowGeneratedImages: options?.allowGeneratedImages !== false,
             useKnowledge: options?.useKnowledge !== false,
             articleId,
+            audit,
           })
           const { result, finalize, researchTokens, research, researchSources, knowledge } = generation
           recoverySnapshot.sources = researchSources
@@ -184,6 +211,7 @@ export default defineEventHandler(async (event) => {
           send(controller, { type: 'research', ...research, sources: researchSources })
           send(controller, { type: 'phase', phase: 'writing' })
           await auditAttempt('MANUAL_GENERATION_WRITER_STARTED', { researchTokens, research, knowledge })
+          writingAuditStep = await audit.startStep('writing')
 
           const writerStartedAt = Date.now()
           let lastWriterDataAt = writerStartedAt
@@ -258,7 +286,9 @@ export default defineEventHandler(async (event) => {
           textDone = true
 
           send(controller, { type: 'activity', phase: 'writing', writingStage: 'review' })
-          const object = await generation.review(await result.output)
+          const draft = await result.output
+          await writingAuditStep.complete({ contentLength: draft.content.length })
+          const object = await generation.review(draft)
           recoverySnapshot = { ...recoverySnapshot, ...object }
           await checkpointGeneration(recoverySession!.id, 'review', recoverySnapshot)
           send(controller, { type: 'review', review: generation.editorialReview })
@@ -275,6 +305,11 @@ export default defineEventHandler(async (event) => {
             onImage: (image) => send(controller, { type: 'image', ...image }),
             onMedia: (media) => send(controller, { type: 'media', ...media }),
           }).catch(async (error) => {
+            await auditAttempt('ARTICLE_GENERATION_FALLBACK', {
+              stage: 'media',
+              reason: 'finalization_failed',
+              outcome: 'text_only',
+            })
             await reportCaughtError('Article finalization failed', error, { clientSiteId })
             send(controller, { type: 'media', stage: 'failed', completed: 0, total: 0, found: 0 })
             return {
@@ -292,6 +327,33 @@ export default defineEventHandler(async (event) => {
 
           const apiTokens =
             (usage.totalTokens || 0) + researchTokens + generation.editorialTokens + generation.linkTokens
+          recoverySnapshot = { ...recoverySnapshot, ...finalized, format: generationOptions.format, metrics }
+          await auditArticleStep(audit, 'persistence', () =>
+            checkpointGeneration(recoverySession!.id, 'final', recoverySnapshot),
+          )
+          const articleWallet = await auditArticleStep(
+            audit,
+            'settlement',
+            () =>
+              settleArticleCredit(articleReservation, true, {
+                ...runConfig,
+                title: finalized.title,
+                apiTokens,
+              }),
+            (wallet) => ({ articlesCharged: 1, articlesRemaining: wallet.available }),
+          )
+          await auditArticleStep(
+            audit,
+            'persistence',
+            () =>
+              finishGenerationSession({
+                sessionId: recoverySession!.id,
+                status: 'COMPLETED',
+                charged: true,
+              }),
+            undefined,
+            { operation: 'finish_session' },
+          )
           await recordAiUsage(
             clientSiteId,
             apiTokens,
@@ -312,18 +374,6 @@ export default defineEventHandler(async (event) => {
             event,
             user.id,
           )
-          recoverySnapshot = { ...recoverySnapshot, ...finalized, format: generationOptions.format, metrics }
-          await checkpointGeneration(recoverySession!.id, 'final', recoverySnapshot)
-          const articleWallet = await settleArticleCredit(articleReservation, true, {
-            ...runConfig,
-            title: finalized.title,
-            apiTokens,
-          })
-          await finishGenerationSession({
-            sessionId: recoverySession!.id,
-            status: 'COMPLETED',
-            charged: true,
-          })
           send(controller, {
             type: 'final',
             article: { ...finalized, metrics, aiInvolvement: 'ASSIST' },
@@ -331,6 +381,7 @@ export default defineEventHandler(async (event) => {
           })
           send(controller, { type: 'billing', articlesCharged: 1, articlesRemaining: articleWallet.available })
         } catch (error: any) {
+          await writingAuditStep?.fail(error)
           if (abortController.signal.aborted && !timedOutStage) {
             // Stopped mid-generation: log the partial usage we actually spent.
             // Research is included because it completes before the first token streams, so Stop
@@ -376,7 +427,10 @@ export default defineEventHandler(async (event) => {
               failureReason: 'Generation was interrupted by the client connection.',
             })
           } else {
-            const failedStage = timedOutStage ?? (generation ? (textDone ? 'finalization' : 'writing') : 'research')
+            const failedStage =
+              timedOutStage ??
+              audit.stageForError(error) ??
+              (generation ? (textDone ? 'finalization' : 'writing') : 'research')
             // The response is already a 200 with a half-written body, so this can never reach Nitro's
             // `error` hook and Sentry never sees a caught throw — without this the author got a
             // generic toast and production had no record at all.
@@ -384,8 +438,8 @@ export default defineEventHandler(async (event) => {
               stage: failedStage,
               error: timedOutStage
                 ? timedOutStage === 'writer_idle'
-                  ? 'Writer produced no data for 30 seconds'
-                  : 'Writer exceeded the 90 second generation deadline'
+                  ? 'Writer produced no data for 45 seconds'
+                  : 'Writer exceeded the 120 second generation deadline'
                 : error?.message || String(error),
             })
             await reportCaughtError('Article generation stream failed', error, {
@@ -427,6 +481,7 @@ export default defineEventHandler(async (event) => {
           }
         }
       } catch (error: any) {
+        await auditAttempt('MANUAL_GENERATION_FAILED', { stage: 'stream', error: error.message })
         settleArticleCredit(articleReservation, false, { ...runConfig, stage: 'stream' }).catch(() => undefined)
         send(controller, { type: 'error', message: error.message })
         try {

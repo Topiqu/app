@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import { articleSlug } from '~~/shared/utils/articleSlug'
 import { firstRankCheck } from '~~/server/utils/keywords/rank'
 import { linkableSources } from '~~/shared/utils/articleSources'
@@ -5,6 +6,7 @@ import { hasDataForSeo } from '~~/server/utils/keywords/dataforseo'
 import { fetchNews, newsSignal } from '~~/server/utils/keywords/news'
 import { countGeneratedWords, type ValueEvent } from '~~/shared/utils/valueMetrics'
 import { isExistingArticleOpportunity } from '~~/server/utils/searchConsole/autopilot'
+import { auditArticleStep, createArticleGenerationAudit } from '~~/server/utils/articleGenerationAudit'
 import { keywordPlanFor, planSignal, sameKeyword, type PlanCandidate } from '~~/server/utils/keywords/plan'
 import {
   getSearchOpportunities,
@@ -87,11 +89,20 @@ const skippedSites = async (pickedIds: string[]) => {
   }))
 }
 
-const processClient = async (client: any, slot: Date) =>
-  withArticleCreditReservation(
+export const processClient = async (client: any, slot: Date) => {
+  const attemptId = randomUUID()
+  const audit = createArticleGenerationAudit({ attemptId, mode: 'scheduled', clientSiteId: client.id })
+  let stage = 'reservation'
+  let settlementStep: Awaited<ReturnType<typeof audit.startStep>> | undefined
+  let publicationStep: Awaited<ReturnType<typeof audit.startStep>> | undefined
+  await audit.record('CRON_GENERATION_STARTED', { scheduledFor: slot.toISOString(), language: client.language })
+  const reservationStep = await audit.startStep('reservation')
+  return withArticleCreditReservation(
     client.id,
     'SCHEDULED_ARTICLE',
-    async () => {
+    async (operation) => {
+      await reservationStep.complete({ articleOperationId: operation.id })
+      stage = 'topic'
       const clientSiteId = client.id
       const defaultLang = client.language
 
@@ -153,7 +164,7 @@ const processClient = async (client: any, slot: Date) =>
         await logAction({
           action: 'CRON_TOPIC_SEARCH_SIGNALS_FAILED',
           clientSiteId,
-          metadata: { error: (err as any).message },
+          metadata: { attemptId, error: (err as any).message },
         })
       }
 
@@ -176,7 +187,11 @@ const processClient = async (client: any, slot: Date) =>
       try {
         planCandidates = await keywordPlanFor(client)
       } catch (err) {
-        await logAction({ action: 'CRON_KEYWORD_PLAN_FAILED', clientSiteId, metadata: { error: (err as any).message } })
+        await logAction({
+          action: 'CRON_KEYWORD_PLAN_FAILED',
+          clientSiteId,
+          metadata: { attemptId, error: (err as any).message },
+        })
       }
       // A feed that chases every headline stops being a blog: at most two of the last five follow the news.
       const newsLed = client.articles.slice(0, 5).filter((a: any) => a.newsUrl).length
@@ -188,7 +203,11 @@ const processClient = async (client: any, slot: Date) =>
             planCandidates.map((cluster) => cluster.keyword),
           ])
         } catch (err) {
-          await logAction({ action: 'CRON_NEWS_FAILED', clientSiteId, metadata: { error: (err as any).message } })
+          await logAction({
+            action: 'CRON_NEWS_FAILED',
+            clientSiteId,
+            metadata: { attemptId, error: (err as any).message },
+          })
         }
       }
 
@@ -214,14 +233,23 @@ const processClient = async (client: any, slot: Date) =>
       let topic: ArticleTopic | null = null
       let topicTokens = 0
       try {
-        const picked = await pickArticleTopic(topicInput)
+        const picked = await auditArticleStep(
+          audit,
+          'topic',
+          () => pickArticleTopic(topicInput),
+          (result) => ({
+            format: result.topic.format,
+            needsResearch: result.topic.needsResearch,
+            tokens: result.usage.totalTokens ?? 0,
+          }),
+        )
         topic = picked.topic
         topicTokens = picked.usage.totalTokens ?? 0
       } catch (err) {
         await logAction({
           action: 'CRON_TOPIC_SELECTION_FAILED',
           clientSiteId,
-          metadata: { error: (err as any).message },
+          metadata: { attemptId, error: (err as any).message },
         })
       }
 
@@ -302,6 +330,7 @@ Respond ONLY in valid JSON (schema required).
 `.trim()
 
       let generated: any, usage: any
+      stage = 'generation'
       try {
         // Never `undefined` here: that would research the prompt, and the prompt is a template.
         ;({ usage, ...generated } = await generateArticle(clientSiteId, prompt, {
@@ -312,13 +341,16 @@ Respond ONLY in valid JSON (schema required).
           modules: cronModules,
           editorialReview: true,
           requireClearRights: client.autoRelease && client.publishToWeb,
+          audit,
         }))
       } catch (err) {
-        await logAction({
-          action: 'CRON_GENERATE_ARTICLE_FAILED',
-          clientSiteId,
-          metadata: { error: (err as any).message, topic: topic?.topic },
+        await audit.record('CRON_GENERATE_ARTICLE_FAILED', {
+          stage: audit.stageForError(err) ?? stage,
+          error: (err as any).message,
+          topic: topic?.topic,
         })
+        stage = 'settlement'
+        settlementStep = await audit.startStep('settlement')
         return { clientSiteId, status: 'failed', stage: 'generation', error: (err as any).message }
       }
 
@@ -330,15 +362,23 @@ Respond ONLY in valid JSON (schema required).
         relatedArticleIds: [],
       }
       let seriesTokens = 0
+      stage = 'series'
       if (client.aiSeriesEnabled) {
         try {
           // The runtime client carries extensions, but the delegates used by this read-only helper
           // are the same transaction-safe Prisma delegates.
-          const seriesContext = await loadAiSeriesContext(prisma as unknown as DatabaseTransaction, clientSiteId)
-          const selected = await chooseArticleSeries(
-            seriesContext,
-            { title: generated.title, excerpt: generated.perex },
-            defaultLang,
+          const selected = await auditArticleStep(
+            audit,
+            'series',
+            async () => {
+              const seriesContext = await loadAiSeriesContext(prisma as unknown as DatabaseTransaction, clientSiteId)
+              return chooseArticleSeries(
+                seriesContext,
+                { title: generated.title, excerpt: generated.perex },
+                defaultLang,
+              )
+            },
+            (result) => ({ action: result.decision.action, tokens: result.usage.totalTokens ?? 0 }),
           )
           seriesDecision = selected.decision
           seriesTokens = selected.usage.totalTokens ?? 0
@@ -350,7 +390,7 @@ Respond ONLY in valid JSON (schema required).
             title: generated.title,
           })
         }
-      }
+      } else await audit.skip('series', 'disabled')
 
       const tokens =
         (usage.totalTokens ?? 0) +
@@ -361,6 +401,7 @@ Respond ONLY in valid JSON (schema required).
         (generated.linkTokens ?? 0)
 
       await recordAiUsage(clientSiteId, tokens, 'CRON_ARTICLE_TOKEN_USAGE', {
+        attemptId,
         usage,
         topicTokens,
         seriesTokens,
@@ -384,11 +425,19 @@ Respond ONLY in valid JSON (schema required).
       const researchApproved =
         !researchRequired || (generated.research?.status === 'completed' && generated.research?.sourceCount > 0)
       const qualityApproved = generated.editorialReview?.approved === true && researchApproved
-      const mediaReport = await evaluateMediaRights(prisma, clientSiteId, {
-        imageUrl: generated.articleImageUrl,
-        coverMediaId: generated.articleCoverMediaId,
-        content: generated.content,
-      })
+      stage = 'publication'
+      const mediaReport = await auditArticleStep(
+        audit,
+        'publication',
+        () =>
+          evaluateMediaRights(prisma, clientSiteId, {
+            imageUrl: generated.articleImageUrl,
+            coverMediaId: generated.articleCoverMediaId,
+            content: generated.content,
+          }),
+        (report) => ({ needsAttention: report.counts.needsAttention }),
+        { operation: 'media_rights_review' },
+      )
       const mediaApproved = mediaReport.counts.needsAttention === 0
       // Nobody opens an article without a cover, so one that found none waits for a human.
       const coverApproved = Boolean(generated.articleImageUrl)
@@ -398,86 +447,102 @@ Respond ONLY in valid JSON (schema required).
       const releaseAt = releasable && slot > new Date() ? slot : null
       const status = releasable && !releaseAt ? 'published' : 'draft'
 
-      const { article, appliedSeries, planLinked } = await prisma.$transaction(async (ctx: any) => {
-        const slug = await generateUniqueSlug(ctx, generated.title, clientSiteId)
-        const appliedSeries = await applyArticleSeriesDecision(ctx, clientSiteId, seriesDecision)
+      stage = 'persistence'
+      const { article, appliedSeries, planLinked } = await auditArticleStep(
+        audit,
+        'persistence',
+        () =>
+          prisma.$transaction(async (ctx: any) => {
+            const slug = await generateUniqueSlug(ctx, generated.title, clientSiteId)
+            const appliedSeries = await applyArticleSeriesDecision(ctx, clientSiteId, seriesDecision)
 
-        const article = await ctx.article.create({
-          select: {
-            id: true,
-            title: true,
-            content: true,
-            userId: true,
-            user: { select: { username: true, language: true, role: true } },
-          },
-          data: {
-            language: client.language,
-            title: generated.title,
-            excerpt: generated.perex,
-            slug,
-            userId: client.users[0]?.id || 'system',
-            content: sanitizeHtml(stampHeadingIds(generated.content)),
-            // Empty means the format carries no answer — `applyFormat` blanks it. Stored as NULL so
-            // the column reads the same as a human article that never had one.
-            answer: generated.answer || null,
-            keyTakeaways: generated.keyTakeaways,
-            faq: generated.faq,
-            format: cronFormat,
-            structureVariant: topic?.variant ?? null,
-            newsUrl: newsPick?.url ?? null,
-            clientSiteId,
-            status,
-            releaseAt,
-            publishedAt: status === 'published' ? new Date() : null,
-            aiInvolvement: 'FULL',
-            articleSeriesId: appliedSeries.seriesId,
-            seriesOrder: appliedSeries.seriesOrder,
-            // The streaming path carries these through `applyAiFinal`; the cron writes the row itself
-            // and dropped them, so every cron article shipped with a NULL `sources` column.
-            sources: linkableSources(generated.sources),
-            // Same omission, and it silently wasted the work: `finalizeArticle` already fetched or
-            // generated the cover before this row was written, so the cost was paid either way.
-            imageUrl: generated.articleImageUrl || null,
-            imageCredit: generated.articleImageCredit ?? undefined,
-            coverMediaId: generated.articleCoverMediaId ?? undefined,
-            totalWords: metrics.totalWords,
-            savedAmount: metrics.savedAmount,
-            savedTimeMinutes: metrics.savedTimeMinutes,
-          },
-        })
+            const article = await ctx.article.create({
+              select: {
+                id: true,
+                title: true,
+                content: true,
+                userId: true,
+                user: { select: { username: true, language: true, role: true } },
+              },
+              data: {
+                language: client.language,
+                title: generated.title,
+                excerpt: generated.perex,
+                slug,
+                userId: client.users[0]?.id || 'system',
+                content: sanitizeHtml(stampHeadingIds(generated.content)),
+                // Empty means the format carries no answer — `applyFormat` blanks it. Stored as NULL so
+                // the column reads the same as a human article that never had one.
+                answer: generated.answer || null,
+                keyTakeaways: generated.keyTakeaways,
+                faq: generated.faq,
+                format: cronFormat,
+                structureVariant: topic?.variant ?? null,
+                newsUrl: newsPick?.url ?? null,
+                clientSiteId,
+                status,
+                releaseAt,
+                publishedAt: status === 'published' ? new Date() : null,
+                aiInvolvement: 'FULL',
+                articleSeriesId: appliedSeries.seriesId,
+                seriesOrder: appliedSeries.seriesOrder,
+                // The streaming path carries these through `applyAiFinal`; the cron writes the row itself
+                // and dropped them, so every cron article shipped with a NULL `sources` column.
+                sources: linkableSources(generated.sources),
+                // Same omission, and it silently wasted the work: `finalizeArticle` already fetched or
+                // generated the cover before this row was written, so the cost was paid either way.
+                imageUrl: generated.articleImageUrl || null,
+                imageCredit: generated.articleImageCredit ?? undefined,
+                coverMediaId: generated.articleCoverMediaId ?? undefined,
+                totalWords: metrics.totalWords,
+                savedAmount: metrics.savedAmount,
+                savedTimeMinutes: metrics.savedTimeMinutes,
+              },
+            })
 
-        // The editor may skip the topic while the article is being written. The finished, paid article
-        // still counts; it just stays unlinked from the plan.
-        const planLinked = planCluster
-          ? (
-              await ctx.keywordCluster.updateMany({
-                where: { id: planCluster.id, clientSiteId, status: { in: ['OPEN', 'PINNED'] } },
-                data: { status: 'USED', articleId: article.id, usedAt: new Date(), nextRankCheckAt: firstRankCheck() },
+            // The editor may skip the topic while the article is being written. The finished, paid article
+            // still counts; it just stays unlinked from the plan.
+            const planLinked = planCluster
+              ? (
+                  await ctx.keywordCluster.updateMany({
+                    where: { id: planCluster.id, clientSiteId, status: { in: ['OPEN', 'PINNED'] } },
+                    data: {
+                      status: 'USED',
+                      articleId: article.id,
+                      usedAt: new Date(),
+                      nextRankCheckAt: firstRankCheck(),
+                    },
+                  })
+                ).count === 1
+              : false
+
+            await ctx.articleTag.createMany({
+              data: generated.tags.map((tagId: string) => ({ articleId: article.id, tagId })),
+              skipDuplicates: true,
+            })
+
+            // Taken for a scheduled release too: `publish-check` holds it if the media changed meanwhile.
+            if (releasable) {
+              await ctx.mediaRightsPublicationSnapshot.create({
+                data: {
+                  articleId: article.id,
+                  clientSiteId,
+                  language: defaultLang,
+                  fingerprint: mediaReport.fingerprint,
+                  items: JSON.parse(JSON.stringify(mediaRightsSnapshotItems(mediaReport))),
+                  issueCount: 0,
+                },
               })
-            ).count === 1
-          : false
+            }
 
-        await ctx.articleTag.createMany({
-          data: generated.tags.map((tagId: string) => ({ articleId: article.id, tagId })),
-          skipDuplicates: true,
-        })
-
-        // Taken for a scheduled release too: `publish-check` holds it if the media changed meanwhile.
-        if (releasable) {
-          await ctx.mediaRightsPublicationSnapshot.create({
-            data: {
-              articleId: article.id,
-              clientSiteId,
-              language: defaultLang,
-              fingerprint: mediaReport.fingerprint,
-              items: JSON.parse(JSON.stringify(mediaRightsSnapshotItems(mediaReport))),
-              issueCount: 0,
-            },
-          })
-        }
-
-        return { article, appliedSeries, planLinked }
-      })
+            return { article, appliedSeries, planLinked }
+          }),
+        (result) => {
+          audit.setArticleId(result.article.id)
+          return { status }
+        },
+      )
+      stage = 'publication'
 
       if (planCluster && !planLinked)
         await logAction({
@@ -516,6 +581,7 @@ Respond ONLY in valid JSON (schema required).
         action: 'CRON_GENERATE_ARTICLE',
         clientSiteId,
         metadata: {
+          attemptId,
           articleId: article.id,
           title: article.title,
           format: cronFormat,
@@ -565,6 +631,7 @@ Respond ONLY in valid JSON (schema required).
         data: { lastGeneratedAt: new Date() },
       })
 
+      publicationStep = await audit.startStep('publication', { operation: 'delivery', status })
       if (status === 'published') {
         await syncArticleTranslationQueue(prisma, article.id, clientSiteId)
         await invalidateFeed(clientSiteId)
@@ -575,6 +642,7 @@ Respond ONLY in valid JSON (schema required).
           clientSiteId,
           idempotencyKey: `cron-generation:${article.id}`,
           metadata: {
+            attemptId,
             articleId: article.id,
             title: article.title,
             autoReleased: client.autoRelease,
@@ -595,6 +663,7 @@ Respond ONLY in valid JSON (schema required).
           clientSiteId,
           idempotencyKey: `cron-generation:${article.id}`,
           metadata: {
+            attemptId,
             articleId: article.id,
             title: article.title,
             generatedWordCount,
@@ -609,6 +678,9 @@ Respond ONLY in valid JSON (schema required).
         })
       }
 
+      await publicationStep.complete({ status, scheduledFor: releaseAt?.toISOString() ?? null })
+      stage = 'settlement'
+      settlementStep = await audit.startStep('settlement')
       return {
         clientSiteId,
         status,
@@ -627,8 +699,26 @@ Respond ONLY in valid JSON (schema required).
         },
       }
     },
-    { shouldCharge: (result) => result?.status !== 'failed' },
+    {
+      metadata: { attemptId, scheduledFor: slot.toISOString() },
+      shouldCharge: (result) => result?.status !== 'failed',
+    },
   )
+    .then(async (outcome) => {
+      await settlementStep?.complete({ charged: outcome?.status !== 'failed' })
+      if (outcome?.status !== 'failed')
+        await audit.record('CRON_GENERATION_COMPLETED', { status: outcome.status, articleId: outcome.articleId })
+      return outcome
+    })
+    .catch(async (error) => {
+      await reservationStep.fail(error)
+      await settlementStep?.fail(error)
+      await publicationStep?.fail(error)
+      const message = error instanceof Error ? error.message : String(error)
+      await audit.record('CRON_GENERATE_ARTICLE_FAILED', { stage, error: message })
+      return { clientSiteId: client.id, status: 'failed', stage, error: message }
+    })
+}
 
 export default defineMonitoredTask({
   meta: {
