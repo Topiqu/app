@@ -18,7 +18,8 @@ export default defineEventHandler(async (event) => {
   // Capped page size; the offset is rescaled so a larger requested `limit` cannot skip rows.
   const take = Math.min(pagination.take, 5)
   const skip = (pagination.skip / pagination.take) * take
-  const { sort } = getQuery(event)
+  const { sort, target } = getQuery(event)
+  const targetId = typeof target === 'string' ? target : ''
   const canModerate =
     user?.role === 'superadmin' ||
     (user?.role === 'admin' &&
@@ -77,8 +78,26 @@ export default defineEventHandler(async (event) => {
     return { roots: ids.flatMap((id) => page.filter((c) => c.id === id)), total: ranked.length }
   }
 
-  const { roots, total } =
-    sort === 'likes:desc'
+  // A permalink loads its complete thread directly, even when the root is on a later page.
+  const targetThread = async () => {
+    let id = targetId
+    const visited = new Set<string>()
+    while (!visited.has(id)) {
+      visited.add(id)
+      const comment = await db.comment.findFirst({ where: { id, articleId }, select: { id: true, parentId: true } })
+      if (!comment) break
+      if (!comment.parentId) {
+        const roots = await findComments({ id: { in: [comment.id] }, parentId: null })
+        return { roots, total: roots.length }
+      }
+      id = comment.parentId
+    }
+    return { roots: [], total: 0 }
+  }
+
+  const { roots, total } = targetId
+    ? await targetThread()
+    : sort === 'likes:desc'
       ? await rootsByLikes()
       : await Promise.all([
           findComments({ parentId: null }, { skip, take }),
@@ -148,6 +167,6 @@ export default defineEventHandler(async (event) => {
 
   return {
     comments: roots.map((c) => toDto(c, 1)),
-    hasMore: skip + roots.length < total,
+    hasMore: !targetId && skip + roots.length < total,
   }
 })

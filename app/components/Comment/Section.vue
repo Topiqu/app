@@ -194,11 +194,15 @@ watch(
   commentsData,
   (v) => {
     if (!v) return
-    comments.value = page.value === 1 ? v.comments : [...comments.value, ...v.comments]
+    comments.value =
+      page.value === 1
+        ? v.comments
+        : [...comments.value, ...v.comments.filter((comment) => !comments.value.some((item) => item.id === comment.id))]
     hasMore.value = v.hasMore && comments.value.length < max
   },
   { immediate: true },
 )
+useCommentAnchor(toRef(props, 'articleId'), comments)
 watch(
   error,
   (e) =>

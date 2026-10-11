@@ -112,7 +112,7 @@ onMounted(() => {
 watch(
   () => route.path,
   async () => {
-    if (resolvePageShell(route.meta.shell) !== 'publication') return
+    if (resolvePageShell(route.meta.shell) !== 'publication' || route.hash) return
     await nextTick()
     document.querySelector<HTMLElement>('.topiqu-dashboard-scroll')?.scrollTo({ top: 0, behavior: 'smooth' })
     window.scrollTo({ top: 0, behavior: 'smooth' })
