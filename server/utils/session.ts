@@ -3,6 +3,7 @@ import type { SessionUser } from '~~/shared/types/auth'
 import { UAParser } from 'ua-parser-js'
 
 import { clientIp } from './ip'
+import { TENANT_SCOPES } from './tenantMembership'
 
 type RequestHeaders = Record<string, string | string[] | undefined>
 
@@ -61,7 +62,7 @@ export const toSessionUser = async (
   const membership = session.clientSiteId
     ? await prisma.tenantMembership.findUnique({
         where: { clientSiteId_userId: { clientSiteId: session.clientSiteId, userId: user.id } },
-        select: { deletedAt: true, clientSite: { select: { plan: true } } },
+        select: { deletedAt: true, role: true, scopes: true, clientSite: { select: { plan: true } } },
       })
     : null
   const active = membership !== null && membership.deletedAt === null
@@ -75,6 +76,12 @@ export const toSessionUser = async (
     role: user.role === 'superadmin' ? 'superadmin' : active ? 'admin' : 'reader',
     clientSiteId: active ? session.clientSiteId! : '',
     plan: active ? membership.clientSite.plan : 'BASIC',
+    scopes:
+      user.role === 'superadmin' || (active && membership.role === 'OWNER')
+        ? [...TENANT_SCOPES]
+        : active
+          ? membership.scopes
+          : [],
     avatarUrl: user.image ?? null,
     sessionId: session.id,
   }

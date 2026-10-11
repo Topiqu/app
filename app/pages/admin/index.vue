@@ -2,7 +2,7 @@
   <div
     class="mx-auto flex min-h-0 w-full max-w-screen-2xl flex-col gap-4 px-4 py-6 sm:px-6 md:h-full md:overflow-hidden lg:px-8"
   >
-    <AdminDomainVerificationBanner v-if="client && !client.domainVerified" />
+    <AdminDomainVerificationBanner v-if="client && !client.domainVerified && can('TENANT_SETTINGS')" />
     <AdminUpgradeBanner v-if="client?.plan === 'BASIC'" />
     <ArticleTable />
 
@@ -15,13 +15,14 @@ definePageMeta({ middleware: 'admin', shell: 'dashboard' })
 
 const { data: status } = await useClientSiteStatus()
 const client = status
+const can = useTenantScope()
 
 useSeoMeta({ title: () => `${client.value?.name ?? 'Topiqu'} - ${$t('admin.title')}` })
 
 const isOpen = shallowRef(false)
 
 onMounted(() => {
-  isOpen.value = status.value?.trial.state === 'EXPIRED'
+  isOpen.value = status.value?.trial.state === 'EXPIRED' && can('BILLING_CHANGE')
 })
 
 const handleContinueFree = async () => {
