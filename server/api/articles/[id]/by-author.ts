@@ -19,12 +19,17 @@ export default defineEventHandler(async (event) => {
 
   const [field, order] = (sort as string).split(':') as ['createdAt' | 'title', 'asc' | 'desc']
 
+  const seesDrafts =
+    user?.role === 'superadmin' ||
+    (user?.role === 'admin' &&
+      user.clientSiteId === author.clientSiteId &&
+      hasTenantScope(
+        (await requireTenantMember(event)).membership,
+        user.id === author.id ? 'ARTICLE_WRITE' : 'ARTICLE_WRITE_OTHERS',
+      ))
   const visibleWhere = {
     userId: author.id,
-    status:
-      (user?.role === 'admin' && user?.clientSiteId == author.clientSiteId) || user?.role === 'superadmin'
-        ? undefined
-        : ('published' as const),
+    status: seesDrafts ? undefined : ('published' as const),
   }
 
   const publicWhere = {

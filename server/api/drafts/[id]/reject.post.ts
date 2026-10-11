@@ -1,10 +1,8 @@
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
+  const { user } = await requireTenantScope(event, 'INTEGRATION_CONTROL')
   const id = getRouterParam(event, 'id')
-  const user = await getSessionUser(event)
-
   if (!id) throw createError({ statusCode: 400, message: t('common.errors.missing')! })
-  if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
   const body = await readBody(event)
   const db = await getEnhancedPrisma(user)

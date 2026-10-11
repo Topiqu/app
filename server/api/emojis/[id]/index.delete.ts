@@ -3,8 +3,7 @@ import { emojiImageKeyFromUrl } from '~~/server/utils/emojiImage'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
-  const user = await getSessionUser(event)
-  if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
+  const { user } = await requireTenantScope(event, 'TENANT_SETTINGS')
 
   const db = await getEnhancedPrisma(user)
   const id = getRouterParam(event, 'id')

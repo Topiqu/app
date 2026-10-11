@@ -13,6 +13,7 @@ export async function resolveAiUser(event: H3Event, clientSiteId: string, create
   // ZenStack lets any admin write any User row, so tenancy is pinned here rather than by policy.
   if (user.role !== 'superadmin' && user.clientSiteId !== clientSiteId)
     throw createError({ statusCode: 403, message: t('common.errors.unauthorized')! })
+  if (user.role !== 'superadmin') await requireTenantScope(event, 'TENANT_SETTINGS', clientSiteId)
 
   const db = await getEnhancedPrisma(user)
   const site = await db.clientSite.findUnique({ where: { id: clientSiteId }, select: { id: true } })

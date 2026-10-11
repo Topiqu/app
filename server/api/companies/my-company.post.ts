@@ -1,7 +1,6 @@
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
-  const user = await getSessionUser(event)
-  if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
+  const { user } = await requireTenantScope(event, 'INTEGRATION_CONTROL')
 
   const body = await readBody(event)
   const appType = body.type || 'personal'

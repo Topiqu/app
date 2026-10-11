@@ -2,8 +2,7 @@ import { isValidEmojiShortcode, normalizeEmojiShortcode } from '#shared/utils/em
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
-  const user = await getSessionUser(event)
-  if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
+  const { user } = await requireTenantScope(event, 'TENANT_SETTINGS')
 
   const id = getRouterParam(event, 'id')
   if (!id) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })

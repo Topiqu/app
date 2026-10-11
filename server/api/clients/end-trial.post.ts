@@ -1,19 +1,10 @@
 export default defineEventHandler(async (event) => {
-  const actor = await getSessionUser(event)
-  if (!actor) throw createError({ statusCode: 401, message: 'Unauthorized' })
+  const { user, membership } = await requireTenantScope(event, 'BILLING_CHANGE')
+  if (!membership.clientSiteId) throw createError({ statusCode: 403, message: 'No client site associated' })
 
-  const db = await getEnhancedPrisma(actor)
-
-  const user = await db.user.findUnique({
-    where: { id: actor.id },
-  })
-
-  if (!user || !user.clientSiteId) {
-    throw createError({ statusCode: 403, message: 'No client site associated' })
-  }
-
+  const db = await getEnhancedPrisma(user)
   const site = await db.clientSite.findUnique({
-    where: { id: user.clientSiteId },
+    where: { id: membership.clientSiteId },
     select: TRIAL_SELECT,
   })
 

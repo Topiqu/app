@@ -20,7 +20,10 @@ export default defineEventHandler(async (event) => {
   const skip = (pagination.skip / pagination.take) * take
   const { sort } = getQuery(event)
   const canModerate =
-    user?.role === 'superadmin' || (user?.role === 'admin' && user.clientSiteId === article.clientSiteId)
+    user?.role === 'superadmin' ||
+    (user?.role === 'admin' &&
+      user.clientSiteId === article.clientSiteId &&
+      hasTenantScope((await requireTenantMember(event)).membership, 'CONTENT_MODERATE'))
 
   const now = new Date()
   const findComments = (

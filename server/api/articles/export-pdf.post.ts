@@ -29,8 +29,7 @@ const fetchImageBuffer = async (url: string): Promise<Buffer | null> => {
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
 
-  const user = await getSessionUser(event)
-  if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
+  const { user, membership } = await requireTenantScope(event, 'ARTICLE_WRITE')
 
   const body = await readBody<{ ids: string[] }>(event)
   const ids = Array.isArray(body?.ids) ? body.ids.filter((id) => typeof id === 'string') : []
@@ -38,8 +37,15 @@ export default defineEventHandler(async (event) => {
 
   const db = await getEnhancedPrisma(user)
 
+  // Same author filter as the admin list in articles/search.ts.
   const articles = await db.article.findMany({
-    where: { id: { in: ids } },
+    where: {
+      id: { in: ids },
+      clientSiteId: membership.clientSiteId,
+      ...(hasTenantScope(membership, 'ARTICLE_WRITE_OTHERS')
+        ? {}
+        : { OR: [{ userId: user.id }, { user: { role: 'ai' as const } }] }),
+    },
     select: {
       id: true,
       slug: true,
