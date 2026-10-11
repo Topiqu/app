@@ -5,6 +5,7 @@ import equal from 'fast-deep-equal'
 import { randomBytes } from 'crypto'
 import { DbNull } from '@zenstackhq/orm'
 import { models } from '~~/shared/databaseSchemas'
+import { auditChanges } from '~~/server/utils/auditChanges'
 import { PUBLICATION_CHANNELS } from '~~/shared/utils/publicationChannels'
 import { nextRelease, releaseScheduleError } from '~~/shared/utils/releaseSchedule'
 import { domainError, domainVerificationDefaults, isValidDomain, normalizeDomain } from '~~/shared/utils/domain'
@@ -147,15 +148,17 @@ export default defineEventHandler(async (event) => {
     }
 
     if (currentAiUser) {
-      await db.user.update({ where: { id: currentAiUser.id }, data: aiData })
+      const updatedAiUser = await db.user.update({ where: { id: currentAiUser.id }, data: aiData })
       await invalidateAuthor(currentAiUser.id)
-      await logAction({
-        action: 'AI_USER_UPDATE',
-        userId: user.id,
-        clientSiteId: id,
-        ip: getIp(event),
-        metadata: { aiUserId: currentAiUser.id, updatedFields: aiUserPayload },
-      })
+      const aiChanges = auditChanges(currentAiUser, updatedAiUser, Object.keys(aiData))
+      if (Object.keys(aiChanges).length)
+        await logAction({
+          action: 'AI_USER_UPDATE',
+          userId: user.id,
+          clientSiteId: id,
+          ip: getIp(event),
+          metadata: { aiUserId: currentAiUser.id, updatedFields: Object.keys(aiChanges), changes: aiChanges },
+        })
     } else {
       const newAi = await db.user.create({
         data: {
@@ -205,13 +208,17 @@ export default defineEventHandler(async (event) => {
   // the OAuth callback, which is the only place a real `linkedinOrgId` comes from. This used to
   // fabricate one with `linkedinOrgId: 'placeholder'`, which the unique index let exactly one
   // tenant get away with; everyone else's settings save died on a unique-key violation.
+  let previousLinkedinMode: string | null = null
+  let updatedLinkedinMode: string | null = null
   if (linkedinMode !== undefined) {
     // Personal is the only connectable type, but a tenant may still carry an older 'pages' row —
     // hence no `type` filter, so its publish mode stays editable.
     const company = await db.linkedinCompany.findFirst({ where: { clientSiteId: id } })
 
     if (company) {
+      previousLinkedinMode = company.mode
       await db.linkedinCompany.update({ where: { id: company.id }, data: { mode: linkedinMode } })
+      updatedLinkedinMode = linkedinMode
     }
   }
 
@@ -242,13 +249,41 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  await logAction({
-    action: 'CLIENT_SITE_UPDATE',
-    userId: user.id,
-    clientSiteId: id,
-    ip: getIp(event),
-    metadata: { updatedFields: Object.keys(data) },
-  })
+  const socialSettings = (rows: { platform: SocialPlatform; url: string }[]) =>
+    rows.map(({ platform, url }) => ({ platform, url })).sort((a, b) => a.platform.localeCompare(b.platform))
+  const aiSettings = (rows: typeof updatedSite.users) => {
+    const ai = rows[0]
+    return ai ? { username: ai.username, bio: ai.bio } : null
+  }
+  const changes = auditChanges(
+    {
+      ...clientSite,
+      socials: socialSettings(clientSite.socials),
+      aiUser: aiSettings(clientSite.users),
+      linkedinMode: previousLinkedinMode,
+    },
+    {
+      ...updatedSite,
+      socials: socialSettings(updatedSite.socials),
+      aiUser: aiSettings(updatedSite.users),
+      linkedinMode: updatedLinkedinMode,
+    },
+    [
+      ...editableFields.filter((field) => field in data),
+      ...['deletedAt', 'nextReleaseAt'].filter((field) => field in data),
+      ...(socials ? ['socials'] : []),
+      ...(hasAiPayload ? ['aiUser'] : []),
+      'linkedinMode',
+    ],
+  )
+  if (Object.keys(changes).length)
+    await logAction({
+      action: 'CLIENT_SITE_UPDATE',
+      userId: user.id,
+      clientSiteId: id,
+      ip: getIp(event),
+      metadata: { updatedFields: Object.keys(changes), changes },
+    })
 
   const ai = updatedSite.users[0]
   return {

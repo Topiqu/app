@@ -214,7 +214,14 @@ export default defineEventHandler(async (event) => {
     userId: user.id,
     clientSiteId: user.clientSiteId,
     ip: getIp(event),
-    metadata: { articleId: id, updatedFields: Object.keys(body) },
+    metadata: {
+      articleId: id,
+      updatedFields: Object.keys(data),
+      previousStatus: previousArticle.status,
+      status: article.status,
+      previousReleaseAt: previousArticle.releaseAt?.toISOString() ?? null,
+      releaseAt: article.releaseAt?.toISOString() ?? null,
+    },
   })
 
   if (article.status === ArticleStatus.published && previousArticle?.status === ArticleStatus.draft) {
