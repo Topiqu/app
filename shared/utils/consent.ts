@@ -52,7 +52,7 @@ export const consentCapabilities = (site?: ConsentSite | null): ConsentCapabilit
   const googleAnalytics = Boolean(
     site.plan !== 'BASIC' && site.allowGtag && site.gtagId?.trim() && GA4_ID.test(site.gtagId.trim()),
   )
-  const marketing = platformAdsEnabledForPlan(site.plan) || tenantGamEnabled(site.gamNetworkCode)
+  const marketing = !platformAdsEnabledForPlan(site.plan) && tenantGamEnabled(site.gamNetworkCode)
   const advertising = platformAdsEnabledForPlan(site.plan)
     ? 'adsense'
     : tenantGamEnabled(site.gamNetworkCode)

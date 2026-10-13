@@ -107,7 +107,7 @@
           "icon": "mdi:cookie",
           "iconColor": "text-amber-500",
           "title": "6. Cookies",
-          "content": "Nezbytné cookies zajišťují přihlášení, zabezpečení, jazyk a uložení vaší volby cookies na 180 dní. Analytické cookies (statistiky Topiqu na 30 dní, případně Google Analytics 4) a reklamní cookies (Google AdSense nebo Ad Manager, pouze nepersonalizované reklamy) se spustí jen s vaším souhlasem. Volbu změníte v Nastavení cookies v patičce webu."
+          "content": "Nezbytné cookies zajišťují přihlášení, zabezpečení, jazyk a uložení vaší volby cookies na 180 dní. Analytické cookies (statistiky Topiqu na 30 dní, případně Google Analytics 4) a reklamní cookies Google Ad Manager (pouze nepersonalizované reklamy) se spustí jen s vaším souhlasem. Reklamy Google AdSense na bezplatných blozích řídí souhlasová zpráva Googlu (IAB TCF) a v EHP, ve Spojeném království a ve Švýcarsku se zobrazí jen podle vaší volby v ní. Volbu změníte v Nastavení cookies v patičce webu, případně ve zprávě Googlu."
         },
         {
           "icon": "mdi:share-variant",

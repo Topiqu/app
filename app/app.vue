@@ -12,7 +12,7 @@
     <ConsentManager v-if="!isWidgetPagePreview" :site="liveClientSite" :enabled="isPublicationSurface" />
     <AdSenseLoader
       v-if="!isWidgetPagePreview"
-      :enabled="isPublicationSurface && platformAdsEnabledForPlan(liveClientSite?.plan) && marketingGranted"
+      :enabled="isPublicationSurface && platformAdsEnabledForPlan(liveClientSite?.plan)"
     />
 
     <DevOnly v-if="!isBrowserTest && !isWidgetPagePreview">
@@ -51,7 +51,6 @@ const { data: auth } = useAuth()
 const uiLocales = { cs, de, en, fr }
 const uiLocale = computed(() => uiLocales[locale.value as keyof typeof uiLocales] ?? en)
 const isBrowserTest = Boolean(useRuntimeConfig().public.browserTest)
-const { marketingGranted } = useConsent(() => liveClientSite.value)
 
 const isArticleRoute = computed(() => String(route.name ?? '').startsWith('clanky-slug'))
 const isPublicationSurface = computed(() => resolvePageShell(route.meta.shell) === 'publication')

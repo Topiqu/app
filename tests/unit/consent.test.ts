@@ -20,7 +20,7 @@ describe('tenant consent capabilities', () => {
     expect(consentCapabilities({ plan: 'BASIC' })).toMatchObject({
       analytics: true,
       googleAnalytics: false,
-      marketing: true,
+      marketing: false,
     })
   })
 
@@ -31,8 +31,9 @@ describe('tenant consent capabilities', () => {
     expect(consentCapabilities({ plan: 'PRO', allowGtag: true, gtagId: 'not-a-ga-id' }).googleAnalytics).toBe(false)
   })
 
-  it('offers marketing only for BASIC platform ads or a configured tenant GAM', () => {
-    expect(consentCapabilities({ plan: 'BASIC' }).marketing).toBe(true)
+  it('offers marketing only for a configured tenant GAM, never for platform AdSense', () => {
+    expect(consentCapabilities({ plan: 'BASIC' }).marketing).toBe(false)
+    expect(consentCapabilities({ plan: 'BASIC', gamNetworkCode: '123456' }).marketing).toBe(false)
     expect(consentCapabilities({ plan: 'PRO' }).marketing).toBe(false)
     expect(consentCapabilities({ plan: 'PRO', gamNetworkCode: '123456' }).marketing).toBe(true)
   })
@@ -147,7 +148,8 @@ describe('consent integration contracts', () => {
       /<ConsentManager\b[^>]*:site="liveClientSite"[^>]*:enabled="isPublicationSurface"/,
     )
     expect(source('app/composables/useArticleTracking.ts')).toContain('useAnalyticsConsent()')
-    expect(source('app/app.vue')).toContain('platformAdsEnabledForPlan(liveClientSite?.plan) && marketingGranted')
+    expect(source('app/app.vue')).toContain('platformAdsEnabledForPlan(liveClientSite?.plan)"')
+    expect(source('app/app.vue')).not.toContain('marketingGranted')
     expect(source('app/composables/useGam.ts')).not.toContain('EnabledForPlan(client.plan)')
     const footer = source('app/components/Footer.vue')
     expect(footer).not.toContain('v-if="hasOptionalServices"')
