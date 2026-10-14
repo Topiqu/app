@@ -10,6 +10,11 @@
     "actionError": "Die Änderung konnte nicht gespeichert werden. Bitte versuche es erneut.",
     "empty": "Noch keine Wissensquellen",
     "emptyDescription": "Füge Produktfakten, Preise, Fallstudien oder freigegebene Vergleiche hinzu, damit generierte Artikel deine Angaben korrekt wiedergeben.",
+    "website": {
+      "title": "Beginne mit deiner Unternehmenswebsite",
+      "description": "Wir haben die Adresse aus deiner Registrierung gespeichert. Wähle aus, welche Seiten du zur Wissensbasis hinzufügen möchtest.",
+      "action": "Website importieren"
+    },
     "chunks": "keine Textabschnitte | {n} Textabschnitt | {n} Textabschnitte",
     "products": "keine Produkte | {n} Produkt | {n} Produkte",
     "failed": "Verarbeitung fehlgeschlagen. Versuche es erneut oder ersetze die Quelle.",

@@ -1,5 +1,11 @@
 <template>
-  <UModal v-model:open="open" :title="$t('knowledge.addTitle')" :ui="{ content: 'sm:max-w-xl' }">
+  <UModal
+    v-model:open="open"
+    :title="$t('knowledge.addTitle')"
+    :dismissible="!saving"
+    :close="!saving"
+    :ui="{ content: 'sm:max-w-xl' }"
+  >
     <template #body>
       <form id="knowledge-add" class="flex flex-col gap-4" @submit.prevent="submit">
         <UTabs v-model="kind" :items="kindTabs" :content="false" class="w-full" />
@@ -134,7 +140,9 @@
           class="sm:flex-1"
         />
         <div class="flex justify-end gap-2">
-          <UButton color="neutral" variant="ghost" @click="open = false">{{ $t('knowledge.cancel') }}</UButton>
+          <UButton color="neutral" variant="ghost" :disabled="saving" @click="open = false">{{
+            $t('knowledge.cancel')
+          }}</UButton>
           <UButton
             type="submit"
             form="knowledge-add"
@@ -156,6 +164,7 @@ import { KNOWLEDGE_CURRENCIES, KNOWLEDGE_LIMITS } from '~~/shared/utils/knowledg
 import AddSourceConsent from './AddSourceConsent.vue'
 import AddSourceSettings from './AddSourceSettings.vue'
 
+const props = defineProps<{ initialUrl?: string | null }>()
 const emit = defineEmits<{ created: [] }>()
 const open = defineModel<boolean>('open', { default: false })
 const { t } = useI18n()
@@ -197,14 +206,25 @@ const today = new Date().toISOString().slice(0, 10)
 const form = reactive(blank())
 const maxSize = `${KNOWLEDGE_LIMITS.maxFileBytes / 1024 / 1024} MB`
 
-watch(open, (value) => {
-  if (value) return
-  Object.assign(form, blank())
-  file.value = null
-  kind.value = 'NOTE'
-  webScope.value = 'PAGE'
-  progress.value = null
-})
+watch(
+  open,
+  (value) => {
+    if (value) {
+      if (props.initialUrl) {
+        kind.value = 'URL'
+        webScope.value = 'SITE'
+        form.url = props.initialUrl.replace(/^http:/i, 'https:')
+      }
+      return
+    }
+    Object.assign(form, blank())
+    file.value = null
+    kind.value = 'NOTE'
+    webScope.value = 'PAGE'
+    progress.value = null
+  },
+  { immediate: true },
+)
 watch([open, kind, webScope, () => form.url], () => {
   discovered.value = null
   feedPreview.value = null
@@ -280,6 +300,7 @@ const importSitemap = async (urls: string[]) => {
 }
 
 const submit = async () => {
+  if (saving.value || !form.confirmed) return
   if (kind.value === 'URL' && webScope.value === 'SITE') {
     saving.value = true
     try {
