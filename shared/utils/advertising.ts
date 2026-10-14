@@ -8,11 +8,12 @@ export type AdProvider = 'adsense' | 'gam' | null
 export const FEED_AD_AFTER = 6
 
 // Platform AdSense wins on BASIC even if a GAM code survived a downgrade: that inventory is ours.
+// AdSense consent belongs to Google's CMP (TCF), so only the tenant GAM unit waits for Marketing.
 export const adProviderFor = (
   site: { plan?: string | null; gamNetworkCode?: string | null } | null | undefined,
   { marketing, adsenseSlot }: { marketing: boolean; adsenseSlot?: string | null },
 ): AdProvider => {
-  if (!site || !marketing) return null
+  if (!site) return null
   if (platformAdsEnabledForPlan(site.plan)) return adsenseSlot?.trim() ? 'adsense' : null
-  return tenantGamEnabled(site.gamNetworkCode) ? 'gam' : null
+  return marketing && tenantGamEnabled(site.gamNetworkCode) ? 'gam' : null
 }
