@@ -1,5 +1,3 @@
-// @vitest-environment nuxt
-
 import type { CommentWithReplies } from '~~/types/comment'
 
 import { mockNuxtImport } from '@nuxt/test-utils/runtime'

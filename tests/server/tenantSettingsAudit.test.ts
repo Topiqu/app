@@ -1,8 +1,12 @@
 import { createError } from 'h3'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 
 afterEach(() => vi.unstubAllGlobals())
-beforeEach(() => vi.resetModules())
+let handler: typeof import('../../server/api/clients/[id]/index.patch').default
+beforeAll(async () => {
+  vi.stubGlobal('defineEventHandler', (run: unknown) => run)
+  handler = (await import('../../server/api/clients/[id]/index.patch')).default
+})
 
 const setup = async (body: Record<string, unknown>, role = 'admin') => {
   let site = {
@@ -60,7 +64,6 @@ const setup = async (body: Record<string, unknown>, role = 'admin') => {
   vi.stubGlobal('invalidateAuthor', vi.fn())
   vi.stubGlobal('isDomainTaken', async () => false)
   vi.stubGlobal('logAction', log)
-  const handler = (await import('../../server/api/clients/[id]/index.patch')).default
   return { run: () => handler({} as never), db, log }
 }
 
