@@ -22,8 +22,8 @@ describe('adProviderFor', () => {
     expect(adProviderFor({ plan: 'PRO' }, granted)).toBeNull()
   })
 
-  it('never renders without marketing consent', () => {
-    expect(adProviderFor({ plan: 'BASIC' }, { ...granted, marketing: false })).toBeNull()
+  it('leaves AdSense consent to Google CMP but keeps the tenant GAM unit behind Marketing', () => {
+    expect(adProviderFor({ plan: 'BASIC' }, { ...granted, marketing: false })).toBe('adsense')
     expect(adProviderFor({ plan: 'PRO', gamNetworkCode: '123' }, { ...granted, marketing: false })).toBeNull()
   })
 

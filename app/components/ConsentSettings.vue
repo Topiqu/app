@@ -80,7 +80,6 @@
 <script setup lang="ts">
 import type { ConsentCapabilities, ConsentDecision, ConsentSite } from '~~/shared/utils/consent'
 
-import { platformAdsEnabledForPlan } from '~~/shared/utils/advertising'
 import { hasAnalyticsConsent, hasMarketingConsent } from '~~/shared/utils/consent'
 
 const props = defineProps<{
@@ -124,7 +123,7 @@ const categories = computed(() => {
       key: 'marketing',
       title: 'common.consent.marketingTitle',
       description: 'common.consent.marketingDescription',
-      services: platformAdsEnabledForPlan(props.site?.plan) ? 'Google AdSense' : 'Google Ad Manager',
+      services: 'Google Ad Manager',
     })
   return result
 })

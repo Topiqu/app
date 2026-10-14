@@ -107,7 +107,7 @@
           "icon": "mdi:cookie",
           "iconColor": "text-amber-500",
           "title": "6. Cookies",
-          "content": "Notwendige Cookies dienen der Anmeldung, Sicherheit und Sprache und speichern deine Cookie-Auswahl für 180 Tage. Analyse-Cookies (Topiqu-Statistiken für 30 Tage und gegebenenfalls Google Analytics 4) und Werbe-Cookies (Google AdSense oder Ad Manager, nur nicht personalisierte Werbung) laufen nur mit deiner Einwilligung. Deine Auswahl änderst du unter Cookie-Einstellungen in der Fußzeile."
+          "content": "Notwendige Cookies dienen der Anmeldung, Sicherheit und Sprache und speichern deine Cookie-Auswahl für 180 Tage. Analyse-Cookies (Topiqu-Statistiken für 30 Tage und gegebenenfalls Google Analytics 4) und Werbe-Cookies von Google Ad Manager (nur nicht personalisierte Werbung) laufen nur mit deiner Einwilligung. Google-AdSense-Werbung auf kostenlosen Blogs steuert die Einwilligungsmeldung von Google (IAB TCF) und erscheint im EWR, im Vereinigten Königreich und in der Schweiz nur entsprechend deiner dortigen Auswahl. Deine Auswahl änderst du unter Cookie-Einstellungen in der Fußzeile bzw. in der Google-Meldung."
         },
         {
           "icon": "mdi:share-variant",
