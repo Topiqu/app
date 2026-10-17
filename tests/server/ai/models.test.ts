@@ -99,7 +99,7 @@ describe('AI model integration', () => {
     requests.length = 0
   })
 
-  it.each(['articleResearch', 'articleWriter', 'translation'] as const)(
+  it.each(['articleResearch', 'translation'] as const)(
     'sends %s to Claude Haiku 5.5 with effort, structured output and web search',
     async (task) => {
       const result = await generateText({
@@ -130,6 +130,28 @@ describe('AI model integration', () => {
       expect(result.usage.totalTokens).toBe(22)
     },
   )
+
+  it('writes articles with GPT-6 Luna through Responses with medium reasoning and structured output', async () => {
+    const result = await generateText({
+      model: aiModel('articleWriter'),
+      prompt: 'Write an article title.',
+      output: Output.object({ schema: z.object({ title: z.string() }) }),
+      maxOutputTokens: 8000,
+      providerOptions: aiReasoning('medium'),
+    })
+
+    expect(requests).toHaveLength(1)
+    expect(requests[0]?.url).toBe('https://api.openai.com/v1/responses')
+    expect(requests[0]?.body).toMatchObject({
+      model: 'gpt-6-luna',
+      max_output_tokens: 8000,
+      reasoning: { effort: 'medium' },
+      text: { format: { type: 'json_schema', strict: true } },
+    })
+    expect(requests[0]?.body).not.toHaveProperty('temperature')
+    expect(result.output).toEqual({ title: 'Verified' })
+    expect(result.usage.totalTokens).toBe(22)
+  })
 
   it('turns Haiku thinking off for reasoning-free routes', async () => {
     await generateText({

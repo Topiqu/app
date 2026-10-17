@@ -55,9 +55,14 @@ describe('AI model registry', () => {
     }
   })
 
-  it('runs every text task on Claude Haiku 5.5 except the ChatGPT visibility probe', () => {
+  it('writes articles with GPT-6 Luna', () => {
+    expect(aiModelProvider('articleWriter')).toBe('openai')
+    expect(aiModelId('articleWriter')).toBe('gpt-6-luna')
+  })
+
+  it('runs the other text tasks on Claude Haiku 5.5 except the ChatGPT visibility probe', () => {
     for (const [task, { provider, id }] of Object.entries(AI_MODELS)) {
-      if (task === 'visibility') continue
+      if (task === 'articleWriter' || task === 'visibility') continue
       expect(provider, task).toBe('anthropic')
       expect(id, task).toBe('claude-haiku-5-5')
     }
