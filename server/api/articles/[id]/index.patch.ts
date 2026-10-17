@@ -146,6 +146,9 @@ export default defineEventHandler(async (event) => {
   const textChanged = changesReaderText(previousArticle, data)
   if (previousArticle.publishedAt && textChanged) data.contentUpdatedAt = currentDate
 
+  // Compare reader text before replacing JSON null with ZenStack's database-null sentinel.
+  if (data.faq === null) data.faq = DbNull
+
   const article = await db
     .$transaction(async (tx) => {
       const updated = await tx.article.update({ where: { id }, data })
