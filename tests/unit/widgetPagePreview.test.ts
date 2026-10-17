@@ -17,6 +17,9 @@ import { useWidgetPagePreview, useWidgetPagePreviewBridge } from '../../app/comp
 const { route } = vi.hoisted(() => ({ route: { query: { widgetPreview: '1' } } }))
 mockNuxtImport('useRoute', () => () => route)
 mockNuxtImport('useLiveClientSite', () => async () => shallowRef({ name: 'Journal', widgets: savedWidgets }))
+mockNuxtImport('useElementSize', () => () => frameSize)
+
+const frameSize = { width: shallowRef(460), height: shallowRef(320) }
 
 const messages = JSON.parse(readFileSync(resolve(process.cwd(), 'i18n/locales/en/widgets.json'), 'utf8'))
 const i18n = () => createI18n({ legacy: false, locale: 'en', messages: { en: messages } })
@@ -46,6 +49,8 @@ Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', { configurable: t
 enableAutoUnmount(afterEach)
 beforeEach(() => {
   route.query.widgetPreview = '1'
+  frameSize.width.value = 460
+  frameSize.height.value = 320
   vi.clearAllMocks()
   Object.defineProperty(window, 'parent', { configurable: true, value: parentWindow })
 })
@@ -136,12 +141,54 @@ describe('widgets in the actual page', () => {
 })
 
 describe('preview frame communication', () => {
-  const mountFrame = () =>
+  const mountFrame = (props: { mobile?: boolean; expanded?: boolean } = {}) =>
     mountSuspended(PagePreview, {
       attachTo: document.body,
-      props: { source: '/en?widgetPreview=1', state: initialState() },
+      props: { source: '/en?widgetPreview=1', state: initialState(), ...props },
       global: { plugins: [i18n()] },
     })
+
+  it.each([
+    { panel: 240, viewport: 320, scale: 0.75 },
+    { panel: 286, viewport: 320, scale: 0.89375 },
+    { panel: 326, viewport: 326, scale: 1 },
+    { panel: 390, viewport: 390, scale: 1 },
+    { panel: 520, viewport: 390, scale: 1 },
+  ])(
+    'fits mobile content in a $panel px panel without going below the publication minimum',
+    async ({ panel, viewport, scale }) => {
+      frameSize.width.value = panel
+      const wrapper = await mountFrame({ mobile: true })
+      const frame = wrapper.get('iframe').element as HTMLIFrameElement
+
+      expect(frame.style.width).toBe(`${viewport}px`)
+      expect(frame.style.transform).toBe(`scale(${scale})`)
+      expect(Number.parseInt(frame.style.height) * scale).toBeLessThanOrEqual(frameSize.height.value)
+    },
+  )
+
+  it('fits a mobile preview to the available height and width after a resize', async () => {
+    const wrapper = await mountFrame({ mobile: true, expanded: true })
+    const frame = wrapper.get('iframe').element as HTMLIFrameElement
+    frameSize.width.value = 280
+    frameSize.height.value = 180
+    await flushPromises()
+
+    expect(frame.style.width).toBe('320px')
+    expect(Number.parseInt(frame.style.height) * (280 / 320)).toBeLessThanOrEqual(180)
+    expect(frame.style.transform).toBe('scale(0.875)')
+    expect(wrapper.get('iframe').element).toBe(frame)
+  })
+
+  it('keeps the desktop viewport when it is scaled to fit a narrow panel', async () => {
+    frameSize.width.value = 286
+    const wrapper = await mountFrame()
+    const frame = wrapper.get('iframe').element as HTMLIFrameElement
+
+    expect(frame.style.width).toBe('1280px')
+    expect(frame.style.transform).toBe(`scale(${286 / 1280})`)
+    expect(Number.parseInt(frame.style.height) * (286 / 1280)).toBeLessThanOrEqual(frameSize.height.value)
+  })
 
   it('sends edits to the loaded page without reloading the iframe', async () => {
     const wrapper = await mountFrame()

@@ -27,10 +27,11 @@ interface ContentActions {
 
 /** Suggested article updates; refetched while one is being prepared, so it turns ready on its own. */
 export const useContentActions = () => {
+  const requestFetch = useRequestFetch()
   const query = useQuery({
     key: () => queryKeys.contentActions.list,
     // Typed by hand: inferring it from the route table exceeds TypeScript's depth limit.
-    query: () => $fetch<ContentActions>('/api/content-actions'),
+    query: () => requestFetch<ContentActions>('/api/content-actions'),
   })
   const preparing = computed(() => query.data.value?.actions.some((action) => action.status === 'QUEUED') ?? false)
   const { pause, resume } = useIntervalFn(() => query.refetch(), 15_000, { immediate: false })

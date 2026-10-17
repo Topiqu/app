@@ -37,7 +37,11 @@
           </div>
           <p v-if="webhook.lastDeliveryAt" class="text-xs text-muted">
             {{ $t('common.webhooks.lastDelivery') }} <NuxtTime :datetime="webhook.lastDeliveryAt" relative /> ·
-            {{ webhook.lastStatusCode ? $t('common.webhooks.httpStatus', { status: webhook.lastStatusCode }) : $t('common.webhooks.unreachable') }}
+            {{
+              webhook.lastStatusCode
+                ? $t('common.webhooks.httpStatus', { status: webhook.lastStatusCode })
+                : $t('common.webhooks.unreachable')
+            }}
           </p>
           <div class="flex flex-wrap gap-2">
             <UButton
@@ -127,10 +131,11 @@ const { t } = useI18n()
 const toast = useToast()
 const confirm = useConfirm()
 const { copy, copied } = useClipboard()
+const requestFetch = useRequestFetch()
 
 const { data, isPending, refetch } = useQuery({
   key: () => queryKeys.webhooks.all,
-  query: () => $fetch<{ webhooks: Webhook[] }>('/api/webhooks'),
+  query: () => requestFetch<{ webhooks: Webhook[] }>('/api/webhooks'),
 })
 const webhooks = computed(() => data.value?.webhooks ?? [])
 
@@ -194,7 +199,11 @@ const toggle = (webhook: Webhook) =>
 
 const rotate = async (id: string) => {
   if (
-    !(await confirm({ title: t('common.webhooks.rotate'), message: t('common.webhooks.rotateConfirm'), variant: 'danger' }))
+    !(await confirm({
+      title: t('common.webhooks.rotate'),
+      message: t('common.webhooks.rotateConfirm'),
+      variant: 'danger',
+    }))
   )
     return
   await run(`rotate:${id}`, async () => {
@@ -204,7 +213,11 @@ const rotate = async (id: string) => {
 
 const remove = async (id: string) => {
   if (
-    !(await confirm({ title: t('common.webhooks.delete'), message: t('common.webhooks.deleteConfirm'), variant: 'danger' }))
+    !(await confirm({
+      title: t('common.webhooks.delete'),
+      message: t('common.webhooks.deleteConfirm'),
+      variant: 'danger',
+    }))
   )
     return
   await run(`delete:${id}`, async () => {

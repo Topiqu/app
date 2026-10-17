@@ -31,9 +31,11 @@ interface KeywordPlan {
 }
 
 /** The plan list and the ranking results share one request; both components read the same cache entry. */
-export const useKeywordPlan = () =>
-  useQuery({
+export const useKeywordPlan = () => {
+  const requestFetch = useRequestFetch()
+  return useQuery({
     key: () => queryKeys.keywordPlan.list,
     // Typed by hand: inferring it from the route table exceeds TypeScript's depth limit.
-    query: () => $fetch<KeywordPlan>('/api/keyword-plan'),
+    query: () => requestFetch<KeywordPlan>('/api/keyword-plan'),
   })
+}

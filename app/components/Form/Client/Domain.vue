@@ -95,10 +95,11 @@ const { t } = useI18n()
 const route = useRoute()
 const confirm = useConfirm()
 const headingId = useId()
+const requestFetch = useRequestFetch()
 
 const { data, isPending, refetch } = useQuery({
   key: () => queryKeys.domain.status,
-  query: () => $fetch<DomainStatus>('/api/domain'),
+  query: () => requestFetch<DomainStatus>('/api/domain'),
 })
 
 const domain = shallowRef('')
