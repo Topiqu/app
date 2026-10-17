@@ -1,7 +1,8 @@
 import { createAnthropic } from '@ai-sdk/anthropic'
 
 const anthropicClientSingleton = () => {
-  const apiKey = useRuntimeConfig().anthropic.apiKey
+  // Allow the SDK to read ANTHROPIC_API_KEY at runtime when the build had no key.
+  const apiKey = useRuntimeConfig().anthropic.apiKey?.trim() || undefined
 
   return createAnthropic({ apiKey })
 }
