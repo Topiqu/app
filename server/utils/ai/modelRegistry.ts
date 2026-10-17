@@ -3,11 +3,12 @@ import type { AiVisibilityProvider } from '~~/generated/zenstack/models'
 export type AiProvider = 'openai' | 'anthropic'
 
 const HAIKU = { provider: 'anthropic', id: 'claude-haiku-5-5' } as const
+const LUNA = { provider: 'openai', id: 'gpt-6-luna' } as const
 
 export const AI_MODELS = {
   topicSelection: HAIKU,
   articleResearch: HAIKU,
-  articleWriter: HAIKU,
+  articleWriter: LUNA,
   articleEditor: HAIKU,
   linkedinPost: HAIKU,
   translation: HAIKU,
@@ -16,7 +17,7 @@ export const AI_MODELS = {
   sentiment: HAIKU,
   communityInsight: HAIKU,
   // Measures what ChatGPT answers, so it has to stay on an OpenAI model.
-  visibility: { provider: 'openai', id: 'gpt-6-luna' },
+  visibility: LUNA,
   visibilityPrompts: HAIKU,
   factCheck: HAIKU,
   knowledgeSelect: HAIKU,
