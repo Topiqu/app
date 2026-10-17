@@ -48,10 +48,11 @@ interface Backlinks {
 
 /** One request for the page; refetched while a discovery runs, so results appear on their own. */
 export const useBacklinks = () => {
+  const requestFetch = useRequestFetch()
   const query = useQuery({
     key: () => queryKeys.backlinks.list,
     // Typed by hand: inferring it from the route table exceeds TypeScript's depth limit.
-    query: () => $fetch<Backlinks>('/api/backlinks'),
+    query: () => requestFetch<Backlinks>('/api/backlinks'),
   })
   const running = computed(() => query.data.value?.running ?? false)
   const { pause, resume } = useIntervalFn(() => query.refetch(), 15_000, { immediate: false })

@@ -4,7 +4,7 @@ import { resolve } from 'node:path'
 import { createI18n } from 'vue-i18n'
 import { readFileSync } from 'node:fs'
 import { defineComponent, ref } from 'vue'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
 import { enableAutoUnmount, flushPromises, type VueWrapper } from '@vue/test-utils'
 
@@ -17,11 +17,16 @@ import { announcementConfigSchema, type AnnouncementConfig } from '../../shared/
 const messages = JSON.parse(readFileSync(resolve(process.cwd(), 'i18n/locales/en/widgets.json'), 'utf8'))
 const common = JSON.parse(readFileSync(resolve(process.cwd(), 'i18n/locales/en/common.json'), 'utf8'))
 const i18n = () => createI18n({ legacy: false, locale: 'en', messages: { en: { ...messages, ...common } } })
+const smallScreen = ref(false)
+mockNuxtImport('useMediaQuery', () => () => smallScreen)
 mockNuxtImport('useLazyFetch', () => () => ({
   data: ref({ featured: { slug: 'a-real-article', language: 'en' }, recommended: [], totalArticles: 1 }),
   pending: ref(false),
 }))
 enableAutoUnmount(afterEach)
+beforeEach(() => {
+  smallScreen.value = false
+})
 
 const editorHarness = defineComponent({
   components: { Announcement, WidgetBar },
@@ -139,6 +144,29 @@ describe('visual widget placement', () => {
     })
   const slotButton = (wrapper: VueWrapper, slot: string) =>
     wrapper.get(`button[aria-label="Place: ${messages.widgets.slots[slot]}"]`)
+
+  it('uses mobile preview on phones and preserves an explicitly selected desktop mode', async () => {
+    smallScreen.value = true
+    const wrapper = await mountPreview()
+    expect(wrapper.getComponent(PagePreview).props('mobile')).toBe(true)
+
+    const desktop = wrapper.findAll('[role="tab"]').find((tab) => tab.text() === 'Desktop')!
+    await desktop.trigger('keydown', { key: 'Enter', code: 'Enter' })
+    expect(wrapper.getComponent(PagePreview).props('mobile')).toBe(false)
+    smallScreen.value = false
+    await flushPromises()
+    smallScreen.value = true
+    await flushPromises()
+    expect(wrapper.getComponent(PagePreview).props('mobile')).toBe(false)
+  })
+
+  it('follows screen size until a preview device is explicitly selected', async () => {
+    const wrapper = await mountPreview()
+    expect(wrapper.getComponent(PagePreview).props('mobile')).toBe(false)
+    smallScreen.value = true
+    await flushPromises()
+    expect(wrapper.getComponent(PagePreview).props('mobile')).toBe(true)
+  })
 
   it('shows the actual tenant homepage and keeps it loaded when moving to the bottom', async () => {
     const wrapper = await mountPreview()

@@ -295,13 +295,14 @@ type StoredWidget = {
 
 const { t } = useI18n()
 const toast = useToast()
+const requestFetch = useRequestFetch()
 const site = await useLiveClientSite()
 const { data: ownedSite } = await useClientSiteStatus()
 const previewSite = computed(() => ownedSite.value ?? site.value)
 
 const { data, isPending, refetch } = useQuery({
   key: () => queryKeys.widgets.all,
-  query: () => $fetch<{ widgets: StoredWidget[]; allowed: WidgetKind[] }>('/api/widgets'),
+  query: () => requestFetch<{ widgets: StoredWidget[]; allowed: WidgetKind[] }>('/api/widgets'),
 })
 const allowed = computed(() => data.value?.allowed ?? [])
 const currency = computed(() => site.value?.currency ?? 'EUR')

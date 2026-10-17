@@ -4,6 +4,7 @@ import { streamArticle } from '../../../server/utils/ai/article'
 import { findStockImage } from '../../../server/utils/images/chain'
 import { finalizeArticle, stockOrigin } from '../../../server/utils/ai/articleMedia'
 import { applyContentSlots, dropAuthoredImages } from '../../../shared/utils/contentSlots'
+import { createArticleGenerationAudit } from '../../../server/utils/articleGenerationAudit'
 
 vi.mock('../../../server/utils/images/chain', () => ({
   findStockImage: vi.fn(),
@@ -59,6 +60,31 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals())
 
 describe('article media finalization', () => {
+  it('audits a failed AI cover and still returns the usable article', async () => {
+    const log = vi.fn()
+    vi.stubGlobal('logAction', log)
+    vi.stubGlobal('reportCaughtError', vi.fn())
+    vi.mocked(generateImage).mockRejectedValue(new Error('Image provider unavailable'))
+    vi.mocked(findStockImage).mockResolvedValue(null)
+    const audit = createArticleGenerationAudit({ attemptId: 'attempt-1', mode: 'manual', clientSiteId: 'site' })
+    const result = await finalizeArticle({ ...draft(), coverImage: aiCover(), images: [] }, 'en', {
+      allowGeneratedImages: true,
+      audit,
+    })
+    expect(result.title).toBe('The Witcher 4')
+    expect(result.articleImageUrl).toBe('')
+    expect(log).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'ARTICLE_GENERATION_STEP_FAILED',
+        metadata: expect.objectContaining({
+          stage: 'image_generation',
+          slot: 'cover',
+          attemptId: 'attempt-1',
+          error: 'Image provider unavailable',
+        }),
+      }),
+    )
+  })
   it.each([
     { plan: 'BASIC', isActive: true, requested: true },
     { plan: 'PRO', isActive: false, requested: true },

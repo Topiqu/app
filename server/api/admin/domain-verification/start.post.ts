@@ -2,13 +2,8 @@ import { randomBytes } from 'crypto'
 import { domainVerificationDefaults, normalizeDomain } from '~~/shared/utils/domain'
 
 export default defineEventHandler(async (event) => {
-  const user = await getSessionUser(event)
-  if (!user?.id) throw createError({ statusCode: 401, message: 'Unauthorized' })
-  if (!user.clientSiteId || !['admin', 'superadmin'].includes(user.role))
-    throw createError({ statusCode: 403, message: 'Forbidden' })
-
-  const db = await getEnhancedPrisma(user)
-  const site = await db.clientSite.findUnique({ where: { id: user.clientSiteId } })
+  const { user, db, clientSiteId } = await requireDomainAccess(event)
+  const site = await db.clientSite.findUnique({ where: { id: clientSiteId } })
   if (!site) throw createError({ statusCode: 404, message: 'Client site not found' })
 
   const domain = normalizeDomain(site.domain)

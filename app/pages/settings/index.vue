@@ -217,13 +217,9 @@ const apiVisible = shallowRef(false)
 const isSaving = shallowRef(false)
 
 const clientId = computed(() => auth.value?.user.clientSiteId)
-const isSuperadmin = computed(() => auth.value?.user.role === 'superadmin')
 
 const { data: client, refresh } = await useFetch<ClientSite>(() => `/api/clients/${clientId.value}`)
 const { data: features } = await useFetch(`/api/features`, { watch: [clientId] })
-const { data: tenantAccess } = await useFetch<{ role: 'OWNER' | 'MEMBER'; scopes: string[] }>('/api/tenant/access', {
-  watch: [clientId],
-})
 const rate = useCurrencyRate(() => client.value?.currency ?? 'EUR')
 
 const form = ref(buildClientSettingsForm(client.value))
@@ -258,8 +254,7 @@ const allowedFeatures = computed(
 
 const isBasic = computed(() => client.value?.plan === 'BASIC')
 const showBilling = computed(() => client.value?.billingPlan !== 'PERMANENT')
-const can = (scope: string) =>
-  isSuperadmin.value || tenantAccess.value?.role === 'OWNER' || tenantAccess.value?.scopes.includes(scope)
+const can = useTenantScope()
 
 const tabs = computed<TabItem[]>(() => {
   const t: TabItem[] = []

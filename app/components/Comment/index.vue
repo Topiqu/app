@@ -2,7 +2,7 @@
   <article
     :id="`comment-${comment.id}`"
     tabindex="-1"
-    class="relative w-full min-w-0 rounded-(--topiqu-surface-radius) border border-default bg-default p-4 sm:p-5"
+    class="relative w-full min-w-0 scroll-mt-24 rounded-(--topiqu-surface-radius) border border-default bg-default p-4 sm:p-5"
   >
     <div class="absolute right-3 top-3 z-10 flex gap-1">
       <UButton

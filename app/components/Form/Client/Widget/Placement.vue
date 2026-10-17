@@ -1,5 +1,5 @@
 <template>
-  <section class="space-y-3" :aria-labelledby="headingId">
+  <section class="min-w-0 space-y-3" :aria-labelledby="headingId">
     <div class="flex flex-wrap items-center justify-between gap-2">
       <h3 :id="headingId" class="text-sm font-semibold text-highlighted">{{ $t('widgets.placement.title') }}</h3>
       <UButton
@@ -11,7 +11,7 @@
         @click="expanded = true"
       />
     </div>
-    <div class="overflow-hidden rounded-xl border border-default bg-default">
+    <div class="min-w-0 overflow-hidden rounded-xl border border-default bg-default">
       <div class="flex flex-wrap items-center justify-between gap-2 border-b border-default p-2">
         <UTabs v-model="page" :items="pageItems" :content="false" size="xs" :ui="{ list: 'p-0.5' }" />
         <UTabs v-model="device" :items="deviceItems" :content="false" size="xs" :ui="{ list: 'p-0.5' }" />
@@ -26,7 +26,7 @@
       <p v-else-if="!source" class="grid min-h-80 place-items-center px-6 text-center text-sm text-muted">
         {{ $t(articlePending ? 'widgets.placement.loading' : 'widgets.placement.noArticle') }}
       </p>
-      <div v-else class="h-80 sm:h-96" />
+      <div v-else :class="device === 'mobile' ? 'h-[min(36rem,70dvh)] min-h-64' : 'h-80 sm:h-96'" />
       <div v-if="interactive" class="flex flex-wrap gap-1 border-t border-default p-2">
         <UButton
           v-for="slot in visibleSlots"
@@ -51,10 +51,10 @@
       :title="$t('widgets.placement.title')"
       :description="$t(`widgets.placement.hints.${modelValue}`, modelValue)"
       fullscreen
-      :ui="{ body: 'p-0 sm:p-0' }"
+      :ui="{ body: 'flex min-h-0 flex-col overflow-hidden p-0 sm:p-0' }"
     >
       <template #body>
-        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-default p-3">
+        <div class="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-default p-3">
           <UTabs v-model="page" :items="pageItems" :content="false" size="sm" />
           <UTabs v-model="device" :items="deviceItems" :content="false" size="sm" />
         </div>
@@ -93,7 +93,14 @@ const { t, locale } = useI18n()
 const localePath = useLocalePath()
 const headingId = useId()
 const page = shallowRef('home')
-const device = shallowRef('desktop')
+const smallScreen = useMediaQuery('(max-width: 639px)', { ssrWidth: 1280 })
+const selectedDevice = shallowRef<string>()
+const device = computed({
+  get: () => selectedDevice.value ?? (smallScreen.value ? 'mobile' : 'desktop'),
+  set: (value: string | number) => {
+    selectedDevice.value = String(value)
+  },
+})
 const expanded = shallowRef(false)
 watch(
   () => modelValue.value,

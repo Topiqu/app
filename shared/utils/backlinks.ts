@@ -21,7 +21,7 @@ export const backlinkAllowance = (plan: string | null | undefined) => {
   return { kinds: [] as BacklinkOpportunityKind[], drafts: false }
 }
 
-const urlHost = (value: string | null | undefined) => {
+export const urlHost = (value: string | null | undefined) => {
   if (!value) return null
   try {
     return toHostname(new URL(/^https?:\/\//i.test(value) ? value : `https://${value}`).hostname)

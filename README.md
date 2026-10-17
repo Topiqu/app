@@ -88,7 +88,7 @@ ZenStack generates ignored schema metadata and TypeScript types in `generated/ze
 - **Billing:** Stripe subscriptions and credit top-ups.
 - **Media & email:** AWS S3 / Rekognition / SES, Sharp, MJML 5, PDFKit and Takumi OG images.
 - **Cache:** optional Redis / Valkey.
-- **AI visibility:** native search adapters for visibility providers; see [provider setup](./docs/ai-visibility-providers.md).
+- **AI visibility:** native search adapters for visibility providers; each key in [.env.example](./.env.example) enables one.
 - **Testing:** Vitest, Nuxt Test Utils, jsdom and Playwright.
 - **Code quality:** ESLint, Prettier and vue-tsc.
 
@@ -165,8 +165,6 @@ When invoking Nuxt through Node instead of Bun, use a supported Node version (`^
 
 - 🗺️ [Architecture](./MAP.md) — source layout, data flows and implementation details.
 - 📐 [Project conventions](./CLAUDE.md) — coding standards and contribution rules.
-- 🔎 [AI visibility providers](./docs/ai-visibility-providers.md) — provider configuration.
-- 🔧 [Maintenance report](./docs/maintenance-2026-10-08.md) — dependency and model decisions.
 
 <details>
 <summary><strong>Source layout</strong></summary>

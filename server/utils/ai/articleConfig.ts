@@ -15,6 +15,7 @@ import { researchTopic } from './researchEvidence'
 import { editorialPolicy } from './editorialPolicy'
 import { AUTHOR_ACCOUNT_RULE } from './articleQuality'
 import { retrieveKnowledge } from '../knowledge/retrieve'
+import { auditArticleStep, type ArticleGenerationAudit } from '../articleGenerationAudit'
 import {
   formatRules,
   selectedModulesFor,
@@ -156,6 +157,7 @@ export const buildArticleConfig = async (
     abortSignal,
     knowledgeQuery: knowledgeQueryOption,
     illustrative = false,
+    audit,
   }: {
     research?: ResearchOption
     /** Defaults to the research query; set it when research is off but the subject is still known. */
@@ -170,6 +172,7 @@ export const buildArticleConfig = async (
     abortSignal?: AbortSignal
     /** Manual editor only: the author may ask for an invented illustrative story. */
     illustrative?: boolean
+    audit?: ArticleGenerationAudit
   } = {},
 ) => {
   const {
@@ -183,21 +186,23 @@ export const buildArticleConfig = async (
     language,
     plan,
     features,
-  } = await prisma.clientSite.findFirstOrThrow({
-    select: {
-      plan: true,
-      features: { where: { feature: { code: 'AI' } }, select: { isActive: true } },
-      language: true,
-      focus: true,
-      keywords: true,
-      audience: true,
-      tags: { select: { id: true, name: true } },
-      aiToneOfVoice: true,
-      aiControversyLevel: true,
-      communityInsight: true,
-    },
-    where: { id: clientSiteId },
-  })
+  } = await auditArticleStep(audit, 'configuration', () =>
+    prisma.clientSite.findFirstOrThrow({
+      select: {
+        plan: true,
+        features: { where: { feature: { code: 'AI' } }, select: { isActive: true } },
+        language: true,
+        focus: true,
+        keywords: true,
+        audience: true,
+        tags: { select: { id: true, name: true } },
+        aiToneOfVoice: true,
+        aiControversyLevel: true,
+        communityInsight: true,
+      },
+      where: { id: clientSiteId },
+    }),
+  )
   const articleLanguage = requestedLanguage ?? language
 
   const editorialDirection = editorialPolicy(format, aiControversyLevel, illustrative)
@@ -209,26 +214,55 @@ export const buildArticleConfig = async (
   const imagesRequested = selectedModules?.includes('images') ?? false
   const [researchResult, knowledge] = await Promise.all([
     researchQuery
-      ? researchTopic(
-          researchQuery,
-          researchDepth,
-          fallbackWithoutResearch,
-          abortSignal,
-          youtubeRequested,
-          imagesRequested,
-          format === 'story' && illustrative,
+      ? auditArticleStep(
+          audit,
+          'research',
+          () =>
+            researchTopic(
+              researchQuery,
+              researchDepth,
+              fallbackWithoutResearch,
+              abortSignal,
+              youtubeRequested,
+              imagesRequested,
+              format === 'story' && illustrative,
+            ),
+          (result) => ({
+            status: result.status,
+            depth: researchDepth,
+            sourceCount: result.sourceCount,
+            tokens: result.tokens,
+            fallbackReason: result.fallbackReason ?? null,
+          }),
         )
-      : {
-          brief: null,
-          tokens: 0,
-          sourceCount: 0,
-          sources: [],
-          officialMediaPages: [],
-          status: 'skipped' as const,
-          fallbackReason: undefined,
-          youtube: youtubeRequested ? ({ status: 'researchOff' } as const) : undefined,
-        },
-    knowledgeQuery ? retrieveKnowledge(clientSiteId, knowledgeQuery, { abortSignal, language: articleLanguage }) : null,
+      : (async () => {
+          await audit?.skip('research', 'disabled')
+          return {
+            brief: null,
+            tokens: 0,
+            sourceCount: 0,
+            sources: [],
+            officialMediaPages: [],
+            status: 'skipped' as const,
+            fallbackReason: undefined,
+            youtube: youtubeRequested ? ({ status: 'researchOff' } as const) : undefined,
+          }
+        })(),
+    knowledgeQuery
+      ? auditArticleStep(
+          audit,
+          'knowledge',
+          () => retrieveKnowledge(clientSiteId, knowledgeQuery, { abortSignal, language: articleLanguage }),
+          (result) => ({
+            sourceCount: result?.used.length ?? 0,
+            selectedChunks: result?.used.reduce((sum, entry) => sum + entry.chunkIds.length, 0) ?? 0,
+            tokens: result?.tokens ?? 0,
+          }),
+        )
+      : (async () => {
+          await audit?.skip('knowledge', 'disabled')
+          return null
+        })(),
   ])
   const { brief } = researchResult
   const researchTokens = researchResult.tokens + (knowledge?.tokens ?? 0)

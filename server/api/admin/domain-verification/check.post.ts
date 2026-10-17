@@ -1,21 +1,17 @@
 export default defineEventHandler(async (event) => {
-  const user = await getSessionUser(event)
-  if (!user?.id) throw createError({ statusCode: 401, message: 'Unauthorized' })
-  if (!user.clientSiteId || !['admin', 'superadmin'].includes(user.role))
-    throw createError({ statusCode: 403, message: 'Forbidden' })
+  const { user, db, clientSiteId } = await requireDomainAccess(event)
 
-  const allowed = await consumeRateLimit(`domain-verification:${user.clientSiteId}:${user.id}`, 5, 600)
+  const allowed = await consumeRateLimit(`domain-verification:${clientSiteId}:${user.id}`, 5, 600)
   if (!allowed) {
     await logger.warn('domain verification rate limit exceeded', {
       source: 'domain-verification',
       userId: user.id,
-      clientSiteId: user.clientSiteId,
+      clientSiteId,
     })
     throw createError({ statusCode: 429, message: 'Too many verification attempts. Try again later.' })
   }
 
-  const db = await getEnhancedPrisma(user)
-  const site = await db.clientSite.findUnique({ where: { id: user.clientSiteId } })
+  const site = await db.clientSite.findUnique({ where: { id: clientSiteId } })
   if (!site) throw createError({ statusCode: 404, message: 'Client site not found' })
   if (!site.domainVerificationToken) throw createError({ statusCode: 409, message: 'Start domain verification first' })
 

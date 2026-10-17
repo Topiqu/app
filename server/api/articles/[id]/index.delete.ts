@@ -12,6 +12,20 @@ export default defineEventHandler(async (event) => {
   // Read first: translations cascade away with the article.
   const removedPaths = await articlePublicPaths(id, user.clientSiteId!)
   const deleted = await db.article.delete({ where: { id } })
+  try {
+    await logAction({
+      action: 'ARTICLE_DELETED',
+      userId: user.id,
+      clientSiteId: deleted.clientSiteId,
+      ip: getIp(event),
+      metadata: { articleId: id, title: deleted.title, status: deleted.status },
+    })
+  } catch (error) {
+    await reportCaughtError('Article deletion audit logging failed', error, {
+      articleId: id,
+      clientSiteId: deleted.clientSiteId,
+    }).catch(() => undefined)
+  }
   if (deleted.status === 'published') {
     await invalidateFeed(deleted.clientSiteId)
     await enqueueArticleWebhook('ARTICLE_DELETED', deleted)

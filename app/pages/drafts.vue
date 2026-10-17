@@ -50,7 +50,10 @@
               </span>
             </div>
 
-            <div v-if="draft.status === 'AWAITING_APPROVAL' || draft.status === 'DRAFT'" class="flex flex-wrap gap-2">
+            <div
+              v-if="can('INTEGRATION_CONTROL') && (draft.status === 'AWAITING_APPROVAL' || draft.status === 'DRAFT')"
+              class="flex flex-wrap gap-2"
+            >
               <UButton
                 color="success"
                 :loading="pendingDraftIds.has(draft.id)"
@@ -114,6 +117,7 @@ import type { DraftStatus } from '~~/generated/zenstack/models'
 definePageMeta({ middleware: 'admin', shell: 'dashboard' })
 
 const filterStatus = shallowRef('')
+const can = useTenantScope()
 const toast = useToast()
 const confirm = useConfirm()
 const rejectOpen = shallowRef(false)

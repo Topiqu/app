@@ -10,6 +10,11 @@
     "actionError": "The change could not be saved. Please try again.",
     "empty": "No knowledge yet",
     "emptyDescription": "Add product facts, pricing, case studies or approved comparisons so generated articles get your own details right.",
+    "website": {
+      "title": "Start with your company website",
+      "description": "We kept the address you entered at sign-up. Choose which pages to add to your knowledge base.",
+      "action": "Import website"
+    },
     "chunks": "no passages | {n} passage | {n} passages",
     "products": "no products | {n} product | {n} products",
     "failed": "Processing failed. Try again or replace the source.",

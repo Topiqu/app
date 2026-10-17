@@ -87,9 +87,16 @@ watch(open, (isOpen) => {
 // New emoji go to the session's tenant, so the shortcut is for its admins and only on their own blog.
 const site = await useClientSite()
 const createOpen = shallowRef(false)
+const can = useTenantScope()
 const canAddEmoji = computed(() => {
   const user = session.value?.user
-  return user?.role === 'admin' && user.plan !== 'BASIC' && !!site && site.id === user.clientSiteId
+  return (
+    user?.role === 'admin' &&
+    user.plan !== 'BASIC' &&
+    !!site &&
+    site.id === user.clientSiteId &&
+    can('TENANT_SETTINGS')
+  )
 })
 
 const toggleEmoji = async (emojiId: string, close: () => void) => {

@@ -9,7 +9,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useCommentReactions } from '../../app/composables/useCommentReactions'
 import { useCommentPermissions } from '../../app/composables/useCommentPermissions'
 
-const state = vi.hoisted(() => ({ user: null as null | { id: string; role: string; clientSiteId: string } }))
+const state = vi.hoisted(() => ({
+  user: null as null | { id: string; role: string; clientSiteId: string; scopes: string[] },
+}))
 const mocks = vi.hoisted(() => ({
   toast: { add: vi.fn() },
   status: { saving: vi.fn(), saved: vi.fn(), reverted: vi.fn() },
@@ -50,23 +52,29 @@ beforeEach(() => {
 
 describe('useCommentPermissions', () => {
   it('lets a site admin moderate other people’s comments on their own site only', () => {
-    state.user = { id: 'admin', role: 'admin', clientSiteId: 'site-1' }
+    state.user = { id: 'admin', role: 'admin', clientSiteId: 'site-1', scopes: ['CONTENT_MODERATE'] }
     const perms = useCommentPermissions(ref(comment()), ref(false))
     expect([perms.ban, perms.unban, perms.moderateDelete, perms.deleteOwn]).toEqual([true, false, true, false])
 
-    state.user = { id: 'admin', role: 'admin', clientSiteId: 'site-2' }
+    state.user = { id: 'admin', role: 'admin', clientSiteId: 'site-2', scopes: ['CONTENT_MODERATE'] }
     const foreign = useCommentPermissions(ref(comment()), ref(false))
     expect([foreign.ban, foreign.moderateDelete]).toEqual([false, false])
   })
 
+  it('hides moderation from a site member without CONTENT_MODERATE', () => {
+    state.user = { id: 'admin', role: 'admin', clientSiteId: 'site-1', scopes: ['ARTICLE_WRITE'] }
+    const perms = useCommentPermissions(ref(comment()), ref(false))
+    expect([perms.ban, perms.unban, perms.moderateDelete, perms.report]).toEqual([false, false, false, true])
+  })
+
   it('offers unban instead of ban for a banned commenter', () => {
-    state.user = { id: 'admin', role: 'admin', clientSiteId: 'site-1' }
+    state.user = { id: 'admin', role: 'admin', clientSiteId: 'site-1', scopes: ['CONTENT_MODERATE'] }
     const perms = useCommentPermissions(ref(comment({ user: { username: 'x', isBanned: true } })), ref(false))
     expect([perms.ban, perms.unban, perms.report, perms.reply]).toEqual([false, true, false, false])
   })
 
   it('never offers moderation of one’s own comment', () => {
-    state.user = { id: 'author', role: 'admin', clientSiteId: 'site-1' }
+    state.user = { id: 'author', role: 'admin', clientSiteId: 'site-1', scopes: ['CONTENT_MODERATE'] }
     const perms = useCommentPermissions(ref(comment()), ref(false))
     expect([perms.deleteOwn, perms.moderateDelete, perms.ban, perms.report]).toEqual([true, false, false, false])
   })

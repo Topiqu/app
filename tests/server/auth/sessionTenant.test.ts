@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
+import { TENANT_SCOPES } from '../../../server/utils/tenantMembership'
 import { initialTenant, toSessionUser, uniqueUsername } from '../../../server/utils/session'
 
 afterEach(() => vi.unstubAllGlobals())
@@ -26,7 +27,8 @@ describe('login tenant selection', () => {
 describe('session user', () => {
   const user = { id: 'u1', name: 'jane', email: 'jane@example.com', image: null, role: 'reader' }
 
-  const stub = (membership: { deletedAt: Date | null; clientSite: { plan: string } } | null) => {
+  type Membership = { deletedAt: Date | null; role?: string; scopes?: string[]; clientSite: { plan: string } }
+  const stub = (membership: Membership | null) => {
     const update = vi.fn().mockResolvedValue({})
     vi.stubGlobal('prisma', {
       tenantMembership: { findUnique: vi.fn().mockResolvedValue(membership) },
@@ -36,21 +38,34 @@ describe('session user', () => {
   }
 
   it('makes a member of the active tenant its admin on that tenant’s plan', async () => {
-    stub({ deletedAt: null, clientSite: { plan: 'PRO' } })
+    stub({ deletedAt: null, role: 'MEMBER', scopes: ['ARTICLE_WRITE'], clientSite: { plan: 'PRO' } })
     expect(await toSessionUser(user, { id: 's1', clientSiteId: 'site' })).toMatchObject({
       role: 'admin',
       clientSiteId: 'site',
       plan: 'PRO',
+      scopes: ['ARTICLE_WRITE'],
       sessionId: 's1',
     })
   })
 
+  it('gives the tenant owner every scope', async () => {
+    stub({ deletedAt: null, role: 'OWNER', scopes: [], clientSite: { plan: 'PRO' } })
+    const session = await toSessionUser(user, { id: 's1', clientSiteId: 'site' })
+    expect(session.scopes).toEqual([...TENANT_SCOPES])
+  })
+
   it('drops a tenant the user was removed from, on the session row too', async () => {
-    const update = stub({ deletedAt: new Date(), clientSite: { plan: 'PRO' } })
+    const update = stub({
+      deletedAt: new Date(),
+      role: 'MEMBER',
+      scopes: ['ARTICLE_WRITE'],
+      clientSite: { plan: 'PRO' },
+    })
     expect(await toSessionUser(user, { id: 's1', clientSiteId: 'site' })).toMatchObject({
       role: 'reader',
       clientSiteId: '',
       plan: 'BASIC',
+      scopes: [],
     })
     expect(update).toHaveBeenCalledWith({ where: { id: 's1' }, data: { clientSiteId: null } })
   })
@@ -60,6 +75,7 @@ describe('session user', () => {
     expect(await toSessionUser({ ...user, role: 'superadmin' }, { id: 's1', clientSiteId: null })).toMatchObject({
       role: 'superadmin',
       plan: 'BASIC',
+      scopes: [...TENANT_SCOPES],
     })
     expect(update).not.toHaveBeenCalled()
   })

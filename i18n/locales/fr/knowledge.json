@@ -10,6 +10,11 @@
     "actionError": "Impossible d'enregistrer la modification. Veuillez réessayer.",
     "empty": "Aucune source pour le moment",
     "emptyDescription": "Ajoutez des faits sur vos produits, des tarifs, des études de cas ou des comparaisons approuvées pour que les articles générés reflètent fidèlement vos informations.",
+    "website": {
+      "title": "Commencez par le site de votre entreprise",
+      "description": "Nous avons conservé l’adresse saisie lors de votre inscription. Choisissez les pages à ajouter à votre base de connaissances.",
+      "action": "Importer le site"
+    },
     "chunks": "aucun passage | {n} passage | {n} passages",
     "products": "aucun produit | {n} produit | {n} produits",
     "failed": "Le traitement a échoué. Réessayez ou remplacez la source.",

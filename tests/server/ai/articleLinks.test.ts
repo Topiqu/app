@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { createArticleGenerationAudit } from '../../../server/utils/articleGenerationAudit'
 import { insertArticleLinks, linkArticle, loadLinkCandidates } from '../../../server/utils/ai/articleLinks'
 
 const { generateStructuredText } = vi.hoisted(() => ({
@@ -118,6 +119,24 @@ describe('linkArticle', () => {
     findMany.mockResolvedValue([{ ...compost, tags: [] }])
     vi.mocked(generateStructuredText).mockRejectedValue(new Error('provider down'))
 
-    expect(await linkArticle('site', { title: 'Zahrada', content: body }, 'cs')).toEqual({ content: body, tokens: 0 })
+    const log = vi.fn()
+    vi.stubGlobal('logAction', log)
+    const audit = createArticleGenerationAudit({ attemptId: 'attempt-1', mode: 'manual', clientSiteId: 'site' })
+    expect(await linkArticle('site', { title: 'Zahrada', content: body }, 'cs', { audit })).toEqual({
+      content: body,
+      tokens: 0,
+    })
+    expect(log).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'ARTICLE_GENERATION_STEP_FAILED',
+        metadata: expect.objectContaining({ stage: 'linking', error: 'provider down' }),
+      }),
+    )
+    expect(log).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'ARTICLE_GENERATION_FALLBACK',
+        metadata: expect.objectContaining({ stage: 'linking', outcome: 'unchanged_content' }),
+      }),
+    )
   })
 })

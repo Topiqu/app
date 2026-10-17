@@ -139,16 +139,31 @@ export const linkArticle = async (
   clientSiteId: string,
   article: { title: string; content: string; tags?: readonly string[] },
   language: Language,
-  { excludeId, abortSignal }: { excludeId?: string | null; abortSignal?: AbortSignal } = {},
+  {
+    excludeId,
+    abortSignal,
+    audit,
+  }: {
+    excludeId?: string | null
+    abortSignal?: AbortSignal
+    audit?: import('../articleGenerationAudit').ArticleGenerationAudit
+  } = {},
 ) => {
   const unchanged = { content: article.content, tokens: 0 }
+  const step = await audit?.startStep('linking')
   try {
     const $ = cheerio.load(article.content, null, false)
     const paragraphs = linkableParagraphs($).map((el) => $(el).text().replace(/\s+/g, ' ').trim())
-    if (!paragraphs.length) return unchanged
+    if (!paragraphs.length) {
+      await step?.complete({ reason: 'no_paragraphs', tokens: 0 })
+      return unchanged
+    }
 
     const candidates = await loadLinkCandidates(clientSiteId, language, { tagIds: article.tags, excludeId })
-    if (!candidates.length) return unchanged
+    if (!candidates.length) {
+      await step?.complete({ reason: 'no_candidates', tokens: 0 })
+      return unchanged
+    }
 
     const { output, usage } = await generateText({
       model: aiModel('articleLinks'),
@@ -163,12 +178,24 @@ export const linkArticle = async (
         : AbortSignal.timeout(30_000),
     })
 
+    const content = insertArticleLinks(article.content, output.links, candidates, language)
+    await step?.complete({
+      candidates: candidates.length,
+      proposedLinks: output.links.length,
+      tokens: usage.totalTokens ?? 0,
+    })
     return {
-      content: insertArticleLinks(article.content, output.links, candidates, language),
+      content,
       tokens: usage.totalTokens ?? 0,
     }
   } catch (error) {
+    await step?.fail(error)
     if (abortSignal?.aborted) throw error
+    await audit?.record('ARTICLE_GENERATION_FALLBACK', {
+      stage: 'linking',
+      reason: 'linking_failed',
+      outcome: 'unchanged_content',
+    })
     // Links are an enrichment: a failed call must never cost the finished article.
     await reportCaughtError('Article linking failed', error, { clientSiteId })
     return unchanged

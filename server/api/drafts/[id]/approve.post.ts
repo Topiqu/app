@@ -1,10 +1,9 @@
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
+  // Approval queues the post for the LinkedIn publish cron — the same act as publish/[id].
+  const { user } = await requireTenantScope(event, 'INTEGRATION_CONTROL')
   const id = getRouterParam(event, 'id')
-  const user = await getSessionUser(event)
-
   if (!id) throw createError({ statusCode: 400, message: t('common.errors.missing')! })
-  if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
   const db = await getEnhancedPrisma(user)
 

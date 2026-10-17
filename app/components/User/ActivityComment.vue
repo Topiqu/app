@@ -10,18 +10,23 @@
     <header class="flex items-center gap-2">
       <UserPicture :name="comment.authorUsername" :url="comment.authorPfp" />
       <span class="text-sm font-medium text-neutral-900 dark:text-neutral-100">{{ comment.authorUsername }}</span>
-      <span class="text-xs text-neutral-400 dark:text-neutral-500">{{ formatDate(comment.createdAt) }}</span>
+      <NuxtLink
+        :to="commentUrl"
+        class="text-xs text-neutral-400 hover:underline dark:text-neutral-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+      >
+        {{ formatDate(comment.createdAt) }}
+      </NuxtLink>
     </header>
 
-    <p class="mt-2 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 text-pretty">
+    <NuxtLink
+      :to="commentUrl"
+      class="mt-2 block text-sm leading-relaxed text-neutral-700 hover:underline dark:text-neutral-300 text-pretty focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+    >
       {{ comment.content }}
-    </p>
+    </NuxtLink>
 
     <NuxtLink
-      :to="
-        localePath({ name: 'clanky-slug', params: { slug: comment.articleSlug } }, comment.articleLanguage) +
-        `#comment-${comment.id}`
-      "
+      :to="commentUrl"
       class="mt-2 inline-flex items-center gap-1 text-xs text-neutral-500 hover:text-neutral-900 hover:underline dark:text-neutral-400 dark:hover:text-neutral-100"
     >
       <UIcon name="mdi:file-document-outline" class="size-3.5 shrink-0" />
@@ -97,5 +102,11 @@ defineEmits<(e: 'delete', id: string) => void>()
 const localePath = useLocalePath()
 const { data: session } = useAuth()
 
+const commentUrl = computed(() =>
+  localePath(
+    { name: 'clanky-slug', params: { slug: comment.articleSlug }, hash: `#comment-${comment.id}` },
+    comment.articleLanguage,
+  ),
+)
 const isOwn = computed(() => session.value?.user?.id === comment.userId)
 </script>

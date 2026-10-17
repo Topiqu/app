@@ -146,6 +146,9 @@ export default defineEventHandler(async (event) => {
   const textChanged = changesReaderText(previousArticle, data)
   if (previousArticle.publishedAt && textChanged) data.contentUpdatedAt = currentDate
 
+  // Compare reader text before replacing JSON null with ZenStack's database-null sentinel.
+  if (data.faq === null) data.faq = DbNull
+
   const article = await db
     .$transaction(async (tx) => {
       const updated = await tx.article.update({ where: { id }, data })
@@ -214,7 +217,14 @@ export default defineEventHandler(async (event) => {
     userId: user.id,
     clientSiteId: user.clientSiteId,
     ip: getIp(event),
-    metadata: { articleId: id, updatedFields: Object.keys(body) },
+    metadata: {
+      articleId: id,
+      updatedFields: Object.keys(data),
+      previousStatus: previousArticle.status,
+      status: article.status,
+      previousReleaseAt: previousArticle.releaseAt?.toISOString() ?? null,
+      releaseAt: article.releaseAt?.toISOString() ?? null,
+    },
   })
 
   if (article.status === ArticleStatus.published && previousArticle?.status === ArticleStatus.draft) {

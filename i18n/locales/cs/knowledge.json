@@ -10,6 +10,11 @@
     "actionError": "Změnu se nepodařilo uložit. Zkuste to prosím znovu.",
     "empty": "Zatím žádné znalosti",
     "emptyDescription": "Přidejte fakta o produktu, ceník, případové studie nebo schválená srovnání, aby generované články měly vaše údaje správně.",
+    "website": {
+      "title": "Začněte webem vaší firmy",
+      "description": "Adresu z registrace jsme si zapamatovali. Vyberte, které stránky přidáte do znalostní báze.",
+      "action": "Importovat web"
+    },
     "chunks": "žádná pasáž | {n} pasáž | {n} pasáže | {n} pasáží",
     "products": "žádný produkt | {n} produkt | {n} produkty | {n} produktů",
     "failed": "Zpracování selhalo. Zkuste to znovu nebo zdroj nahraďte.",

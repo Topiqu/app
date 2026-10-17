@@ -11,9 +11,13 @@ export default defineEventHandler(async (event) => {
   if (target.role === 'OWNER') throw createError({ statusCode: 403, message: 'Owner permissions cannot be changed' })
   if (target.id === membership.id && !body.scopes.includes('MEMBER_CONTROL'))
     throw createError({ statusCode: 400, message: 'You cannot remove your own member control permission' })
+  const scopes = [...new Set(body.scopes)]
+  const addedScopes = scopes.filter((scope) => !target.scopes.includes(scope))
+  const removedScopes = target.scopes.filter((scope) => !scopes.includes(scope))
+  if (!addedScopes.length && !removedScopes.length) return { id: target.id, scopes: target.scopes }
   const updated = await prisma.tenantMembership.update({
     where: { id },
-    data: { scopes: [...new Set(body.scopes)] },
+    data: { scopes },
     select: { id: true, scopes: true },
   })
   await logAction({
@@ -21,7 +25,14 @@ export default defineEventHandler(async (event) => {
     userId: user.id,
     clientSiteId: membership.clientSiteId,
     ip: getIp(event),
-    metadata: { membershipId: id, targetUserId: target.userId, previousScopes: target.scopes, scopes: updated.scopes },
+    metadata: {
+      membershipId: id,
+      targetUserId: target.userId,
+      previousScopes: target.scopes,
+      scopes: updated.scopes,
+      addedScopes,
+      removedScopes,
+    },
   })
   return updated
 })

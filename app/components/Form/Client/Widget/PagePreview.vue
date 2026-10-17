@@ -1,8 +1,8 @@
 <template>
   <div
     ref="container"
-    class="relative overflow-hidden bg-muted"
-    :class="expanded ? 'h-[calc(100dvh-13rem)] min-h-80' : 'h-80 sm:h-96'"
+    class="relative w-full min-w-0 overflow-hidden bg-muted"
+    :class="expanded ? 'min-h-0 flex-1' : mobile ? 'h-[min(36rem,70dvh)] min-h-64' : 'h-80 sm:h-96'"
     :aria-busy="loading"
   >
     <iframe
@@ -44,10 +44,11 @@ const emit = defineEmits<{ select: [slot: string] }>()
 const frame = useTemplateRef<HTMLIFrameElement>('frame')
 const container = useTemplateRef<HTMLElement>('container')
 const { width, height } = useElementSize(container, { width: 460, height: 320 })
-const viewportWidth = computed(() => (mobile ? 390 : 1280))
-const scale = computed(() => Math.max(0.1, Math.min(1, (width.value || 460) / viewportWidth.value)))
+// Reflow to the panel width, respecting the publication's 320px minimum before scaling down.
+const viewportWidth = computed(() => (mobile ? Math.min(390, Math.max(320, width.value || 390)) : 1280))
+const scale = computed(() => Math.min(1, (width.value || 460) / viewportWidth.value))
 // The outer window fixes the height. Measuring the page itself would make its 100dvh hero grow on every resize.
-const viewportHeight = computed(() => Math.round((height.value || 320) / scale.value))
+const viewportHeight = computed(() => Math.floor((height.value || 320) / scale.value))
 const loading = shallowRef(true)
 
 function synchronize(focus = false) {

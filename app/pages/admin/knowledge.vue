@@ -5,10 +5,17 @@
         <h1 class="text-2xl font-bold text-highlighted">{{ $t('knowledge.title') }}</h1>
         <p class="mt-1 text-sm text-muted">{{ $t('knowledge.description') }}</p>
       </div>
-      <UButton icon="mdi:plus" class="shrink-0" :disabled="quotaFull" @click="addOpen = true">
+      <UButton icon="mdi:plus" class="shrink-0" :disabled="quotaFull" @click="openAdd()">
         {{ $t('knowledge.add') }}
       </UButton>
     </header>
+
+    <KnowledgeWebsiteOffer
+      v-if="websiteUrl && data && !websiteImported"
+      :url="websiteUrl"
+      :disabled="quotaFull"
+      @import="openAdd(websiteUrl)"
+    />
 
     <dl
       v-if="limits"
@@ -47,7 +54,7 @@
       icon="mdi:book-open-page-variant-outline"
       :title="$t('knowledge.empty')"
       :description="$t('knowledge.emptyDescription')"
-      :actions="[{ label: $t('knowledge.add'), icon: 'mdi:plus', onClick: () => (addOpen = true) }]"
+      :actions="[{ label: $t('knowledge.add'), icon: 'mdi:plus', onClick: () => openAdd() }]"
     />
     <ul v-else class="flex flex-col gap-3" :aria-label="$t('knowledge.title')">
       <li
@@ -122,7 +129,7 @@
       </li>
     </ul>
 
-    <KnowledgeAddSource v-model:open="addOpen" @created="refresh" />
+    <KnowledgeAddSource v-model:open="addOpen" :initialUrl="addWebsiteUrl" @created="refresh" />
     <KnowledgeEditSource :id="editId" v-model:open="editOpen" @saved="refresh" />
   </div>
 </template>
@@ -130,6 +137,7 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
 
+import { urlHost } from '~~/shared/utils/backlinks'
 import {
   isKnowledgeStale,
   knowledgeAsOf,
@@ -153,7 +161,18 @@ const { t, locale } = useI18n()
 const toast = useToast()
 const confirm = useConfirm()
 const { data, status, error, refresh } = await useLazyFetch('/api/knowledge')
+const { data: clientStatus } = await useClientSiteStatus()
 const sources = computed(() => data.value?.sources ?? [])
+const websiteUrl = computed(() => clientStatus.value?.websiteUrl ?? null)
+const websiteImported = computed(() => {
+  const host = urlHost(websiteUrl.value)
+  return (
+    !!host &&
+    sources.value.some(
+      (source) => source.kind === 'URL' && source.status !== 'FAILED' && urlHost(source.sourceUrl) === host,
+    )
+  )
+})
 const limits = computed(() => data.value?.limits)
 const quotaFull = computed(() => !!limits.value && limits.value.usage.sources >= limits.value.maxSources)
 const meters = computed(() => {
@@ -167,6 +186,11 @@ const meters = computed(() => {
 })
 const indexedCount = computed(() => sources.value.filter((source) => source.status === 'INDEXED').length)
 const addOpen = shallowRef(false)
+const addWebsiteUrl = shallowRef<string | null>(null)
+const openAdd = (url: string | null = null) => {
+  addWebsiteUrl.value = url
+  addOpen.value = true
+}
 const editOpen = shallowRef(false)
 const editId = shallowRef<string | null>(null)
 const formatCount = (value: number) =>
