@@ -4,6 +4,8 @@ import { generateText, Output } from 'ai'
 
 import type { DatabaseTransaction } from '../database'
 
+import { aiReasoning } from './reasoning'
+
 export const AI_SERIES_RECENT_WINDOW = 10
 export const AI_SERIES_COOLDOWN = 2
 export const AI_SERIES_MAX_PER_WINDOW = 3
@@ -214,6 +216,7 @@ export const chooseArticleSeries = async (
 
   const { output: object, usage } = await generateText({
     model: aiModel('topicSelection'),
+    providerOptions: aiReasoning('medium'),
     maxOutputTokens: 500,
     instructions:
       'You are a conservative managing editor. Organize articles into a series only when the relationship is unmistakable. Return only valid JSON.',

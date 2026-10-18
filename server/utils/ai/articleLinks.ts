@@ -169,7 +169,7 @@ export const linkArticle = async (
       model: aiModel('articleLinks'),
       output: Output.object({ schema: articleLinksSchema }),
       maxOutputTokens: 1000,
-      providerOptions: aiReasoning('low'),
+      providerOptions: aiReasoning('medium'),
       instructions:
         'You are a careful editor who adds internal links only where they genuinely help the reader. Return only valid JSON.',
       prompt: linksPrompt(article.title, paragraphs, candidates),

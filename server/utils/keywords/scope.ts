@@ -49,7 +49,7 @@ export const inScope = async (site: ScopeSite, items: string[], usageAction: str
   const result = await generateText({
     model: aiModel('topicScope'),
     maxOutputTokens: Math.max(400, items.length * 8),
-    providerOptions: aiReasoning('none'),
+    providerOptions: aiReasoning('medium'),
     instructions: SCOPE_RULES,
     prompt: `${siteProfile(site)}\n\n## ITEMS\n${items.map((item, index) => `${index + 1}. ${item}`).join('\n')}`,
     output: Output.object({ schema: scopeSchema }),

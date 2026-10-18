@@ -162,7 +162,7 @@ export const pickArticleTopic = async (input: TopicInput) => {
   const { output: object, usage } = await generateText({
     model: aiModel('topicSelection'),
     maxOutputTokens: 2000,
-    providerOptions: aiReasoning('low'),
+    providerOptions: aiReasoning('medium'),
     instructions: `
       You are an editor choosing what a blog should publish next.
       Return the topic and angle in the client's language, but keep searchQuery in English.

@@ -44,7 +44,7 @@ export const draftOutreach = async (site: MatchSite, target: OutreachTarget, use
   const result = await generateText({
     model: aiModel('backlinkOutreach'),
     maxOutputTokens: 800,
-    providerOptions: aiReasoning('none'),
+    providerOptions: aiReasoning('medium'),
     instructions: RULES,
     prompt: `Language: ${language}
 Business: ${site.name}

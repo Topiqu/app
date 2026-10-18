@@ -1,6 +1,7 @@
 import { generateText } from 'ai'
 
 import { aiModel } from '../ai/models'
+import { aiReasoning } from '../ai/reasoning'
 
 export async function generateContentForTask(
   topic: string,
@@ -27,6 +28,7 @@ export async function generateContentForTask(
 
   const { text } = await generateText({
     model: aiModel('linkedinPost'),
+    providerOptions: aiReasoning('medium'),
     prompt,
   })
 

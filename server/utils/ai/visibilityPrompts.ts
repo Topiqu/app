@@ -3,6 +3,8 @@ import { subDays } from 'date-fns'
 import { generateText, Output } from 'ai'
 import { promptIntent } from '~~/shared/utils/aiVisibility'
 
+import { aiReasoning } from './reasoning'
+
 export const AUTO_PROMPT_LIMIT = 10
 const RESEED_DAYS = 7
 // Three weekly checks with no citation at all means no engine searches the web for this question.
@@ -68,6 +70,7 @@ export const seedVisibilityPrompts = async (clientSiteId: string) => {
   ]
   const { output: object, usage } = await generateText({
     model: aiModel('visibilityPrompts'),
+    providerOptions: aiReasoning('medium'),
     maxOutputTokens: 1500,
     output: Output.object({ schema }),
     instructions:

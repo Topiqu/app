@@ -3,6 +3,8 @@ import type { ClientPlan } from '~~/generated/zenstack/models'
 import { z } from 'zod'
 import { generateText, Output } from 'ai'
 
+import { aiReasoning } from './reasoning'
+
 const basicSchema = z.object({
   label: z.enum(['negative', 'neutral', 'positive']),
   score: z.number().min(-1).max(1),
@@ -30,6 +32,7 @@ export const detectSentiment = async (text: string, plan: ClientPlan) => {
 
   const { output: object, usage } = await generateText({
     model: aiModel('sentiment'),
+    providerOptions: aiReasoning('medium'),
     instructions:
       plan === 'PREMIUM'
         ? `Analyze sentiment with 5-tier label, emotion breakdown, toxicity, helpfulness, sarcasm. Extract main point in ≤75 chars. Score -1 to 1. Return ONLY valid JSON.`

@@ -1,6 +1,8 @@
 import { z } from 'zod'
 import { generateText, Output } from 'ai'
 
+import { aiReasoning } from './reasoning'
+
 const ctrSchema = z.object({
   title: z.string().min(5).max(255),
   excerpt: z.string().min(20).max(500),
@@ -26,6 +28,7 @@ Average position: ${signal.position.toFixed(1)}
 export const generateCtrOptimization = async (article: SeoArticle, signal: SeoSignal) => {
   const { output: object, usage } = await generateText({
     model: aiModel('articleWriter'),
+    providerOptions: aiReasoning('medium'),
     maxOutputTokens: 500,
     output: Output.object({ schema: ctrSchema }),
     instructions:
@@ -45,6 +48,7 @@ Rewrite only the title and excerpt so they accurately answer the observed search
 export const generateContentRefresh = async (article: SeoArticle, signal: SeoSignal) => {
   const { output: object, usage } = await generateText({
     model: aiModel('articleWriter'),
+    providerOptions: aiReasoning('medium'),
     maxOutputTokens: 1400,
     output: Output.object({ schema: refreshSchema }),
     instructions:

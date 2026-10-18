@@ -92,7 +92,7 @@ const runOpenAi = async (config: VisibilityProviderConfig, prompt: string): Prom
     toolChoice: 'required',
     tools: { web_search: aiWebSearchTool('visibility', 'medium') as never },
     abortSignal: AbortSignal.timeout(60_000),
-    providerOptions: aiReasoning('low'),
+    providerOptions: aiReasoning('medium'),
   })
   return {
     provider: config.provider,
@@ -117,8 +117,8 @@ const runAnthropic = async (config: VisibilityProviderConfig, prompt: string): P
     {
       model: config.model,
       // Haiku thinks out of the same pool; 1400 is the answer's share.
-      max_tokens: 1400 + 4000,
-      output_config: { effort: 'low' },
+      max_tokens: 1400 + 8000,
+      output_config: { effort: 'medium' },
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: prompt }],
       tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 5 }],
