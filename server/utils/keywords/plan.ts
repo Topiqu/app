@@ -255,7 +255,7 @@ const deriveSeeds = async (site: PlanSite, titles: string[]) => {
   const result = await generateText({
     model: aiModel('keywordSeeds'),
     maxOutputTokens: 600,
-    providerOptions: aiReasoning('none'),
+    providerOptions: aiReasoning('medium'),
     instructions:
       "List short search phrases for distinct subtopics inside this blog's exact focus, including specific reader problems and comparisons. Use the blog language. Avoid generic umbrella categories and do not invent trending names or search volumes.",
     prompt: `${siteProfile(site)}\nRecent titles:\n${

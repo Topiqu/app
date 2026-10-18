@@ -292,7 +292,7 @@ export const draftContentEdit = async (
     model: aiModel('articleWriter'),
     maxOutputTokens: 8000,
     abortSignal: AbortSignal.timeout(120_000),
-    providerOptions: aiReasoning('medium'),
+    providerOptions: aiReasoning('high'),
     instructions: EDIT_RULES,
     prompt: [
       `Language: ${article.language.toUpperCase()}`,

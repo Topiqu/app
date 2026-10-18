@@ -1,5 +1,6 @@
 import { generateText, Output } from 'ai'
 import { insightSchema } from '~~/server/utils/ai/insight'
+import { aiReasoning } from '~~/server/utils/ai/reasoning'
 
 export default defineMonitoredTask({
   meta: {
@@ -63,6 +64,7 @@ export default defineMonitoredTask({
         try {
           const { output: object, usage } = await generateText({
             model: aiModel('communityInsight'),
+            providerOptions: aiReasoning('medium'),
             instructions: `You are a community analyst. Respond in the client's language: ${site.language}. Summary must be 250 characters or less. Count every character. Return ONLY valid JSON. No extra text.`,
             prompt: `
             Client: ${site.name}

@@ -74,6 +74,7 @@ const researchYoutube = async (
   try {
     const result = await generateText({
       model: aiModel('articleResearch'),
+      providerOptions: aiReasoning('medium'),
       instructions: `Search for existing, directly relevant YouTube videos about the topic. Prefer the official developer, publisher, manufacturer, institution or named subject's channel. Return up to three full youtube.com/watch or youtu.be URLs you actually opened, ordered by relevance; return NONE if no suitable video was retrieved. Never guess a video id or transform a channel/search URL into a watch URL.`,
       prompt,
       maxOutputTokens: 250,
@@ -154,7 +155,7 @@ export const researchTopic = async (
       `.trim(),
       prompt,
       maxOutputTokens: researchConfig.maxOutputTokens,
-      providerOptions: aiReasoning('medium'),
+      providerOptions: aiReasoning('high'),
       tools: { web_search: aiWebSearchTool('articleResearch', researchConfig.searchContextSize) as never },
       abortSignal: researchSignal,
     })

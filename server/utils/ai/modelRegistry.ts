@@ -10,10 +10,10 @@ export const AI_MODELS = {
   articleResearch: HAIKU,
   articleWriter: LUNA,
   articleEditor: HAIKU,
-  linkedinPost: HAIKU,
-  translation: HAIKU,
-  promptEnhance: HAIKU,
-  textEdit: HAIKU,
+  linkedinPost: LUNA,
+  translation: LUNA,
+  promptEnhance: LUNA,
+  textEdit: LUNA,
   sentiment: HAIKU,
   communityInsight: HAIKU,
   // Measures what ChatGPT answers, so it has to stay on an OpenAI model.
@@ -26,7 +26,7 @@ export const AI_MODELS = {
   topicScope: HAIKU,
   keywordOpportunity: HAIKU,
   backlinkMatch: HAIKU,
-  backlinkOutreach: HAIKU,
+  backlinkOutreach: LUNA,
 } as const satisfies Record<string, { provider: AiProvider; id: string }>
 
 export const AI_VISIBILITY_MODELS = {

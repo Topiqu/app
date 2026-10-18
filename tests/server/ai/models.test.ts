@@ -99,7 +99,7 @@ describe('AI model integration', () => {
     requests.length = 0
   })
 
-  it.each(['articleResearch', 'translation'] as const)(
+  it.each(['articleResearch', 'articleEditor', 'factCheck'] as const)(
     'sends %s to Claude Haiku 5.5 with effort, structured output and web search',
     async (task) => {
       const result = await generateText({
@@ -107,7 +107,7 @@ describe('AI model integration', () => {
         prompt: 'Create a structured answer with a source.',
         output: Output.object({ schema: z.object({ title: z.string() }) }),
         maxOutputTokens: 3000,
-        providerOptions: aiReasoning('medium'),
+        providerOptions: aiReasoning('high'),
         toolChoice: 'required',
         tools: { web_search: aiWebSearchTool(task, 'medium') },
       })
@@ -117,10 +117,10 @@ describe('AI model integration', () => {
       expect(requests[0]?.body).toMatchObject({
         model: 'claude-haiku-5-5',
         // The call-site budget plus headroom for adaptive thinking, which shares `max_tokens`.
-        max_tokens: 11_000,
+        max_tokens: 19_000,
         tool_choice: { type: 'any' },
         tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 5 }],
-        output_config: { effort: 'medium', format: { type: 'json_schema' } },
+        output_config: { effort: 'high', format: { type: 'json_schema' } },
       })
       expect(requests[0]?.body).not.toHaveProperty('temperature')
       expect(result.output).toEqual({ title: 'Verified' })
@@ -131,21 +131,21 @@ describe('AI model integration', () => {
     },
   )
 
-  it('writes articles with GPT-6 Luna through Responses with medium reasoning and structured output', async () => {
+  it('writes articles with GPT-6 Luna through Responses with high reasoning and structured output', async () => {
     const result = await generateText({
       model: aiModel('articleWriter'),
       prompt: 'Write an article title.',
       output: Output.object({ schema: z.object({ title: z.string() }) }),
       maxOutputTokens: 8000,
-      providerOptions: aiReasoning('medium'),
+      providerOptions: aiReasoning('high'),
     })
 
     expect(requests).toHaveLength(1)
     expect(requests[0]?.url).toBe('https://api.openai.com/v1/responses')
     expect(requests[0]?.body).toMatchObject({
       model: 'gpt-6-luna',
-      max_output_tokens: 8000,
-      reasoning: { effort: 'medium' },
+      max_output_tokens: 24_000,
+      reasoning: { effort: 'high' },
       text: { format: { type: 'json_schema', strict: true } },
     })
     expect(requests[0]?.body).not.toHaveProperty('temperature')
@@ -153,26 +153,87 @@ describe('AI model integration', () => {
     expect(result.usage.totalTokens).toBe(22)
   })
 
-  it('turns Haiku thinking off for reasoning-free routes', async () => {
+  it.each(['translation', 'textEdit', 'promptEnhance', 'linkedinPost', 'backlinkOutreach'] as const)(
+    'sends %s to Luna with medium reasoning and room for the complete structured output',
+    async (task) => {
+      const result = await generateText({
+        model: aiModel(task),
+        prompt: 'Return a title.',
+        output: Output.object({ schema: z.object({ title: z.string() }) }),
+        maxOutputTokens: 3000,
+        providerOptions: aiReasoning('medium'),
+      })
+
+      expect(requests).toHaveLength(1)
+      expect(requests[0]?.url).toBe('https://api.openai.com/v1/responses')
+      expect(requests[0]?.body).toMatchObject({
+        model: 'gpt-6-luna',
+        max_output_tokens: 11_000,
+        reasoning: { effort: 'medium' },
+        text: { format: { type: 'json_schema', strict: true } },
+      })
+      expect(result.output).toEqual({ title: 'Verified' })
+    },
+  )
+
+  it('uses medium reasoning for Haiku helper tasks', async () => {
     await generateText({
       model: aiModel('keywordSeeds'),
       prompt: 'List seeds.',
       maxOutputTokens: 600,
-      providerOptions: aiReasoning('none'),
+      providerOptions: aiReasoning('medium'),
+    })
+
+    expect(requests[0]?.body).toMatchObject({
+      max_tokens: 8600,
+      output_config: { effort: 'medium' },
+    })
+  })
+
+  it('does not add headroom when the Anthropic SDK explicitly disables thinking', async () => {
+    await generateText({
+      model: aiModel('keywordSeeds'),
+      prompt: 'List seeds.',
+      maxOutputTokens: 600,
+      providerOptions: { anthropic: { thinking: { type: 'disabled' }, effort: 'medium' } },
     })
 
     expect(requests[0]?.body).toMatchObject({
       max_tokens: 600,
       thinking: { type: 'disabled' },
-      output_config: { effort: 'low' },
+      output_config: { effort: 'medium' },
     })
+  })
+
+  it('does not add headroom when an OpenAI SDK call explicitly disables reasoning', async () => {
+    await generateText({
+      model: aiModel('visibility'),
+      prompt: 'Reply with OK.',
+      maxOutputTokens: 600,
+      providerOptions: { openai: { reasoningEffort: 'none' } },
+    })
+
+    expect(requests[0]?.body).toMatchObject({
+      max_output_tokens: 600,
+      reasoning: { effort: 'none' },
+    })
+  })
+
+  it('keeps the provider default limit when a caller does not specify an answer budget', async () => {
+    await generateText({
+      model: aiModel('textEdit'),
+      prompt: 'Improve a sentence.',
+      providerOptions: aiReasoning('medium'),
+    })
+
+    expect(requests[0]?.body).not.toHaveProperty('max_output_tokens')
   })
 
   it('keeps the ChatGPT visibility probe on OpenAI Responses with OpenAI web search', async () => {
     await generateText({
       model: aiModel('visibility'),
       prompt: 'Answer with a source.',
-      providerOptions: aiReasoning('low'),
+      providerOptions: aiReasoning('medium'),
       toolChoice: 'required',
       tools: { web_search: aiWebSearchTool('visibility', 'medium') },
     })
@@ -180,7 +241,7 @@ describe('AI model integration', () => {
     expect(requests[0]?.url).toBe('https://api.openai.com/v1/responses')
     expect(requests[0]?.body).toMatchObject({
       model: 'gpt-6-luna',
-      reasoning: { effort: 'low' },
+      reasoning: { effort: 'medium' },
       tools: [{ type: 'web_search', search_context_size: 'medium' }],
     })
   })

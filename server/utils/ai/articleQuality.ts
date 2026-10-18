@@ -212,7 +212,7 @@ export const reviewArticle = async (draft: ReviewDraft, context: ReviewContext) 
       tools: { web_search: aiWebSearchTool('articleResearch', 'high') as never },
       toolChoice: 'required',
       maxOutputTokens: 6000,
-      providerOptions: aiReasoning('medium'),
+      providerOptions: aiReasoning('high'),
       abortSignal: context.abortSignal
         ? AbortSignal.any([context.abortSignal, AbortSignal.timeout(120_000)])
         : AbortSignal.timeout(120_000),
@@ -271,10 +271,10 @@ firstPartyKnowledge is the publisher's own material, dated per entry. A claim ab
   const { output: object, usage } = await generateText({
     model: aiModel('articleEditor'),
     maxOutputTokens: 2000,
-    providerOptions: aiReasoning('low'),
+    providerOptions: aiReasoning('high'),
     abortSignal: context.abortSignal
-      ? AbortSignal.any([context.abortSignal, AbortSignal.timeout(30_000)])
-      : AbortSignal.timeout(30_000),
+      ? AbortSignal.any([context.abortSignal, AbortSignal.timeout(120_000)])
+      : AbortSignal.timeout(120_000),
     instructions: `
 You are the final copy desk for an automatically published article. Judge the draft, do not rewrite it.
 Return only the structured review.

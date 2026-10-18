@@ -9,6 +9,7 @@ import { LANGUAGE_NAMES } from '~~/shared/utils/language'
 import { normalizePollOptions } from '~~/shared/utils/polls'
 
 import { escapeHtml } from '../sanitize'
+import { aiReasoning } from './reasoning'
 
 const verbatimToken = (i: number) => `[[BLK_${i}]]`
 const pollToken = (i: number) => `[[POLLBLK_${i}]]`
@@ -228,6 +229,7 @@ export const generateTranslation = async (article: TranslatableArticle, targetLa
 
   const { output: object, usage } = await generateText({
     model: aiModel('translation'),
+    providerOptions: aiReasoning('medium'),
     maxOutputTokens: Math.min(20000, Math.ceil(masked.length / 3) + 1000),
     instructions,
     prompt: JSON.stringify({

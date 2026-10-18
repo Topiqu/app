@@ -1,28 +1,36 @@
 import { wrapLanguageModel, type LanguageModelMiddleware } from 'ai'
 
-import type { AiEmbeddingTask, AiImageTask, AiTask } from './modelRegistry'
+import type { AiEmbeddingTask, AiImageTask, AiProvider, AiTask } from './modelRegistry'
 
 import openAi from './openai'
 import anthropic from './anthropic'
 import { aiEmbeddingModelId, aiImageModelId, aiModelId, aiModelProvider } from './modelRegistry'
 
-// Haiku thinks out of the same `max_tokens` pool as the answer, so call-site budgets that size the
-// answer alone end in `length` (research) or truncated JSON (writer). At $0.50/MTok this is pennies.
-const THINKING_HEADROOM = 8000
+// Both providers count reasoning against the output limit. Call-site budgets size the answer;
+// reserve additional space for thinking, with more headroom at high effort.
+const THINKING_HEADROOM = { medium: 8000, high: 16000 } as const
 
-const thinkingHeadroom: LanguageModelMiddleware = {
+const thinkingHeadroom = (provider: AiProvider): LanguageModelMiddleware => ({
   transformParams: async ({ params }) => {
-    const thinking = params.providerOptions?.anthropic?.thinking as { type?: string } | undefined
-    return params.maxOutputTokens == null || thinking?.type === 'disabled'
+    const options = params.providerOptions?.[provider]
+    const thinking = options?.thinking as { type?: string } | undefined
+    const effort = provider === 'anthropic' ? options?.effort : options?.reasoningEffort
+    return params.maxOutputTokens == null || thinking?.type === 'disabled' || effort === 'none'
       ? params
-      : { ...params, maxOutputTokens: params.maxOutputTokens + THINKING_HEADROOM }
+      : {
+          ...params,
+          maxOutputTokens: params.maxOutputTokens + THINKING_HEADROOM[effort === 'high' ? 'high' : 'medium'],
+        }
   },
-}
+})
 
-export const aiModel = (task: AiTask) =>
-  aiModelProvider(task) === 'anthropic'
-    ? wrapLanguageModel({ model: anthropic(aiModelId(task)), middleware: thinkingHeadroom })
-    : openAi.responses(aiModelId(task))
+export const aiModel = (task: AiTask) => {
+  const provider = aiModelProvider(task)
+  return wrapLanguageModel({
+    model: provider === 'anthropic' ? anthropic(aiModelId(task)) : openAi.responses(aiModelId(task)),
+    middleware: thinkingHeadroom(provider),
+  })
+}
 
 export const aiImageModel = (task: AiImageTask) => openAi.image(aiImageModelId(task))
 

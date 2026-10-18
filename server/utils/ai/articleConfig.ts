@@ -417,7 +417,7 @@ export const buildArticleConfig = async (
     },
     config: {
       model: aiModel('articleWriter'),
-      providerOptions: aiReasoning('medium'),
+      providerOptions: aiReasoning('high'),
       maxOutputTokens: 8000,
       instructions,
       prompt,

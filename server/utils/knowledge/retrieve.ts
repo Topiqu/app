@@ -226,7 +226,7 @@ const selectRelevant = async (topic: string, shortlist: readonly KnowledgeCandid
     model: aiModel('knowledgeSelect'),
     output: Output.object({ schema: selectionSchema }),
     maxOutputTokens: 600,
-    providerOptions: aiReasoning('low'),
+    providerOptions: aiReasoning('medium'),
     abortSignal: abortSignal
       ? AbortSignal.any([abortSignal, AbortSignal.timeout(20_000)])
       : AbortSignal.timeout(20_000),
