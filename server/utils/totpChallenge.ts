@@ -52,7 +52,8 @@ export const verifyTotpChallenge = (challenge: string): { userId: string } => ({
 })
 
 // The pending secret rides in the token, not the row: a stored but unconfirmed secret already gates login.
-export const signTotpSetup = (userId: string, secret: string) => sign({ purpose: 'setup', userId, secret }, SETUP_TTL_MS)
+export const signTotpSetup = (userId: string, secret: string) =>
+  sign({ purpose: 'setup', userId, secret }, SETUP_TTL_MS)
 
 export const verifyTotpSetup = (token: string, userId: string): string => {
   const { secret } = read(token, 'setup', userId)

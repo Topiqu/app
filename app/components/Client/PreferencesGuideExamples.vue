@@ -51,7 +51,9 @@
         >
           <dt class="text-sm font-semibold text-highlighted">
             {{ t(`common.preferences.${field}.label`) }}
-            <span class="block text-xs font-normal text-muted">{{ t(`common.preferences.guide.fields.${field}`) }}</span>
+            <span class="block text-xs font-normal text-muted">{{
+              t(`common.preferences.guide.fields.${field}`)
+            }}</span>
           </dt>
           <dd class="min-w-0 text-sm text-toned [overflow-wrap:anywhere]">
             {{

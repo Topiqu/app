@@ -6,9 +6,8 @@ import { webhookEventType, webhookUrlError } from '../../shared/utils/webhooks'
 const postPublicUrl = vi.fn()
 vi.mock('../../server/utils/images/publicFetch', () => ({ postPublicUrl }))
 
-const { deliverDueWebhooks, enqueueArticleWebhook, signWebhook, webhookRetryAt, WEBHOOK_DISABLE_AFTER } = await import(
-  '../../server/utils/webhooks'
-)
+const { deliverDueWebhooks, enqueueArticleWebhook, signWebhook, webhookRetryAt, WEBHOOK_DISABLE_AFTER } =
+  await import('../../server/utils/webhooks')
 
 const db = {
   webhook: { findMany: vi.fn(), findUnique: vi.fn(), update: vi.fn(), updateMany: vi.fn() },

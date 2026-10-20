@@ -40,7 +40,12 @@ describe('newsItems', () => {
     expect(
       newsItems(
         [
-          story('BMW spustilo výrobu  baterií', '2026-10-03 13:44:53 +00:00', 'https://auto.cz/baterie', 'Nový  závod.'),
+          story(
+            'BMW spustilo výrobu  baterií',
+            '2026-10-03 13:44:53 +00:00',
+            'https://auto.cz/baterie',
+            'Nový  závod.',
+          ),
           story('bmw spustilo výrobu baterií', '2026-10-04 05:44:54 +00:00', 'https://other.cz/x'),
           { type: 'top_stories', title: 'Novinky: BMW' },
           story('Stará zpráva', '2026-09-20 10:00:00 +00:00', 'https://auto.cz/old'),
@@ -72,8 +77,18 @@ describe('fetchNews', () => {
         items:
           task.keyword === 'RPG'
             ? [
-                story('Hra Exodus má datum vydání', '2026-10-04 08:00:00 +00:00', 'https://hry.cz/1', 'Sci-fi RPG od bývalých tvůrců Mass Effectu…'),
-                story('GTA VI ukázalo nový trailer', '2026-10-04 09:00:00 +00:00', 'https://hry.cz/2', 'Rockstar ukázal akční…'),
+                story(
+                  'Hra Exodus má datum vydání',
+                  '2026-10-04 08:00:00 +00:00',
+                  'https://hry.cz/1',
+                  'Sci-fi RPG od bývalých tvůrců Mass Effectu…',
+                ),
+                story(
+                  'GTA VI ukázalo nový trailer',
+                  '2026-10-04 09:00:00 +00:00',
+                  'https://hry.cz/2',
+                  'Rockstar ukázal akční…',
+                ),
               ]
             : [story('Zaklínač 3 Remastered dostal patch', '2026-10-03 10:00:00 +00:00', 'https://hry.cz/3')],
       },
@@ -124,7 +139,13 @@ describe('newsSignal', () => {
   it('numbers the headline with its source, day and snippet', () => {
     expect(
       newsSignal(
-        { title: 'Titulek', snippet: 'Perex.', url: 'https://idnes.cz/a', domain: 'idnes.cz', publishedAt: '2026-10-03T08:15:00.000Z' },
+        {
+          title: 'Titulek',
+          snippet: 'Perex.',
+          url: 'https://idnes.cz/a',
+          domain: 'idnes.cz',
+          publishedAt: '2026-10-03T08:15:00.000Z',
+        },
         1,
       ),
     ).toBe('[2] "Titulek" (idnes.cz, 2026-10-03): Perex.')

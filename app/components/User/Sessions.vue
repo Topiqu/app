@@ -84,7 +84,10 @@ async function revokeSession(sessionId: string) {
   try {
     emit('update:isLoading', true)
     await $fetch(`/api/sessions/${sessionId}`, { method: 'DELETE' })
-    emit('update:sessions', (sessions ?? []).filter((s) => s.id !== sessionId))
+    emit(
+      'update:sessions',
+      (sessions ?? []).filter((s) => s.id !== sessionId),
+    )
     if (sessionId === currentSessionId) emit('signOut')
     toast.add({ color: 'success', title: $t('profile.sessionRevokedSuccess') })
   } catch (err: any) {

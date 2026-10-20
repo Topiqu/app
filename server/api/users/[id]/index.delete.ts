@@ -7,7 +7,8 @@ export default defineEventHandler(async (event) => {
   if (!userId) throw createError({ statusCode: 400, message: t('common.errors.missing')! })
 
   const self = user.id === userId
-  if (!self && user.role !== 'superadmin') throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
+  if (!self && user.role !== 'superadmin')
+    throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
 
   const db = await getEnhancedPrisma(user)
   const targetUser = await db.user.findFirst({ where: { id: userId, deletedAt: null }, select: { clientSiteId: true } })

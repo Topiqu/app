@@ -141,7 +141,12 @@ const requestPinned = (
   })
 
 /** A redirect is returned, not followed: its target would bypass the address check. */
-export const postPublicUrl = async (input: string | URL, body: string, headers: Record<string, string>, timeoutMs = 10_000) => {
+export const postPublicUrl = async (
+  input: string | URL,
+  body: string,
+  headers: Record<string, string>,
+  timeoutMs = 10_000,
+) => {
   const target = await resolvePublicHttpsUrl(input)
   return requestPinned(target.url, target.addresses, timeoutMs, { method: 'POST', headers, body })
 }

@@ -195,7 +195,8 @@ export const generationSteps = (run: GenerationRun, words: number): GenerationSt
   else if (!research) steps.push({ id: 'research', state: researchPending(), detail: 'research.running' })
   else if (research.status === 'completed')
     steps.push({ id: 'research', state: 'done', detail: 'research.sources', params: { count: research.sourceCount } })
-  else steps.push({ id: 'research', state: 'warning', detail: `research.fallback.${research.fallbackReason ?? 'empty'}` })
+  else
+    steps.push({ id: 'research', state: 'warning', detail: `research.fallback.${research.fallbackReason ?? 'empty'}` })
 
   if (run.useKnowledge) {
     const count = research?.knowledgeSourceCount ?? 0
@@ -254,11 +255,20 @@ export const generationSteps = (run: GenerationRun, words: number): GenerationSt
 
   const media = run.media
   if (!media)
-    steps.push({ id: 'media', state: run.phase === 'images' ? 'running' : 'pending', detail: run.phase === 'images' ? 'media.cover' : null })
+    steps.push({
+      id: 'media',
+      state: run.phase === 'images' ? 'running' : 'pending',
+      detail: run.phase === 'images' ? 'media.cover' : null,
+    })
   else if (media.stage === 'failed') steps.push({ id: 'media', state: 'failed', detail: 'media.failed' })
   else if (media.stage === 'cover') steps.push({ id: 'media', state: 'running', detail: 'media.cover' })
   else if (media.stage === 'content')
-    steps.push({ id: 'media', state: 'running', detail: 'media.progress', params: { completed: media.completed, total: media.total } })
+    steps.push({
+      id: 'media',
+      state: 'running',
+      detail: 'media.progress',
+      params: { completed: media.completed, total: media.total },
+    })
   else
     steps.push({
       id: 'media',

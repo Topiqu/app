@@ -8,5 +8,9 @@ export default defineEventHandler(async (event) => {
   if (!target) return
   const url = getRequestURL(event)
   // 308 keeps the method and body of a non-GET request; a 301 may turn it into a GET.
-  return sendRedirect(event, `https://${target}${url.pathname}${url.search}`, ['GET', 'HEAD'].includes(event.method) ? 301 : 308)
+  return sendRedirect(
+    event,
+    `https://${target}${url.pathname}${url.search}`,
+    ['GET', 'HEAD'].includes(event.method) ? 301 : 308,
+  )
 })

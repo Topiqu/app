@@ -22,6 +22,8 @@ describe('opaque origin guard', () => {
   it('lets reads, cookie-less calls and normal origins through', async () => {
     expect(await call('GET', '/api/comments', { origin: 'null', cookie: 'session=1' })).not.toThrow()
     expect(await call('POST', '/api/stripe/webhook', { origin: 'null' })).not.toThrow()
-    expect(await call('POST', '/api/comments', { origin: 'https://blog.example.cz', cookie: 'session=1' })).not.toThrow()
+    expect(
+      await call('POST', '/api/comments', { origin: 'https://blog.example.cz', cookie: 'session=1' }),
+    ).not.toThrow()
   })
 })

@@ -7,7 +7,8 @@ export default defineEventHandler(async (event) => {
   const user = await requireUser(event, { role: ['admin', 'superadmin'], clientSite: true })
   const { membership } = await requireTenantScope(event, 'INTEGRATION_CONTROL', user.clientSiteId)
   const pending = await linkedShopifyInstallation(event)
-  if (!pending) throw createError({ statusCode: 403, message: 'The Shopify link has expired. Open Topiqu from Shopify again.' })
+  if (!pending)
+    throw createError({ statusCode: 403, message: 'The Shopify link has expired. Open Topiqu from Shopify again.' })
   const clientSiteId = user.clientSiteId!
   const site = await prisma.clientSite.findUnique({
     where: { id: clientSiteId },
@@ -35,10 +36,17 @@ export default defineEventHandler(async (event) => {
       },
     })
     const claimed = await tx.shopifyInstallation.deleteMany({ where: { id: pending.id } })
-    if (!installation || !claimed.count) throw createError({ statusCode: 409, message: 'The Shopify store was already linked' })
+    if (!installation || !claimed.count)
+      throw createError({ statusCode: 409, message: 'The Shopify store was already linked' })
     const { shop } = installation
-    const current = await tx.shopifyConnection.findUnique({ where: { clientSiteId }, select: { id: true, shop: true, status: true } })
-    const owner = await tx.shopifyConnection.findUnique({ where: { shop }, select: { id: true, clientSiteId: true, status: true } })
+    const current = await tx.shopifyConnection.findUnique({
+      where: { clientSiteId },
+      select: { id: true, shop: true, status: true },
+    })
+    const owner = await tx.shopifyConnection.findUnique({
+      where: { shop },
+      select: { id: true, clientSiteId: true, status: true },
+    })
     if (current && current.shop !== shop) {
       if (current.status !== 'REVOKED')
         throw createError({ statusCode: 409, message: 'Disconnect the current Shopify store from this project first' })

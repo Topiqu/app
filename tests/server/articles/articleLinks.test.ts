@@ -64,7 +64,10 @@ describe('resolveArticleLinks', () => {
     const db = makeDb({ articles: [{ ...compost, status: 'draft' }] })
 
     expect(
-      await resolve(db, '<p>Read <a href="/cs/clanky/kompost">about <strong>compost</strong></a> or <a href="/cs/clanky/gone">this</a>.</p>'),
+      await resolve(
+        db,
+        '<p>Read <a href="/cs/clanky/kompost">about <strong>compost</strong></a> or <a href="/cs/clanky/gone">this</a>.</p>',
+      ),
     ).toBe('<p>Read about <strong>compost</strong> or this.</p>')
   })
 })

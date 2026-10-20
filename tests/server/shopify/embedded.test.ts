@@ -106,13 +106,25 @@ describe('Shopify App Home session', () => {
   })
 
   it('treats a revoked connection as unlinked instead of silently reconnecting it', async () => {
-    connection = { id: 'connection-1', status: 'REVOKED', shopGid: 'gid', grantedScopes: ['write_content'], clientSiteId: 'site-1' }
+    connection = {
+      id: 'connection-1',
+      status: 'REVOKED',
+      shopGid: 'gid',
+      grantedScopes: ['write_content'],
+      clientSiteId: 'site-1',
+    }
     expect(await run()).toMatchObject({ linked: false })
     expect(connectionUpdate).not.toHaveBeenCalled()
   })
 
   it('heals an expired grant of a linked store and reports the Shopify plan state', async () => {
-    connection = { id: 'connection-1', status: 'REAUTH_REQUIRED', shopGid: 'gid', grantedScopes: ['write_content'], clientSiteId: 'site-1' }
+    connection = {
+      id: 'connection-1',
+      status: 'REAUTH_REQUIRED',
+      shopGid: 'gid',
+      grantedScopes: ['write_content'],
+      clientSiteId: 'site-1',
+    }
     expect(await run()).toEqual({
       linked: true,
       project: 'Shop blog',
@@ -128,7 +140,13 @@ describe('Shopify App Home session', () => {
   })
 
   it('leaves a healthy connection alone and hides Shopify pricing from Stripe customers', async () => {
-    connection = { id: 'connection-1', status: 'CONNECTED', shopGid: 'gid', grantedScopes: ['write_content'], clientSiteId: 'site-1' }
+    connection = {
+      id: 'connection-1',
+      status: 'CONNECTED',
+      shopGid: 'gid',
+      grantedScopes: ['write_content'],
+      clientSiteId: 'site-1',
+    }
     site = { name: 'Shop blog', plan: 'PRO', billingProvider: 'STRIPE' }
     expect(await run()).toMatchObject({ linked: true, needsPlan: false, pricingUrl: null })
     expect(shopifyTokenExchange).not.toHaveBeenCalled()
@@ -194,11 +212,18 @@ describe('Shopify store linking', () => {
     vi.stubGlobal('setHeader', vi.fn())
     vi.stubGlobal('getQuery', () => ({ code: cookies.shopify_link }))
     vi.stubGlobal('sendRedirect', (_event: unknown, url: string) => url)
-    vi.stubGlobal('requireUser', vi.fn(async () => ({ id: 'user-1', role: 'admin', clientSiteId: 'site-1' })))
-    vi.stubGlobal('requireTenantScope', vi.fn(async () => ({ membership })))
+    vi.stubGlobal(
+      'requireUser',
+      vi.fn(async () => ({ id: 'user-1', role: 'admin', clientSiteId: 'site-1' })),
+    )
+    vi.stubGlobal(
+      'requireTenantScope',
+      vi.fn(async () => ({ membership })),
+    )
     vi.stubGlobal(
       'hasTenantScope',
-      (value: { role: string; scopes: string[] }, scope: string) => value.role === 'OWNER' || value.scopes.includes(scope),
+      (value: { role: string; scopes: string[] }, scope: string) =>
+        value.role === 'OWNER' || value.scopes.includes(scope),
     )
   })
   afterEach(() => {
@@ -210,8 +235,18 @@ describe('Shopify store linking', () => {
 
   it('moves a valid link into an httpOnly cookie and rejects altered ones', async () => {
     expect(await land()).toBe('https://app.topiqu.com/en/settings?tab=integrations&shopify=link')
-    expect(setCookie).toHaveBeenCalledWith({}, 'shopify_link', cookies.shopify_link, expect.objectContaining({ httpOnly: true, path: '/api/shopify' }))
-    expect(setCookie).toHaveBeenCalledWith({}, 'shopify_install', 'store.myshopify.com', expect.objectContaining({ path: '/' }))
+    expect(setCookie).toHaveBeenCalledWith(
+      {},
+      'shopify_link',
+      cookies.shopify_link,
+      expect.objectContaining({ httpOnly: true, path: '/api/shopify' }),
+    )
+    expect(setCookie).toHaveBeenCalledWith(
+      {},
+      'shopify_install',
+      'store.myshopify.com',
+      expect.objectContaining({ path: '/' }),
+    )
     setCookie.mockClear()
     cookies.shopify_link = `${cookies.shopify_link}x`
     expect(await land()).toBe('https://app.topiqu.com/en/settings?tab=integrations&shopify=expired')
@@ -221,7 +256,12 @@ describe('Shopify store linking', () => {
   it('links the session project and moves a project without Stripe to Shopify billing', async () => {
     expect(await claim()).toEqual({ success: true })
     expect(created).toHaveBeenCalledWith({
-      data: expect.objectContaining({ clientSiteId: 'site-1', shop: 'store.myshopify.com', encryptedAccessToken: 'enc-access', status: 'CONNECTED' }),
+      data: expect.objectContaining({
+        clientSiteId: 'site-1',
+        shop: 'store.myshopify.com',
+        encryptedAccessToken: 'enc-access',
+        status: 'CONNECTED',
+      }),
       select: { id: true },
     })
     expect(siteUpdate).toHaveBeenCalledWith({ where: { id: 'site-1' }, data: { billingProvider: 'SHOPIFY' } })

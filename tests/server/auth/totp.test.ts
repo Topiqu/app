@@ -9,7 +9,10 @@ mockNuxtImport('useRuntimeConfig', () => () => ({ auth: { secret: 'test-secret' 
 
 const stubUtilGlobals = (allowed = true) => {
   vi.stubGlobal('createError', createError)
-  vi.stubGlobal('consumeRateLimit', vi.fn(async () => allowed))
+  vi.stubGlobal(
+    'consumeRateLimit',
+    vi.fn(async () => allowed),
+  )
 }
 
 const loadUtil = () => import('../../../server/utils/totpChallenge')
@@ -44,8 +47,9 @@ describe('TOTP tokens', () => {
   it('rejects a tampered payload', async () => {
     const { signTotpSetup, verifyTotpSetup } = await loadUtil()
     const [, sig] = signTotpSetup('u1', 'SECRET').split('.')
-    const forged = Buffer.from(JSON.stringify({ purpose: 'setup', userId: 'u1', secret: 'MINE', exp: 9e15 }))
-      .toString('base64url')
+    const forged = Buffer.from(JSON.stringify({ purpose: 'setup', userId: 'u1', secret: 'MINE', exp: 9e15 })).toString(
+      'base64url',
+    )
     expect(() => verifyTotpSetup(`${forged}.${sig}`, 'u1')).toThrow()
   })
 
@@ -95,7 +99,14 @@ describe('PATCH /api/users/:id 2FA and password', () => {
   }) => {
     stubUtilGlobals()
     const util = await loadUtil()
-    const actor = { email: 'a@example.com', clientSiteId: null, sessionId: 's1', role: 'reader', id: 'u1', ...options.actor }
+    const actor = {
+      email: 'a@example.com',
+      clientSiteId: null,
+      sessionId: 's1',
+      role: 'reader',
+      id: 'u1',
+      ...options.actor,
+    }
     const update = vi.fn(async () => ({}))
     const updateMany = vi.fn(async () => ({ count: options.claimed ?? 1 }))
     const saveUserWithLogging = vi.fn(async () => ({ id: options.targetId ?? actor.id }))
@@ -205,7 +216,10 @@ describe('PATCH /api/users/:id 2FA and password', () => {
   })
 
   it('lets a password-less account set a password only right after signing in', async () => {
-    const stale = await setup({ body: { password: 'new-password' }, sessionCreatedAt: new Date(Date.now() - 11 * 60_000) })
+    const stale = await setup({
+      body: { password: 'new-password' },
+      sessionCreatedAt: new Date(Date.now() - 11 * 60_000),
+    })
     await expect(stale.run()).rejects.toMatchObject({ statusCode: 403, message: 'common.errors.reauthRequired' })
     expect(stale.saveUserWithLogging).not.toHaveBeenCalled()
 

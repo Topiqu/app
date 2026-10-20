@@ -28,7 +28,13 @@ interface NewsSerpItem {
 export const newsQuery = (terms: string[]) => {
   const seen = new Set<string>()
   const phrases = terms
-    .map((term) => term.replace(/["'’()]/g, '').replace(/\bOR\b/g, ' ').replace(/\s+/g, ' ').trim())
+    .map((term) =>
+      term
+        .replace(/["'’()]/g, '')
+        .replace(/\bOR\b/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim(),
+    )
     .filter((term) => term && !seen.has(term.toLocaleLowerCase()) && seen.add(term.toLocaleLowerCase()))
     .slice(0, TERMS_PER_QUERY)
   return phrases.map((phrase) => (phrase.includes(' ') ? `"${phrase}"` : phrase)).join(' OR ')

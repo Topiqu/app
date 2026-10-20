@@ -6,8 +6,11 @@ export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')!
   const body = await readValidatedBody(
     event,
-    z.object({ url: webhookUrlSchema.optional(), events: webhookEventsSchema.optional(), active: z.boolean().optional() })
-      .parse,
+    z.object({
+      url: webhookUrlSchema.optional(),
+      events: webhookEventsSchema.optional(),
+      active: z.boolean().optional(),
+    }).parse,
   )
 
   const existing = await db.webhook.findFirst({ where: { id, clientSiteId }, select: { id: true } })

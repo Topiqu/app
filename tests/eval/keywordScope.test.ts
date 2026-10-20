@@ -70,7 +70,10 @@ const blogs: Blog[] = [
       ['Dacia Sandero má nový ceník (auto.cz)', 'drop'],
       ['Koenigsegg ukázal limitovanou edici (auto.cz)', 'drop'],
       ['Mercedes CLA dostal nový čtyřválec (autoforum.cz)', 'drop'],
-      ['Nepřesvědčivý a nepřesvědčivější: Němci proti sobě postavili dostupné modely BMW a Mercedesu (autoforum.cz)', 'keep'],
+      [
+        'Nepřesvědčivý a nepřesvědčivější: Němci proti sobě postavili dostupné modely BMW a Mercedesu (autoforum.cz)',
+        'keep',
+      ],
     ],
   },
   {
@@ -127,9 +130,15 @@ describe.skipIf(!process.env.AI_EVAL)('keyword scope eval', () => {
       const scored = verdicts.filter((verdict) => verdict.expected !== 'either')
       const wrong = scored.filter((verdict) => verdict.kept !== (verdict.expected === 'keep'))
       results.push({ id: blog.id, wrong, verdicts })
-      console.info(blog.id, `${scored.length - wrong.length}/${scored.length}`, wrong.map((verdict) => verdict.item))
+      console.info(
+        blog.id,
+        `${scored.length - wrong.length}/${scored.length}`,
+        wrong.map((verdict) => verdict.item),
+      )
 
-      expect(verdicts.filter((verdict) => verdict.kept && MUST_DROP.some((text) => verdict.item.includes(text)))).toEqual([])
+      expect(
+        verdicts.filter((verdict) => verdict.kept && MUST_DROP.some((text) => verdict.item.includes(text))),
+      ).toEqual([])
       expect(wrong.length).toBeLessThanOrEqual(1)
     },
     120_000,

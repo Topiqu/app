@@ -41,7 +41,14 @@
           </UTooltip>
         </div>
         <div v-if="canAddEmoji" class="mt-3">
-          <UButton size="sm" color="neutral" variant="soft" icon="mdi:plus" block @click="(close(), (createOpen = true))">
+          <UButton
+            size="sm"
+            color="neutral"
+            variant="soft"
+            icon="mdi:plus"
+            block
+            @click="(close(), (createOpen = true))"
+          >
             {{ $t('emoji.addCustom') }}
           </UButton>
         </div>
@@ -91,11 +98,7 @@ const can = useTenantScope()
 const canAddEmoji = computed(() => {
   const user = session.value?.user
   return (
-    user?.role === 'admin' &&
-    user.plan !== 'BASIC' &&
-    !!site &&
-    site.id === user.clientSiteId &&
-    can('TENANT_SETTINGS')
+    user?.role === 'admin' && user.plan !== 'BASIC' && !!site && site.id === user.clientSiteId && can('TENANT_SETTINGS')
   )
 })
 

@@ -66,7 +66,9 @@ describe('Tags/Create', () => {
 
     chip('a').querySelector('button')!.click()
     await settle()
-    chip('a').querySelector('input')!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }))
+    chip('a')
+      .querySelector('input')!
+      .dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }))
     await settle()
 
     expect(chip('a').querySelector('input')).toBeNull()

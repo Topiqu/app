@@ -28,6 +28,11 @@ export default defineEventHandler(async (event) => {
     path: '/api/shopify',
     maxAge: MAX_AGE_SECONDS,
   })
-  setCookie(event, SHOPIFY_INSTALL_COOKIE, installation.shop, { secure, sameSite: 'lax', path: '/', maxAge: MAX_AGE_SECONDS })
+  setCookie(event, SHOPIFY_INSTALL_COOKIE, installation.shop, {
+    secure,
+    sameSite: 'lax',
+    path: '/',
+    maxAge: MAX_AGE_SECONDS,
+  })
   return sendRedirect(event, `${settingsUrl}&shopify=link`)
 })

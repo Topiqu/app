@@ -60,7 +60,9 @@ const articleData = async (event: WebhookEventCode, ref: ArticleRef) => {
   if (!row) return null
   const { clientSite, ...article } = row
   const flat = flattenExternalArticle(article, clientSite.language)
-  return { article: { ...flat, url: `https://${clientSite.domain}${articlePath(flat.language as Language, flat.slug)}` } }
+  return {
+    article: { ...flat, url: `https://${clientSite.domain}${articlePath(flat.language as Language, flat.slug)}` },
+  }
 }
 
 /** Best-effort like follower notifications: a failure is logged and never fails the article write. */
@@ -94,7 +96,13 @@ export const enqueueArticleWebhook = async (event: WebhookEventCode, ref: Articl
 
 const errorText = (error: unknown) => (error instanceof Error ? error.message : String(error)).slice(0, 500)
 
-export const sendWebhookRequest = async (url: string, secret: string, deliveryId: string, body: string, type: string) => {
+export const sendWebhookRequest = async (
+  url: string,
+  secret: string,
+  deliveryId: string,
+  body: string,
+  type: string,
+) => {
   try {
     const response = await postPublicUrl(url, body, {
       'Content-Type': 'application/json',

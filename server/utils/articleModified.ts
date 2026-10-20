@@ -15,7 +15,8 @@ const FIELDS = ['title', 'excerpt', 'answer', 'keyTakeaways', 'faq'] as const
 export const changesReaderText = (previous: ArticleText, next: ArticleText) =>
   (next.content !== undefined && htmlToText(next.content) !== htmlToText(previous.content)) ||
   FIELDS.some(
-    (field) => next[field] !== undefined && JSON.stringify(next[field] || null) !== JSON.stringify(previous[field] || null),
+    (field) =>
+      next[field] !== undefined && JSON.stringify(next[field] || null) !== JSON.stringify(previous[field] || null),
   )
 
 /** `dateModified` / `lastmod`: the last text change readers saw, never a view or a status flip. */

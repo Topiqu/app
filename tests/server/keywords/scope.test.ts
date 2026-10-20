@@ -22,7 +22,9 @@ describe('inScope', () => {
 
   it('returns the indexes of kept items and ignores numbers that do not exist', async () => {
     vi.mocked(generateText).mockResolvedValue({ output: { keep: [2, 9] }, usage: { totalTokens: 120 } } as never)
-    await expect(inScope(site, ['GTA VI má datum vydání', 'Larian ukázal nové RPG'], 'NEWS_SCOPE_TOKENS')).resolves.toEqual([1])
+    await expect(
+      inScope(site, ['GTA VI má datum vydání', 'Larian ukázal nové RPG'], 'NEWS_SCOPE_TOKENS'),
+    ).resolves.toEqual([1])
     expect(recordAiUsage).toHaveBeenCalledWith('s1', 120, 'NEWS_SCOPE_TOKENS', expect.anything())
   })
 

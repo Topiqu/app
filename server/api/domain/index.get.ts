@@ -10,6 +10,8 @@ export default defineEventHandler(async (event) => {
     domain: site.domain,
     canUseCustomDomain: site.plan !== 'BASIC',
     pending:
-      site.pendingDomain && site.pendingDomainToken ? domainDnsRecords(site.pendingDomain, site.pendingDomainToken) : null,
+      site.pendingDomain && site.pendingDomainToken
+        ? domainDnsRecords(site.pendingDomain, site.pendingDomainToken)
+        : null,
   }
 })

@@ -29,13 +29,7 @@ export default defineEventHandler(async (event) => {
   if (!clientSite || article.language === body.language)
     throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
-  const slug = await dedupeTranslationSlug(
-    db,
-    articleSlug(body.title),
-    user.clientSiteId!,
-    body.language,
-    articleId,
-  )
+  const slug = await dedupeTranslationSlug(db, articleSlug(body.title), user.clientSiteId!, body.language, articleId)
   const translation = await db.articleTranslation.upsert({
     where: { articleId_language: { articleId, language: body.language } },
     create: {
