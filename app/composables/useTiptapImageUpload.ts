@@ -19,13 +19,8 @@ export function useTiptapImageUpload(
 
     const alt = await promptAlt(cleanAltFromFilename(file.name))
 
-    const fileExt = file.name.split('.').pop() || 'jpg'
-    const uniqueId = `${Date.now()}-${Math.random().toString(36).substring(7)}`
-    const generatedFilename = `content-${uniqueId}.${fileExt}`
-
     const form = new FormData()
     form.append('file', file)
-    form.append('customFilename', generatedFilename)
     form.append('type', 'article-image')
 
     try {
