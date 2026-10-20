@@ -27,8 +27,30 @@
     <div class="flex flex-col md:flex-row gap-6 md:gap-10">
       <TabNav v-model="activeTab" :tabs="tabs" :label="$t('common.preferences.title')" />
 
-      <div class="min-w-0 flex-1 space-y-8">
+      <div
+        v-if="clientPending && !client"
+        class="min-w-0 flex-1 space-y-6"
+        :aria-label="$t('common.loading')"
+        aria-busy="true"
+      >
+        <USkeleton class="h-6 w-32" />
+        <div class="space-y-4 rounded-(--topiqu-surface-radius) border border-default p-5">
+          <USkeleton class="h-4 w-28" />
+          <USkeleton class="h-24 w-48 max-w-full" />
+          <USkeleton class="h-10 w-32" />
+        </div>
+        <USkeleton class="h-40 w-full rounded-(--topiqu-surface-radius)" />
+      </div>
+      <UAlert
+        v-else-if="clientError"
+        class="min-w-0 flex-1"
+        color="error"
+        :title="$t('common.messages.loadFailedTitle')"
+        :actions="[{ label: $t('common.messages.retry'), onClick: () => refresh() }]"
+      />
+      <div v-else class="min-w-0 flex-1 space-y-8">
         <section v-show="activeTab === 'branding'">
+          <AdminDomainVerificationBanner class="mb-5" />
           <FormClientBranding
             v-model:description="form.description"
             v-model:tagline="form.tagline"
@@ -50,6 +72,7 @@
             @update:headingFontUrl="onFontStored('headingFontUrl', $event)"
             @update:bodyFontUrl="onFontStored('bodyFontUrl', $event)"
           />
+          <FormClientFooter v-model="form.footerSettings" :plan="client?.plan ?? 'BASIC'" class="mt-8" />
           <FormClientDomain class="mt-8" />
         </section>
 
@@ -218,8 +241,13 @@ const isSaving = shallowRef(false)
 
 const clientId = computed(() => auth.value?.user.clientSiteId)
 
-const { data: client, refresh } = await useFetch<ClientSite>(() => `/api/clients/${clientId.value}`)
-const { data: features } = await useFetch(`/api/features`, { watch: [clientId] })
+const {
+  data: client,
+  refresh,
+  pending: clientPending,
+  error: clientError,
+} = await useLazyFetch<ClientSite>(() => `/api/clients/${clientId.value}`)
+const { data: features } = await useLazyFetch(`/api/features`, { watch: [clientId] })
 const rate = useCurrencyRate(() => client.value?.currency ?? 'EUR')
 
 const form = ref(buildClientSettingsForm(client.value))
@@ -232,6 +260,11 @@ const releaseScheduleModel = computed({
   set: (settings: ReleaseScheduleSettings) => Object.assign(form.value, settings),
 })
 const pristine = ref(buildClientSettingsForm(client.value))
+watch(client, (value) => {
+  if (!value || isDirty.value) return
+  form.value = buildClientSettingsForm(value)
+  pristine.value = buildClientSettingsForm(value)
+})
 const isDirty = computed(() => !equal(form.value, pristine.value))
 const releaseScheduleDirty = computed(
   () =>
@@ -316,7 +349,7 @@ const savePreferences = async () => {
       method: 'PATCH',
       body: buildClientSettingsPatch(form.value, pristine.value),
     })
-    toast.add({ color: 'success', title: $t('common.messages.successGeneralTitle') })
+    toast.add({ color: 'success', title: $t('common.messages.saveSuccess'), description: client.value?.name })
     // The publication surface reads the tenant from its own cached entry, which this PATCH just made stale.
     await Promise.all([
       refresh(),

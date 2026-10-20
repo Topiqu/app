@@ -8,10 +8,10 @@ beforeAll(async () => {
   handler = (await import('../../server/api/clients/[id]/index.patch')).default
 })
 
-const setup = async (body: Record<string, unknown>, role = 'admin') => {
+const setup = async (body: Record<string, unknown>, role = 'admin', plan = 'PRO') => {
   let site = {
     id: 'tenant-1',
-    plan: 'PRO',
+    plan,
     name: 'Original site',
     domain: 'old-example.com',
     deletedAt: null,
@@ -68,6 +68,32 @@ const setup = async (body: Record<string, unknown>, role = 'admin') => {
 }
 
 describe('tenant settings audit', () => {
+  it('saves validated footer settings on a paid tenant', async () => {
+    const footerSettings = {
+      enabled: false,
+      text: 'Publication',
+      showSocials: true,
+      links: [{ label: 'Contact', url: '/contact' }],
+    }
+    const { run, db } = await setup({ footerSettings })
+    await run()
+    expect(db.clientSite.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ footerSettings }) }),
+    )
+  })
+
+  it('refuses footer changes on Basic, including a forged plan upgrade', async () => {
+    const { run, db } = await setup({ footerSettings: { enabled: false }, plan: 'PRO' }, 'admin', 'BASIC')
+    await expect(run()).rejects.toMatchObject({ statusCode: 403 })
+    expect(db.clientSite.update).not.toHaveBeenCalled()
+  })
+
+  it('rejects unsafe footer links before writing any settings', async () => {
+    const { run, db } = await setup({ footerSettings: { links: [{ label: 'Unsafe', url: 'javascript:alert(1)' }] } })
+    await expect(run()).rejects.toMatchObject({ statusCode: 400 })
+    expect(db.clientSite.update).not.toHaveBeenCalled()
+  })
+
   it('records changed persisted values and ignores unchanged and uneditable input', async () => {
     const { run, log } = await setup({
       name: 'New site',
