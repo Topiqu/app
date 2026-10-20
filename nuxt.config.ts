@@ -89,6 +89,13 @@ const CRAWL_ROUTES = Object.fromEntries(
 )
 
 export default defineNuxtConfig({
+  hooks: {
+    'build:manifest': (manifest) => {
+      // Keep rendered-module preloads and NuxtLink navigation prefetching, but do not
+      // download every async dialog and its dependencies through blanket SSR hints.
+      for (const entry of Object.values(manifest)) entry.prefetch = false
+    },
+  },
   compatibilityDate: '2026-05-21',
 
   devtools: { enabled: !IS_BROWSER_TEST },
