@@ -97,7 +97,10 @@ export const refreshClientSite = async () => {
 export const useClientSiteStatus = () => {
   const requestFetch = useRequestFetch()
 
-  return useAsyncData('clientsite-status', () => requestFetch<ClientSiteStatus | null>('/api/clients/status'))
+  return useAsyncData('clientsite-status', () => requestFetch<ClientSiteStatus | null>('/api/clients/status'), {
+    // Persistent shell and routed pages share this snapshot. Explicit invalidation still fetches fresh data.
+    getCachedData: (key, nuxtApp, ctx) => (ctx.cause === 'initial' ? nuxtApp.payload.data[key] : undefined),
+  })
 }
 
 /** Refreshes the shared status ref used by the editor, navigation and article balance surfaces. */

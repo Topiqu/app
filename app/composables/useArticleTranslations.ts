@@ -85,11 +85,16 @@ export const useArticleTranslations = (articleId?: string, initialLang = '') => 
   const run = async (kind: NonNullable<typeof pending.value>, fn: () => Promise<unknown>, successKey: string) => {
     if (pending.value) return
     pending.value = kind
+    const language = activeLang.value
     try {
       await fn()
       await refresh()
       await invalidateArticleLists()
-      toast.add({ color: 'success', title: t(successKey) })
+      toast.add({
+        color: 'success',
+        title: t(successKey),
+        description: language ? t(`languages.${language}`) : undefined,
+      })
     } catch (e: any) {
       toast.add({ color: 'error', title: fetchErrorMessage(e, t('common.messages.saveFailed')) })
     } finally {

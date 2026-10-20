@@ -207,7 +207,15 @@ export const useArticleGenerationStore = defineStore('articleGeneration', () => 
       if (streamedContent) update({ content: present() })
       const status = run.value?.status
       if (status && status !== 'running')
-        toast.add({ color: RUN_TOAST_COLOR[status], title: t(`articles.editor.ai.run.title.${status}`) })
+        toast.add({
+          color: RUN_TOAST_COLOR[status],
+          title: t(`articles.editor.ai.run.title.${status}`),
+          description: article.value?.title,
+          actions:
+            editorPath.value && (status === 'completed' || status === 'partial')
+              ? [{ label: t('common.actions.view'), icon: 'mdi:pencil-outline', to: editorPath.value }]
+              : undefined,
+        })
       if (charged) await refreshClientSiteStatus().catch(() => undefined)
       else await refreshClientSiteStatusAfterStop(reservedBefore).catch(() => undefined)
     }
@@ -232,7 +240,15 @@ export const useArticleGenerationStore = defineStore('articleGeneration', () => 
     const phase = outcome === 'completed' ? 'images' : run.value.phase
     run.value = finishGenerationRun({ ...run.value, phase, resumed: true }, outcome, Date.now())
     const status = run.value.status as keyof typeof RUN_TOAST_COLOR
-    toast.add({ color: RUN_TOAST_COLOR[status], title: t(`articles.editor.ai.run.title.${status}`) })
+    toast.add({
+      color: RUN_TOAST_COLOR[status],
+      title: t(`articles.editor.ai.run.title.${status}`),
+      description: article.value?.title,
+      actions:
+        editorPath.value && (status === 'completed' || status === 'partial')
+          ? [{ label: t('common.actions.view'), icon: 'mdi:pencil-outline', to: editorPath.value }]
+          : undefined,
+    })
     void refreshClientSiteStatus().catch(() => undefined)
   }
 

@@ -27,7 +27,7 @@
 
         <EditorContent
           :editor
-          class="article-content editor-canvas min-h-96 min-w-0 max-w-full! overflow-hidden text-highlighted"
+          class="article-content editor-canvas min-h-96 min-w-0 max-w-full! overflow-hidden rounded-b-(--topiqu-surface-radius) text-highlighted"
           :class="[EDITOR_TABLE_CLASS, contentClass]"
           @click.stop="handleEditorClick"
         />

@@ -97,6 +97,7 @@ describe('Nuxt UI template contract', () => {
       'NodeViewContent',
       'NodeViewWrapper',
       'NuxtImg',
+      'NuxtErrorBoundary',
       'NuxtLayout',
       'NuxtLink',
       'NuxtLoadingIndicator',
@@ -105,6 +106,7 @@ describe('Nuxt UI template contract', () => {
       'NuxtTime',
       'Qrcode',
       'ReusePicker',
+      'Suspense',
       'Teleport',
       'Transition',
       'VueEasyLightbox',
@@ -237,7 +239,7 @@ describe('Nuxt UI template contract', () => {
       'app/components/Client/Version.vue',
       'app/components/Form/Client/AI.vue',
       'app/components/Form/Client/Billing.vue',
-      'app/pages/admin/editor/[id].vue',
+      'app/components/Article/Editor/Workspace.vue',
     ])
     const hardColorAllowlist = new Set([
       'app/components/Form/Client/Branding.vue',
@@ -275,7 +277,7 @@ describe('Nuxt UI template contract', () => {
       'app/components/Form/Client/Billing.vue',
       'app/components/User/AccountHealth.vue',
       'app/components/User/PictureUploader.vue',
-      'app/pages/admin/editor/[id].vue',
+      'app/components/Article/Editor/Workspace.vue',
       'app/pages/invitation/[token].vue',
       'app/pages/start.vue',
     ])
