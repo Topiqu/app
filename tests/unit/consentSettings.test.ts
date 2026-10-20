@@ -47,24 +47,25 @@ describe('cookie settings choices', () => {
     expect((wrapper.get('input').element as HTMLInputElement).checked).toBe(false)
     wrapper.unmount()
   })
-  it('keeps BASIC to analytics only because Google CMP owns AdSense consent', () => {
+  it('keeps BASIC to analytics only while advertising is halted', () => {
     const wrapper = render({ plan: 'BASIC' })
     expect(wrapper.findAll('input')).toHaveLength(1)
     expect(wrapper.text()).not.toContain('Google AdSense')
     wrapper.unmount()
   })
-  it('shows GA4 and the actual advertising service and saves the selected categories', async () => {
+  it('shows GA4 but not retained advertising configuration and saves the available categories', async () => {
     const wrapper = render({ plan: 'PRO', allowGtag: true, gtagId: 'G-ONE123', gamNetworkCode: '123' })
     expect(wrapper.text()).toContain('Google Analytics 4')
-    expect(wrapper.text()).toContain('Google Ad Manager')
-    await wrapper.get('#consent-marketing').setValue(true)
+    expect(wrapper.text()).not.toContain('Google Ad Manager')
+    expect(wrapper.find('#consent-marketing').exists()).toBe(false)
+    await wrapper.get('#consent-analytics').setValue(true)
     await wrapper.findAll('button')[0]!.trigger('click')
-    expect(wrapper.emitted('save')?.[0]).toEqual([{ analytics: false, marketing: true }])
+    expect(wrapper.emitted('save')?.[0]).toEqual([{ analytics: true, marketing: false }])
     wrapper.unmount()
   })
   it('restores a saved choice and offers equally available accept and reject actions', async () => {
     const wrapper = render({ plan: 'PRO', gamNetworkCode: '123' }, true)
-    expect(wrapper.text()).toContain('Google Ad Manager')
+    expect(wrapper.text()).not.toContain('Google Ad Manager')
     expect(wrapper.findAll('input').every((input) => (input.element as HTMLInputElement).checked)).toBe(true)
     await wrapper.findAll('button')[1]!.trigger('click')
     expect(wrapper.emitted('reject')).toHaveLength(1)

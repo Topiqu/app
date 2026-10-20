@@ -4,11 +4,21 @@ import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 
 import { useGamAds } from '../../app/composables/useGam'
 
-const mocks = vi.hoisted(() => ({ granted: null as ReturnType<typeof shallowRef<boolean>> | null }))
+const mocks = vi.hoisted(() => ({ granted: null as ReturnType<typeof shallowRef<boolean>> | null, enabled: false }))
+vi.mock('~~/shared/utils/advertising', () => ({ tenantGamEnabled: () => mocks.enabled }))
 mockNuxtImport('useMarketingConsent', () => () => mocks.granted)
 
 describe('Google Ad Manager consent', () => {
+  it('does not load retained advertising even with stored marketing consent while halted', async () => {
+    mocks.enabled = false
+    mocks.granted = shallowRef(true)
+    const ads = useGamAds({ id: 'site-1', plan: 'PRO', gamNetworkCode: '123' })
+    expect(await ads.initialize()).toBe(false)
+    expect(document.head.querySelector('script[src*="/gpt.js"]')).toBeNull()
+  })
+
   it('loads GPT only after consent, configures non-personalized ads, and stops new slots after revocation', async () => {
+    mocks.enabled = true
     mocks.granted = shallowRef(false)
     const privacy = vi.fn(),
       enable = vi.fn(),

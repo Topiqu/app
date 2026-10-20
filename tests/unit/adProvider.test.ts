@@ -4,26 +4,26 @@ import { FEED_AD_AFTER, adProviderFor } from '~~/shared/utils/advertising'
 const granted = { marketing: true, adsenseSlot: '1234567890' }
 
 describe('adProviderFor', () => {
-  it('serves platform AdSense on BASIC', () => {
-    expect(adProviderFor({ plan: 'BASIC' }, granted)).toBe('adsense')
+  it('does not serve platform AdSense on BASIC while advertising is halted', () => {
+    expect(adProviderFor({ plan: 'BASIC' }, granted)).toBeNull()
   })
 
-  it('keeps BASIC inventory on AdSense even with a leftover GAM code', () => {
-    expect(adProviderFor({ plan: 'BASIC', gamNetworkCode: '123' }, granted)).toBe('adsense')
+  it('does not activate a leftover GAM code on BASIC', () => {
+    expect(adProviderFor({ plan: 'BASIC', gamNetworkCode: '123' }, granted)).toBeNull()
   })
 
   it('renders nothing on BASIC until the AdSense unit is configured', () => {
     expect(adProviderFor({ plan: 'BASIC' }, { marketing: true, adsenseSlot: ' ' })).toBeNull()
   })
 
-  it('serves the tenant GAM unit on paid plans that set a network code', () => {
-    expect(adProviderFor({ plan: 'PRO', gamNetworkCode: '123' }, granted)).toBe('gam')
+  it('does not activate retained GAM configuration on paid plans', () => {
+    expect(adProviderFor({ plan: 'PRO', gamNetworkCode: '123' }, granted)).toBeNull()
     expect(adProviderFor({ plan: 'PREMIUM', gamNetworkCode: '  ' }, granted)).toBeNull()
     expect(adProviderFor({ plan: 'PRO' }, granted)).toBeNull()
   })
 
-  it('leaves AdSense consent to Google CMP but keeps the tenant GAM unit behind Marketing', () => {
-    expect(adProviderFor({ plan: 'BASIC' }, { ...granted, marketing: false })).toBe('adsense')
+  it('does not request advertising regardless of the stored Marketing choice', () => {
+    expect(adProviderFor({ plan: 'BASIC' }, { ...granted, marketing: false })).toBeNull()
     expect(adProviderFor({ plan: 'PRO', gamNetworkCode: '123' }, { ...granted, marketing: false })).toBeNull()
   })
 

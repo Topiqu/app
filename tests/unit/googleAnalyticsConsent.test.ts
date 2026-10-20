@@ -115,11 +115,11 @@ describe('Google Analytics consent lifecycle', () => {
     )
   })
 
-  it('keeps advertising independent and never grants personalization', async () => {
+  it('keeps halted advertising denied even when a saved choice requests Marketing', async () => {
     const { consent } = setup({ ...gaSite, gamNetworkCode: '123' })
     consent.save({ analytics: false, marketing: true })
     await nextTick()
-    expect(consent.marketingGranted.value).toBe(true)
+    expect(consent.marketingGranted.value).toBe(false)
     expect(mocks.initialize).not.toHaveBeenCalled()
     consent.save({ analytics: true, marketing: true })
     await nextTick()
@@ -128,7 +128,7 @@ describe('Google Analytics consent lifecycle', () => {
       'update',
       expect.objectContaining({
         analytics_storage: 'granted',
-        ad_storage: 'granted',
+        ad_storage: 'denied',
         ad_personalization: 'denied',
       }),
     )
