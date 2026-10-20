@@ -1,5 +1,7 @@
 import type { Language } from '~~/generated/zenstack/models'
 
+import { articleCardSelect } from '~~/server/utils/articleCard'
+
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const user = await getSessionUser(event)
@@ -13,7 +15,7 @@ export default defineEventHandler(async (event) => {
   if (!clientSiteId) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
   const clientSite = await prisma.clientSite.findUnique({
-    where: { id: clientSiteId },
+    where: { id: clientSiteId, deletedAt: null },
     select: { language: true },
   })
   if (!clientSite) throw createError({ statusCode: 404, message: t('common.errors.blogNotFound')! })
@@ -35,20 +37,18 @@ export default defineEventHandler(async (event) => {
     where: {
       // Tag.clientSiteId is nullable, so a global tag matches across tenants without this.
       clientSiteId,
+      deletedAt: null,
       id: { not: current.id },
       ...(isAdmin ? {} : { status: 'published' }),
     },
-    include: {
-      tags: { include: { tag: true } },
-      user: { select: { id: true, username: true, role: true, avatarUrl: true } },
+    select: {
+      ...articleCardSelect(user?.id),
       reactions: {
         where: user?.id ? { userId: user.id } : sessionId ? { sessionId, userId: null } : { id: '' },
         select: { id: true },
         take: 1,
       },
-      _count: { select: { comments: true, reactions: true } },
     },
-    omit: { content: true },
     orderBy: [{ releaseAt: 'desc' }, { createdAt: 'desc' }],
     take: take * 10,
   })
@@ -63,5 +63,8 @@ export default defineEventHandler(async (event) => {
 
   const localized = await localizeArticles(prisma, articles, { clientSiteId, locale, primaryLanguage })
 
-  return localized.map(({ reactions, ...article }) => ({ ...article, likedByUser: reactions.length > 0 }))
+  return localized.map(({ reactions, content: _content, ...article }) => ({
+    ...article,
+    likedByUser: reactions.length > 0,
+  }))
 })

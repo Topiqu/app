@@ -2,43 +2,48 @@
   <div class="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
     <div class="min-w-0 w-full">
       <Back />
-      <UPageHeader :title="authorName">
-        <div class="mt-6 flex flex-col gap-5 sm:flex-row sm:items-center">
-          <AppMedia
-            :src="author.avatarUrl"
-            :alt="$t('common.avatar.alt.author', [authorName])"
-            :fallbackText="authorName"
-            aspectRatio="1 / 1"
-            sizes="96px"
-            containerClass="size-24 shrink-0 rounded-full"
-          />
-          <div class="min-w-0">
-            <p v-if="author.bio" class="max-w-2xl text-sm leading-6 text-muted">{{ author.bio }}</p>
-            <dl class="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted">
-              <div>
-                <dt class="sr-only">{{ $t('stats.articleCount') }}</dt>
-                <dd>
-                  <strong class="text-highlighted">{{ author.articleCount }}</strong> {{ $t('stats.articleCount') }}
-                </dd>
-              </div>
-              <div>
-                <dt class="sr-only">{{ $t('profile.followers') }}</dt>
-                <dd>
-                  <strong class="text-highlighted">{{ author.followerCount }}</strong> {{ $t('profile.followers') }}
-                </dd>
-              </div>
-              <div>
-                <dt class="sr-only">{{ $t('profile.following', [author.followingCount]) }}</dt>
-                <dd>{{ $t('profile.following', [author.followingCount]) }}</dd>
-              </div>
-              <div>
-                <dt class="sr-only">{{ $t('common.user.joined', [formatDate(author.joinedAt, locale)]) }}</dt>
-                <dd>{{ $t('common.user.joined', [formatDate(author.joinedAt, locale)]) }}</dd>
-              </div>
-            </dl>
+      <header class="mt-6 flex flex-col gap-5 border-b border-default pb-6 sm:flex-row sm:items-start">
+        <UserPicture :url="author.avatarUrl" :name="authorName" size="xl" />
+        <div class="min-w-0 flex-1 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <h1 class="min-w-0 break-words text-3xl font-bold text-highlighted">{{ authorName }}</h1>
+            <UButton
+              v-if="auth?.user?.id !== author.id"
+              color="neutral"
+              :variant="isFollowing ? 'soft' : 'solid'"
+              :icon="isFollowing ? 'mdi:account-check' : 'mdi:account-plus'"
+              :loading="followPending"
+              @click="toggleFollow"
+              >{{ isFollowing ? $t('profile.unfollow') : $t('profile.follow') }}</UButton
+            >
           </div>
+          <p v-if="author.bio" class="max-w-2xl text-sm leading-6 text-muted">{{ author.bio }}</p>
+          <dl class="flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted">
+            <div>
+              <dt class="sr-only">{{ $t('stats.articleCount') }}</dt>
+              <dd>
+                <strong class="text-highlighted">{{ author.articleCount }}</strong> {{ $t('stats.articleCount') }}
+              </dd>
+            </div>
+            <div>
+              <dt class="sr-only">{{ $t('profile.followers') }}</dt>
+              <dd>
+                <strong class="text-highlighted">{{ author.followerCount }}</strong> {{ $t('profile.followers') }}
+              </dd>
+            </div>
+            <div>
+              <dt class="sr-only">{{ $t('profile.following') }}</dt>
+              <dd>
+                <strong class="text-highlighted">{{ author.followingCount }}</strong> {{ $t('profile.following') }}
+              </dd>
+            </div>
+            <div>
+              <dt class="sr-only">{{ $t('common.user.joined', [formatDate(author.joinedAt, locale)]) }}</dt>
+              <dd>{{ $t('common.user.joined', [formatDate(author.joinedAt, locale)]) }}</dd>
+            </div>
+          </dl>
         </div>
-      </UPageHeader>
+      </header>
       <div class="min-w-0 w-full pt-4 pb-8">
         <ArticleCollection
           v-model:search="search"
@@ -67,6 +72,8 @@ type AuthorArticlesResponse = PublicAuthorSummary & {
 definePageMeta({ shell: 'publication' })
 
 const route = useRoute()
+const { data: auth } = useAuth()
+const toast = useToast()
 const { locale } = useI18n()
 const canonicalOrigin = useCanonicalOrigin()
 const localePath = useLocalePath()
@@ -121,6 +128,31 @@ if (error.value || (!pending.value && !author.value?.id)) {
 
 const authorName = computed(() => author.value.username || '')
 const articles = computed(() => author.value.articles.map(({ article }) => article))
+const { data: following, refresh: refreshFollowing } = await useFetch<Array<{ id: string }>>('/api/follows/followed', {
+  immediate: Boolean(auth.value?.user),
+  default: () => [],
+})
+const isFollowing = computed(() => following.value.some((user) => user.id === author.value.id))
+const followPending = shallowRef(false)
+const toggleFollow = async () => {
+  if (!auth.value?.user) return navigateTo(localePath({ name: 'autorizace' }))
+  if (followPending.value || auth.value.user.id === author.value.id) return
+  followPending.value = true
+  try {
+    const result = isFollowing.value
+      ? await $fetch<{ followerCount: number }>(`/api/follows/${author.value.id}`, { method: 'DELETE' })
+      : await $fetch<{ followerCount: number }>('/api/follows', {
+          method: 'POST',
+          body: { followedId: author.value.id },
+        })
+    author.value.followerCount = result.followerCount
+    await refreshFollowing()
+  } catch (error) {
+    toast.add({ color: 'error', title: fetchErrorMessage(error, $t('profile.messages.followFailed')) })
+  } finally {
+    followPending.value = false
+  }
+}
 
 const debouncedRefresh = useDebounceFn(() => refresh(), 300)
 watch([search, sort], () => {

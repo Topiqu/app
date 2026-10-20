@@ -1,9 +1,10 @@
 import { articleExcerpt } from '~~/shared/utils/articleBlocks'
+import { articleCardSelect } from '~~/server/utils/articleCard'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const user = await getSessionUser(event)
-  const slug = decodeURIComponent(getRouterParam(event, 'slug')!.trim())
+  const slug = getRouterParam(event, 'slug', { decode: true })?.trim()
 
   if (!slug) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
@@ -15,7 +16,7 @@ export default defineEventHandler(async (event) => {
 
   const db = await getEnhancedPrisma(user)
   const clientSite = await db.clientSite.findUnique({
-    where: { name: slug },
+    where: { name: slug, deletedAt: null },
     select: { id: true, language: true },
   })
 
@@ -44,19 +45,7 @@ export default defineEventHandler(async (event) => {
       take: take + 1,
       skip,
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-      include: {
-        tags: { include: { tag: true } },
-        // No email: this is an anonymous-readable payload and it gets cached.
-        user: { select: { id: true, username: true, role: true, avatarUrl: true } },
-        // Scoped to the caller so the payload answers one bool instead of shipping every liker's
-        // id. Safe to cache: the cached branch below is anonymous-only, where this is always empty.
-        reactions: {
-          where: user?.id ? { userId: user.id } : { id: '' },
-          select: { id: true },
-          take: 1,
-        },
-        _count: { select: { comments: true, reactions: true } },
-      },
+      select: articleCardSelect(user?.id),
     })
 
     const allTags = await db.article
@@ -67,9 +56,7 @@ export default defineEventHandler(async (event) => {
           deletedAt: null,
           OR: [{ releaseAt: null }, { releaseAt: { lte: new Date() } }],
         },
-        include: {
-          tags: { include: { tag: true } },
-        },
+        select: { tags: { select: { tag: { select: { id: true, name: true, slug: true } } } } },
       })
       .then((articles) => [
         ...new Map(
@@ -114,7 +101,7 @@ export default defineEventHandler(async (event) => {
 
   const gen = await feedGen(clientSite.id)
   // `locale` is part of the key — the payload is localized, so two locales must not share it.
-  const key = `feed:v${gen}:${clientSite.id}:tag=${tag ?? '_all'}:skip=${skip}:take=${take}:loc=${locale ?? '_def'}`
+  const key = `feed:2:v${gen}:${clientSite.id}:tag=${tag ?? '_all'}:skip=${skip}:take=${take}:loc=${locale ?? '_def'}`
   // 10 min is only safe because every article mutation calls invalidateFeed().
   return cached(key, 600, buildFeed)
 })

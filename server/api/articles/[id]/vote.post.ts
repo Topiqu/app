@@ -4,12 +4,16 @@ export default defineEventHandler(async (event) => {
   const { id } = getRouterParams(event)
   const { pollId, optionId } = await readBody(event)
 
-  if (!pollId || !id || !optionId) {
+  if (typeof pollId !== 'string' || !pollId || !id || typeof optionId !== 'string' || !optionId) {
     throw createError({ statusCode: 400, message: t('common.errors.missing')! })
   }
 
   const option = await prisma.pollOption.findFirst({
-    where: { id: optionId, pollId, poll: { articleId: id } },
+    where: {
+      id: optionId,
+      pollId,
+      poll: { articleId: id, article: { status: 'published', deletedAt: null, clientSite: { deletedAt: null } } },
+    },
     select: { id: true },
   })
 

@@ -1,7 +1,7 @@
 <template>
   <div
     ref="listOrigin"
-    class="flex min-h-0 w-full flex-1 flex-col gap-4 sm:overflow-hidden"
+    class="flex min-h-0 min-w-0 w-full flex-1 flex-col gap-4 p-px sm:overflow-hidden"
     data-article-table
     :data-search-query="globalFilter"
   >
@@ -31,7 +31,13 @@
           {{ $t('common.labels.filters') }}
           <UBadge v-if="activeFilterCount" color="primary" variant="solid">{{ activeFilterCount }}</UBadge>
         </UButton>
-        <UButton class="shrink-0" color="neutral" variant="soft" icon="mdi:tag-multiple-outline" @click="tagsOpen = true">
+        <UButton
+          class="shrink-0"
+          color="neutral"
+          variant="soft"
+          icon="mdi:tag-multiple-outline"
+          @click="tagsOpen = true"
+        >
           {{ $t('articles.tags.manageTags') }}
         </UButton>
         <div v-if="rows.length" class="shrink-0">
@@ -71,6 +77,27 @@
       </template>
     </UAlert>
 
+    <div
+      v-else-if="isPending && !rows.length"
+      class="space-y-3 rounded-(--topiqu-surface-radius) border border-default bg-default p-4"
+      aria-busy="true"
+      :aria-label="$t('common.loading')"
+    >
+      <div class="hidden grid-cols-[3.5rem_minmax(0,1fr)_8rem] gap-4 border-b border-default pb-4 sm:grid">
+        <USkeleton class="h-4 w-10" />
+        <USkeleton class="h-4 w-24" />
+        <USkeleton class="h-4 w-20" />
+      </div>
+      <div v-for="index in 3" :key="index" class="flex items-center gap-4 py-2">
+        <USkeleton class="size-14 shrink-0" />
+        <div class="min-w-0 flex-1 space-y-2">
+          <USkeleton class="h-4 w-3/4" />
+          <USkeleton class="h-3 w-1/3" />
+        </div>
+        <USkeleton class="hidden h-9 w-32 sm:block" />
+      </div>
+    </div>
+
     <UEmpty
       v-else-if="!isPending && rows.length === 0"
       icon="mdi:file-document-outline"
@@ -90,6 +117,7 @@
           root: 'overflow-visible',
           base: 'w-full min-w-[48rem] table-fixed',
           thead: 'sticky top-0 z-20 bg-default shadow-[0_1px_0_var(--ui-border)]',
+          tr: 'border-b border-default',
         }"
       >
         <template #title-header>
@@ -185,10 +213,7 @@
       </UTable>
     </div>
 
-    <div v-if="isPending" class="space-y-3 sm:hidden">
-      <UCard v-for="n in 5" :key="n"><USkeleton class="h-28 w-full" /></UCard>
-    </div>
-    <div v-else-if="rows.length" class="space-y-3 sm:hidden" :aria-busy="pendingStatusIds.size > 0">
+    <div v-if="rows.length" class="space-y-3 sm:hidden" :aria-busy="pendingStatusIds.size > 0">
       <UCard v-for="article in rows" :key="article.id">
         <div class="flex gap-3">
           <NuxtLink :to="articleUrl(article.slug, article.language)" class="block shrink-0">
@@ -301,10 +326,12 @@ const tagsOpen = useState('dashboard-tags-open', () => false)
 const localePath = useLocalePath()
 const { data: clientSite } = await useClientSiteStatus()
 const sourceLanguage = (article: ArticleWithDetails): Language => article.language ?? clientSite.value?.language ?? 'en'
+const requestUrl = useRequestURL()
 const articleUrl = (slug: string, language?: Language) =>
   publicationUrl(
     clientSite.value,
     localePath({ name: 'clanky-slug', params: { slug } }, language ?? clientSite.value?.language),
+    requestUrl,
   )
 const { formatTime } = useTime()
 const requestFetch = useRequestFetch()
@@ -518,7 +545,8 @@ const setStatus = async ({ id, status }: { id: string; status: ArticleStatus }) 
     })
     toast.add({
       color: 'success',
-      title: 'Status ' + $t(`articles.status.${status}`).toLocaleLowerCase(),
+      title: $t('articles.status.changeSuccess', [$t(`articles.status.${status}`)]),
+      description: rows.value.find((article) => article.id === id)?.title,
     })
     await invalidateArticleLists()
     optimisticStatus.saved()

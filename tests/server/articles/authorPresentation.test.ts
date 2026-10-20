@@ -14,8 +14,8 @@ describe('author article presentation', () => {
     expect(endpoint).toContain(
       "where: user?.id ? { userId: user.id } : sessionId ? { sessionId, userId: null } : { id: '' }",
     )
-    expect(endpoint).toContain('omit: { content: true }')
+    expect(endpoint).toContain('...articleCardSelect(user?.id)')
     expect(endpoint).toContain('likedByUser: reactions.length > 0')
-    expect(endpoint).toContain('items.map(({ reactions, ...article })')
+    expect(endpoint).toContain('items.map(({ reactions, content, ...article })')
   })
 })

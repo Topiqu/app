@@ -1,5 +1,5 @@
 <template>
-  <div v-if="data && article" class="min-h-[100dvh] px-4 py-8 sm:px-6 lg:px-8">
+  <div v-if="data && article" class="px-4 py-8 sm:px-6 lg:px-8">
     <ArticleView
       :article
       :aiDisclosure="showsAiDisclosure ? data.aiInvolvement : null"
@@ -47,47 +47,49 @@
           :onStatusUpdate="debouncedSetStatus"
           @toggleComments="toggleComments"
           @refresh="refresh"
-        />
-
-        <div class="flex justify-end gap-4 mt-10">
-          <UButton
-            :color="articleLiked ? 'error' : 'neutral'"
-            :variant="articleLiked ? 'soft' : 'ghost'"
-            icon="mdi:heart"
-            square
-            :aria-label="$t('common.actions.like')"
-            :loading="articleReactionPending"
-            @click="toggleArticleLike"
-          />
-          <UButton
-            color="neutral"
-            variant="ghost"
-            icon="mdi:link-variant"
-            square
-            :aria-label="$t('common.actions.copyLink')"
-            @click="copyLink(fullUrl)"
-          />
-          <UButton
-            :to="`https://x.com/share?text=${encodeURIComponent(data.title)}&url=${fullUrl}`"
-            target="_blank"
-            color="neutral"
-            variant="ghost"
-            icon="mdi:twitter"
-            square
-            aria-label="X"
-            @click="share('TWITTER')"
-          />
-          <UButton
-            :to="`https://www.linkedin.com/sharing/share-offsite/?url=${fullUrl}`"
-            target="_blank"
-            color="neutral"
-            variant="ghost"
-            icon="mdi:linkedin"
-            square
-            aria-label="LinkedIn"
-            @click="share('LINKEDIN')"
-          />
-        </div>
+        >
+          <template #sharing>
+            <div class="flex flex-wrap items-center gap-1">
+              <UButton
+                :color="articleLiked ? 'error' : 'neutral'"
+                :variant="articleLiked ? 'soft' : 'ghost'"
+                icon="mdi:heart"
+                square
+                :aria-label="$t('common.actions.like')"
+                :loading="articleReactionPending"
+                @click="toggleArticleLike"
+              />
+              <UButton
+                color="neutral"
+                variant="ghost"
+                icon="mdi:link-variant"
+                square
+                :aria-label="$t('common.actions.copyLink')"
+                @click="copyLink(fullUrl)"
+              />
+              <UButton
+                :to="`https://x.com/share?text=${encodeURIComponent(data.title)}&url=${fullUrl}`"
+                target="_blank"
+                color="neutral"
+                variant="ghost"
+                icon="mdi:twitter"
+                square
+                aria-label="X"
+                @click="share('TWITTER')"
+              />
+              <UButton
+                :to="`https://www.linkedin.com/sharing/share-offsite/?url=${fullUrl}`"
+                target="_blank"
+                color="neutral"
+                variant="ghost"
+                icon="mdi:linkedin"
+                square
+                aria-label="LinkedIn"
+                @click="share('LINKEDIN')"
+              />
+            </div>
+          </template>
+        </ArticleActionsBar>
       </template>
 
       <template #footer>
@@ -229,7 +231,10 @@ if (redirectSlug) {
   )
 }
 
-const { data: follows, refresh: refreshFollows } = await useFetch<User[]>('/api/follows/followed')
+const { data: follows, refresh: refreshFollows } = await useLazyFetch<User[]>('/api/follows/followed', {
+  immediate: Boolean(session.value?.user),
+  default: () => [],
+})
 
 const { data: relatedArticles, pending } = await useFetch(() => `/api/articles/${slug.value}/related`, {
   lazy: true,
@@ -279,6 +284,9 @@ const { trackView } = useArticleTracking(computed(() => data.value?.id))
 const { share, copyLink, toggleComments, debouncedSetStatus } = useArticleActions(data, refresh)
 
 const isFollowing = shallowRef(follows.value?.some((f) => f.id === data.value?.userId) || false)
+watch(follows, (users) => {
+  isFollowing.value = users?.some((user) => user.id === data.value?.userId) || false
+})
 const followPending = shallowRef(false)
 const optimisticStatus = useOptimisticStatus()
 const toggleFollow = async () => {

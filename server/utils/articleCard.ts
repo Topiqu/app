@@ -1,0 +1,28 @@
+/** Listing queries never load editor prompts, accounting or generation metadata. */
+export const articleCardSelect = (userId?: string) =>
+  ({
+    id: true,
+    slug: true,
+    language: true,
+    title: true,
+    excerpt: true,
+    content: true,
+    imageUrl: true,
+    imageCredit: true,
+    createdAt: true,
+    updatedAt: true,
+    publishedAt: true,
+    readingTime: true,
+    totalWords: true,
+    views: true,
+    shared: true,
+    status: true,
+    clientSiteId: true,
+    aiInvolvement: true,
+    articleSeriesId: true,
+    seriesOrder: true,
+    tags: { select: { tagId: true, tag: { select: { id: true, name: true, slug: true } } } },
+    user: { select: { id: true, username: true, role: true, avatarUrl: true } },
+    reactions: { where: userId ? { userId } : { id: '' }, select: { id: true }, take: 1 },
+    _count: { select: { comments: true, reactions: true } },
+  }) as const

@@ -4,9 +4,18 @@ export default defineEventHandler(async (event) => {
   const { id } = getRouterParams(event)
   const { pollId } = getQuery(event)
 
-  if (!pollId || !id) {
+  if (typeof pollId !== 'string' || !pollId || !id) {
     throw createError({ statusCode: 400, message: t('common.errors.missing')! })
   }
+  const poll = await prisma.poll.findFirst({
+    where: {
+      id: pollId,
+      articleId: id,
+      article: { status: 'published', deletedAt: null, clientSite: { deletedAt: null } },
+    },
+    select: { id: true },
+  })
+  if (!poll) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
 
   // Read-only: this route only reports counts, so it must not mint an identity for a crawler.
   // A first-time visitor has no cookie yet and correctly reads back no vote of their own.

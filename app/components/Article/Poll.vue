@@ -108,7 +108,7 @@ const vote = async (optionId?: string) => {
     hasVoted.value = previousHasVoted
     selectedOption.value = previousSelection
     optimisticStatus.reverted()
-    toast.add({ color: 'error', title: e.data?.message })
+    toast.add({ color: 'error', title: fetchErrorMessage(e, $t('common.messages.operationFailed')) })
   } finally {
     voting.value = false
   }

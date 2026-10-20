@@ -20,6 +20,8 @@ export default defineEventHandler(async (event) => {
     if (!userData) throw createError({ statusCode: 404, message: t('common.errors.userNotFound')! })
 
     const articleWhere = {
+      deletedAt: null,
+      clientSite: { deletedAt: null },
       userId: userData.id,
       clientSiteId: userData.clientSiteId ?? undefined,
       status: 'published' as const,
