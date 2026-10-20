@@ -4,6 +4,37 @@ import { preparePage, waitForPageReady } from './helpers'
 
 const articleUrl = 'http://localhost:4173/cs/clanky/jak-postavit-udrzitelnou-redakci'
 
+test('service-worker activation removes legacy private responses and never serves them offline', async ({ page }) => {
+  await preparePage(page)
+  await page.goto('http://localhost:4173/api/live')
+  await page.evaluate(async () => {
+    const cache = await caches.open('api-cache')
+    await cache.put(
+      '/api/auth/get-session',
+      new Response(JSON.stringify({ user: { id: 'synthetic-account-a' } }), {
+        headers: { 'content-type': 'application/json' },
+      }),
+    )
+  })
+  await page.goto(articleUrl)
+  await waitForPageReady(page)
+  await expect
+    .poll(() => page.evaluate(async () => (await caches.keys()).includes('api-cache')), { timeout: 20_000 })
+    .toBe(false)
+  await page.reload()
+  await waitForPageReady(page)
+  await page.context().setOffline(true)
+  const result = await page.evaluate(async () => {
+    try {
+      await fetch('/api/auth/get-session')
+      return 'network-response'
+    } catch {
+      return 'offline'
+    }
+  })
+  expect(result).toBe('offline')
+})
+
 test('production article assets stay loadable across service-worker activation', async ({ page, request }) => {
   await preparePage(page)
   await page.goto(articleUrl)
