@@ -12,20 +12,31 @@ export default defineEventHandler(async (event) => {
 
   const { hard } = getQuery(event)
   const forceDelete = hard === 'true'
+  const site = await db.clientSite.findUnique({ where: { id }, select: { domain: true } })
+  if (!site) throw createError({ statusCode: 404, message: t('common.errors.blogNotFound')! })
 
   if (forceDelete) {
-    await db.user.deleteMany({ where: { clientSiteId: id } })
-    await db.clientSite.delete({ where: { id } })
-  } else {
-    await db.user.updateMany({
-      where: { clientSiteId: id },
-      data: { deletedAt: new Date() },
+    await db.$transaction(async (tx) => {
+      // Global identities may own content or memberships in other publications.
+      await tx.user.updateMany({ where: { clientSiteId: id }, data: { clientSiteId: null } })
+      await tx.session.updateMany({ where: { clientSiteId: id }, data: { clientSiteId: null } })
+      await tx.clientSite.delete({ where: { id } })
     })
-    await db.clientSite.update({
-      where: { id },
-      data: { deletedAt: new Date() },
+  } else {
+    await db.$transaction(async (tx) => {
+      await tx.clientSite.update({ where: { id }, data: { deletedAt: new Date() } })
+      await tx.session.updateMany({ where: { clientSiteId: id }, data: { clientSiteId: null } })
     })
   }
+  await invalidateFeed(id)
+  await uncache(tenantHostKey(site.domain), domainRedirectKey(site.domain))
+  await logAction({
+    action: 'CLIENT_DELETE',
+    userId: user.id,
+    clientSiteId: forceDelete ? null : id,
+    ip: getIp(event),
+    metadata: { clientSiteId: id, hard: forceDelete },
+  })
 
   return { success: true }
 })

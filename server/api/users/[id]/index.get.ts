@@ -4,13 +4,25 @@ export default defineEventHandler(async (event) => {
   if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
   const { id } = getRouterParams(event)
+  if (user.id !== id && user.role !== 'superadmin')
+    throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
   const db = await getEnhancedPrisma(user)
 
   const userData = await db.user.findUnique({
     where: { id },
-    include: {
+    select: {
+      id: true,
+      username: true,
+      email: true,
+      avatarUrl: true,
+      role: true,
+      language: true,
+      theme: true,
+      bio: true,
+      clientSiteId: true,
+      emailVerified: true,
+      createdAt: true,
       _count: { select: { comments: true, followers: true, following: true } },
-      reactions: true,
     },
   })
 

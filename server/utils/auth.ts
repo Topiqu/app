@@ -23,7 +23,7 @@ declare module 'h3' {
 
 // Production pins no AUTH_ORIGIN: the OAuth redirect_uri follows the request host, which the tenant
 // hop (`oauth-start`) always makes app.topiqu.com. The host list keeps a forged Host header out.
-const devOrigins = isSecureAuth ? [] : ['http://localhost:*', 'http://127.0.0.1:*']
+const devOrigins = isSecureAuth ? [] : ['http://localhost:*', 'http://*.localhost:*', 'http://127.0.0.1:*']
 const baseURL = process.env.AUTH_ORIGIN || {
   allowedHosts: ['topiqu.com', '*.topiqu.com', ...devOrigins.map((url) => url.replace('http://', ''))],
   fallback: isSecureAuth ? 'https://app.topiqu.com' : 'http://localhost:3000',
@@ -136,7 +136,7 @@ const credentials = {
 export const auth = betterAuth({
   appName: 'Topiqu',
   baseURL,
-  secret: useRuntimeConfig().auth.secret,
+  secret: process.env.AUTH_SECRET || useRuntimeConfig().auth.secret,
   // The adapter types its client without options; the omit override only widens result rows.
   database: zenstackAdapter(authDb as unknown as Parameters<typeof zenstackAdapter>[0], { provider: 'postgresql' }),
   trustedOrigins,
@@ -258,6 +258,9 @@ export const getSessionUser = async (event: H3Event): Promise<SessionUser | null
   if (event.context.authUser !== undefined) return event.context.authUser
   // Refresh is left to `/api/auth/get-session`, the only caller that can hand the extended cookie back.
   const result = await auth.api.getSession({ headers: event.headers, query: { disableRefresh: true } })
-  event.context.authUser = result?.user ?? null
+  const activeUser =
+    result?.user &&
+    (await prisma.user.findFirst({ where: { id: result.user.id, deletedAt: null }, select: { id: true } }))
+  event.context.authUser = activeUser ? result!.user : null
   return event.context.authUser
 }

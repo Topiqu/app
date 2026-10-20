@@ -62,10 +62,10 @@ export const toSessionUser = async (
   const membership = session.clientSiteId
     ? await prisma.tenantMembership.findUnique({
         where: { clientSiteId_userId: { clientSiteId: session.clientSiteId, userId: user.id } },
-        select: { deletedAt: true, role: true, scopes: true, clientSite: { select: { plan: true } } },
+        select: { deletedAt: true, role: true, scopes: true, clientSite: { select: { plan: true, deletedAt: true } } },
       })
     : null
-  const active = membership !== null && membership.deletedAt === null
+  const active = membership !== null && membership.deletedAt === null && membership.clientSite.deletedAt === null
   if (session.clientSiteId && !active)
     await prisma.session.update({ where: { id: session.id }, data: { clientSiteId: null } })
 

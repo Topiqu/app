@@ -184,7 +184,7 @@ describe('tenant boundary wiring', () => {
   })
 
   it('sends only writable article fields when updating an existing article', () => {
-    const editor = source('app/pages/admin/editor/[id].vue')
+    const editor = source('app/components/Article/Editor/Workspace.vue')
     const payload = editor.slice(editor.indexOf('const payload = {'), editor.indexOf('submitting.value = true'))
     expect(payload).not.toContain('...editedArticle.value')
     expect(payload).toContain('title: sourceDraft?.title ?? editedArticle.value.title')

@@ -28,7 +28,7 @@ const loadTenant = async (hostname: string) => {
 
   const site = await prisma.clientSite.findFirst({
     // Name also resolves outside production, matching `/api/clients/slug/[slug]`.
-    where: isProd ? { domain: hostname } : { OR: [{ domain: hostname }, { name: hostname }] },
+    where: { deletedAt: null, ...(isProd ? { domain: hostname } : { OR: [{ domain: hostname }, { name: hostname }] }) },
     select: TENANT_SELECT,
   })
   if (!site) return null

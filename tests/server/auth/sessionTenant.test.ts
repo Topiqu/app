@@ -27,11 +27,22 @@ describe('login tenant selection', () => {
 describe('session user', () => {
   const user = { id: 'u1', name: 'jane', email: 'jane@example.com', image: null, role: 'reader' }
 
-  type Membership = { deletedAt: Date | null; role?: string; scopes?: string[]; clientSite: { plan: string } }
+  type Membership = {
+    deletedAt: Date | null
+    role?: string
+    scopes?: string[]
+    clientSite: { plan: string; deletedAt?: Date | null }
+  }
   const stub = (membership: Membership | null) => {
     const update = vi.fn().mockResolvedValue({})
     vi.stubGlobal('prisma', {
-      tenantMembership: { findUnique: vi.fn().mockResolvedValue(membership) },
+      tenantMembership: {
+        findUnique: vi
+          .fn()
+          .mockResolvedValue(
+            membership ? { ...membership, clientSite: { deletedAt: null, ...membership.clientSite } } : null,
+          ),
+      },
       session: { update },
     })
     return update
@@ -78,6 +89,20 @@ describe('session user', () => {
       scopes: [...TENANT_SCOPES],
     })
     expect(update).not.toHaveBeenCalled()
+  })
+  it('clears a deactivated tenant without granting its scopes', async () => {
+    const update = stub({
+      deletedAt: null,
+      role: 'OWNER',
+      scopes: [],
+      clientSite: { plan: 'PRO', deletedAt: new Date() },
+    })
+    expect(await toSessionUser(user, { id: 's1', clientSiteId: 'site' })).toMatchObject({
+      role: 'reader',
+      clientSiteId: '',
+      scopes: [],
+    })
+    expect(update).toHaveBeenCalled()
   })
 })
 

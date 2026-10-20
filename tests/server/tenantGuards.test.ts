@@ -3,7 +3,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { requireArticleAccess, requireTenantMember, requireTenantScope } from '../../server/utils/tenantMembership'
 
-type Membership = { role: 'OWNER' | 'MEMBER'; scopes: string[]; deletedAt?: Date | null }
+type Membership = {
+  role: 'OWNER' | 'MEMBER'
+  scopes: string[]
+  deletedAt?: Date | null
+  clientSite?: { deletedAt: Date | null }
+}
 
 const event = {} as never
 
@@ -19,6 +24,7 @@ const stub = (
         clientSiteId: where.clientSiteId_userId.clientSiteId,
         userId: where.clientSiteId_userId.userId,
         deletedAt: null,
+        clientSite: { deletedAt: null },
         ...membership,
       },
   )
@@ -37,6 +43,10 @@ beforeEach(() => vi.unstubAllGlobals())
 afterEach(() => vi.unstubAllGlobals())
 
 describe('requireTenantMember', () => {
+  it('rejects an otherwise active member of a deactivated tenant', async () => {
+    stub(member, { role: 'OWNER', scopes: [], clientSite: { deletedAt: new Date() } })
+    await expect(requireTenantMember(event)).rejects.toMatchObject({ statusCode: 403 })
+  })
   it('rejects a user without an active tenant', async () => {
     stub({ ...member, clientSiteId: '' }, null)
     await expect(requireTenantMember(event)).rejects.toMatchObject({ statusCode: 403 })
@@ -90,10 +100,14 @@ describe('requireArticleAccess', () => {
   })
 
   it('checks the scope on the article’s tenant', async () => {
-    const { findUnique } = stub(member, { role: 'MEMBER', scopes: ['ARTICLE_WRITE'] }, {
-      userId: 'u1',
-      clientSiteId: 'site-2',
-    })
+    const { findUnique } = stub(
+      member,
+      { role: 'MEMBER', scopes: ['ARTICLE_WRITE'] },
+      {
+        userId: 'u1',
+        clientSiteId: 'site-2',
+      },
+    )
     await requireArticleAccess(event, 'a1')
     expect(findUnique.mock.calls[0]![0].where.clientSiteId_userId.clientSiteId).toBe('site-2')
   })
