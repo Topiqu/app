@@ -4,6 +4,9 @@ import { createDatabaseClient } from '../server/utils/database'
 
 const prisma = createDatabaseClient()
 
+if ((process.env.NODE_ENV === 'production' || process.env.APP_ENV === 'production') && !process.env.TEST_DATABASE_URL)
+  throw new Error('Demo fixtures cannot be seeded in production')
+
 const TEST_PASSWORD = 'test1234'
 
 const FEATURE_CATALOG = [
@@ -240,8 +243,7 @@ async function main() {
 
   console.log('✅ Seed done')
   console.log('   ClientSite:', site.name, '(plan:', site.plan + ')')
-  console.log('   Users (password = "' + TEST_PASSWORD + '"):')
-  for (const u of users) console.log('   -', u.email, '→', u.role)
+  console.log('   Demo users created; credentials are never printed.')
 }
 
 main()

@@ -70,6 +70,9 @@ jobs:
       - name: Lint
         run: bun run lint
 
+      - name: Check formatting
+        run: bun run prettier
+
       - name: Check OpenAPI contract
         run: bun run openapi:check
 
@@ -200,6 +203,9 @@ jobs:
 
       - name: Install browser engines
         run: bunx playwright install --with-deps chromium webkit
+
+      - name: Build deployment image without database credentials
+        run: docker build --tag topiqu-ci:${{ github.sha }} .
 
       - name: Test production assets and service worker
         run: bun run test:e2e:release

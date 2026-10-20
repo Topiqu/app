@@ -25,18 +25,17 @@ FROM base AS prerelease
 COPY --from=install /temp/node_modules node_modules
 COPY . .
 
-ARG DATABASE_URL
-ENV DATABASE_URL=${DATABASE_URL}
-
 ENV NODE_ENV=production
 ENV NITRO_PRESET=bun
-RUN bun release
 RUN bun --bun run build
 
 # release
 FROM base AS release
 
-COPY --from=prerelease /usr/src/app/.output .
+COPY --from=prerelease --chown=bun:bun /usr/src/app/.output .
+USER bun
 
-EXPOSE 3000:3000
+HEALTHCHECK --interval=30s --timeout=6s --start-period=30s --retries=3 CMD bun -e "const r = await fetch('http://127.0.0.1:3000/api/health', { signal: AbortSignal.timeout(5000) }); if (!r.ok) process.exit(1)"
+
+EXPOSE 3000
 ENTRYPOINT [ "bun", "--bun", "server/index.mjs" ]
