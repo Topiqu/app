@@ -39,7 +39,7 @@
             class="w-full"
             icon="mdi:lock"
             required
-            :minlength="4"
+            :minlength="8"
             :maxlength="124"
             placeholder="********"
             autocomplete="new-password"
@@ -66,7 +66,7 @@
             class="w-full"
             icon="mdi:lock-check"
             required
-            :minlength="4"
+            :minlength="8"
             :maxlength="124"
             placeholder="********"
             autocomplete="new-password"
@@ -113,8 +113,8 @@ const resetSchema = z
   .object({
     email: z.email(),
     code: z.string().length(8),
-    password: z.string().min(4).max(124),
-    passwordConfirm: z.string().min(4).max(124),
+    password: z.string().min(8).max(124),
+    passwordConfirm: z.string().min(8).max(124),
   })
   .refine((value) => value.password === value.passwordConfirm, { path: ['passwordConfirm'] })
 const verificationDigits = computed<string[]>({
@@ -131,7 +131,7 @@ const forgot = async () => {
       body: { email: form.value.email },
     })
     emit('update:mode', 'reset')
-    toast.add({ color: 'success', title: $t('common.auth.verificationCodeSent') })
+    toast.add({ color: 'success', title: $t('common.auth.verificationCodeSent'), description: form.value.email })
   } catch (e: any) {
     toast.add({ color: 'error', title: fetchErrorMessage(e, $t('common.auth.sendCodeFailed')) })
   } finally {

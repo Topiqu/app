@@ -26,6 +26,7 @@
     "greeting": "Bonjour {userName},",
     "intro": "Pour terminer {actionType}, utilisez le code de vérification suivant :",
     "expiration": "Ce code est valable 24 heures. Si vous ne l'avez pas demandé, vous pouvez ignorer cet e-mail.",
+    "resetExpiration": "Ce code de réinitialisation du mot de passe est valable 15 minutes. Si vous ne l'avez pas demandé, ignorez cet e-mail.",
     "actions": {
       "signup": "la création de votre compte",
       "emailVerification": "la vérification de votre adresse e-mail"
