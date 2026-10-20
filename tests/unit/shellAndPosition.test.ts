@@ -20,12 +20,31 @@ describe('application shell contract', () => {
     ['user', false],
     [undefined, false],
   ] as const)('renders the dashboard for %s: %s', (role, expected) => {
-    expect(canRenderDashboardShell(role)).toBe(expected)
+    expect(canRenderDashboardShell(role, { platformHost: true })).toBe(expected)
   })
 
   it('lets auth and invitation routes explicitly suppress the role shell', () => {
-    expect(canRenderDashboardShell('admin', false)).toBe(false)
-    expect(canRenderDashboardShell('superadmin', false)).toBe(false)
+    expect(canRenderDashboardShell('admin', { platformHost: true, dashboardSidebar: false })).toBe(false)
+    expect(canRenderDashboardShell('superadmin', { platformHost: true, dashboardSidebar: false })).toBe(false)
+  })
+
+  it('only shows tenant administration when the host matches the active authorized tenant', () => {
+    expect(canRenderDashboardShell('admin', { platformHost: false, hostTenantId: 'own', sessionTenantId: 'own' })).toBe(
+      true,
+    )
+    expect(
+      canRenderDashboardShell('admin', { platformHost: false, hostTenantId: 'other', sessionTenantId: 'own' }),
+    ).toBe(false)
+    expect(canRenderDashboardShell('admin', { platformHost: false, hostTenantId: 'other' })).toBe(false)
+    expect(
+      canRenderDashboardShell('reader', { platformHost: false, hostTenantId: 'own', sessionTenantId: 'own' }),
+    ).toBe(false)
+  })
+
+  it('fails closed on unresolved tenant hosts but preserves platform and superadmin access', () => {
+    expect(canRenderDashboardShell('admin', { platformHost: false, sessionTenantId: 'own' })).toBe(false)
+    expect(canRenderDashboardShell('admin', { platformHost: true, sessionTenantId: 'own' })).toBe(true)
+    expect(canRenderDashboardShell('superadmin', { platformHost: false, hostTenantId: 'other' })).toBe(true)
   })
 })
 

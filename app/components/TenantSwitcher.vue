@@ -1,5 +1,5 @@
 <template>
-  <div :class="collapsed ? '' : ''">
+  <div :class="collapsed ? 'flex min-w-0 justify-center' : 'min-w-0'">
     <UDropdownMenu v-model:open="open" :items="menuItems" :content="{ align: 'start' }" :ui="{ content: 'w-64' }">
       <UButton
         class="text-muted hover:text-highlighted"

@@ -97,11 +97,9 @@
 const isSidebarOpen = defineModel<boolean>('isSidebarOpen')
 
 const route = useRoute()
-const preview = useWidgetPagePreview()
 // Live ref, not a snapshot: the header sits in the persistent layout, so a settings save would otherwise
 // keep showing the previous logo until a full reload.
 const clientSite = await useLiveClientSite()
-const { data: auth } = useAuth()
 const localePath = useLocalePath()
 const articleHeader = useArticleHeaderContext()
 const articleState = useArticleScrollState()
@@ -109,7 +107,7 @@ const articleLikeBus = useArticleLikeBus()
 const isArticleRoute = computed(() => String(route.name || '').includes('clanky-slug'))
 
 const shell = computed(() => resolvePageShell(route.meta.shell))
-const showDashboard = computed(() => !preview.active.value && canRenderDashboardShell(auth.value?.user.role))
+const showDashboard = useDashboardAccess(clientSite)
 const isPublicationSurface = computed(() => Boolean(clientSite.value && shell.value === 'publication'))
 const logoSrc = computed(() => clientSite.value?.logoUrl || null)
 </script>

@@ -6,6 +6,12 @@
     :minSize="272"
     :maxSize="272"
     :collapsedSize="72"
+    :ui="{
+      root: 'group/sidebar',
+      header: 'group-data-[collapsed=true]/sidebar:px-2',
+      body: 'group-data-[collapsed=true]/sidebar:px-2',
+      footer: 'group-data-[collapsed=true]/sidebar:px-2',
+    }"
   >
     <template #header="{ collapsed, collapse }">
       <div class="flex w-full items-center gap-2" :class="collapsed ? 'justify-center' : 'justify-between'">

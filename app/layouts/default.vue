@@ -44,7 +44,7 @@
       />
       <Footer />
     </template>
-    <template v-if="auth?.user?.role === 'admin'">
+    <template v-if="showDashboard && auth?.user?.role === 'admin'">
       <LazyTagsCreate v-if="tagsMounted" v-model="tagsOpen" />
     </template>
     <LazyClientCreate v-if="auth?.user?.role === 'superadmin' && clientCreateMounted" v-model="clientCreateOpen" />
@@ -71,9 +71,7 @@ const tagsMounted = computed<boolean>((previous) => Boolean(previous || tagsOpen
 const clientCreateMounted = computed<boolean>((previous) => Boolean(previous || clientCreateOpen.value))
 const userListMounted = computed<boolean>((previous) => Boolean(previous || userListOpen.value))
 const shell = computed(() => resolvePageShell(route.meta.shell))
-const showDashboard = computed(
-  () => !preview.active.value && canRenderDashboardShell(auth.value?.user.role, route.meta.dashboardSidebar),
-)
+const showDashboard = useDashboardAccess(clientSite)
 const isPublicationSurface = computed(() => {
   return Boolean(clientSite.value && shell.value === 'publication')
 })
