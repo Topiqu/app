@@ -28,9 +28,10 @@ export default defineEventHandler(async (event) => {
   }
 
   const stripe = useStripe()
+  const returnOrigin = await billingReturnOrigin(event, origin)
   const portalSession = await stripe.billingPortal.sessions.create({
     customer: clientSite.stripeCustomerId,
-    return_url: `${origin}/settings?tab=billing`,
+    return_url: `${returnOrigin}/settings?tab=billing`,
   })
 
   return { url: portalSession.url }

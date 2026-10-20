@@ -41,6 +41,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const stripe = useStripe()
+  const returnOrigin = await billingReturnOrigin(event, origin)
   const stripeSession = await stripe.checkout.sessions.create({
     mode: 'payment',
     line_items: [
@@ -53,8 +54,8 @@ export default defineEventHandler(async (event) => {
         quantity: 1,
       },
     ],
-    success_url: `${origin}/settings?tab=billing`,
-    cancel_url: `${origin}/settings?tab=billing`,
+    success_url: `${returnOrigin}/settings?tab=billing`,
+    cancel_url: `${returnOrigin}/settings?tab=billing`,
     client_reference_id: clientSiteId,
     metadata: { articles: articlePack.articles.toString(), packId: articlePack.id, clientSiteId },
   })

@@ -34,13 +34,23 @@ export default defineEventHandler(async (event) => {
 
   const clientSite = await prisma.clientSite.findUnique({
     where: { id: clientSiteId },
-    select: { id: true, plan: true, billingPlan: true, billingProvider: true, stripeCustomerId: true },
+    select: {
+      id: true,
+      plan: true,
+      billingPlan: true,
+      billingProvider: true,
+      stripeCustomerId: true,
+      stripeSubscriptionId: true,
+    },
   })
   if (!clientSite) {
     throw createError({ statusCode: 404, message: 'ClientSite not found' })
   }
   rejectShopifyBilled(event, clientSite.billingProvider)
 
+  const returnOrigin = await billingReturnOrigin(event, origin)
+  if (bodyInterval !== undefined && !['month', 'year'].includes(bodyInterval))
+    throw createError({ statusCode: 400, message: 'Invalid billing interval' })
   const interval: 'month' | 'year' = bodyInterval ?? (clientSite.billingPlan === 'ANNUAL' ? 'year' : 'month')
   const price = PRICE_BY_PLAN[plan][interval]
   if (!price) {
@@ -48,18 +58,29 @@ export default defineEventHandler(async (event) => {
   }
 
   const stripe = useStripe()
-  const session = await stripe.checkout.sessions.create({
-    mode: 'subscription',
-    line_items: [{ price, quantity: 1 }],
-    success_url: `${origin}/settings?tab=billing`,
-    cancel_url: `${origin}/settings?tab=billing`,
-    client_reference_id: clientSiteId,
-    customer: clientSite.stripeCustomerId ?? undefined,
-    metadata: { plan, clientSiteId, interval },
-    subscription_data: {
+  if (clientSite.stripeSubscriptionId) {
+    const existing = await stripe.subscriptions.retrieve(clientSite.stripeSubscriptionId)
+    if (!['canceled', 'incomplete_expired'].includes(existing.status))
+      throw createError({
+        statusCode: 409,
+        message: (await useServerI18n(event)).translate('common.errors.alreadyExists')!,
+      })
+  }
+  const session = await stripe.checkout.sessions.create(
+    {
+      mode: 'subscription',
+      line_items: [{ price, quantity: 1 }],
+      success_url: `${returnOrigin}/settings?tab=billing`,
+      cancel_url: `${returnOrigin}/settings?tab=billing`,
+      client_reference_id: clientSiteId,
+      customer: clientSite.stripeCustomerId ?? undefined,
       metadata: { plan, clientSiteId, interval },
+      subscription_data: {
+        metadata: { plan, clientSiteId, interval },
+      },
     },
-  })
+    { idempotencyKey: `subscription:${clientSiteId}:${Math.floor(Date.now() / 1_800_000)}` },
+  )
 
   return { url: session.url }
 })
