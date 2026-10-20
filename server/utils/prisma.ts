@@ -12,7 +12,7 @@ const calculateBasicMetrics = (content: string) => {
   }
 }
 
-const appMutationPlugin = definePlugin(schema, {
+export const appMutationPlugin = definePlugin(schema, {
   id: 'app-mutations',
   async onQuery({ model, operation, args, proceed }) {
     const data = args?.data
