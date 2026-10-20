@@ -3,7 +3,7 @@
     v-model:open="open"
     :title="$t('articles.tags.manageTags')"
     :ui="{ content: 'sm:max-w-lg' }"
-    :content="{ onEscapeKeyDown }"
+    :content="{ onEscapeKeyDown, onCloseAutoFocus }"
   >
     <template #body>
       <form class="flex gap-2" @submit.prevent="createTag">
@@ -141,10 +141,22 @@ const editErrorId = useId()
 const creating = shallowRef(false)
 const pendingTagIds = ref(new Set<string>())
 const optimisticStatus = useOptimisticStatus()
+let opener: HTMLElement | null = null
+const onCloseAutoFocus = (event: Event) => {
+  if (!opener?.isConnected) return
+  event.preventDefault()
+  opener.focus({ preventScroll: true })
+}
 
-watch(open, (isOpen) => {
-  if (isOpen) refresh()
-})
+watch(
+  open,
+  (isOpen) => {
+    if (!isOpen) return
+    if (import.meta.client && document.activeElement instanceof HTMLElement) opener = document.activeElement
+    refresh()
+  },
+  { immediate: true },
+)
 
 const toSlug = (name: string) => slugify(name, { lower: true, strict: true, trim: true })
 const sameName = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase()
