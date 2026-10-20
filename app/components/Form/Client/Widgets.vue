@@ -27,7 +27,7 @@
 
       <div
         v-if="!items.length"
-        class="flex flex-col items-center gap-3 rounded-xl border border-dashed border-accented px-6 py-12 text-center"
+        class="flex flex-col items-center gap-3 rounded-(--topiqu-surface-radius) border border-dashed border-accented px-6 py-12 text-center"
       >
         <UIcon name="mdi:widgets-outline" class="size-10 text-dimmed" aria-hidden="true" />
         <p class="font-medium text-highlighted">{{ $t('widgets.empty') }}</p>
@@ -71,7 +71,7 @@
           <li v-for="({ item, index }, at) in group.entries" :key="item.key">
             <article
               :data-widget-key="item.key"
-              class="relative flex h-full flex-col overflow-hidden rounded-xl border bg-default transition"
+              class="relative flex h-full flex-col overflow-hidden rounded-(--topiqu-surface-radius) border bg-default transition"
               :class="
                 item.key === invalidKey
                   ? 'border-error ring-1 ring-error'
@@ -456,7 +456,7 @@ async function save() {
     await $fetch('/api/widgets', { method: 'PUT', body: parsed.data })
     await Promise.all([refetch(), refreshClientSite()])
     editingKey.value = null
-    toast.add({ color: 'success', title: t('common.messages.successGeneralTitle') })
+    toast.add({ color: 'success', title: t('common.messages.saveSuccess') })
   } catch (err) {
     toast.add({ color: 'error', title: fetchErrorMessage(err, t('common.messages.operationFailed')) })
   } finally {

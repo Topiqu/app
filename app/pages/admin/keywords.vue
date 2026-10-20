@@ -18,9 +18,21 @@
       </div>
     </header>
 
-    <div v-if="isPending" class="flex flex-col gap-3" aria-busy="true">
-      <USkeleton class="h-20 w-full" />
-      <USkeleton v-for="index in 3" :key="index" class="h-14 w-full" />
+    <div v-if="isPending" class="flex flex-col gap-6" :aria-label="$t('common.loading')" aria-busy="true">
+      <div
+        class="grid grid-cols-1 gap-px overflow-hidden rounded-(--topiqu-surface-radius) border border-default bg-default sm:grid-cols-3"
+      >
+        <div v-for="index in 3" :key="index" class="space-y-3 p-4">
+          <USkeleton class="h-3 w-32" />
+          <USkeleton class="h-7 w-12" />
+          <USkeleton class="h-3 w-full max-w-48" />
+        </div>
+      </div>
+      <USkeleton class="h-12 w-full" />
+      <div class="space-y-3">
+        <USkeleton class="h-5 w-28" />
+        <USkeleton v-for="index in 3" :key="index" class="h-14 w-full" />
+      </div>
     </div>
     <UAlert
       v-else-if="error || !data"

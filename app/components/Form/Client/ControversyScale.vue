@@ -7,7 +7,7 @@
       <span class="truncate text-xs font-medium text-muted" aria-hidden="true">{{ currentLabel }}</span>
     </div>
 
-    <div class="rounded-2xl bg-muted px-4 pb-1.5 pt-1">
+    <div class="px-4 pb-1.5 pt-1">
       <SliderRoot
         v-model="sliderValue"
         :min="0"
@@ -21,7 +21,7 @@
         <span
           v-for="(option, index) in levels"
           :key="option"
-          class="pointer-events-none absolute top-1/2 size-3 -translate-1/2 rounded-full ring-3 ring-(--ui-bg-muted)"
+          class="pointer-events-none absolute top-1/2 size-3 -translate-1/2 rounded-full ring-3 ring-default"
           :class="index <= tier ? 'bg-primary' : 'bg-accented'"
           :style="{ left: stop(index) }"
           aria-hidden="true"
