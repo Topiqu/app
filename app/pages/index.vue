@@ -1,14 +1,28 @@
 <template>
-  <ArticleEmptyPage v-if="isBlankSite" :site="clientSite" :isOwner="isOwner" />
+  <UContainer v-if="featuredError && !featuredData" class="flex min-h-[60dvh] items-center py-16">
+    <UAlert
+      color="error"
+      variant="subtle"
+      icon="mdi:alert-circle-outline"
+      :title="$t('articles.home.loadError')"
+      :description="$t('articles.home.loadErrorDescription')"
+    >
+      <template #actions>
+        <UButton color="error" variant="soft" @click="refreshFeatured()">{{ $t('common.entry.retry') }}</UButton>
+      </template>
+    </UAlert>
+  </UContainer>
 
-  <div v-else class="mx-auto max-w-7xl space-y-16 px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+  <ArticleEmptyPage v-else-if="isBlankSite" :site="clientSite" :isOwner="isOwner" />
+
+  <UContainer v-else class="@container space-y-16 pb-16 sm:space-y-20">
     <section
       ref="heroSection"
-      class="relative grid gap-6 md:grid-cols-2 lg:-mt-12 lg:min-h-[calc(100dvh-var(--topiqu-header-height))] lg:grid-cols-12 lg:items-center"
+      class="relative grid gap-6 py-8 sm:py-12 @2xl:min-h-[calc(100dvh-var(--topiqu-header-height))] @2xl:grid-cols-12 @2xl:items-center"
       data-editorial-hero
     >
       <div
-        class="editorial-enter flex max-w-2xl flex-col items-center justify-center space-y-6 py-8 text-center md:col-span-1 lg:col-span-5 lg:py-12"
+        class="editorial-enter flex max-w-2xl flex-col items-center justify-center space-y-6 py-8 text-center @2xl:col-span-5 @2xl:py-0"
         style="--enter-order: 0; transform: translateY(0.75rem)"
       >
         <AppMedia
@@ -20,14 +34,14 @@
           fit="contain"
           sizes="224px sm:288px"
           :width="576"
-          containerClass="aspect-square w-full max-w-56 rounded-(--topiqu-surface-radius) bg-transparent sm:max-w-64 lg:max-w-72"
+          containerClass="aspect-square w-full max-w-56 rounded-(--topiqu-surface-radius) bg-transparent @2xl:max-w-[min(16rem,24dvh)]"
         />
         <h1 v-if="clientSite?.logoUrl" class="sr-only">
           {{ clientSite?.name ?? $t('common.labels.title') }}
         </h1>
         <div v-else class="home-hero__heading">
           <h1
-            class="max-w-[14ch] text-4xl font-black leading-[1.05] tracking-tight text-highlighted sm:text-5xl lg:text-6xl"
+            class="max-w-[14ch] text-4xl font-black leading-[1.05] tracking-tight text-highlighted @2xl:text-5xl @5xl:text-6xl"
           >
             {{ clientSite?.name ?? $t('common.labels.title') }}
           </h1>
@@ -54,7 +68,7 @@
             {{ $t('articles.home.latestStory') }}
           </UButton>
           <UButton
-            v-if="heroArticle?.slug"
+            v-if="leadArticle?.slug"
             to="#articles"
             color="neutral"
             variant="soft"
@@ -66,61 +80,64 @@
       </div>
 
       <article
-        v-if="heroArticle?.slug"
-        class="editorial-enter group relative flex min-h-[28rem] flex-col overflow-hidden rounded-(--topiqu-surface-radius) border border-default bg-default md:col-span-1 lg:grid lg:min-h-[72dvh] lg:grid-rows-[minmax(14rem,1fr)_auto] lg:self-center"
-        :class="hasHeroRail ? 'lg:col-span-5' : 'lg:col-span-7'"
+        v-if="leadArticle?.slug"
+        class="editorial-enter group relative flex min-w-0 min-h-[28rem] flex-col overflow-hidden rounded-(--topiqu-surface-radius) border border-default bg-default @2xl:col-span-7 @2xl:grid @2xl:h-[calc(100dvh-var(--topiqu-header-height)-6rem)] @2xl:grid-rows-[minmax(0,1fr)_auto] @2xl:self-center"
+        :class="hasHeroRail ? '@5xl:col-span-5' : ''"
         style="--enter-order: 1"
       >
-        <NuxtLink
-          :to="localePath({ name: 'clanky-slug', params: { slug: heroArticle.slug } }, heroArticle.language)"
-          class="absolute inset-0 z-10"
-          :aria-label="heroArticle.title"
-        />
+        <NuxtLink :to="articlePath(leadArticle)" class="absolute inset-0 z-10" :aria-label="leadArticle.title" />
         <AppMedia
-          v-if="heroArticle.imageUrl"
-          :src="heroArticle.imageUrl"
-          :alt="heroArticle.title"
+          v-if="leadArticle.imageUrl"
+          :src="leadArticle.imageUrl"
+          :alt="leadArticle.title"
           priority
           aspectRatio="16 / 10"
           sizes="100vw md:50vw lg:42vw"
-          containerClass="min-h-56 w-full flex-1 lg:h-full"
+          containerClass="min-h-56 w-full flex-1 @2xl:h-full @2xl:min-h-0 @2xl:aspect-auto!"
         />
         <div
           v-else
           class="grid min-h-28 place-items-center border-b border-dashed border-default bg-elevated text-primary"
         >
           <UIcon name="mdi:newspaper-variant-outline" size="36" aria-hidden="true" />
-          <span class="sr-only">{{ heroArticle.title }}</span>
+          <span class="sr-only">{{ leadArticle.title }}</span>
         </div>
         <div class="flex min-h-0 flex-1 flex-col gap-3 p-5 sm:p-6">
-          <div v-if="heroTags.length" class="flex flex-wrap gap-2">
-            <UBadge v-for="tag in heroTags" :key="tag.id" color="primary" variant="soft">{{ tag.name }}</UBadge>
+          <div v-if="leadTags.length" class="flex flex-wrap gap-2">
+            <UBadge v-for="tag in leadTags" :key="tag.id" color="primary" variant="soft">{{ tag.name }}</UBadge>
           </div>
-          <h2 class="text-balance text-2xl font-black leading-tight tracking-tight text-highlighted sm:text-3xl">
-            {{ heroArticle.title }}
+          <h2
+            class="text-balance text-2xl font-black leading-tight tracking-tight text-highlighted sm:text-3xl @2xl:line-clamp-3"
+          >
+            {{ leadArticle.title }}
           </h2>
-          <p v-if="heroExcerpt" class="text-pretty text-sm leading-6 text-muted">{{ heroExcerpt }}</p>
+          <p v-if="leadArticle.excerpt" class="text-pretty text-sm leading-6 text-muted @2xl:line-clamp-2">
+            {{ leadArticle.excerpt }}
+          </p>
           <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
-            <span>{{ formatDate(heroArticle.publishedAt || heroArticle.createdAt, locale) }}</span>
-            <span v-if="heroArticle.readingTime">{{ $t('articles.readingTime', [heroArticle.readingTime]) }}</span>
+            <span>{{ formatDate(leadArticle.publishedAt || leadArticle.createdAt, locale) }}</span>
+            <span v-if="leadArticle.readingTime">{{ $t('articles.readingTime', [leadArticle.readingTime]) }}</span>
             <span class="inline-flex items-center gap-1"
-              ><UIcon name="mdi:eye-outline" size="16" />{{ heroArticle.views ?? 0 }}</span
+              ><UIcon name="mdi:eye-outline" size="16" />{{ leadArticle.views ?? 0 }}</span
             >
           </div>
           <div class="relative z-20 mt-auto space-y-3 pt-2" data-article-footer>
             <USeparator />
             <div class="flex min-h-9 items-center justify-between gap-3">
-              <UserCard v-if="heroArticle.user" :user="{ ...heroArticle.user, bio: null }" />
+              <UserCard
+                v-if="leadArticle.user?.id"
+                :user="{ ...leadArticle.user, id: leadArticle.user.id, bio: null }"
+              />
               <span v-else />
               <div class="flex shrink-0 items-center gap-1">
                 <UButton
-                  :icon="heroLiked ? 'mdi:heart' : 'mdi:heart-outline'"
-                  :color="heroLiked ? 'error' : 'neutral'"
+                  :icon="leadLiked ? 'mdi:heart' : 'mdi:heart-outline'"
+                  :color="leadLiked ? 'error' : 'neutral'"
                   variant="ghost"
                   square
-                  :loading="heroReactionPending"
+                  :loading="leadReactionPending"
                   :aria-label="$t('common.actions.like')"
-                  @click="toggleHeroLike"
+                  @click="toggleLeadLike"
                 />
                 <UButton
                   icon="mdi:share-variant-outline"
@@ -128,18 +145,18 @@
                   variant="ghost"
                   square
                   :aria-label="$t('common.actions.share')"
-                  @click="shareHeroArticle"
+                  @click="shareLeadArticle"
                 />
               </div>
             </div>
           </div>
         </div>
       </article>
-      <USkeleton v-else-if="featPending" class="aspect-[4/3] w-full md:col-span-1 lg:col-span-7" />
+      <USkeleton v-else-if="featuredPending" class="aspect-[4/3] w-full @2xl:col-span-7" />
 
       <aside
         v-if="hasHeroRail"
-        class="editorial-enter grid gap-4 md:col-span-2 md:grid-cols-2 lg:col-span-2 lg:h-[36dvh] lg:max-h-[23rem] lg:min-h-[18rem] lg:grid-cols-1 lg:grid-rows-2 lg:self-center"
+        class="editorial-enter grid gap-4 @2xl:hidden @5xl:col-span-2 @5xl:grid @5xl:h-[36dvh] @5xl:max-h-[23rem] @5xl:min-h-[18rem] @5xl:grid-cols-1 @5xl:grid-rows-2 @5xl:self-center"
         style="--enter-order: 2"
       >
         <article
@@ -155,12 +172,12 @@
           <span class="line-clamp-2 text-lg font-bold text-highlighted">{{ tags[0].name }}</span>
         </article>
         <div
-          v-if="feat?.totalArticles"
+          v-if="featuredData?.totalArticles"
           class="flex min-h-36 flex-col justify-between rounded-(--topiqu-surface-radius) border border-default p-4"
         >
           <span class="text-sm font-medium text-muted">{{ $t('stats.articleCount') }}</span>
           <strong class="text-4xl font-black tabular-nums text-highlighted">{{
-            formatNumber(feat.totalArticles)
+            formatNumber(featuredData.totalArticles)
           }}</strong>
         </div>
       </aside>
@@ -168,38 +185,91 @@
       <Transition name="fade-slide">
         <UButton
           v-if="showScrollCue"
-          to="#recommended"
+          type="button"
           square
           color="neutral"
           variant="soft"
           icon="mdi:chevron-down"
-          class="absolute bottom-3 left-1/2 z-20 hidden -translate-x-1/2 animate-bounce rounded-full lg:inline-flex motion-reduce:animate-none"
+          class="absolute bottom-3 left-1/2 z-20 hidden -translate-x-1/2 animate-bounce rounded-full @5xl:inline-flex motion-reduce:animate-none"
           :aria-label="$t('articles.home.browseArticles')"
-          @click="showScrollCue = false"
+          @click="scrollPastHero"
         />
       </Transition>
     </section>
 
     <WidgetSlot name="HOME_TOP" />
 
-    <section v-if="tags.length" class="space-y-5" aria-labelledby="topic-explorer-title">
-      <h2 id="topic-explorer-title" class="text-2xl font-bold tracking-tight text-highlighted">
-        {{ $t('articles.home.exploreTopics') }}
-      </h2>
-      <div class="topic-strip -mx-1 flex max-w-full snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-3" tabindex="0">
+    <section
+      v-if="recommendedArticles.length"
+      id="recommended"
+      ref="recommendedSection"
+      class="scroll-mt-24 space-y-6"
+      aria-labelledby="recommended-heading"
+    >
+      <div class="flex items-baseline justify-between gap-4 border-b border-default pb-4">
+        <h2 id="recommended-heading" class="text-2xl font-bold tracking-tight text-highlighted sm:text-3xl">
+          {{ $t('articles.home.recommended') }}
+        </h2>
+      </div>
+      <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <article v-for="article in recommendedArticles" :key="article.id" class="min-w-0">
+          <NuxtLink
+            :to="articlePath(article)"
+            class="group block min-w-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          >
+            <AppMedia
+              :src="article.imageUrl"
+              :alt="''"
+              :fallbackText="article.title"
+              :fallbackBorder="false"
+              aspectRatio="4 / 3"
+              sizes="100vw md:50vw lg:33vw"
+              containerClass="w-full rounded-(--topiqu-surface-radius) bg-elevated"
+            />
+            <div class="min-w-0 space-y-2 pt-4">
+              <h3
+                class="break-words text-balance text-lg font-bold leading-snug text-highlighted group-hover:text-primary sm:text-xl"
+              >
+                {{ article.title }}
+              </h3>
+              <p v-if="article.excerpt" class="line-clamp-2 text-sm leading-6 text-muted">{{ article.excerpt }}</p>
+              <p class="text-xs text-muted">{{ formatDate(article.publishedAt || article.createdAt, locale) }}</p>
+            </div>
+          </NuxtLink>
+        </article>
+      </div>
+    </section>
+
+    <HomeSeries v-if="clientSite?.name" :site="clientSite.name" />
+
+    <section
+      v-if="tags.length"
+      ref="topicsSection"
+      aria-labelledby="topics-heading"
+      class="grid scroll-mt-24 gap-6 border-t border-default pt-8 lg:grid-cols-[minmax(0,0.3fr)_minmax(0,0.7fr)] lg:gap-10"
+    >
+      <div class="space-y-2">
+        <h2 id="topics-heading" class="text-3xl font-black tracking-tight text-highlighted sm:text-4xl">
+          {{ $t('articles.home.exploreTopics') }}
+        </h2>
+        <p class="text-sm text-muted">{{ $t('articles.home.chooseTopic') }}</p>
+      </div>
+      <div
+        class="topic-strip -mx-1 flex max-w-full snap-x gap-3 overflow-x-auto px-1 pb-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        role="group"
+        tabindex="0"
+        :aria-label="$t('articles.home.exploreTopics')"
+      >
         <UButton
           v-for="tag in tags"
           :key="tag.id"
-          as="button"
-          type="button"
-          size="sm"
           :color="selectedTag === tag.name ? 'primary' : 'neutral'"
-          :variant="selectedTag === tag.name ? 'solid' : 'soft'"
+          :variant="selectedTag === tag.name ? 'solid' : 'outline'"
+          size="lg"
+          leadingIcon="mdi:pound"
+          trailingIcon="mdi:arrow-up-right"
+          class="min-h-16 min-w-40 shrink-0 snap-start justify-between px-5 text-left"
           :aria-pressed="selectedTag === tag.name"
-          icon="mdi:tag-outline"
-          :ui="{
-            base: 'min-h-11 shrink-0 snap-start rounded-[var(--ui-radius)] px-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
-          }"
           @click="selectTopic(tag.name)"
         >
           {{ tag.name }}
@@ -207,102 +277,94 @@
       </div>
     </section>
 
-    <section
-      v-if="recommendedArticles.length"
-      id="recommended"
-      class="scroll-mt-24 space-y-6"
-      aria-labelledby="recommended-title"
-    >
-      <h2 id="recommended-title" class="text-3xl font-bold tracking-tight text-highlighted">
-        {{ $t('articles.home.recommended') }}
-      </h2>
-      <div class="grid gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.65fr)]">
-        <ArticleCard :article="recommendedArticles[0]!" variant="featured" />
-        <div
-          v-if="recommendedArticles.length > 1"
-          class="grid h-full gap-6 sm:grid-cols-2 lg:grid-cols-1 lg:grid-rows-2"
-        >
-          <ArticleCard
-            v-for="article in recommendedArticles.slice(1, 3)"
-            :key="article.id"
-            :article="article"
-            variant="compact"
-          />
-        </div>
-      </div>
-    </section>
-
-    <HomeSeries v-if="clientSite?.name" :site="clientSite.name" />
-
     <WidgetSlot name="HOME_MIDDLE" />
 
-    <section v-if="showFeed" id="articles" class="space-y-6">
-      <div class="flex items-baseline justify-between gap-4 border-b border-default pb-3">
-        <h2 class="text-3xl font-bold tracking-tight">{{ $t('articles.title') }}</h2>
+    <section
+      v-if="showFeed"
+      id="articles"
+      ref="feedSection"
+      aria-labelledby="articles-heading"
+      class="scroll-mt-24 space-y-8"
+    >
+      <div class="flex flex-wrap items-end justify-between gap-4 border-b border-default pb-5">
+        <h2 id="articles-heading" class="text-3xl font-black tracking-tight text-highlighted sm:text-4xl">
+          {{ $t('articles.home.latestArticles') }}
+        </h2>
+        <span v-if="!hasFilters && featuredData?.totalArticles" class="text-sm tabular-nums text-muted">
+          {{ $t('articles.articlesCount', featuredData.totalArticles) }}
+        </span>
       </div>
 
-      <div
-        v-if="hasContent || hasFilters"
-        class="sticky z-20 w-full space-y-3 border border-transparent border-b-default bg-default/95 px-3 py-3 backdrop-blur"
-        :class="hasDashboardChrome ? 'top-0' : 'top-[var(--topiqu-header-height)]'"
-      >
-        <UFormField :label="$t('articles.searchPlaceholder')" :ui="{ label: 'sr-only' }" class="w-full">
+      <div class="flex flex-wrap items-end gap-3">
+        <UFormField
+          :label="$t('articles.searchPlaceholder')"
+          :ui="{ label: 'sr-only' }"
+          class="min-w-0 flex-1 sm:max-w-md"
+        >
           <UInput
             id="article-search"
             v-model="searchQuery"
             type="search"
-            :placeholder="$t('articles.searchPlaceholder')"
-            :aria-label="$t('articles.searchPlaceholder')"
             icon="mdi:magnify"
+            :placeholder="$t('articles.searchPlaceholder')"
             class="w-full"
           />
         </UFormField>
-        <div class="flex flex-nowrap overflow-x-auto gap-2 -mx-1 px-1 pb-1">
-          <UBadge
-            as="button"
-            type="button"
-            size="md"
-            :color="selectedTag === '' ? 'primary' : 'neutral'"
-            :variant="selectedTag === '' ? 'solid' : 'soft'"
-            :aria-pressed="selectedTag === ''"
-            @click="selectedTag = ''"
-          >
-            {{ $t('articles.title') }}
-          </UBadge>
-          <UBadge
-            v-for="tag in tags"
-            :key="tag.id"
-            as="button"
-            type="button"
-            size="md"
-            :color="selectedTag === tag.name ? 'primary' : 'neutral'"
-            :variant="selectedTag === tag.name ? 'solid' : 'soft'"
-            :aria-pressed="selectedTag === tag.name"
-            @click="selectedTag = selectedTag === tag.name ? '' : tag.name"
-          >
-            {{ tag.name }}
-          </UBadge>
-        </div>
+        <UButton v-if="hasFilters" color="neutral" variant="soft" icon="mdi:close" @click="resetFilters">
+          {{ $t('articles.home.clearFilters') }}
+        </UButton>
       </div>
+      <p v-if="selectedTag" class="text-sm text-muted">
+        {{ $t('articles.home.selectedTopic', { topic: selectedTag }) }}
+      </p>
 
-      <div v-if="pending && !filteredArticles.length" class="home-grid">
-        <ArticleSkeletonCard v-for="i in 6" :key="`skel-feed-${i}`" :pending="true" :index="i - 1" />
-      </div>
-      <div v-else-if="filteredArticles.length" class="home-grid">
-        <template v-for="(article, idx) in filteredArticles" :key="article.id">
-          <ArticleSkeletonCard :pending="pending" :article="article" :tags="article.tags" :index="idx" />
-          <!-- Only between full rows: never as the feed's last item, where it would trail a short row. -->
-          <HomeFeedAd
-            v-if="feedAd && idx === FEED_AD_AFTER - 1 && filteredArticles.length > FEED_AD_AFTER"
-            :provider="feedAd"
-          />
+      <UAlert
+        v-if="feedError"
+        color="error"
+        variant="subtle"
+        icon="mdi:alert-circle-outline"
+        :title="$t('articles.home.feedError')"
+      >
+        <template #actions>
+          <UButton color="error" variant="soft" @click="refreshFeed()">{{ $t('common.entry.retry') }}</UButton>
         </template>
-      </div>
-      <UEmpty v-else icon="mdi:file-search-outline" :title="$t('articles.noResults.message')" />
+      </UAlert>
 
-      <div v-if="hasMore" class="text-center pt-4">
-        <!-- A real link, so crawlers reach every page; with JavaScript the click appends in place. -->
-        <UButton :to="nextPageTo" :disabled="pending" :loading="pending" @click.prevent="loadMore">
+      <div
+        v-if="feedPending && !visibleArticles.length"
+        class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+        aria-busy="true"
+      >
+        <ArticleSkeletonCard v-for="index in 6" :key="index" :pending="true" />
+      </div>
+      <ol v-else-if="visibleArticles.length" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <template v-for="(article, index) in visibleArticles" :key="article.id">
+          <li class="min-w-0" data-editorial-article>
+            <ArticleCard :article="article" />
+          </li>
+          <li
+            v-if="feedAd && index === FEED_AD_AFTER - 1 && visibleArticles.length > FEED_AD_AFTER"
+            class="col-span-full"
+          >
+            <HomeFeedAd :provider="feedAd" />
+          </li>
+        </template>
+      </ol>
+      <UEmpty
+        v-else-if="!feedError && !feedPending"
+        icon="mdi:file-search-outline"
+        :title="$t('articles.home.noMatches')"
+      />
+
+      <div v-if="hasMore && !feedError" class="flex justify-center border-t border-default pt-6">
+        <UButton
+          color="neutral"
+          variant="outline"
+          :to="nextPageTo"
+          :loading="feedPending"
+          :disabled="feedPending"
+          @click.prevent="loadMore"
+        >
           {{ $t('common.pagination.next') }}
         </UButton>
       </div>
@@ -310,39 +372,64 @@
 
     <HomeDiscussions v-if="clientSite?.name" :site="clientSite.name" />
 
-    <section v-if="latestPoll || topArticles.length" class="grid grid-cols-1 gap-10 lg:grid-cols-2">
-      <div v-if="latestPoll" class="space-y-4" :class="{ 'lg:col-span-2': !topArticles.length }">
-        <h2 class="text-2xl font-bold tracking-tight text-highlighted">
+    <section
+      v-if="topArticles.length || latestPoll"
+      class="grid gap-12 border-t border-default pt-10 lg:grid-cols-2 lg:gap-16"
+    >
+      <div v-if="topArticles.length" class="min-w-0" :class="{ 'lg:col-span-2': !latestPoll }">
+        <h2 class="mb-6 text-3xl font-black tracking-tight text-highlighted sm:text-4xl">
+          {{ $t('articles.home.popular') }}
+        </h2>
+        <ol class="divide-y divide-default border-y border-default">
+          <li v-for="(article, index) in topArticles" :key="article.id" class="py-6">
+            <NuxtLink
+              :to="articlePath(article)"
+              class="group grid min-w-0 grid-cols-[2.5rem_minmax(0,1fr)_1.5rem] items-start gap-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:grid-cols-[3rem_minmax(0,1fr)_1.5rem]"
+            >
+              <span class="text-3xl font-black leading-none tabular-nums text-primary sm:text-4xl" aria-hidden="true">{{
+                index + 1
+              }}</span>
+              <span class="min-w-0 space-y-2">
+                <span
+                  class="block break-words text-balance text-lg font-bold leading-snug text-highlighted group-hover:text-primary sm:text-xl"
+                  >{{ article.title }}</span
+                >
+                <span v-if="article.excerpt" class="line-clamp-2 text-sm leading-6 text-muted">{{
+                  article.excerpt
+                }}</span>
+                <span class="block text-xs text-muted">{{
+                  formatDate(article.publishedAt || article.createdAt, locale)
+                }}</span>
+              </span>
+              <UIcon name="mdi:arrow-up-right" size="20" class="text-primary" aria-hidden="true" />
+            </NuxtLink>
+          </li>
+        </ol>
+      </div>
+      <div
+        v-if="latestPoll"
+        class="min-w-0 space-y-5"
+        :class="topArticles.length ? 'lg:border-l lg:border-default lg:pl-12' : 'lg:col-span-2'"
+      >
+        <h2 class="text-3xl font-black tracking-tight text-highlighted sm:text-4xl">
           {{ $t('articles.poll.hpTitle') }}
         </h2>
         <ArticlePoll :poll="latestPoll" :articleId="latestPoll.articleId" />
       </div>
-      <aside v-if="topArticles.length" class="space-y-5" :class="{ 'lg:col-span-2': !latestPoll }">
-        <h3 class="text-2xl font-bold tracking-tight text-highlighted">
-          {{ $t('stats.topArticle.pluralTitle') }}
-        </h3>
-        <ol class="grid gap-3">
-          <li
-            v-for="(top, idx) in topArticles"
-            :key="top.id"
-            class="grid grid-cols-[2rem_minmax(0,1fr)] items-start gap-3"
-          >
-            <span class="pt-3 text-xl font-black tabular-nums text-primary">{{ idx + 1 }}</span>
-            <ArticleCard :article="top" variant="compact" layout="responsive-row" />
-          </li>
-        </ol>
-      </aside>
     </section>
 
     <WidgetSlot name="HOME_BOTTOM" />
 
-    <ClientSocials v-if="clientSite?.id" :clientSiteId="clientSite.id" />
-  </div>
+    <div v-if="clientSite?.id" class="border-t border-default pt-6">
+      <ClientSocials :clientSiteId="clientSite.id" />
+    </div>
+  </UContainer>
 </template>
 
 <script setup lang="ts">
 import type { Language } from '~~/shared/utils/language'
 import type { PollOptionData } from '~~/shared/utils/polls'
+import type { ArticleCardData } from '~~/shared/types/article'
 
 import { formatDate } from '~~/shared/utils'
 import { formatNumber } from '~~/shared/utils/number'
@@ -350,28 +437,10 @@ import { FEED_AD_AFTER, adProviderFor } from '~~/shared/utils/advertising'
 
 definePageMeta({ shell: 'publication' })
 
-interface HomeArticle {
-  id: string
-  slug: string
-  language?: Language
-  title: string
-  excerpt: string | null
-  imageUrl: string | null
-  createdAt: string
-  publishedAt?: string | null
-  readingTime: number | null
-  views: number
-  likedByUser?: boolean
-  user: { id: string; username: string; avatarUrl: string | null } | null
-  tags: { tag: { id: string; name: string; slug: string } }[]
-  _count: { comments: number; reactions: number } | null
-}
+type HomeArticle = ArticleCardData & { id: string; slug: string; title: string; createdAt: string }
 
 const { data: auth } = useAuth()
 const preview = useWidgetPagePreview()
-const hasDashboardChrome = computed(
-  () => !preview.active.value && ['admin', 'superadmin'].includes(auth.value?.user?.role || ''),
-)
 const localePath = useLocalePath()
 const { locale } = useI18n()
 const clientSite = await useClientSite()
@@ -380,18 +449,24 @@ const adsenseSlot = String(useRuntimeConfig().public.adsenseFeedSlot || '')
 const feedAd = computed(() =>
   preview.active.value ? null : adProviderFor(clientSite, { marketing: marketingGranted.value, adsenseSlot }),
 )
+const {
+  data: featuredData,
+  pending: featuredPending,
+  error: featuredError,
+  refresh: refreshFeatured,
+} = await useFetch(`/api/articles/featured/${clientSite?.name}`, { query: { locale } })
 
-const { data: feat, pending: featPending } = await useFetch(`/api/articles/featured/${clientSite?.name}`, {
-  query: { locale },
-})
 const route = useRoute()
 const requestedPage = () => Math.max(1, Number.parseInt(String(route.query.page ?? ''), 10) || 1)
-const page = shallowRef<number>(requestedPage())
-const limit = shallowRef<number>(15)
-const selectedTag = shallowRef<string>('')
-const searchQuery = shallowRef<string>('')
+const page = shallowRef(requestedPage())
+const selectedTag = shallowRef('')
+const searchQuery = shallowRef('')
+const feedSection = useTemplateRef<HTMLElement>('feedSection')
+const recommendedSection = useTemplateRef<HTMLElement>('recommendedSection')
+const topicsSection = useTemplateRef<HTMLElement>('topicsSection')
 const heroSection = useTemplateRef<HTMLElement>('heroSection')
 const showScrollCue = shallowRef(false)
+const reducedMotion = usePreferredReducedMotion()
 let scrollCueTimer: ReturnType<typeof setTimeout> | null = null
 
 const scheduleScrollCue = () => {
@@ -404,46 +479,44 @@ const scheduleScrollCue = () => {
   }, 4000)
 }
 
-onMounted(() => {
-  scheduleScrollCue()
-})
-
+onMounted(scheduleScrollCue)
 useEventListener(
   () => heroSection.value?.closest<HTMLElement>('.topiqu-dashboard-scroll') ?? window,
   'scroll',
   scheduleScrollCue,
   { passive: true },
 )
-
 onBeforeUnmount(() => {
   if (scrollCueTimer) clearTimeout(scrollCueTimer)
 })
 
+const scrollPastHero = () => {
+  const target = recommendedSection.value ?? topicsSection.value ?? feedSection.value
+  target?.scrollIntoView({ behavior: reducedMotion.value === 'reduce' ? 'auto' : 'smooth', block: 'start' })
+  showScrollCue.value = false
+}
+const isBlankSite = computed(() => !featuredError.value && featuredData.value?.totalArticles === 0)
 const query = computed(() => ({
   page: page.value,
-  limit: limit.value,
+  limit: 15,
   locale: locale.value,
   ...(selectedTag.value ? { tag: selectedTag.value } : {}),
   ...(searchQuery.value ? { query: searchQuery.value } : {}),
 }))
-
-const isBlankSite = (feat.value?.totalArticles ?? 0) === 0
-
 const {
   data: feed,
-  refresh,
-  pending,
+  pending: feedPending,
+  error: feedError,
+  refresh: refreshFeed,
 } = await useLazyFetch(`/api/articles/by-clientsite/${clientSite?.name}`, {
   query,
   watch: false,
-  immediate: !isBlankSite,
+  immediate: !isBlankSite.value && !featuredError.value,
 })
 
-// Keep the view model shallow. Inferring this from the ZenStack-enhanced endpoint response makes
-// Volar recursively instantiate the full policy-aware payload type in every template binding.
 const articleMap = ref<Map<string, HomeArticle>>(new Map())
-const hasMore = shallowRef<boolean>(true)
-const latestPoll = ref<{
+const hasMore = shallowRef(false)
+const latestPoll = shallowRef<{
   type: string
   pollId: string
   question: string
@@ -453,383 +526,131 @@ const latestPoll = ref<{
 
 watch(
   feed,
-  (d) => {
-    const next = (d?.items ?? []).filter((a) => !articleMap.value.has(a.id))
-    for (const article of next) {
-      articleMap.value.set(article.id, article as HomeArticle)
-    }
-
-    if (d?.latestPoll) {
-      latestPoll.value = d.latestPoll as unknown as typeof latestPoll.value
-    } else {
-      latestPoll.value = null
-    }
-
-    hasMore.value = !!d?.hasMore
+  (result) => {
+    if (!result) return
+    for (const article of result.items ?? []) articleMap.value.set(article.id, article as HomeArticle)
+    hasMore.value = Boolean(result.hasMore)
+    latestPoll.value = result.latestPoll ? (result.latestPoll as typeof latestPoll.value) : null
   },
   { immediate: true },
 )
 
-const debouncedRefresh = useDebounceFn(() => {
+const resetFeed = useDebounceFn(async () => {
   page.value = 1
+  await refreshFeed()
+}, 350)
+watch([selectedTag, searchQuery, locale], () => {
   articleMap.value.clear()
-  hasMore.value = true
-  refresh()
-}, 400)
-
-watch([selectedTag, searchQuery], debouncedRefresh)
-
-// Back/forward between `?page=` URLs reuses this component instance.
+  hasMore.value = false
+  resetFeed()
+})
 watch(
   () => route.query.page,
   () => {
     page.value = requestedPage()
     articleMap.value.clear()
     hasMore.value = true
-    refresh()
+    refreshFeed()
   },
 )
 const nextPageTo = computed(() => ({ query: { ...route.query, page: page.value + 1 } }))
+watch(featuredData, (result, previous) => {
+  if (result?.totalArticles && !previous && !feed.value) refreshFeed()
+})
 
 const allArticles = computed(() => Array.from(articleMap.value.values()))
-const hasFilters = computed(() => Boolean(searchQuery.value || selectedTag.value))
-const featured = computed(() => feat.value?.featured ?? null)
-const recommended = computed(() => feat.value?.recommended ?? [])
-const tags = computed(() => feed.value?.tags ?? [])
-const reservedIds = computed(
-  () => new Set([featured.value?.id, ...recommended.value.map((article) => article.id)].filter(Boolean)),
-)
-const recommendedArticles = computed(() => recommended.value.filter((article) => article.id !== featured.value?.id))
-const topArticles = computed(() =>
-  allArticles.value.length
-    ? [...allArticles.value].sort((a, b) => (b._count?.reactions ?? 0) - (a._count?.reactions ?? 0)).slice(0, 3)
-    : [],
-)
-// A selected tag or search is an explicit result set: do not hide matches merely because the same
-// article is also promoted in the unfiltered hero/recommended rails.
-const filteredArticles = computed(() =>
-  hasFilters.value ? allArticles.value : allArticles.value.filter((article) => !reservedIds.value.has(article.id)),
-)
+const hasFilters = computed(() => Boolean(selectedTag.value || searchQuery.value))
+const leadArticle = computed(() => (featuredData.value?.featured as HomeArticle | null) ?? allArticles.value[0] ?? null)
 const latestArticle = computed(
   () =>
     [...allArticles.value].sort(
       (a, b) => new Date(b.publishedAt || b.createdAt).getTime() - new Date(a.publishedAt || a.createdAt).getTime(),
     )[0] ?? null,
 )
-const heroArticle = computed(() => featured.value || latestArticle.value)
-const heroArticlePath = computed(() =>
-  heroArticle.value?.slug
-    ? localePath({ name: 'clanky-slug', params: { slug: heroArticle.value.slug } }, heroArticle.value.language)
-    : '#',
+const primaryCtaTo = computed(() =>
+  latestArticle.value
+    ? articlePath(latestArticle.value)
+    : leadArticle.value
+      ? articlePath(leadArticle.value)
+      : '#articles',
 )
+const recommendedArticles = computed(() =>
+  ((featuredData.value?.recommended ?? []) as HomeArticle[]).filter((article) => article.id !== leadArticle.value?.id),
+)
+const highlightedIds = computed(
+  () => new Set([leadArticle.value?.id, ...recommendedArticles.value.map((article) => article.id)]),
+)
+const visibleArticles = computed(() =>
+  hasFilters.value ? allArticles.value : allArticles.value.filter((article) => !highlightedIds.value.has(article.id)),
+)
+const tags = computed(() => feed.value?.tags ?? [])
+const hasHeroRail = computed(() => Boolean(tags.value[0] || featuredData.value?.totalArticles))
+const topArticles = computed(() => (featuredData.value?.topArticles ?? []) as HomeArticle[])
+const leadTags = computed(() =>
+  (leadArticle.value?.tags ?? []).flatMap((item) => (item.tag ? [item.tag] : [])).slice(0, 2),
+)
+const showFeed = computed(
+  () => feedPending.value || hasFilters.value || visibleArticles.value.length > 0 || Boolean(feedError.value),
+)
+const isOwner = computed(() => {
+  const user = auth.value?.user
+  return user?.role === 'superadmin' || (user?.role === 'admin' && user.clientSiteId === clientSite?.id)
+})
+
+const articlePath = (article: { slug: string; language?: Language }) =>
+  localePath({ name: 'clanky-slug', params: { slug: article.slug } }, article.language)
+
 const {
-  liked: heroLiked,
-  isPending: heroReactionPending,
-  toggle: toggleHeroLike,
+  liked: leadLiked,
+  isPending: leadReactionPending,
+  toggle: toggleLeadLike,
 } = useArticleReaction(
-  () => heroArticle.value?.id,
+  () => leadArticle.value?.id,
   () => ({
-    liked: Boolean(heroArticle.value?.likedByUser),
-    likes: heroArticle.value?._count?.reactions ?? 0,
+    liked: Boolean(leadArticle.value?.likedByUser),
+    likes: leadArticle.value?._count?.reactions ?? 0,
   }),
 )
 const toast = useToast()
 const trackShare = useArticleShare()
-
-const shareHeroArticle = async () => {
-  const article = heroArticle.value
+const shareLeadArticle = async () => {
+  const article = leadArticle.value
   if (!article) return
-  const url = new URL(heroArticlePath.value, window.location.origin).href
+  const url = new URL(articlePath(article), window.location.origin).href
   try {
     if (navigator.share) await navigator.share({ title: article.title, url })
     else await navigator.clipboard.writeText(url)
   } catch (error) {
-    if ((error as DOMException)?.name !== 'AbortError') {
+    if ((error as DOMException)?.name !== 'AbortError')
       toast.add({ color: 'error', title: $t('common.messages.operationFailed') })
-    }
     return
   }
   await trackShare(article.id, 'OTHER')
 }
-const primaryCtaArticle = computed(() => latestArticle.value || featured.value)
-const primaryCtaTo = computed(() =>
-  primaryCtaArticle.value?.slug
-    ? localePath(
-        { name: 'clanky-slug', params: { slug: primaryCtaArticle.value.slug } },
-        primaryCtaArticle.value.language,
-      )
-    : '#articles',
-)
-const heroTags = computed(() =>
-  (heroArticle.value?.tags ?? [])
-    .map((item: any, index: number) => ({
-      id: item.tag?.id || item.id || String(index),
-      name: item.tag?.name || item.name || '',
-    }))
-    .filter((tag) => tag.name)
-    .slice(0, 2),
-)
-const heroExcerpt = computed(() => heroArticle.value?.excerpt ?? '')
-const hasHeroRail = computed(() => Boolean(tags.value[0] || feat.value?.totalArticles))
 
-const hasContent = computed(() => allArticles.value.length > 0)
-const showFeed = computed(() => pending.value || hasFilters.value || filteredArticles.value.length > 0)
-
-const isOwner = computed(() => {
-  const user = auth.value?.user
-  if (!user) return false
-  if (user.role === 'superadmin') return true
-  return user.role === 'admin' && Boolean(clientSite?.id) && user.clientSiteId === clientSite?.id
-})
-
-const hasPublishedArticles = computed(() => (feat.value?.totalArticles ?? 0) > 0)
-
-// A page past the end lists nothing and would be indexed as a thin copy of the homepage.
-const isPastLastPage = computed(() => requestedPage() > 1 && !pending.value && !feed.value?.items?.length)
+const selectTopic = async (name: string) => {
+  selectedTag.value = selectedTag.value === name ? '' : name
+  await nextTick()
+  feedSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+const resetFilters = () => {
+  selectedTag.value = ''
+  searchQuery.value = ''
+}
+const loadMore = async () => {
+  if (!hasMore.value || feedPending.value) return
+  page.value++
+  await refreshFeed()
+}
 
 useSeoMeta({
   robots: () =>
     preview.active.value
       ? 'noindex, nofollow'
-      : hasPublishedArticles.value && !isPastLastPage.value
-        ? 'index, follow'
-        : 'noindex, follow',
+      : isBlankSite.value ||
+          (featuredError.value && !featuredData.value) ||
+          (requestedPage() > 1 && !feedPending.value && !feed.value?.items?.length)
+        ? 'noindex, follow'
+        : 'index, follow',
 })
-
-const loadMore = async () => {
-  if (!hasMore.value) return
-  page.value++
-  await refresh()
-}
-
-const selectTopic = (tagName: string) => {
-  selectedTag.value = selectedTag.value === tagName ? '' : tagName
-  nextTick(() => document.querySelector('#articles')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
-}
 </script>
-
-<style scoped>
-.home-shell {
-  --home-ink: #17211b;
-  --home-muted: #657068;
-  --home-accent: var(--client-accent, #2563eb);
-  --home-line: rgb(23 33 27 / 12%);
-  width: min(100% - 2rem, 80rem);
-  margin-inline: auto;
-  padding: clamp(5.5rem, 10vw, 8rem) 0 5rem;
-  display: grid;
-  gap: clamp(3.5rem, 7vw, 7rem);
-  color: var(--home-ink);
-}
-
-.home-hero {
-  display: grid;
-  justify-items: center;
-  gap: 1rem;
-  padding: clamp(1.5rem, 4vw, 3rem) clamp(0.5rem, 3vw, 2rem) clamp(2.5rem, 6vw, 4.5rem);
-  text-align: center;
-  border-bottom: 1px solid var(--home-line);
-}
-
-.home-hero__eyebrow {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  font-size: 0.72rem;
-  font-weight: 750;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--home-muted);
-}
-
-.home-hero__eyebrow-line {
-  width: 1.5rem;
-  height: 2px;
-  background: var(--home-accent);
-}
-.home-hero__logo {
-  width: auto;
-  height: auto;
-  max-width: min(12rem, 70vw);
-  max-height: 5rem;
-  object-fit: contain;
-}
-.home-hero__heading {
-  max-width: 62rem;
-}
-.home-hero__title {
-  font-size: clamp(2.5rem, 7vw, 5.5rem);
-  line-height: 1;
-  letter-spacing: -0.055em;
-  font-weight: 750;
-  text-wrap: balance;
-}
-.home-hero__description {
-  max-width: 44rem;
-  font-size: clamp(1rem, 2vw, 1.25rem);
-  line-height: 1.65;
-  color: var(--home-muted);
-  text-wrap: balance;
-}
-.home-hero__meta {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.45rem 0.65rem;
-  margin-top: 0.5rem;
-  font-size: 0.72rem;
-  font-weight: 650;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--home-muted);
-}
-.home-hero__latest {
-  max-width: min(17rem, 75vw);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--home-ink);
-  text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, var(--home-accent) 45%, transparent);
-  text-underline-offset: 0.25rem;
-}
-
-.home-highlights {
-  display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(17rem, 1fr);
-  gap: clamp(1rem, 2.5vw, 2rem);
-  align-items: stretch;
-}
-.home-recommended {
-  display: grid;
-  gap: 1rem;
-}
-.home-feed {
-  display: grid;
-  gap: 1.75rem;
-  scroll-margin-top: 5rem;
-}
-.home-section-heading {
-  display: flex;
-  align-items: baseline;
-  gap: 1rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--home-line);
-}
-.home-section-heading h2 {
-  font-size: clamp(2rem, 5vw, 3.75rem);
-  line-height: 1;
-  letter-spacing: -0.045em;
-  font-weight: 780;
-}
-.home-section-heading__index {
-  font-size: 0.72rem;
-  font-weight: 800;
-  color: var(--home-accent);
-}
-.home-filters {
-  position: sticky;
-  top: 0.75rem;
-  z-index: 20;
-  display: grid;
-  gap: 0.75rem;
-  padding: 0.75rem;
-  border: 1px solid var(--home-line);
-  border-radius: 1.25rem;
-  background: rgb(251 250 246 / 90%);
-  box-shadow: 0 12px 35px rgb(23 33 27 / 8%);
-  backdrop-filter: blur(16px);
-}
-.home-search {
-  width: 100%;
-  min-height: 3rem;
-  padding: 0.7rem 1rem 0.7rem 2.75rem !important;
-  border-radius: 0.85rem !important;
-  background: rgb(255 255 255 / 72%) !important;
-}
-.home-tags {
-  display: flex;
-  gap: 0.5rem;
-  max-width: 100%;
-  overflow-x: auto;
-  padding: 0 0.1rem 0.2rem;
-  scrollbar-width: none;
-}
-.home-tags::-webkit-scrollbar {
-  display: none;
-}
-.home-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(1rem, 2.5vw, 2rem);
-}
-.home-secondary {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(2rem, 5vw, 4rem);
-  padding-top: clamp(2rem, 5vw, 4rem);
-  border-top: 1px solid var(--home-line);
-}
-
-:global(html.dark) .home-shell {
-  --home-ink: #f1eee7;
-  --home-muted: #a9b2ab;
-  --home-line: rgb(241 238 231 / 14%);
-}
-:global(html.dark) .home-filters {
-  background: rgb(23 32 26 / 90%);
-}
-:global(html.dark) .home-search {
-  background: rgb(31 41 55 / 75%) !important;
-}
-
-@media (max-width: 900px) {
-  .home-highlights,
-  .home-secondary {
-    grid-template-columns: 1fr;
-  }
-  .home-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 600px) {
-  .home-shell {
-    width: min(100% - 1rem, 80rem);
-    padding-top: 4.75rem;
-    gap: 3.5rem;
-  }
-  .home-hero {
-    justify-items: start;
-    padding: 1rem 0.5rem 2.5rem;
-    text-align: left;
-  }
-  .home-hero__eyebrow {
-    font-size: 0.65rem;
-  }
-  .home-hero__title {
-    font-size: clamp(2.5rem, 15vw, 4.1rem);
-  }
-  .home-hero__description {
-    font-size: 1rem;
-  }
-  .home-hero__meta {
-    justify-content: flex-start;
-    text-align: left;
-  }
-  .home-hero__logo {
-    max-width: min(10rem, 70vw);
-    max-height: 4rem;
-  }
-  .home-grid {
-    grid-template-columns: 1fr;
-  }
-  .home-filters {
-    top: 0.5rem;
-    border-radius: 1rem;
-  }
-  .home-secondary {
-    gap: 3rem;
-  }
-}
-</style>
