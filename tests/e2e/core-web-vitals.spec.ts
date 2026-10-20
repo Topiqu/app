@@ -1,0 +1,86 @@
+import { expect, test } from '@playwright/test'
+
+import { expectNoHorizontalOverflow, preparePage } from './helpers'
+
+test('search retains results and their space while a slow request becomes empty', async ({ page }) => {
+  await preparePage(page)
+  await page.goto('http://localhost:4173/cs')
+  await page.locator('html[data-topiqu-hydrated="true"]').waitFor()
+  const consent = page.getByRole('button', { name: 'Odmítnout volitelné', exact: true })
+  if (await consent.isVisible()) await consent.click()
+  await page.getByRole('group', { name: 'Prozkoumat témata' }).getByRole('button').first().click()
+  const results = page.locator('[data-feed-results]')
+  await expect(results).toHaveAttribute('aria-busy', 'false')
+  await expect(results.locator('[data-editorial-article]').first()).toBeVisible()
+  const height = await results.evaluate((element) => element.getBoundingClientRect().height)
+
+  await page.route('**/api/articles/by-clientsite/**', async (route) => {
+    const response = await route.fetch()
+    const body = await response.json()
+    await new Promise((resolve) => setTimeout(resolve, 900))
+    await route.fulfill({ response, json: { ...body, items: [], hasMore: false } })
+  })
+  await page.getByRole('searchbox', { name: 'Hledat články...' }).fill('no-matching-article')
+  await expect(results).toHaveAttribute('aria-busy', 'true')
+  await expect(results.locator('[data-editorial-article]').first()).toBeVisible()
+  await expect(results).toHaveAttribute('aria-busy', 'false')
+  await expect(results.locator('[data-editorial-article]')).toHaveCount(0)
+  expect(await results.evaluate((element) => element.getBoundingClientRect().height)).toBeGreaterThanOrEqual(
+    Math.min(height, page.viewportSize()!.height) - 1,
+  )
+  await expectNoHorizontalOverflow(page)
+})
+
+test('critical article media is visible without JavaScript', async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false })
+  try {
+    const page = await context.newPage()
+    await page.goto('http://localhost:4173/cs/clanky/jak-postavit-udrzitelnou-redakci')
+    const image = page.locator('.app-media img[width="1200"][height="675"]')
+    await expect(image).toHaveAttribute('fetchpriority', 'high')
+    await expect(image).toHaveAttribute('srcset', /768w/)
+    await expect(image).toHaveAttribute('loading', 'eager')
+    await expect(image).toHaveCSS('opacity', '1')
+    await expect(image).toBeVisible()
+    await expect.poll(() => image.evaluate((element) => (element as HTMLImageElement).naturalWidth)).toBeGreaterThan(0)
+  } finally {
+    await context.close()
+  }
+})
+
+test('guest publications do not bootstrap halted advertising', async ({ page }) => {
+  const advertising: string[] = []
+  page.on('request', (request) => {
+    if (/pagead2\.googlesyndication\.com|securepubads\.g\.doubleclick\.net/.test(request.url()))
+      advertising.push(request.url())
+  })
+  await page.goto('http://localhost:4173/cs')
+  await page.locator('html[data-topiqu-hydrated="true"]').waitFor()
+  await page.evaluate(() => document.fonts.ready)
+  await expect(page.locator('link[rel="prefetch"][as="script"]')).toHaveCount(0)
+  expect(await page.locator('link[rel="modulepreload"]').count()).toBeGreaterThan(0)
+  await expect(page.locator('script[src*="adsbygoogle"], script[src*="gpt.js"]')).toHaveCount(0)
+  expect(advertising).toEqual([])
+})
+
+test.describe('private loading boundaries', () => {
+  test.use({ storageState: 'tests/e2e/.auth/admin.json' })
+
+  test('tag management loads on first keyboard opening and restores focus when closed', async ({ page }) => {
+    await preparePage(page)
+    await page.goto('/cs/admin')
+    await page.locator('html[data-topiqu-hydrated="true"]').waitFor()
+    const trigger = page.getByRole('button', { name: 'Spravovat štítky', exact: true })
+    await trigger.focus()
+    await trigger.press('Enter')
+    const dialog = page.getByRole('dialog')
+    await expect(dialog).toBeVisible()
+    await expect(dialog.locator('[data-tag-id]').first()).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(dialog).toBeHidden()
+    await expect(trigger).toBeFocused()
+    await trigger.press('Enter')
+    await expect(dialog.locator('[data-tag-id]').first()).toBeVisible()
+    await expectNoHorizontalOverflow(page)
+  })
+})
