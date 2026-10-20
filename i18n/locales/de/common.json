@@ -64,6 +64,10 @@
       }
     },
     "domain": {
+      "activateSubdomain": "Subdomain aktivieren",
+      "subdomainHelp": "Nutzen Sie eine kostenlose Subdomain unter {baseDomain} oder verbinden Sie mit Pro Ihre eigene Domain. Dies ändert die öffentliche Adresse Ihres Blogs.",
+      "managedPending": "{domain} ohne DNS-Änderung aktivieren.",
+      "setupHelp": "Nach dem Erstellen des Blogs müssen Sie Ihre eigene Domain über TXT- und CNAME-Einträge verbinden. Sie können zunächst eine Topiqu-Subdomain nutzen.",
       "title": "Domain",
       "current": "Ihr Blog läuft unter",
       "newDomain": "Neue eigene Domain",
@@ -681,6 +685,8 @@
       "invalidDateRange": "Das Veröffentlichungsdatum muss zwischen {0} und {1} liegen",
       "draftSaved": "Entwurf gespeichert",
       "draftSaveFailed": "Entwurf konnte nicht gespeichert werden",
+      "draftSaveFailedHelp": "Lassen Sie diesen Tab geöffnet und versuchen Sie erneut zu speichern. Ihre letzten Änderungen wurden nicht gespeichert.",
+      "articleTitleRequired": "Geben Sie vor dem Speichern einen Artikeltitel ein.",
       "invalidImage": "Wähle ein gültiges Bild aus",
       "successGeneral": "Erfolgreich",
       "successGeneralTitle": "Dieser Vorgang war erfolgreich",
@@ -716,6 +722,21 @@
     "deleted": "Gelöscht am:",
     "cancelAction": "Aktion abbrechen",
     "preferences": {
+      "footer": {
+        "title": "Fußzeile",
+        "description": "Wählen Sie, was Besucher am Ende Ihres Blogs sehen.",
+        "paidOnly": "Eigene Fußzeilen und das Ausblenden sind in kostenpflichtigen Tarifen verfügbar. Basic behält Powered by Topiqu.",
+        "enabled": "Fußzeile anzeigen",
+        "text": "Text der Fußzeile",
+        "textHelp": "Leer lassen, um den Blognamen zu verwenden. Bis zu 300 Zeichen.",
+        "socials": "Die für diesen Blog eingerichteten sozialen Links anzeigen",
+        "links": "Links in der Fußzeile",
+        "linksHelp": "Fügen Sie bis zu {count} Links hinzu, etwa Kontakt, Über uns oder eigene Richtlinien.",
+        "linkLabel": "Linkbezeichnung",
+        "linkUrl": "Link-URL",
+        "invalidUrl": "Verwenden Sie eine HTTPS-URL oder einen lokalen Pfad mit / am Anfang.",
+        "addLink": "Link hinzufügen"
+      },
       "title": "Deine Einstellungen",
       "unsaved": "Nicht gespeicherte Änderungen",
       "unsavedDescription": "Deine Änderungen wurden noch nicht gespeichert.",

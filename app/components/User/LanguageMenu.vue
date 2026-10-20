@@ -3,16 +3,36 @@
     <UButton
       color="neutral"
       variant="ghost"
-      icon="mdi:translate"
-      trailingIcon="mdi:chevron-down"
-      block
+      :trailingIcon="compact ? undefined : 'mdi:chevron-down'"
+      :block="!compact"
+      :square="compact"
+      :aria-label="$t('common.user.language')"
       :loading="saving"
-      :ui="{ base: 'justify-start' }"
+      :ui="{ base: compact ? 'justify-center' : 'justify-start' }"
     >
-      <span class="flex-1 text-left">{{ $t('common.user.language') }}</span>
-      <span class="text-muted" :lang="current.value">{{ current.label }}</span>
+      <template #leading>
+        <svg
+          class="size-5 shrink-0"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="m5 8 6 6M4 14l6-6 2-3M2 5h12M7 2h1m14 20-5-10-5 10m2-4h6" />
+        </svg>
+      </template>
+      <template v-if="!compact">
+        <span class="flex-1 text-left">{{ $t('common.user.language') }}</span>
+        <span class="text-muted" :lang="current.value">{{ current.label }}</span>
+      </template>
     </UButton>
 
+    <template #item-leading="{ item }">
+      <LanguageFlag :language="item.value" />
+    </template>
     <template #item-label="{ item }">
       <span :lang="item.value">{{ item.label }}</span>
     </template>
@@ -20,6 +40,7 @@
 </template>
 
 <script setup lang="ts">
+defineProps<{ compact?: boolean }>()
 const { locale, setLocale } = useI18n()
 const { data: auth } = useAuth()
 const { saveProfile } = useProfile()

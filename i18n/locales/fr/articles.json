@@ -126,7 +126,17 @@
       "exploreTopics": "Explorer les sujets",
       "recommended": "À lire aussi",
       "series": "Séries",
-      "discussions": "Discussions récentes"
+      "discussions": "Discussions récentes",
+      "readLead": "Lire l'article principal",
+      "chooseTopic": "Choisissez un sujet qui vous intéresse",
+      "latestArticles": "Nouveaux articles",
+      "clearFilters": "Effacer les filtres",
+      "selectedTopic": "Sujet : {topic}",
+      "noMatches": "Aucun article ne correspond à votre recherche.",
+      "popular": "Articles populaires",
+      "loadError": "Impossible de charger ce blog",
+      "loadErrorDescription": "Veuillez recharger la page.",
+      "feedError": "Impossible de charger les articles."
     },
     "readingTime": "{0} min de lecture",
     "noResults": {
@@ -218,6 +228,7 @@
       "invalid": "Saisissez une URL complète, avec https://"
     },
     "status": {
+      "changeSuccess": "Statut modifié : {0}",
       "published": "Publié",
       "draft": "Brouillon",
       "archived": "Archivé"

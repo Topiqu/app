@@ -127,7 +127,17 @@
       "exploreTopics": "Prozkoumat témata",
       "recommended": "Doporučené čtení",
       "series": "Seriály",
-      "discussions": "Poslední diskuze"
+      "discussions": "Poslední diskuze",
+      "readLead": "Přečíst hlavní článek",
+      "chooseTopic": "Vyberte si, co vás zajímá",
+      "latestArticles": "Nové články",
+      "clearFilters": "Zrušit filtry",
+      "selectedTopic": "Téma: {topic}",
+      "noMatches": "Pro toto hledání jsme nenašli žádné články.",
+      "popular": "Čtené články",
+      "loadError": "Blog se nepodařilo načíst",
+      "loadErrorDescription": "Zkuste stránku načíst znovu.",
+      "feedError": "Články se nepodařilo načíst."
     },
     "noResults": {
       "imageAlt": "Smutný Topík",
@@ -218,6 +228,7 @@
       "invalid": "Zadejte úplnou URL včetně https://"
     },
     "status": {
+      "changeSuccess": "Stav změněn na {0}",
       "published": "Publikováno",
       "draft": "Koncept",
       "archived": "Archivováno"

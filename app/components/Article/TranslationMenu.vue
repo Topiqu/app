@@ -13,6 +13,10 @@
       <span v-if="existing.length" class="text-muted">+{{ existing.length }}</span>
       <span v-if="attention" class="size-1.5 rounded-full" :class="translationStatusDot(attention)" />
     </UButton>
+    <template #item-leading="{ item }">
+      <LanguageFlag v-if="item.language" :language="item.language" />
+      <UIcon v-else-if="item.icon" :name="item.icon" class="size-5" />
+    </template>
   </UDropdownMenu>
 </template>
 
@@ -71,7 +75,7 @@ const items = computed<DropdownMenuItem[][]>(() => [
     {
       label: $t(`languages.${source}`),
       description: $t('articles.translations.sourceTab'),
-      icon: 'mdi:file-document-outline',
+      language: source,
       to: editorTab(source),
     },
   ],
@@ -81,13 +85,13 @@ const items = computed<DropdownMenuItem[][]>(() => [
       ? {
           label: $t(`languages.${language}`),
           description: $t(`articles.translations.status.${status}`),
-          icon: 'mdi:translate',
+          language,
           to: editorTab(language),
         }
       : {
           label: $t(`languages.${language}`),
           description: $t('articles.translations.actions.translate'),
-          icon: 'mdi:plus',
+          language,
           disabled: translating,
           onSelect: () => emit('translate', language),
         }
@@ -101,6 +105,7 @@ const items = computed<DropdownMenuItem[][]>(() => [
             disabled: translating,
             children: existing.value.map((language) => ({
               label: $t(`languages.${language}`),
+              language,
               onSelect: () => emit('translate', language),
             })),
           },

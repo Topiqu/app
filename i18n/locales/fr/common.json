@@ -64,6 +64,10 @@
       }
     },
     "domain": {
+      "activateSubdomain": "Activer le sous-domaine",
+      "subdomainHelp": "Utilisez un sous-domaine gratuit de {baseDomain} ou connectez votre domaine avec Pro. Cela change l’adresse publique de votre blog.",
+      "managedPending": "Activez {domain} sans modifier le DNS.",
+      "setupHelp": "Après la création du blog, connectez votre domaine avec des enregistrements TXT et CNAME. Vous pouvez commencer avec un sous-domaine Topiqu.",
       "title": "Domaine",
       "current": "Votre blog est accessible sur",
       "newDomain": "Nouveau domaine personnalisé",
@@ -681,6 +685,8 @@
       "invalidDateRange": "La date de publication doit être comprise entre {0} et {1}",
       "draftSaved": "Brouillon enregistré",
       "draftSaveFailed": "Impossible d'enregistrer le brouillon",
+      "draftSaveFailedHelp": "Gardez cet onglet ouvert et réessayez d’enregistrer. Vos dernières modifications n’ont pas été enregistrées.",
+      "articleTitleRequired": "Saisissez un titre d’article avant d’enregistrer.",
       "invalidImage": "Choisissez une image valide",
       "successGeneral": "Succès",
       "successGeneralTitle": "Cette opération a réussi",
@@ -716,6 +722,21 @@
     "deleted": "Supprimé le :",
     "cancelAction": "Annuler l'action",
     "preferences": {
+      "footer": {
+        "title": "Pied de page",
+        "description": "Choisissez ce que les visiteurs voient en bas de votre blog.",
+        "paidOnly": "La personnalisation et le masquage du pied de page sont disponibles avec les offres payantes. Basic conserve Powered by Topiqu.",
+        "enabled": "Afficher le pied de page",
+        "text": "Texte du pied de page",
+        "textHelp": "Laissez vide pour utiliser le nom du blog. Jusqu’à 300 caractères.",
+        "socials": "Afficher les liens sociaux configurés pour ce blog",
+        "links": "Liens du pied de page",
+        "linksHelp": "Ajoutez jusqu’à {count} liens, comme un contact, une présentation ou vos propres conditions.",
+        "linkLabel": "Libellé du lien",
+        "linkUrl": "URL du lien",
+        "invalidUrl": "Utilisez une URL HTTPS ou un chemin local commençant par /.",
+        "addLink": "Ajouter un lien"
+      },
       "title": "Vos préférences",
       "unsaved": "Modifications non enregistrées",
       "unsavedDescription": "Vos modifications n'ont pas encore été enregistrées.",
