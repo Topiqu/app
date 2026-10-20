@@ -21,7 +21,10 @@
       :fetchpriority="priority ? 'high' : 'auto'"
       :sizes="sizes"
       class="absolute inset-0 size-full transition-opacity"
-      :class="[fit === 'contain' ? 'object-contain' : 'object-cover', hasLoaded ? 'opacity-100' : 'opacity-0']"
+      :class="[
+        fit === 'contain' ? 'object-contain' : 'object-cover',
+        priority || hasLoaded ? 'opacity-100' : 'opacity-0',
+      ]"
       @load="handleMediaLoad"
       @error="handleMediaError"
     />
@@ -34,11 +37,17 @@
       :loading="priority ? 'eager' : 'lazy'"
       :fetchpriority="priority ? 'high' : 'auto'"
       class="absolute inset-0 size-full transition-opacity"
-      :class="[fit === 'contain' ? 'object-contain' : 'object-cover', hasLoaded ? 'opacity-100' : 'opacity-0']"
+      :class="[
+        fit === 'contain' ? 'object-contain' : 'object-cover',
+        priority || hasLoaded ? 'opacity-100' : 'opacity-0',
+      ]"
       @load="handleMediaLoad"
       @error="handleMediaError"
     />
-    <div v-if="!hasLoaded" class="absolute inset-0 z-[1] grid place-items-center text-muted">
+    <div
+      v-if="!hasLoaded && (!priority || !currentSrc)"
+      class="absolute inset-0 z-[1] grid place-items-center text-muted"
+    >
       <span v-if="fallbackText" class="app-media__monogram font-bold text-highlighted" aria-hidden="true">{{
         monogram
       }}</span>
@@ -124,7 +133,7 @@ watchEffect(() => {
   if (!mounted.value) return
   if (!currentSrc.value || hasLoaded.value) return
   if (!priority && !isVisible.value) return
-  loadTimeout = setTimeout(handleMediaError, priority ? 2000 : 4000)
+  loadTimeout = setTimeout(handleMediaError, 30_000)
 })
 
 onMounted(() => {

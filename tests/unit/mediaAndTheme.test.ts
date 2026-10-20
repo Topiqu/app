@@ -39,7 +39,7 @@ describe('stable media and theme controls', () => {
     expect(wrapper.attributes('data-media-state')).toBe('loading')
   })
 
-  it('still gives up on a priority image that never loads', async () => {
+  it('keeps a slow priority image visible during hydration and only falls back after a generous deadline', async () => {
     vi.useFakeTimers()
     const wrapper = mount(AppMedia, {
       props: { alt: 'Hero', src: 'https://t1.gstatic.com/faviconV2?url=stalled', priority: true },
@@ -50,8 +50,27 @@ describe('stable media and theme controls', () => {
     vi.advanceTimersByTime(2000)
     await nextTick()
 
+    expect(wrapper.get('img').classes()).toContain('opacity-100')
+    expect(wrapper.attributes('data-media-state')).toBe('loading')
+    vi.advanceTimersByTime(28_000)
+    await nextTick()
+
     expect(wrapper.find('img').exists()).toBe(false)
     expect(wrapper.attributes('data-media-state')).toBe('fallback')
+  })
+
+  it('renders priority media visibly in SSR without JavaScript or a covering placeholder', async () => {
+    const html = await renderToString(
+      createSSRApp(AppMedia, {
+        alt: 'Critical cover',
+        src: 'https://media.example/critical.webp',
+        priority: true,
+      }),
+    )
+    expect(html).toContain('opacity-100')
+    expect(html).toContain('loading="eager"')
+    expect(html).toContain('fetchpriority="high"')
+    expect(html).not.toContain('place-items-center')
   })
 
   it('routes allowlisted images through Nuxt Image with WebP variants', () => {
