@@ -22,10 +22,11 @@
       data-editorial-hero
     >
       <div
-        class="editorial-enter flex max-w-2xl flex-col items-center justify-center space-y-6 py-8 text-center @2xl:col-span-5 @2xl:py-0"
-        style="--enter-order: 0; transform: translateY(0.75rem)"
+        class="flex max-w-2xl flex-col items-center justify-center space-y-6 py-8 text-center @2xl:col-span-5 @2xl:py-0"
+        style="transform: translateY(0.75rem)"
       >
         <AppMedia
+          priority
           :src="clientSite?.logoUrl"
           :fallbackText="clientSite?.name || 'Topiqu'"
           :fallbackBorder="false"
@@ -81,9 +82,8 @@
 
       <article
         v-if="leadArticle?.slug"
-        class="editorial-enter group relative flex min-w-0 min-h-[28rem] flex-col overflow-hidden rounded-(--topiqu-surface-radius) border border-default bg-default @2xl:col-span-7 @2xl:grid @2xl:h-[calc(100dvh-var(--topiqu-header-height)-6rem)] @2xl:grid-rows-[minmax(0,1fr)_auto] @2xl:self-center"
+        class="group relative flex min-w-0 min-h-[28rem] flex-col overflow-hidden rounded-(--topiqu-surface-radius) border border-default bg-default @2xl:col-span-7 @2xl:grid @2xl:h-[calc(100dvh-var(--topiqu-header-height)-6rem)] @2xl:grid-rows-[minmax(0,1fr)_auto] @2xl:self-center"
         :class="hasHeroRail ? '@5xl:col-span-5' : ''"
-        style="--enter-order: 1"
       >
         <NuxtLink :to="articlePath(leadArticle)" class="absolute inset-0 z-10" :aria-label="leadArticle.title" />
         <AppMedia
@@ -306,6 +306,7 @@
             v-model="searchQuery"
             type="search"
             icon="mdi:magnify"
+            :loading="feedBusy"
             :placeholder="$t('articles.searchPlaceholder')"
             class="w-full"
           />
@@ -331,38 +332,50 @@
       </UAlert>
 
       <div
-        v-if="feedPending && !visibleArticles.length"
-        class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
-        aria-busy="true"
+        ref="feedResults"
+        data-feed-results
+        :style="{ minHeight: hasFilters ? `${Math.min(feedResultsHeight, viewportHeight)}px` : undefined }"
+        :aria-busy="feedBusy"
       >
-        <ArticleSkeletonCard v-for="index in 6" :key="index" :pending="true" />
+        <div
+          v-if="feedBusy && !visibleArticles.length"
+          class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+          aria-busy="true"
+        >
+          <ArticleSkeletonCard
+            v-for="index in hasFilters ? 3 : 6"
+            :key="index"
+            :pending="true"
+            :class="hasFilters && index > 1 ? 'hidden sm:block' : ''"
+          />
+        </div>
+        <ol v-else-if="visibleArticles.length" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <template v-for="(article, index) in visibleArticles" :key="article.id">
+            <li class="min-w-0" data-editorial-article>
+              <ArticleCard :article="article" />
+            </li>
+            <li
+              v-if="feedAd && index === FEED_AD_AFTER - 1 && visibleArticles.length > FEED_AD_AFTER"
+              class="col-span-full"
+            >
+              <HomeFeedAd :provider="feedAd" />
+            </li>
+          </template>
+        </ol>
+        <UEmpty
+          v-else-if="!feedError && !feedBusy"
+          icon="mdi:file-search-outline"
+          :title="$t('articles.home.noMatches')"
+        />
       </div>
-      <ol v-else-if="visibleArticles.length" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        <template v-for="(article, index) in visibleArticles" :key="article.id">
-          <li class="min-w-0" data-editorial-article>
-            <ArticleCard :article="article" />
-          </li>
-          <li
-            v-if="feedAd && index === FEED_AD_AFTER - 1 && visibleArticles.length > FEED_AD_AFTER"
-            class="col-span-full"
-          >
-            <HomeFeedAd :provider="feedAd" />
-          </li>
-        </template>
-      </ol>
-      <UEmpty
-        v-else-if="!feedError && !feedPending"
-        icon="mdi:file-search-outline"
-        :title="$t('articles.home.noMatches')"
-      />
 
       <div v-if="hasMore && !feedError" class="flex justify-center border-t border-default pt-6">
         <UButton
           color="neutral"
           variant="outline"
           :to="nextPageTo"
-          :loading="feedPending"
-          :disabled="feedPending"
+          :loading="feedBusy"
+          :disabled="feedBusy"
           @click.prevent="loadMore"
         >
           {{ $t('common.pagination.next') }}
@@ -461,6 +474,23 @@ const requestedPage = () => Math.max(1, Number.parseInt(String(route.query.page 
 const page = shallowRef(requestedPage())
 const selectedTag = shallowRef('')
 const searchQuery = shallowRef('')
+const appliedFilters = shallowRef({ tag: '', query: '', locale: locale.value })
+const filtersWaiting = computed(
+  () =>
+    selectedTag.value !== appliedFilters.value.tag ||
+    searchQuery.value !== appliedFilters.value.query ||
+    locale.value !== appliedFilters.value.locale,
+)
+const feedResults = useTemplateRef<HTMLElement>('feedResults')
+const { height: viewportHeight } = useWindowSize()
+const feedResultsHeight = shallowRef(384)
+useResizeObserver(feedResults, ([entry]) => {
+  if (entry)
+    feedResultsHeight.value = Math.max(
+      feedResultsHeight.value,
+      Math.min(entry.contentRect.height, viewportHeight.value),
+    )
+})
 const feedSection = useTemplateRef<HTMLElement>('feedSection')
 const recommendedSection = useTemplateRef<HTMLElement>('recommendedSection')
 const topicsSection = useTemplateRef<HTMLElement>('topicsSection')
@@ -499,9 +529,9 @@ const isBlankSite = computed(() => !featuredError.value && featuredData.value?.t
 const query = computed(() => ({
   page: page.value,
   limit: 15,
-  locale: locale.value,
-  ...(selectedTag.value ? { tag: selectedTag.value } : {}),
-  ...(searchQuery.value ? { query: searchQuery.value } : {}),
+  locale: appliedFilters.value.locale,
+  ...(appliedFilters.value.tag ? { tag: appliedFilters.value.tag } : {}),
+  ...(appliedFilters.value.query ? { query: appliedFilters.value.query } : {}),
 }))
 const {
   data: feed,
@@ -513,8 +543,10 @@ const {
   watch: false,
   immediate: !isBlankSite.value && !featuredError.value,
 })
+const feedBusy = computed(() => feedPending.value || filtersWaiting.value)
 
 const articleMap = ref<Map<string, HomeArticle>>(new Map())
+const replaceResults = shallowRef(true)
 const hasMore = shallowRef(false)
 const latestPoll = shallowRef<{
   type: string
@@ -527,7 +559,8 @@ const latestPoll = shallowRef<{
 watch(
   feed,
   (result) => {
-    if (!result) return
+    if (!result || filtersWaiting.value) return
+    if (replaceResults.value) articleMap.value.clear()
     for (const article of result.items ?? []) articleMap.value.set(article.id, article as HomeArticle)
     hasMore.value = Boolean(result.hasMore)
     latestPoll.value = result.latestPoll ? (result.latestPoll as typeof latestPoll.value) : null
@@ -537,18 +570,20 @@ watch(
 
 const resetFeed = useDebounceFn(async () => {
   page.value = 1
+  replaceResults.value = true
+  appliedFilters.value = { tag: selectedTag.value, query: searchQuery.value, locale: locale.value }
   await refreshFeed()
 }, 350)
 watch([selectedTag, searchQuery, locale], () => {
-  articleMap.value.clear()
   hasMore.value = false
+  if (!selectedTag.value && !searchQuery.value) feedResultsHeight.value = 384
   resetFeed()
 })
 watch(
   () => route.query.page,
   () => {
     page.value = requestedPage()
-    articleMap.value.clear()
+    replaceResults.value = true
     hasMore.value = true
     refreshFeed()
   },
@@ -590,7 +625,7 @@ const leadTags = computed(() =>
   (leadArticle.value?.tags ?? []).flatMap((item) => (item.tag ? [item.tag] : [])).slice(0, 2),
 )
 const showFeed = computed(
-  () => feedPending.value || hasFilters.value || visibleArticles.value.length > 0 || Boolean(feedError.value),
+  () => feedBusy.value || hasFilters.value || visibleArticles.value.length > 0 || Boolean(feedError.value),
 )
 const isOwner = computed(() => {
   const user = auth.value?.user
@@ -638,7 +673,8 @@ const resetFilters = () => {
   searchQuery.value = ''
 }
 const loadMore = async () => {
-  if (!hasMore.value || feedPending.value) return
+  if (!hasMore.value || feedBusy.value) return
+  replaceResults.value = false
   page.value++
   await refreshFeed()
 }
