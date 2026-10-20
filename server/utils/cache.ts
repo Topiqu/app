@@ -146,14 +146,22 @@ export async function cachedAuthor<T>(userId: string, load: () => Promise<T>): P
 export const invalidateAuthor = (userId: string) => bumpGen(`author:${userId}`)
 
 const fallbackLimits = new Map<string, { count: number; resetAt: number }>()
+const MAX_FALLBACK_LIMITS = 20_000
+let nextPruneAt = 0
 
 export async function consumeRateLimit(key: string, limit: number, windowSeconds: number): Promise<boolean> {
   const redis = activeClient()
   if (redis) {
     try {
       const redisKey = `rate:${key}`
-      const count = await redis.incr(redisKey)
-      if (count === 1) await redis.expire(redisKey, windowSeconds)
+      const count = Number(
+        await redis.eval(
+          "local n = redis.call('INCR', KEYS[1]); if n == 1 or redis.call('TTL', KEYS[1]) < 0 then redis.call('EXPIRE', KEYS[1], ARGV[1]); end; return n",
+          1,
+          redisKey,
+          windowSeconds,
+        ),
+      )
       return count <= limit
     } catch (e) {
       logErr('rate-limit', key, e)
@@ -161,8 +169,14 @@ export async function consumeRateLimit(key: string, limit: number, windowSeconds
   }
 
   const now = Date.now()
+  if (now >= nextPruneAt) {
+    for (const [entry, value] of fallbackLimits) if (value.resetAt <= now) fallbackLimits.delete(entry)
+    nextPruneAt = now + 60_000
+  }
   const current = fallbackLimits.get(key)
   if (!current || current.resetAt <= now) {
+    // Do not evict live identity limits: eviction would turn a memory cap into a bypass.
+    if (!current && fallbackLimits.size >= MAX_FALLBACK_LIMITS) return false
     fallbackLimits.set(key, { count: 1, resetAt: now + windowSeconds * 1000 })
     return true
   }

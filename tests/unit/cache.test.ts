@@ -39,6 +39,11 @@ class FakeRedis {
     this.ttls.set(key, ttl)
     return 1
   }
+  async eval(_script: string, _keys: number, key: string, ttl: number) {
+    const count = await this.incr(key)
+    if (count === 1 || !this.ttls.has(key)) await this.expire(key, ttl)
+    return count
+  }
 }
 
 let mockInstance = new FakeRedis()
@@ -248,6 +253,25 @@ describe('author summaries', () => {
 })
 
 describe('consumeRateLimit', () => {
+  it('repairs a Redis counter without a TTL', async () => {
+    const { consumeRateLimit } = await loadCache()
+    mockInstance.store.set('rate:orphan', '1')
+    await expect(consumeRateLimit('orphan', 3, 60)).resolves.toBe(true)
+    expect(mockInstance.ttls.get('rate:orphan')).toBe(60)
+  })
+  it('bounds fallback memory without evicting active identity limits and reclaims expired entries', async () => {
+    vi.useFakeTimers()
+    try {
+      const { consumeRateLimit } = await loadCache({ configured: false })
+      for (let i = 0; i < 20_000; i++) await consumeRateLimit(`identity:${i}`, 1, 60)
+      await expect(consumeRateLimit('overflow', 1, 60)).resolves.toBe(false)
+      await expect(consumeRateLimit('identity:0', 1, 60)).resolves.toBe(false)
+      vi.advanceTimersByTime(60_001)
+      await expect(consumeRateLimit('overflow', 1, 60)).resolves.toBe(true)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
   it('shares counters through Redis and rejects after the configured limit', async () => {
     const { consumeRateLimit } = await loadCache()
 
