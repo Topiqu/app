@@ -1,5 +1,5 @@
 <template>
-  <main class="min-h-[75vh] flex items-center justify-center px-4 py-12">
+  <main class="flex min-h-0 flex-1 items-center justify-center px-4 py-8">
     <div
       class="w-full max-w-lg rounded-3xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-7 sm:p-10 shadow-xl text-center"
     >

@@ -1,5 +1,14 @@
 export default defineAppConfig({
   ui: {
+    toast: {
+      slots: {
+        root: 'rounded-(--topiqu-surface-radius)',
+        title: 'break-words',
+        description: 'break-words',
+        actions: 'flex-wrap',
+      },
+      defaultVariants: { orientation: 'vertical' },
+    },
     colors: {
       primary: 'slate',
       neutral: 'slate',
@@ -287,7 +296,7 @@ export default defineAppConfig({
     },
     popover: {
       slots: {
-        content: 'bg-default ring ring-default',
+        content: 'rounded-(--topiqu-surface-radius) bg-default ring ring-default',
       },
     },
     dropdownMenu: {
@@ -333,9 +342,10 @@ export default defineAppConfig({
       },
     },
     skeleton: {
-      base: 'bg-accented',
+      base: 'rounded-(--ui-radius) bg-accented',
     },
     empty: {
+      slots: { root: 'rounded-(--topiqu-surface-radius)' },
       defaultVariants: {
         variant: 'outline',
         size: 'md',
@@ -356,6 +366,7 @@ export default defineAppConfig({
       },
     },
     navigationMenu: {
+      slots: { link: 'rounded-(--ui-radius)' },
       defaultVariants: {
         color: 'primary',
         highlightColor: 'primary',

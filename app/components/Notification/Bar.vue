@@ -75,7 +75,7 @@
                 <UProgress v-if="loading" />
               </div>
             </UScrollArea>
-            <UEmpty v-else icon="mdi:bell-off-outline" :title="$t('common.notifications.empty')" />
+            <UEmpty v-else variant="naked" icon="mdi:bell-off-outline" :title="$t('common.notifications.empty')" />
           </template>
 
           <div v-else class="bg-default p-4">

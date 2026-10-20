@@ -1,6 +1,9 @@
 <template>
   <div class="space-y-5">
-    <div class="flex w-fit gap-1 rounded-[var(--ui-radius)] bg-muted p-1" role="tablist">
+    <div
+      class="flex w-fit max-w-full flex-wrap gap-1 rounded-[calc(var(--ui-radius)+0.25rem)] bg-muted p-1"
+      role="tablist"
+    >
       <UButton
         v-for="tab in tabs"
         :key="tab.id"
@@ -37,7 +40,7 @@
           color="neutral"
           variant="ghost"
           :icon="isGrid ? 'mdi:view-list' : 'mdi:view-grid'"
-          :aria="$t('common.actions.toggleLayout')"
+          :aria-label="$t('common.actions.toggleLayout')"
           :title="$t('common.actions.toggleLayout')"
           @click="isGrid = !isGrid"
         />

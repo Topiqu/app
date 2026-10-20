@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-[100dvh] bg-default px-4 py-12 sm:px-6 lg:px-8">
+  <div class="bg-default px-4 py-12 sm:px-6 lg:px-8">
     <article class="mx-auto max-w-[var(--topiqu-reading-width)]">
       <header class="mb-12 border-b border-default pb-8">
         <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight mb-4">

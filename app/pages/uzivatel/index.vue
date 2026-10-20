@@ -1,5 +1,5 @@
 <template>
-  <main class="w-full max-w-5xl mx-auto pt-24 sm:pt-28 px-4 sm:px-6 pb-28 flex flex-col gap-6">
+  <main class="w-full max-w-5xl mx-auto pt-6 sm:pt-10 px-4 sm:px-6 pb-28 flex flex-col gap-6">
     <header class="flex items-center justify-between gap-4">
       <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
         {{ $t('profile.title') }}
@@ -20,7 +20,30 @@
     <div class="flex flex-col md:flex-row gap-6 md:gap-10">
       <TabNav v-model="activeTab" :tabs="tabs" :label="$t('profile.title')" />
 
-      <div class="flex-1 min-w-0">
+      <div
+        v-if="profilePending && !userData"
+        class="min-w-0 flex-1 space-y-6"
+        :aria-label="$t('common.loading')"
+        aria-busy="true"
+      >
+        <div class="flex items-start gap-4 rounded-(--topiqu-surface-radius) border border-default p-5">
+          <USkeleton class="size-16 shrink-0" :ui="{ base: 'rounded-full' }" />
+          <div class="min-w-0 flex-1 space-y-4">
+            <USkeleton class="h-7 w-36 max-w-full" />
+            <USkeleton class="h-4 w-24" />
+            <USkeleton class="h-4 w-3/4" />
+          </div>
+        </div>
+        <USkeleton class="h-64 w-full" />
+      </div>
+      <UAlert
+        v-else-if="profileError"
+        class="min-w-0 flex-1"
+        color="error"
+        :title="$t('common.messages.loadFailedTitle')"
+        :actions="[{ label: $t('common.messages.retry'), onClick: () => refresh() }]"
+      />
+      <div v-else class="flex-1 min-w-0">
         <div v-show="activeTab === 'profile'" class="space-y-6">
           <Panel>
             <UserIdentity
@@ -221,8 +244,8 @@
         <div v-show="activeTab === 'activity'" class="space-y-6">
           <Panel :title="$t('profile.statsTitle')">
             <StatsUser
-              :followingCount="profileForm.followers"
-              :followerCount="profileForm.following"
+              :followers="profileForm.followers"
+              :following="profileForm.following"
               :likedArticles="profileForm.likedArticles"
               :commentsCount="profileForm.commentsCount"
               :likesCount="profileForm.likesCount"
@@ -300,15 +323,26 @@ const showOldPassword = shallowRef(false)
 const profileForm = shallowReactive<Profile>({} as Profile)
 const passwordForm = shallowReactive({ oldPassword: '', newPassword: '', confirmNewPassword: '' })
 
-const { data: userData, refresh } = await useFetch(`/api/users/${user.value?.user?.id}/account`)
+const {
+  data: userData,
+  refresh,
+  pending: profilePending,
+  error: profileError,
+} = await useLazyFetch(`/api/users/${user.value?.user?.id}/account`)
 
 const is2FAEnabled = shallowRef(!!userData.value?.totpEnabled)
 
-if (userData.value) {
-  const loaded = { ...userData.value, handle: toHandle(userData.value.username) }
-  Object.assign(profileForm, loaded)
-  originalProfile.value = { ...loaded }
-}
+watch(
+  userData,
+  (value) => {
+    if (!value || isDirty.value) return
+    const loaded = { ...value, handle: toHandle(value.username) }
+    Object.assign(profileForm, loaded)
+    originalProfile.value = { ...loaded }
+    is2FAEnabled.value = !!value.totpEnabled
+  },
+  { immediate: true },
+)
 
 useSeoMeta({ title: () => `${profileForm.username ?? ''} — ${$t('profile.title')}` })
 

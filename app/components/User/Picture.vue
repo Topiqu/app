@@ -2,7 +2,7 @@
   <AppMedia
     :src="url"
     :alt="(name || '') + ' ' + $t('common.avatar.alt.profile')"
-    :fallbackText="name || undefined"
+    :fallbackText="name?.trim().charAt(0).toLocaleUpperCase() || undefined"
     fallbackIcon="mdi:account-circle-outline"
     aspectRatio="1 / 1"
     :sizes="pixelSize"

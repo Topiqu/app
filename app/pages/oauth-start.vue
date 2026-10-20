@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-[100dvh] items-center justify-center bg-default">
+  <div class="flex min-h-0 flex-1 items-center justify-center bg-default py-8">
     <UProgress class="w-48" />
   </div>
 </template>

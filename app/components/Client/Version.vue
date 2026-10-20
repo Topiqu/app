@@ -1,7 +1,7 @@
 <template>
   <div
     data-client-version-bar
-    class="bottom-action-bar fixed right-3 bottom-3 z-overlay flex max-w-[calc(100vw-1.5rem)] items-center gap-1 rounded-lg bg-elevated p-1 shadow-lg ring ring-default"
+    class="bottom-action-bar fixed right-3 bottom-3 z-overlay flex max-w-[calc(100vw-1.5rem)] items-center gap-1 rounded-[calc(var(--ui-radius)+0.25rem)] bg-elevated p-1 shadow-lg ring ring-default"
   >
     <UButton
       class="min-w-0"
