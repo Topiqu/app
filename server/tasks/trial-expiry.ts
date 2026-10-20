@@ -20,8 +20,7 @@ export default defineMonitoredTask({
       // The SQL filter and the predicate must agree; if they ever drift, the predicate wins.
       if (!needsTrialDowngrade(site, now)) continue
 
-      await downgradeExpiredTrial(site.id, site)
-      downgraded++
+      if (await downgradeExpiredTrial(site.id, site)) downgraded++
     }
 
     return { result: { candidates: sites.length, downgraded } }

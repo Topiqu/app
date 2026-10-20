@@ -23,18 +23,22 @@ export const expiredTrialWhere = (now: Date) => ({
 
 /** Plan entitlements and credit are independent. Only explicitly expiring grants can expire. */
 export const downgradeExpiredTrial = async (clientSiteId: string, site?: TrialInfo) => {
-  await serializableTransaction(async (tx) => {
-    await tx.clientSite.update({
-      where: { id: clientSiteId },
+  const changed = await serializableTransaction(async (tx) => {
+    const changed = await tx.clientSite.updateMany({
+      where: { id: clientSiteId, ...expiredTrialWhere(new Date()) },
       data: { plan: 'BASIC' },
     })
 
-    await syncPlanFeatures(tx, clientSiteId)
+    if (changed.count) await syncPlanFeatures(tx, clientSiteId)
+    return changed.count > 0
   })
+
+  if (!changed) return false
 
   await logAction({
     action: 'TRIAL_EXPIRED',
     clientSiteId,
     metadata: { from: site?.plan ?? null },
   })
+  return true
 }

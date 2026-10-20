@@ -228,6 +228,7 @@ export const generateTranslation = async (article: TranslatableArticle, targetLa
   const sourceTakeaways = article.keyTakeaways ?? []
 
   const { output: object, usage } = await generateText({
+    abortSignal: AbortSignal.timeout(15 * 60_000),
     model: aiModel('translation'),
     providerOptions: aiReasoning('medium'),
     maxOutputTokens: Math.min(20000, Math.ceil(masked.length / 3) + 1000),

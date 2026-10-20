@@ -4,9 +4,7 @@ import { generateContentForTask } from '../../utils/linkedin/generator'
 import { publishDecisionAndExecute } from '../../utils/linkedin/publisher'
 
 export default defineEventHandler(async (event) => {
-  if (getHeader(event, 'Authorization') !== `Bearer ${process.env.CRON_SECRET}`) {
-    throw createError({ statusCode: 401, message: 'Unauthorized' })
-  }
+  requireCron(event)
 
   const tasks = await prisma.contentTask.findMany({
     where: { status: 'PENDING', company: { clientSite: { publishToLinkedIn: true } } },
@@ -21,10 +19,11 @@ export default defineEventHandler(async (event) => {
 
   for (const task of tasks) {
     try {
-      await prisma.contentTask.update({
-        where: { id: task.id },
+      const claimed = await prisma.contentTask.updateMany({
+        where: { id: task.id, status: 'PENDING' },
         data: { status: 'GENERATING' },
       })
+      if (!claimed.count) continue
 
       const { communityInsight, aiToneOfVoice, audience } = task.company.clientSite
       const text = await generateContentForTask(task.topic, { tone: aiToneOfVoice, audience }, communityInsight)

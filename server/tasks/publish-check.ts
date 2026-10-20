@@ -7,9 +7,21 @@ export default defineMonitoredTask({
     const now = new Date()
     const touched = new Set<string>()
     const result = await prisma.$transaction(async (ctx) => {
+      // Transaction-scoped, cross-replica claim. A concurrent scheduler exits without side effects.
+      const [lock] = await ctx.$queryRaw<
+        { locked: boolean }[]
+      >`SELECT pg_try_advisory_xact_lock(7420190001::bigint) AS locked`
+      if (!lock?.locked) return { result: { count: 0, timestamp: now.toISOString() }, published: [] }
       // console.log('now', now.toISOString())
       const articles = await ctx.article.findMany({
-        where: { status: 'draft', releaseAt: { not: null, lte: now }, clientSite: { publishToWeb: true } },
+        where: {
+          status: 'draft',
+          deletedAt: null,
+          releaseAt: { not: null, lte: now },
+          clientSite: { publishToWeb: true, deletedAt: null },
+        },
+        take: 100,
+        orderBy: [{ releaseAt: 'asc' }, { id: 'asc' }],
         select: {
           id: true,
           title: true,
