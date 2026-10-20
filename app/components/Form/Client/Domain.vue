@@ -35,8 +35,14 @@
         </UAlert>
 
         <template v-else-if="data?.pending">
-          <p class="text-sm">{{ $t('common.domain.pendingIntro', { domain: data?.pending?.domain }) }}</p>
-          <dl class="divide-y divide-default rounded-lg border border-default text-sm">
+          <p class="text-sm">
+            {{
+              $t(pendingManaged ? 'common.domain.managedPending' : 'common.domain.pendingIntro', {
+                domain: data?.pending?.domain,
+              })
+            }}
+          </p>
+          <dl v-if="!pendingManaged" class="divide-y divide-default rounded-lg border border-default text-sm">
             <div
               v-for="record in records"
               :key="record.type"
@@ -51,7 +57,7 @@
           <UAlert v-if="notYet" color="warning" variant="soft" :title="$t('common.domain.notYet')" />
           <div class="flex flex-wrap gap-2">
             <UButton :loading="busy === 'verify'" :disabled="!!busy" @click="verify">
-              {{ $t('common.domain.verify') }}
+              {{ $t(pendingManaged ? 'common.domain.activateSubdomain' : 'common.domain.verify') }}
             </UButton>
             <UButton color="neutral" variant="ghost" :disabled="!!busy" @click="cancel">
               {{ $t('common.domain.cancel') }}
@@ -59,27 +65,28 @@
           </div>
         </template>
 
-        <form
-          v-else-if="data?.canUseCustomDomain"
-          class="flex flex-col gap-2 sm:flex-row sm:items-end"
-          @submit.prevent="request"
-        >
+        <form v-else class="flex flex-col gap-2 sm:flex-row sm:items-end" @submit.prevent="request">
           <div class="min-w-0 flex-1">
-            <UFormField :label="$t('common.domain.newDomain')" :error="error">
-              <UInput v-model="domain" class="w-full" placeholder="blog.example.com" />
+            <UFormField
+              :label="$t('common.domain.title')"
+              :error="error"
+              :help="$t('common.domain.subdomainHelp', { baseDomain })"
+            >
+              <UInput v-model="domain" class="w-full" :placeholder="`my-blog.${baseDomain}`" />
             </UFormField>
           </div>
           <UButton type="submit" :loading="busy === 'request'" :disabled="!domain.trim() || !!busy">
             {{ $t('common.domain.continue') }}
           </UButton>
         </form>
-        <p v-else class="text-sm text-muted">{{ $t('common.domain.planRequired') }}</p>
+        <p v-if="!data?.canUseCustomDomain" class="text-sm text-muted">{{ $t('common.domain.planRequired') }}</p>
       </div>
     </UCard>
   </section>
 </template>
 
 <script setup lang="ts">
+import { isManagedDomain } from '~~/shared/utils/domain'
 interface DnsRecords {
   domain: string
   txt: { name: string; value: string }
@@ -92,6 +99,8 @@ interface DomainStatus {
 }
 
 const { t } = useI18n()
+const baseDomain = useRuntimeConfig().public.baseDomain
+const pendingManaged = computed(() => !!data.value?.pending && isManagedDomain(data.value.pending.domain, baseDomain))
 const route = useRoute()
 const confirm = useConfirm()
 const headingId = useId()

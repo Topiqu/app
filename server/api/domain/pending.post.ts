@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { randomBytes } from 'node:crypto'
-import { domainError, isManagedDomain, normalizeDomain } from '~~/shared/utils/domain'
+import { domainError, normalizeDomain } from '~~/shared/utils/domain'
 
 export default defineEventHandler(async (event) => {
   const { user, db, clientSiteId } = await requireDomainAccess(event)
@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
   const site = await db.clientSite.findUnique({ where: { id: clientSiteId }, select: { domain: true, plan: true } })
   if (!site) throw createError({ statusCode: 404, message: 'Client site not found' })
 
-  const reason = isManagedDomain(domain) ? 'reserved' : domainError(domain, { allowCustom: site.plan !== 'BASIC' })
+  const reason = domainError(domain, { allowCustom: site.plan !== 'BASIC' })
   if (reason || domain === site.domain)
     throw createError({ statusCode: 400, message: 'Invalid domain', data: { code: reason ?? 'unchanged' } })
   if (await isDomainTaken(domain, clientSiteId))

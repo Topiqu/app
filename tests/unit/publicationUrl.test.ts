@@ -21,4 +21,21 @@ describe('dashboard publication links', () => {
     expect(publicationUrl({ ...site, domainVerified: false })).toBeUndefined()
     expect(publicationUrl({ ...site, domain: 'javascript:alert(1)' })).toBeUndefined()
   })
+
+  it('preserves the development protocol and port for local tenant links', () => {
+    const local = { ...site, domain: 'viky.localhost' }
+    expect(publicationUrl(local, '/cs/clanky/test', new URL('http://viky.localhost:3001/cs/admin'))).toBe(
+      'http://viky.localhost:3001/cs/clanky/test',
+    )
+    expect(publicationUrl(local, undefined, new URL('http://localhost:3001'))).toBe('http://viky.localhost:3001/cs')
+  })
+
+  it('never carries development ports or HTTP to a production publication', () => {
+    expect(publicationUrl(site, undefined, new URL('http://localhost:3001'))).toBe(
+      'https://gamingnewsbigjohn.topiqu.com/cs',
+    )
+    expect(publicationUrl({ ...site, domain: 'viky.localhost' }, undefined, new URL('https://app.topiqu.com'))).toBe(
+      'https://viky.localhost/cs',
+    )
+  })
 })
