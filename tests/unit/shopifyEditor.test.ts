@@ -165,8 +165,9 @@ describe('Shopify publishing in the editor', () => {
 
   it('sends a save from the publish dialog even while the editor is still disabled', async () => {
     let panel: { send: (mode: string) => Promise<void> } | null = null
-    const Page = defineComponent(() => () =>
-      h(ShopifyEditor, { articleId: 'article-1', disabled: true, ref: (el) => (panel = el as typeof panel) }),
+    const Page = defineComponent(
+      () => () =>
+        h(ShopifyEditor, { articleId: 'article-1', disabled: true, ref: (el) => (panel = el as typeof panel) }),
     )
     await mountSuspended(Page, { global })
     await flushPromises()

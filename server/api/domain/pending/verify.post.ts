@@ -1,3 +1,5 @@
+import { domainError, isManagedDomain } from '~~/shared/utils/domain'
+
 export default defineEventHandler(async (event) => {
   const { user, db, clientSiteId } = await requireDomainAccess(event)
   if (!(await consumeRateLimit(`domain-switch:${clientSiteId}`, 5, 600)))
@@ -10,13 +12,16 @@ export default defineEventHandler(async (event) => {
   if (!site?.pendingDomain || !site.pendingDomainToken)
     throw createError({ statusCode: 409, message: 'No domain change is pending' })
   const pending = site.pendingDomain
+  const managed = isManagedDomain(pending)
   // Plan or ownership may have changed since the request.
-  if (site.plan === 'BASIC')
+  if (domainError(pending, { allowCustom: site.plan !== 'BASIC' }))
     throw createError({ statusCode: 403, message: 'Custom domains require the Pro plan', data: { code: 'plan' } })
   if (await isDomainTaken(pending, clientSiteId))
     throw createError({ statusCode: 409, message: 'Domain already taken', data: { code: 'taken' } })
 
-  const dns = await checkDomainDns(pending, site.pendingDomainToken)
+  const dns = managed
+    ? { ownershipVerified: true, routingVerified: true }
+    : await checkDomainDns(pending, site.pendingDomainToken)
   if (!dns.ownershipVerified || !dns.routingVerified)
     return { verified: false, ownership: dns.ownershipVerified, routing: dns.routingVerified }
 
@@ -34,8 +39,8 @@ export default defineEventHandler(async (event) => {
           // The TXT record stays in place, so domain-reverification keeps checking the same token.
           domainVerified: true,
           domainVerificationStatus: 'VERIFIED',
-          domainVerificationToken: site.pendingDomainToken,
-          domainVerificationIssuedAt: site.pendingDomainRequestedAt ?? now,
+          domainVerificationToken: managed ? null : site.pendingDomainToken,
+          domainVerificationIssuedAt: managed ? null : (site.pendingDomainRequestedAt ?? now),
           domainVerifiedAt: now,
           domainLastCheckedAt: now,
           domainRoutingVerified: true,

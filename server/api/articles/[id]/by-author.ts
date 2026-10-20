@@ -1,8 +1,11 @@
+import { articleExcerpt } from '~~/shared/utils/articleBlocks'
+import { articleCardSelect } from '~~/server/utils/articleCard'
+
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const user = await getSessionUser(event)
   const sessionId = user?.id ? null : readAnonSession(event)
-  const username = decodeURIComponent(getRouterParam(event, 'id')!.trim())
+  const username = getRouterParam(event, 'id', { decode: true })?.trim()
   if (!username) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
   const { skip, take } = await getPagination(event)
@@ -17,7 +20,15 @@ export default defineEventHandler(async (event) => {
   })
   if (!author) throw createError({ statusCode: 404, message: t('common.errors.authorNotFound')! })
 
-  const [field, order] = (sort as string).split(':') as ['createdAt' | 'title', 'asc' | 'desc']
+  if (typeof sort !== 'string') throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
+  const [field, order] = sort.split(':') as ['createdAt' | 'title', 'asc' | 'desc']
+  if (
+    !['createdAt', 'title'].includes(field) ||
+    !['asc', 'desc'].includes(order) ||
+    typeof search !== 'string' ||
+    search.length > 300
+  )
+    throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
   const seesDrafts =
     user?.role === 'superadmin' ||
@@ -28,11 +39,15 @@ export default defineEventHandler(async (event) => {
         user.id === author.id ? 'ARTICLE_WRITE' : 'ARTICLE_WRITE_OTHERS',
       ))
   const visibleWhere = {
+    deletedAt: null,
+    clientSite: { deletedAt: null },
     userId: author.id,
     status: seesDrafts ? undefined : ('published' as const),
   }
 
   const publicWhere = {
+    deletedAt: null,
+    clientSite: { deletedAt: null },
     userId: author.id,
     clientSiteId: author.clientSiteId ?? undefined,
     status: 'published' as const,
@@ -46,17 +61,14 @@ export default defineEventHandler(async (event) => {
       take: take + 1,
       skip,
       orderBy: { [field]: order },
-      include: {
-        user: { select: { id: true, username: true, avatarUrl: true } },
-        tags: { include: { tag: true } },
+      select: {
+        ...articleCardSelect(user?.id),
         reactions: {
           where: user?.id ? { userId: user.id } : sessionId ? { sessionId, userId: null } : { id: '' },
           select: { id: true },
           take: 1,
         },
-        _count: { select: { reactions: true } },
       },
-      omit: { content: true },
     }),
     db.article.count({ where: visibleWhere }),
     db.user.findUnique({
@@ -83,10 +95,11 @@ export default defineEventHandler(async (event) => {
     commentCount: counts!._count.comments,
     totalArticleViews: stats._sum.views ?? 0,
     totalArticleLikes,
-    articles: items.map(({ reactions, ...article }) => ({
+    articles: items.map(({ reactions, content, ...article }) => ({
       articleId: article.id,
       article: {
         ...article,
+        excerpt: articleExcerpt(article.excerpt, content),
         likes: article._count.reactions,
         likedByUser: reactions.length > 0,
         views: article.views,

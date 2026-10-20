@@ -20,6 +20,7 @@ export default defineMonitoredTask({
         domainVerificationDegradedAt: true,
       },
       take: 200,
+      orderBy: [{ domainLastCheckedAt: { sort: 'asc', nulls: 'first' } }, { id: 'asc' }],
     })
 
     let verified = 0
@@ -82,14 +83,19 @@ export default defineMonitoredTask({
           clientSiteId: site.id,
           metadata: { domain: site.domain, failures: next.failures, reason },
         })
-        const admins = await prisma.user.findMany({
-          where: { clientSiteId: site.id, role: 'admin', allowNotifs: true },
-          select: { id: true },
+        const admins = await prisma.tenantMembership.findMany({
+          where: {
+            clientSiteId: site.id,
+            deletedAt: null,
+            user: { allowNotifs: true, deletedAt: null },
+            OR: [{ role: 'OWNER' }, { scopes: { has: 'TENANT_SETTINGS' } }],
+          },
+          select: { userId: true },
         })
         if (admins.length)
           await prisma.notification.createMany({
             data: admins.map((admin) => ({
-              userId: admin.id,
+              userId: admin.userId,
               type: 'SYSTEM',
               message: `DNS verification for ${site.domain} is failing. Fix it within 7 days.`,
               link: '/admin',

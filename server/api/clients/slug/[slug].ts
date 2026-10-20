@@ -10,7 +10,10 @@ export default defineEventHandler(async (event) => {
   }
 
   const clientSite = await prisma.clientSite.findFirst({
-    where: process.env.NODE_ENV === 'production' ? { domain: slug } : { OR: [{ domain: slug }, { name: slug }] },
+    where: {
+      deletedAt: null,
+      ...(process.env.NODE_ENV === 'production' ? { domain: slug } : { OR: [{ domain: slug }, { name: slug }] }),
+    },
     select: publicClientSiteSelect,
   })
 

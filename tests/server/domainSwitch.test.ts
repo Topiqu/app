@@ -60,6 +60,26 @@ const verify = async () => {
 }
 
 describe('domain switch verification', () => {
+  it('activates a free managed subdomain without external DNS or a paid plan', async () => {
+    findSite.mockResolvedValue(site({ plan: 'BASIC', pendingDomain: 'fallback.topiqu.com' }))
+    await expect(verify()).resolves.toEqual({ verified: true, domain: 'fallback.topiqu.com' })
+    expect(checkDomainDns).not.toHaveBeenCalled()
+    expect(tx.clientSite.updateMany.mock.calls[0]![0].data).toMatchObject({
+      domainVerificationToken: null,
+      domainVerified: true,
+    })
+  })
+
+  it.each(['admin.topiqu.com', 'app.topiqu.com', 'nested.blog.topiqu.com', 'topiqu.com'])(
+    'refuses reserved or nested managed host %s',
+    async (pendingDomain) => {
+      findSite.mockResolvedValue(site({ pendingDomain }))
+      await expect(verify()).rejects.toMatchObject({ statusCode: 403 })
+      expect(tx.clientSite.updateMany).not.toHaveBeenCalled()
+      expect(checkDomainDns).not.toHaveBeenCalled()
+    },
+  )
+
   it('keeps the live domain while DNS is not proven', async () => {
     checkDomainDns.mockResolvedValue({ ownershipVerified: true, routingVerified: false })
     await expect(verify()).resolves.toEqual({ verified: false, ownership: true, routing: false })

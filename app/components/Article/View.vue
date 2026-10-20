@@ -1,9 +1,9 @@
 <template>
   <div
-    class="mx-auto grid max-w-[var(--topiqu-article-width)] gap-10 lg:grid-cols-[minmax(0,1fr)_15rem]"
+    class="mx-auto grid w-full max-w-[var(--topiqu-reading-width)] gap-10 lg:max-w-[calc(var(--topiqu-reading-width)+17.5rem)] lg:grid-cols-[minmax(0,1fr)_15rem]"
     :class="
       $slots.sidebar
-        ? 'xl:max-w-[calc(var(--topiqu-article-width)+12.5rem)] xl:grid-cols-[minmax(0,1fr)_15rem_10rem]'
+        ? 'xl:max-w-[calc(var(--topiqu-reading-width)+30rem)] xl:grid-cols-[minmax(0,1fr)_15rem_10rem]'
         : ''
     "
     :style="{
@@ -47,7 +47,12 @@
         <NuxtLink
           v-for="tag in article.tags"
           :key="tag.name"
-          :to="localePath({ name: 'stitky-slug', params: { slug: tag.name } })"
+          :to="
+            localePath({
+              name: 'stitky-slug',
+              params: { slug: tag.slug || slugify(tag.name, { lower: true, strict: true }) },
+            })
+          "
           class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
           <UBadge color="neutral" variant="soft" size="lg" icon="mdi:tag">
@@ -60,7 +65,7 @@
 
       <slot name="actions" />
 
-      <article ref="content" class="article-content mx-auto w-full" :class="ARTICLE_PROSE_CLASS">
+      <article ref="content" class="article-content w-full max-w-none!" :class="ARTICLE_PROSE_CLASS">
         <ArticleParsed
           v-if="article.blocks.length"
           :blocks="article.blocks"
@@ -118,6 +123,7 @@ import type { CoverCredit } from '~~/shared/utils/imageCredit'
 import type { ArticleBlock } from '~~/shared/utils/articleBlocks'
 import type { SharePlatform } from '~~/generated/zenstack/models'
 
+import slugify from 'slugify'
 import { ARTICLE_PROSE_CLASS } from '~~/shared/utils/articleProse'
 
 type SeriesLink = {
@@ -153,7 +159,7 @@ const { article, discloseAi = false } = defineProps<{
         imageUrl?: string | null
       }[]
     } | null
-    tags: { name: string }[]
+    tags: { name: string; slug?: string }[]
     answer?: string | null
     takeaways: string[]
     blocks: ArticleBlock[]

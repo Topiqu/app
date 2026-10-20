@@ -44,19 +44,19 @@ describe('publication brand assets', () => {
     expect(styles).toContain('--transparency-square: var(--ui-bg-accented)')
   })
 
-  it('renders the normalized wide logo without requesting a square crop', () => {
+  it('renders publication logos in contain mode without requesting a crop', () => {
     const header = source('app/components/Header.vue')
     const home = source('app/pages/index.vue')
     const preview = source('app/components/Form/Client/BrandingPreview.vue')
 
     const logoMedia = (code: string) =>
-      code.match(/<AppMedia\s+[\s\S]*?:src="(?:clientSite\?\.logoUrl|logoUrl)"[\s\S]*?\/>/)?.[0]
+      code.match(/<AppMedia\s+[\s\S]*?:src="(?:clientSite(?:\?\.|\.)logoUrl|logoUrl)"[\s\S]*?\/>/)?.[0]
 
     expect(header).toContain('aspectRatio="16 / 5"')
     expect(header).toContain(':width="128"')
     expect(header).not.toContain(':height="128"')
-    expect(home).toContain('aspectRatio="1 / 1"')
-    expect(home).toContain('containerClass="aspect-square w-full max-w-56 ')
+    expect(logoMedia(home)).toContain('aspectRatio="1 / 1"')
+    expect(logoMedia(home)).toContain('fit="contain"')
     expect(logoMedia(home)).toContain(':width="576"')
     expect(logoMedia(home)).not.toContain(':height=')
     expect(logoMedia(preview)).toContain(':width="256"')

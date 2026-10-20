@@ -155,7 +155,13 @@ Apply database migrations with `bun run release` (targets `DATABASE_URL`). `bun 
 <details>
 <summary><strong>Docker and runtime details</strong></summary>
 
-The Dockerfile uses the same pinned Bun version and installs from the frozen lockfile, including the compatibility patch in `patches/`. Its prerelease stage runs `bun release` with the supplied `DATABASE_URL` before building. The final image contains only `.output` and starts `server/index.mjs` with Bun. CI applies migrations to its disposable database before the production browser smoke tests.
+The Dockerfile uses the same pinned Bun version and installs from the frozen lockfile, including the compatibility patch in `patches/`. Building an image never connects to or migrates a database and takes no database credentials. The final image contains only `.output`, runs as the unprivileged `bun` user, and starts `server/index.mjs` with Bun. CI applies migrations to its disposable database before the production browser smoke tests.
+
+Production requires runtime `DATABASE_URL` and an `AUTH_SECRET` of at least 32 characters. Inject these through the deployment environment; do not pass them as Docker build arguments. `CRON_SECRET` is required to call the external cron endpoints; an unset secret always denies access. `PGPOOL_MAX` defaults to 10 connections per process (allowed range 1–100); budget the total across all replicas and workers. Connections wait at most 3 seconds and statements at most 30 seconds. `/api/live` is liveness; `/api/health` is database readiness with a 4-second deadline. Configure the platform probes accordingly. External log delivery is bounded and best-effort; console logs and the database audit remain authoritative.
+
+Release order is operator-controlled: identify the target database and image, take a backup and verify restore on a separate database, run `bun run release` from the matching source revision against that exact target, then roll out the tested image and check readiness, login, tenant access, publication and cron heartbeats. Retain the previous image. Roll it back only if it is compatible with the applied schema; otherwise use a reviewed forward fix or restore the verified backup under a maintenance plan. Never assume rolling back an image rolls back migrations. Neither a Git push nor an image build authorizes these production operations.
+
+Password reset codes issued before the reset hardening change must be requested again: reset tokens now use a separate purpose-bound store, expire in 15 minutes and revoke all previous sessions on success. No new database migration is needed for this change. Existing verification codes for account activation remain separate.
 
 When invoking Nuxt through Node instead of Bun, use a supported Node version (`^22.21.0`, `^24.11.0` or `>=26.0.0`).
 

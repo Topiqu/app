@@ -35,6 +35,13 @@ const searchInput = () => document.querySelector<HTMLInputElement>('form input')
 const addButton = () => document.querySelector<HTMLButtonElement>('form button[type="submit"]')!
 
 describe('Tags/Create', () => {
+  it('loads tags when lazy-mounted directly in the open state', async () => {
+    await mountSuspended(TagsCreate, { props: { modelValue: true }, attachTo: document.body })
+    await settle()
+    expect(chip('a')?.textContent).toContain('Xbox')
+    expect(chip('b')?.textContent).toContain('PlayStation')
+  })
+
   it('turns a tag name into an input when clicked', async () => {
     await mount()
 
@@ -66,7 +73,9 @@ describe('Tags/Create', () => {
 
     chip('a').querySelector('button')!.click()
     await settle()
-    chip('a').querySelector('input')!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }))
+    chip('a')
+      .querySelector('input')!
+      .dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }))
     await settle()
 
     expect(chip('a').querySelector('input')).toBeNull()

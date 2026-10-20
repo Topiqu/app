@@ -34,6 +34,8 @@ export default defineEventHandler(async (event) => {
     },
   })
 
+  await uncache(tenantHostKey(site.domain))
+
   await logAction({
     action: verified ? 'DOMAIN_VERIFICATION_SUCCEEDED' : 'DOMAIN_VERIFICATION_FAILED',
     userId: user.id,

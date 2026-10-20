@@ -58,7 +58,7 @@ export async function logAction(params: {
 
     const prev = await db.log.findFirst({
       orderBy: { createdAt: 'desc' },
-      select: { hash: true },
+      select: { hash: true, createdAt: true },
     })
 
     const data = {
@@ -68,14 +68,15 @@ export async function logAction(params: {
       metadata: rest.metadata ?? {},
       idempotencyKey: rest.idempotencyKey ?? null,
       ip: rest.ip ?? null,
-      ts: new Date(),
+      ts: new Date(Math.max(Date.now(), prev?.createdAt ? prev.createdAt.getTime() + 1 : 0)),
       previousHash: prev?.hash ?? 'GENESIS',
     }
 
     const raw = JSON.stringify(canonicalize({ ...data, ts: data.ts.getTime() }))
     const hash = crypto.createHmac('sha256', LOG_HMAC_SECRET).update(raw).digest('hex')
 
-    return { entry: await db.log.create({ data: { ...data, hash } }), created: true }
+    // PostgreSQL now() is the transaction start time, which can predate the lock winner.
+    return { entry: await db.log.create({ data: { ...data, createdAt: data.ts, hash } }), created: true }
   }
 
   const { entry, created } = tx ? await write(tx) : await prisma.$transaction(write)

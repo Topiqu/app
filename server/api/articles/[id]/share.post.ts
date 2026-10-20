@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
   const { platform } = await readValidatedBody(event, BodySchema.parse)
 
   const article = await prisma.article.findUnique({
-    where: { id, status: 'published' },
+    where: { id, status: 'published', deletedAt: null, clientSite: { deletedAt: null } },
     select: {
       id: true,
       shared: true,

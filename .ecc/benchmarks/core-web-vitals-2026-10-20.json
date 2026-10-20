@@ -1,0 +1,552 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-20",
+  "sourceCommit": "3c9affd9",
+  "scope": "Local production build, synthetic BASIC tenant, anonymous visits; not field p75",
+  "tools": {
+    "lighthouse": "13.5.0",
+    "webVitals": "6.2.3",
+    "browser": "Chromium 156",
+    "hostBun": "1.4.3"
+  },
+  "fieldData": {
+    "available": false,
+    "reason": "No deployed URL or CrUX/RUM data supplied"
+  },
+  "thresholds": {
+    "LCP_ms": 2500,
+    "INP_ms": 200,
+    "CLS": 0.1
+  },
+  "method": {
+    "runsPerScenario": 3,
+    "lighthouseNavigationCount": 27,
+    "scriptedVisitCount": 12,
+    "primaryTransport": "HTTPS HTTP/2 + Brotli Q4 through an audit-only localhost proxy",
+    "coldBrowser": true,
+    "coldServer": false,
+    "serviceWorkerInScriptedVisits": "blocked",
+    "mobile": {
+      "viewport": [412, 823],
+      "deviceScaleFactor": 1.75,
+      "cpuSlowdown": 4,
+      "latencyMs": 150,
+      "downloadKbps": 1638.4
+    },
+    "desktop": {
+      "viewport": [1350, 940],
+      "deviceScaleFactor": 1,
+      "cpuSlowdown": 1,
+      "latencyMs": 40,
+      "downloadKbps": 10240
+    },
+    "lighthouseThrottling": "simulate",
+    "interactionThrottling": "CDP actual",
+    "actions": [
+      "reject optional cookies",
+      "open/close locale",
+      "open/close account",
+      "home: select topic and type redakce",
+      "article: toggle sources",
+      "scroll"
+    ]
+  },
+  "lighthouse": [
+    {
+      "scenario": "home-br-desktop",
+      "runs": 3,
+      "score": {
+        "median": 80,
+        "min": 79,
+        "max": 88
+      },
+      "lcp": {
+        "median": 2218.0105497207633,
+        "min": 2040.5672997207635,
+        "max": 2613.0942999999997
+      },
+      "fcp": {
+        "median": 1071.8263000000002,
+        "min": 886.2813000000001,
+        "max": 1812.1585499999983
+      },
+      "cls": {
+        "median": 0.002848772196564043,
+        "min": 0.002848772196564043,
+        "max": 0.002848772196564043
+      },
+      "tbt": {
+        "median": 84.99999999999955,
+        "min": 28.999999999999773,
+        "max": 175.00000000000045
+      },
+      "ttfb": {
+        "median": 103,
+        "min": 97,
+        "max": 161
+      },
+      "bytes": {
+        "median": 1299013,
+        "min": 1299012,
+        "max": 1299047
+      }
+    },
+    {
+      "scenario": "article-h2-mobile",
+      "runs": 3,
+      "score": {
+        "median": 56.99999999999999,
+        "min": 56.99999999999999,
+        "max": 62
+      },
+      "lcp": {
+        "median": 7200.892,
+        "min": 6504.147,
+        "max": 7260.009
+      },
+      "fcp": {
+        "median": 2760.009,
+        "min": 2250.892,
+        "max": 3879.147
+      },
+      "cls": {
+        "median": 0.0006048944166569065,
+        "min": 0.0006048944166569065,
+        "max": 0.0006048944166569065
+      },
+      "tbt": {
+        "median": 456.5,
+        "min": 431.5,
+        "max": 574.5
+      },
+      "ttfb": {
+        "median": 117,
+        "min": 100,
+        "max": 169
+      },
+      "bytes": {
+        "median": 1322983,
+        "min": 1322904,
+        "max": 1323196
+      }
+    },
+    {
+      "scenario": "article-br-mobile",
+      "runs": 3,
+      "score": {
+        "median": 48,
+        "min": 48,
+        "max": 50
+      },
+      "lcp": {
+        "median": 9438.743999999992,
+        "min": 9247.083703802487,
+        "max": 11946.528053802489
+      },
+      "fcp": {
+        "median": 5287.5050999999985,
+        "min": 4734.9439999999995,
+        "max": 5306.160500000003
+      },
+      "cls": {
+        "median": 0.0006048944166569065,
+        "min": 0.0006048944166569065,
+        "max": 0.000621024934434424
+      },
+      "tbt": {
+        "median": 530.9999999999973,
+        "min": 452.4999999999991,
+        "max": 593.5
+      },
+      "ttfb": {
+        "median": 109,
+        "min": 107,
+        "max": 232
+      },
+      "bytes": {
+        "median": 1361041,
+        "min": 1360776,
+        "max": 1361096
+      }
+    },
+    {
+      "scenario": "home-h2-desktop",
+      "runs": 3,
+      "score": {
+        "median": 97,
+        "min": 96,
+        "max": 97
+      },
+      "lcp": {
+        "median": 1209.9915,
+        "min": 1208.1685,
+        "max": 1244.54
+      },
+      "fcp": {
+        "median": 829.9915,
+        "min": 828.1685,
+        "max": 864.54
+      },
+      "cls": {
+        "median": 0.002848772196564043,
+        "min": 0.002848772196564043,
+        "max": 0.002848772196564043
+      },
+      "tbt": {
+        "median": 15,
+        "min": 14.5,
+        "max": 28.5
+      },
+      "ttfb": {
+        "median": 97,
+        "min": 91,
+        "max": 124
+      },
+      "bytes": {
+        "median": 1265090,
+        "min": 1264843,
+        "max": 1265415
+      }
+    },
+    {
+      "scenario": "home-raw-mobile",
+      "runs": 3,
+      "score": {
+        "median": 42,
+        "min": 38,
+        "max": 42
+      },
+      "lcp": {
+        "median": 20050.437824720757,
+        "min": 18760.45154972076,
+        "max": 21006.549836709604
+      },
+      "fcp": {
+        "median": 11667.4601,
+        "min": 9374.840000000002,
+        "max": 16368.208475000014
+      },
+      "cls": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "tbt": {
+        "median": 580.0000000000036,
+        "min": 531.598786709591,
+        "max": 686.4999999999982
+      },
+      "ttfb": {
+        "median": 153,
+        "min": 124,
+        "max": 208
+      },
+      "bytes": {
+        "median": 3091005,
+        "min": 3090879,
+        "max": 3091209
+      }
+    },
+    {
+      "scenario": "home-br-mobile",
+      "runs": 3,
+      "score": {
+        "median": 43,
+        "min": 43,
+        "max": 51
+      },
+      "lcp": {
+        "median": 8719.443893179321,
+        "min": 8645.319743179316,
+        "max": 10447.63336007232
+      },
+      "fcp": {
+        "median": 4128.3278,
+        "min": 3000.7367999999997,
+        "max": 4129.793
+      },
+      "cls": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "tbt": {
+        "median": 1005.5000000000009,
+        "min": 543.5,
+        "max": 1361.000000000001
+      },
+      "ttfb": {
+        "median": 152,
+        "min": 110,
+        "max": 836
+      },
+      "bytes": {
+        "median": 1285866,
+        "min": 1285813,
+        "max": 1285891
+      }
+    },
+    {
+      "scenario": "article-h2-desktop",
+      "runs": 3,
+      "score": {
+        "median": 95,
+        "min": 94,
+        "max": 95
+      },
+      "lcp": {
+        "median": 1474.9245,
+        "min": 1470.7265000000002,
+        "max": 1486.3885
+      },
+      "fcp": {
+        "median": 834.9245,
+        "min": 830.7265,
+        "max": 846.3885
+      },
+      "cls": {
+        "median": 0.0003072556602901132,
+        "min": 0.0003072556602901132,
+        "max": 0.0003072556602901132
+      },
+      "tbt": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "ttfb": {
+        "median": 98,
+        "min": 96,
+        "max": 99
+      },
+      "bytes": {
+        "median": 1321878,
+        "min": 1321724,
+        "max": 1322087
+      }
+    },
+    {
+      "scenario": "article-br-desktop",
+      "runs": 3,
+      "score": {
+        "median": 87,
+        "min": 87,
+        "max": 87
+      },
+      "lcp": {
+        "median": 2236.593399999999,
+        "min": 2220.38235,
+        "max": 2334.597253802489
+      },
+      "fcp": {
+        "median": 996.5594000000002,
+        "min": 927.4974000000001,
+        "max": 999.8918000000004
+      },
+      "cls": {
+        "median": 0.0003072556602901132,
+        "min": 0.0003072556602901132,
+        "max": 0.0003072556602901132
+      },
+      "tbt": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "ttfb": {
+        "median": 125,
+        "min": 102,
+        "max": 132
+      },
+      "bytes": {
+        "median": 1360070,
+        "min": 1359904,
+        "max": 1384710
+      }
+    },
+    {
+      "scenario": "home-h2-mobile",
+      "runs": 3,
+      "score": {
+        "median": 65,
+        "min": 61,
+        "max": 66
+      },
+      "lcp": {
+        "median": 6149.666,
+        "min": 6123.991,
+        "max": 6242.8709999999965
+      },
+      "fcp": {
+        "median": 2699.666,
+        "min": 2285.671,
+        "max": 4323.991
+      },
+      "cls": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "tbt": {
+        "median": 361.5,
+        "min": 297,
+        "max": 400.5
+      },
+      "ttfb": {
+        "median": 104,
+        "min": 95,
+        "max": 153
+      },
+      "bytes": {
+        "median": 1253750,
+        "min": 1253535,
+        "max": 1253920
+      }
+    }
+  ],
+  "scriptedInteractions": [
+    {
+      "scenario": "home-mobile",
+      "runs": 3,
+      "LCP": {
+        "median": 6684,
+        "min": 6604,
+        "max": 6796
+      },
+      "CLS": {
+        "median": 0.2790524838089396,
+        "min": 0.2790524838089396,
+        "max": 0.2790524838089396
+      },
+      "INP": {
+        "median": 280,
+        "min": 264,
+        "max": 304
+      }
+    },
+    {
+      "scenario": "article-mobile",
+      "runs": 3,
+      "LCP": {
+        "median": 7648,
+        "min": 7632,
+        "max": 7940
+      },
+      "CLS": {
+        "median": 0.00008584771663143381,
+        "min": 0,
+        "max": 0.00008584771663143381
+      },
+      "INP": {
+        "median": 288,
+        "min": 272,
+        "max": 296
+      }
+    },
+    {
+      "scenario": "home-desktop",
+      "runs": 3,
+      "LCP": {
+        "median": 1532,
+        "min": 1472,
+        "max": 1640
+      },
+      "CLS": {
+        "median": 0.00018700099232408138,
+        "min": 0.00018700099232408138,
+        "max": 0.11940110939643346
+      },
+      "INP": {
+        "median": 72,
+        "min": 72,
+        "max": 120
+      }
+    },
+    {
+      "scenario": "article-desktop",
+      "runs": 3,
+      "LCP": {
+        "median": 2428,
+        "min": 1784,
+        "max": 3540
+      },
+      "CLS": {
+        "median": 0.00030362490149724193,
+        "min": 0.0002996565537168374,
+        "max": 0.00030362490149724193
+      },
+      "INP": {
+        "median": 80,
+        "min": 80,
+        "max": 104
+      }
+    }
+  ],
+  "resourceSample": {
+    "scenario": "home-h2-mobile-2",
+    "requests": 165,
+    "preloads": 108,
+    "firstPartyBytes": 968969,
+    "thirdPartyBytes": 284951,
+    "byType": {
+      "Document": {
+        "requests": 4,
+        "transferredBytes": 30019,
+        "decodedBytes": 111535
+      },
+      "Stylesheet": {
+        "requests": 4,
+        "transferredBytes": 45972,
+        "decodedBytes": 311105
+      },
+      "Script": {
+        "requests": 121,
+        "transferredBytes": 935386,
+        "decodedBytes": 2801602
+      },
+      "Image": {
+        "requests": 23,
+        "transferredBytes": 54003,
+        "decodedBytes": 59163
+      },
+      "Other": {
+        "requests": 7,
+        "transferredBytes": 77421,
+        "decodedBytes": 55532
+      },
+      "Font": {
+        "requests": 2,
+        "transferredBytes": 40110,
+        "decodedBytes": 39956
+      },
+      "Fetch": {
+        "requests": 3,
+        "transferredBytes": 56682,
+        "decodedBytes": 161476
+      },
+      "XHR": {
+        "requests": 1,
+        "transferredBytes": 14327,
+        "decodedBytes": 18534
+      }
+    }
+  },
+  "diagnostics": {
+    "homeSearchCLS": 0.2790524838089396,
+    "shiftAfterLastInputMs": 548.4000000953674,
+    "shiftBeforeFinalScroll": true,
+    "sourceAreas": ["latest discussions section", "bottom separator"],
+    "noJavascriptImage": {
+      "complete": true,
+      "naturalWidth": 350,
+      "opacity": 0
+    }
+  },
+  "limitations": [
+    "No production transport, CDN, cache, database latency or real tenant media verified",
+    "Default cookie state and current AdSense load included",
+    "No CrUX or population p75 assessment",
+    "Synthetic fixture intentionally includes an unavailable image",
+    "Scripted metrics do not cover every interaction, iframe or user session"
+  ]
+}

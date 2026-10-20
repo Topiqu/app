@@ -16,7 +16,12 @@ export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
   const site = await tenantByHost(event)
   // Only on the tenant's own verified domain: on *.topiqu.com a hostile script would risk the platform domain.
-  if (!id || !site || !widgetAllowed('HTML', site) || toHostname(getRequestHost(event, { xForwardedHost: true })) !== site.domain)
+  if (
+    !id ||
+    !site ||
+    !widgetAllowed('HTML', site) ||
+    toHostname(getRequestHost(event, { xForwardedHost: true })) !== site.domain
+  )
     throw createError({ statusCode: 404 })
 
   const widget = await prisma.siteWidget.findFirst({

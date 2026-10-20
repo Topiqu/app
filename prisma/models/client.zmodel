@@ -114,6 +114,7 @@ model ClientSite with Base {
     typographyPreset     PublicationTypography @default(MODERN)
     accentColor          String?             @length(7, 7)
     brandGradient        Json?
+    footerSettings       Json?
     headingFontUrl       String?             @length(0, 255)
     bodyFontUrl          String?             @length(0, 255)
     generationFrequency  GenerationFrequency @default(NONE)

@@ -45,7 +45,7 @@
             <NuxtLink
               v-for="tag in visibleTags"
               :key="tag.id"
-              :to="localePath({ name: 'stitky-slug', params: { slug: tag.name } })"
+              :to="localePath({ name: 'stitky-slug', params: { slug: tag.slug } })"
               class="relative rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             >
               <UBadge color="primary" variant="soft">{{ tag.name }}</UBadge>
@@ -143,6 +143,7 @@
 <script setup lang="ts">
 import type { ArticleCardData, ArticleCardLayout, ArticleCardVariant } from '~~/shared/types/article'
 
+import slugify from 'slugify'
 import { formatDate } from '~~/shared/utils'
 import { articleExcerpt } from '~~/shared/utils/articleBlocks'
 
@@ -184,6 +185,7 @@ const normalizedTags = computed(() =>
     .map((item, index) => ({
       id: item.tag?.id || item.id || String(index),
       name: item.tag?.name || item.name || '',
+      slug: item.tag?.slug || item.slug || slugify(item.tag?.name || item.name || '', { lower: true, strict: true }),
     }))
     .filter((tag) => tag.name),
 )

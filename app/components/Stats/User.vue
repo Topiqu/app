@@ -1,5 +1,5 @@
 <template>
-  <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5" data-profile-metrics>
+  <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5" data-profile-metrics>
     <UButton
       v-for="item in interactiveStats"
       :key="item.label"
@@ -9,7 +9,7 @@
       :label="`${item.label}: ${item.value}`"
       size="xs"
       class="w-full"
-      :ui="{ base: 'h-full min-h-14 justify-center px-2', label: 'text-[11px] whitespace-nowrap' }"
+      :ui="{ base: 'h-full min-h-14 min-w-0 justify-start px-3', label: 'text-xs whitespace-normal text-left' }"
       data-profile-metric
       :aria-label="`${item.label}: ${item.value}`"
       @click="item.action()"
@@ -22,7 +22,7 @@
       :label="`${$t('profile.likes')}: ${likesCount ?? 0}`"
       size="xs"
       class="w-full"
-      :ui="{ base: 'h-full min-h-14 justify-center px-2', label: 'text-[11px] whitespace-nowrap' }"
+      :ui="{ base: 'h-full min-h-14 min-w-0 justify-start px-3', label: 'text-xs whitespace-normal text-left' }"
       data-profile-metric
       disabled
     />

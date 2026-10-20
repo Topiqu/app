@@ -21,7 +21,7 @@
 </template>
 
 <script setup lang="ts">
-import type { ArticleWithDetails } from '~~/types/article'
+import type { ArticleCardData } from '~~/shared/types/article'
 
-defineProps<{ articles: Omit<ArticleWithDetails, 'content'>[]; pending: boolean }>()
+defineProps<{ articles: ArticleCardData[]; pending: boolean }>()
 </script>

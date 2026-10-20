@@ -31,25 +31,25 @@ describe('tenant consent capabilities', () => {
     expect(consentCapabilities({ plan: 'PRO', allowGtag: true, gtagId: 'not-a-ga-id' }).googleAnalytics).toBe(false)
   })
 
-  it('offers marketing only for a configured tenant GAM, never for platform AdSense', () => {
+  it('does not offer marketing while advertising is halted, including retained GAM configuration', () => {
     expect(consentCapabilities({ plan: 'BASIC' }).marketing).toBe(false)
     expect(consentCapabilities({ plan: 'BASIC', gamNetworkCode: '123456' }).marketing).toBe(false)
     expect(consentCapabilities({ plan: 'PRO' }).marketing).toBe(false)
-    expect(consentCapabilities({ plan: 'PRO', gamNetworkCode: '123456' }).marketing).toBe(true)
+    expect(consentCapabilities({ plan: 'PRO', gamNetworkCode: '123456' }).marketing).toBe(false)
   })
 })
 
 describe('advertising plan policy', () => {
-  it('requires advertising on BASIC and disables it on every other plan', () => {
-    expect(platformAdsEnabledForPlan('BASIC')).toBe(true)
+  it('keeps advertising disabled on every plan during the product halt', () => {
+    expect(platformAdsEnabledForPlan('BASIC')).toBe(false)
     expect(platformAdsEnabledForPlan('PRO')).toBe(false)
     expect(platformAdsEnabledForPlan('PREMIUM')).toBe(false)
     expect(platformAdsEnabledForPlan('CUSTOM')).toBe(false)
     expect(platformAdsEnabledForPlan(null)).toBe(false)
   })
 
-  it('enables a tenant-owned GAM on any plan only when a network code exists', () => {
-    expect(tenantGamEnabled('123456')).toBe(true)
+  it('does not activate retained tenant GAM configuration', () => {
+    expect(tenantGamEnabled('123456')).toBe(false)
     expect(tenantGamEnabled('  ')).toBe(false)
     expect(tenantGamEnabled(null)).toBe(false)
   })
@@ -100,7 +100,7 @@ describe('stored consent', () => {
     expect(hasAnalyticsConsent(decision, consentCapabilities({ ...site, id: 'site-2' }))).toBe(false)
   })
 
-  it('requires a new decision when a Google property or advertising provider changes', () => {
+  it('requires a new decision when Google Analytics changes but ignores halted ad configuration', () => {
     const site = { id: 'site-1', plan: 'PRO', allowGtag: true, gtagId: 'G-ONE123', gamNetworkCode: '123' }
     const decision = createConsentDecision(consentCapabilities(site), { analytics: true, marketing: true })
     expect(consentCovers(decision, consentCapabilities({ ...site, gtagId: 'G-TWO456' }))).toBe(false)
@@ -153,7 +153,7 @@ describe('consent integration contracts', () => {
     expect(source('app/composables/useGam.ts')).not.toContain('EnabledForPlan(client.plan)')
     const footer = source('app/components/Footer.vue')
     expect(footer).not.toContain('v-if="hasOptionalServices"')
-    expect(source('app/app.vue')).toContain('<ClientVersion v-if="consentLauncher === \'client-version\'" />')
+    expect(source('app/app.vue')).toContain('<LazyClientVersion v-if="consentLauncher === \'client-version\'" />')
     expect(source('app/app.vue')).toContain(
       '<ConsentSettingsButton v-else-if="consentLauncher === \'cookie-button\'" />',
     )

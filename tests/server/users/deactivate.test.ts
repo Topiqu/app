@@ -55,7 +55,11 @@ describe('DELETE /api/users/:id', () => {
   })
 
   it('lets a superadmin deactivate any account', async () => {
-    const { run, update, count } = await setup({ actor: { id: 'admin', role: 'superadmin' }, targetId: 'u1', ownedBlogs: 1 })
+    const { run, update, count } = await setup({
+      actor: { id: 'admin', role: 'superadmin' },
+      targetId: 'u1',
+      ownedBlogs: 1,
+    })
     await run()
     expect(count).not.toHaveBeenCalled()
     expect(update).toHaveBeenCalled()

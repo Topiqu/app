@@ -96,7 +96,8 @@ export default defineEventHandler(async (event) => {
 
   const fullSubdomain = normalizeDomain(body.domainType === 'SUBDOMAIN' ? `${body.domain}.topiqu.com` : body.domain)
   // Every onboarding tenant starts on the trial plan, which includes a custom domain.
-  if (domainError(fullSubdomain, { allowCustom: true })) throw createError({ statusCode: 400, message: 'Invalid domain' })
+  if (domainError(fullSubdomain, { allowCustom: true }))
+    throw createError({ statusCode: 400, message: 'Invalid domain' })
   const loginToken = randomBytes(32).toString('hex')
   const loginTokenExpiresAt = new Date(Date.now() + LOGIN_TOKEN_TTL_MS)
 

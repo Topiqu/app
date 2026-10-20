@@ -9,18 +9,12 @@
   >
     <template #header="{ collapsed, collapse }">
       <div class="flex w-full items-center gap-2" :class="collapsed ? 'justify-center' : 'justify-between'">
-        <NuxtLink
-          v-if="!collapsed"
-          :to="localePath({ name: auth?.user?.role === 'superadmin' ? 'master' : 'admin' })"
-          class="flex min-w-0 items-center gap-2"
-        >
-          <AppWordmark class="h-10 max-w-36" />
-        </NuxtLink>
+        <TenantSwitcher v-if="!collapsed && auth?.user?.role === 'admin'" :collapsed="false" class="min-w-0 flex-1" />
         <UTooltip :text="collapsed ? $t('common.actions.expand') : $t('common.actions.collapse')">
           <UButton
             color="neutral"
             variant="ghost"
-            size="xs"
+            size="md"
             square
             :icon="collapsed ? 'mdi:chevron-double-right' : 'mdi:chevron-double-left'"
             :aria-label="collapsed ? $t('common.actions.expand') : $t('common.actions.collapse')"
@@ -31,7 +25,7 @@
     </template>
 
     <template #default="{ collapsed }">
-      <TenantSwitcher v-if="auth?.user?.role === 'admin'" :collapsed="collapsed" />
+      <TenantSwitcher v-if="collapsed && auth?.user?.role === 'admin'" collapsed />
       <!-- The most frequent action, so a button rather than one more place in the list. -->
       <UButton
         v-if="auth?.user?.role === 'admin'"
@@ -46,7 +40,7 @@
         :items="navigation"
         orientation="vertical"
         :collapsed="collapsed"
-        :ui="{ link: collapsed ? 'size-10 mx-auto justify-center p-0' : 'min-h-10 justify-start' }"
+        :ui="{ link: collapsed ? 'size-10 mx-auto justify-center p-0' : 'min-h-10 justify-start px-3' }"
       />
     </template>
 
@@ -101,7 +95,8 @@ const clientCreateOpen = useState('dashboard-client-create-open', () => false)
 const userListOpen = useState('dashboard-user-list-open', () => false)
 
 const { data: clientStatus } = await useClientSiteStatus()
-const siteUrl = computed(() => publicationUrl(clientStatus.value))
+const requestUrl = useRequestURL()
+const siteUrl = computed(() => publicationUrl(clientStatus.value, undefined, requestUrl))
 
 // Groups render with a divider between them: home, content, reach, settings.
 const navigation = computed<NavigationMenuItem[][]>(() => {
@@ -110,12 +105,24 @@ const navigation = computed<NavigationMenuItem[][]>(() => {
 
   return [
     [
-      { label: $t('common.navigation.dashboard'), icon: 'mdi:view-dashboard-outline', to: localePath({ name: 'admin' }) },
+      {
+        label: $t('common.navigation.dashboard'),
+        icon: 'mdi:view-dashboard-outline',
+        to: localePath({ name: 'admin' }),
+      },
       { label: $t('common.navigation.stats'), icon: 'mdi:chart-line', to: localePath({ name: 'admin-stats' }) },
     ],
     [
-      { label: $t('common.navigation.keywords'), icon: 'mdi:lightbulb-on-outline', to: localePath({ name: 'admin-keywords' }) },
-      { label: $t('common.navigation.media'), icon: 'mdi:image-multiple-outline', to: localePath({ name: 'admin-media' }) },
+      {
+        label: $t('common.navigation.keywords'),
+        icon: 'mdi:lightbulb-on-outline',
+        to: localePath({ name: 'admin-keywords' }),
+      },
+      {
+        label: $t('common.navigation.media'),
+        icon: 'mdi:image-multiple-outline',
+        to: localePath({ name: 'admin-media' }),
+      },
       {
         label: $t('common.navigation.knowledge'),
         icon: 'mdi:book-open-page-variant-outline',
@@ -124,7 +131,11 @@ const navigation = computed<NavigationMenuItem[][]>(() => {
     ],
     [
       { label: $t('visibility.title'), icon: 'mdi:radar', to: localePath({ name: 'admin-visibility' }) },
-      { label: $t('common.navigation.backlinks'), icon: 'mdi:link-variant', to: localePath({ name: 'admin-backlinks' }) },
+      {
+        label: $t('common.navigation.backlinks'),
+        icon: 'mdi:link-variant',
+        to: localePath({ name: 'admin-backlinks' }),
+      },
     ],
     [{ label: $t('common.navigation.settings'), icon: 'mdi:cog-outline', to: localePath({ name: 'settings' }) }],
   ]

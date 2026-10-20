@@ -43,7 +43,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const article = await db.article.findUnique({
-    where: { id },
+    where: { id, status: 'published', deletedAt: null, clientSite: { deletedAt: null } },
     select: { userId: true },
   })
 

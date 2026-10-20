@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
   // Published only — an admin previewing a draft used to inflate the counter the dashboard
   // then reported as readership.
   const article = await prisma.article.findFirst({
-    where: { id, status: 'published' },
+    where: { id, status: 'published', deletedAt: null, clientSite: { deletedAt: null } },
     select: {
       id: true,
       clientSiteId: true,

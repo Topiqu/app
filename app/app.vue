@@ -10,8 +10,8 @@
     </NuxtLayout>
 
     <ConsentManager v-if="!isWidgetPagePreview" :site="liveClientSite" :enabled="isPublicationSurface" />
-    <AdSenseLoader
-      v-if="!isWidgetPagePreview"
+    <LazyAdSenseLoader
+      v-if="!isWidgetPagePreview && isPublicationSurface && platformAdsEnabledForPlan(liveClientSite?.plan)"
       :enabled="isPublicationSurface && platformAdsEnabledForPlan(liveClientSite?.plan)"
     />
 
@@ -20,9 +20,9 @@
     </DevOnly>
 
     <ClientOnly v-if="!isWidgetPagePreview">
-      <ClientVersion v-if="consentLauncher === 'client-version'" />
+      <LazyClientVersion v-if="consentLauncher === 'client-version'" />
       <ConsentSettingsButton v-else-if="consentLauncher === 'cookie-button'" />
-      <ArticleGenerationActivity />
+      <LazyArticleGenerationActivity v-if="auth?.user?.role === 'admin' || auth?.user?.role === 'superadmin'" />
     </ClientOnly>
   </UApp>
 </template>

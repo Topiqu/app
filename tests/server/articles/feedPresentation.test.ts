@@ -2,6 +2,8 @@ import { resolve } from 'node:path'
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
+import { articleCardSelect } from '../../../server/utils/articleCard'
+
 const source = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf8')
 
 const feed = source('server/api/articles/by-clientsite/[slug].ts')
@@ -12,7 +14,9 @@ describe('homepage feed presentation', () => {
     ['feed', feed],
     ['featured', featured],
   ])('gives %s cards the current viewer reaction', (_name, endpoint) => {
-    expect(endpoint).toContain("where: user?.id ? { userId: user.id } : { id: '' }")
+    expect(endpoint).toContain('select: articleCardSelect(user?.id)')
+    expect(articleCardSelect('viewer').reactions.where).toEqual({ userId: 'viewer' })
+    expect(articleCardSelect().reactions.where).toEqual({ id: '' })
     expect(endpoint).toContain('likedByUser: reactions.length > 0')
     expect(endpoint).toContain('({ reactions, content, ...article })')
   })

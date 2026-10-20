@@ -248,7 +248,7 @@ const submit = async () => {
       })
       if (!res) return toast.add({ color: 'error', title: $t('common.auth.registerFailed') })
       verifyMode.value = true
-      toast.add({ color: 'success', title: $t('common.auth.verificationCodeSent') })
+      toast.add({ color: 'success', title: $t('common.auth.verificationCodeSent'), description: form.value.email })
     } else {
       const totpData = await $fetch('/api/users/totp', {
         method: 'POST',

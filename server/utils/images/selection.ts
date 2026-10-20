@@ -27,13 +27,15 @@ const descriptiveWords = new Set([
  * "PlayStation 5"), so a sentence-case query like "Office meeting" names nothing. */
 const identityWords = (query: string) => {
   const tokens = query.match(/[\p{L}\p{N}]+/gu) ?? []
-  return tokens.flatMap((token, index) => {
-    const next = tokens[index + 1]
-    const capitalized = /^\p{Lu}/u.test(token)
-    const number = /^\d{1,3}$/.test(token)
-    const continues = !!next && (/^\p{Lu}/u.test(next) || /^\d{1,3}$/.test(next))
-    return number || (capitalized && (index > 0 || continues)) ? words(token) : []
-  }).filter((word) => !descriptiveWords.has(word))
+  return tokens
+    .flatMap((token, index) => {
+      const next = tokens[index + 1]
+      const capitalized = /^\p{Lu}/u.test(token)
+      const number = /^\d{1,3}$/.test(token)
+      const continues = !!next && (/^\p{Lu}/u.test(next) || /^\d{1,3}$/.test(next))
+      return number || (capitalized && (index > 0 || continues)) ? words(token) : []
+    })
+    .filter((word) => !descriptiveWords.has(word))
 }
 
 /** A catalogue hit without evidence for the requested subject is not usable. Requiring every

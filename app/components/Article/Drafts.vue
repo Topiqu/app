@@ -7,9 +7,13 @@
     @close:prevent="close"
   >
     <template #body>
-      <div class="mt-4">
+      <div>
         <div v-if="drafts.length" class="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <UFormField :label="$t('common.search')" :ui="{ label: 'sr-only' }" class="w-full flex-1">
+          <UFormField
+            :label="$t('common.search')"
+            :ui="{ wrapper: 'sr-only', container: 'mt-0' }"
+            class="w-full flex-1"
+          >
             <UInput
               v-model="searchQuery"
               :placeholder="$t('common.search')"
@@ -20,7 +24,7 @@
           </UFormField>
           <UFormField
             :label="$t('articles.editor.drafts.selectDraftTitle')"
-            :ui="{ label: 'sr-only' }"
+            :ui="{ wrapper: 'sr-only', container: 'mt-0' }"
             class="w-full md:w-40"
           >
             <USelectMenu
@@ -52,7 +56,7 @@
           <article
             v-for="draft in filteredDrafts"
             :key="draft.id"
-            class="group relative min-w-0 overflow-hidden rounded-xl border border-default bg-default transition hover:border-primary/50 hover:shadow-md focus-within:ring-2 focus-within:ring-primary"
+            class="group relative min-w-0 overflow-hidden rounded-(--topiqu-surface-radius) border border-default bg-default transition hover:border-primary/50 hover:shadow-md focus-within:ring-2 focus-within:ring-primary"
           >
             <ULink as="button" type="button" class="block size-full min-w-0 text-left" @click="selectDraft(draft)">
               <AppMedia

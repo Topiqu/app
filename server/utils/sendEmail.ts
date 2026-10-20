@@ -4,6 +4,8 @@ import mjml2html from 'mjml'
 import { getCookie } from 'h3'
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses'
 
+import { escapeHtml } from './sanitize'
+
 interface EmailData {
   event?: H3Event
   to: string
@@ -105,16 +107,20 @@ export const sendEmail = async ({ event, to, template, data, lang: forcedLang }:
   const cdnUrl = useRuntimeConfig().public.cdnUrl
   const enrichedData: Record<string, string> = {
     logoUrl: `${cdnUrl}/app-logo.png`,
+    expirationText: translate(
+      `verificationCode.${data.expirationKey === 'resetExpiration' ? 'resetExpiration' : 'expiration'}`,
+    ),
     ...data,
     tenantLogoUrl: data.tenantLogoUrl || `${cdnUrl}/app-logo.png`,
   }
 
   let parsedMjml = mjmlTemplate
+  const htmlData = Object.fromEntries(Object.entries(enrichedData).map(([key, value]) => [key, escapeHtml(value)]))
 
-  for (const [k, v] of Object.entries(enrichedData)) {
-    parsedMjml = parsedMjml.replace(new RegExp(`{\\s*${k}\\s*}`, 'g'), v)
+  for (const [k, v] of Object.entries(htmlData)) {
+    parsedMjml = parsedMjml.replace(new RegExp(`{\\s*${k}\\s*}`, 'g'), () => v)
   }
-  parsedMjml = parsedMjml.replace(/\{t:([^}]+)\}/g, (_, key: string) => translate(key, enrichedData))
+  parsedMjml = parsedMjml.replace(/\{t:([^}]+)\}/g, (_, key: string) => translate(key, htmlData))
 
   let finalHtml: string
   try {
@@ -136,7 +142,11 @@ export const sendEmail = async ({ event, to, template, data, lang: forcedLang }:
   const client = getSesClient()
 
   const textKeys: Record<string, string[]> = {
-    verificationCode: ['greeting', 'intro', 'expiration'],
+    verificationCode: [
+      'greeting',
+      'intro',
+      data.expirationKey === 'resetExpiration' ? 'resetExpiration' : 'expiration',
+    ],
     newComment: ['greeting', 'intro', 'button'],
     commentReply: ['greeting', 'intro', 'parent', 'button'],
     deleteComment: ['greeting', 'intro', 'reason'],

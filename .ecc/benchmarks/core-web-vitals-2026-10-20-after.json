@@ -1,0 +1,360 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-20",
+  "sourceCommit": "3c9affd9",
+  "uncommittedOptimizations": true,
+  "scope": "Local production build, synthetic BASIC tenant, anonymous visits; not field p75",
+  "tools": {
+    "lighthouse": "13.5.0",
+    "webVitals": "6.2.3",
+    "browser": "Chromium 156",
+    "hostBun": "1.4.3"
+  },
+  "fieldData": {
+    "available": false,
+    "reason": "No deployed URL or CrUX/RUM data supplied"
+  },
+  "thresholds": {
+    "LCP_ms": 2500,
+    "INP_ms": 200,
+    "CLS": 0.1
+  },
+  "method": {
+    "runsPerScenario": 3,
+    "lighthouseNavigationCount": 12,
+    "scriptedVisitCount": 12,
+    "primaryTransport": "HTTPS HTTP/2 + Brotli Q4 through an audit-only localhost proxy",
+    "coldBrowser": true,
+    "coldServer": false,
+    "serviceWorkerInScriptedVisits": "blocked",
+    "mobile": {
+      "viewport": [412, 823],
+      "deviceScaleFactor": 1.75,
+      "cpuSlowdown": 4,
+      "latencyMs": 150,
+      "downloadKbps": 1638.4
+    },
+    "desktop": {
+      "viewport": [1350, 940],
+      "deviceScaleFactor": 1,
+      "cpuSlowdown": 1,
+      "latencyMs": 40,
+      "downloadKbps": 10240
+    },
+    "lighthouseThrottling": "simulate",
+    "interactionThrottling": "CDP actual",
+    "actions": [
+      "reject optional cookies",
+      "open/close locale",
+      "open/close account",
+      "home: select topic and type redakce",
+      "article: toggle sources",
+      "scroll"
+    ],
+    "buildMode": "production",
+    "runtimeMode": "test with isolated synthetic database"
+  },
+  "lighthouse": [
+    {
+      "scenario": "home-h2-mobile",
+      "runs": 3,
+      "score": {
+        "median": 75,
+        "min": 74,
+        "max": 80
+      },
+      "lcp": {
+        "median": 4576.098,
+        "min": 4481.0779999999995,
+        "max": 4634.532
+      },
+      "fcp": {
+        "median": 3659.532,
+        "min": 2476.098,
+        "max": 4106.0779999999995
+      },
+      "cls": {
+        "median": 0.0004955214791647264,
+        "min": 0.0004955214791647264,
+        "max": 0.0004955214791647264
+      },
+      "tbt": {
+        "median": 92,
+        "min": 83.5,
+        "max": 102
+      },
+      "ttfb": {
+        "median": 84,
+        "min": 67,
+        "max": 183
+      },
+      "bytes": {
+        "median": 885850,
+        "min": 885850,
+        "max": 885852
+      }
+    },
+    {
+      "scenario": "article-h2-mobile",
+      "runs": 3,
+      "score": {
+        "median": 74,
+        "min": 70,
+        "max": 75
+      },
+      "lcp": {
+        "median": 5401.2195,
+        "min": 5170.877,
+        "max": 5422.0465
+      },
+      "fcp": {
+        "median": 3070.877,
+        "min": 2947.0465,
+        "max": 3976.2195
+      },
+      "cls": {
+        "median": 0.0006048944166569065,
+        "min": 0.0006048944166569065,
+        "max": 0.0006048944166569065
+      },
+      "tbt": {
+        "median": 82,
+        "min": 66,
+        "max": 100
+      },
+      "ttfb": {
+        "median": 73,
+        "min": 59,
+        "max": 91
+      },
+      "bytes": {
+        "median": 959635,
+        "min": 959635,
+        "max": 959657
+      }
+    },
+    {
+      "scenario": "home-h2-desktop",
+      "runs": 3,
+      "score": {
+        "median": 98,
+        "min": 98,
+        "max": 98
+      },
+      "lcp": {
+        "median": 967.6195,
+        "min": 957.363,
+        "max": 997.5695000000001
+      },
+      "fcp": {
+        "median": 737.5695000000001,
+        "min": 737.363,
+        "max": 747.6195
+      },
+      "cls": {
+        "median": 0.003449439279131244,
+        "min": 0.003449439279131244,
+        "max": 0.003449439279131244
+      },
+      "tbt": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "ttfb": {
+        "median": 56,
+        "min": 53,
+        "max": 67
+      },
+      "bytes": {
+        "median": 897064,
+        "min": 897059,
+        "max": 897065
+      }
+    },
+    {
+      "scenario": "article-h2-desktop",
+      "runs": 3,
+      "score": {
+        "median": 98,
+        "min": 98,
+        "max": 98
+      },
+      "lcp": {
+        "median": 1028.404,
+        "min": 1026.788,
+        "max": 1028.4695000000002
+      },
+      "fcp": {
+        "median": 748.404,
+        "min": 746.788,
+        "max": 828.4695
+      },
+      "cls": {
+        "median": 0.0003072556602901132,
+        "min": 0.0003072556602901132,
+        "max": 0.0003072556602901132
+      },
+      "tbt": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "ttfb": {
+        "median": 65,
+        "min": 61,
+        "max": 66
+      },
+      "bytes": {
+        "median": 958461,
+        "min": 958459,
+        "max": 958463
+      }
+    }
+  ],
+  "scriptedInteractions": [
+    {
+      "scenario": "home-mobile",
+      "runs": 3,
+      "lcp": {
+        "median": 3448,
+        "min": 3436,
+        "max": 3460
+      },
+      "fcp": {
+        "median": 3448,
+        "min": 3436,
+        "max": 3460
+      },
+      "inp": {
+        "median": 200,
+        "min": 192,
+        "max": 224
+      },
+      "cls": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    {
+      "scenario": "article-mobile",
+      "runs": 3,
+      "lcp": {
+        "median": 3936,
+        "min": 3896,
+        "max": 3944
+      },
+      "fcp": {
+        "median": 3936,
+        "min": 3896,
+        "max": 3944
+      },
+      "inp": {
+        "median": 136,
+        "min": 120,
+        "max": 200
+      },
+      "cls": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    {
+      "scenario": "home-desktop",
+      "runs": 3,
+      "lcp": {
+        "median": 648,
+        "min": 640,
+        "max": 668
+      },
+      "fcp": {
+        "median": 648,
+        "min": 640,
+        "max": 668
+      },
+      "inp": {
+        "median": 64,
+        "min": 64,
+        "max": 64
+      },
+      "cls": {
+        "median": 0.0006006670825672008,
+        "min": 0.0006006670825672008,
+        "max": 0.0006006670825672008
+      }
+    },
+    {
+      "scenario": "article-desktop",
+      "runs": 3,
+      "lcp": {
+        "median": 708,
+        "min": 696,
+        "max": 732
+      },
+      "fcp": {
+        "median": 708,
+        "min": 696,
+        "max": 732
+      },
+      "inp": {
+        "median": 56,
+        "min": 48,
+        "max": 64
+      },
+      "cls": {
+        "median": 0.0002996565537168374,
+        "min": 0.0002996565537168374,
+        "max": 0.00030362490149724193
+      }
+    }
+  ],
+  "resourceSample": {
+    "scenario": "home-h2-mobile",
+    "run": 2,
+    "totalTransferredBytes": 885852,
+    "firstPartyRequests": 123,
+    "firstPartyTransferredBytes": 885852,
+    "scriptsTransferredBytes": 614076,
+    "scriptsDecodedBytes": 1826591,
+    "externalHttpHosts": []
+  },
+  "privateModulesDownloaded": [
+    {
+      "component": "Sidebar.vue",
+      "downloaded": false
+    },
+    {
+      "component": "TenantSwitcher.vue",
+      "downloaded": false
+    },
+    {
+      "component": "Tags/Create.vue",
+      "downloaded": false
+    },
+    {
+      "component": "Client/Create.vue",
+      "downloaded": false
+    },
+    {
+      "component": "User/List.vue",
+      "downloaded": false
+    },
+    {
+      "component": "Client/Version.vue",
+      "downloaded": false
+    },
+    {
+      "component": "Article/GenerationActivity.vue",
+      "downloaded": false
+    }
+  ],
+  "limitations": [
+    "No production transport, CDN, cache, database latency or real tenant media verified",
+    "Default cookie state; advertising is halted and no external advertising requests were observed",
+    "No CrUX or population p75 assessment",
+    "Synthetic fixture intentionally includes an unavailable image",
+    "Scripted metrics do not cover every interaction, iframe or user session"
+  ]
+}

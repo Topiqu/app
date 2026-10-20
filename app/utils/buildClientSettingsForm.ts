@@ -5,6 +5,7 @@ import equal from 'fast-deep-equal'
 import { parseBrandGradient, type BrandGradient } from '~~/shared/utils/publicationBranding'
 import { releaseScheduleSettings, type ReleaseScheduleSettings } from '~~/shared/utils/releaseSchedule'
 import { publicationChannelSettings, type PublicationChannelSettings } from '~~/shared/utils/publicationChannels'
+import { parseFooterSettings, resolveFooterSettings, type FooterSettings } from '~~/shared/utils/publicationFooter'
 
 export interface ClientSite extends Omit<
   _ClientSite,
@@ -41,6 +42,7 @@ export interface ClientSettingsForm extends PublicationChannelSettings, ReleaseS
   keywords: string[]
   description: string
   tagline: string
+  footerSettings: FooterSettings
   logoUrl: string
   faviconUrl: string
   typographyPreset: 'MODERN' | 'EDITORIAL' | 'SYSTEM' | 'MAGAZINE' | 'CUSTOM'
@@ -77,6 +79,7 @@ const emptyForm = (): ClientSettingsForm => ({
   keywords: [],
   description: '',
   tagline: '',
+  footerSettings: parseFooterSettings(null),
   logoUrl: '',
   faviconUrl: '',
   typographyPreset: 'MODERN',
@@ -129,6 +132,7 @@ export function buildClientSettingsForm(client?: ClientSite | null): ClientSetti
     brandGradient: parseBrandGradient(client.brandGradient),
     description: client.description ?? '',
     tagline: client.tagline ?? '',
+    footerSettings: resolveFooterSettings(client.footerSettings, client.plan),
     logoUrl: client.logoUrl ?? '',
     faviconUrl: client.faviconUrl ?? '',
     typographyPreset: client.typographyPreset ?? 'MODERN',
@@ -169,5 +173,10 @@ export function buildClientSettingsPatch(form: ClientSettingsForm, pristine: Cli
     Object.entries(form).filter(([key, value]) => !equal(value, pristine[key as keyof ClientSettingsForm])),
   ) as Partial<ClientSettingsForm>
   if (patch.socials) patch.socials = patch.socials.filter((social) => social.url.trim())
+  if (patch.footerSettings)
+    patch.footerSettings = {
+      ...patch.footerSettings,
+      links: patch.footerSettings.links.filter((link) => link.label.trim() || link.url.trim()),
+    }
   return patch
 }

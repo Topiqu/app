@@ -64,6 +64,10 @@
       }
     },
     "domain": {
+      "activateSubdomain": "Activate subdomain",
+      "subdomainHelp": "Use a free {baseDomain} subdomain, or connect your own domain with Pro. This changes the public address of your blog.",
+      "managedPending": "Activate {domain} without changing DNS.",
+      "setupHelp": "Your domain must be connected using TXT and CNAME records after creating the blog. You can use a Topiqu subdomain first.",
       "title": "Domain",
       "current": "Your blog runs on",
       "newDomain": "New custom domain",
@@ -681,6 +685,8 @@
       "invalidDateRange": "Release date must be between {0} and {1}",
       "draftSaved": "Draft saved",
       "draftSaveFailed": "Failed to save draft",
+      "draftSaveFailedHelp": "Keep this tab open and try saving again. Your latest changes have not been saved.",
+      "articleTitleRequired": "Enter an article title before saving.",
       "invalidImage": "Select a valid image",
       "successGeneral": "Success",
       "successGeneralTitle": "This operation was successful",
@@ -716,6 +722,21 @@
     "deleted": "Deleted at:",
     "cancelAction": "Cancel action",
     "preferences": {
+      "footer": {
+        "title": "Footer",
+        "description": "Choose what visitors see at the bottom of your blog.",
+        "paidOnly": "Custom footers and hiding the footer are available on paid plans. Basic keeps Powered by Topiqu.",
+        "enabled": "Show footer",
+        "text": "Footer text",
+        "textHelp": "Leave empty to use the blog name. Up to 300 characters.",
+        "socials": "Show social links configured for this blog",
+        "links": "Footer links",
+        "linksHelp": "Add up to {count} links, such as contact, about or your own policies.",
+        "linkLabel": "Link label",
+        "linkUrl": "Link URL",
+        "invalidUrl": "Use an HTTPS URL or a local path starting with /.",
+        "addLink": "Add link"
+      },
       "title": "Your Preferences",
       "unsaved": "Unsaved changes",
       "unsavedDescription": "Your changes have not been saved yet.",

@@ -39,7 +39,7 @@ const ADMIN_FIELDS = { prompt: true, savedAmount: true, savedTimeMinutes: true }
 /** `reactions` is scoped to the caller: unfiltered it shipped every liker's id to answer one bool. */
 const articleSelect = (isAdmin: boolean, viewer: { userId?: string; sessionId?: string | null }) => ({
   ...PUBLIC_FIELDS,
-  clientSite: { select: { commentsEnabled: true, commentGifsEnabled: true, domain: true } },
+  clientSite: { select: { commentsEnabled: true, commentGifsEnabled: true, domain: true, deletedAt: true } },
   ...(isAdmin ? ADMIN_FIELDS : {}),
   user: {
     select: {
@@ -171,6 +171,8 @@ export default defineEventHandler(async (event) => {
     primaryLanguage = article.language
     language = primaryLanguage
   }
+
+  if (article.clientSite.deletedAt) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
 
   // hreflang alternates: the source (primary language) plus every PUBLISHED translation.
   const publishedTranslations = await prisma.articleTranslation.findMany({

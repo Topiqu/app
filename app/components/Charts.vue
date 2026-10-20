@@ -1,7 +1,11 @@
 <template>
-  <UCard as="figure" class="h-full" :ui="{ body: 'flex h-full flex-col' }">
-    <figcaption class="flex justify-between items-center mb-4">
-      <h2 class="text-xl font-semibold">{{ title }}</h2>
+  <UCard as="figure" class="h-full min-w-0" :ui="{ body: 'flex h-full min-w-0 flex-col' }">
+    <span ref="colorProbe" class="hidden" aria-hidden="true">
+      <span class="text-highlighted" /><span class="text-default" /><span class="text-toned" />
+      <span class="text-muted" /><span class="text-dimmed" /><span class="text-default border-default bg-default" />
+    </span>
+    <figcaption class="mb-4 flex min-w-0 items-start justify-between gap-3">
+      <h2 class="min-w-0 text-lg font-semibold sm:text-xl">{{ title }}</h2>
       <UButton
         color="neutral"
         variant="soft"
@@ -12,7 +16,7 @@
       />
     </figcaption>
 
-    <div class="relative h-72">
+    <div class="relative h-72 min-w-0 w-full">
       <component :is="currentChart" :key="chartType" :data="chartData" :options="chartOptions" :plugins="valueLabels" />
     </div>
 
@@ -70,19 +74,6 @@ ChartJS.register(
   ArcElement,
 )
 
-// Validated categorical slots (adjacent CVD ΔE 9.1 light / 8.4 dark). Fixed order: a series
-// keeps its hue when neighbours drop out. Light mode sits under 3:1 on three slots, which is
-// why every value is also on an axis, a bar-end label and the table twin.
-const SERIES = {
-  light: ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4'],
-  dark: ['#3987e5', '#d95926', '#199e70', '#c98500', '#d55181'],
-}
-
-const INK = {
-  light: { muted: '#898781', grid: '#e1e0d9', surface: '#ffffff' },
-  dark: { muted: '#898781', grid: '#2c2c2a', surface: '#171717' },
-}
-
 const props = defineProps<{
   title: string
   // `trend` is a value over time (bar ↔ line); `breakdown` is one measure split across
@@ -99,8 +90,19 @@ const props = defineProps<{
 }>()
 
 const theme = useThemeStore()
-const palette = computed(() => (theme.isDark ? SERIES.dark : SERIES.light))
-const ink = computed(() => (theme.isDark ? INK.dark : INK.light))
+const colorProbe = useTemplateRef<HTMLElement>('colorProbe')
+const palette = shallowRef<string[]>(['currentColor'])
+const ink = shallowRef({ muted: 'currentColor', grid: 'transparent', surface: 'transparent' })
+// Canvas cannot resolve CSS variables. Read the same semantic colours used by the surrounding UI.
+const syncColors = () => {
+  if (!colorProbe.value) return
+  const styles = Array.from(colorProbe.value.children, (element) => getComputedStyle(element))
+  palette.value = styles.slice(0, 5).map((style) => style.color)
+  const surface = styles[5]!
+  ink.value = { muted: styles[3]!.color, grid: surface.borderColor, surface: surface.backgroundColor }
+}
+onMounted(syncColors)
+watch(() => theme.isDark, syncColors, { flush: 'post' })
 
 const chartType = shallowRef<'bar' | 'line' | 'pie'>('bar')
 const alternate = computed(() => (props.kind === 'trend' ? 'line' : 'pie'))
@@ -142,7 +144,7 @@ const tableColumns = computed<TableColumn<(typeof tableRows.value)[number]>[]>((
 const chartData = computed(() => {
   // A trend is one series, so it is one colour; a breakdown colours by entity, which is
   // what the pie needs and what keeps the two views of it consistent.
-  const colors = isBreakdown.value ? categoryColors.value : palette.value[0]!
+  const colors = chartType.value === 'pie' ? categoryColors.value : (palette.value[2] ?? palette.value[0]!)
 
   return {
     labels: props.labels,

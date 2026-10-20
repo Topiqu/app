@@ -3,17 +3,12 @@
     v-model:open="open"
     :title="$t('articles.tags.manageTags')"
     :ui="{ content: 'sm:max-w-lg' }"
-    :content="{ onEscapeKeyDown }"
+    :content="{ onEscapeKeyDown, onCloseAutoFocus }"
   >
     <template #body>
       <form class="flex gap-2" @submit.prevent="createTag">
         <UFormField :label="$t('articles.tags.searchOrAdd')" :ui="{ label: 'sr-only' }" class="min-w-0 flex-1">
-          <UInput
-            v-model="query"
-            :placeholder="$t('articles.tags.searchOrAdd')"
-            icon="mdi:magnify"
-            class="w-full"
-          />
+          <UInput v-model="query" :placeholder="$t('articles.tags.searchOrAdd')" icon="mdi:magnify" class="w-full" />
         </UFormField>
         <UButton
           type="submit"
@@ -24,7 +19,15 @@
         />
       </form>
 
-      <UProgress v-if="status === 'pending'" size="xs" class="mt-5" />
+      <div
+        v-if="status === 'pending'"
+        class="mt-5 flex min-h-44 flex-col items-center justify-center gap-5"
+        :aria-label="$t('common.loading')"
+        aria-busy="true"
+      >
+        <USkeleton class="size-10" :ui="{ base: 'rounded-full' }" />
+        <USkeleton class="h-4 w-32" />
+      </div>
       <UAlert
         v-else-if="error"
         class="mt-5"
@@ -39,7 +42,10 @@
         </template>
       </UAlert>
       <template v-else-if="filteredTags.length">
-        <ul class="mt-5 flex max-h-80 flex-wrap content-start gap-1.5 overflow-y-auto" :aria-label="$t('articles.tags.manageTags')">
+        <ul
+          class="mt-5 flex max-h-80 flex-wrap content-start gap-1.5 overflow-y-auto"
+          :aria-label="$t('articles.tags.manageTags')"
+        >
           <li
             v-for="t in filteredTags"
             :key="t.id"
@@ -100,7 +106,7 @@
       </template>
       <UEmpty
         v-else
-        class="mt-5"
+        class="mt-5 min-h-44"
         size="sm"
         icon="mdi:tag-off-outline"
         :description="$t('articles.tags.noTagsFound')"
@@ -135,10 +141,22 @@ const editErrorId = useId()
 const creating = shallowRef(false)
 const pendingTagIds = ref(new Set<string>())
 const optimisticStatus = useOptimisticStatus()
+let opener: HTMLElement | null = null
+const onCloseAutoFocus = (event: Event) => {
+  if (!opener?.isConnected) return
+  event.preventDefault()
+  opener.focus({ preventScroll: true })
+}
 
-watch(open, (isOpen) => {
-  if (isOpen) refresh()
-})
+watch(
+  open,
+  (isOpen) => {
+    if (!isOpen) return
+    if (import.meta.client && document.activeElement instanceof HTMLElement) opener = document.activeElement
+    refresh()
+  },
+  { immediate: true },
+)
 
 const toSlug = (name: string) => slugify(name, { lower: true, strict: true, trim: true })
 const sameName = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase()
@@ -186,7 +204,7 @@ const createTag = async () => {
     tags.value = tags.value.filter((tag) => tag.id !== optimisticId)
     query.value = name
     optimisticStatus.reverted()
-    toast.add({ color: 'error', title: $t('articles.tags.createFailed') + error.data?.message })
+    toast.add({ color: 'error', title: $t('articles.tags.createFailed'), description: error.data?.message })
   } finally {
     creating.value = false
   }
@@ -223,7 +241,7 @@ const deleteTag = async (id: string, name: string) => {
     tags.value.splice(index, 0, removed)
     optimisticStatus.reverted()
     await focusTag(id)
-    toast.add({ color: 'error', title: $t('common.messages.deleteFailed') + error.data?.message })
+    toast.add({ color: 'error', title: $t('common.messages.deleteFailed'), description: error.data?.message })
   } finally {
     const pending = new Set(pendingTagIds.value)
     pending.delete(id)
@@ -285,7 +303,7 @@ const saveEdit = async (tag: TagItem, refocus = true) => {
     editingTagId.value = tag.id
     editDraft.value = name
     optimisticStatus.reverted()
-    toast.add({ color: 'error', title: $t('articles.tags.updateFailed') + error.data?.message })
+    toast.add({ color: 'error', title: $t('articles.tags.updateFailed'), description: error.data?.message })
   } finally {
     const pending = new Set(pendingTagIds.value)
     pending.delete(tag.id)

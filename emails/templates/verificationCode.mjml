@@ -82,7 +82,7 @@
 
           <mj-text css-class="code-pill" padding="0 0 24px">{verificationCode}</mj-text>
 
-          <mj-text css-class="meta" padding="0">{t:verificationCode.expiration}</mj-text>
+          <mj-text css-class="meta" padding="0">{expirationText}</mj-text>
         </mj-column>
       </mj-section>
     </mj-wrapper>

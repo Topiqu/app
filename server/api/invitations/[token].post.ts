@@ -1,6 +1,7 @@
 import { z } from 'zod'
 const bodySchema = z.object({ action: z.enum(['accept', 'decline']) })
 export default defineEventHandler(async (event) => {
+  const { translate: t } = await useServerI18n(event)
   const token = getRouterParam(event, 'token')!
   const body = await readValidatedBody(event, bodySchema.parse)
   const invitation = await prisma.tenantInvitation.findUnique({ where: { tokenHash: invitationTokenHash(token) } })
@@ -17,7 +18,10 @@ export default defineEventHandler(async (event) => {
   if (invitation.expiresAt <= new Date())
     throw createError({ statusCode: 410, message: 'Invitation expired', data: { code: 'INVITATION_EXPIRED' } })
   if (body.action === 'decline') {
-    await prisma.tenantInvitation.update({ where: { id: invitation.id }, data: { revokedAt: new Date() } })
+    await prisma.tenantInvitation.updateMany({
+      where: { id: invitation.id, acceptedAt: null, revokedAt: null },
+      data: { revokedAt: new Date() },
+    })
     await logAction({
       action: 'TENANT_INVITATION_DECLINED',
       userId: invitation.invitedById,
@@ -34,16 +38,29 @@ export default defineEventHandler(async (event) => {
       message: 'Sign in with the invited email address',
       data: { code: 'INVITATION_EMAIL_MISMATCH', invitedEmail: invitation.email, currentEmail: user.email },
     })
-  await prisma.$transaction([
-    prisma.tenantMembership.upsert({
+  await prisma.$transaction(async (tx) => {
+    const consumed = await tx.tenantInvitation.updateMany({
+      where: {
+        id: invitation.id,
+        acceptedAt: null,
+        revokedAt: null,
+        expiresAt: { gt: new Date() },
+        clientSite: { deletedAt: null },
+      },
+      data: { acceptedAt: new Date() },
+    })
+    if (consumed.count !== 1) throw createError({ statusCode: 409, message: t('common.errors.invalidRequest')! })
+    await tx.tenantMembership.upsert({
       where: { clientSiteId_userId: { clientSiteId: invitation.clientSiteId, userId: user.id } },
       create: { clientSiteId: invitation.clientSiteId, userId: user.id, role: 'MEMBER', scopes: invitation.scopes },
       update: { scopes: invitation.scopes, deletedAt: null },
-    }),
-    prisma.tenantInvitation.update({ where: { id: invitation.id }, data: { acceptedAt: new Date() } }),
-    prisma.user.update({ where: { id: user.id }, data: { role: 'admin' } }),
-    prisma.session.update({ where: { id: user.sessionId }, data: { clientSiteId: invitation.clientSiteId } }),
-  ])
+    })
+    // Tenant membership determines administrative access; never downgrade a system role.
+    await tx.session.updateMany({
+      where: { id: user.sessionId, userId: user.id },
+      data: { clientSiteId: invitation.clientSiteId },
+    })
+  })
   await logAction({
     action: 'TENANT_INVITATION_ACCEPTED',
     userId: user.id,

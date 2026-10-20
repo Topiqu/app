@@ -95,6 +95,7 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     env: {
       ...process.env,
+      APP_ENV: 'test',
       DATABASE_URL: testDatabaseUrl,
       DIRECT_DATABASE_URL: testDatabaseUrl,
       AUTH_ORIGIN: 'http://127.0.0.1:4173/api/auth',

@@ -64,6 +64,10 @@
       }
     },
     "domain": {
+      "activateSubdomain": "Aktivovat subdoménu",
+      "subdomainHelp": "Použijte bezplatnou subdoménu {baseDomain}, nebo s plánem Pro připojte vlastní doménu. Tím změníte veřejnou adresu blogu.",
+      "managedPending": "Aktivujte {domain} bez změny DNS.",
+      "setupHelp": "Po vytvoření blogu je potřeba vlastní doménu propojit pomocí TXT a CNAME záznamů. Pro začátek můžete použít subdoménu Topiqu.",
       "title": "Doména",
       "current": "Váš blog běží na",
       "newDomain": "Nová vlastní doména",
@@ -681,6 +685,8 @@
       "invalidDateRange": "Datum vydání musí být mezi {0} a {1}",
       "draftSaved": "Koncept uložen",
       "draftSaveFailed": "Uložení konceptu selhalo",
+      "draftSaveFailedHelp": "Nezavírejte tuto kartu a zkuste uložení znovu. Poslední změny nejsou uložené.",
+      "articleTitleRequired": "Před uložením zadejte název článku.",
       "invalidImage": "Vyberte platný obrázek",
       "successGeneral": "Úspěch",
       "successGeneralTitle": "Tato operace byla úspěšná",
@@ -716,6 +722,21 @@
     "deleted": "Smazáno:",
     "cancelAction": "Zrušit akci",
     "preferences": {
+      "footer": {
+        "title": "Patička",
+        "description": "Vyberte, co návštěvníci uvidí ve spodní části blogu.",
+        "paidOnly": "Vlastní patička a její vypnutí jsou dostupné u placených tarifů. Basic zachovává Powered by Topiqu.",
+        "enabled": "Zobrazovat patičku",
+        "text": "Text patičky",
+        "textHelp": "Prázdné pole použije název blogu. Nejvýše 300 znaků.",
+        "socials": "Zobrazit sociální sítě nastavené pro tento blog",
+        "links": "Odkazy v patičce",
+        "linksHelp": "Přidejte až {count} odkazů, například kontakt, o nás nebo vlastní podmínky.",
+        "linkLabel": "Název odkazu",
+        "linkUrl": "Adresa odkazu",
+        "invalidUrl": "Použijte HTTPS adresu nebo místní cestu začínající /.",
+        "addLink": "Přidat odkaz"
+      },
       "title": "Vaše preference",
       "unsaved": "Neuložené změny",
       "unsavedDescription": "Provedené změny ještě nejsou uložené.",

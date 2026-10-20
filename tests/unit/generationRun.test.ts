@@ -106,7 +106,10 @@ describe('generation run', () => {
   })
 
   it('skips research-dependent steps when research is off', () => {
-    const run = startGenerationRun({ ...options(), modules: ['youtube'], research: { ...options().research, enabled: false } }, 0)
+    const run = startGenerationRun(
+      { ...options(), modules: ['youtube'], research: { ...options().research, enabled: false } },
+      0,
+    )
     expect(step(run, 'research')).toMatchObject({ state: 'skipped' })
     expect(step(play(run, [{ ...research({ status: 'researchOff' }), status: 'skipped' }]), 'youtube')).toMatchObject({
       state: 'skipped',
@@ -117,10 +120,12 @@ describe('generation run', () => {
 describe('missingArticleModules', () => {
   it('lists requested components absent from the finished article', () => {
     expect(
-      missingArticleModules(
-        { answer: 'Yes.', keyTakeaways: [], content: '<p>x</p><img src="a">' },
-        ['answer', 'takeaways', 'images', 'youtube'],
-      ),
+      missingArticleModules({ answer: 'Yes.', keyTakeaways: [], content: '<p>x</p><img src="a">' }, [
+        'answer',
+        'takeaways',
+        'images',
+        'youtube',
+      ]),
     ).toEqual(['takeaways', 'youtube'])
   })
 })

@@ -122,12 +122,16 @@ const {
   watch: false,
 })
 
-watch(open, (isOpen) => {
-  if (!isOpen) return
-  page.value = 1
-  users.value = []
-  refresh()
-})
+watch(
+  open,
+  (isOpen) => {
+    if (!isOpen) return
+    page.value = 1
+    users.value = []
+    refresh()
+  },
+  { immediate: true },
+)
 
 watch(
   usersData,

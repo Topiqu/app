@@ -11,6 +11,7 @@ describe('related article presentation', () => {
     )
     expect(source).toContain('select: { id: true }')
     expect(source).toContain('likedByUser: reactions.length > 0')
-    expect(source).toContain('map(({ reactions, ...article })')
+    expect(source).toContain('...articleCardSelect(user?.id)')
+    expect(source).toContain('map(({ reactions, content: _content, ...article })')
   })
 })

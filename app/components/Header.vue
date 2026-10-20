@@ -1,9 +1,13 @@
 <template>
-  <UHeader :toggle="false" class="fixed inset-x-0 top-0 z-header h-16">
+  <UHeader
+    :toggle="false"
+    class="fixed inset-x-0 top-0 z-header h-16"
+    :ui="{ container: 'gap-1 px-2 sm:px-6', left: 'min-w-0 gap-1', right: 'min-w-0 gap-0' }"
+  >
     <template #left>
       <UButton
         v-if="showDashboard"
-        class="md:hidden"
+        class="lg:hidden"
         color="neutral"
         variant="ghost"
         square
@@ -27,7 +31,7 @@
         :aria-hidden="articleState.showHeader && !!articleHeader"
         :tabindex="articleState.showHeader && articleHeader ? -1 : undefined"
       >
-        <AppWordmark v-if="!isPublicationSurface" class="h-12 max-w-36 rounded-md" />
+        <AppWordmark v-if="!isPublicationSurface" class="h-10 w-14 sm:w-32 rounded-md" />
         <AppMedia
           v-else
           :src="logoSrc"
@@ -50,7 +54,7 @@
       </p>
     </template>
     <template #right>
-      <div class="flex items-center justify-between gap-2">
+      <div class="flex min-w-0 items-center gap-0 sm:gap-2">
         <UButton
           v-if="articleState.showHeader && articleHeader"
           :color="articleHeader.liked ? 'error' : 'neutral'"
@@ -70,6 +74,7 @@
           :aria-label="$t('common.actions.edit')"
         />
         <UserAccount />
+        <UserLanguageMenu compact />
         <ThemeToggle />
         <NotificationBar />
       </div>

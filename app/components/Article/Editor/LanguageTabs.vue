@@ -13,6 +13,7 @@
     >
       {{ activeTab?.code }}
     </UButton>
+    <template #item-leading="{ item }"><LanguageFlag :language="item.language" /></template>
   </UDropdownMenu>
 </template>
 
@@ -51,7 +52,9 @@ const activeTab = computed(() => tabs.value.find((tab) => tab.lang === modelValu
 const menuItems = computed(() =>
   tabs.value.map((tab) => ({
     label: tab.hint,
-    icon: tab.lang === modelValue.value ? 'mdi:check' : 'mdi:translate',
+    language: tab.code,
+    type: 'checkbox' as const,
+    checked: tab.lang === modelValue.value,
     disabled,
     onSelect: () => {
       modelValue.value = tab.lang

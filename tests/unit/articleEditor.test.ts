@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 
 import { canManageArticle, dropBlankLines, isBlankArticle, publishAction } from '../../shared/utils/articleEditor'
 
-const editorSource = readFileSync(resolve(process.cwd(), 'app/pages/admin/editor/[id].vue'), 'utf8')
+const editorSource = readFileSync(resolve(process.cwd(), 'app/components/Article/Editor/Workspace.vue'), 'utf8')
 const generationStore = readFileSync(resolve(process.cwd(), 'app/stores/articleGeneration.ts'), 'utf8')
 const clientSiteSource = readFileSync(resolve(process.cwd(), 'app/composables/useClientSite.ts'), 'utf8')
 

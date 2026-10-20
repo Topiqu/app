@@ -211,7 +211,9 @@
           >
             {{ result ? $t('articles.editor.factCheck.runAgain') : $t('articles.editor.factCheck.run') }}
           </UButton>
-          <p v-if="!locked && !canRun" class="mt-2 text-xs text-muted">{{ $t('articles.editor.factCheck.notEnoughContent') }}</p>
+          <p v-if="!locked && !canRun" class="mt-2 text-xs text-muted">
+            {{ $t('articles.editor.factCheck.notEnoughContent') }}
+          </p>
           <p v-if="result" class="mt-3 text-[11px] leading-4 text-muted">
             {{ $t('articles.editor.factCheck.disclaimer') }}
           </p>

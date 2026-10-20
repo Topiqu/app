@@ -6,6 +6,7 @@ import { randomBytes } from 'crypto'
 import { DbNull } from '@zenstackhq/orm'
 import { models } from '~~/shared/databaseSchemas'
 import { auditChanges } from '~~/server/utils/auditChanges'
+import { FooterSettingsSchema } from '~~/shared/utils/publicationFooter'
 import { PUBLICATION_CHANNELS } from '~~/shared/utils/publicationChannels'
 import { nextRelease, releaseScheduleError } from '~~/shared/utils/releaseSchedule'
 import { domainError, domainVerificationDefaults, isValidDomain, normalizeDomain } from '~~/shared/utils/domain'
@@ -56,6 +57,7 @@ export default defineEventHandler(async (event) => {
     linkedinCompanyType: _linkedinCompanyType,
     accentColor,
     brandGradient,
+    footerSettings,
     ...scalarBody
   } = body
 
@@ -89,6 +91,13 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: parsed.error.message })
   }
   const data: any = { ...parsed.data }
+  if (footerSettings !== undefined) {
+    const footer = footerSettings === null ? null : FooterSettingsSchema.safeParse(footerSettings)
+    if (footer && !footer.success) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
+    if (footer && !hasAdvancedBranding(data.plan ?? clientSite.plan))
+      throw createError({ statusCode: 403, message: t('common.preferences.footer.paidOnly')! })
+    data.footerSettings = footer?.success ? footer.data : DbNull
+  }
   if (accentColor !== undefined) {
     const parsedColor = accentColor === null || accentColor === '' ? null : normalizeAccentColor(accentColor)
     if (parsedColor === null && accentColor !== null && accentColor !== '')

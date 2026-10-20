@@ -4,10 +4,7 @@ import { assertPublicWebhookUrl, webhookEventsSchema, webhookUrlSchema } from '~
 
 export default defineEventHandler(async (event) => {
   const { user, db, clientSiteId } = await requireWebhookAccess(event)
-  const body = await readValidatedBody(
-    event,
-    z.object({ url: webhookUrlSchema, events: webhookEventsSchema }).parse,
-  )
+  const body = await readValidatedBody(event, z.object({ url: webhookUrlSchema, events: webhookEventsSchema }).parse)
 
   if ((await db.webhook.count({ where: { clientSiteId } })) >= MAX_WEBHOOKS)
     throw createError({ statusCode: 409, message: `At most ${MAX_WEBHOOKS} webhooks per site` })

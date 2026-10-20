@@ -13,7 +13,8 @@ const SHOP_QUERY = 'query TopiquShop { shop { id name primaryDomain { url } } }'
 export const exchangeShopifySession = async (shop: string, idToken: string) => {
   const tokens = await shopifyTokenExchange(shop, idToken)
   const grantedScopes = (tokens.scope || '').split(',').map((scope) => scope.trim())
-  if (!shopifyGrantsContent(grantedScopes)) throw new ShopifyApiError('REAUTH_REQUIRED', 'Shopify content access was not granted')
+  if (!shopifyGrantsContent(grantedScopes))
+    throw new ShopifyApiError('REAUTH_REQUIRED', 'Shopify content access was not granted')
   const { shop: info } = await shopifyGraphql<{ shop: { id: string; name: string; primaryDomain: { url: string } } }>(
     shop,
     tokens.access_token,
@@ -30,8 +31,15 @@ export const exchangeShopifySession = async (shop: string, idToken: string) => {
 
 /** A pending installation whose tokens can still seed a connection. */
 export const pendingShopifyInstallation = async (shop: string, idToken: string) => {
-  const existing = await prisma.shopifyInstallation.findUnique({ where: { shop }, select: { id: true, refreshTokenExpiresAt: true, grantedScopes: true } })
-  if (existing && existing.refreshTokenExpiresAt.getTime() > Date.now() + 3_600_000 && shopifyGrantsContent(existing.grantedScopes))
+  const existing = await prisma.shopifyInstallation.findUnique({
+    where: { shop },
+    select: { id: true, refreshTokenExpiresAt: true, grantedScopes: true },
+  })
+  if (
+    existing &&
+    existing.refreshTokenExpiresAt.getTime() > Date.now() + 3_600_000 &&
+    shopifyGrantsContent(existing.grantedScopes)
+  )
     return existing.id
   const fields = await exchangeShopifySession(shop, idToken)
   const saved = await prisma.shopifyInstallation.upsert({

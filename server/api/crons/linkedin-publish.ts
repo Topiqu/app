@@ -2,9 +2,7 @@ import prisma from '../../utils/prisma'
 import { publishApprovedDraft } from '../../utils/linkedin/publisher'
 
 export default defineEventHandler(async (event) => {
-  if (getHeader(event, 'Authorization') !== `Bearer ${process.env.CRON_SECRET}`) {
-    throw createError({ statusCode: 401, message: 'Unauthorized' })
-  }
+  requireCron(event)
 
   const drafts = await prisma.draftPost.findMany({
     where: { status: 'APPROVED', task: { company: { clientSite: { publishToLinkedIn: true } } } },

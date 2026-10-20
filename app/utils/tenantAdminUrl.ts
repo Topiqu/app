@@ -9,11 +9,12 @@ export const tenantAdminUrl = (
 ) => {
   const current = new URL(currentHref)
   const domain = normalizeDomain(site.domain)
-  const targetHost = site.domainVerified && isValidDomain(domain)
-    ? domain
-    : current.hostname === 'localhost' || current.hostname === '127.0.0.1'
-      ? current.hostname
-      : `app.${normalizeDomain(baseDomain)}`
+  const targetHost =
+    site.domainVerified && isValidDomain(domain)
+      ? domain
+      : current.hostname === 'localhost' || current.hostname === '127.0.0.1'
+        ? current.hostname
+        : `app.${normalizeDomain(baseDomain)}`
 
   if (!isValidDomain(targetHost)) throw new Error('Invalid tenant domain')
 

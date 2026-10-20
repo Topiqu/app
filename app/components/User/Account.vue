@@ -1,30 +1,27 @@
 <template>
-  <UPopover v-model:open="show" :content="{ align: 'end' }">
+  <UPopover
+    v-model:open="show"
+    :content="{ align: 'end' }"
+    :ui="{ content: 'overflow-hidden rounded-(--topiqu-surface-radius)' }"
+  >
     <UButton
-      v-if="auth"
       color="neutral"
       variant="ghost"
-      :label="displayName"
-      :aria-label="displayName || $t('common.user.viewProfile')"
+      :label="auth ? displayName : undefined"
+      :icon="auth ? undefined : 'mdi:account-circle'"
+      :aria-label="auth ? displayName || $t('common.user.viewProfile') : $t('common.auth.login')"
       :title="displayName"
-      trailingIcon="mdi:chevron-down"
-      :ui="{ label: 'hidden max-w-40 truncate sm:block' }"
+      :trailingIcon="auth ? 'mdi:chevron-down' : undefined"
+      :square="!auth"
+      :ui="{ label: 'hidden max-w-40 truncate sm:block', trailingIcon: 'hidden sm:block' }"
     >
-      <template #leading>
+      <template v-if="auth" #leading>
         <UserPicture :url="displayAvatarUrl" :name="displayName" size="sm" />
       </template>
     </UButton>
-    <UButton
-      v-else
-      color="neutral"
-      variant="ghost"
-      icon="mdi:account-circle"
-      :label="$t('common.auth.login')"
-      trailingIcon="mdi:chevron-down"
-    />
 
     <template #content>
-      <UCard class="w-[calc(100vw-1.5rem)] max-w-sm overflow-hidden" :ui="{ body: 'p-0 sm:p-0' }">
+      <UCard class="w-[calc(100vw-1.5rem)] max-w-sm overflow-hidden" :ui="{ root: 'ring-0', body: 'p-0 sm:p-0' }">
         <template v-if="auth && userData">
           <div>
             <div class="flex items-center gap-3 bg-elevated/70 p-4">
@@ -73,8 +70,6 @@
                 <span v-if="userData.role === 'admin'" class="max-w-28 truncate">{{ clientData?.name }}</span>
               </div>
 
-              <UserLanguageMenu />
-
               <div class="flex items-center gap-2 border-t border-default pt-3">
                 <UButton
                   :to="localePath({ name: 'uzivatel' })"
@@ -92,8 +87,14 @@
           </div>
         </template>
 
-        <div v-else-if="auth" class="flex min-h-48 items-center justify-center" aria-live="polite">
-          <UProgress class="w-32" aria-hidden="true" />
+        <div v-else-if="auth" class="min-h-64 space-y-5 p-4" aria-live="polite" aria-busy="true">
+          <div class="flex items-center gap-3">
+            <USkeleton class="size-12" :ui="{ base: 'rounded-full' }" />
+            <div class="flex-1 space-y-2"><USkeleton class="h-4 w-28" /><USkeleton class="h-3 w-40" /></div>
+          </div>
+          <USkeleton class="h-20 w-full" />
+          <USkeleton class="h-4 w-2/3" />
+          <USkeleton class="h-10 w-full" />
           <span class="sr-only">{{ $t('common.loading') }}</span>
         </div>
 
@@ -115,9 +116,6 @@
           >
             {{ $t('common.auth.register') }}
           </UButton>
-          <div class="mt-2 border-t border-default pt-2">
-            <UserLanguageMenu />
-          </div>
         </div>
       </UCard>
     </template>

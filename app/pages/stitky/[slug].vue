@@ -25,20 +25,17 @@
 import type { Language } from '~~/shared/utils/language'
 import type { ArticleCardData } from '~~/shared/types/article'
 
-import slugify from 'slugify'
-
 definePageMeta({ shell: 'publication' })
 
 const route = useRoute()
+const { t } = useI18n()
 const canonicalOrigin = useCanonicalOrigin()
 const localePath = useLocalePath()
 
-const tagSlug = computed(() =>
-  slugify(decodeURIComponent(route.params.slug as string).trim(), { lower: true, strict: true }),
-)
+const tagSlug = computed(() => String(route.params.slug ?? '').trim())
 
 const clientSite = await useClientSite()
-if (!clientSite?.id) throw createError({ statusCode: 404, message: 'Blog not found', fatal: true })
+if (!clientSite?.id) throw createError({ statusCode: 404, message: t('common.errors.blogNotFound'), fatal: true })
 
 const search = shallowRef('')
 const sort = shallowRef('createdAt:desc')
@@ -58,7 +55,7 @@ const {
   pending,
   refresh,
   error,
-} = await useFetch(`/api/tags/slug/${tagSlug.value}`, {
+} = await useFetch(`/api/tags/slug/${encodeURIComponent(tagSlug.value)}`, {
   key: `tag-${tagSlug.value}`,
   query,
   default: () => ({ id: '', name: '', slug: '', articles: [], hasMore: false, total: 0 }),
@@ -66,7 +63,18 @@ const {
 })
 
 if (error.value || (!pending.value && !tag.value?.id)) {
-  throw createError({ statusCode: 404, message: 'Tag not found', fatal: true })
+  throw createError({
+    statusCode: error.value?.statusCode ?? 404,
+    message: t('common.errors.tagNotFound'),
+    fatal: true,
+  })
+}
+
+if (tag.value.slug && tag.value.slug !== tagSlug.value) {
+  await navigateTo(localePath({ name: 'stitky-slug', params: { slug: tag.value.slug }, query: route.query }), {
+    redirectCode: 301,
+    replace: true,
+  })
 }
 
 const tagName = computed(() => tag.value.name)

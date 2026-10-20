@@ -60,9 +60,9 @@ describe('article optimization', () => {
     expect(status('<h2>Heading here</h2><p>Visit <a href="/cs">the homepage</a>.</p>')).toBe('warning')
     expect(status('<h2>Heading here</h2><p>Visit <a href="https://topiqu.test/">us</a>.</p>')).toBe('warning')
     expect(status('<h2>Heading here</h2><p>Read <a href="/cs/clanky/kompost">about compost</a>.</p>')).toBe('passed')
-    expect(status('<h2>Heading here</h2><p>Read <a href="https://topiqu.test/en/articles/compost#tips">this</a>.</p>')).toBe(
-      'passed',
-    )
+    expect(
+      status('<h2>Heading here</h2><p>Read <a href="https://topiqu.test/en/articles/compost#tips">this</a>.</p>'),
+    ).toBe('passed')
     expect(status('<h2>Heading here</h2><p>Read <a href="https://other.test/cs/clanky/kompost">this</a>.</p>')).toBe(
       'warning',
     )

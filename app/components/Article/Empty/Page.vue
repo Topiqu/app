@@ -1,7 +1,7 @@
 <template>
   <div
     id="articles"
-    class="relative isolate flex min-h-[calc(100vh-14rem)] items-center justify-center overflow-hidden px-4 py-16 sm:px-6 sm:py-24"
+    class="relative isolate flex min-h-0 flex-1 items-center justify-center overflow-hidden px-4 py-12 sm:px-6 sm:py-16"
   >
     <div class="mx-auto flex w-full max-w-2xl flex-col items-center gap-8 text-center">
       <UAlert

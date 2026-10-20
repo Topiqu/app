@@ -15,10 +15,14 @@ import {
  * Stripe and revives the moment the invoice is paid, so we keep the id to stay attached to it.
  * `stripeCustomerId` survives either way, or the tenant loses portal access to their invoices.
  */
-const revokeToBasic = async (clientSiteId: string, { clearSubscription }: { clearSubscription: boolean }) => {
+const revokeToBasic = async (
+  clientSiteId: string,
+  subscriptionId: string,
+  { clearSubscription }: { clearSubscription: boolean },
+) => {
   await serializableTransaction(async (tx) => {
-    await tx.clientSite.update({
-      where: { id: clientSiteId },
+    const changed = await tx.clientSite.updateMany({
+      where: { id: clientSiteId, stripeSubscriptionId: subscriptionId, billingProvider: 'STRIPE', deletedAt: null },
       data: {
         plan: 'BASIC',
         stripePriceId: null,
@@ -26,7 +30,7 @@ const revokeToBasic = async (clientSiteId: string, { clearSubscription }: { clea
       },
     })
 
-    await syncPlanFeatures(tx, clientSiteId)
+    if (changed.count) await syncPlanFeatures(tx, clientSiteId)
   })
 }
 
@@ -54,6 +58,7 @@ export default defineEventHandler(async (event) => {
       const subscriptionId = typeof session.subscription === 'string' ? session.subscription : session.subscription?.id
       const customerId = typeof session.customer === 'string' ? session.customer : session.customer?.id
       const subscription = subscriptionId ? await stripe.subscriptions.retrieve(subscriptionId) : null
+      if (!subscription || !['active', 'trialing'].includes(subscription.status)) return { received: true }
       const priceId = subscription?.items.data[0]?.price.id ?? null
       const subscriptionInterval = subscription?.items.data[0]?.price.recurring?.interval
       const billingPlan =
@@ -64,8 +69,13 @@ export default defineEventHandler(async (event) => {
       const paid = marksFirstPayment(subscription?.status, derivedPlan)
 
       await serializableTransaction(async (tx) => {
-        await tx.clientSite.update({
-          where: { id: clientSiteId },
+        const changed = await tx.clientSite.updateMany({
+          where: {
+            id: clientSiteId,
+            deletedAt: null,
+            billingProvider: 'STRIPE',
+            OR: [{ stripeSubscriptionId: null }, { stripeSubscriptionId: subscriptionId }],
+          },
           data: {
             ...(derivedPlan ? { plan: derivedPlan as ClientPlan } : {}),
             ...(paid ? { firstPaidAt: new Date(), lastPaidAt: new Date() } : {}),
@@ -76,7 +86,7 @@ export default defineEventHandler(async (event) => {
           },
         })
 
-        if (derivedPlan) await syncPlanFeatures(tx, clientSiteId)
+        if (changed.count && derivedPlan) await syncPlanFeatures(tx, clientSiteId)
       })
       return { received: true }
     }
@@ -95,7 +105,8 @@ export default defineEventHandler(async (event) => {
   }
 
   if (stripeEvent.type === 'customer.subscription.updated') {
-    const subscription = stripeEvent.data.object as Stripe.Subscription
+    // Events can be duplicated or delivered out of order: reconcile the provider's current state.
+    const subscription = await stripe.subscriptions.retrieve((stripeEvent.data.object as Stripe.Subscription).id)
     const previous = stripeEvent.data.previous_attributes as Partial<Stripe.Subscription> | undefined
     const clientSiteId = subscription.metadata?.clientSiteId
     if (!clientSiteId) return { received: true }
@@ -109,15 +120,20 @@ export default defineEventHandler(async (event) => {
 
     // Terminal non-paying states never produce a `deleted` event — revoke here or not at all.
     if (revokesPlan(subscription.status)) {
-      await revokeToBasic(clientSiteId, { clearSubscription: subscription.status === 'canceled' })
+      await revokeToBasic(clientSiteId, subscription.id, { clearSubscription: subscription.status === 'canceled' })
       return { received: true }
     }
 
     // Fires on both trial-end promotion and portal-driven plan changes (PRO↔PREMIUM).
     if (subscription.status === 'active' && derivedPlan) {
       await serializableTransaction(async (tx) => {
-        await tx.clientSite.update({
-          where: { id: clientSiteId },
+        const changed = await tx.clientSite.updateMany({
+          where: {
+            id: clientSiteId,
+            stripeSubscriptionId: subscription.id,
+            billingProvider: 'STRIPE',
+            deletedAt: null,
+          },
           data: {
             plan: derivedPlan as ClientPlan,
             stripePriceId: currentPriceId ?? undefined,
@@ -126,7 +142,7 @@ export default defineEventHandler(async (event) => {
           },
         })
 
-        await syncPlanFeatures(tx, clientSiteId)
+        if (changed.count) await syncPlanFeatures(tx, clientSiteId)
       })
     }
     return { received: true }
@@ -137,7 +153,7 @@ export default defineEventHandler(async (event) => {
     const clientSiteId = subscription.metadata?.clientSiteId
     if (!clientSiteId) return { received: true }
 
-    await revokeToBasic(clientSiteId, { clearSubscription: true })
+    await revokeToBasic(clientSiteId, subscription.id, { clearSubscription: true })
     return { received: true }
   }
 
@@ -161,15 +177,15 @@ export default defineEventHandler(async (event) => {
     const periodEnd = annual ? nextArticleCreditMonth(periodStart) : invoicePeriodEnd
 
     await serializableTransaction(async (tx) => {
-      await tx.clientSite.update({
-        where: { id: clientSiteId },
+      const changed = await tx.clientSite.updateMany({
+        where: { id: clientSiteId, stripeSubscriptionId: subscriptionId, billingProvider: 'STRIPE', deletedAt: null },
         data: {
           lastPaidAt: new Date(),
           lastInvoicedAt: new Date(),
           ...(annual ? { billingPlan: 'ANNUAL' } : { billingPlan: 'MONTHLY' }),
         },
       })
-      if (derivedPlan)
+      if (changed.count && derivedPlan)
         await grantPlanArticleCredits(tx, {
           clientSiteId,
           plan: derivedPlan,

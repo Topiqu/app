@@ -9,8 +9,9 @@
       :ui="{
         fieldset: 'grid min-w-0 grid-cols-[minmax(0,1fr)] gap-2 @md:grid-cols-2',
         item: 'min-w-0 cursor-pointer overflow-hidden rounded-(--topiqu-surface-radius) border-default bg-default px-3 py-2.5 transition-colors hover:border-accented has-data-[state=checked]:border-primary has-data-[state=checked]:bg-primary/5 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-primary',
-        wrapper: 'm-0 min-w-0 text-start',
-        label: 'min-w-0 font-normal',
+        wrapper: 'm-0 min-w-0 w-full text-start',
+        label: 'min-w-0 w-full whitespace-normal font-normal',
+        container: 'sr-only',
       }"
       @update:modelValue="emit('update:preset', $event as PublicationTypography)"
     >
@@ -33,7 +34,10 @@
           >
             {{ $t('common.preferences.branding.sampleTitle') }}
           </span>
-          <span class="mt-0.5 block min-w-0 truncate text-sm text-muted" :style="{ fontFamily: item.fonts.body }">
+          <span
+            class="mt-0.5 block min-w-0 whitespace-normal break-words text-sm text-muted"
+            :style="{ fontFamily: item.fonts.body }"
+          >
             {{ $t('common.preferences.branding.sampleExcerpt') }}
           </span>
         </span>

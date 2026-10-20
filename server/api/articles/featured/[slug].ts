@@ -1,16 +1,17 @@
 import { articleExcerpt } from '~~/shared/utils/articleBlocks'
+import { articleCardSelect } from '~~/server/utils/articleCard'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const user = await getSessionUser(event)
-  const name = decodeURIComponent(getRouterParam(event, 'slug')!).trim()
+  const name = getRouterParam(event, 'slug', { decode: true })?.trim()
   if (!name) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
   const locale = getQuery(event).locale as string | undefined
 
   const db = await getEnhancedPrisma(user)
   const clientSite = await db.clientSite.findUnique({
-    where: { name },
+    where: { name, deletedAt: null },
     select: { id: true, language: true },
   })
 
@@ -32,17 +33,7 @@ export default defineEventHandler(async (event) => {
         ...publicWhere,
         ...(totalArticles < 150 ? {} : { createdAt: { gte: monthAgo } }),
       },
-      include: {
-        tags: { include: { tag: true } },
-        user: { select: { id: true, username: true, role: true, avatarUrl: true } },
-        // Scoped to the caller, and empty on the cached branch below, which is anonymous-only.
-        reactions: {
-          where: user?.id ? { userId: user.id } : { id: '' },
-          select: { id: true },
-          take: 1,
-        },
-        _count: { select: { comments: true, reactions: true } },
-      },
+      select: articleCardSelect(user?.id),
       orderBy: { createdAt: 'desc' },
       take: 10,
     })
@@ -63,7 +54,28 @@ export default defineEventHandler(async (event) => {
       likedByUser: reactions.length > 0,
     }))
     const [featured, ...recommended] = cards
-    return { featured, recommended, totalArticles }
+    const topRows = await db.article.findMany({
+      where: {
+        ...publicWhere,
+        id: { notIn: cards.map((article) => article.id) },
+      },
+      select: articleCardSelect(user?.id),
+      orderBy: [{ views: 'desc' }, { createdAt: 'desc' }, { id: 'desc' }],
+      take: 3,
+    })
+    const topArticles = await localizeArticles(db, topRows, {
+      clientSiteId: clientSite.id,
+      locale,
+      primaryLanguage: clientSite.language,
+    }).then((articles) =>
+      articles.map(({ reactions, content, ...article }) => ({
+        ...article,
+        excerpt: articleExcerpt(article.excerpt, content),
+        likedByUser: reactions.length > 0,
+      })),
+    )
+
+    return { featured, recommended, topArticles, totalArticles }
   }
 
   // Same rule as the feed: `db` is role-scoped by ZenStack, so only the
@@ -73,6 +85,6 @@ export default defineEventHandler(async (event) => {
   // Shares the feed's generation namespace on purpose — this list is derived
   // from the same articles, so invalidateFeed() already covers it.
   const gen = await feedGen(clientSite.id)
-  const key = `featured:v${gen}:${clientSite.id}:loc=${locale ?? '_def'}`
+  const key = `featured:3:v${gen}:${clientSite.id}:loc=${locale ?? '_def'}`
   return cached(key, 600, buildFeatured)
 })

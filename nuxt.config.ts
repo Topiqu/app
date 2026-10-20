@@ -89,6 +89,13 @@ const CRAWL_ROUTES = Object.fromEntries(
 )
 
 export default defineNuxtConfig({
+  hooks: {
+    'build:manifest': (manifest) => {
+      // Keep rendered-module preloads and NuxtLink navigation prefetching, but do not
+      // download every async dialog and its dependencies through blanket SSR hints.
+      for (const entry of Object.values(manifest)) entry.prefetch = false
+    },
+  },
   compatibilityDate: '2026-05-21',
 
   devtools: { enabled: !IS_BROWSER_TEST },
@@ -138,33 +145,35 @@ export default defineNuxtConfig({
       tasks: true,
       asyncContext: true,
     },
-    scheduledTasks: IS_PROD
-      ? {
-          '* * * * *': ['webhook-deliver'],
-          '*/10 * * * *': ['publish-check'],
-          '*/15 * * * *': ['generate-article'],
-          '*/30 * * * *': ['sentiment-analysis'],
-          '0 3 * * *': ['community-insights'],
-          '0 2 * * *': ['search-console-sync'],
-          '30 2 * * *': ['search-console-autopilot'],
-          '*/5 * * * *': [
-            'translate-pending',
-            'knowledge-index',
-            'shopify-publish',
-            'shopify-catalog',
-            'content-actions',
-          ],
-          '0 4 * * *': ['gam-sync'],
-          '15 4 * * *': ['grant-annual-article-credits'],
-          '30 4 * * *': ['media-gc'],
-          '45 * * * *': ['knowledge-refresh'],
-          '20 * * * *': ['shopify-billing'],
-          '0 5 * * *': ['ai-visibility-monitor'],
-          '30 5 * * *': ['keyword-rank'],
-          '0 6 * * *': ['backlink-discovery'],
-          '30 6 * * *': ['backlink-check'],
-        }
-      : undefined,
+    scheduledTasks:
+      IS_PROD && !IS_BROWSER_TEST
+        ? {
+            '* * * * *': ['webhook-deliver'],
+            '*/15 * * * *': ['generate-article'],
+            '*/30 * * * *': ['sentiment-analysis'],
+            '0 3 * * *': ['community-insights'],
+            '0 2 * * *': ['search-console-sync'],
+            '30 2 * * *': ['search-console-autopilot'],
+            '*/5 * * * *': [
+              'translate-pending',
+              'knowledge-index',
+              'shopify-publish',
+              'shopify-catalog',
+              'content-actions',
+            ],
+            '0 4 * * *': ['gam-sync'],
+            '15 4 * * *': ['grant-annual-article-credits'],
+            '30 4 * * *': ['media-gc'],
+            '45 * * * *': ['knowledge-refresh'],
+            '20 * * * *': ['shopify-billing'],
+            '0 5 * * *': ['ai-visibility-monitor'],
+            '30 5 * * *': ['keyword-rank'],
+            '0 6 * * *': ['backlink-discovery'],
+            '30 6 * * *': ['backlink-check'],
+            '*/10 * * * *': ['publish-check', 'trial-expiry'],
+            '10 * * * *': ['domain-reverification'],
+          }
+        : undefined,
     preset: 'bun',
     imports: {
       dirs: ['server/utils'],
@@ -199,6 +208,10 @@ export default defineNuxtConfig({
     // Client only: Nitro re-bundles the SSR output, and Oxc's mangled names there collided with an
     // import binding ("The symbol has already been declared"), failing the production build.
     $client: {
+      optimizeDeps: {
+        // Nuxt must transform this component's virtual #components import before Vite loads it.
+        entries: ['!**/node_modules/@nuxtjs/i18n/dist/runtime/components/NuxtLinkLocale.js'],
+      },
       build: {
         rolldownOptions: {
           output: {
@@ -442,6 +455,7 @@ export default defineNuxtConfig({
     xssValidator: false,
   },
   routeRules: {
+    '/api/**': { headers: { 'cache-control': 'no-store' } },
     // A service worker must revalidate on every navigation/deploy; caching this file can leave
     // clients controlled by an obsolete Workbox routing table for hours.
     '/sw.js': { headers: { 'cache-control': 'no-cache, no-store, must-revalidate' } },
@@ -687,22 +701,11 @@ export default defineNuxtConfig({
       ],
     },
     workbox: {
+      importScripts: ['/sw-cache-cleanup.js'],
       // This is an SSR application, not an app-shell build. `/` is intentionally absent from
       // precache, so Workbox must let navigations reach Nitro instead of binding them to `/`.
       navigateFallback: null,
-      runtimeCaching: [
-        {
-          urlPattern: /^https:\/\/topiqu\.com\/.*$/,
-          handler: 'NetworkFirst',
-          options: {
-            cacheName: 'api-cache',
-            expiration: {
-              maxEntries: 50,
-              maxAgeSeconds: 86400,
-            },
-          },
-        },
-      ],
+      runtimeCaching: [],
     },
   },
 })

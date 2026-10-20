@@ -10,7 +10,10 @@ export default defineEventHandler(async (event) => {
   const locale = getQuery(event).locale as string | undefined
   // Anonymous scope: the list below is shared through the cache, whoever builds it.
   const db = await getEnhancedPrisma()
-  const clientSite = await db.clientSite.findUnique({ where: { name }, select: { id: true, language: true } })
+  const clientSite = await db.clientSite.findUnique({
+    where: { name, deletedAt: null },
+    select: { id: true, language: true },
+  })
   if (!clientSite) throw createError({ statusCode: 404, message: t('common.errors.blogNotFound')! })
 
   const buildSeries = async () => {

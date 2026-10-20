@@ -1,6 +1,8 @@
 /// <reference types="@types/google-publisher-tag" />
 import type { PublicClientSite } from '~~/shared/utils/clientSiteFields'
 
+import { tenantGamEnabled } from '~~/shared/utils/advertising'
+
 declare global {
   interface Window {
     googletag: typeof googletag
@@ -43,7 +45,8 @@ const loadGpt = (site: GamSite) =>
 export const useGamAds = (site: GamSite | null) => {
   const marketingGranted = useMarketingConsent()
   const initialize = () => {
-    if (!import.meta.client || !site?.gamNetworkCode || !marketingGranted.value) return Promise.resolve(false)
+    if (!import.meta.client || !site || !tenantGamEnabled(site.gamNetworkCode) || !marketingGranted.value)
+      return Promise.resolve(false)
     ready ??= loadGpt(site).then((ok) => {
       if (!ok) ready = null
       return ok

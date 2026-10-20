@@ -4,7 +4,7 @@
     :dismissible="!creating"
     :title="$t('common.tenant.createTitle')"
     :description="$t('common.tenant.createDescription')"
-    :ui="{ content: 'max-w-2xl' }"
+    :ui="{ content: 'sm:max-w-4xl' }"
   >
     <template #body>
       <div class="space-y-6">
@@ -23,7 +23,7 @@
                 class="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
                 :class="index === step ? 'bg-primary/10 font-semibold text-primary' : 'text-muted'"
                 :aria-current="index === step ? 'step' : undefined"
-                :disabled="creating"
+                :disabled="creating || index > furthestStep || (index === 3 && !canCreate)"
                 @click="goToStep(index)"
               >
                 <span
@@ -132,7 +132,7 @@
                 :aria-pressed="form.language === language.value"
                 @click="form.language = language.value"
               >
-                <UIcon :name="language.icon" class="h-6 w-9 shrink-0 rounded shadow-sm" aria-hidden="true" />
+                <LanguageFlag :language="language.value" class="h-6 w-9" />
                 <span>
                   <span class="block text-sm font-semibold">{{ language.label }}</span>
                   <span class="block text-xs text-muted">{{ language.code }}</span>
@@ -232,6 +232,13 @@
             </div>
           </UFormField>
 
+          <UAlert
+            v-if="usesCustomDomain"
+            color="info"
+            icon="mdi:information-outline"
+            :description="$t('common.domain.setupHelp')"
+          />
+
           <UFormField :label="$t('common.tenant.name')">
             <UInput v-model="form.name" autofocus :placeholder="$t('common.tenant.namePlaceholder')" class="w-full" />
           </UFormField>
@@ -319,7 +326,12 @@
           {{ $t('common.actions.back') }}
         </UButton>
 
-        <UButton v-if="step < steps.length - 1" trailingIcon="mdi:arrow-right" :disabled="!canContinue" @click="step++">
+        <UButton
+          v-if="step < steps.length - 1"
+          trailingIcon="mdi:arrow-right"
+          :disabled="!canContinue"
+          @click="nextStep"
+        >
           {{ $t('common.actions.continue') }}
         </UButton>
         <UButton
@@ -356,6 +368,7 @@ const baseDomain = String(config.public.baseDomain || 'topiqu.com')
 const themes = ThemeSchema.options
 const billingIntervals: BillingInterval[] = ['month', 'year']
 const step = shallowRef(0)
+const furthestStep = shallowRef(0)
 const form = reactive({
   name: '',
   subdomain: '',
@@ -542,6 +555,7 @@ watch(open, (value) => {
     return
   }
   step.value = 0
+  furthestStep.value = 0
   form.name = ''
   form.subdomain = ''
   form.customDomain = ''
@@ -571,9 +585,16 @@ const setCustomDomain = (value: string | number) => {
 
 const detailsValid = computed(() => Boolean(form.name.trim()))
 const domainValid = computed(() => Boolean(requestedDomain.value) && availability.value === 'available')
-const isStepComplete = (index: number) => index < 2 || (index === 2 && detailsValid.value && domainValid.value)
+const isStepComplete = (index: number) =>
+  index < furthestStep.value && (index !== 2 || (detailsValid.value && domainValid.value))
 const goToStep = (index: number) => {
+  if (creating.value || index > furthestStep.value || (index === 3 && !canCreate.value)) return
   step.value = index
+}
+const nextStep = () => {
+  if (!canContinue.value || creating.value) return
+  step.value++
+  furthestStep.value = Math.max(furthestStep.value, step.value)
 }
 const canContinue = computed(() => {
   if (step.value === 2) return detailsValid.value && domainValid.value
@@ -599,7 +620,7 @@ const createTenant = async () => {
       },
     })
     created = true
-    toast.add({ color: 'success', title: $t('common.tenant.created') })
+    toast.add({ color: 'success', title: $t('common.tenant.created'), description: form.name })
     await getSession()
 
     if (form.plan !== 'BASIC') {

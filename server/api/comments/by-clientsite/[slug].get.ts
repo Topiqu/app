@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
   // Anonymous scope: nothing here is viewer-specific, so every reader shares one cached answer.
   const db = await getEnhancedPrisma()
   const clientSite = await db.clientSite.findUnique({
-    where: { name },
+    where: { name, deletedAt: null },
     select: { id: true, language: true, commentsEnabled: true },
   })
   if (!clientSite) throw createError({ statusCode: 404, message: t('common.errors.blogNotFound')! })

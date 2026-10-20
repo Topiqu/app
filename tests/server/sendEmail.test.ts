@@ -73,6 +73,19 @@ const data = {
 }
 
 describe('transactional email rendering', () => {
+  it('escapes user data before MJML interpretation and preserves reset expiry in both bodies', async () => {
+    await sendEmail({
+      to: 'reader@example.invalid',
+      lang: 'en',
+      template: 'verificationCode',
+      data: { ...data, userName: '</mj-text><mj-text>Injected section</mj-text>', expirationKey: 'resetExpiration' },
+    })
+    const email = sentCommands.at(-1)!
+    expect(email.Message?.Body?.Html?.Data).toContain('&lt;/mj-text&gt;')
+    expect(email.Message?.Body?.Html?.Data).toContain('15 minutes')
+    expect(email.Message?.Body?.Text?.Data).toContain('15 minutes')
+    expect(email.Message?.Body?.Text?.Data).not.toContain('24 hours')
+  })
   beforeEach(() => {
     sentCommands.length = 0
     vi.stubGlobal('useStorage', (base: string) => {

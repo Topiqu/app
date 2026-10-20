@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-[100dvh] items-center justify-center px-4">
+  <div class="flex min-h-0 flex-1 items-center justify-center px-4 py-8">
     <UCard class="w-full max-w-lg">
       <slot v-if="$slots.icon" name="icon" />
       <template v-if="effectiveType === 'pending'">
@@ -28,7 +28,7 @@
             color="neutral"
             variant="soft"
             size="sm"
-            :label="showStack ? $t('common.actions.hideDetails') : $t('common.actions.showDetails')"
+            :label="showStack ? t('common.actions.hideDetails') : t('common.actions.showDetails')"
             @click="showStack = !showStack"
           />
           <UButton
@@ -38,7 +38,7 @@
             size="sm"
             square
             :icon="copied ? 'mdi:check' : 'mdi:content-copy'"
-            :aria-label="$t('common.actions.copy')"
+            :aria-label="t('common.actions.copy')"
             @click="copy()"
           />
         </div>
@@ -63,11 +63,12 @@ const props = defineProps<{
 }>()
 
 const showStack = shallowRef(false)
+const { t } = useI18n()
 const { copy, copied } = useClipboard({ source: computed(() => props.stackTrace ?? '') })
 
 const effectiveType = computed(() => props.type || props.status || 'idle')
-const statusTitle = computed(() => props.title || $t(TITLES[effectiveType.value]))
-const statusMessage = computed(() => props.message || $t(MESSAGES[effectiveType.value]))
+const statusTitle = computed(() => props.title || t(TITLES[effectiveType.value]))
+const statusMessage = computed(() => props.message || t(MESSAGES[effectiveType.value]))
 const statusColor = computed(() =>
   effectiveType.value === 'error' ? 'error' : effectiveType.value === 'success' ? 'success' : 'neutral',
 )

@@ -1,4 +1,9 @@
-export const WEBHOOK_EVENTS = ['ARTICLE_PUBLISHED', 'ARTICLE_UPDATED', 'ARTICLE_UNPUBLISHED', 'ARTICLE_DELETED'] as const
+export const WEBHOOK_EVENTS = [
+  'ARTICLE_PUBLISHED',
+  'ARTICLE_UPDATED',
+  'ARTICLE_UNPUBLISHED',
+  'ARTICLE_DELETED',
+] as const
 export type WebhookEventCode = (typeof WEBHOOK_EVENTS)[number]
 
 export const MAX_WEBHOOKS = 5

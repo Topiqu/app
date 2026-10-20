@@ -50,6 +50,7 @@ export default defineEventHandler(async (event) => {
         typographyPreset: clientSite.typographyPreset,
         accentColor: clientSite.accentColor,
         brandGradient: clientSite.brandGradient,
+        footerSettings: clientSite.footerSettings,
         headingFontUrl: clientSite.headingFontUrl,
         bodyFontUrl: clientSite.bodyFontUrl,
         generationFrequency: clientSite.generationFrequency,

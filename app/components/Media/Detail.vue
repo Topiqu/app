@@ -202,7 +202,7 @@ const save = async () => {
         confirmRights: form.confirmRights,
       },
     })
-    toast.add({ color: 'success', title: t('media.saved') })
+    toast.add({ color: 'success', title: t('media.saved'), description: form.name || undefined })
     await load()
     emit('updated', detail.value?.asset)
   } finally {
@@ -235,7 +235,10 @@ const scheduleDelete = async () => {
   } catch (cause: any) {
     toast.add({
       color: 'error',
-      title: cause?.data?.data?.code === 'MEDIA_IN_USE' ? t('media.inUseError') : cause?.data?.message,
+      title:
+        cause?.data?.data?.code === 'MEDIA_IN_USE'
+          ? t('media.inUseError')
+          : fetchErrorMessage(cause, t('common.messages.deleteFailed')),
     })
   }
 }

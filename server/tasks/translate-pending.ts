@@ -11,6 +11,10 @@ export default defineMonitoredTask({
   },
   async run() {
     const now = new Date()
+    await prisma.articleTranslation.updateMany({
+      where: { status: 'TRANSLATING', updatedAt: { lt: new Date(now.getTime() - 30 * 60_000) } },
+      data: { status: 'PENDING', error: null },
+    })
 
     const candidates = await prisma.articleTranslation.findMany({
       where: {
@@ -18,6 +22,7 @@ export default defineMonitoredTask({
         deletedAt: null,
         article: { status: 'published', deletedAt: null },
         clientSite: {
+          deletedAt: null,
           plan: { in: TRANSLATION_PLANS },
           translationMode: { in: ['AUTO', 'HYBRID'] },
           ...activeFeatureFilter('AI'),
@@ -49,11 +54,12 @@ export default defineMonitoredTask({
     const skipped = 0
 
     for (const { id } of candidates) {
+      const claimedAt = new Date()
       // Atomic per-row claim: only the run that flips it out of a claimable state owns it,
       // so concurrent cron runs / manual triggers can never double-translate the same row.
       const claim = await prisma.articleTranslation.updateMany({
         where: { id, status: { in: ['PENDING', 'STALE'] } },
-        data: { status: 'TRANSLATING' },
+        data: { status: 'TRANSLATING', updatedAt: claimedAt },
       })
       if (claim.count !== 1) continue
 
@@ -79,8 +85,8 @@ export default defineMonitoredTask({
       })
 
       if (!row || !row.article || !row.clientSite) {
-        await prisma.articleTranslation.update({
-          where: { id },
+        await prisma.articleTranslation.updateMany({
+          where: { id, status: 'TRANSLATING', updatedAt: claimedAt },
           data: { status: 'FAILED', error: 'Source article or tenant missing' },
         })
         failed++
@@ -102,34 +108,52 @@ export default defineMonitoredTask({
         const finalStatus =
           row.clientSite.translationMode === 'AUTO' && row.clientSite.publishToWeb ? 'PUBLISHED' : 'READY'
 
-        const updatedTranslation = await prisma.articleTranslation.update({
-          where: { id },
-          data: {
-            slug,
-            title: translated.title,
-            excerpt: translated.excerpt,
+        const updatedTranslation = await prisma.$transaction(async (tx) => {
+          const saved = await tx.articleTranslation.updateMany({
+            where: {
+              id,
+              status: 'TRANSLATING',
+              updatedAt: claimedAt,
+              clientSite: {
+                deletedAt: null,
+                plan: { in: TRANSLATION_PLANS },
+                translationMode: row.clientSite.translationMode,
+                publishToWeb: row.clientSite.publishToWeb,
+                ...activeFeatureFilter('AI'),
+              },
+              article: { status: 'published', deletedAt: null },
+            },
+            data: {
+              slug,
+              title: translated.title,
+              excerpt: translated.excerpt,
+              content: sanitizeHtml(translated.content),
+              answer: translated.answer,
+              keyTakeaways: translated.keyTakeaways,
+              faq: translated.faq,
+              status: finalStatus,
+              source: 'AI',
+              model: aiModelId('translation'),
+              usage: toDatabaseJson(usage),
+              error: null,
+              translatedAt: new Date(),
+            },
+          })
+          if (!saved.count) return false
+          await syncArticleMediaUsages(tx, {
+            clientSiteId: row.clientSiteId,
+            articleId: row.article.id,
+            articleTranslationId: id,
+            language: row.language,
             content: sanitizeHtml(translated.content),
-            answer: translated.answer,
-            keyTakeaways: translated.keyTakeaways,
-            faq: translated.faq,
-            status: finalStatus,
-            source: 'AI',
-            model: aiModelId('translation'),
-            usage: toDatabaseJson(usage),
-            error: null,
-            translatedAt: new Date(),
-          },
+          })
+          return true
         })
+        if (!updatedTranslation) continue
 
-        await syncArticleMediaUsages(prisma, {
-          clientSiteId: row.clientSiteId,
-          articleId: row.article.id,
-          articleTranslationId: updatedTranslation.id,
-          language: row.language,
-          content: updatedTranslation.content,
-        })
+        if (finalStatus === 'PUBLISHED') await invalidateFeed(row.clientSiteId)
 
-        logAction({
+        await logAction({
           action: 'TRANSLATE_ARTICLE',
           clientSiteId: row.clientSiteId,
           metadata: {
@@ -140,17 +164,19 @@ export default defineMonitoredTask({
             usage,
           },
         })
-        if (finalStatus === 'PUBLISHED') await announceArticle(row.article.id, row.clientSiteId)
+        if (finalStatus === 'PUBLISHED') {
+          await announceArticle(row.article.id, row.clientSiteId)
+        }
         processed++
       } catch (e: any) {
-        await prisma.articleTranslation.update({
-          where: { id },
+        await prisma.articleTranslation.updateMany({
+          where: { id, status: 'TRANSLATING', updatedAt: claimedAt },
           data: {
             status: 'FAILED',
             error: (e?.message || 'unknown').slice(0, 1000),
           },
         })
-        logAction({
+        await logAction({
           action: 'TRANSLATE_FAILED',
           clientSiteId: row.clientSiteId,
           metadata: { articleId: row.article.id, translationId: row.id, error: e?.message },

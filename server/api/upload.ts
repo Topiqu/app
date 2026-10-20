@@ -2,26 +2,10 @@ import sharp from 'sharp'
 import { randomUUID } from 'node:crypto'
 import { analyzeImage } from '~~/server/utils/imageAnalysis'
 
-const ALLOWED_EXT = ['png', 'jpg', 'jpeg', 'webp', 'gif']
 const MAX_UPLOAD_BYTES = 15 * 1024 * 1024
-
-const safeExt = (name?: string) => {
-  const ext = (name?.split('.').pop() || '').toLowerCase()
-  return ALLOWED_EXT.includes(ext) ? ext : 'webp'
-}
-
-const sanitizeFilename = (raw: string) => {
-  const base = raw.split(/[/\\]/).pop() || ''
-  const stem = base
-    .replace(/\.[^/.]+$/, '')
-    .replace(/[^a-zA-Z0-9._-]/g, '')
-    .slice(0, 80)
-  return `${stem || `content-${Date.now()}`}.${safeExt(base)}`
-}
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
-  const config = useRuntimeConfig()
   const user = await getSessionUser(event)
   if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
@@ -44,7 +28,22 @@ export default defineEventHandler(async (event) => {
       })!,
     })
   }
-  const uploadType = files.find((part) => part.name === 'type')?.data.toString()
+  const uploadType = files.find((part) => part.name === 'type')?.data.toString() || 'article-image'
+  if (!['article-image', 'client-logo', 'client-favicon', 'user-avatar', 'emoji'].includes(uploadType))
+    throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
+  if (uploadType === 'user-avatar' || uploadType === 'emoji') {
+    // Account avatars and emojis have their own authenticated, normalized upload routes.
+    if (user.role !== 'superadmin') throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
+  } else {
+    await requireTenantScope(event, uploadType === 'article-image' ? 'ARTICLE_WRITE' : 'TENANT_SETTINGS')
+  }
+  if (!(await consumeRateLimit(`upload:${user.id}`, 30, 60)))
+    throw createError({ statusCode: 429, message: t('common.errors.tooManyRequests')! })
+  const metadata = await sharp(file.data, { limitInputPixels: 40_000_000 })
+    .metadata()
+    .catch(() => null)
+  if (!metadata?.format || !['png', 'jpeg', 'webp', 'gif'].includes(metadata.format))
+    throw createError({ statusCode: 400, message: t('common.upload.unreadable')! })
   if (uploadType === 'client-favicon') {
     const reason = await validateFaviconUpload(file.data, file.type || '')
     // The client validates the same rules, so a rejection here is worth a readable reason rather than a bare status.
@@ -63,12 +62,25 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  const tags = await analyzeImage(file.data)
+  const favicon = uploadType === 'client-favicon'
+  const normalized = await sharp(file.data, { limitInputPixels: 40_000_000, animated: !favicon })
+    .rotate()
+    .toFormat(favicon ? 'png' : 'webp')
+    .toBuffer()
+    .catch(() => null)
+  if (!normalized) throw createError({ statusCode: 400, message: t('common.upload.unreadable')! })
+  if (normalized.length > MAX_UPLOAD_BYTES)
+    throw createError({ statusCode: 413, message: t('common.errors.invalidRequest')! })
+  const moderationImage = await sharp(file.data, { limitInputPixels: 40_000_000 })
+    .rotate()
+    .resize({ width: 2048, height: 2048, fit: 'inside', withoutEnlargement: true })
+    .jpeg({ quality: 80 })
+    .toBuffer()
+  const tags = await analyzeImage(moderationImage)
   const detectedTagsString = tags.join(',')
 
   const contentHash = hashMedia(file.data)
   if (uploadType === 'article-image' && user.clientSiteId) {
-    await requireTenantScope(event, 'ARTICLE_WRITE', user.clientSiteId)
     const existing = await prisma.mediaAsset.findFirst({
       where: { clientSiteId: user.clientSiteId, contentHash, purgedAt: null },
       orderBy: { createdAt: 'asc' },
@@ -82,8 +94,8 @@ export default defineEventHandler(async (event) => {
         contentHash,
         name: file.filename?.replace(/\.[^/.]+$/, '') ?? null,
         originalFilename: file.filename,
-        mimeType: file.type,
-        sizeBytes: file.data.length,
+        mimeType: existing.mimeType,
+        sizeBytes: existing.sizeBytes,
         machineTags: tags,
       })
       return {
@@ -98,23 +110,17 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  const customFilename = files.find((part) => part.name === 'customFilename')?.data.toString()
-  const filename = customFilename
-    ? sanitizeFilename(customFilename)
-    : `content-${Date.now()}-${randomUUID().slice(0, 8)}.${safeExt(file.filename)}`
-  const optimizedFilename = filename.replace(/\.[^/.]+$/, '.webp')
+  const filename = `${user.clientSiteId || user.id}/${randomUUID()}.${favicon ? 'png' : 'webp'}`
+  const contentType = favicon ? 'image/png' : 'image/webp'
 
   try {
-    const url = await putToCdn(`uploads/${filename}`, file.data, file.type, {
+    const url = await putToCdn(`uploads/${filename}`, normalized, contentType, {
       'rekognition-tags': detectedTagsString,
       'original-name': file.filename ? encodeURIComponent(file.filename) : 'unknown',
     })
 
     let mediaAsset
     if (uploadType === 'article-image' && user.clientSiteId) {
-      const metadata = await sharp(file.data)
-        .metadata()
-        .catch(() => null)
       const xmp = metadata?.xmpAsString ?? ''
       const copyright =
         metadata?.comments?.find((item) => /copyright|rights/i.test(item.keyword))?.text ??
@@ -126,12 +132,12 @@ export default defineEventHandler(async (event) => {
         clientSiteId: user.clientSiteId,
         createdById: user.id,
         url,
-        deliveryUrl: `${config.public.cdnUrl}/optimized/${optimizedFilename}`,
+        deliveryUrl: url,
         storageKey: `uploads/${filename}`,
         name: file.filename?.replace(/\.[^/.]+$/, '') ?? null,
         originalFilename: file.filename,
-        mimeType: file.type,
-        sizeBytes: file.data.length,
+        mimeType: contentType,
+        sizeBytes: normalized.length,
         contentHash,
         width: metadata?.autoOrient?.width ?? metadata?.width,
         height: metadata?.autoOrient?.height ?? metadata?.height,
@@ -149,7 +155,7 @@ export default defineEventHandler(async (event) => {
     return {
       success: true,
       url,
-      optimizedUrl: `${config.public.cdnUrl}/optimized/${optimizedFilename}`,
+      optimizedUrl: url,
       filename,
       tags: detectedTagsString.split(',').filter(Boolean),
       mediaAsset,

@@ -58,7 +58,10 @@
           </details>
           <div class="grid gap-4 sm:grid-cols-2">
             <UFormField :label="$t('knowledge.feed.language')" :help="$t('knowledge.feed.languageHint')" required>
-              <USelect v-model="form.language" :items="locales" class="w-full" />
+              <USelect v-model="form.language" :items="locales" class="w-full">
+                <template #leading><LanguageFlag :language="form.language" /></template>
+                <template #item-leading="{ item }"><LanguageFlag :language="item.value" /></template>
+              </USelect>
             </UFormField>
             <UFormField :label="$t('knowledge.feed.currency')" :help="$t('knowledge.feed.currencyHint')" required>
               <USelectMenu v-model="form.currency" :items="[...KNOWLEDGE_CURRENCIES]" class="w-full" />

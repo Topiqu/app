@@ -126,7 +126,17 @@
       "exploreTopics": "Explore topics",
       "recommended": "Recommended reading",
       "series": "Series to follow",
-      "discussions": "Latest discussions"
+      "discussions": "Latest discussions",
+      "readLead": "Read the lead story",
+      "chooseTopic": "Find a topic that interests you",
+      "latestArticles": "Latest articles",
+      "clearFilters": "Clear filters",
+      "selectedTopic": "Topic: {topic}",
+      "noMatches": "No articles match your search.",
+      "popular": "Popular articles",
+      "loadError": "Could not load this blog",
+      "loadErrorDescription": "Please try loading the page again.",
+      "feedError": "Could not load the articles."
     },
     "readingTime": "{0} min read",
     "noResults": {
@@ -218,6 +228,7 @@
       "invalid": "Enter a complete URL, including https://"
     },
     "status": {
+      "changeSuccess": "Status changed to {0}",
       "published": "Published",
       "draft": "Draft",
       "archived": "Archived"

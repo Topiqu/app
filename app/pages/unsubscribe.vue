@@ -1,5 +1,5 @@
 <template>
-  <main class="min-h-[75vh] flex items-center justify-center px-4 py-12">
+  <main class="flex min-h-0 flex-1 items-center justify-center px-4 py-8">
     <section class="w-full max-w-lg rounded-3xl border border-default bg-default p-7 sm:p-10 shadow-xl text-center">
       <UIcon
         :name="state === 'done' ? 'mdi:email-check-outline' : 'mdi:email-off-outline'"

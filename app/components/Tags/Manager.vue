@@ -175,7 +175,7 @@ const createNew = async () => {
     createOpen.value = false
     await invalidateTags()
   } catch (error: any) {
-    toast.add({ color: 'error', title: t('articles.tags.createFailed') + (error.data?.message ?? '') })
+    toast.add({ color: 'error', title: t('articles.tags.createFailed'), description: error.data?.message })
   } finally {
     creating.value = false
   }

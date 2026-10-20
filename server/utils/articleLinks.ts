@@ -52,8 +52,7 @@ export const resolveArticleLinks = async (
 
   const articleIdOf = ({ slug, language: linkLanguage }: { slug: string; language: Language }) =>
     sources.find((source) => source.slug === slug)?.id ??
-    translations.find((translation) => translation.slug === slug && translation.language === linkLanguage)
-      ?.articleId ??
+    translations.find((translation) => translation.slug === slug && translation.language === linkLanguage)?.articleId ??
     redirects.find((redirect) => redirect.slug === slug)?.articleId
 
   const ids = [...new Set(links.flatMap((link) => articleIdOf(link) ?? []))]

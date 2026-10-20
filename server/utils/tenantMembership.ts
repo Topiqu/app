@@ -37,9 +37,18 @@ export const requireTenantMember = async (event: H3Event, clientSiteId?: string)
   if (!tenantId) throw createError({ statusCode: 403, message: 'No active tenant' })
   const membership = await prisma.tenantMembership.findUnique({
     where: { clientSiteId_userId: { clientSiteId: tenantId, userId: user.id } },
-    select: { id: true, clientSiteId: true, userId: true, role: true, scopes: true, deletedAt: true },
+    select: {
+      id: true,
+      clientSiteId: true,
+      userId: true,
+      role: true,
+      scopes: true,
+      deletedAt: true,
+      clientSite: { select: { deletedAt: true } },
+    },
   })
-  if (!membership || membership.deletedAt) throw createError({ statusCode: 403, message: 'Tenant membership required' })
+  if (!membership || membership.deletedAt || membership.clientSite.deletedAt)
+    throw createError({ statusCode: 403, message: 'Tenant membership required' })
   return { user, membership }
 }
 

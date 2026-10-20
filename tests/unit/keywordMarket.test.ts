@@ -4,7 +4,12 @@ import { keywordLocation, keywordMarketFor } from '../../shared/utils/keywordPla
 
 describe('keyword markets', () => {
   it('defaults to the home market of the article language', () => {
-    expect(keywordLocation('cs')).toEqual({ market: 'CZ', languageCode: 'cs', labsLocationCode: 2203, serpLocationCode: 2203 })
+    expect(keywordLocation('cs')).toEqual({
+      market: 'CZ',
+      languageCode: 'cs',
+      labsLocationCode: 2203,
+      serpLocationCode: 2203,
+    })
     expect(keywordMarketFor('de', null)).toBe('DE')
   })
 

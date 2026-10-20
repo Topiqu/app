@@ -5,7 +5,11 @@ export default defineEventHandler(async (event) => {
   const widget = id
     ? await prisma.siteWidget.findFirst({
         where: { id, active: true, deletedAt: null, kind: { in: ['PRICE', 'WEATHER'] } },
-        select: { kind: true, config: true, clientSite: { select: { plan: true, domain: true, domainVerified: true, deletedAt: true } } },
+        select: {
+          kind: true,
+          config: true,
+          clientSite: { select: { plan: true, domain: true, domainVerified: true, deletedAt: true } },
+        },
       })
     : null
   if (!widget || widget.clientSite.deletedAt || !widgetAllowed(widget.kind, widget.clientSite))

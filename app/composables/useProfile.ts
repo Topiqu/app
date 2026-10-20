@@ -29,7 +29,7 @@ export function useProfile() {
     const id = user.value?.user?.id
     if (!id) throw new Error('User not authenticated')
     const response = await $fetch(`/api/users/${id}` as `/api/users/:id`, { method: 'PATCH', body })
-    toast.add({ color: 'success', title: t('common.messages.successGeneralTitle') })
+    toast.add({ color: 'success', title: t('common.messages.saveSuccess') })
     return response
   }
 

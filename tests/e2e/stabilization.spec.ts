@@ -17,7 +17,8 @@ const luminance = (rgb: string) => {
   return 0.2126 * linear[0]! + 0.7152 * linear[1]! + 0.0722 * linear[2]!
 }
 
-test('publication hero and canonical cards remain visible, aligned and contrasting', async ({ page }) => {
+test('publication hero and article layouts remain visible, aligned and contrasting', async ({ page }) => {
+  if ((page.viewportSize()?.width ?? 0) < 400) await page.setViewportSize({ width: 320, height: 800 })
   await preparePage(page)
   await page.goto('http://localhost:4173/cs')
   await page.locator('html[data-topiqu-hydrated="true"]').waitFor()
@@ -34,22 +35,26 @@ test('publication hero and canonical cards remain visible, aligned and contrasti
     (Math.min(luminance(colors.foreground), luminance(colors.background)) + 0.05)
   expect(ratio).toBeGreaterThanOrEqual(4.5)
 
-  const cards = page.locator('[data-article-card]')
-  expect(await cards.count()).toBeGreaterThan(1)
-  for (const card of await cards.all()) {
-    const geometry = await card.evaluate((element) => {
-      const box = element.getBoundingClientRect()
-      const footer = element.querySelector('[data-article-footer]')?.getBoundingClientRect()
-      return {
-        overflow: element.scrollWidth - element.clientWidth,
-        bottomGap: footer ? box.bottom - footer.bottom : 999,
-      }
-    })
-    expect(geometry.overflow).toBeLessThanOrEqual(1)
-    expect(geometry.bottomGap).toBeLessThanOrEqual(24)
+  // The three fixtures can all appear in the hero/recommendations, without a duplicate feed.
+  const articleRows = page.locator('main article')
+  expect(await articleRows.count()).toBeGreaterThan(1)
+  for (const row of await articleRows.all()) {
+    expect(await row.evaluate((element) => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1)
   }
   await expectNoHorizontalOverflow(page)
   await expectAccessible(page)
+
+  const topics = page.getByRole('group', { name: 'Prozkoumat témata' })
+  const firstTopic = topics.getByRole('button').first()
+  await firstTopic.click()
+  await expect(firstTopic).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.locator('#articles [data-article-card]').first()).toBeVisible()
+
+  await page.getByRole('searchbox', { name: 'Hledat články...' }).fill('topiqu-no-matching-story-987654')
+  await expect(page.getByText('Pro toto hledání jsme nenašli žádné články.')).toBeVisible()
+  await page.getByRole('button', { name: 'Zrušit filtry' }).click()
+  await expect(page.locator('main article').first()).toBeVisible()
+  await expectNoHorizontalOverflow(page)
 })
 
 test('article TOC remains sticky while the active heading changes', async ({ page }) => {
@@ -210,35 +215,45 @@ test.describe('admin stabilization', () => {
     const title = page.getByRole('textbox', { name: /Název článku|Article title/i }).first()
     await expect(title).toHaveValue('Jak postavit udržitelnou digitální redakci')
     const original = await title.inputValue()
-    await title.fill(`${original} E2E`)
     const commandBar = page.locator('[data-editor-command-bar]')
     await expect(commandBar).toHaveAttribute('data-editor-submitting', 'false')
-    await expect(commandBar).toHaveAttribute('data-editor-title-length', String(`${original} E2E`.length))
+    // The persistent shell can hydrate before its lazy editor finishes hydrating.
+    await expect(async () => {
+      await title.fill(`${original} E2E`)
+      expect(await commandBar.getAttribute('data-editor-title-length')).toBe(String(`${original} E2E`.length))
+    }).toPass()
     const save = page.getByRole('button', { name: /Uložit změny|Save changes/i }).first()
     await expect(save).toBeEnabled()
-    const update = page.waitForResponse(
-      (response) =>
-        response.url().includes('/api/articles/20000000-0000-4000-8000-000000000001') &&
-        response.request().method() === 'PATCH',
-    )
-    await save.click()
-    expect((await update).ok()).toBe(true)
-    await expect(page).toHaveURL(/\/cs\/admin(?:\?|$)/)
+    const saveWithReview = async () => {
+      const waitForUpdate = () =>
+        page.waitForResponse(
+          (response) =>
+            response.url().includes('/api/articles/20000000-0000-4000-8000-000000000001') &&
+            response.request().method() === 'PATCH',
+        )
+      const update = waitForUpdate()
+      await page
+        .getByRole('button', { name: /Uložit změny|Save changes/i })
+        .first()
+        .click()
+      let response = await update
+      if (response.status() === 409) {
+        expect((await response.json()).data.code).toBe('MEDIA_RIGHTS_REVIEW_REQUIRED')
+        const reviewed = waitForUpdate()
+        await page.getByRole('dialog').getByRole('button', { name: 'Potvrzuji oprávnění a publikuji' }).click()
+        response = await reviewed
+      }
+      expect(response.ok()).toBe(true)
+      await expect(commandBar).toHaveAttribute('data-editor-submitting', 'false')
+    }
+    await saveWithReview()
+    await expect(page).toHaveURL(/\/cs\/admin\/editor\//)
 
     await page.goto('/cs/admin/editor/20000000-0000-4000-8000-000000000001')
     const restoredTitle = page.getByRole('textbox', { name: /Název článku|Article title/i }).first()
     await expect(restoredTitle).toHaveValue(`${original} E2E`)
     await restoredTitle.fill(original)
-    const restore = page.waitForResponse(
-      (response) =>
-        response.url().includes('/api/articles/20000000-0000-4000-8000-000000000001') &&
-        response.request().method() === 'PATCH',
-    )
-    await page
-      .getByRole('button', { name: /Uložit změny|Save changes/i })
-      .first()
-      .click()
-    expect((await restore).ok()).toBe(true)
+    await saveWithReview()
   })
 
   test('article filters and sorting persist in the URL', async ({ page }) => {
@@ -301,7 +316,9 @@ test.describe('admin stabilization', () => {
   test('brand kit persists and the preview matches the public publication', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'desktop-light-en', 'Mutating brand roundtrip runs once')
     await preparePage(page)
-    const session = (await (await page.request.get('/api/auth/get-session')).json()) as { user: { clientSiteId: string } }
+    const session = (await (await page.request.get('/api/auth/get-session')).json()) as {
+      user: { clientSiteId: string }
+    }
     const id = session.user.clientSiteId
     const original = (await (await page.request.get(`/api/clients/${id}`)).json()) as {
       tagline: string | null

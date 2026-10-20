@@ -1,6 +1,9 @@
-export const platformAdsEnabledForPlan = (plan?: string | null) => plan === 'BASIC'
+// Advertising is halted. Retained provider configuration is not an active entitlement.
+const advertisingEnabled = false
 
-export const tenantGamEnabled = (networkCode?: string | null) => Boolean(networkCode?.trim())
+export const platformAdsEnabledForPlan = (plan?: string | null) => advertisingEnabled && plan === 'BASIC'
+
+export const tenantGamEnabled = (networkCode?: string | null) => advertisingEnabled && Boolean(networkCode?.trim())
 
 export type AdProvider = 'adsense' | 'gam' | null
 

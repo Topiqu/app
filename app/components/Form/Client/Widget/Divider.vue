@@ -15,7 +15,9 @@ import { DIVIDER_STYLES, type DividerConfig } from '~~/shared/utils/widgets'
 const config = defineModel<DividerConfig>('config', { required: true })
 const { t } = useI18n()
 
-const styleItems = computed(() => DIVIDER_STYLES.map((value) => ({ value, label: t(`widgets.divider.styles.${value}`) })))
+const styleItems = computed(() =>
+  DIVIDER_STYLES.map((value) => ({ value, label: t(`widgets.divider.styles.${value}`) })),
+)
 const label = computed({
   get: () => config.value.label ?? '',
   set: (value: string) => (config.value.label = value || null),

@@ -25,6 +25,7 @@
     "greeting": "Dobrý den, {userName},",
     "intro": "Pro dokončení akce {actionType} použijte následující ověřovací kód:",
     "expiration": "Tento kód je platný 24 hodin. Pokud jste tuto žádost neodeslali, můžete tento e-mail ignorovat.",
+    "resetExpiration": "Tento kód pro obnovení hesla je platný 15 minut. Pokud jste o něj nepožádali, tento e-mail ignorujte.",
     "actions": {
       "signup": "vytvoření účtu",
       "emailVerification": "ověření e-mailu"

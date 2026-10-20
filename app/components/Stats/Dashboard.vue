@@ -1,43 +1,47 @@
 <template>
   <div class="space-y-6">
     <header class="flex w-full min-w-0 items-center justify-between gap-3">
-        <h1 class="truncate text-2xl font-bold tracking-tight text-highlighted">{{ $t('stats.title') }}</h1>
-        <div class="flex items-center gap-2">
-          <USelect
-            v-model="range"
-            :items="rangeItems"
-            valueKey="value"
-            labelKey="label"
-            :aria-label="$t('stats.range.label')"
-            class="w-28 sm:w-36"
-            size="sm"
-          />
-          <UButton
-            color="neutral"
-            variant="soft"
-            icon="mdi:refresh"
-            :loading="isRefreshing"
-            :aria-label="$t('common.messages.retry')"
-            @click="refetch()"
-          />
-        </div>
+      <h1 class="truncate text-2xl font-bold tracking-tight text-highlighted">{{ $t('stats.title') }}</h1>
+      <div class="flex items-center gap-2">
+        <USelect
+          v-model="range"
+          :items="rangeItems"
+          valueKey="value"
+          labelKey="label"
+          :aria-label="$t('stats.range.label')"
+          class="w-28 sm:w-36"
+          size="sm"
+        />
+        <UButton
+          color="neutral"
+          variant="soft"
+          icon="mdi:refresh"
+          :loading="isRefreshing"
+          :aria-label="$t('common.messages.retry')"
+          @click="refetch()"
+        />
+      </div>
     </header>
 
     <section>
       <div v-if="pending" class="space-y-8" :aria-label="$t('stats.loading')" aria-busy="true">
-        <div class="grid grid-cols-1 gap-6 sm:grid-cols-4">
-          <div v-for="i in 4" :key="i" class="space-y-2">
-            <div class="h-3 w-16 animate-pulse rounded bg-neutral-900/[0.08] dark:bg-white/10" />
-            <div class="h-9 w-24 animate-pulse rounded bg-neutral-900/[0.08] dark:bg-white/10" />
+        <div
+          class="grid grid-cols-1 gap-6 rounded-(--topiqu-surface-radius) border border-default p-5 sm:grid-cols-2 lg:grid-cols-4"
+        >
+          <div v-for="i in 4" :key="i" class="space-y-3">
+            <USkeleton class="h-3 w-16" />
+            <USkeleton class="h-9 w-24 max-w-full" />
+            <USkeleton class="h-3 w-20 max-w-full" />
           </div>
         </div>
-        <div v-for="section in 3" :key="section" class="space-y-3">
-          <div class="h-3 w-28 animate-pulse rounded bg-neutral-900/[0.08] dark:bg-white/10" />
-          <div
-            v-for="row in 3"
-            :key="row"
-            class="h-8 animate-pulse rounded bg-neutral-900/[0.05] dark:bg-white/[0.06]"
-          />
+        <div class="grid gap-x-10 gap-y-7 lg:grid-cols-2">
+          <div v-for="section in 4" :key="section" class="space-y-3">
+            <USkeleton class="h-4 w-28" />
+            <div v-for="row in 3" :key="row" class="flex gap-3 py-2">
+              <USkeleton class="size-8 shrink-0" />
+              <USkeleton class="h-8 flex-1" />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -61,7 +65,7 @@
         <p class="text-sm text-neutral-500 dark:text-neutral-400">{{ $t('stats.noArticles.description') }}</p>
       </div>
 
-      <div v-else class="grid gap-x-10 gap-y-7 lg:grid-cols-2 lg:items-start">
+      <div v-else class="grid min-w-0 grid-cols-1 gap-x-10 gap-y-7 lg:grid-cols-2 lg:items-start">
         <!-- BASIC sees the offer before the half-empty report, not after scrolling past it. -->
         <div
           v-if="isBasicPlan"
@@ -82,7 +86,7 @@
 
         <!-- Performance and completed work share one concise summary. -->
         <section
-          class="grid grid-cols-2 gap-x-4 gap-y-6 rounded-[var(--topiqu-surface-radius)] border border-default bg-elevated/40 p-5 lg:col-span-2 lg:grid-cols-4 lg:divide-x lg:divide-default"
+          class="grid min-w-0 grid-cols-1 gap-x-4 gap-y-6 rounded-[var(--topiqu-surface-radius)] border border-default bg-elevated/40 p-5 sm:grid-cols-2 lg:col-span-2 lg:grid-cols-4 lg:divide-x lg:divide-default"
         >
           <div class="lg:pr-5">
             <p class="text-xs font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
@@ -186,7 +190,7 @@
           </div>
         </section>
 
-        <div class="grid gap-7 lg:col-span-2 lg:grid-cols-2 [&>section]:h-full">
+        <div class="grid min-w-0 grid-cols-1 gap-7 lg:col-span-2 lg:grid-cols-2 [&>section]:h-full [&>section]:min-w-0">
           <section class="flex flex-col rounded-[var(--topiqu-surface-radius)] border border-default bg-default p-5">
             <StatsSectionHeading :title="$t('stats.sections.content')" :note="concentrationNote" />
             <div class="mt-3 flex flex-1 flex-col justify-evenly gap-1">
@@ -320,8 +324,8 @@
             <!-- Current article classification includes drafts; legacy words are deliberately not added to documented work. -->
             <div class="mt-3 lg:flex lg:flex-1 lg:flex-col lg:justify-center">
               <div class="flex h-2 overflow-hidden rounded-full bg-neutral-900/[0.06] dark:bg-white/10">
-                <span class="bg-emerald-500/80" :style="{ width: `${aiShare.full * 100}%` }" />
-                <span class="bg-emerald-500/35" :style="{ width: `${aiShare.assist * 100}%` }" />
+                <span class="bg-inverted/80" :style="{ width: `${aiShare.full * 100}%` }" />
+                <span class="bg-inverted/35" :style="{ width: `${aiShare.assist * 100}%` }" />
               </div>
               <dl class="mt-3 grid gap-2 text-xs sm:grid-cols-3">
                 <div
@@ -382,7 +386,7 @@
           </section>
         </div>
 
-        <section v-if="!isBasicPlan" class="grid items-stretch gap-6 lg:col-span-2 lg:grid-cols-2">
+        <section v-if="!isBasicPlan" class="grid min-w-0 grid-cols-1 items-stretch gap-6 lg:col-span-2 lg:grid-cols-2">
           <div class="min-w-0">
             <LazyCharts
               kind="trend"
@@ -406,7 +410,6 @@
             :labels="shareChart.labels"
             :values="shareChart.values"
             :icons="shareChart.icons"
-            :colors="shareChart.colors"
           />
         </section>
         <p
@@ -627,8 +630,8 @@ const aiShare = computed(() => {
     full: FULL / total,
     assist: ASSIST / total,
     legend: [
-      { key: 'FULL', count: FULL, dot: 'bg-emerald-500/80', icon: 'mdi:robot-outline' },
-      { key: 'ASSIST', count: ASSIST, dot: 'bg-emerald-500/35', icon: 'mdi:account-edit-outline' },
+      { key: 'FULL', count: FULL, dot: 'bg-inverted/80', icon: 'mdi:robot-outline' },
+      { key: 'ASSIST', count: ASSIST, dot: 'bg-inverted/35', icon: 'mdi:account-edit-outline' },
       {
         key: 'NONE',
         count: NONE,
@@ -670,18 +673,9 @@ const PLATFORM_ICONS: Record<(typeof SHARE_PLATFORMS)[number], string> = {
   OTHER: 'mdi:link-variant',
 }
 
-const PLATFORM_COLORS: Record<(typeof SHARE_PLATFORMS)[number], { light: string; dark: string }> = {
-  TWITTER: { light: '#09090b', dark: '#fafafa' },
-  LINKEDIN: { light: '#0a66c2', dark: '#70b5f9' },
-  FACEBOOK: { light: '#1877f2', dark: '#6ea8fe' },
-  EMAIL: { light: '#ea4335', dark: '#f28b82' },
-  OTHER: { light: '#7c3aed', dark: '#a78bfa' },
-}
-
 const shareChart = computed(() => ({
   labels: SHARE_PLATFORMS.map((platform) => t(`stats.platforms.${platform}`)),
   values: SHARE_PLATFORMS.map((platform) => stats.value.sharesDistribution[platform] || 0),
   icons: SHARE_PLATFORMS.map((platform) => PLATFORM_ICONS[platform]),
-  colors: SHARE_PLATFORMS.map((platform) => PLATFORM_COLORS[platform]),
 }))
 </script>

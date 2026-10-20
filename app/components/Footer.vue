@@ -1,5 +1,5 @@
 <template>
-  <div v-if="clientSite" class="mt-auto border-t border-default">
+  <div v-if="clientSite && settings.enabled" class="mt-auto border-t border-default">
     <UFooter>
       <div class="flex w-full flex-col items-center justify-between gap-3 sm:flex-row">
         <NuxtLink
@@ -21,33 +21,42 @@
           />
           <strong class="text-lg text-primary">Topiqu</strong>
         </NuxtLink>
-        <span v-else class="text-sm font-semibold text-highlighted">{{ clientSite.name }}</span>
-        <div class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm">
+        <p v-else class="min-w-0 max-w-2xl whitespace-pre-line break-words text-sm text-highlighted">
+          {{ settings.text || clientSite.name }}
+        </p>
+        <nav
+          v-if="settings.links.length"
+          :aria-label="$t('common.preferences.footer.links')"
+          class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm"
+        >
           <NuxtLink
-            :to="localePath({ name: 'privacy' })"
-            class="text-muted hover:text-highlighted focus-visible:outline-2 focus-visible:outline-primary"
+            v-for="(link, index) in settings.links"
+            :key="index"
+            :to="link.url"
+            class="break-words text-muted hover:text-highlighted focus-visible:outline-2 focus-visible:outline-primary"
+            >{{ link.label }}</NuxtLink
           >
-            {{ $t('common.consent.moreInfo') }}
-          </NuxtLink>
-          <ULink as="button" type="button" @click="settingsOpen = true">
-            {{ $t('common.consent.openSettings') }}
-          </ULink>
-        </div>
+        </nav>
+        <ClientSocials v-if="settings.showSocials" :clientSiteId="clientSite.id" />
       </div>
     </UFooter>
   </div>
 </template>
 
 <script setup lang="ts">
-const clientSite = await useClientSite()
-const localePath = useLocalePath()
-const settingsOpen = useConsentSettingsOpen()
+import { resolveFooterSettings } from '~~/shared/utils/publicationFooter'
+
+const clientSite = await useLiveClientSite()
+const settings = computed(() => resolveFooterSettings(clientSite.value?.footerSettings, clientSite.value?.plan))
 
 // Free blogs are the referral channel; the landing's analytics attribute sign-ups by these UTM tags.
-const poweredByUrl = `https://topiqu.com/?${new URLSearchParams({
-  utm_source: 'topiqu_blog',
-  utm_medium: 'referral',
-  utm_campaign: 'powered_by',
-  utm_content: clientSite?.domain ?? '',
-})}`
+const poweredByUrl = computed(
+  () =>
+    `https://topiqu.com/?${new URLSearchParams({
+      utm_source: 'topiqu_blog',
+      utm_medium: 'referral',
+      utm_campaign: 'powered_by',
+      utm_content: clientSite.value?.domain ?? '',
+    })}`,
+)
 </script>

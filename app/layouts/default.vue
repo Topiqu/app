@@ -8,12 +8,16 @@
       storageKey="topiqu-dashboard-sidebar"
       class="topiqu-dashboard-group fixed inset-x-0 bottom-0 top-16"
     >
-      <Sidebar v-model:isOpen="isSidebarOpen" />
+      <LazySidebar v-model:isOpen="isSidebarOpen" />
       <UDashboardPanel>
-        <div class="topiqu-dashboard-scroll min-h-0 flex-1 overflow-y-auto">
+        <div class="topiqu-dashboard-scroll flex min-h-0 flex-1 flex-col overflow-y-auto">
           <WidgetBar v-if="announcement" :announcement />
-          <UMain :class="shell === 'dashboard' ? 'h-full min-h-full' : ''"><slot /></UMain>
-          <WidgetSlot v-if="isPublicationSurface" name="FOOTER" class="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8" />
+          <UMain class="flex min-h-0 grow shrink-0 flex-col"><slot /></UMain>
+          <WidgetSlot
+            v-if="isPublicationSurface && footerVisible"
+            name="FOOTER"
+            class="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8"
+          />
           <Footer v-if="shell !== 'dashboard'" />
         </div>
       </UDashboardPanel>
@@ -32,28 +36,40 @@
         />
       </WidgetPagePreviewSlot>
       <WidgetBar v-else-if="announcement" :announcement />
-      <UMain class="flex min-h-0 flex-1 flex-col"><slot /></UMain>
-      <WidgetSlot v-if="isPublicationSurface" name="FOOTER" class="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8" />
+      <UMain class="flex min-h-0 grow shrink-0 flex-col"><slot /></UMain>
+      <WidgetSlot
+        v-if="isPublicationSurface && footerVisible"
+        name="FOOTER"
+        class="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8"
+      />
       <Footer />
     </template>
     <template v-if="auth?.user?.role === 'admin'">
-      <TagsCreate v-model="tagsOpen" />
+      <LazyTagsCreate v-if="tagsMounted" v-model="tagsOpen" />
     </template>
-    <ClientCreate v-if="auth?.user?.role === 'superadmin'" v-model="clientCreateOpen" />
-    <UserList v-if="auth?.user?.role === 'superadmin'" v-model="userListOpen" />
+    <LazyClientCreate v-if="auth?.user?.role === 'superadmin' && clientCreateMounted" v-model="clientCreateOpen" />
+    <LazyUserList v-if="auth?.user?.role === 'superadmin' && userListMounted" v-model="userListOpen" />
     <ButtonBackToTop />
   </div>
 </template>
 
 <script setup lang="ts">
+import { resolveFooterSettings } from '~~/shared/utils/publicationFooter'
 const { data: auth } = useAuth()
 const route = useRoute()
 const preview = useWidgetPagePreview()
 const clientSite = await useLiveClientSite()
+const footerVisible = computed(
+  () => resolveFooterSettings(clientSite.value?.footerSettings, clientSite.value?.plan).enabled,
+)
 const isSidebarOpen = shallowRef<boolean>(false)
 const tagsOpen = useState('dashboard-tags-open', () => false)
 const clientCreateOpen = useState('dashboard-client-create-open', () => false)
 const userListOpen = useState('dashboard-user-list-open', () => false)
+// Keep a previously opened dialog alive for its closing transition and focus restoration.
+const tagsMounted = computed<boolean>((previous) => Boolean(previous || tagsOpen.value))
+const clientCreateMounted = computed<boolean>((previous) => Boolean(previous || clientCreateOpen.value))
+const userListMounted = computed<boolean>((previous) => Boolean(previous || userListOpen.value))
 const shell = computed(() => resolvePageShell(route.meta.shell))
 const showDashboard = computed(
   () => !preview.active.value && canRenderDashboardShell(auth.value?.user.role, route.meta.dashboardSidebar),

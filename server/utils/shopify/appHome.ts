@@ -1,5 +1,4 @@
-const escapeHtml = (value: string) =>
-  value.replace(/[&<>"']/g, (char) => `&#${char.charCodeAt(0)};`)
+const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (char) => `&#${char.charCodeAt(0)};`)
 
 // Inline so the CSP nonce covers it; state arrives from `/api/shopify/app/session`.
 const SCRIPT = `

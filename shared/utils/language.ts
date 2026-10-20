@@ -21,9 +21,9 @@ export const isLanguage = (value: unknown): value is Language =>
 
 export const languageTag = (value: unknown): string => (isLanguage(value) ? LANGUAGE_TAGS[value] : 'en-US')
 
-export const locales: Array<{ icon: string; label: string; value: Language }> = [
-  { icon: 'twemoji:flag-united-kingdom', label: 'English', value: 'en' },
-  { icon: 'twemoji:flag-czechia', label: 'Čeština', value: 'cs' },
-  { icon: 'twemoji:flag-germany', label: 'Deutsch', value: 'de' },
-  { icon: 'twemoji:flag-france', label: 'Français', value: 'fr' },
+export const locales: Array<{ label: string; value: Language }> = [
+  { label: 'English', value: 'en' },
+  { label: 'Čeština', value: 'cs' },
+  { label: 'Deutsch', value: 'de' },
+  { label: 'Français', value: 'fr' },
 ]
