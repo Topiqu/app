@@ -159,7 +159,7 @@
 
     <section class="border-t border-neutral-200 pt-6 dark:border-neutral-700">
       <div class="mb-3 flex items-center gap-2">
-        <UIcon name="mdi:email-clock-outline" class="size-5 text-amber-500" />
+        <UIcon name="mdi:email-fast-outline" class="size-5 text-amber-500" />
         <h3 class="font-semibold">{{ $t('common.members.pending') }}</h3>
         <span class="rounded-full bg-neutral-100 px-2 py-0.5 text-xs dark:bg-neutral-800">{{
           filteredInvitations.length
