@@ -704,6 +704,16 @@
       "language": "Interface language"
     },
     "auth": {
+      "transfer": {
+        "signIn": "Continue with Topiqu",
+        "title": "Sign in to your blog",
+        "target": "You are connecting to {host}.",
+        "explanation": "Confirm only if you started signing in on this domain. Topiqu will create a separate session there. Your password and Topiqu session cookie are not transferred.",
+        "confirm": "Continue as {name}",
+        "switchAccount": "Use another account",
+        "failed": "Sign-in could not be completed",
+        "restart": "Return to the blog and start signing in again. The request may have expired or the domain may have changed."
+      },
       "login": "Log In",
       "register": "Register",
       "loginPrompt": "Log in to access exclusive features and content.",

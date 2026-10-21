@@ -6,6 +6,7 @@ import { z } from 'zod'
 import argon from 'argon2'
 import { authenticator } from 'otplib'
 import { betterAuth } from 'better-auth'
+import { createHmac } from 'node:crypto'
 import { customSession } from 'better-auth/plugins'
 import { setSessionCookie } from 'better-auth/cookies'
 import { zenstackAdapter } from '@zenstackhq/better-auth'
@@ -60,6 +61,36 @@ const credentialsBody = z.object({ email: z.string(), password: z.string(), totp
 const credentials = {
   id: 'credentials',
   endpoints: {
+    // Internal API only: absent from the public auth route allowlist.
+    signInTransfer: createAuthEndpoint(
+      '/sign-in/transfer',
+      {
+        method: 'POST',
+        body: z.object({ request: z.string().uuid(), code: z.string().length(43), proof: z.string().length(43) }),
+        requireHeaders: true,
+      },
+      async (ctx) => {
+        let userId: string
+        try {
+          userId = await consumeAuthTransfer(
+            ctx.body.request,
+            ctx.body.code,
+            ctx.body.proof,
+            new URL(ctx.context.baseURL).origin,
+          )
+        } catch (error) {
+          if (
+            error &&
+            typeof error === 'object' &&
+            'statusCode' in error &&
+            [400, 403, 404].includes(Number(error.statusCode))
+          )
+            throw reject('FORBIDDEN', 'transfer_invalid')
+          throw error
+        }
+        return openSession(ctx, userId)
+      },
+    ),
     signInCredentials: createAuthEndpoint(
       '/sign-in/credentials',
       { method: 'POST', body: credentialsBody, requireHeaders: true },
@@ -75,9 +106,7 @@ const credentials = {
           throw reject('TOO_MANY_REQUESTS', 'rate_limited')
         }
 
-        // TODO: For proper multi-tenant isolation:
-        // 1. Resolve 'clientSiteId' from req.headers.host (domain).
-        // 2. Filter user by { email, clientSiteId } to ensure unique accounts per site.
+        // Identity is global; session tenant membership determines permissions.
         const user = await prisma.user.findFirst({
           where: { email: { equals: email, mode: 'insensitive' }, deletedAt: null },
           select: { id: true, password: true, clientSiteId: true, totpSecret: true, emailVerified: true },
@@ -133,131 +162,169 @@ const credentials = {
   },
 } satisfies BetterAuthPlugin
 
-export const auth = betterAuth({
-  appName: 'Topiqu',
-  baseURL,
-  secret: process.env.AUTH_SECRET || useRuntimeConfig().auth.secret,
-  // The adapter types its client without options; the omit override only widens result rows.
-  database: zenstackAdapter(authDb as unknown as Parameters<typeof zenstackAdapter>[0], { provider: 'postgresql' }),
-  trustedOrigins,
-  // Login limits live in `checkLoginRateLimit` (Valkey, `clientIp`); Better Auth's own limiter
-  // reads the first X-Forwarded-For entry, which is the Cloudflare edge behind Traefik.
-  rateLimit: { enabled: false },
-  onAPIError: {
-    errorURL: '/auth-error',
-    // An APIError is an answered request (bad password, expired token), not a fault.
-    onError: (error) => {
-      if (!(error instanceof APIError)) logAuthError('BETTER_AUTH_ERROR', { error })
-    },
-  },
-  logger: {
-    log: (level, message) => {
-      if (level === 'error') logAuthError('BETTER_AUTH_ERROR', { error: message })
-    },
-  },
-  advanced: {
-    useSecureCookies: isSecureAuth,
-    crossSubDomainCookies: { enabled: !!sessionCookieDomain, domain: sessionCookieDomain?.slice(1) },
-    database: { generateId: false },
-  },
-  user: {
-    fields: { name: 'username', image: 'avatarUrl' },
-    additionalFields: { role: { type: 'string', input: false, required: false } },
-  },
-  session: {
-    expiresIn: 60 * 60 * 24 * 30,
-    updateAge: 60 * 60 * 24,
-    fields: { ipAddress: 'ip' },
-    additionalFields: {
-      device: { type: 'string', input: false, required: false },
-      os: { type: 'string', input: false, required: false },
-      browser: { type: 'string', input: false, required: false },
-      city: { type: 'string', input: false, required: false },
-      region: { type: 'string', input: false, required: false },
-      country: { type: 'string', input: false, required: false },
-      clientSiteId: { type: 'string', input: false, required: false },
-    },
-  },
-  account: {
-    encryptOAuthTokens: true,
-    // Linking needs a verified local email (Better Auth default) and, as neither provider is trusted,
-    // a verified provider email too — so a password squatter can never absorb the victim's OAuth identity.
-    accountLinking: { enabled: true },
-  },
-  socialProviders: {
-    google: {
-      clientId: process.env.AUTH_GOOGLE_ID ?? '',
-      clientSecret: process.env.AUTH_GOOGLE_SECRET ?? '',
-    },
-    github: {
-      clientId: process.env.AUTH_GITHUB_ID ?? '',
-      clientSecret: process.env.AUTH_GITHUB_SECRET ?? '',
-    },
-  },
-  databaseHooks: {
-    user: {
-      create: {
-        // Only OAuth creates users here; registration has its own endpoint.
-        before: async (user) => {
-          if (!user.emailVerified) throw reject('FORBIDDEN', 'oauth_email_unverified')
-          return { data: { ...user, name: await uniqueUsername(user.name, user.email) } }
-        },
+const createAuth = (customOrigin?: string, customTenantId?: string) =>
+  betterAuth({
+    appName: 'Topiqu',
+    baseURL: customOrigin ?? baseURL,
+    secret: customOrigin
+      ? createHmac('sha256', process.env.AUTH_SECRET || useRuntimeConfig().auth.secret)
+          .update(`custom-auth:${customOrigin}:${customTenantId}`)
+          .digest('hex')
+      : process.env.AUTH_SECRET || useRuntimeConfig().auth.secret,
+    // The adapter types its client without options; the omit override only widens result rows.
+    database: zenstackAdapter(authDb as unknown as Parameters<typeof zenstackAdapter>[0], { provider: 'postgresql' }),
+    trustedOrigins: customOrigin ? [customOrigin] : trustedOrigins,
+    // Login limits live in `checkLoginRateLimit` (Valkey, `clientIp`); Better Auth's own limiter
+    // reads the first X-Forwarded-For entry, which is the Cloudflare edge behind Traefik.
+    rateLimit: { enabled: false },
+    onAPIError: {
+      errorURL: '/auth-error',
+      // An APIError is an answered request (bad password, expired token), not a fault.
+      onError: (error) => {
+        if (!(error instanceof APIError)) logAuthError('BETTER_AUTH_ERROR', { error })
       },
+    },
+    logger: {
+      log: (level, message) => {
+        if (level === 'error') logAuthError('BETTER_AUTH_ERROR', { error: message })
+      },
+    },
+    advanced: {
+      useSecureCookies: isSecureAuth,
+      crossSubDomainCookies: {
+        enabled: !customOrigin && !!sessionCookieDomain,
+        domain: customOrigin ? undefined : sessionCookieDomain?.slice(1),
+      },
+      database: { generateId: false },
+    },
+    user: {
+      fields: { name: 'username', image: 'avatarUrl' },
+      additionalFields: { role: { type: 'string', input: false, required: false } },
     },
     session: {
-      create: {
-        before: async (session, ctx) => {
-          const owner = await prisma.user.findUnique({ where: { id: session.userId }, select: { deletedAt: true } })
-          if (!owner || owner.deletedAt) throw reject('FORBIDDEN', 'account_deactivated')
-          const device = await sessionDevice(headerRecord(ctx?.headers ?? ctx?.request?.headers))
-          return {
-            data: { ...session, ...device, ipAddress: device.ip, clientSiteId: await initialTenant(session.userId) },
-          }
+      expiresIn: 60 * 60 * 24 * 30,
+      updateAge: 60 * 60 * 24,
+      fields: { ipAddress: 'ip' },
+      additionalFields: {
+        device: { type: 'string', input: false, required: false },
+        os: { type: 'string', input: false, required: false },
+        browser: { type: 'string', input: false, required: false },
+        city: { type: 'string', input: false, required: false },
+        region: { type: 'string', input: false, required: false },
+        country: { type: 'string', input: false, required: false },
+        clientSiteId: { type: 'string', input: false, required: false },
+      },
+    },
+    account: {
+      encryptOAuthTokens: true,
+      // Linking needs a verified local email (Better Auth default) and, as neither provider is trusted,
+      // a verified provider email too — so a password squatter can never absorb the victim's OAuth identity.
+      accountLinking: { enabled: true },
+    },
+    socialProviders: {
+      google: {
+        clientId: process.env.AUTH_GOOGLE_ID ?? '',
+        clientSecret: process.env.AUTH_GOOGLE_SECRET ?? '',
+      },
+      github: {
+        clientId: process.env.AUTH_GITHUB_ID ?? '',
+        clientSecret: process.env.AUTH_GITHUB_SECRET ?? '',
+      },
+    },
+    databaseHooks: {
+      user: {
+        create: {
+          // Only OAuth creates users here; registration has its own endpoint.
+          before: async (user) => {
+            if (!user.emailVerified) throw reject('FORBIDDEN', 'oauth_email_unverified')
+            return { data: { ...user, name: await uniqueUsername(user.name, user.email) } }
+          },
         },
-        after: async (session) => {
-          await prisma.user.update({ where: { id: session.userId }, data: { lastLogin: new Date() } })
-          try {
-            await logAction({
-              action: 'SESSION_CREATE',
-              userId: session.userId,
-              ip: (session.ipAddress as string | null) ?? undefined,
-              metadata: {
-                sessionId: session.id,
-                device: session.device ?? undefined,
-                os: session.os ?? undefined,
-                browser: session.browser ?? undefined,
-                city: session.city ?? undefined,
-                region: session.region ?? undefined,
-                country: session.country ?? undefined,
+      },
+      session: {
+        create: {
+          before: async (session, ctx) => {
+            const owner = await prisma.user.findUnique({ where: { id: session.userId }, select: { deletedAt: true } })
+            if (!owner || owner.deletedAt) throw reject('FORBIDDEN', 'account_deactivated')
+            const device = await sessionDevice(headerRecord(ctx?.headers ?? ctx?.request?.headers))
+            return {
+              data: {
+                ...session,
+                ...device,
+                ipAddress: device.ip,
+                clientSiteId: await initialTenant(session.userId, customTenantId),
               },
-            })
-          } catch (err) {
-            await logger.error('audit:SESSION_CREATE failed', {
-              source: 'audit',
-              action: 'SESSION_CREATE',
-              userId: session.userId,
-              sessionId: session.id,
-              error: err instanceof Error ? err.message : String(err),
-            })
-          }
+            }
+          },
+          after: async (session) => {
+            await prisma.user.update({ where: { id: session.userId }, data: { lastLogin: new Date() } })
+            try {
+              await logAction({
+                action: 'SESSION_CREATE',
+                userId: session.userId,
+                ip: (session.ipAddress as string | null) ?? undefined,
+                metadata: {
+                  sessionId: session.id,
+                  device: session.device ?? undefined,
+                  os: session.os ?? undefined,
+                  browser: session.browser ?? undefined,
+                  city: session.city ?? undefined,
+                  region: session.region ?? undefined,
+                  country: session.country ?? undefined,
+                },
+              })
+            } catch (err) {
+              await logger.error('audit:SESSION_CREATE failed', {
+                source: 'audit',
+                action: 'SESSION_CREATE',
+                userId: session.userId,
+                sessionId: session.id,
+                error: err instanceof Error ? err.message : String(err),
+              })
+            }
+          },
         },
       },
     },
-  },
-  plugins: [
-    credentials,
-    customSession(async ({ user, session }) => ({
-      user: await toSessionUser(user, session),
-      session: { id: session.id, expiresAt: session.expiresAt },
-    })),
-  ],
-})
+    plugins: [
+      credentials,
+      customSession(async ({ user, session }) => ({
+        user: await toSessionUser(user, session, customTenantId),
+        session: { id: session.id, expiresAt: session.expiresAt },
+      })),
+    ],
+  })
+
+export const auth = createAuth()
+const customAuth = new Map<string, ReturnType<typeof createAuth>>()
+
+/** Custom domains get host-only, separately signed cookies. Revalidate the canonical
+ * domain on every request; an old auth instance must not outlive a disconnection. */
+export const authForEvent = async (event: H3Event) => {
+  const origin = getRequestURL(event, { xForwardedHost: true, xForwardedProto: true }).origin
+  const url = new URL(origin)
+  if (isPlatformAuthHost(url.hostname)) return auth
+  const site = await prisma.clientSite.findFirst({
+    where: { domain: url.hostname, domainVerified: true, deletedAt: null },
+    select: { id: true },
+  })
+  if (!site || (isSecureAuth && url.protocol !== 'https:')) throw createError({ statusCode: 403 })
+  const key = `${origin}:${site.id}`
+  let instance = customAuth.get(key)
+  if (!instance) {
+    instance = createAuth(origin, site.id)
+    if (customAuth.size >= 100) customAuth.delete(customAuth.keys().next().value!)
+    customAuth.set(key, instance)
+  }
+  return instance
+}
 
 /** The signed-in user for this request, or null. Cached on the event. */
 export const getSessionUser = async (event: H3Event): Promise<SessionUser | null> => {
   if (event.context.authUser !== undefined) return event.context.authUser
   // Refresh is left to `/api/auth/get-session`, the only caller that can hand the extended cookie back.
-  const result = await auth.api.getSession({ headers: event.headers, query: { disableRefresh: true } })
+  const instance = await authForEvent(event)
+  const result = await instance.api.getSession({ headers: event.headers, query: { disableRefresh: true } })
   const activeUser =
     result?.user &&
     (await prisma.user.findFirst({ where: { id: result.user.id, deletedAt: null }, select: { id: true } }))

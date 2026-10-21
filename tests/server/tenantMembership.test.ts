@@ -213,7 +213,8 @@ describe('invitation onboarding wiring', () => {
     const authPage = source('app/pages/autorizace/index.vue')
     const form = source('app/components/Auth/Form.vue')
     expect(authPage).toContain(':redirectTo="invitationRedirect || appRedirect"')
-    expect(form.match(/afterSignIn\(user\.role\)/g)?.length).toBeGreaterThanOrEqual(3)
+    expect(form.match(/afterSignIn\(\)/g)?.length).toBeGreaterThanOrEqual(3)
+    expect(form).toContain("const role = data.value?.user.role ?? 'reader'")
   })
 
   it('keeps the invitation URL as the OAuth callback and accepts the verified OAuth email', () => {

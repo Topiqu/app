@@ -704,6 +704,16 @@
       "language": "Langue de l'interface"
     },
     "auth": {
+      "transfer": {
+        "signIn": "Continuer avec Topiqu",
+        "title": "Se connecter au blog",
+        "target": "Vous vous connectez à {host}.",
+        "explanation": "Confirmez uniquement si vous avez lancé la connexion sur ce domaine. Topiqu y créera une session distincte. Votre mot de passe et le cookie de session Topiqu ne sont pas transférés.",
+        "confirm": "Continuer en tant que {name}",
+        "switchAccount": "Utiliser un autre compte",
+        "failed": "La connexion n’a pas pu aboutir",
+        "restart": "Retournez au blog et relancez la connexion. La demande a peut-être expiré ou le domaine a changé."
+      },
       "login": "Se connecter",
       "register": "S'inscrire",
       "loginPrompt": "Connectez-vous pour accéder aux fonctionnalités et contenus exclusifs.",

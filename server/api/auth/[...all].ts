@@ -12,7 +12,10 @@ const routes = new Set([
   'callback/github',
 ])
 
-export default defineEventHandler((event) => {
+export default defineEventHandler(async (event) => {
   if (!routes.has(getRouterParam(event, 'all') ?? '')) throw createError({ statusCode: 404 })
-  return auth.handler(toWebRequest(event))
+  const instance = await authForEvent(event)
+  if (instance !== auth && /^(?:sign-in\/social|callback\/)/.test(getRouterParam(event, 'all') ?? ''))
+    throw createError({ statusCode: 403 })
+  return instance.handler(toWebRequest(event))
 })

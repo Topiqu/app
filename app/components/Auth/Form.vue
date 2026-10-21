@@ -85,6 +85,16 @@
           <USeparator :label="$t('common.auth.or')" />
           <div class="space-y-3 text-center">
             <UButton
+              v-if="customAuthDomain"
+              type="button"
+              color="neutral"
+              variant="outline"
+              icon="mdi:account-arrow-right-outline"
+              block
+              @click="handleTopiquAuth"
+              >{{ $t('common.auth.transfer.signIn') }}</UButton
+            >
+            <UButton
               type="button"
               color="neutral"
               variant="outline"
@@ -142,6 +152,7 @@
 <script setup lang="ts">
 import { z } from 'zod'
 import { signInSchema } from '~~/shared/utils/auth'
+import { isManagedDomain } from '~~/shared/utils/domain'
 
 const props = defineProps<{
   mode?: 'login' | 'register' | 'forgot' | 'reset'
@@ -153,7 +164,8 @@ const theme = useThemeStore()
 const { data, getSession } = useAuth()
 const { setLocale } = useI18n()
 const localePath = useLocalePath()
-const afterSignIn = (role: string) => {
+const afterSignIn = () => {
+  const role = data.value?.user.role ?? 'reader'
   if (props.redirectTo) return navigateTo(props.redirectTo)
   if (role === 'superadmin') return navigateTo(localePath({ name: 'master' }))
   if (role === 'admin') return navigateTo(localePath({ name: 'admin' }))
@@ -270,7 +282,7 @@ const submit = async () => {
         setLocale(user.language)
         theme.mode = user.theme
         toast.add({ color: 'success', title: $t('common.auth.loginSuccess') })
-        afterSignIn(user.role)
+        afterSignIn()
         form.value = init
       }
     }
@@ -297,7 +309,7 @@ const verify = async () => {
     setLocale(user.language)
     theme.mode = user.theme
     toast.add({ color: 'success', title: $t('common.auth.verifySuccess') })
-    afterSignIn(user.role)
+    afterSignIn()
   } catch (e: any) {
     toast.add({ color: 'error', title: e.message || $t('common.auth.verifyFailed') })
   } finally {
@@ -323,7 +335,7 @@ const verifyTotp = async () => {
     const user = await $fetch(`/api/users/${form.value.userId}` as `/api/users/:id`)
     setLocale(user.language)
     theme.mode = user.theme
-    afterSignIn(user.role)
+    afterSignIn()
     form.value = init
     internalMode.value = 'login'
   } catch (e: any) {
@@ -333,8 +345,31 @@ const verifyTotp = async () => {
   }
 }
 
+const authHost = useRequestURL().hostname
+const customAuthDomain =
+  !isManagedDomain(authHost) && authHost !== 'localhost' && authHost !== '127.0.0.1' && !authHost.endsWith('.localhost')
+const { locale } = useI18n()
+const startAuthTransfer = async (provider?: 'google' | 'github') => {
+  const result = await $fetch('/api/auth/transfer/start', {
+    method: 'POST',
+    body: {
+      returnTo: resolveAuthRedirect(window.location.href, props.redirectTo),
+      locale: locale.value,
+      provider,
+    },
+  })
+  window.location.assign(result.url)
+}
+const handleTopiquAuth = async () => {
+  try {
+    await startAuthTransfer()
+  } catch {
+    toast.add({ color: 'error', title: $t('common.auth.transfer.failed') })
+  }
+}
 const handleSocialAuth = async (provider: 'google' | 'github') => {
   try {
+    if (customAuthDomain) return await startAuthTransfer(provider)
     const mainDomain = import.meta.dev ? 'localhost' : 'app.topiqu.com'
     const isMainDomain = window.location.hostname === mainDomain
     const finalRedirectUrl = resolveAuthRedirect(window.location.href, props.redirectTo)

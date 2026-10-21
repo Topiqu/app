@@ -704,6 +704,16 @@
       "language": "Sprache der Oberfläche"
     },
     "auth": {
+      "transfer": {
+        "signIn": "Mit Topiqu fortfahren",
+        "title": "Beim Blog anmelden",
+        "target": "Sie verbinden sich mit {host}.",
+        "explanation": "Bestätigen Sie nur, wenn Sie die Anmeldung auf dieser Domain gestartet haben. Topiqu erstellt dort eine separate Sitzung. Ihr Passwort und das Topiqu-Sitzungscookie werden nicht übertragen.",
+        "confirm": "Als {name} fortfahren",
+        "switchAccount": "Anderes Konto verwenden",
+        "failed": "Anmeldung konnte nicht abgeschlossen werden",
+        "restart": "Kehren Sie zum Blog zurück und starten Sie die Anmeldung erneut. Die Anfrage ist möglicherweise abgelaufen oder die Domain hat sich geändert."
+      },
       "login": "Anmelden",
       "register": "Registrieren",
       "loginPrompt": "Melde dich an, um exklusive Funktionen und Inhalte zu nutzen.",

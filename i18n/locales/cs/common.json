@@ -704,6 +704,16 @@
       "language": "Jazyk rozhraní"
     },
     "auth": {
+      "transfer": {
+        "signIn": "Pokračovat přes Topiqu",
+        "title": "Přihlášení k blogu",
+        "target": "Připojujete se k doméně {host}.",
+        "explanation": "Potvrďte pouze v případě, že jste na této doméně zahájili přihlášení. Topiqu tam vytvoří samostatnou relaci. Vaše heslo ani přihlašovací cookie Topiqu se nepřenášejí.",
+        "confirm": "Pokračovat jako {name}",
+        "switchAccount": "Použít jiný účet",
+        "failed": "Přihlášení se nepodařilo dokončit",
+        "restart": "Vraťte se na blog a spusťte přihlášení znovu. Požadavek mohl vypršet nebo se mohla změnit doména."
+      },
       "login": "Přihlásit se",
       "register": "Registrovat",
       "loginPrompt": "Přihlaste se pro přístup k exkluzivním funkcím a obsahu.",
