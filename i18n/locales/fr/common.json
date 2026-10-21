@@ -114,6 +114,48 @@
       }
     },
     "domain": {
+      "provisioning": {
+        "certificateRequirements": "Utilisez un certificat publiquement reconnu pour ce nom d’hôte uniquement. Les jokers, noms supplémentaires et certificats autosignés ne sont pas pris en charge.",
+        "cleanupRequired": "Déconnectez les domaines avant de supprimer définitivement ce blog. Les enregistrements de nettoyage conservés nécessitent un examen administratif.",
+        "expiringNotification": "Le certificat d’origine de {domain} expire bientôt. Installez un remplacement dans les paramètres du domaine.",
+        "degradedNotification": "La connexion de {domain} est dégradée. Vérifiez les paramètres du domaine.",
+        "revokedNotification": "La diffusion de {domain} a été suspendue après plusieurs échecs de vérification. Vérifiez les paramètres du domaine.",
+        "proxyHelp": "Conservez le TXT Topiqu dans le DNS. Le proxy Cloudflare est pris en charge après activation.",
+        "refresh": "Vérifier la connexion",
+        "customCertificate": "Certificat d’origine personnel",
+        "expires": "Expiration du certificat :",
+        "fallback": "Sous-domaine Topiqu de secours",
+        "disconnect": "Déconnecter le domaine",
+        "disconnectConfirm": "Passer au sous-domaine Topiqu choisi et déconnecter ce domaine ? Le nettoyage peut prendre quelques minutes.",
+        "adopt": "Rattacher la configuration existante",
+        "adoptConfirm": "Rattacher la configuration manuelle correspondante ? Elle restera gérée en externe et ne sera pas supprimée automatiquement.",
+        "certificateHelp": "Importez la chaîne PEM et la clé correspondante non chiffrée. Cela sécurise l’origine ; Cloudflare gère le certificat public. Le renouvellement est à votre charge.",
+        "certificate": "Chaîne de certificats (PEM)",
+        "privateKey": "Clé privée (PEM)",
+        "upload": "Installer le certificat",
+        "states": {
+          "OWNERSHIP": "Preuve de propriété attendue",
+          "DNS_UNAVAILABLE": "DNS temporairement indisponible",
+          "CERTIFICATE": "Préparation de HTTPS",
+          "ROUTING": "Vérification du routage",
+          "READY": "Connexion prête",
+          "DISCONNECTING": "Déconnexion en cours",
+          "DISCONNECTED": "Déconnecté"
+        },
+        "errors": {
+          "DOMAIN_LIMIT": "Terminez ou annulez les opérations de domaine existantes avant une nouvelle connexion.",
+          "ADOPTION_REQUIRED": "Un administrateur doit examiner la configuration existante.",
+          "CONFIGURATION": "La connexion des domaines est mal configurée. Contactez l’assistance.",
+          "BUSY": "Une autre opération est en cours. Réessayez dans un instant.",
+          "CERTIFICATE_INVALID": "Vérifiez la chaîne, le domaine, la validité et la clé correspondante.",
+          "CERTIFICATE_EXPIRED": "Le certificat d’origine a expiré. Installez un remplacement.",
+          "TXT_MISMATCH": "Le TXT Topiqu est absent ou incorrect.",
+          "DOMAIN_RESERVED": "Ce domaine est réservé par une autre connexion.",
+          "CLOUDFLARE_UNAVAILABLE": "Cloudflare est inaccessible ou a refusé la demande. Réessayez plus tard.",
+          "DOKPLOY_UNAVAILABLE": "L’hébergeur n’a pas pu terminer la demande. Réessayez plus tard.",
+          "UNKNOWN": "L’opération a échoué. Réessayez ou contactez l’assistance."
+        }
+      },
       "activateSubdomain": "Activer le sous-domaine",
       "subdomainHelp": "Utilisez un sous-domaine gratuit de {baseDomain} ou connectez votre domaine avec Pro. Cela change l’adresse publique de votre blog.",
       "managedPending": "Activez {domain} sans modifier le DNS.",

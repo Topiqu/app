@@ -114,6 +114,48 @@
       }
     },
     "domain": {
+      "provisioning": {
+        "certificateRequirements": "Verwenden Sie ein öffentlich vertrauenswürdiges Zertifikat nur für genau diesen Hostnamen. Wildcards, zusätzliche Hostnamen und selbstsignierte Zertifikate werden nicht unterstützt.",
+        "cleanupRequired": "Trennen Sie Domain-Integrationen vor dem endgültigen Löschen. Verbleibende Bereinigungsdatensätze müssen administrativ geprüft werden.",
+        "expiringNotification": "Das Origin-Zertifikat für {domain} läuft bald ab. Installieren Sie einen Ersatz in den Domaineinstellungen.",
+        "degradedNotification": "Die Verbindung für {domain} ist beeinträchtigt. Prüfen Sie die Domaineinstellungen.",
+        "revokedNotification": "Die Auslieferung von {domain} wurde nach wiederholten Prüfungsfehlern ausgesetzt. Prüfen Sie die Domaineinstellungen.",
+        "proxyHelp": "Behalten Sie den Topiqu-TXT-Eintrag im DNS. Der Cloudflare-Proxy wird nach der Aktivierung unterstützt.",
+        "refresh": "Verbindung prüfen",
+        "customCertificate": "Eigenes Origin-Zertifikat",
+        "expires": "Zertifikat gültig bis:",
+        "fallback": "Topiqu-Ersatzsubdomain",
+        "disconnect": "Domain trennen",
+        "disconnectConfirm": "Zur gewählten Topiqu-Subdomain wechseln und diese Domain trennen? Die Bereinigung kann einige Minuten dauern.",
+        "adopt": "Bestehende Konfiguration verbinden",
+        "adoptConfirm": "Passende manuelle Konfiguration verbinden? Sie bleibt extern verwaltet und wird nicht automatisch gelöscht.",
+        "certificateHelp": "Laden Sie die PEM-Kette und den passenden unverschlüsselten Schlüssel hoch. Dies sichert den Origin; Cloudflare verwaltet das öffentliche Zertifikat. Sie sind für die Erneuerung verantwortlich.",
+        "certificate": "Zertifikatskette (PEM)",
+        "privateKey": "Privater Schlüssel (PEM)",
+        "upload": "Zertifikat installieren",
+        "states": {
+          "OWNERSHIP": "Eigentumsnachweis ausstehend",
+          "DNS_UNAVAILABLE": "DNS vorübergehend nicht verfügbar",
+          "CERTIFICATE": "HTTPS wird vorbereitet",
+          "ROUTING": "Routing wird geprüft",
+          "READY": "Verbindung bereit",
+          "DISCONNECTING": "Wird getrennt",
+          "DISCONNECTED": "Getrennt"
+        },
+        "errors": {
+          "DOMAIN_LIMIT": "Schließen Sie laufende Domainvorgänge ab oder brechen Sie sie ab, bevor Sie eine weitere Verbindung starten.",
+          "ADOPTION_REQUIRED": "Ein Plattformadministrator muss die bestehende Konfiguration prüfen.",
+          "CONFIGURATION": "Die Domain-Anbindung ist nicht korrekt eingerichtet. Kontaktieren Sie den Support.",
+          "BUSY": "Ein anderer Vorgang läuft. Versuchen Sie es gleich erneut.",
+          "CERTIFICATE_INVALID": "Prüfen Sie Zertifikatskette, Hostname, Gültigkeit und passenden Schlüssel.",
+          "CERTIFICATE_EXPIRED": "Das Origin-Zertifikat ist abgelaufen. Installieren Sie einen Ersatz.",
+          "TXT_MISMATCH": "Der Topiqu-TXT-Eintrag fehlt oder stimmt nicht überein.",
+          "DOMAIN_RESERVED": "Diese Domain ist durch eine andere Verbindung reserviert.",
+          "CLOUDFLARE_UNAVAILABLE": "Cloudflare ist nicht erreichbar oder hat die Anfrage abgelehnt. Versuchen Sie es später.",
+          "DOKPLOY_UNAVAILABLE": "Der Hostinganbieter konnte die Anfrage nicht abschließen. Versuchen Sie es später.",
+          "UNKNOWN": "Der Vorgang ist fehlgeschlagen. Versuchen Sie es erneut oder kontaktieren Sie den Support."
+        }
+      },
       "activateSubdomain": "Subdomain aktivieren",
       "subdomainHelp": "Nutzen Sie eine kostenlose Subdomain unter {baseDomain} oder verbinden Sie mit Pro Ihre eigene Domain. Dies ändert die öffentliche Adresse Ihres Blogs.",
       "managedPending": "{domain} ohne DNS-Änderung aktivieren.",

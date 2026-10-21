@@ -1,3 +1,5 @@
+import { reconcileDomainConnection } from '../../../utils/domains/connections'
+
 export default defineEventHandler(async (event) => {
   const { user, db, clientSiteId } = await requireDomainAccess(event)
 
@@ -16,20 +18,22 @@ export default defineEventHandler(async (event) => {
   if (!site.domainVerificationToken) throw createError({ statusCode: 409, message: 'Start domain verification first' })
 
   const result = await checkDomainDns(site.domain, site.domainVerificationToken)
-  const verified = result.ownershipVerified && result.routingVerified
-  const preserveGrandfatheredDomain = site.domainVerified && site.domainVerificationStatus === 'PENDING'
+  const connection = await db.domainConnection.findUnique({ where: { host: site.domain }, select: { id: true } })
+  const provisioned = connection ? await reconcileDomainConnection(connection.id, clientSiteId) : null
+  const verified = !!provisioned?.ready && result.ownershipVerified
   const reason = verified ? null : result.error || (!result.ownershipVerified ? 'TXT_MISMATCH' : 'ROUTING_MISMATCH')
 
-  await db.clientSite.update({
-    where: { id: site.id },
+  await db.clientSite.updateMany({
+    where: { id: site.id, domain: site.domain, domainVerificationToken: site.domainVerificationToken },
     data: {
-      domainVerified: verified || preserveGrandfatheredDomain,
-      domainVerificationStatus: verified ? 'VERIFIED' : 'PENDING',
+      // Manual refresh never takes a live publication offline; the scheduled security policy owns revocation.
+      domainVerified: verified || site.domainVerified,
+      domainVerificationStatus: verified ? 'VERIFIED' : site.domainVerificationStatus,
       domainVerifiedAt: verified ? new Date() : site.domainVerifiedAt,
       domainLastCheckedAt: new Date(),
       domainRoutingVerified: result.routingVerified,
       domainVerificationFailures: verified ? 0 : { increment: 1 },
-      domainVerificationDegradedAt: null,
+      domainVerificationDegradedAt: verified ? null : site.domainVerificationDegradedAt,
       domainVerificationError: reason,
     },
   })
@@ -54,7 +58,7 @@ export default defineEventHandler(async (event) => {
   return {
     verified,
     ownership: { verified: result.ownershipVerified },
-    routing: { verified: result.routingVerified, actual: result.routingTargets },
+    routing: { verified: !!provisioned?.ready, actual: result.routingTargets },
     reason,
   }
 })

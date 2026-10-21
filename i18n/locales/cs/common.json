@@ -114,6 +114,48 @@
       }
     },
     "domain": {
+      "provisioning": {
+        "certificateRequirements": "Použijte veřejně důvěryhodný certifikát pouze pro tuto přesnou doménu. Wildcard, další domény a self-signed certifikáty nejsou podporované.",
+        "cleanupRequired": "Před trvalým smazáním blogu odpojte integrace domén. Zachované záznamy úklidu musí zkontrolovat administrátor.",
+        "expiringNotification": "Origin certifikát pro {domain} brzy vyprší. Nahrajte nový v nastavení domény.",
+        "degradedNotification": "Připojení domény {domain} má problémy. Zkontrolujte nastavení domény.",
+        "revokedNotification": "Obsluha domény {domain} byla po opakovaných neúspěšných kontrolách pozastavena. Zkontrolujte nastavení domény.",
+        "proxyHelp": "Ponechte TXT záznam Topiqu v DNS. Cloudflare proxy je podporovaná po aktivaci.",
+        "refresh": "Zkontrolovat připojení",
+        "customCertificate": "Vlastní origin certifikát",
+        "expires": "Platnost certifikátu do:",
+        "fallback": "Záložní subdoména Topiqu",
+        "disconnect": "Odpojit doménu",
+        "disconnectConfirm": "Přepnout na zvolenou subdoménu Topiqu a odpojit tuto doménu? Úklid může trvat několik minut.",
+        "adopt": "Připojit existující konfiguraci",
+        "adoptConfirm": "Připojit odpovídající ruční konfiguraci? Zůstane spravovaná externě a nebude se automaticky mazat.",
+        "certificateHelp": "Nahrajte PEM řetězec a odpovídající nezašifrovaný klíč. Slouží pro origin; veřejný certifikát spravuje Cloudflare. Za obnovu odpovídáte vy.",
+        "certificate": "Řetězec certifikátů (PEM)",
+        "privateKey": "Privátní klíč (PEM)",
+        "upload": "Nainstalovat certifikát",
+        "states": {
+          "OWNERSHIP": "Čeká na ověření vlastnictví",
+          "DNS_UNAVAILABLE": "DNS je dočasně nedostupné",
+          "CERTIFICATE": "Připravuje se HTTPS",
+          "ROUTING": "Kontroluje se směrování",
+          "READY": "Připojení je připravené",
+          "DISCONNECTING": "Odpojuje se",
+          "DISCONNECTED": "Odpojeno"
+        },
+        "errors": {
+          "DOMAIN_LIMIT": "Před dalším připojením dokončete nebo zrušte probíhající operace s doménami.",
+          "ADOPTION_REQUIRED": "Existující konfiguraci musí zkontrolovat administrátor platformy.",
+          "CONFIGURATION": "Připojení domén není správně nastavené. Kontaktujte podporu.",
+          "BUSY": "Probíhá jiná operace. Zkuste to za chvíli.",
+          "CERTIFICATE_INVALID": "Zkontrolujte řetězec, doménu, platnost a odpovídající privátní klíč.",
+          "CERTIFICATE_EXPIRED": "Origin certifikát vypršel. Nahrajte nový.",
+          "TXT_MISMATCH": "TXT záznam Topiqu chybí nebo neodpovídá.",
+          "DOMAIN_RESERVED": "Doména je rezervovaná jiným připojením.",
+          "CLOUDFLARE_UNAVAILABLE": "Cloudflare je nedostupné nebo požadavek odmítlo. Zkuste to později.",
+          "DOKPLOY_UNAVAILABLE": "Hosting nemohl požadavek dokončit. Zkuste to později.",
+          "UNKNOWN": "Operace selhala. Zkuste to znovu nebo kontaktujte podporu."
+        }
+      },
       "activateSubdomain": "Aktivovat subdoménu",
       "subdomainHelp": "Použijte bezplatnou subdoménu {baseDomain}, nebo s plánem Pro připojte vlastní doménu. Tím změníte veřejnou adresu blogu.",
       "managedPending": "Aktivujte {domain} bez změny DNS.",

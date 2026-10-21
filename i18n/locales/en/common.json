@@ -114,6 +114,48 @@
       }
     },
     "domain": {
+      "provisioning": {
+        "certificateRequirements": "Use a publicly trusted certificate for this exact hostname only. Wildcards, additional hostnames and self-signed certificates are not supported.",
+        "cleanupRequired": "Disconnect domain integrations before permanently deleting this blog. Retained cleanup records require administrator review.",
+        "expiringNotification": "The origin certificate for {domain} expires soon. Install a replacement in domain settings.",
+        "degradedNotification": "The connection for {domain} is degraded. Review domain settings.",
+        "revokedNotification": "Serving {domain} has been suspended after repeated verification failures. Review domain settings.",
+        "proxyHelp": "Keep the Topiqu TXT record in DNS. Cloudflare proxy is supported after activation.",
+        "refresh": "Check connection",
+        "customCertificate": "Own origin certificate",
+        "expires": "Certificate expires:",
+        "fallback": "Topiqu fallback subdomain",
+        "disconnect": "Disconnect domain",
+        "disconnectConfirm": "Switch to the selected Topiqu subdomain and disconnect this domain? Cleanup may take a few minutes.",
+        "adopt": "Attach existing configuration",
+        "adoptConfirm": "Attach the matching manual configuration? It stays externally managed and will not be deleted automatically.",
+        "certificateHelp": "Upload the PEM chain and matching unencrypted key. This secures the origin; Cloudflare manages the public certificate. Renewal is your responsibility.",
+        "certificate": "Certificate chain (PEM)",
+        "privateKey": "Private key (PEM)",
+        "upload": "Install certificate",
+        "states": {
+          "OWNERSHIP": "Waiting for ownership proof",
+          "DNS_UNAVAILABLE": "DNS temporarily unavailable",
+          "CERTIFICATE": "Preparing HTTPS",
+          "ROUTING": "Checking routing",
+          "READY": "Connection ready",
+          "DISCONNECTING": "Disconnecting",
+          "DISCONNECTED": "Disconnected"
+        },
+        "errors": {
+          "DOMAIN_LIMIT": "Finish or cancel existing domain operations before starting another connection.",
+          "ADOPTION_REQUIRED": "Existing provider configuration needs review by a platform administrator.",
+          "CONFIGURATION": "Domain provisioning is not configured correctly. Contact support.",
+          "BUSY": "Another operation is running. Try again shortly.",
+          "CERTIFICATE_INVALID": "Check the certificate chain, hostname, validity and matching key.",
+          "CERTIFICATE_EXPIRED": "The origin certificate has expired. Install a replacement.",
+          "TXT_MISMATCH": "The Topiqu TXT record is missing or incorrect.",
+          "DOMAIN_RESERVED": "This domain is reserved by another connection.",
+          "CLOUDFLARE_UNAVAILABLE": "Cloudflare is unavailable or rejected the request. Try again later.",
+          "DOKPLOY_UNAVAILABLE": "The hosting provider could not complete the request. Try again later.",
+          "UNKNOWN": "The operation failed. Try again or contact support."
+        }
+      },
       "activateSubdomain": "Activate subdomain",
       "subdomainHelp": "Use a free {baseDomain} subdomain, or connect your own domain with Pro. This changes the public address of your blog.",
       "managedPending": "Activate {domain} without changing DNS.",

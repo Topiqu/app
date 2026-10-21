@@ -1,6 +1,9 @@
 import { createError } from 'h3'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+const provision = vi.hoisted(() => vi.fn())
+vi.mock('../../server/utils/domains/connections', () => ({ reconcileDomainConnection: provision }))
+
 const PENDING = 'blog.example.cz'
 const OLD = 'acme.topiqu.com'
 
@@ -25,6 +28,7 @@ const uncache = vi.fn()
 beforeEach(() => {
   vi.resetModules()
   findSite.mockResolvedValue(site())
+  provision.mockResolvedValue({ ready: true, state: 'READY' })
   checkDomainDns.mockResolvedValue({ ownershipVerified: true, routingVerified: true })
   isDomainTaken.mockResolvedValue(false)
   tx.clientSite.updateMany.mockResolvedValue({ count: 1 })
@@ -32,7 +36,10 @@ beforeEach(() => {
   vi.stubGlobal('createError', createError)
   vi.stubGlobal('requireDomainAccess', async () => ({
     user: { id: 'u1' },
-    db: { clientSite: { findUnique: findSite } },
+    db: {
+      clientSite: { findUnique: findSite },
+      domainConnection: { findUnique: async () => ({ id: 'c1', clientSiteId: 's1' }) },
+    },
     clientSiteId: 's1',
   }))
   vi.stubGlobal('consumeRateLimit', async () => true)
@@ -80,9 +87,9 @@ describe('domain switch verification', () => {
     },
   )
 
-  it('keeps the live domain while DNS is not proven', async () => {
-    checkDomainDns.mockResolvedValue({ ownershipVerified: true, routingVerified: false })
-    await expect(verify()).resolves.toEqual({ verified: false, ownership: true, routing: false })
+  it('keeps the live domain while provider setup is incomplete', async () => {
+    provision.mockResolvedValue({ ready: false, state: 'CERTIFICATE' })
+    await expect(verify()).resolves.toEqual({ verified: false, ownership: true, routing: false, state: 'CERTIFICATE' })
     expect(tx.clientSite.updateMany).not.toHaveBeenCalled()
   })
 
@@ -90,7 +97,7 @@ describe('domain switch verification', () => {
     await expect(verify()).resolves.toEqual({ verified: true, domain: PENDING })
 
     const update = tx.clientSite.updateMany.mock.calls[0]![0]
-    expect(update.where).toEqual({ id: 's1', pendingDomain: PENDING })
+    expect(update.where).toEqual({ id: 's1', pendingDomain: PENDING, pendingDomainToken: 'token' })
     expect(update.data).toMatchObject({
       domain: PENDING,
       pendingDomain: null,

@@ -16,7 +16,26 @@ export default defineEventHandler(async (event) => {
   if (!site) throw createError({ statusCode: 404, message: t('common.errors.blogNotFound')! })
 
   if (forceDelete) {
-    await db.$transaction(async (tx) => {
+    // Preserve provider IDs until cleanup is complete; no cascaded deletion of infrastructure evidence.
+    if (
+      await db.domainConnection.count({
+        where: {
+          clientSiteId: id,
+          OR: [
+            { state: { not: 'DISCONNECTED' } },
+            { cloudflareId: { not: null } },
+            { dokployId: { not: null } },
+            { certificateId: { not: null } },
+          ],
+        },
+      })
+    )
+      throw createError({ statusCode: 409, message: t('common.domain.provisioning.cleanupRequired')! })
+    // Explicit superadmin maintenance: generic policies intentionally cannot delete provisioning rows.
+    await prisma.$transaction(async (tx) => {
+      await tx.domainConnection.deleteMany({
+        where: { clientSiteId: id, state: 'DISCONNECTED', cloudflareId: null, dokployId: null, certificateId: null },
+      })
       // Global identities may own content or memberships in other publications.
       await tx.user.updateMany({ where: { clientSiteId: id }, data: { clientSiteId: null } })
       await tx.session.updateMany({ where: { clientSiteId: id }, data: { clientSiteId: null } })

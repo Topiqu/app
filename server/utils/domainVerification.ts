@@ -5,7 +5,7 @@ import { normalizeDomain } from '~~/shared/utils/domain'
 /** Taken by another tenant's live domain, or by an old domain that still redirects to its blog. */
 export const isDomainTaken = async (domain: string, exceptClientSiteId?: string) => {
   const host = normalizeDomain(domain)
-  const [site, redirect] = await Promise.all([
+  const [site, redirect, connection] = await Promise.all([
     prisma.clientSite.findFirst({
       where: { domain: host, ...(exceptClientSiteId ? { id: { not: exceptClientSiteId } } : {}) },
       select: { id: true },
@@ -14,8 +14,16 @@ export const isDomainTaken = async (domain: string, exceptClientSiteId?: string)
       where: { host, ...(exceptClientSiteId ? { clientSiteId: { not: exceptClientSiteId } } : {}) },
       select: { id: true },
     }),
+    prisma.domainConnection.findFirst({
+      where: {
+        host,
+        state: { not: 'DISCONNECTED' },
+        ...(exceptClientSiteId ? { clientSiteId: { not: exceptClientSiteId } } : {}),
+      },
+      select: { id: true },
+    }),
   ])
-  return Boolean(site || redirect)
+  return Boolean(site || redirect || connection)
 }
 
 export const DOMAIN_ROUTING_TARGET = normalizeDomain(process.env.DOMAIN_ROUTING_TARGET || 'domains.topiqu.com')
@@ -31,6 +39,20 @@ export const domainDnsRecords = (domain: string, token: string) => ({
 export const requireDomainAccess = async (event: H3Event) => {
   const { user, db } = await requireDb(event, { role: ['admin', 'superadmin'], clientSite: true })
   if (user.role !== 'superadmin') await requireTenantScope(event, 'TENANT_SETTINGS', user.clientSiteId!)
+  const host = tenantHostname(event)
+  const localRoot =
+    (process.env.NODE_ENV !== 'production' || !!process.env.TEST_DATABASE_URL) &&
+    !!host &&
+    (host === 'localhost' || host === '127.0.0.1' || host.endsWith('.localhost'))
+  const tenant = host ? await cachedTenantByHost(event) : null
+  const origin = getRequestHeader(event, 'origin')
+  if (
+    (user.role !== 'superadmin' && host && !localRoot && (!tenant || tenant.id !== user.clientSiteId)) ||
+    (origin && origin !== getRequestURL(event, { xForwardedHost: true, xForwardedProto: true }).origin)
+  ) {
+    const { translate } = await useServerI18n(event)
+    throw createError({ statusCode: 403, message: translate('common.errors.forbidden')! })
+  }
   return { user, db, clientSiteId: user.clientSiteId! }
 }
 

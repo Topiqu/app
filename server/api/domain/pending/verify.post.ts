@@ -1,5 +1,7 @@
 import { domainError, isManagedDomain } from '~~/shared/utils/domain'
 
+import { reconcileDomainConnection } from '../../../utils/domains/connections'
+
 export default defineEventHandler(async (event) => {
   const { user, db, clientSiteId } = await requireDomainAccess(event)
   if (!(await consumeRateLimit(`domain-switch:${clientSiteId}`, 5, 600)))
@@ -22,15 +24,24 @@ export default defineEventHandler(async (event) => {
   const dns = managed
     ? { ownershipVerified: true, routingVerified: true }
     : await checkDomainDns(pending, site.pendingDomainToken)
-  if (!dns.ownershipVerified || !dns.routingVerified)
-    return { verified: false, ownership: dns.ownershipVerified, routing: dns.routingVerified }
+  if (!dns.ownershipVerified) return { verified: false, ownership: false, routing: false }
+  if (!managed) {
+    const connection = await db.domainConnection.findUnique({
+      where: { host: pending },
+      select: { id: true, clientSiteId: true },
+    })
+    if (!connection || connection.clientSiteId !== clientSiteId)
+      throw createError({ statusCode: 409, message: 'Domain setup must be restarted', data: { code: 'setupRequired' } })
+    const result = await reconcileDomainConnection(connection.id, clientSiteId)
+    if (!result.ready) return { verified: false, ownership: true, routing: false, state: result.state }
+  }
 
   const now = new Date()
   try {
     // System-scoped: redirect rows have no tenant write policy; only this proven swap creates them.
     await prisma.$transaction(async (tx) => {
       const swapped = await tx.clientSite.updateMany({
-        where: { id: clientSiteId, pendingDomain: pending },
+        where: { id: clientSiteId, pendingDomain: pending, pendingDomainToken: site.pendingDomainToken },
         data: {
           domain: pending,
           pendingDomain: null,
@@ -51,11 +62,20 @@ export default defineEventHandler(async (event) => {
       })
       if (!swapped.count) throw createError({ statusCode: 409, message: 'The domain change was cancelled' })
       await tx.domainRedirect.deleteMany({ where: { host: pending, clientSiteId } })
-      await tx.domainRedirect.upsert({
-        where: { host: site.domain },
-        create: { host: site.domain, clientSiteId },
-        update: { clientSiteId },
-      })
+      if (isManagedDomain(site.domain)) {
+        await tx.domainRedirect.upsert({
+          where: { host: site.domain },
+          create: { host: site.domain, clientSiteId },
+          update: { clientSiteId },
+        })
+      } else {
+        // A retired custom hostname must not keep redirecting after its ownership changes.
+        await tx.domainRedirect.deleteMany({ where: { host: site.domain, clientSiteId } })
+        await tx.domainConnection.updateMany({
+          where: { host: site.domain, clientSiteId },
+          data: { cleanupRequestedAt: now, state: 'DISCONNECTING' },
+        })
+      }
     })
   } catch (error) {
     if (isUniqueViolation(error))

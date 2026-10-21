@@ -1,18 +1,25 @@
 import { randomBytes } from 'crypto'
-import { domainVerificationDefaults, normalizeDomain } from '~~/shared/utils/domain'
+import { isManagedDomain, domainVerificationDefaults, normalizeDomain } from '~~/shared/utils/domain'
+
+import { reserveDomainConnection } from '../../../utils/domains/connections'
 
 export default defineEventHandler(async (event) => {
   const { user, db, clientSiteId } = await requireDomainAccess(event)
+  if (!(await consumeRateLimit(`domain-start:${clientSiteId}`, 10, 600))) throw createError({ statusCode: 429 })
   const site = await db.clientSite.findUnique({ where: { id: clientSiteId } })
   if (!site) throw createError({ statusCode: 404, message: 'Client site not found' })
 
   const domain = normalizeDomain(site.domain)
   let token = site.domainVerificationToken
-  if (!token && !site.domainVerified) {
+  if (!token && !isManagedDomain(domain)) {
     token = randomBytes(24).toString('base64url')
-    await db.clientSite.update({
-      where: { id: site.id },
-      data: domainVerificationDefaults(domain, token),
+    await prisma.$transaction(async (tx) => {
+      const changed = await tx.clientSite.updateMany({
+        where: { id: site.id, domain: site.domain, domainVerificationToken: null },
+        data: { ...domainVerificationDefaults(domain, token!), domainVerified: site.domainVerified },
+      })
+      if (!changed.count) throw createError({ statusCode: 409, message: 'Domain setup changed' })
+      await reserveDomainConnection(clientSiteId, domain, token!, tx)
     })
     await logAction({
       action: 'DOMAIN_VERIFICATION_STARTED',
@@ -22,6 +29,8 @@ export default defineEventHandler(async (event) => {
       metadata: { domain },
     })
   }
+
+  if (token && !isManagedDomain(domain)) await reserveDomainConnection(clientSiteId, domain, token)
 
   return {
     domain,
