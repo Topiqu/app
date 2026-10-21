@@ -1,4 +1,5 @@
 import "./base"
+import "./domain"
 import "./aiUsage"
 import "./articleCreditWallet"
 import "./article"
@@ -103,6 +104,7 @@ model ClientSite with Base {
     pendingDomainToken   String?
     pendingDomainRequestedAt DateTime?
     domainRedirects      DomainRedirect[]
+    domainConnections    DomainConnection[]
     plan                 ClientPlan          @default(BASIC)
     focus                String?
     // The company website given at sign-up; only prefills the knowledge import, nothing fetches it unasked.

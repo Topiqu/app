@@ -1,0 +1,47 @@
+import "./base"
+import "./client"
+
+enum DomainConnectionState {
+    OWNERSHIP
+    DNS_UNAVAILABLE
+    CERTIFICATE
+    ROUTING
+    READY
+    DISCONNECTING
+    DISCONNECTED
+}
+
+enum DomainCertificateMode {
+    AUTO
+    CUSTOM
+}
+
+// Writes are system-only, after requireDomainAccess. Generic model APIs cannot provision infrastructure.
+model DomainConnection with Base {
+    host String @unique
+    clientSiteId String
+    clientSite ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Restrict)
+    challenge String @omit
+    state DomainConnectionState @default(OWNERSHIP)
+    cloudflareId String? @omit
+    cloudflareManaged Boolean @default(false)
+    dokployId String? @omit
+    dokployManaged Boolean @default(false)
+    certificateId String? @omit
+    certificateExpiresAt DateTime?
+    certificateWarnedAt DateTime?
+    certificateFingerprint String?
+    certificateMode DomainCertificateMode @default(AUTO)
+    encryptedCertificate String? @omit @deny('read', true)
+    validationRecords Json?
+    errorCode String?
+    checkedAt DateTime?
+    ownershipLostAt DateTime?
+    leaseId String? @omit
+    leaseUntil DateTime?
+    cleanupRequestedAt DateTime?
+    probeSecret String @omit @deny('read', true)
+    @@index([state, checkedAt])
+    @@index([clientSiteId])
+    @@allow('read', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
+}
