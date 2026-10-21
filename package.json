@@ -8,6 +8,7 @@
   },
   "type": "module",
   "scripts": {
+    "domains:check": "bun scripts/check-domain-providers.ts",
     "build": "bun --bun run zenstack:generate && nuxt build",
     "build:docker": "bun run build",
     "release": "bun db:migrate:deploy",
