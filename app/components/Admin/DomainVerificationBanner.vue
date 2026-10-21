@@ -62,7 +62,7 @@ const isCustomDomain = computed(() => {
 })
 
 onMounted(async () => {
-  if (!isCustomDomain.value) return
+  if (!isCustomDomain.value || clientSite.value?.domainVerified) return
   try {
     instructions.value = await $fetch<VerificationInstructions>('/api/admin/domain-verification/start' as string, {
       method: 'POST',

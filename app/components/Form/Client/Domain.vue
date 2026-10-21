@@ -16,6 +16,35 @@
           </a>
         </p>
 
+        <FormClientDomainConnection
+          v-for="connection in data.connections"
+          :key="connection.id"
+          :connection="connection"
+          :current="connection.host === data.domain"
+          @changed="changed"
+        />
+        <UAlert v-if="error" color="error" :title="error" />
+        <dl
+          v-if="!data.pending && data.currentVerification"
+          class="grid gap-1 rounded-(--ui-radius) border border-default p-3 text-xs sm:grid-cols-[4rem_1fr_1fr]"
+        >
+          <dt>TXT</dt>
+          <dd class="break-all font-mono">{{ data.currentVerification.txt.name }}</dd>
+          <dd class="break-all font-mono">{{ data.currentVerification.txt.value }}</dd>
+        </dl>
+        <UButton
+          v-if="
+            !isManagedDomain(data.domain, baseDomain) &&
+            !data.connections.some((connection) => connection.host === data?.domain)
+          "
+          color="neutral"
+          variant="soft"
+          :loading="busy === 'verify'"
+          @click="prepareCurrent"
+        >
+          {{ $t('common.domain.provisioning.refresh') }}
+        </UButton>
+
         <UAlert
           v-if="switchedTo"
           color="success"
@@ -96,6 +125,16 @@ interface DomainStatus {
   domain: string
   canUseCustomDomain: boolean
   pending: DnsRecords | null
+  currentVerification: DnsRecords | null
+  connections: Array<{
+    id: string
+    host: string
+    state: string
+    errorCode: string | null
+    validationRecords: unknown
+    cleanupRequestedAt: string | null
+    certificateExpiresAt: string | null
+  }>
 }
 
 const { t } = useI18n()
@@ -116,6 +155,14 @@ const error = shallowRef<string>()
 const busy = shallowRef<'request' | 'verify' | 'cancel' | null>(null)
 const notYet = shallowRef(false)
 const switchedTo = shallowRef('')
+const changed = async () => {
+  await Promise.all([refetch(), refreshClientSiteStatus(), refreshClientSite()])
+}
+const prepareCurrent = () =>
+  run('verify', async () => {
+    await $fetch('/api/admin/domain-verification/start' as string, { method: 'POST' })
+    await changed()
+  })
 
 const records = computed(() => {
   const pending = data.value?.pending
@@ -136,7 +183,14 @@ const run = async (key: NonNullable<typeof busy.value>, task: () => Promise<void
     await task()
   } catch (cause) {
     const code = errorCode(cause)
-    error.value = t(code && ERROR_CODES.includes(code) ? `common.domain.errors.${code}` : 'common.domain.failed')
+    const provisioning = ['CONFIGURATION', 'BUSY', 'DOMAIN_RESERVED', 'DOMAIN_LIMIT']
+    error.value = t(
+      code && ERROR_CODES.includes(code)
+        ? `common.domain.errors.${code}`
+        : code && provisioning.includes(code)
+          ? `common.domain.provisioning.errors.${code}`
+          : 'common.domain.failed',
+    )
   } finally {
     busy.value = null
   }
@@ -157,6 +211,7 @@ const verify = () =>
     })
     notYet.value = !result.verified
     if (result.verified && result.domain) switchedTo.value = result.domain
+    await changed()
   })
 
 const cancel = async () => {
