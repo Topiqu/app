@@ -47,7 +47,19 @@ Navíc je escapován uživatelský vstup do e-mailového HTML, testy kontrolují
 - Samostatné opakování UI testů: **34/34 prošlo**. Předchozí souběh dvou buildů a celé sady způsobil timeout tří testů a následný nedokončený popover; při opakování nebyly limity ani aserce oslabeny.
 - Rozšířený E2E běh odhalil, že runtime převzal `APP_ENV=production` a odeslal IndexNow požadavek se syntetickým localhost článkem (odpověď 429). `playwright.config.ts` nyní explicitně nastavuje testovacímu serveru `APP_ENV=test`; následné opakování už externí indexování nespustilo. Nebyl odeslán zákaznický obsah.
 - Dev znovu běží na `viky.localhost:3001`: veřejná stránka i dynamický Workspace modul HTTP 200. V dev SSR jsou nefatální Vue RouterLink slot warnings; produkční browser scénáře prošly. Celá Playwright matice ani nezávislý penetrační test nebyly provedeny.
-- Lokální Bun je 1.4.3, image/CI zůstávají připnuté na 1.4.2. Změny nebyly commitnuté, pushnuté ani nasazené.
+- V době tohoto ověření byl lokální Bun 1.4.3 a image/CI byly připnuté na 1.4.2. Následný upgrade sjednocuje konfiguraci na 1.4.3; výše uvedené výsledky Linux image platí pro původní 1.4.2. Změny v době ověření nebyly commitnuté, pushnuté ani nasazené.
+
+## Dodatečný Docker pokus s Bun 1.4.3 (21. října 2026)
+
+Aktuální pracovní strom se nepodařilo kompletně sestavit jako Linux/arm64 image v izolovaném BuildKit builderu s limitem 6 GiB RAM, dvěma CPU, jedním build krokem současně a bez swapu. Frozen instalace včetně patchů, klient i SSR build prošly; při Nitro bundlování následoval SIGKILL a Docker `ResourceExhausted / cannot allocate memory`. Druhý sériový pokus s build-only `BUN_OPTIONS=--smol` skončil stejným způsobem. Experimentální volba byla vrácena a builder odstraněn. Databázové credentials nebyly předané buildu; běh finálního kontejneru nebyl ověřen, protože image nevznikl. Tento výsledek neprokazuje syntaktickou chybu Dockerfile ani úspěšný build při vyšším limitu; paměťové požadavky zůstávají nevyřešené. Předchozí úspěšný image s Bun 1.4.2 není důkazem funkčnosti aktuální konfigurace.
+
+### Následné ověření bez dodatečného limitu builderu
+
+Stejný Dockerfile s Bun 1.4.3, bez `--smol`, následně prošel nativním Linux/arm64 buildem přes existující OrbStack builder. Docker VM měla přibližně 8 GB RAM; její konfigurace nebyla změněna. Příkaz: `docker buildx build --builder orbstack --platform linux/arm64 --load --tag topiqu:verify-bun143-20261021 --progress=plain .`. Nuxt build trval 2 minuty 21 sekund, celý image se úspěšně exportoval jako `sha256:fd552625684a896abd1d1644993a6ef009bab602c01e8eb9c834242433d95c97`. Předchozí OOM se týká omezeného docker-container builderu; přesná minimální paměťová náročnost tím není změřená.
+
+Image byl spuštěn jako `bun` (UID 1000) s limitem runtime 1 GiB / 1 CPU a přepsaným `PORT=4190`, publikovaným pouze na `127.0.0.1:4189`. Použil výhradně existující dedikovanou testovací DB `topiqu_hardening_test_20261020` na hostiteli, s `TEST=1` pro vypnutí cron runneru. Docker healthcheck byl `healthy`; `/api/live` a `/api/health` HTTP 200, DB readiness true, seeded SSR `/cs` HTTP 200, gzip JS HTTP 200, IPX WebP HTTP 200 s jednodenní cache a ETag/304. Nepovolený IPX host dostal 403 a anonymní privátní účet 401. Přihlášení syntetického fixture uživatele a ověření session prošly HTTP 200, včetně nativního argon2. Pracovní adresář je zapisovatelný pro `bun`. Příkaz `node` v base image je Bun fallback shim (`/usr/local/bun-node-fallback-bin/node` → `/usr/local/bin/bun`), nikoli samostatný Node runtime.
+
+První runtime pokus použil nesprávnou testovací PostgreSQL instanci a byl nahrazen připojením přes `host.docker.internal` ke skutečné hostitelské testovací DB; nešlo o změnu image. Kontejner byl po ověření zastaven a odstraněn. Dynamický OG renderer nebyl vyvolán fixturem; celý prohlížečový matrix, AMD64 image a produkční nasazení se v tomto kroku neověřovaly. Žádné produkční migrace ani změny Docker VM nebyly provedeny.
 
 ## Původní audit před opravami
 
