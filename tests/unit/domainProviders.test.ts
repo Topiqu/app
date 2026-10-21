@@ -98,8 +98,8 @@ describe('domain provider boundaries', () => {
         ssl: { validation_records: [{ txt_name: '_acme.example.com', txt_value: 'certificate-fixture' }] },
       }),
     ).toEqual([
-      { type: 'TXT', name: '_cf.example.com', value: 'fixture' },
-      { type: 'TXT', name: '_acme.example.com', value: 'certificate-fixture' },
+      { type: 'TXT', name: '_cf.example.com', value: 'fixture', purpose: 'hostname' },
+      { type: 'TXT', name: '_acme.example.com', value: 'certificate-fixture', purpose: 'certificate' },
     ])
   })
 })

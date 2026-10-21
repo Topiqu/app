@@ -20,7 +20,10 @@ export default defineEventHandler(async (event) => {
     },
     select: { id: true, host: true, cleanupRequestedAt: true, state: true },
   })
-  if (!connection || (!connection.cleanupRequestedAt && connection.host !== (site.pendingDomain ?? site.domain)))
+  if (
+    !connection ||
+    (!connection.cleanupRequestedAt && connection.host !== site.domain && connection.host !== site.pendingDomain)
+  )
     throw createError({ statusCode: 409, data: { code: 'setupRequired' } })
   if (connection.state === 'DISCONNECTED') return { ready: false, state: 'DISCONNECTED' }
   const result = await reconcileDomainConnection(connection.id, clientSiteId)

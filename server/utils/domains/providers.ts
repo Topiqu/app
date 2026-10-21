@@ -212,13 +212,20 @@ export const findDokployDomain = async (host: string, id?: string) => {
 
 export const cloudflareValidationRecords = (entry: CloudflareHostname) => [
   ...(entry.ownership_verification?.type === 'txt'
-    ? [{ type: 'TXT', name: entry.ownership_verification.name, value: entry.ownership_verification.value }]
+    ? [
+        {
+          type: 'TXT',
+          name: entry.ownership_verification.name,
+          value: entry.ownership_verification.value,
+          purpose: 'hostname' as const,
+        },
+      ]
     : []),
   ...(entry.ssl?.validation_records ?? []).flatMap((record) =>
     record.txt_name && record.txt_value
-      ? [{ type: 'TXT', name: record.txt_name, value: record.txt_value }]
+      ? [{ type: 'TXT', name: record.txt_name, value: record.txt_value, purpose: 'certificate' as const }]
       : record.cname && record.cname_target
-        ? [{ type: 'CNAME', name: record.cname, value: record.cname_target }]
+        ? [{ type: 'CNAME', name: record.cname, value: record.cname_target, purpose: 'certificate' as const }]
         : [],
   ),
 ]

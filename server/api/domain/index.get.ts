@@ -9,14 +9,17 @@ export default defineEventHandler(async (event) => {
   if (!site) throw createError({ statusCode: 404, message: 'Client site not found' })
   const connections = await db.domainConnection.findMany({
     where: { clientSiteId, state: { not: 'DISCONNECTED' } },
-    select: domainConnectionPublicSelect,
+    select: { ...domainConnectionPublicSelect, challenge: true },
     orderBy: { createdAt: 'desc' },
     take: 20,
   })
 
   return {
     domain: site.domain,
-    connections,
+    connections: connections.map(({ challenge, ...connection }) => ({
+      ...connection,
+      dns: domainDnsRecords(connection.host, challenge),
+    })),
     currentVerification: site.domainVerificationToken
       ? domainDnsRecords(site.domain, site.domainVerificationToken)
       : null,

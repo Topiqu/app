@@ -1,5 +1,6 @@
 import { randomBytes, randomUUID } from 'node:crypto'
 import { isManagedDomain } from '~~/shared/utils/domain'
+import { mergeDomainValidationRecords } from '~~/shared/utils/domainRecords'
 
 import { probeDomainRouting } from './probe'
 import { decryptDomainCertificate, verifyDomainCertificate } from './certificates'
@@ -206,6 +207,7 @@ export const reconcileDomainConnection = async (id: string, expectedClientSiteId
         })
         return { ready: false, state: transient ? 'DNS_UNAVAILABLE' : 'OWNERSHIP', transient }
       }
+      await save({ state: 'CERTIFICATE', errorCode: null, checkedAt: new Date() })
       await checkCloudflareFallback()
       let dokploy = await findDokployDomain(connection.host, connection.dokployId ?? undefined)
       if (dokploy && dokploy.domainId !== connection.dokployId) throw new DomainProviderError('ADOPTION_REQUIRED')
@@ -250,6 +252,12 @@ export const reconcileDomainConnection = async (id: string, expectedClientSiteId
         if (cf.hostname !== connection.host) throw new DomainProviderError('PROVIDER_CONFLICT')
         await save({ cloudflareId: cf.id, cloudflareManaged: true })
       }
+      // Preserve new DNS instructions even if a later origin/certificate operation fails.
+      const validationRecords = mergeDomainValidationRecords(
+        connection.validationRecords,
+        cloudflareValidationRecords(cf),
+      )
+      await save({ validationRecords })
       if (connection.encryptedCertificate) {
         const material = JSON.parse(decryptDomainCertificate(connection.encryptedCertificate, id)) as {
           certificate: string
@@ -302,7 +310,6 @@ export const reconcileDomainConnection = async (id: string, expectedClientSiteId
         await save({ state: 'CERTIFICATE', errorCode: 'CERTIFICATE_EXPIRED', checkedAt: new Date() })
         return { ready: false, state: 'CERTIFICATE' }
       }
-      const validationRecords = cloudflareValidationRecords(cf)
       const edgeReady = cf.status === 'active' && cf.ssl?.status === 'active'
       const routing = edgeReady && (await probeDomainRouting(connection.host, connection.probeSecret))
       const state = !edgeReady ? 'CERTIFICATE' : !routing ? 'ROUTING' : 'READY'

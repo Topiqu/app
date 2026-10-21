@@ -65,6 +65,30 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals())
 
 describe('domain connection lifecycle', () => {
+  it('persists Cloudflare records and their history across certificate checks', async () => {
+    const previous = { type: 'TXT', name: '_acme.example.com', value: 'previous' }
+    record.mockResolvedValue({ ...row(), validationRecords: [previous] })
+    mocks.cf.mockResolvedValue({
+      id: 'cf1',
+      hostname: 'blog.example.com',
+      status: 'pending',
+      ssl: {
+        status: 'pending_validation',
+        validation_records: [{ txt_name: '_acme.example.com', txt_value: 'current' }],
+      },
+    })
+    await expect(reconcileDomainConnection('c1')).resolves.toMatchObject({ state: 'CERTIFICATE' })
+    expect(updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          validationRecords: [
+            { type: 'TXT', name: '_acme.example.com', value: 'current', purpose: 'certificate', active: true },
+            { ...previous, active: false },
+          ],
+        }),
+      }),
+    )
+  })
   it('does not provision a newly reused connection during a delayed cleanup attempt', async () => {
     await expect(reconcileDomainConnection('c1', 's1', true)).resolves.toMatchObject({ state: 'OWNERSHIP' })
     expect(mocks.config).not.toHaveBeenCalled()
