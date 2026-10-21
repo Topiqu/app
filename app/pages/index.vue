@@ -8,7 +8,7 @@
       :description="$t('articles.home.loadErrorDescription')"
     >
       <template #actions>
-        <UButton color="error" variant="soft" @click="refreshFeatured()">{{ $t('common.entry.retry') }}</UButton>
+        <UButton color="neutral" variant="soft" @click="refreshFeatured()">{{ $t('common.entry.retry') }}</UButton>
       </template>
     </UAlert>
   </UContainer>
@@ -327,7 +327,7 @@
         :title="$t('articles.home.feedError')"
       >
         <template #actions>
-          <UButton color="error" variant="soft" @click="refreshFeed()">{{ $t('common.entry.retry') }}</UButton>
+          <UButton color="neutral" variant="soft" @click="refreshFeed()">{{ $t('common.entry.retry') }}</UButton>
         </template>
       </UAlert>
 

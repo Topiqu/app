@@ -10,7 +10,7 @@
 
       <p
         class="mt-3 text-sm leading-relaxed text-pretty [overflow-wrap:anywhere]"
-        :class="bio ? 'text-neutral-700 dark:text-neutral-300' : 'text-neutral-400 dark:text-neutral-500 italic'"
+        :class="bio ? 'text-neutral-700 dark:text-neutral-300' : 'text-muted italic'"
       >
         {{ bio || $t('articles.userMenu.noBio') }}
       </p>

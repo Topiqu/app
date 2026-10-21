@@ -8,7 +8,7 @@
             ? 'text-error'
             : stringValue.length >= maxLength * 0.9
               ? 'text-warning'
-              : 'text-dimmed'
+              : 'text-muted'
         "
       >
         {{ stringValue.length }}/{{ maxLength }}
