@@ -1,0 +1,197 @@
+{
+  "methodology": "Three serial cold Lighthouse 13.5.0 runs per device on the local seeded /cs production build with HTTP/2 and Brotli Q4. CPU calibration differs substantially; timing/score comparisons are not controlled evidence of a performance gain or regression.",
+  "runs": [
+    {
+      "phase": "css21",
+      "device": "mobile",
+      "run": 1,
+      "benchmarkIndex": 3617.5,
+      "score": 0.68,
+      "scriptRequests": 100,
+      "scriptBytes": 568160,
+      "metrics": {
+        "first-contentful-paint": 4108.296,
+        "largest-contentful-paint": 5097.797273155213,
+        "total-blocking-time": 210,
+        "cumulative-layout-shift": 0,
+        "total-byte-weight": 833803
+      }
+    },
+    {
+      "phase": "css21",
+      "device": "mobile",
+      "run": 2,
+      "benchmarkIndex": 3608.5,
+      "score": 0.77,
+      "scriptRequests": 100,
+      "scriptBytes": 568229,
+      "metrics": {
+        "first-contentful-paint": 2470.714,
+        "largest-contentful-paint": 4946.715149177551,
+        "total-blocking-time": 149,
+        "cumulative-layout-shift": 0,
+        "total-byte-weight": 833824
+      }
+    },
+    {
+      "phase": "css21",
+      "device": "mobile",
+      "run": 3,
+      "benchmarkIndex": 3272,
+      "score": 0.8,
+      "scriptRequests": 100,
+      "scriptBytes": 568160,
+      "metrics": {
+        "first-contentful-paint": 2197.9955,
+        "largest-contentful-paint": 4777.996649177551,
+        "total-blocking-time": 118.5,
+        "cumulative-layout-shift": 0.0004955214791647264,
+        "total-byte-weight": 833836
+      }
+    },
+    {
+      "phase": "css21",
+      "device": "desktop",
+      "run": 1,
+      "benchmarkIndex": 3452,
+      "score": 0.98,
+      "scriptRequests": 100,
+      "scriptBytes": 568160,
+      "metrics": {
+        "first-contentful-paint": 429.01,
+        "largest-contentful-paint": 1064.0111491775513,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "total-byte-weight": 839673
+      }
+    },
+    {
+      "phase": "css21",
+      "device": "desktop",
+      "run": 2,
+      "benchmarkIndex": 3356.5,
+      "score": 0.98,
+      "scriptRequests": 100,
+      "scriptBytes": 568160,
+      "metrics": {
+        "first-contentful-paint": 741.8340000000001,
+        "largest-contentful-paint": 1002.8351491775513,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "total-byte-weight": 839678
+      }
+    },
+    {
+      "phase": "css21",
+      "device": "desktop",
+      "run": 3,
+      "benchmarkIndex": 3386,
+      "score": 0.98,
+      "scriptRequests": 100,
+      "scriptBytes": 568229,
+      "metrics": {
+        "first-contentful-paint": 768.207,
+        "largest-contentful-paint": 1049.2081491775511,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "total-byte-weight": 839671
+      }
+    },
+    {
+      "phase": "ui21",
+      "device": "mobile",
+      "run": 1,
+      "benchmarkIndex": 1380,
+      "score": 0.59,
+      "scriptRequests": 105,
+      "scriptBytes": 539749,
+      "metrics": {
+        "first-contentful-paint": 3130.8630000000003,
+        "largest-contentful-paint": 4635.864149177552,
+        "total-blocking-time": 755.9987268447876,
+        "cumulative-layout-shift": 0.0004955214791647264,
+        "total-byte-weight": 805364
+      }
+    },
+    {
+      "phase": "ui21",
+      "device": "mobile",
+      "run": 2,
+      "benchmarkIndex": 1420,
+      "score": 0.57,
+      "scriptRequests": 105,
+      "scriptBytes": 539749,
+      "metrics": {
+        "first-contentful-paint": 1846.704,
+        "largest-contentful-paint": 5116.705149177551,
+        "total-blocking-time": 1043.9987268447874,
+        "cumulative-layout-shift": 0.0004955214791647264,
+        "total-byte-weight": 805387
+      }
+    },
+    {
+      "phase": "ui21",
+      "device": "mobile",
+      "run": 3,
+      "benchmarkIndex": 1352.5,
+      "score": 0.65,
+      "scriptRequests": 105,
+      "scriptBytes": 539749,
+      "metrics": {
+        "first-contentful-paint": 2326.564,
+        "largest-contentful-paint": 5109.565149177552,
+        "total-blocking-time": 512.4987268447876,
+        "cumulative-layout-shift": 0,
+        "total-byte-weight": 805364
+      }
+    },
+    {
+      "phase": "ui21",
+      "device": "desktop",
+      "run": 1,
+      "benchmarkIndex": 1392,
+      "score": 0.98,
+      "scriptRequests": 105,
+      "scriptBytes": 539749,
+      "metrics": {
+        "first-contentful-paint": 553.254,
+        "largest-contentful-paint": 1132.2551491775512,
+        "total-blocking-time": 30,
+        "cumulative-layout-shift": 0,
+        "total-byte-weight": 811238
+      }
+    },
+    {
+      "phase": "ui21",
+      "device": "desktop",
+      "run": 2,
+      "benchmarkIndex": 1500,
+      "score": 0.98,
+      "scriptRequests": 105,
+      "scriptBytes": 539749,
+      "metrics": {
+        "first-contentful-paint": 551.3105,
+        "largest-contentful-paint": 1146.3116491775513,
+        "total-blocking-time": 53.9987268447876,
+        "cumulative-layout-shift": 0,
+        "total-byte-weight": 811214
+      }
+    },
+    {
+      "phase": "ui21",
+      "device": "desktop",
+      "run": 3,
+      "benchmarkIndex": 1551,
+      "score": 0.92,
+      "scriptRequests": 105,
+      "scriptBytes": 539749,
+      "metrics": {
+        "first-contentful-paint": 1100.8135,
+        "largest-contentful-paint": 1435.8146491775512,
+        "total-blocking-time": 115.9987268447876,
+        "cumulative-layout-shift": 0.0005963766034060065,
+        "total-byte-weight": 811235
+      }
+    }
+  ]
+}

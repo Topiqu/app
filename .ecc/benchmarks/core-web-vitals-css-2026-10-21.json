@@ -1,0 +1,151 @@
+{
+  "methodology": "Lighthouse 13.5.0, three serial cold runs per device, local seeded /cs production build, HTTP/2 and Brotli Q4; comparison against previous after21 series, not field data or an interleaved A/B experiment",
+  "before": [
+    {
+      "desktop": false,
+      "run": 1,
+      "score": 0.78,
+      "metrics": {
+        "first-contentful-paint": 2510.859,
+        "largest-contentful-paint": 4985.859,
+        "total-blocking-time": 95.5,
+        "cumulative-layout-shift": 0,
+        "total-byte-weight": 839917
+      }
+    },
+    {
+      "desktop": false,
+      "run": 2,
+      "score": 0.71,
+      "metrics": {
+        "first-contentful-paint": 3656.062,
+        "largest-contentful-paint": 5231.062,
+        "total-blocking-time": 132.5,
+        "cumulative-layout-shift": 0,
+        "total-byte-weight": 839917
+      }
+    },
+    {
+      "desktop": false,
+      "run": 3,
+      "score": 0.73,
+      "metrics": {
+        "first-contentful-paint": 3659.5280000000002,
+        "largest-contentful-paint": 4934.528,
+        "total-blocking-time": 76,
+        "cumulative-layout-shift": 0,
+        "total-byte-weight": 839919
+      }
+    },
+    {
+      "desktop": true,
+      "run": 1,
+      "score": 0.99,
+      "metrics": {
+        "first-contentful-paint": 604.2415,
+        "largest-contentful-paint": 984.2415000000001,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "total-byte-weight": 845771
+      }
+    },
+    {
+      "desktop": true,
+      "run": 2,
+      "score": 0.98,
+      "metrics": {
+        "first-contentful-paint": 747.0735,
+        "largest-contentful-paint": 967.0735,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "total-byte-weight": 845779
+      }
+    },
+    {
+      "desktop": true,
+      "run": 3,
+      "score": 0.98,
+      "metrics": {
+        "first-contentful-paint": 743.869,
+        "largest-contentful-paint": 1003.8690000000001,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "total-byte-weight": 845777
+      }
+    }
+  ],
+  "after": [
+    {
+      "desktop": false,
+      "run": 1,
+      "score": 0.68,
+      "metrics": {
+        "first-contentful-paint": 4108.296,
+        "largest-contentful-paint": 5097.797273155213,
+        "total-blocking-time": 210,
+        "cumulative-layout-shift": 0,
+        "total-byte-weight": 833803
+      }
+    },
+    {
+      "desktop": false,
+      "run": 2,
+      "score": 0.77,
+      "metrics": {
+        "first-contentful-paint": 2470.714,
+        "largest-contentful-paint": 4946.715149177551,
+        "total-blocking-time": 149,
+        "cumulative-layout-shift": 0,
+        "total-byte-weight": 833824
+      }
+    },
+    {
+      "desktop": false,
+      "run": 3,
+      "score": 0.8,
+      "metrics": {
+        "first-contentful-paint": 2197.9955,
+        "largest-contentful-paint": 4777.996649177551,
+        "total-blocking-time": 118.5,
+        "cumulative-layout-shift": 0.0004955214791647264,
+        "total-byte-weight": 833836
+      }
+    },
+    {
+      "desktop": true,
+      "run": 1,
+      "score": 0.98,
+      "metrics": {
+        "first-contentful-paint": 429.01,
+        "largest-contentful-paint": 1064.0111491775513,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "total-byte-weight": 839673
+      }
+    },
+    {
+      "desktop": true,
+      "run": 2,
+      "score": 0.98,
+      "metrics": {
+        "first-contentful-paint": 741.8340000000001,
+        "largest-contentful-paint": 1002.8351491775513,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "total-byte-weight": 839678
+      }
+    },
+    {
+      "desktop": true,
+      "run": 3,
+      "score": 0.98,
+      "metrics": {
+        "first-contentful-paint": 768.207,
+        "largest-contentful-paint": 1049.2081491775511,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "total-byte-weight": 839671
+      }
+    }
+  ]
+}

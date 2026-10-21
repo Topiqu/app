@@ -82,3 +82,42 @@ Tři studené běhy Lighthouse 13.5.0 pro každé zařízení, stejná seeded ho
 Přenos a mobilní TBT se snížily, ale celkové skóre se přesvědčivě nezlepšilo. Mobilní LCP zůstává nad cílem 2,5 s. Ve vzorku prvních mobilních běhů klesl počet požadavků 123 → 113 a přenos JavaScriptu 614 099 → 568 470 B. Výsledky neopravňují k tvrzení, že jsou vyřešené všechny Core Web Vitals.
 
 Ověření: 2 326 Vitest testů prošlo, 22 externích/AI testů přeskočeno; 22 compiled E2E prošlo, desktopový collapsed-rail scénář na mobilu přeskočen. Typecheck, lint, formátování, OpenAPI a hostitelský produkční build prošly. Frozen install zachovává verze závislostí a přidává pouze IPX patch. Lokální Docker pokus se dvěma CPU a 4 GiB RAM skončil na paměťovém limitu; úsporný retry byl zastaven a změna Dockerfile vrácena. Linux Docker build se ověřuje v existujícím CI před povýšením na `main`, nikoli zvýšením zátěže vývojářského počítače. Žádné migrace nejsou součástí této sady změn.
+
+## CSS a hydratace podle zkušeností z landingu
+
+Appka používá Tailwind, nikoli UnoCSS. Samostatný experiment s `ui.experimental.componentDetection` našel 62 komponent včetně závislostí a snížil vstupní CSS z 307 363 na 267 146 B (gzip 45 457 → 39 957 B). Následné `features.inlineStyles: true` vložilo globální styly do SSR a odstranilo blokující entry stylesheet bez dalšího modulu. HTML měřené na `/cs` narostlo z 47 222 na 314 367 znaků; gzip HTML + entry CSS byl 50 626 B před inliningem oproti 50 055 B po něm, bez zanedbatelného společného AppMedia stylesheetu. Nejde tedy o odstranění všeho CSS z přenosu, ale hlavně o zkrácení kritické síťové cesty. Vitalizer nebyl potřeba; stylesheety lazy komponent zůstávají zachované.
+
+Nitro předgeneruje gzip veřejných assetů. Build-time Brotli je vypnuté kvůli nákladům na sestavení; CDN ho může používat nezávisle. Hashované assety zachovávají immutable cache, IPX vlastní existující TTL. Související články mají nativní visible hydration se zachovaným SSR obsahem. Interaktivní header, formuláře a komentáře zůstávají okamžitě hydratované. Již existující lazy editor/grafy, prefetch při interakci, image breakpointy a font preload se zachovaly. Žádné dependencies, Docker změny ani migrace nepřibyly.
+
+Rozšířené prohlížečové kontroly odhalily a vedly k opravě kontrastu prázdného bio, počítadla znaků a retry tlačítek v chybovém alertu. Používají stávající sémantické tokeny. Široká public-accessibility sada obsahuje nesoulad s aktuálním produktem: onboarding scénář hledá na publikační homepage původní landingový odkaz „Start Integration“. Nebyl přepsán ani prohlášen za úspěšný v rámci optimalizace.
+
+Tři následné studené běhy na zařízení, Lighthouse 13.5.0, stejná lokální seeded `/cs`, HTTP/2 a Brotli Q4, bez souběžných buildů či testů. Srovnávací řada je předchozí `after21`, nikoli prokládaný A/B experiment; rozdíly zahrnují laboratorní variabilitu. Všechny běhy včetně pomalého prvního mobilního jsou v `.ecc/benchmarks/core-web-vitals-css-2026-10-21.json`.
+
+| Medián | Mobil před → po     | Desktop před → po   |
+| ------ | ------------------- | ------------------- |
+| Skóre  | 73 → 77             | 98 → 98             |
+| FCP    | 3 656 → 2 471 ms    | 744 → 742 ms        |
+| LCP    | 4 986 → 4 947 ms    | 984 → 1 049 ms      |
+| TBT    | 95,5 → 149 ms       | 0 → 0 ms            |
+| CLS    | 0 → 0               | 0 → 0               |
+| Přenos | 839 917 → 833 824 B | 845 777 → 839 673 B |
+
+První vykreslení se v mobilním mediánu zlepšilo; LCP prakticky ne a TBT se v této řadě zhoršilo. Jeden mobilní běh měl CLS 0,00050. Lighthouse u druhého mobilního běhu již nehlásí blokující stylesheety; LCP obrázek zůstává dostupný v SSR s eager/high priority. To neopravňuje k tvrzení, že jsou vyřešené všechny CWV nebo že je prokázané lepší produkční INP.
+
+Finální ověření: produkční hostitelský Bun build, typecheck, ESLint a formátování změněných souborů prošly; 26 cílených compiled Playwright kontrol prošlo s jedním workerem (mobil, desktop dark, profil, koncepty, header, search, SSR média, CSP a release smoke). Celá Vitest ani Playwright matice se pro tuto změnu nespouštěla. Lokální Docker se nesestavoval; Linux image, nasazené CDN hlavičky a produkční field data nejsou ověřené touto sadou. Změny nevyžadují migraci ani konfiguraci prostředí.
+
+## Oddělení veřejných popoverů od kalendářů
+
+Source mapy potvrdily, že společný 210 095B chunk obsahoval Popover i 37 kalendářových modulů přes `reka-ui/namespaced`. Nuxt UI i privátní lazy formuláře používají různé exporty stejného namespace modulu, takže veřejný popover přebíral závislosti kalendářů. Připnutý Bun patch pro `@nuxt/ui@4.11.3` nahrazuje namespace import pouze v Popover a DropdownMenuContent ekvivalentními přímými exporty Reka a identickými mapami komponent. Props, eventy, portály, šablony a verze balíčků se nemění; nejde o vlastní implementaci ovládacích prvků ani o vynucený globální vendor chunk.
+
+Nový build má u Nuxt UI Popover chunk 20 930 B bez kalendářových modulů. Tento rozdíl není automaticky úsporou celého přenosu: další Reka primitives mohou být ve vlastních společných chunkech. Patch je třeba přezkoumat při aktualizaci Nuxt UI, protože zasahuje jeho distribuované SFC soubory.
+
+Prohlížečová regresní sada prošla s 29 testy a jedním přeskočeným hover scénářem na dotykovém mobilu. Přibylo přepnutí jazyka s opakovaným otevřením dropdownu po navigaci a otevření/zavření autorské hover karty. Test navigace výslovně povoluje browserem zrušené požadavky při změně locale; ostatní testy i ostatní síťové/runtime chyby zůstávají přísné. Frozen install prošel a lockfile mění pouze záznam patche, nikoli verze závislostí.
+
+### Přenos a omezení časového srovnání
+
+Tři studené sériové běhy na zařízení proti předchozí řadě `css21` jsou zachované v `.ecc/benchmarks/core-web-vitals-ui-2026-10-21.json`. Přenos JavaScriptu klesl z mediánu 568 160 na 539 749 B (−5 %), celkový mobilní přenos z 833 824 na 805 364 B (−3,4 %). Počet script požadavků naopak vzrostl ze 100 na 105. Kontrola source map skutečně stažených startup skriptů nenašla žádný Calendar/DatePicker/DateField modul Reka. Menší sdílený chunk tedy neznamená méně jednotlivých souborů.
+
+Časové výsledky nejsou průkazné A/B srovnání: Lighthouse CPU benchmark index byl před změnou 3272–3618, během nového měření pouze 1353–1551. Mobilní medián skóre byl 77 → 59, FCP 2471 → 2327 ms, LCP 4947 → 5110 ms a TBT 149 → 756 ms; desktopové skóre 98 → 98. Horší hodnoty se neskrývají, ale při tak rozdílné kalibraci počítače nelze přisoudit změně ani zhoršení TBT, ani zlepšení FCP. Prokázaná je přenosová úspora a oddělení závislostí; nikoli rychlejší produkční INP/LCP. Další časové měření patří do stabilních podmínek nebo do skutečných produkčních field dat, ne do dalšího lokálního build loopu.
+
+Produkční hostitelský build, frozen install, typecheck, ESLint, formátování změněných souborů a `git diff --check` prošly. Celá Vitest/Playwright matice ani Linux Docker image se v tomto kroku nespouštěly. Měřicí servery a prohlížeče byly ukončeny; žádná migrace, nasazení ani změna produkční konfigurace není součástí tohoto kroku.
