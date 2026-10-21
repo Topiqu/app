@@ -57,3 +57,28 @@ Samostatná Linux Docker image se v této změně znovu nestavěla: Dockerfile, 
 Měření používá lokální produkční build, syntetickou BASIC publikaci a HTTPS/HTTP2/Brotli auditní proxy, stejně jako baseline. Žádné naměřené číslo zde není populační p75 ani potvrzení Google CWV assessment. Bez nasazené URL a dat skutečných návštěvníků nelze potvrdit produkční CWV.
 
 Neměnil se hosting, DNS, CDN, databázové schéma, cenová politika ani vzdálená telemetrie. Globální CSS, route-level lokalizační dělení a dodavatelské balíky potřebují samostatné profilování; plošná změna bez důkazu by nebyla bezpečná optimalizace. Známá omezení produkční bezpečnosti a neopravená upstream advisories zůstávají v [produkčním auditu](PRODUCTION_AUDIT.md).
+
+## Produkční nálezy z 21. října 2026
+
+Na veřejné stránce `trawl.topiqu.com/en` se potvrdily 1px/2px varianty responsivních obrázků, CSP hlášení vyvolané Zod `Function()` sondou a IPX odpovědi s `application/octet-stream` místo MIME obrázku. Poslední problém vznikal v Node adaptéru IPX na Bun/Nitro, nikoli chybějícím nastavením TTL: konfigurace již požadovala rok pro vzdálená média. Cloudflare odpověď bez správných origin hlaviček vracela čtyřhodinovou cache.
+
+Oprava připojuje IPX Fetch handler přímo k H3 přes verzovaný Bun patch; zachovává parser URL, provider konfiguraci a povolené hosty. Compiled E2E ověřuje MIME, TTL, ETag/304, restriktivní CSP obrázku a odmítnutí nepovoleného zdroje. Média dostala explicitní 320px/480px breakpointy a opravené size hints, uploadové náhledy odpovídají svým skutečným rozměrům. Manrope má jeden stabilně identifikovaný preload. Prefetch odkazů začíná při hover/focus interakci a cookie nastavení se načte až při prvním otevření. Sdílený Zod vstup vypíná browser JIT před konstrukcí schémat, bez `unsafe-eval` a bez změny serverové validace.
+
+Pokus o hydrataci účtového a jazykového ovládání až po kliknutí byl odstraněn: zahazoval první klik. Header zůstává standardně hydratovaný a regresní test ověřuje první otevření obou ovládacích prvků.
+
+### Opakované lokální měření
+
+Tři studené běhy Lighthouse 13.5.0 pro každé zařízení, stejná seeded homepage `/cs`, HTTP/2 a Brotli Q4. Jde o laboratorní srovnání, nikoli produkční field data ani přímou reprodukci dodaných Trawl screenshotů. Výchozí první mobilní běh se krátce překrýval se samostatným profilem veřejné stránky; všechny výsledky jsou zachované v `.ecc/benchmarks/core-web-vitals-2026-10-21.json`. Následné běhy byly sériové bez souběžných buildů či testů.
+
+| Medián | Mobil před → po     | Desktop před → po   |
+| ------ | ------------------- | ------------------- |
+| Skóre  | 75 → 73             | 98 → 98             |
+| FCP    | 3 653 → 3 656 ms    | 737 → 744 ms        |
+| LCP    | 5 262 → 4 986 ms    | 958 → 984 ms        |
+| TBT    | 149,5 → 95,5 ms     | 0 → 0 ms            |
+| CLS    | 0,00050 → 0         | 0,00345 → 0         |
+| Přenos | 885 864 → 839 917 B | 897 071 → 845 777 B |
+
+Přenos a mobilní TBT se snížily, ale celkové skóre se přesvědčivě nezlepšilo. Mobilní LCP zůstává nad cílem 2,5 s. Ve vzorku prvních mobilních běhů klesl počet požadavků 123 → 113 a přenos JavaScriptu 614 099 → 568 470 B. Výsledky neopravňují k tvrzení, že jsou vyřešené všechny Core Web Vitals.
+
+Ověření: 2 326 Vitest testů prošlo, 22 externích/AI testů přeskočeno; 22 compiled E2E prošlo, desktopový collapsed-rail scénář na mobilu přeskočen. Typecheck, lint, formátování, OpenAPI a hostitelský produkční build prošly. Frozen install zachovává verze závislostí a přidává pouze IPX patch. Lokální Docker pokus se dvěma CPU a 4 GiB RAM skončil na paměťovém limitu; úsporný retry byl zastaven a změna Dockerfile vrácena. Linux Docker build se ověřuje v existujícím CI před povýšením na `main`, nikoli zvýšením zátěže vývojářského počítače. Žádné migrace nejsou součástí této sady změn.

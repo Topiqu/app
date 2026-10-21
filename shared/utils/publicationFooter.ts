@@ -1,5 +1,4 @@
-import { z } from 'zod'
-
+import { z } from './zod'
 import { isSafeWidgetLink } from './widgets'
 import { hasAdvancedBranding } from './publicationBranding'
 

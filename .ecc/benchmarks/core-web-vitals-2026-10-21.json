@@ -1,0 +1,159 @@
+{
+  "date": "2026-10-21",
+  "baseCommit": "413592ff",
+  "scope": "Seeded public homepage /cs; local production Bun server, HTTP/2, Brotli quality 4; Lighthouse 13.5.0, three cold runs per device. Not CrUX/field data and not a direct comparison with the production Trawl screenshots.",
+  "limitations": [
+    "Before mobile run 1 overlapped with a short read-only live-profile capture; report all three runs instead of selecting a favorable result.",
+    "After measurements ran serially after local Docker builds and test processes stopped.",
+    "Local Linux Docker verification exceeded a 4 GiB cap; the uncapped and smol retry were canceled. Required Linux build is verified by CI before main promotion.",
+    "Real production DNS, CDN configuration, telemetry and tenant data differ from local fixtures."
+  ],
+  "before": [
+    {
+      "desktop": false,
+      "run": 1,
+      "score": 0.68,
+      "metrics": {
+        "first-contentful-paint": 4382.928,
+        "largest-contentful-paint": 5296.428,
+        "total-blocking-time": 167.5,
+        "cumulative-layout-shift": 0.0004955214791647264,
+        "total-byte-weight": 885874
+      }
+    },
+    {
+      "desktop": false,
+      "run": 2,
+      "score": 0.76,
+      "metrics": {
+        "first-contentful-paint": 2337.361,
+        "largest-contentful-paint": 5262.361,
+        "total-blocking-time": 149.5,
+        "cumulative-layout-shift": 0.0004955214791647264,
+        "total-byte-weight": 885846
+      }
+    },
+    {
+      "desktop": false,
+      "run": 3,
+      "score": 0.75,
+      "metrics": {
+        "first-contentful-paint": 3653.149,
+        "largest-contentful-paint": 4628.148999999999,
+        "total-blocking-time": 81.5,
+        "cumulative-layout-shift": 0.0004955214791647264,
+        "total-byte-weight": 885864
+      }
+    },
+    {
+      "desktop": true,
+      "run": 1,
+      "score": 0.99,
+      "metrics": {
+        "first-contentful-paint": 630.573,
+        "largest-contentful-paint": 930.573,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0.003449439279131244,
+        "total-byte-weight": 897075
+      }
+    },
+    {
+      "desktop": true,
+      "run": 2,
+      "score": 0.98,
+      "metrics": {
+        "first-contentful-paint": 737.225,
+        "largest-contentful-paint": 997.2249999999999,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0.003449439279131244,
+        "total-byte-weight": 897033
+      }
+    },
+    {
+      "desktop": true,
+      "run": 3,
+      "score": 0.98,
+      "metrics": {
+        "first-contentful-paint": 737.9795,
+        "largest-contentful-paint": 957.9795,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0.003449439279131244,
+        "total-byte-weight": 897071
+      }
+    }
+  ],
+  "after": [
+    {
+      "desktop": false,
+      "run": 1,
+      "score": 0.78,
+      "metrics": {
+        "first-contentful-paint": 2510.859,
+        "largest-contentful-paint": 4985.859,
+        "total-blocking-time": 95.5,
+        "cumulative-layout-shift": 0,
+        "total-byte-weight": 839917
+      }
+    },
+    {
+      "desktop": false,
+      "run": 2,
+      "score": 0.71,
+      "metrics": {
+        "first-contentful-paint": 3656.062,
+        "largest-contentful-paint": 5231.062,
+        "total-blocking-time": 132.5,
+        "cumulative-layout-shift": 0,
+        "total-byte-weight": 839917
+      }
+    },
+    {
+      "desktop": false,
+      "run": 3,
+      "score": 0.73,
+      "metrics": {
+        "first-contentful-paint": 3659.5280000000002,
+        "largest-contentful-paint": 4934.528,
+        "total-blocking-time": 76,
+        "cumulative-layout-shift": 0,
+        "total-byte-weight": 839919
+      }
+    },
+    {
+      "desktop": true,
+      "run": 1,
+      "score": 0.99,
+      "metrics": {
+        "first-contentful-paint": 604.2415,
+        "largest-contentful-paint": 984.2415000000001,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "total-byte-weight": 845771
+      }
+    },
+    {
+      "desktop": true,
+      "run": 2,
+      "score": 0.98,
+      "metrics": {
+        "first-contentful-paint": 747.0735,
+        "largest-contentful-paint": 967.0735,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "total-byte-weight": 845779
+      }
+    },
+    {
+      "desktop": true,
+      "run": 3,
+      "score": 0.98,
+      "metrics": {
+        "first-contentful-paint": 743.869,
+        "largest-contentful-paint": 1003.8690000000001,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "total-byte-weight": 845777
+      }
+    }
+  ]
+}

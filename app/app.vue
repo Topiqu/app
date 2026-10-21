@@ -36,6 +36,7 @@ import { brandTitle, toAbsoluteUrl } from '~~/shared/utils/seo'
 import { resolveBrandAccent } from '~~/shared/utils/tenantTheme'
 import { platformAdsEnabledForPlan } from '~~/shared/utils/advertising'
 import { activeBrandGradient, gradientCss } from '~~/shared/utils/publicationBranding'
+import manropeLatin from '@fontsource-variable/manrope/files/manrope-latin-wght-normal.woff2?url'
 
 const reqUrl = useRequestURL()
 const route = useRoute()
@@ -121,6 +122,14 @@ useHead(() => ({
     dir: i18nHead.value.htmlAttrs?.dir as 'ltr' | 'rtl' | 'auto' | undefined,
   },
   link: [
+    {
+      key: 'topiqu-manrope-latin',
+      rel: 'preload',
+      as: 'font',
+      type: 'font/woff2',
+      href: manropeLatin,
+      crossorigin: 'anonymous',
+    },
     ...i18nLinks.value,
     {
       rel: 'icon',

@@ -22,7 +22,7 @@
             :alt="$t('articles.articleCard.imageAlt')"
             :aspectRatio="resolvedAspectRatio"
             fit="contain"
-            sizes="100vw sm:640px"
+            :sizes="compact ? '80px' : '224px'"
             :containerClass="
               compact ? 'size-20 rounded-[var(--ui-radius)]' : 'h-36 w-56 max-w-full rounded-[var(--ui-radius)]'
             "
@@ -35,7 +35,7 @@
               :alt="$t('articles.articleCard.imageAlt')"
               :aspectRatio="resolvedAspectRatio"
               fit="contain"
-              sizes="100vw sm:640px"
+              :sizes="compact ? '80px' : '224px'"
               :containerClass="
                 compact ? 'size-20 rounded-[var(--ui-radius)]' : 'h-36 w-56 max-w-full rounded-[var(--ui-radius)]'
               "

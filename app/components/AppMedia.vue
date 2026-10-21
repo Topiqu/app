@@ -70,7 +70,7 @@ const {
   fallbackBorder = false,
   fallbackText,
   priority = false,
-  sizes = '100vw sm:50vw lg:33vw',
+  sizes = 'xs:100vw phone:100vw sm:50vw lg:33vw',
   width,
   height,
   containerClass = '',

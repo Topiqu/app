@@ -30,7 +30,7 @@
         :src="config.image.url"
         :alt="config.image.alt"
         loading="lazy"
-        sizes="100vw md:400px"
+        sizes="xs:100vw phone:100vw sm:100vw md:400px"
         class="aspect-[4/3] w-full rounded-xl object-cover"
       />
     </div>
