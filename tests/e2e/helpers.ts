@@ -12,7 +12,10 @@ type RuntimeFailures = {
 
 const runtimeFailures = new WeakMap<Page, RuntimeFailures>()
 
-export const preparePage = async (page: Page, options: { expectedErrorPage?: boolean } = {}) => {
+export const preparePage = async (
+  page: Page,
+  options: { expectedErrorPage?: boolean; allowCancelledRequests?: boolean } = {},
+) => {
   const failures: RuntimeFailures = {
     console: [],
     hydration: [],
@@ -80,6 +83,12 @@ export const preparePage = async (page: Page, options: { expectedErrorPage?: boo
     }
   })
   page.on('requestfailed', (request) => {
+    // Route changes can intentionally cancel an in-flight useFetch request.
+    if (
+      options.allowCancelledRequests &&
+      /^(?:net::ERR_ABORTED|cancelled|canceled|NS_BINDING_ABORTED)$/.test(request.failure()?.errorText ?? '')
+    )
+      return
     if (request.url().startsWith(page.url().split('/').slice(0, 3).join('/'))) {
       failures.requests.push(`${request.url()} ${request.failure()?.errorText ?? 'failed'}`)
     }

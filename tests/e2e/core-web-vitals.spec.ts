@@ -41,6 +41,33 @@ test('header controls hydrate and open on the first click', async ({ page }) => 
   await expect(page.getByRole('menu')).toBeVisible()
 })
 
+test('locale dropdown selects a language and remains usable after navigation', async ({ page }) => {
+  await preparePage(page, { allowCancelledRequests: true })
+  await page.goto('http://localhost:4173/en')
+  await page.locator('html[data-topiqu-hydrated="true"]').waitFor()
+  await page.getByRole('button', { name: 'Interface language', exact: true }).click()
+  await page.getByRole('menuitemcheckbox', { name: 'Čeština', exact: true }).click()
+  await expect(page).toHaveURL(/\/cs(?:\/|$)/)
+  await page.getByRole('button', { name: 'Jazyk rozhraní', exact: true }).click()
+  await expect(page.getByRole('menu')).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(page.getByRole('menu')).toBeHidden()
+  await expectNoHorizontalOverflow(page)
+})
+
+test('author hover card opens and dismisses without navigating', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name.startsWith('mobile'), 'Hover interaction requires a pointer')
+  await preparePage(page)
+  await page.goto('http://localhost:4173/cs/clanky/jak-postavit-udrzitelnou-redakci')
+  await page.locator('html[data-topiqu-hydrated="true"]').waitFor()
+  const author = page.locator('a[href*="/autor/"]').first()
+  await author.hover()
+  await expect(page.locator('[data-user-card-popover]')).toBeVisible()
+  await page.mouse.move(0, 0)
+  await expect(page.locator('[data-user-card-popover]')).toBeHidden()
+  await expect(page).toHaveURL(/\/clanky\/jak-postavit-udrzitelnou-redakci$/)
+})
+
 test('search retains results and their space while a slow request becomes empty', async ({ page }) => {
   await preparePage(page)
   await page.goto('http://localhost:4173/cs')
