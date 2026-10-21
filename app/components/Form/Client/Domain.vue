@@ -19,13 +19,26 @@
         <FormClientDomainConnection
           v-for="connection in data.connections"
           :key="connection.id"
-          :connection="connection"
+          :connection="{
+            ...connection,
+            dns:
+              connection.dns ??
+              (connection.host === data.pending?.domain
+                ? data.pending
+                : connection.host === data.domain
+                  ? (data.currentVerification ?? undefined)
+                  : undefined),
+          }"
           :current="connection.host === data.domain"
           @changed="changed"
         />
         <UAlert v-if="error" color="error" :title="error" />
         <dl
-          v-if="!data.pending && data.currentVerification"
+          v-if="
+            !data.pending &&
+            data.currentVerification &&
+            !data.connections.some((connection) => connection.host === data?.domain)
+          "
           class="grid gap-1 rounded-(--ui-radius) border border-default p-3 text-xs sm:grid-cols-[4rem_1fr_1fr]"
         >
           <dt>TXT</dt>
@@ -60,18 +73,24 @@
             >
               {{ $t('common.domain.open') }}
             </UButton>
+            <UButton color="neutral" variant="ghost" @click="openChange">{{
+              $t('common.domain.provisioning.change')
+            }}</UButton>
           </template>
         </UAlert>
 
         <template v-else-if="data?.pending">
-          <p class="text-sm">
+          <p v-if="pendingManaged || !pendingConnection" class="text-sm">
             {{
               $t(pendingManaged ? 'common.domain.managedPending' : 'common.domain.pendingIntro', {
                 domain: data?.pending?.domain,
               })
             }}
           </p>
-          <dl v-if="!pendingManaged" class="divide-y divide-default rounded-lg border border-default text-sm">
+          <dl
+            v-if="!pendingManaged && !pendingConnection"
+            class="divide-y divide-default rounded-lg border border-default text-sm"
+          >
             <div
               v-for="record in records"
               :key="record.type"
@@ -83,9 +102,14 @@
             </div>
           </dl>
           <p class="text-xs text-muted">{{ $t('common.domain.keepsServing', { domain: data?.domain }) }}</p>
-          <UAlert v-if="notYet" color="warning" variant="soft" :title="$t('common.domain.notYet')" />
+          <UAlert v-if="notYet" color="warning" variant="soft" :title="$t('common.domain.provisioning.continueHelp')" />
           <div class="flex flex-wrap gap-2">
-            <UButton :loading="busy === 'verify'" :disabled="!!busy" @click="verify">
+            <UButton
+              v-if="pendingManaged || (pendingConnection?.state === 'READY' && !pendingConnection.errorCode)"
+              :loading="busy === 'verify'"
+              :disabled="!!busy"
+              @click="verify"
+            >
               {{ $t(pendingManaged ? 'common.domain.activateSubdomain' : 'common.domain.verify') }}
             </UButton>
             <UButton color="neutral" variant="ghost" :disabled="!!busy" @click="cancel">
@@ -94,10 +118,13 @@
           </div>
         </template>
 
+        <UButton v-else-if="!changeOpen" color="neutral" variant="soft" @click="changeOpen = true">{{
+          $t('common.domain.provisioning.change')
+        }}</UButton>
         <form v-else class="flex flex-col gap-2 sm:flex-row sm:items-end" @submit.prevent="request">
           <div class="min-w-0 flex-1">
             <UFormField
-              :label="$t('common.domain.title')"
+              :label="$t('common.domain.newDomain')"
               :error="error"
               :help="$t('common.domain.subdomainHelp', { baseDomain })"
             >
@@ -107,6 +134,9 @@
           <UButton type="submit" :loading="busy === 'request'" :disabled="!domain.trim() || !!busy">
             {{ $t('common.domain.continue') }}
           </UButton>
+          <UButton color="neutral" variant="ghost" :disabled="!!busy" @click="changeOpen = false">{{
+            $t('common.domain.cancel')
+          }}</UButton>
         </form>
         <p v-if="!data?.canUseCustomDomain" class="text-sm text-muted">{{ $t('common.domain.planRequired') }}</p>
       </div>
@@ -134,6 +164,8 @@ interface DomainStatus {
     validationRecords: unknown
     cleanupRequestedAt: string | null
     certificateExpiresAt: string | null
+    checkedAt?: string | null
+    dns?: DnsRecords
   }>
 }
 
@@ -151,12 +183,21 @@ const { data, isPending, refetch } = useQuery({
 })
 
 const domain = shallowRef('')
+const changeOpen = shallowRef(false)
+const openChange = () => {
+  switchedTo.value = ''
+  changeOpen.value = true
+}
+const pendingConnection = computed(() =>
+  data.value?.connections.find((connection) => connection.host === data.value?.pending?.domain),
+)
 const error = shallowRef<string>()
 const busy = shallowRef<'request' | 'verify' | 'cancel' | null>(null)
 const notYet = shallowRef(false)
 const switchedTo = shallowRef('')
 const changed = async () => {
   error.value = undefined
+  notYet.value = false
   await Promise.all([refetch(), refreshClientSiteStatus(), refreshClientSite()])
 }
 const prepareCurrent = () =>
@@ -210,9 +251,9 @@ const verify = () =>
     const result = await $fetch<{ verified: boolean; domain?: string }>('/api/domain/pending/verify', {
       method: 'POST',
     })
-    notYet.value = !result.verified
     if (result.verified && result.domain) switchedTo.value = result.domain
     await changed()
+    notYet.value = !result.verified
   })
 
 const cancel = async () => {
@@ -220,6 +261,7 @@ const cancel = async () => {
   await run('cancel', async () => {
     await $fetch('/api/domain/pending', { method: 'DELETE' })
     notYet.value = false
+    changeOpen.value = false
     await refetch()
   })
 }

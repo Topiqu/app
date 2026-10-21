@@ -115,6 +115,42 @@
     },
     "domain": {
       "provisioning": {
+        "attention": "Attention requise",
+        "lastChecked": "Dernière vérification :",
+        "progress": "Progression de la connexion",
+        "change": "Modifier l’adresse du blog",
+        "continueHelp": "La connexion n’est pas encore prête. Consultez l’étape actuelle ci-dessus et vérifiez à nouveau la connexion. L’adresse actuelle reste inchangée.",
+        "steps": {
+          "ownership": "Propriété Topiqu",
+          "https": "HTTPS et Cloudflare",
+          "activation": "Activer l’adresse"
+        },
+        "guidance": {
+          "ownership": "Ajoutez le TXT Topiqu et le CNAME de routage permanents ci-dessous, puis vérifiez la connexion. Conservez les deux enregistrements.",
+          "records": "La propriété Topiqu est validée. Ajoutez tous les enregistrements Cloudflare ci-dessous sans remplacer le TXT Topiqu. Plusieurs valeurs TXT peuvent partager le même nom. Vérifiez ensuite à nouveau.",
+          "https": "La propriété Topiqu est validée. HTTPS est en préparation. Vérifiez plus tard ; des enregistrements DNS supplémentaires peuvent apparaître.",
+          "routing": "HTTPS est prêt. Nous vérifions que le domaine mène à votre blog. Conservez les enregistrements DNS et vérifiez à nouveau.",
+          "activate": "Toutes les vérifications ont réussi. Utilisez Vérifier et basculer ci-dessous pour activer cette adresse principale.",
+          "active": "C’est l’adresse active de votre blog. Conservez le TXT Topiqu et le CNAME de routage. Les valeurs exactes figurent dans les instructions DNS.",
+          "retry": "La connexion nécessite votre attention. Suivez l’avertissement ci-dessus et vérifiez à nouveau. Les instructions DNS et les étapes terminées sont conservées."
+        },
+        "dns": {
+          "show": "Instructions DNS et anciens enregistrements",
+          "permanent": "Enregistrements DNS permanents",
+          "keep": "Conservez ces deux enregistrements pendant l’utilisation du domaine. S’ils ont été supprimés, restaurez ces valeurs exactes ; l’absence du TXT Topiqu peut suspendre la connexion.",
+          "topiqu": "Propriété Topiqu — conserver dans le DNS",
+          "routing": "Routage du blog — conserver dans le DNS",
+          "cloudflare": "Vérification Cloudflare supplémentaire",
+          "additional": "Cloudflare demande actuellement ces enregistrements supplémentaires. Ajoutez toutes les valeurs sans remplacer les enregistrements permanents. HTTPS peut aussi être validé automatiquement par le routage.",
+          "hostname": "Vérification du nom d’hôte Cloudflare",
+          "certificate": "Vérification HTTPS Cloudflare",
+          "history": "Anciens enregistrements Cloudflare",
+          "historyHelp": "Cloudflare ne demande plus ces valeurs exactes. Cet historique n’est ni une confirmation de validation ni une instruction de les ajouter à nouveau. Les exigences actuelles sont ci-dessus.",
+          "previous": "Demandé auparavant — plus requis actuellement",
+          "name": "Nom / hôte DNS",
+          "value": "Valeur / cible",
+          "copy": "Copier {field}"
+        },
         "cleanupHelp": "Le blog n’utilise plus ce domaine. Terminez la déconnexion avant de le reconnecter. La configuration manuelle des fournisseurs est conservée.",
         "retryCleanup": "Terminer la déconnexion",
         "certificateRequirements": "Utilisez un certificat publiquement reconnu pour ce nom d’hôte uniquement. Les jokers, noms supplémentaires et certificats autosignés ne sont pas pris en charge.",

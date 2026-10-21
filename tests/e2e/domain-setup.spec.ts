@@ -63,6 +63,10 @@ test('domain setup exposes provider records and clears private certificate mater
   const connection = page.getByRole('region', { name: host, exact: true })
   await expect(connection).toBeVisible()
   await expect(connection.getByText('Preparing HTTPS', { exact: true })).toBeVisible()
+  await expect(connection.getByText('Permanent DNS records', { exact: true })).toBeVisible()
+  await expect(connection.getByText('Additional Cloudflare verification', { exact: true })).toBeVisible()
+  await expect(connection.getByText('topiqu-verification=synthetic-challenge', { exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Verify and switch', exact: true })).toHaveCount(0)
   await expectNoHorizontalOverflow(page)
   await connection.getByRole('button', { name: 'Own origin certificate', exact: true }).click()
   const dialog = page.getByRole('dialog', { name: 'Own origin certificate', exact: true })
@@ -137,6 +141,94 @@ test('a legacy disconnect can be completed without stale adoption errors', async
   await expectNoHorizontalOverflow(page)
 })
 
+test('domain progress preserves DNS history and separates activation from address changes', async ({ page }) => {
+  await preparePage(page, { allowCancelledRequests: true })
+  await page.setViewportSize({ width: 320, height: 800 })
+  const host = 'progress.example.test'
+  let checked = false
+  let active = false
+  const dns = {
+    domain: host,
+    txt: { name: `_topiqu-verification.${host}`, value: 'topiqu-verification=fixture-keep' },
+    routing: { type: 'CNAME', name: host, value: 'domains.topiqu.com' },
+  }
+  await page.route('**/api/stripe/plans', (route) =>
+    route.fulfill({ json: { PRO: { month: null, year: null }, PREMIUM: { month: null, year: null } } }),
+  )
+  await page.route('**/api/domain', (route) =>
+    route.fulfill({
+      json: {
+        domain: active ? host : 'fixture.topiqu.com',
+        canUseCustomDomain: true,
+        pending: active ? null : dns,
+        currentVerification: active ? dns : null,
+        connections: [
+          {
+            id: '00000000-0000-4000-8000-000000000001',
+            host,
+            dns,
+            state: checked ? 'READY' : 'CERTIFICATE',
+            errorCode: null,
+            cleanupRequestedAt: null,
+            certificateExpiresAt: null,
+            checkedAt: '2026-01-01T10:00:00.000Z',
+            validationRecords: [
+              {
+                type: 'TXT',
+                name: `_acme-challenge.${host}`,
+                value: 'new-challenge',
+                active: true,
+                purpose: 'certificate',
+              },
+              {
+                type: 'TXT',
+                name: `_acme-challenge.${host}`,
+                value: 'previous-challenge',
+                active: false,
+                purpose: 'certificate',
+              },
+            ],
+          },
+        ],
+      },
+    }),
+  )
+  await page.route('**/api/domain/refresh', (route) => {
+    checked = true
+    return route.fulfill({ json: { ready: true, state: 'READY' } })
+  })
+  await page.route('**/api/domain/pending/verify', (route) => {
+    active = true
+    return route.fulfill({ json: { verified: true, domain: host } })
+  })
+  await page.goto('/en/admin')
+  await page.locator('html[data-topiqu-hydrated="true"]').waitFor()
+  const settings = page.getByRole('link', { name: 'Settings', exact: true }).first()
+  if (!(await settings.isVisible()))
+    await page
+      .getByRole('button', { name: /Open navigation|Open menu|Toggle sidebar/i })
+      .first()
+      .click()
+  await settings.click()
+  const connection = page.getByRole('region', { name: host, exact: true })
+  await expect(connection.getByRole('list', { name: 'Connection progress' })).toBeVisible()
+  await expect(connection.getByText('new-challenge', { exact: true })).toBeVisible()
+  await connection.locator('summary').filter({ hasText: 'Previous Cloudflare records' }).click()
+  await expect(connection.getByText('previous-challenge', { exact: true })).toBeVisible()
+  await expect(connection.getByText('topiqu-verification=fixture-keep', { exact: true })).toBeVisible()
+  await connection.getByRole('button', { name: 'Check connection', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Verify and switch', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Verify and switch', exact: true }).click()
+  await expect(page.getByRole('link', { name: host, exact: true })).toBeVisible()
+  await expect(page.getByRole('textbox', { name: 'New custom domain', exact: true })).toHaveCount(0)
+  await connection.locator('summary').filter({ hasText: 'DNS instructions and previous records' }).click()
+  await expect(connection.getByText('topiqu-verification=fixture-keep', { exact: true })).toBeVisible()
+  await expectNoHorizontalOverflow(page)
+  await page.screenshot({ path: test.info().outputPath('domain-ready-320.png'), fullPage: true })
+  await page.getByRole('button', { name: 'Change blog address', exact: true }).click()
+  await expect(page.getByRole('textbox', { name: 'New custom domain', exact: true })).toBeVisible()
+})
+
 test('custom domain reservation and cancellation preserve the live address through real API routes', async ({
   request,
   playwright,
@@ -186,6 +278,7 @@ test('custom domain reservation and cancellation preserve the live address throu
     expect(connection).toMatchObject({ host, state: 'OWNERSHIP' })
     for (const key of ['probeSecret', 'encryptedCertificate', 'challenge', 'cloudflareId', 'dokployId', 'leaseId'])
       expect(connection).not.toHaveProperty(key)
+    expect(connection.dns.txt).toEqual(state.pending.txt)
     expect((await request.delete('/api/domain/pending')).status()).toBe(200)
     const cancelled = await db.domainConnection.findUniqueOrThrow({ where: { host } })
     expect(cancelled.state).toBe('DISCONNECTED')

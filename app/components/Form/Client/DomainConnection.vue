@@ -2,7 +2,18 @@
   <section class="space-y-3 rounded-(--ui-radius) border border-default p-4" :aria-label="connection.host">
     <div class="flex flex-wrap items-center justify-between gap-2">
       <span class="break-all font-medium text-highlighted">{{ connection.host }}</span>
-      <UBadge color="neutral" variant="soft">{{ $t(`common.domain.provisioning.states.${state}`) }}</UBadge>
+      <UBadge
+        :color="statusColor"
+        variant="soft"
+        :icon="state === 'READY' && !connection.errorCode ? 'mdi:check-circle-outline' : undefined"
+        >{{
+          $t(
+            connection.errorCode && !connection.cleanupRequestedAt
+              ? 'common.domain.provisioning.attention'
+              : `common.domain.provisioning.states.${state}`,
+          )
+        }}</UBadge
+      >
     </div>
     <p class="text-sm text-muted">
       {{
@@ -18,16 +29,75 @@
       color="warning"
       :title="errorMessage(connection.errorCode)"
     />
-    <dl v-if="!connection.cleanupRequestedAt && records.length" class="divide-y divide-default text-xs">
-      <div v-for="(record, index) in records" :key="index" class="grid gap-1 py-3 sm:grid-cols-[4rem_1fr_1fr]">
-        <dt>{{ record.type }}</dt>
-        <dd class="break-all font-mono">{{ record.name }}</dd>
-        <dd class="break-all font-mono">{{ record.value }}</dd>
-      </div>
-    </dl>
+    <template v-if="!connection.cleanupRequestedAt">
+      <ol class="grid gap-2 sm:grid-cols-3" :aria-label="$t('common.domain.provisioning.progress')">
+        <li
+          v-for="(step, index) in steps"
+          :key="step.key"
+          class="flex items-center gap-2 rounded-(--ui-radius) border border-default p-2 text-sm"
+          :aria-current="step.current ? 'step' : undefined"
+        >
+          <UIcon
+            :name="step.done ? 'mdi:check-circle-outline' : 'mdi:circle-outline'"
+            :class="step.done ? 'text-success' : 'text-muted'"
+            class="size-5 shrink-0"
+          />
+          <span>{{ index + 1 }}. {{ $t(`common.domain.provisioning.steps.${step.key}`) }}</span>
+        </li>
+      </ol>
+      <p class="text-sm text-muted" role="status" aria-live="polite">
+        {{ $t(`common.domain.provisioning.guidance.${guidance}`) }}
+      </p>
+      <details :open="!current || !!connection.errorCode" class="space-y-3">
+        <summary class="cursor-pointer text-sm font-medium text-highlighted">
+          {{ $t('common.domain.provisioning.dns.show') }}
+        </summary>
+        <div v-if="dns" class="space-y-2">
+          <h4 class="text-sm font-semibold">{{ $t('common.domain.provisioning.dns.permanent') }}</h4>
+          <p class="text-xs text-muted">{{ $t('common.domain.provisioning.dns.keep') }}</p>
+          <FormClientDomainDnsRecord
+            :record="{ type: 'TXT', ...dns.txt }"
+            :label="$t('common.domain.provisioning.dns.topiqu')"
+          />
+          <FormClientDomainDnsRecord :record="dns.routing" :label="$t('common.domain.provisioning.dns.routing')" />
+        </div>
+        <div v-if="activeRecords.length" class="space-y-2">
+          <h4 class="text-sm font-semibold">{{ $t('common.domain.provisioning.dns.cloudflare') }}</h4>
+          <p class="text-xs text-muted">{{ $t('common.domain.provisioning.dns.additional') }}</p>
+          <FormClientDomainDnsRecord
+            v-for="(record, index) in activeRecords"
+            :key="index"
+            :record="record"
+            :label="
+              $t(
+                record.purpose === 'hostname'
+                  ? 'common.domain.provisioning.dns.hostname'
+                  : 'common.domain.provisioning.dns.certificate',
+              )
+            "
+          />
+        </div>
+        <details v-if="previousRecords.length" class="space-y-2">
+          <summary class="cursor-pointer text-sm text-muted">
+            {{ $t('common.domain.provisioning.dns.history') }}
+          </summary>
+          <p class="text-xs text-muted">{{ $t('common.domain.provisioning.dns.historyHelp') }}</p>
+          <FormClientDomainDnsRecord
+            v-for="(record, index) in previousRecords"
+            :key="index"
+            :record="record"
+            :label="$t('common.domain.provisioning.dns.previous')"
+          />
+        </details>
+      </details>
+    </template>
     <p v-if="connection.certificateExpiresAt" class="text-sm text-muted">
       {{ $t('common.domain.provisioning.expires') }}
       <NuxtTime :datetime="connection.certificateExpiresAt" dateStyle="medium" />
+    </p>
+    <p v-if="connection.checkedAt" class="text-xs text-muted">
+      {{ $t('common.domain.provisioning.lastChecked') }}
+      <NuxtTime :datetime="connection.checkedAt" dateStyle="short" timeStyle="short" />
     </p>
     <UAlert v-if="error" color="error" :title="error" />
     <div class="flex flex-wrap gap-2">
@@ -110,6 +180,8 @@
 </template>
 
 <script setup lang="ts">
+import { readDomainValidationRecords } from '~~/shared/utils/domainRecords'
+
 interface Connection {
   id: string
   host: string
@@ -118,6 +190,8 @@ interface Connection {
   validationRecords: unknown
   cleanupRequestedAt: string | null
   certificateExpiresAt: string | null
+  checkedAt?: string | null
+  dns?: { txt: { name: string; value: string }; routing: { type: string; name: string; value: string } }
 }
 const props = defineProps<{ connection: Connection; current: boolean }>()
 const emit = defineEmits<{ changed: [] }>()
@@ -139,17 +213,37 @@ const state = computed(() =>
     ? props.connection.state
     : 'OWNERSHIP',
 )
-const records = computed(() =>
-  Array.isArray(props.connection.validationRecords)
-    ? props.connection.validationRecords.filter(
-        (entry): entry is { type: string; name: string; value: string } =>
-          !!entry &&
-          typeof entry === 'object' &&
-          typeof entry.type === 'string' &&
-          typeof entry.name === 'string' &&
-          typeof entry.value === 'string',
-      )
-    : [],
+const dns = computed(() => props.connection.dns)
+const records = computed(() => readDomainValidationRecords(props.connection.validationRecords))
+const activeRecords = computed(() => records.value.filter((record) => record.active !== false))
+const previousRecords = computed(() => records.value.filter((record) => record.active === false))
+const statusColor = computed(() =>
+  props.connection.errorCode ? 'warning' : state.value === 'READY' ? 'success' : 'neutral',
+)
+const stepIndex = computed(() =>
+  ['CERTIFICATE', 'ROUTING', 'READY'].includes(state.value) ? (state.value === 'CERTIFICATE' ? 1 : 2) : 0,
+)
+const steps = computed(() =>
+  ['ownership', 'https', 'activation'].map((key, index) => ({
+    key,
+    done: index < stepIndex.value || (index === 2 && state.value === 'READY' && props.current),
+    current: index === stepIndex.value && !(state.value === 'READY' && props.current),
+  })),
+)
+const guidance = computed(() =>
+  props.connection.errorCode
+    ? 'retry'
+    : state.value === 'READY'
+      ? props.current
+        ? 'active'
+        : 'activate'
+      : state.value === 'ROUTING'
+        ? 'routing'
+        : state.value === 'CERTIFICATE'
+          ? activeRecords.value.length
+            ? 'records'
+            : 'https'
+          : 'ownership',
 )
 const errorMessage = (code: string) => {
   if (code === 'PLAN_REQUIRED') return t('common.domain.errors.plan')

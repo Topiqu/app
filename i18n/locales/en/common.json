@@ -115,6 +115,42 @@
     },
     "domain": {
       "provisioning": {
+        "attention": "Needs attention",
+        "lastChecked": "Last checked:",
+        "progress": "Connection progress",
+        "change": "Change blog address",
+        "continueHelp": "Connection is not ready yet. Review the current step above and continue with Check connection. Your current blog address stays unchanged.",
+        "steps": {
+          "ownership": "Topiqu ownership",
+          "https": "HTTPS & Cloudflare",
+          "activation": "Activate address"
+        },
+        "guidance": {
+          "ownership": "Add the permanent Topiqu TXT and routing CNAME below, then check the connection. Keep both records while using this domain.",
+          "records": "Topiqu ownership passed. Add the additional Cloudflare records below without replacing the Topiqu TXT. Multiple TXT values at the same name can coexist. Then check again.",
+          "https": "Topiqu ownership passed. HTTPS is being prepared. Check again shortly; additional DNS records may appear below.",
+          "routing": "HTTPS is ready. We are checking that this domain reaches your blog. Keep the DNS records and check again shortly.",
+          "activate": "All connection checks passed. Use Verify and switch below to make this your blog’s main address.",
+          "active": "This is your blog’s active address. Keep the permanent Topiqu TXT and routing CNAME. You can find the exact values in DNS instructions.",
+          "retry": "The connection needs attention. Follow the warning above, then check again. Your DNS instructions and completed setup are retained; you do not need to restart."
+        },
+        "dns": {
+          "show": "DNS instructions and previous records",
+          "permanent": "Permanent DNS records",
+          "keep": "Keep these two records for as long as you use this domain. If removed, restore these exact values; a missing Topiqu TXT can eventually suspend the connection.",
+          "topiqu": "Topiqu ownership — keep in DNS",
+          "routing": "Blog routing — keep in DNS",
+          "cloudflare": "Additional Cloudflare verification",
+          "additional": "These are additional records currently returned by Cloudflare. Add all displayed values; do not replace the permanent records. HTTPS can also validate automatically through routing.",
+          "hostname": "Cloudflare hostname verification",
+          "certificate": "Cloudflare HTTPS verification",
+          "history": "Previous Cloudflare records",
+          "historyHelp": "Cloudflare no longer requests these exact values. They are shown for reference, not as a verified status or an instruction to add them again. Current requirements are above.",
+          "previous": "Previously requested — not currently required",
+          "name": "DNS name / host",
+          "value": "Value / target",
+          "copy": "Copy {field}"
+        },
         "cleanupHelp": "The blog has moved off this domain. Complete the disconnection before connecting it again. Manual provider configuration is retained.",
         "retryCleanup": "Complete disconnection",
         "certificateRequirements": "Use a publicly trusted certificate for this exact hostname only. Wildcards, additional hostnames and self-signed certificates are not supported.",

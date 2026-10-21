@@ -115,6 +115,42 @@
     },
     "domain": {
       "provisioning": {
+        "attention": "Vyžaduje pozornost",
+        "lastChecked": "Poslední kontrola:",
+        "progress": "Průběh připojení",
+        "change": "Změnit adresu blogu",
+        "continueHelp": "Připojení ještě není připravené. Zkontrolujte aktuální krok výše a pokračujte tlačítkem Zkontrolovat spojení. Dosavadní adresa blogu se nemění.",
+        "steps": {
+          "ownership": "Vlastnictví pro Topiqu",
+          "https": "HTTPS a Cloudflare",
+          "activation": "Aktivace adresy"
+        },
+        "guidance": {
+          "ownership": "Přidejte níže uvedený trvalý TXT pro Topiqu a směrovací CNAME, potom zkontrolujte spojení. Oba záznamy ponechte po celou dobu používání domény.",
+          "records": "Vlastnictví pro Topiqu je ověřené. Přidejte dodatečné záznamy Cloudflare níže, aniž byste nahradili TXT pro Topiqu. Více TXT hodnot se stejným názvem může existovat současně. Potom kontrolu zopakujte.",
+          "https": "Vlastnictví pro Topiqu je ověřené. Připravuje se HTTPS. Za chvíli kontrolu zopakujte; níže se mohou objevit dodatečné DNS záznamy.",
+          "routing": "HTTPS je připravené. Ověřujeme, že doména skutečně vede na váš blog. DNS záznamy ponechte a za chvíli kontrolu zopakujte.",
+          "activate": "Všechny kontroly připojení prošly. Tlačítkem Ověřit a přepnout níže nastavte doménu jako hlavní adresu blogu.",
+          "active": "Toto je aktivní adresa blogu. Trvalý TXT pro Topiqu a směrovací CNAME ponechte v DNS. Přesné hodnoty najdete v DNS instrukcích.",
+          "retry": "Připojení vyžaduje vaši pozornost. Postupujte podle upozornění výše a kontrolu zopakujte. DNS instrukce i dokončené nastavení zůstávají zachované; nemusíte začínat znovu."
+        },
+        "dns": {
+          "show": "DNS instrukce a předchozí záznamy",
+          "permanent": "Trvalé DNS záznamy",
+          "keep": "Tyto dva záznamy ponechte po celou dobu používání domény. Pokud jste je smazali, obnovte přesně tyto hodnoty; chybějící TXT pro Topiqu může později vést k pozastavení připojení.",
+          "topiqu": "Vlastnictví pro Topiqu — ponechte v DNS",
+          "routing": "Směrování blogu — ponechte v DNS",
+          "cloudflare": "Dodatečné ověření Cloudflare",
+          "additional": "Tyto dodatečné záznamy právě vrací Cloudflare. Přidejte všechny zobrazené hodnoty; nenahrazujte trvalé záznamy. HTTPS se také může ověřit automaticky přes směrování.",
+          "hostname": "Ověření domény u Cloudflare",
+          "certificate": "Ověření HTTPS u Cloudflare",
+          "history": "Předchozí záznamy Cloudflare",
+          "historyHelp": "Cloudflare už přesně tyto hodnoty nepožaduje. Zůstávají zde pro přehled, nejde o potvrzení ověření ani pokyn k opětovnému přidání. Aktuální požadavky jsou výše.",
+          "previous": "Dříve požadovaný — nyní není vyžadován",
+          "name": "Název / hostitel DNS",
+          "value": "Hodnota / cíl",
+          "copy": "Zkopírovat {field}"
+        },
         "cleanupHelp": "Blog už tuto doménu nepoužívá. Před opětovným připojením dokončete odpojení. Ruční konfigurace u poskytovatelů zůstane zachována.",
         "retryCleanup": "Dokončit odpojení",
         "certificateRequirements": "Použijte veřejně důvěryhodný certifikát pouze pro tuto přesnou doménu. Wildcard, další domény a self-signed certifikáty nejsou podporované.",

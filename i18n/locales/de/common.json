@@ -115,6 +115,42 @@
     },
     "domain": {
       "provisioning": {
+        "attention": "Handlungsbedarf",
+        "lastChecked": "Zuletzt geprüft:",
+        "progress": "Verbindungsfortschritt",
+        "change": "Blogadresse ändern",
+        "continueHelp": "Die Verbindung ist noch nicht bereit. Prüfen Sie den aktuellen Schritt oben und klicken Sie erneut auf Verbindung prüfen. Die aktuelle Blogadresse bleibt unverändert.",
+        "steps": {
+          "ownership": "Topiqu-Inhaberschaft",
+          "https": "HTTPS & Cloudflare",
+          "activation": "Adresse aktivieren"
+        },
+        "guidance": {
+          "ownership": "Fügen Sie den permanenten Topiqu-TXT- und Routing-CNAME-Eintrag unten hinzu. Prüfen Sie dann die Verbindung und behalten Sie beide Einträge.",
+          "records": "Die Topiqu-Inhaberschaft ist bestätigt. Ergänzen Sie alle Cloudflare-Einträge unten, ohne den Topiqu-TXT zu ersetzen. Mehrere TXT-Werte mit gleichem Namen sind möglich. Prüfen Sie danach erneut.",
+          "https": "Die Topiqu-Inhaberschaft ist bestätigt. HTTPS wird vorbereitet. Prüfen Sie später erneut; zusätzliche DNS-Einträge können unten erscheinen.",
+          "routing": "HTTPS ist bereit. Wir prüfen die Weiterleitung zu Ihrem Blog. Behalten Sie die DNS-Einträge und prüfen Sie später erneut.",
+          "activate": "Alle Prüfungen sind erfolgreich. Aktivieren Sie unten mit Prüfen und wechseln die neue Hauptadresse.",
+          "active": "Dies ist Ihre aktive Blogadresse. Behalten Sie Topiqu-TXT und Routing-CNAME. Die genauen Werte stehen in den DNS-Anweisungen.",
+          "retry": "Die Verbindung erfordert Aufmerksamkeit. Folgen Sie dem Hinweis oben und prüfen Sie erneut. DNS-Anweisungen und abgeschlossene Schritte bleiben erhalten."
+        },
+        "dns": {
+          "show": "DNS-Anweisungen und frühere Einträge",
+          "permanent": "Permanente DNS-Einträge",
+          "keep": "Behalten Sie beide Einträge während der Nutzung. Stellen Sie gelöschte Einträge mit diesen Werten wieder her; ein fehlender Topiqu-TXT kann die Verbindung später sperren.",
+          "topiqu": "Topiqu-Inhaberschaft — im DNS behalten",
+          "routing": "Blog-Routing — im DNS behalten",
+          "cloudflare": "Zusätzliche Cloudflare-Prüfung",
+          "additional": "Cloudflare fordert aktuell diese zusätzlichen Einträge an. Ergänzen Sie alle Werte, ohne permanente Einträge zu ersetzen. HTTPS kann auch automatisch über das Routing validiert werden.",
+          "hostname": "Cloudflare-Hostname-Prüfung",
+          "certificate": "Cloudflare-HTTPS-Prüfung",
+          "history": "Frühere Cloudflare-Einträge",
+          "historyHelp": "Cloudflare fordert diese genauen Werte nicht mehr an. Sie dienen nur als Verlauf, nicht als Bestätigung oder Aufforderung zum erneuten Hinzufügen. Aktuelle Anforderungen stehen oben.",
+          "previous": "Früher angefordert — aktuell nicht erforderlich",
+          "name": "DNS-Name / Host",
+          "value": "Wert / Ziel",
+          "copy": "{field} kopieren"
+        },
         "cleanupHelp": "Der Blog verwendet diese Domain nicht mehr. Schließen Sie die Trennung ab, bevor Sie sie erneut verbinden. Manuelle Anbieterkonfiguration bleibt erhalten.",
         "retryCleanup": "Trennung abschließen",
         "certificateRequirements": "Verwenden Sie ein öffentlich vertrauenswürdiges Zertifikat nur für genau diesen Hostnamen. Wildcards, zusätzliche Hostnamen und selbstsignierte Zertifikate werden nicht unterstützt.",

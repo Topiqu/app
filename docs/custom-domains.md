@@ -76,6 +76,23 @@ not require provider credentials. Reconnecting requires completed cleanup and a 
 challenge; this tenant's pending cleanup is distinct from another tenant's reservation.
 Customer DNS records stay in the customer's DNS account and must be removed there.
 
+The settings UI separates Topiqu ownership, Cloudflare/HTTPS preparation and address
+activation. Topiqu TXT and routing CNAME instructions remain available after activation,
+including on each retained connection. Cloudflare hostname and certificate challenges
+are additional records, not replacements for the Topiqu TXT. Their exact values are
+retained in `validationRecords`: currently returned requirements have `active: true`,
+and previous values have `active: false`. An absent requirement is not proof that an
+individual record was verified. Older array entries without these metadata fields remain
+readable. Reusing a disconnected connection clears its old challenge history.
+
+Only a ready connection offers address activation; a waiting or failed connection can be
+checked again without discarding its setup. Changing the address is an explicit action,
+separate from disconnecting the current domain. A missing permanent Topiqu TXT can still
+lead to suspension through the existing revalidation/grace-period policy even if HTTPS
+remains valid. Cloudflare can complete eligible HTTPS validation automatically via routing;
+no application restart is required. Historical values overwritten before this retention
+change cannot be reconstructed from the database.
+
 DNS cannot detect a registrar ownership transfer that leaves all DNS records unchanged.
 Old TXT and a stale provider active status cannot authorize a new tenant claim. Ownership
 disputes need reviewed fresh proof. Do not describe periodic DNS checks as detecting sales.
