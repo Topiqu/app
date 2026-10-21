@@ -31,7 +31,7 @@ COPY . .
 ENV NODE_ENV=production
 ENV NITRO_PRESET=bun
 ENV NUXT_TELEMETRY_DISABLED=1
-RUN bun --bun run build
+RUN bun --bun run build && bun scripts/prepare-migrations.ts
 
 # release
 FROM base AS release
@@ -47,4 +47,4 @@ USER bun
 HEALTHCHECK --interval=30s --timeout=6s --start-period=30s --retries=3 CMD bun -e "const port = process.env.NITRO_PORT || process.env.PORT || '3000'; const r = await fetch('http://127.0.0.1:' + port + '/api/health', { signal: AbortSignal.timeout(5000) }); if (!r.ok) process.exit(1)"
 
 EXPOSE 3000
-ENTRYPOINT [ "bun", "--bun", "server/index.mjs" ]
+ENTRYPOINT [ "/bin/sh", "docker-entrypoint.sh" ]
