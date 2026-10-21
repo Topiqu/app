@@ -8,19 +8,16 @@
     <div class="absolute inset-0 bg-black/20" />
 
     <div
-      class="absolute -top-32 -right-32 w-[700px] h-[700px] rounded-full blur-[150px] opacity-25"
-      :style="{ backgroundColor: themeColor }"
+      class="absolute -top-32 -right-32 w-[700px] h-[700px] rounded-full opacity-25"
+      :style="{ backgroundColor: themeColor, filter: 'blur(150px)' }"
     />
     <div
-      class="absolute -bottom-40 -left-20 w-[600px] h-[600px] rounded-full blur-[120px] opacity-15"
-      :style="{ backgroundColor: themeColor }"
+      class="absolute -bottom-40 -left-20 w-[600px] h-[600px] rounded-full opacity-15"
+      :style="{ backgroundColor: themeColor, filter: 'blur(120px)' }"
     />
 
     <div class="absolute top-16 left-16 flex items-center gap-3 opacity-90">
-      <div
-        class="w-3 h-3 rounded-full shadow-lg"
-        :style="{ backgroundColor: themeColor, boxShadow: `0 0 10px ${themeColor}` }"
-      />
+      <div class="w-3 h-3 rounded-full" :style="{ backgroundColor: themeColor, boxShadow: `0 0 10px ${themeColor}` }" />
       <span class="text-xl font-bold tracking-widest uppercase opacity-80">{{ siteName }}</span>
     </div>
 
@@ -34,7 +31,8 @@
       />
       <div
         v-else
-        class="h-[120px] w-[120px] rounded-xl bg-white/5 flex items-center justify-center text-5xl font-bold backdrop-blur-md border border-white/10 shadow-2xl"
+        class="h-[120px] w-[120px] rounded-xl bg-white/5 flex items-center justify-center text-5xl font-bold"
+        style="border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25)"
       >
         {{ siteName[0] }}
       </div>
@@ -43,7 +41,10 @@
     <!-- pb clears the absolutely-positioned domain pill below (bottom-16 + its own height). -->
     <div class="relative flex flex-col justify-end h-full p-16 pb-36">
       <div class="flex flex-col gap-6 max-w-4xl">
-        <h1 class="text-8xl font-black leading-[0.95] text-white drop-shadow-2xl tracking-tight">
+        <h1
+          class="text-8xl font-black leading-[0.95] text-white tracking-tight"
+          style="filter: drop-shadow(0 25px 25px rgba(0, 0, 0, 0.15))"
+        >
           {{ title }}
         </h1>
         <p
@@ -56,7 +57,8 @@
     </div>
 
     <div
-      class="absolute bottom-16 left-16 flex items-center px-6 py-3 rounded-full bg-white/5 border border-white/5 backdrop-blur-xl"
+      class="absolute bottom-16 left-16 flex items-center px-6 py-3 rounded-full bg-white/5"
+      style="border: 1px solid rgba(255, 255, 255, 0.05)"
     >
       <span class="text-xl font-medium tracking-wide text-gray-300">{{ domain }}</span>
     </div>

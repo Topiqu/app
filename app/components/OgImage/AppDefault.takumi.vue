@@ -3,12 +3,21 @@
     class="w-full h-full flex flex-col justify-center items-center text-white bg-[#0f172a] relative overflow-hidden"
     style="font-family: Inter"
   >
-    <div class="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-900/40" />
+    <div
+      class="absolute inset-0"
+      style="background-image: linear-gradient(to bottom right, rgba(37, 99, 235, 0.2), rgba(88, 28, 135, 0.4))"
+    />
 
-    <div class="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-blue-500/30 rounded-full blur-[100px]" />
-    <div class="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-purple-500/30 rounded-full blur-[100px]" />
+    <div
+      class="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-blue-500/30 rounded-full"
+      style="filter: blur(100px)"
+    />
+    <div
+      class="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-purple-500/30 rounded-full"
+      style="filter: blur(100px)"
+    />
 
-    <div class="relative z-10 flex flex-col items-center gap-6 p-12 text-center">
+    <div class="relative flex flex-col items-center gap-6 p-12 text-center">
       <img
         :src="appLogo"
         width="120"
@@ -17,7 +26,10 @@
         style="width: 120px; height: 120px; object-fit: contain"
       />
 
-      <h1 class="text-7xl font-black tracking-tight text-white drop-shadow-xl">
+      <h1
+        class="text-7xl font-black tracking-tight text-white"
+        style="filter: drop-shadow(0 9px 7px rgba(0, 0, 0, 0.1))"
+      >
         {{ title }}
       </h1>
 

@@ -5,6 +5,7 @@
 
 @theme inline {
   --color-action: var(--topiqu-action);
+  --font-sans: 'Manrope Variable', ui-sans-serif, system-ui, sans-serif;
 }
 
 :root {
