@@ -150,12 +150,12 @@ bun --bun run build    # generate ZenStack artifacts, then build Nuxt
 bun --bun run preview
 ```
 
-Apply database migrations with `bun run release` (targets `DATABASE_URL`). `bun run build:docker` is an alias for the same build.
+Docker deployments apply pending database migrations automatically before starting the server. Outside Docker, `bun run release` applies migrations explicitly (targets `DATABASE_URL`). `bun run build:docker` is an alias for the same build.
 
 <details>
 <summary><strong>Docker and runtime details</strong></summary>
 
-The Dockerfile uses the same pinned Bun version and installs from the frozen lockfile, including compatibility patches in `patches/` for Nuxt DevTools and Nuxt Image's IPX Fetch adapter. The IPX patch preserves image MIME types, cache headers and conditional requests on Bun; review it when upgrading Nuxt Image. Building an image never connects to or migrates a database and takes no database credentials. The final image contains only `.output`, runs as the unprivileged `bun` user, and starts `server/index.mjs` with Bun. CI applies migrations to its disposable database before the production browser smoke tests.
+The Dockerfile uses the same pinned Bun version and installs from the frozen lockfile, including compatibility patches in `patches/` for Nuxt DevTools and Nuxt Image's IPX Fetch adapter. The IPX patch preserves image MIME types, cache headers and conditional requests on Bun; review it when upgrading Nuxt Image. Building an image never connects to or migrates a database and takes no database credentials. The final image contains `.output`, including an isolated migration CLI traced from the existing locked Prisma dependency, the schema generated from ZModel and committed SQL history. It runs as the unprivileged `bun` user. Its entrypoint runs `prisma migrate deploy` with Bun, then replaces itself with `server/index.mjs` only after success. No packages are installed at startup. CI applies migrations to its disposable database before the production browser smoke tests.
 
 Nuxt UI detects used components to limit generated theme CSS. Global CSS is inlined in SSR HTML; do not strip remaining stylesheet links indiscriminately, because lazy components can own additional styles. Nitro precompresses static assets with gzip so the origin can serve them without runtime compression; CDN Brotli is independent. Related articles retain SSR markup and hydrate when visible. Release smoke checks cover SSR styles, gzip negotiation and immutable hashed assets.
 
@@ -165,7 +165,7 @@ Docker dependency caching is scoped to the app and target architecture. Package 
 
 Production requires runtime `DATABASE_URL` and an `AUTH_SECRET` of at least 32 characters. Inject these through the deployment environment; do not pass them as Docker build arguments. `CRON_SECRET` is required to call the external cron endpoints; an unset secret always denies access. `PGPOOL_MAX` defaults to 10 connections per process (allowed range 1–100); budget the total across all replicas and workers. Connections wait at most 3 seconds and statements at most 30 seconds. `/api/live` is liveness; `/api/health` is database readiness with a 4-second deadline. Configure the platform probes accordingly. External log delivery is bounded and best-effort; console logs and the database audit remain authoritative.
 
-Release order is operator-controlled: identify the target database and image, take a backup and verify restore on a separate database, run `bun run release` from the matching source revision against that exact target, then roll out the tested image and check readiness, login, tenant access, publication and cron heartbeats. Retain the previous image. Roll it back only if it is compatible with the applied schema; otherwise use a reviewed forward fix or restore the verified backup under a maintenance plan. Never assume rolling back an image rolls back migrations. Neither a Git push nor an image build authorizes these production operations.
+Release order is operator-controlled: identify the target database and image, take a backup and verify restore on a separate database, configure runtime credentials, then roll out the tested image. Startup applies pending migrations before serving requests; migration failure exits the container without starting the app. `DIRECT_DATABASE_URL`, when set, is used only by migrations; the app keeps `DATABASE_URL`. Database credentials must permit the committed DDL, and deployment startup/readiness timeouts must allow migrations to finish. Prisma's advisory lock serializes migration attempts across replicas; lock timeout fails startup and requires an orchestrator retry. Keep rolling-release schema changes backward compatible with old replicas. Check readiness, login, tenant access, publication and cron heartbeats. Retain the previous image. Roll it back only if it is compatible with the applied schema; otherwise use a reviewed forward fix or restore the verified backup under a maintenance plan. Never assume rolling back an image rolls back migrations. Neither a Git push nor an image build authorizes these production operations.
 
 Password reset codes issued before the reset hardening change must be requested again: reset tokens now use a separate purpose-bound store, expire in 15 minutes and revoke all previous sessions on success. No new database migration is needed for this change. Existing verification codes for account activation remain separate.
 
@@ -174,6 +174,8 @@ When invoking Nuxt through Node instead of Bun, use a supported Node version (`^
 </details>
 
 ## Documentation
+
+Custom-domain provisioning configuration, migration order and operational limitations are documented in [Custom domains](./docs/custom-domains.md).
 
 - 🗺️ [Architecture](./MAP.md) — source layout, data flows and implementation details.
 - 📐 [Project conventions](./CLAUDE.md) — coding standards and contribution rules.
