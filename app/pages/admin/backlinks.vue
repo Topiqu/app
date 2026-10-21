@@ -52,14 +52,11 @@
       <AppStatTiles :items="stats" />
       <BacklinksOpportunities />
       <BacklinksLinks />
-      <p class="text-xs text-muted">{{ $t('backlinks.policy') }}</p>
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { isFollowed } from '~~/shared/utils/backlinks'
-
 import type { StatTile } from '~/components/AppStatTiles.vue'
 
 definePageMeta({ middleware: 'admin', shell: 'dashboard' })
@@ -90,11 +87,9 @@ const refreshNote = computed(() => {
   return t('backlinks.refreshedAt', { date: formatDate(data.value.refreshedAt) })
 })
 
-/** Live links, of them followed, and requests waiting: what the links work has earned so far. */
 const stats = computed((): StatTile[] => {
   const number = new Intl.NumberFormat(locale.value)
   const live = (data.value?.links ?? []).filter((link) => !link.lostAt)
-  const followed = live.filter((link) => isFollowed(link.rel)).length
   const open = data.value?.opportunities.length ?? 0
   const label = (key: string) => t(`backlinks.stats.${key}.label`)
   const info = (key: string) => t(`backlinks.stats.${key}.info`)
@@ -104,7 +99,6 @@ const stats = computed((): StatTile[] => {
       icon: 'mdi:link-variant',
       label: label('live'),
       value: number.format(live.length),
-      note: t('backlinks.stats.live.hint', { n: number.format(followed) }),
       hint: info('live'),
     },
     {
@@ -112,7 +106,6 @@ const stats = computed((): StatTile[] => {
       icon: 'mdi:trophy-outline',
       label: label('won'),
       value: number.format(data.value?.won ?? 0),
-      muted: !data.value?.won,
       note: t('backlinks.stats.won.hint'),
       hint: info('won'),
     },
@@ -121,7 +114,6 @@ const stats = computed((): StatTile[] => {
       icon: 'mdi:email-fast-outline',
       label: label('open'),
       value: number.format(open),
-      note: t('backlinks.stats.open.hint'),
       hint: info('open'),
     },
   ]

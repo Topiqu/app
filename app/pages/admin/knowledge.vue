@@ -163,6 +163,10 @@ const confirm = useConfirm()
 const { data, status, error, refresh } = await useLazyFetch('/api/knowledge')
 const { data: clientStatus } = await useClientSiteStatus()
 const sources = computed(() => data.value?.sources ?? [])
+watch(
+  () => sources.value.map((source) => `${source.id}:${source.status}:${source.useInArticles}`).join(','),
+  () => refreshClientSiteStatus(),
+)
 const websiteUrl = computed(() => clientStatus.value?.websiteUrl ?? null)
 const websiteImported = computed(() => {
   const host = urlHost(websiteUrl.value)

@@ -9,6 +9,8 @@ export default defineEventHandler(async (event) => {
     select: {
       id: true,
       name: true,
+      description: true,
+      logoUrl: true,
       language: true,
       domain: true,
       domainVerified: true,
@@ -53,10 +55,29 @@ export default defineEventHandler(async (event) => {
     ...status
   } = clientSite
 
-  const [articleWallet, knowledgeSources] = await Promise.all([
+  const [articleWallet, knowledgeSources, publishedArticle] = await Promise.all([
     getArticleCreditWallet(user.clientSiteId),
-    db.knowledgeSource.count({ where: { clientSiteId: clientSite.id, deletedAt: null } }),
+    db.knowledgeSource.findMany({
+      where: { clientSiteId: clientSite.id, deletedAt: null },
+      select: { status: true, useInArticles: true },
+    }),
+    db.article.findFirst({
+      where: {
+        clientSiteId: clientSite.id,
+        deletedAt: null,
+        status: 'published',
+        OR: [{ releaseAt: null }, { releaseAt: { lte: new Date() } }],
+      },
+      select: { id: true },
+    }),
   ])
+  const knowledge = { indexed: 0, processing: 0, failed: 0 }
+  for (const source of knowledgeSources) {
+    if (!source.useInArticles) continue
+    if (source.status === 'INDEXED') knowledge.indexed++
+    else if (source.status === 'FAILED') knowledge.failed++
+    else knowledge.processing++
+  }
   // Onboarding records why a new site started without a trial; nothing on the site row says so.
   const repeatInbox =
     clientSite.plan === 'BASIC' &&
@@ -66,7 +87,8 @@ export default defineEventHandler(async (event) => {
     ...status,
     articlesRemaining: articleWallet.available,
     articleWallet,
-    knowledgeSources,
+    knowledgeSources: knowledgeSources.length,
+    setup: { hasPublishedArticle: Boolean(publishedArticle), knowledge },
     aiUser: users[0] ?? null,
     hasActiveSubscription: !!stripeSubscriptionId,
     trial: {

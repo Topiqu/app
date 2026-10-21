@@ -2,7 +2,7 @@
   <section class="flex flex-col gap-3" :aria-labelledby="headingId">
     <div>
       <h2 :id="headingId" class="text-base font-semibold text-highlighted">{{ $t('backlinks.links.title') }}</h2>
-      <p class="mt-1 text-sm text-muted">{{ $t('backlinks.links.description') }}</p>
+      <p v-if="links.length" class="mt-1 text-sm text-muted">{{ $t('backlinks.links.description') }}</p>
     </div>
 
     <p

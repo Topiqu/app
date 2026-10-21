@@ -1,11 +1,8 @@
 <template>
   <section class="flex flex-col gap-3" :aria-labelledby="headingId">
-    <div>
-      <h2 :id="headingId" class="text-base font-semibold text-highlighted">
-        {{ $t('backlinks.opportunities.title') }}
-      </h2>
-      <p class="mt-1 text-sm text-muted">{{ $t('backlinks.opportunities.description') }}</p>
-    </div>
+    <h2 :id="headingId" class="text-base font-semibold text-highlighted">
+      {{ $t('backlinks.opportunities.title') }}
+    </h2>
 
     <p
       v-if="!opportunities.length"

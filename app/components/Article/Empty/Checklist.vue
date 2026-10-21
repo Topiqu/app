@@ -16,8 +16,8 @@
         <UPageCard
           :to="step.to"
           variant="ghost"
-          :title="$t(`articles.empty.owner.steps.${step.id}.title`)"
-          :description="$t(`articles.empty.owner.steps.${step.id}.description`, { domain: site?.domain })"
+          :title="$t(`common.setup.steps.${step.id}.title`)"
+          :description="$t(`common.setup.steps.${step.id}.description`, { domain: site?.domain })"
           :icon="step.done ? 'mdi:check-circle' : step.icon"
           :ui="{ leadingIcon: step.done ? 'text-success' : undefined }"
         />
@@ -63,11 +63,20 @@ const stepMeta: Record<SetupStepId, { icon: string; to: () => RouteLocationRaw }
     icon: 'mdi:web-check',
     to: () => localePath({ name: 'admin' }),
   },
+  article: {
+    icon: 'mdi:file-document-edit-outline',
+    to: () => localePath({ name: 'admin-editor-id', params: { id: 'new' } }),
+  },
 }
 
 const steps = computed(() =>
   buildSetupSteps(
-    { ...site, focus: status.value?.focus, audience: status.value?.audience },
+    {
+      ...site,
+      focus: status.value?.focus,
+      audience: status.value?.audience,
+      hasPublishedArticle: status.value?.setup?.hasPublishedArticle,
+    },
     String(config.public.baseDomain || 'topiqu.com'),
   ),
 )
