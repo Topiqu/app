@@ -156,6 +156,7 @@ const busy = shallowRef<'request' | 'verify' | 'cancel' | null>(null)
 const notYet = shallowRef(false)
 const switchedTo = shallowRef('')
 const changed = async () => {
+  error.value = undefined
   await Promise.all([refetch(), refreshClientSiteStatus(), refreshClientSite()])
 }
 const prepareCurrent = () =>
@@ -183,7 +184,7 @@ const run = async (key: NonNullable<typeof busy.value>, task: () => Promise<void
     await task()
   } catch (cause) {
     const code = errorCode(cause)
-    const provisioning = ['CONFIGURATION', 'BUSY', 'DOMAIN_RESERVED', 'DOMAIN_LIMIT']
+    const provisioning = ['CONFIGURATION', 'BUSY', 'DOMAIN_RESERVED', 'DOMAIN_LIMIT', 'DOMAIN_CLEANUP_PENDING']
     error.value = t(
       code && ERROR_CODES.includes(code)
         ? `common.domain.errors.${code}`

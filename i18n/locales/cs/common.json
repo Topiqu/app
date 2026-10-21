@@ -115,6 +115,8 @@
     },
     "domain": {
       "provisioning": {
+        "cleanupHelp": "Blog už tuto doménu nepoužívá. Před opětovným připojením dokončete odpojení. Ruční konfigurace u poskytovatelů zůstane zachována.",
+        "retryCleanup": "Dokončit odpojení",
         "certificateRequirements": "Použijte veřejně důvěryhodný certifikát pouze pro tuto přesnou doménu. Wildcard, další domény a self-signed certifikáty nejsou podporované.",
         "cleanupRequired": "Před trvalým smazáním blogu odpojte integrace domén. Zachované záznamy úklidu musí zkontrolovat administrátor.",
         "expiringNotification": "Origin certifikát pro {domain} brzy vyprší. Nahrajte nový v nastavení domény.",
@@ -143,6 +145,7 @@
           "DISCONNECTED": "Odpojeno"
         },
         "errors": {
+          "DOMAIN_CLEANUP_PENDING": "Tato doména se ještě odpojuje od vašeho blogu. Dokončete odpojení výše a zkuste to znovu.",
           "DOMAIN_LIMIT": "Před dalším připojením dokončete nebo zrušte probíhající operace s doménami.",
           "ADOPTION_REQUIRED": "Existující konfiguraci musí zkontrolovat administrátor platformy.",
           "CONFIGURATION": "Připojení domén není správně nastavené. Kontaktujte podporu.",

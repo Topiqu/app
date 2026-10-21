@@ -1,20 +1,30 @@
+import { z } from 'zod'
+
 import { reconcileDomainConnection } from '../../utils/domains/connections'
 
 export default defineEventHandler(async (event) => {
   const { db, user, clientSiteId } = await requireDomainAccess(event)
   if (!(await consumeRateLimit(`domain-refresh:${clientSiteId}`, 5, 600))) throw createError({ statusCode: 429 })
+  const body = await readValidatedBody(
+    event,
+    z.object({ connectionId: z.string().uuid().optional() }).strict().nullish().parse,
+  )
   const site = await db.clientSite.findUniqueOrThrow({
     where: { id: clientSiteId },
     select: { domain: true, pendingDomain: true, domainVerificationToken: true },
   })
   const connection = await db.domainConnection.findUnique({
-    where: { host: site.pendingDomain ?? site.domain },
-    select: { id: true, cleanupRequestedAt: true },
+    where: {
+      ...(body?.connectionId ? { id: body.connectionId } : { host: site.pendingDomain ?? site.domain }),
+      clientSiteId,
+    },
+    select: { id: true, host: true, cleanupRequestedAt: true, state: true },
   })
-  if (!connection || connection.cleanupRequestedAt)
+  if (!connection || (!connection.cleanupRequestedAt && connection.host !== (site.pendingDomain ?? site.domain)))
     throw createError({ statusCode: 409, data: { code: 'setupRequired' } })
+  if (connection.state === 'DISCONNECTED') return { ready: false, state: 'DISCONNECTED' }
   const result = await reconcileDomainConnection(connection.id, clientSiteId)
-  if (result.ready && !site.pendingDomain) {
+  if (result.ready && !connection.cleanupRequestedAt && !site.pendingDomain && connection.host === site.domain) {
     const changed = await db.clientSite.updateMany({
       where: {
         id: clientSiteId,

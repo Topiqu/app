@@ -10,7 +10,15 @@ export class DomainProviderError extends Error {
   ) {
     super(code)
     this.name = 'DomainProviderError'
-    this.statusCode = ['BUSY', 'DOMAIN_RESERVED', 'DOMAIN_LIMIT', 'ADOPTION_REQUIRED'].includes(code) ? 409 : 503
+    this.statusCode = [
+      'BUSY',
+      'DOMAIN_RESERVED',
+      'DOMAIN_LIMIT',
+      'DOMAIN_CLEANUP_PENDING',
+      'ADOPTION_REQUIRED',
+    ].includes(code)
+      ? 409
+      : 503
     this.data = { code }
   }
 }

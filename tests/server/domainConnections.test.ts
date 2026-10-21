@@ -6,14 +6,14 @@ import {
   withDomainLease,
 } from '../../server/utils/domains/connections'
 
-const mocks = vi.hoisted(() => ({ cf: vi.fn(), find: vi.fn(), dokploy: vi.fn(), probe: vi.fn() }))
+const mocks = vi.hoisted(() => ({ cf: vi.fn(), find: vi.fn(), dokploy: vi.fn(), probe: vi.fn(), config: vi.fn() }))
 vi.mock('../../server/utils/domains/providers', async (original) => ({
   ...(await original<typeof import('../../server/utils/domains/providers')>()),
   cloudflareDomain: mocks.cf,
   checkCloudflareFallback: async () => {},
   findDokployDomain: mocks.find,
   dokployRequest: mocks.dokploy,
-  domainProviderConfig: () => ({ applicationId: 'app', organizationId: 'org', port: 3000 }),
+  domainProviderConfig: mocks.config,
 }))
 vi.mock('../../server/utils/domains/probe', () => ({ probeDomainRouting: mocks.probe }))
 
@@ -42,6 +42,7 @@ const site = vi.fn()
 
 beforeEach(() => {
   vi.clearAllMocks()
+  mocks.config.mockImplementation(() => ({ applicationId: 'app', organizationId: 'org', port: 3000 }))
   record.mockResolvedValue(row())
   updateMany.mockResolvedValue({ count: 1 })
   site.mockResolvedValue({
@@ -64,6 +65,31 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals())
 
 describe('domain connection lifecycle', () => {
+  it('does not provision a newly reused connection during a delayed cleanup attempt', async () => {
+    await expect(reconcileDomainConnection('c1', 's1', true)).resolves.toMatchObject({ state: 'OWNERSHIP' })
+    expect(mocks.config).not.toHaveBeenCalled()
+    expect(mocks.cf).not.toHaveBeenCalled()
+  })
+  it('reports this tenant’s pending cleanup without claiming another tenant owns the domain', async () => {
+    const database = {
+      domainConnection: { findUnique: vi.fn().mockResolvedValue({ ...row(), cleanupRequestedAt: new Date() }) },
+    } as unknown as NonNullable<Parameters<typeof reserveDomainConnection>[3]>
+    await expect(reserveDomainConnection('s1', 'blog.example.com', 'fresh', database)).rejects.toThrow(
+      'DOMAIN_CLEANUP_PENDING',
+    )
+    await expect(reserveDomainConnection('other', 'blog.example.com', 'fresh', database)).rejects.toThrow(
+      'DOMAIN_RESERVED',
+    )
+  })
+  it('finishes unprovisioned cleanup even when provider configuration is unavailable', async () => {
+    record.mockResolvedValue({ ...row(), cleanupRequestedAt: new Date(), cloudflareId: null, dokployId: null })
+    mocks.config.mockImplementation(() => {
+      throw new Error('configuration unavailable')
+    })
+    await expect(reconcileDomainConnection('c1', 's1')).resolves.toMatchObject({ state: 'DISCONNECTED' })
+    expect(mocks.cf).not.toHaveBeenCalled()
+    expect(mocks.find).not.toHaveBeenCalled()
+  })
   it('does not overwrite another claimant when reusing a disconnected hostname', async () => {
     const claim = vi.fn().mockResolvedValue({ count: 0 })
     const database = {

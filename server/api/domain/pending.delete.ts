@@ -1,4 +1,4 @@
-import { withDomainLease } from '../../utils/domains/connections'
+import { attemptDomainCleanup, withDomainLease } from '../../utils/domains/connections'
 
 export default defineEventHandler(async (event) => {
   const { user, db, clientSiteId } = await requireDomainAccess(event)
@@ -19,11 +19,12 @@ export default defineEventHandler(async (event) => {
       if (connection)
         await tx.domainConnection.update({
           where: { id: connection.id },
-          data: { cleanupRequestedAt: new Date(), state: 'DISCONNECTING' },
+          data: { cleanupRequestedAt: new Date(), state: 'DISCONNECTING', errorCode: null },
         })
     })
   if (connection) await withDomainLease(connection.id, cancel)
   else await cancel()
   await logAction({ action: 'DOMAIN_SWITCH_CANCELLED', userId: user.id, clientSiteId, ip: getIp(event) })
+  if (connection) await attemptDomainCleanup(connection.id, clientSiteId)
   return { success: true }
 })

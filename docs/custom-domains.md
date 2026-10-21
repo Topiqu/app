@@ -68,7 +68,12 @@ Only retired managed Topiqu hosts retain redirects. Retired custom hosts are dis
 so later owners do not inherit indefinite redirects. Explicit disconnect requires an
 available managed fallback and disables serving before provider cleanup. Cleanup checks
 tracked IDs and exact hostname/application identity, never suffix-based bulk deletion.
-Provider cleanup is asynchronous: the hourly domain task retries persisted requests.
+Disconnect and setup cancellation attempt provider cleanup immediately after committing
+the safe address change. Failed or busy cleanup remains durable for the hourly task, and
+the connection card allows a tenant-scoped retry after the blog has moved to its fallback.
+Retired setup errors are cleared when disconnecting. Cleanup with no owned resources does
+not require provider credentials. Reconnecting requires completed cleanup and a fresh TXT
+challenge; this tenant's pending cleanup is distinct from another tenant's reservation.
 Customer DNS records stay in the customer's DNS account and must be removed there.
 
 DNS cannot detect a registrar ownership transfer that leaves all DNS records unchanged.

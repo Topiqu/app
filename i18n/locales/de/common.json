@@ -115,6 +115,8 @@
     },
     "domain": {
       "provisioning": {
+        "cleanupHelp": "Der Blog verwendet diese Domain nicht mehr. Schließen Sie die Trennung ab, bevor Sie sie erneut verbinden. Manuelle Anbieterkonfiguration bleibt erhalten.",
+        "retryCleanup": "Trennung abschließen",
         "certificateRequirements": "Verwenden Sie ein öffentlich vertrauenswürdiges Zertifikat nur für genau diesen Hostnamen. Wildcards, zusätzliche Hostnamen und selbstsignierte Zertifikate werden nicht unterstützt.",
         "cleanupRequired": "Trennen Sie Domain-Integrationen vor dem endgültigen Löschen. Verbleibende Bereinigungsdatensätze müssen administrativ geprüft werden.",
         "expiringNotification": "Das Origin-Zertifikat für {domain} läuft bald ab. Installieren Sie einen Ersatz in den Domaineinstellungen.",
@@ -143,6 +145,7 @@
           "DISCONNECTED": "Getrennt"
         },
         "errors": {
+          "DOMAIN_CLEANUP_PENDING": "Diese Domain wird noch von Ihrem Blog getrennt. Schließen Sie die Trennung oben ab und versuchen Sie es erneut.",
           "DOMAIN_LIMIT": "Schließen Sie laufende Domainvorgänge ab oder brechen Sie sie ab, bevor Sie eine weitere Verbindung starten.",
           "ADOPTION_REQUIRED": "Ein Plattformadministrator muss die bestehende Konfiguration prüfen.",
           "CONFIGURATION": "Die Domain-Anbindung ist nicht korrekt eingerichtet. Kontaktieren Sie den Support.",

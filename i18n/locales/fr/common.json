@@ -115,6 +115,8 @@
     },
     "domain": {
       "provisioning": {
+        "cleanupHelp": "Le blog n’utilise plus ce domaine. Terminez la déconnexion avant de le reconnecter. La configuration manuelle des fournisseurs est conservée.",
+        "retryCleanup": "Terminer la déconnexion",
         "certificateRequirements": "Utilisez un certificat publiquement reconnu pour ce nom d’hôte uniquement. Les jokers, noms supplémentaires et certificats autosignés ne sont pas pris en charge.",
         "cleanupRequired": "Déconnectez les domaines avant de supprimer définitivement ce blog. Les enregistrements de nettoyage conservés nécessitent un examen administratif.",
         "expiringNotification": "Le certificat d’origine de {domain} expire bientôt. Installez un remplacement dans les paramètres du domaine.",
@@ -143,6 +145,7 @@
           "DISCONNECTED": "Déconnecté"
         },
         "errors": {
+          "DOMAIN_CLEANUP_PENDING": "Ce domaine est encore en cours de déconnexion de votre blog. Terminez la déconnexion ci-dessus, puis réessayez.",
           "DOMAIN_LIMIT": "Terminez ou annulez les opérations de domaine existantes avant une nouvelle connexion.",
           "ADOPTION_REQUIRED": "Un administrateur doit examiner la configuration existante.",
           "CONFIGURATION": "La connexion des domaines est mal configurée. Contactez l’assistance.",

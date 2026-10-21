@@ -115,6 +115,8 @@
     },
     "domain": {
       "provisioning": {
+        "cleanupHelp": "The blog has moved off this domain. Complete the disconnection before connecting it again. Manual provider configuration is retained.",
+        "retryCleanup": "Complete disconnection",
         "certificateRequirements": "Use a publicly trusted certificate for this exact hostname only. Wildcards, additional hostnames and self-signed certificates are not supported.",
         "cleanupRequired": "Disconnect domain integrations before permanently deleting this blog. Retained cleanup records require administrator review.",
         "expiringNotification": "The origin certificate for {domain} expires soon. Install a replacement in domain settings.",
@@ -143,6 +145,7 @@
           "DISCONNECTED": "Disconnected"
         },
         "errors": {
+          "DOMAIN_CLEANUP_PENDING": "This domain is still disconnecting from your blog. Complete the disconnection above, then try again.",
           "DOMAIN_LIMIT": "Finish or cancel existing domain operations before starting another connection.",
           "ADOPTION_REQUIRED": "Existing provider configuration needs review by a platform administrator.",
           "CONFIGURATION": "Domain provisioning is not configured correctly. Contact support.",

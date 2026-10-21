@@ -91,7 +91,9 @@ export const reserveDomainConnection = async (
       if (!claimed.count) throw new DomainProviderError('DOMAIN_RESERVED')
       return database.domainConnection.findUniqueOrThrow({ where: { id: existing.id }, omit: domainConnectionSecrets })
     }
-    if (existing.clientSiteId !== clientSiteId || existing.cleanupRequestedAt || existing.challenge !== challenge)
+    if (existing.clientSiteId === clientSiteId && existing.cleanupRequestedAt)
+      throw new DomainProviderError('DOMAIN_CLEANUP_PENDING')
+    if (existing.clientSiteId !== clientSiteId || existing.challenge !== challenge)
       throw new DomainProviderError('DOMAIN_RESERVED')
     return existing
   }
@@ -124,17 +126,17 @@ export const withDomainLease = async <T>(id: string, task: (leaseId: string) => 
   }
 }
 
-export const reconcileDomainConnection = async (id: string, expectedClientSiteId?: string) =>
+export const reconcileDomainConnection = async (id: string, expectedClientSiteId?: string, cleanupOnly = false) =>
   withDomainLease(id, async (leaseId) => {
     const connection = await loadDomainConnection(id)
     if (expectedClientSiteId && connection.clientSiteId !== expectedClientSiteId)
       throw new DomainProviderError('DOMAIN_RESERVED')
+    if (cleanupOnly && !connection.cleanupRequestedAt) return { ready: false, state: connection.state }
     const save = async (data: Parameters<typeof prisma.domainConnection.updateMany>[0]['data']) => {
       const result = await prisma.domainConnection.updateMany({ where: { id, leaseId }, data })
       if (!result.count) throw new DomainProviderError('BUSY')
     }
     try {
-      const config = domainProviderConfig()
       if (connection.cleanupRequestedAt) {
         await cleanupDomainProviders(connection)
         await save({
@@ -148,6 +150,7 @@ export const reconcileDomainConnection = async (id: string, expectedClientSiteId
         })
         return { ready: false, state: 'DISCONNECTED' }
       }
+      const config = domainProviderConfig()
       const site = await prisma.clientSite.findUniqueOrThrow({
         where: { id: connection.clientSiteId },
         select: {
@@ -312,6 +315,16 @@ export const reconcileDomainConnection = async (id: string, expectedClientSiteId
       return { ready: false, state: 'ERROR', transient: true }
     }
   })
+
+// The address switch is already committed; keep cleanup retryable if another worker holds the lease.
+export const attemptDomainCleanup = async (id: string, clientSiteId: string) => {
+  try {
+    await reconcileDomainConnection(id, clientSiteId, true)
+  } catch (error) {
+    if (!(error instanceof DomainProviderError && error.code === 'BUSY'))
+      await reportCaughtError('Domain cleanup attempt failed', new Error('DOMAIN_CLEANUP_FAILED'), { connectionId: id })
+  }
+}
 
 const cleanupDomainProviders = async (connection: Awaited<ReturnType<typeof loadDomainConnection>>) => {
   // Delete only resources created by this connection, after rechecking their identities.

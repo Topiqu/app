@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { domainError, isManagedDomain, normalizeDomain } from '~~/shared/utils/domain'
 
-import { withDomainLease } from '../../utils/domains/connections'
+import { attemptDomainCleanup, withDomainLease } from '../../utils/domains/connections'
 
 export default defineEventHandler(async (event) => {
   const { db, user, clientSiteId } = await requireDomainAccess(event)
@@ -39,7 +39,7 @@ export default defineEventHandler(async (event) => {
       if (connection)
         await tx.domainConnection.update({
           where: { id: connection.id },
-          data: { state: 'DISCONNECTING', cleanupRequestedAt: new Date() },
+          data: { state: 'DISCONNECTING', cleanupRequestedAt: new Date(), errorCode: null },
         })
     })
   if (connection) await withDomainLease(connection.id, disconnect)
@@ -57,5 +57,6 @@ export default defineEventHandler(async (event) => {
     ip: getIp(event),
     metadata: { domain: site.domain, fallback },
   })
+  if (connection) await attemptDomainCleanup(connection.id, clientSiteId)
   return { domain: fallback }
 })

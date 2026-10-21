@@ -4,9 +4,21 @@
       <span class="break-all font-medium text-highlighted">{{ connection.host }}</span>
       <UBadge color="neutral" variant="soft">{{ $t(`common.domain.provisioning.states.${state}`) }}</UBadge>
     </div>
-    <p class="text-sm text-muted">{{ $t('common.domain.provisioning.proxyHelp') }}</p>
-    <UAlert v-if="connection.errorCode" color="warning" :title="errorMessage(connection.errorCode)" />
-    <dl v-if="records.length" class="divide-y divide-default text-xs">
+    <p class="text-sm text-muted">
+      {{
+        $t(
+          connection.cleanupRequestedAt
+            ? 'common.domain.provisioning.cleanupHelp'
+            : 'common.domain.provisioning.proxyHelp',
+        )
+      }}
+    </p>
+    <UAlert
+      v-if="connection.errorCode && !(connection.cleanupRequestedAt && connection.errorCode === 'ADOPTION_REQUIRED')"
+      color="warning"
+      :title="errorMessage(connection.errorCode)"
+    />
+    <dl v-if="!connection.cleanupRequestedAt && records.length" class="divide-y divide-default text-xs">
       <div v-for="(record, index) in records" :key="index" class="grid gap-1 py-3 sm:grid-cols-[4rem_1fr_1fr]">
         <dt>{{ record.type }}</dt>
         <dd class="break-all font-mono">{{ record.name }}</dd>
@@ -19,14 +31,14 @@
     </p>
     <UAlert v-if="error" color="error" :title="error" />
     <div class="flex flex-wrap gap-2">
-      <UButton
-        color="neutral"
-        variant="soft"
-        :loading="busy"
-        :disabled="!!connection.cleanupRequestedAt"
-        @click="refresh"
-      >
-        {{ $t('common.domain.provisioning.refresh') }}
+      <UButton color="neutral" variant="soft" :loading="busy" @click="refresh">
+        {{
+          $t(
+            connection.cleanupRequestedAt
+              ? 'common.domain.provisioning.retryCleanup'
+              : 'common.domain.provisioning.refresh',
+          )
+        }}
       </UButton>
       <UButton
         v-if="!connection.cleanupRequestedAt"
@@ -38,7 +50,7 @@
         {{ $t('common.domain.provisioning.customCertificate') }}
       </UButton>
       <UButton
-        v-if="superadmin && connection.errorCode === 'ADOPTION_REQUIRED'"
+        v-if="superadmin && !connection.cleanupRequestedAt && connection.errorCode === 'ADOPTION_REQUIRED'"
         color="neutral"
         variant="soft"
         :disabled="busy"
@@ -150,6 +162,7 @@ const errorMessage = (code: string) => {
     'TXT_MISMATCH',
     'DOMAIN_RESERVED',
     'DOMAIN_LIMIT',
+    'DOMAIN_CLEANUP_PENDING',
     'CLOUDFLARE_UNAVAILABLE',
     'DOKPLOY_UNAVAILABLE',
   ]
@@ -169,7 +182,12 @@ const run = async (task: () => Promise<unknown>) => {
   }
 }
 const refresh = () =>
-  run(() => $fetch<{ ready: boolean; state: string }>('/api/domain/refresh' as string, { method: 'POST' }))
+  run(() =>
+    $fetch<{ ready: boolean; state: string }>('/api/domain/refresh' as string, {
+      method: 'POST',
+      body: { connectionId: props.connection.id },
+    }),
+  )
 const adopt = async () => {
   if (
     !(await confirm({
