@@ -1,4 +1,4 @@
-import { isValidDomain, normalizeDomain } from '~~/shared/utils/domain'
+import { isManagedDomain, isValidDomain, normalizeDomain } from '~~/shared/utils/domain'
 
 /** A tenant change starts at its dashboard so tenant-specific route IDs cannot carry over. */
 export const tenantAdminUrl = (
@@ -10,7 +10,7 @@ export const tenantAdminUrl = (
   const current = new URL(currentHref)
   const domain = normalizeDomain(site.domain)
   const targetHost =
-    site.domainVerified && isValidDomain(domain)
+    site.domainVerified && isValidDomain(domain) && isManagedDomain(domain, baseDomain)
       ? domain
       : current.hostname === 'localhost' || current.hostname === '127.0.0.1'
         ? current.hostname

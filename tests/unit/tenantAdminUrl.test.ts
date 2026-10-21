@@ -14,7 +14,7 @@ describe('tenant admin navigation', () => {
     ).toBe('https://second.topiqu.com/cs/admin')
   })
 
-  it('opens a verified custom domain', () => {
+  it('keeps management on the platform host for a verified custom domain', () => {
     expect(
       tenantAdminUrl(
         { domain: 'blog.example.cz', domainVerified: true },
@@ -22,7 +22,7 @@ describe('tenant admin navigation', () => {
         '/en/admin',
         'topiqu.com',
       ),
-    ).toBe('https://blog.example.cz/en/admin')
+    ).toBe('https://app.topiqu.com/en/admin')
   })
 
   it('uses the app host until a custom domain is verified', () => {
