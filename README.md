@@ -30,7 +30,7 @@
 
 ## Quick start
 
-**Requirements:** Bun **1.4.2**, Node **24.21.0** and Docker. Versions are pinned in [.prototools](./.prototools) and [.node-version](./.node-version); Node is needed for Vue type checking and browser tests.
+**Requirements:** Bun **1.4.3**, Node **24.21.0** and Docker. Bun is pinned in [package.json](./package.json), Docker and CI; Node is pinned in [.node-version](./.node-version) for Vue type checking and browser tests.
 
 **1. Configure your environment**
 
@@ -79,7 +79,7 @@ ZenStack generates ignored schema metadata and TypeScript types in `generated/ze
 | **Data**            | ZenStack ORM 3 · PostgreSQL · pgvector |
 | **Editor**          | Tiptap 3 with custom extensions        |
 | **AI**              | AI SDK 7 · Claude Haiku 5.5 · OpenAI   |
-| **Runtime**         | Bun 1.4.2 · Node 24.21.0               |
+| **Runtime**         | Bun 1.4.3 · Node 24.21.0               |
 
 <details>
 <summary><strong>Integrations and tooling</strong></summary>
@@ -156,6 +156,12 @@ Apply database migrations with `bun run release` (targets `DATABASE_URL`). `bun 
 <summary><strong>Docker and runtime details</strong></summary>
 
 The Dockerfile uses the same pinned Bun version and installs from the frozen lockfile, including compatibility patches in `patches/` for Nuxt DevTools and Nuxt Image's IPX Fetch adapter. The IPX patch preserves image MIME types, cache headers and conditional requests on Bun; review it when upgrading Nuxt Image. Building an image never connects to or migrates a database and takes no database credentials. The final image contains only `.output`, runs as the unprivileged `bun` user, and starts `server/index.mjs` with Bun. CI applies migrations to its disposable database before the production browser smoke tests.
+
+Nuxt UI detects used components to limit generated theme CSS. Global CSS is inlined in SSR HTML; do not strip remaining stylesheet links indiscriminately, because lazy components can own additional styles. Nitro precompresses static assets with gzip so the origin can serve them without runtime compression; CDN Brotli is independent. Related articles retain SSR markup and hydrate when visible. Release smoke checks cover SSR styles, gzip negotiation and immutable hashed assets.
+
+The pinned Nuxt UI patch in `patches/@nuxt%2Fui@4.11.3.patch` keeps the public popover/dropdown imports independent of private calendar code by using identical direct Reka component exports. It changes no package versions or public APIs; review/remove it when upgrading Nuxt UI, and verify locale switching, click popovers and author hover cards after the upgrade.
+
+Docker dependency caching is scoped to the app and target architecture. Package manifests and patches are copied before application source; local test reports, caches and host-generated ORM files stay outside the build context. BuildKit mounts keep APT indexes out of image layers. The runtime defaults to `NODE_ENV=production`, `HOST=0.0.0.0` and `PORT=3000`, with a writable app working directory owned by `bun`; the healthcheck follows `NITRO_PORT` or `PORT` when overridden. The image still exposes port 3000 by default; publish the configured runtime port if changing it.
 
 Production requires runtime `DATABASE_URL` and an `AUTH_SECRET` of at least 32 characters. Inject these through the deployment environment; do not pass them as Docker build arguments. `CRON_SECRET` is required to call the external cron endpoints; an unset secret always denies access. `PGPOOL_MAX` defaults to 10 connections per process (allowed range 1–100); budget the total across all replicas and workers. Connections wait at most 3 seconds and statements at most 30 seconds. `/api/live` is liveness; `/api/health` is database readiness with a 4-second deadline. Configure the platform probes accordingly. External log delivery is bounded and best-effort; console logs and the database audit remain authoritative.
 
