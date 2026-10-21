@@ -51,7 +51,7 @@
       :alt="$t('articles.articleCard.imageAlt')"
       aspectRatio="16 / 9"
       fit="contain"
-      sizes="xs:100vw sm:100vw md:100vw lg:1200px"
+      sizes="xs:100vw phone:100vw sm:100vw md:100vw lg:1200px"
       :width="1200"
       :height="675"
       containerClass="w-full rounded-lg"

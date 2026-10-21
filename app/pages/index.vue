@@ -92,7 +92,7 @@
           :alt="leadArticle.title"
           priority
           aspectRatio="16 / 10"
-          sizes="100vw md:50vw lg:42vw"
+          sizes="xs:100vw phone:100vw sm:100vw md:50vw lg:42vw xl:560px"
           containerClass="min-h-56 w-full flex-1 @2xl:h-full @2xl:min-h-0 @2xl:aspect-auto!"
         />
         <div
@@ -223,7 +223,7 @@
               :fallbackText="article.title"
               :fallbackBorder="false"
               aspectRatio="4 / 3"
-              sizes="100vw md:50vw lg:33vw"
+              sizes="xs:100vw phone:100vw sm:100vw md:50vw lg:33vw xl:420px"
               containerClass="w-full rounded-(--topiqu-surface-radius) bg-elevated"
             />
             <div class="min-w-0 space-y-2 pt-4">

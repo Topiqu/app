@@ -63,7 +63,7 @@
                 :src="draft.imageUrl"
                 :alt="draft.title || $t('articles.articleCard.imageAlt')"
                 aspectRatio="16 / 9"
-                sizes="100vw sm:400px"
+                sizes="xs:100vw phone:100vw sm:400px"
                 containerClass="w-full rounded-none"
               />
               <div class="min-w-0 space-y-2 p-4 pr-12">

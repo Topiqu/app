@@ -12,7 +12,7 @@
             :fallbackText="item.name"
             :fallbackBorder="false"
             aspectRatio="16 / 9"
-            sizes="100vw sm:50vw lg:33vw"
+            sizes="xs:100vw phone:100vw sm:50vw lg:33vw xl:420px"
             containerClass="w-full"
           />
           <div class="flex flex-1 flex-col gap-3 p-5">

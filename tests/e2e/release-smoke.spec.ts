@@ -4,6 +4,20 @@ import { preparePage, waitForPageReady } from './helpers'
 
 const articleUrl = 'http://localhost:4173/cs/clanky/jak-postavit-udrzitelnou-redakci'
 
+test('IPX preserves image headers, conditional requests and host restrictions', async ({ request }) => {
+  const url = '/_ipx/w_80&f_webp&q_82/topik_normal_rm.png'
+  const response = await request.get(url)
+  expect(response.status()).toBe(200)
+  expect(response.headers()['content-type']).toMatch(/^image\/webp/)
+  expect(response.headers()['cache-control']).toContain('max-age=86400')
+  expect(response.headers()['content-security-policy']).toContain("default-src 'none'")
+  const etag = response.headers().etag
+  expect(etag).toBeTruthy()
+  expect((await request.get(url, { headers: { 'if-none-match': etag! } })).status()).toBe(304)
+  const denied = await request.get('/_ipx/w_80/https://example.invalid/private.png')
+  expect(denied.status()).toBe(403)
+})
+
 test('service-worker activation removes legacy private responses and never serves them offline', async ({ page }) => {
   await preparePage(page)
   await page.goto('http://localhost:4173/api/live')

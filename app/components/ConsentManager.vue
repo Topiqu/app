@@ -50,8 +50,8 @@
       </UButton>
     </div>
   </div>
-  <ConsentSettings
-    v-if="site"
+  <LazyConsentSettings
+    v-if="site && settingsMounted"
     v-model:open="settingsOpen"
     :site="site"
     :capabilities="capabilities"
@@ -72,6 +72,8 @@ const { decision, settingsOpen, capabilities, needsDecision, analyticsGranted, m
   () => props.site,
 )
 const currentCapabilities = useState<ConsentCapabilities | null>('consent-capabilities', () => null)
+// Retain the dialog after first opening so its close transition and focus restoration finish.
+const settingsMounted = computed<boolean>((previous) => Boolean(previous || settingsOpen.value))
 watch(capabilities, (value) => (currentCapabilities.value = value), { immediate: true, flush: 'sync' })
 useGoogleAnalyticsConsent(
   () => props.site,

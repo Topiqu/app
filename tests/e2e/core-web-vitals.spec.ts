@@ -2,6 +2,45 @@ import { expect, test } from '@playwright/test'
 
 import { expectNoHorizontalOverflow, preparePage } from './helpers'
 
+test('public startup preserves CSP and generates useful image candidates and a font preload', async ({ page }) => {
+  await page.addInitScript(() => {
+    const violations: string[] = []
+    Object.assign(window, { startupCspViolations: violations })
+    document.addEventListener('securitypolicyviolation', (event) => violations.push(event.blockedURI))
+  })
+  await page.goto('http://localhost:4173/en')
+  await page.locator('html[data-topiqu-hydrated="true"]').waitFor()
+  await expect(page.locator('link[rel="preload"][as="font"]')).toHaveAttribute('crossorigin', 'anonymous')
+  const srcsets = await page
+    .locator('.app-media img[srcset]')
+    .evaluateAll((images) => images.map((image) => image.getAttribute('srcset')!))
+  expect(srcsets.length).toBeGreaterThan(0)
+  expect(srcsets.every((srcset) => !/\s[12]w(?:,|$)/.test(srcset))).toBe(true)
+  expect(srcsets.some((srcset) => /\s480w(?:,|$)/.test(srcset))).toBe(true)
+  expect(
+    await page.evaluate(() => (window as Window & { startupCspViolations: string[] }).startupCspViolations),
+  ).not.toContain('eval')
+
+  await page.getByRole('button', { name: 'Cookie settings', exact: true }).click()
+  const dialog = page.getByRole('dialog', { name: 'Cookie settings', exact: true })
+  await expect(dialog).toBeVisible()
+  await expect(dialog.getByRole('switch').first()).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(dialog).toBeHidden()
+  await page.getByRole('button', { name: 'Cookie settings', exact: true }).click()
+  await expect(dialog).toBeVisible()
+})
+
+test('header controls hydrate and open on the first click', async ({ page }) => {
+  await page.goto('http://localhost:4173/en')
+  await page.locator('html[data-topiqu-hydrated="true"]').waitFor()
+  await page.getByRole('button', { name: 'Log In', exact: true }).click()
+  await expect(page.getByRole('link', { name: 'Log In', exact: true })).toBeVisible()
+  await page.keyboard.press('Escape')
+  await page.getByRole('button', { name: 'Interface language', exact: true }).click()
+  await expect(page.getByRole('menu')).toBeVisible()
+})
+
 test('search retains results and their space while a slow request becomes empty', async ({ page }) => {
   await preparePage(page)
   await page.goto('http://localhost:4173/cs')

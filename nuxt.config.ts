@@ -100,6 +100,9 @@ export default defineNuxtConfig({
 
   devtools: { enabled: !IS_BROWSER_TEST },
   experimental: {
+    defaults: {
+      nuxtLink: { prefetchOn: { visibility: false, interaction: true } },
+    },
     typedPages: true,
   },
   build: {
@@ -179,9 +182,6 @@ export default defineNuxtConfig({
       dirs: ['server/utils'],
     },
     externals: {
-      // IPX loads srvx/node via createRequire, and tracing alone copies only srvx's Bun entry. Nitro wants a
-      // file path here; a bare specifier is resolved against the project root and fails the build.
-      traceInclude: [createRequire(import.meta.url).resolve('srvx/node')],
       inline: [
         // Match Windows paths too: https://github.com/nuxt/nuxt/issues/36467
         /[\\/]node_modules[\\/]nuxt[\\/]dist[\\/]/,
@@ -297,6 +297,7 @@ export default defineNuxtConfig({
     runtimeCacheStorage: true,
   },
   image: {
+    screens: { xs: 320, phone: 480 },
     quality: 82,
     format: ['avif', 'webp', 'png'],
     domains: [...IMAGE_HOSTS],

@@ -66,7 +66,7 @@
           :originalSrc="asset.url"
           :alt="asset.defaultAltText || asset.name || asset.originalFilename || ''"
           aspectRatio="1 / 1"
-          sizes="50vw sm:33vw lg:25vw xl:220px"
+          sizes="xs:50vw phone:50vw sm:33vw lg:25vw xl:220px"
           containerClass="w-full"
         />
         <div class="space-y-1 p-3">

@@ -63,7 +63,7 @@
             :src="series.prev.imageUrl"
             alt=""
             aspectRatio="16 / 9"
-            sizes="100vw md:50vw"
+            sizes="xs:100vw phone:100vw sm:100vw md:50vw"
             containerClass="w-full rounded-md"
           />
         </template>
@@ -87,7 +87,7 @@
             :src="series.next.imageUrl"
             alt=""
             aspectRatio="16 / 9"
-            sizes="100vw md:50vw"
+            sizes="xs:100vw phone:100vw sm:100vw md:50vw"
             containerClass="w-full rounded-md"
           />
         </template>

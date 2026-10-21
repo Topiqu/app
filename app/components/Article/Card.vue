@@ -31,10 +31,10 @@
             "
             :sizes="
               variant === 'featured'
-                ? '100vw lg:55vw'
+                ? 'xs:100vw phone:100vw sm:100vw md:100vw lg:55vw xl:720px'
                 : layout === 'responsive-row'
-                  ? '100vw (min-width: 576px) 176px'
-                  : '100vw sm:50vw lg:33vw'
+                  ? 'xs:100vw phone:100vw 576:176px'
+                  : 'xs:100vw phone:100vw sm:50vw lg:33vw xl:420px'
             "
             :containerClass="layout === 'responsive-row' ? 'w-full @min-[36rem]:h-full' : 'w-full'"
           />
