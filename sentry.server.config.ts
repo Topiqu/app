@@ -1,6 +1,7 @@
 import * as Sentry from '@sentry/nuxt'
 
 import { scrubDomainTelemetry } from './server/utils/domainTelemetry'
+import { scrubAuthTransferBreadcrumb } from './shared/utils/authTelemetry'
 
 // This file is prepended as the very first import of the Nitro server entry (`autoInjectServerSentry`
 // in nuxt.config), so it runs before Nitro exists: `useRuntimeConfig()` here throws and kills the
@@ -14,10 +15,12 @@ Sentry.init({
   tracesSampleRate: APP_ENV === 'production' ? 0.2 : 1.0,
   beforeSend: (event) => {
     scrubDomainTelemetry(event)
+    for (const breadcrumb of event.breadcrumbs ?? []) scrubAuthTransferBreadcrumb(breadcrumb)
     return event
   },
   beforeSendTransaction: (event) => {
     if (scrubDomainTelemetry(event)) for (const span of event.spans ?? []) span.data = {}
+    for (const breadcrumb of event.breadcrumbs ?? []) scrubAuthTransferBreadcrumb(breadcrumb)
     return event
   },
 })
