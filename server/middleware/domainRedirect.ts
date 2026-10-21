@@ -1,7 +1,7 @@
 /** A blog that moved domains keeps its old links and rankings: the old host answers with a 301. */
 export default defineEventHandler(async (event) => {
   const hostname = tenantHostname(event)
-  if (!hostname || event.path.startsWith('/_nuxt/')) return
+  if (!hostname || event.path.startsWith('/_nuxt/') || event.path === '/api/domain/probe') return
   if (await cachedTenantByHost(event)) return
 
   const target = await domainRedirectTarget(hostname)

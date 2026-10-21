@@ -8,6 +8,7 @@ const GUARD =
 
 // Routes that write without a tenant scope, each for a reason that is not "nobody checked".
 const exempt: Record<string, string> = {
+  'domain/probe.post.ts': 'public nonce-bound routing proof; rate limited, no session or tenant content',
   'admin/verify-domain.post.ts': 're-exports domain-verification/check.post',
   'clients/[id]/index.delete.ts': 'superadmin only',
   'clients/[id]/wallet-adjustments.post.ts': 'superadmin only',
