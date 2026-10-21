@@ -4,6 +4,23 @@ import { preparePage, waitForPageReady } from './helpers'
 
 const articleUrl = 'http://localhost:4173/cs/clanky/jak-postavit-udrzitelnou-redakci'
 
+test('SSR includes application styles and hashed assets support origin compression', async ({ request }) => {
+  const document = await request.get('/en')
+  expect(document.status()).toBe(200)
+  const html = await document.text()
+  // Global styles must be available before JavaScript runs, without a blocking entry CSS fetch.
+  expect(html).toMatch(/<style\b[^>]*>[\s\S]*?--topiqu-header-height/)
+  expect(html).not.toMatch(/<link\b[^>]*rel="stylesheet"[^>]*href="[^"]*\/entry\.[^"]+\.css"/)
+  const script = html.match(/<script\b[^>]*src="([^"]*\/_nuxt\/[^"]+\.js)"/)
+  expect(script).toBeTruthy()
+  const asset = await request.get(script![1]!, { headers: { 'accept-encoding': 'gzip' } })
+  expect(asset.status()).toBe(200)
+  expect(asset.headers()['content-encoding']).toBe('gzip')
+  expect(asset.headers().vary).toContain('Accept-Encoding')
+  expect(asset.headers()['cache-control']).toContain('immutable')
+  expect((await asset.body()).length).toBeGreaterThan(1024)
+})
+
 test('IPX preserves image headers, conditional requests and host restrictions', async ({ request }) => {
   const url = '/_ipx/w_80&f_webp&q_82/topik_normal_rm.png'
   const response = await request.get(url)

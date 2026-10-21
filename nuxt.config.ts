@@ -99,6 +99,10 @@ export default defineNuxtConfig({
   compatibilityDate: '2026-05-21',
 
   devtools: { enabled: !IS_BROWSER_TEST },
+  ui: {
+    experimental: { componentDetection: true },
+  },
+  features: { inlineStyles: true },
   experimental: {
     defaults: {
       nuxtLink: { prefetchOn: { visibility: false, interaction: true } },
@@ -144,6 +148,8 @@ export default defineNuxtConfig({
   },
 
   nitro: {
+    // Serve compressed assets at the origin without expensive build-time Brotli work.
+    compressPublicAssets: { gzip: true, brotli: false },
     experimental: {
       tasks: true,
       asyncContext: true,
