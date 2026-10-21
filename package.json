@@ -1,10 +1,10 @@
 {
   "name": "topiqu-blog",
   "private": true,
-  "packageManager": "bun@1.4.2",
+  "packageManager": "bun@1.4.3",
   "engines": {
     "node": "^22.21.0 || ^24.11.0 || >=26.0.0",
-    "bun": ">=1.4.2"
+    "bun": ">=1.4.3"
   },
   "type": "module",
   "scripts": {
@@ -171,6 +171,7 @@
   },
   "patchedDependencies": {
     "@nuxt/devtools@3.4.2": "patches/@nuxt%2Fdevtools@3.4.2.patch",
-    "@nuxt/image@2.1.0": "patches/@nuxt%2Fimage@2.1.0.patch"
+    "@nuxt/image@2.1.0": "patches/@nuxt%2Fimage@2.1.0.patch",
+    "@nuxt/ui@4.11.3": "patches/@nuxt%2Fui@4.11.3.patch"
   }
 }

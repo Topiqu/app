@@ -6,6 +6,8 @@
 .cache
 dist
 shared/zod
+generated/zenstack
+prisma/~schema.prisma
 
 # Dependencies — reinstalled from the lockfile
 node_modules
@@ -24,6 +26,9 @@ node_modules
 .fleet
 .claude
 .qodo
+.ecc
+.playwright-cli
+.shopify
 
 # Docs & local tooling
 *.md
@@ -34,6 +39,10 @@ docker-compose.yml
 # Tests — not needed at runtime, and CI already gates them
 tests
 vitest.config.ts
+coverage
+test-results
+playwright-report
+blob-report
 
 # Misc
 .DS_Store

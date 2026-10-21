@@ -1,0 +1,43 @@
+diff --git a/dist/runtime/components/DropdownMenuContent.vue b/dist/runtime/components/DropdownMenuContent.vue
+index 7e0ce8e0209c4391ababa06160e8f428033f90cd..bc0b4441f1f944426e6fe1f52c6f5ff597a5b44f 100644
+--- a/dist/runtime/components/DropdownMenuContent.vue
++++ b/dist/runtime/components/DropdownMenuContent.vue
+@@ -5,7 +5,7 @@
+ <script setup>
+ import { computed, ref, toRef } from "vue";
+ import { defu } from "defu";
+-import { DropdownMenu } from "reka-ui/namespaced";
++import { DropdownMenuRoot, DropdownMenuTrigger, DropdownMenuPortal, DropdownMenuContent, DropdownMenuArrow, DropdownMenuItem, DropdownMenuGroup, DropdownMenuSeparator, DropdownMenuCheckboxItem, DropdownMenuItemIndicator, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuFilter } from "reka-ui";
+ import { useForwardPropsEmits } from "reka-ui";
+ import { reactiveOmit, createReusableTemplate } from "@vueuse/core";
+ import { useAppConfig } from "#imports";
+@@ -22,6 +22,7 @@ import UIcon from "./Icon.vue";
+ import UInput from "./Input.vue";
+ import UKbd from "./Kbd.vue";
+ import UDropdownMenuContent from "./DropdownMenuContent.vue";
++const DropdownMenu = { Root: DropdownMenuRoot, Trigger: DropdownMenuTrigger, Portal: DropdownMenuPortal, Content: DropdownMenuContent, Arrow: DropdownMenuArrow, Item: DropdownMenuItem, Group: DropdownMenuGroup, Separator: DropdownMenuSeparator, CheckboxItem: DropdownMenuCheckboxItem, ItemIndicator: DropdownMenuItemIndicator, Label: DropdownMenuLabel, RadioGroup: DropdownMenuRadioGroup, RadioItem: DropdownMenuRadioItem, Sub: DropdownMenuSub, SubContent: DropdownMenuSubContent, SubTrigger: DropdownMenuSubTrigger, Filter: DropdownMenuFilter };
+ const props = defineProps({
+   items: { type: null, required: false },
+   portal: { type: [Boolean, String], required: false, skipCheck: true },
+diff --git a/dist/runtime/components/Popover.vue b/dist/runtime/components/Popover.vue
+index e202538ea8473a559fe37b59e06a3fa381bf993d..23be12ab59094bd242882201e324382d20395628 100644
+--- a/dist/runtime/components/Popover.vue
++++ b/dist/runtime/components/Popover.vue
+@@ -6,7 +6,7 @@ import theme from "#build/ui/popover";
+ import { computed, toRef } from "vue";
+ import { defu } from "defu";
+ import { useForwardProps } from "../composables/useForwardProps";
+-import { Popover, HoverCard } from "reka-ui/namespaced";
++import { PopoverRoot, PopoverTrigger, PopoverPortal, PopoverContent, PopoverArrow, PopoverClose, PopoverAnchor, HoverCardRoot, HoverCardTrigger, HoverCardPortal, HoverCardContent, HoverCardArrow } from "reka-ui";
+ import { reactivePick } from "@vueuse/core";
+ import { useAppConfig } from "#imports";
+ import { useComponentProps } from "../composables/useComponentProps";
+@@ -57,6 +57,8 @@ const arrowProps = toRef(() => defu(props.arrow, { rounded: true }));
+ const ui = computed(() => tv({ extend: theme, ...appConfig.ui?.popover || {} })({
+   side: contentProps.value.side
+ }));
++const Popover = { Root: PopoverRoot, Trigger: PopoverTrigger, Portal: PopoverPortal, Content: PopoverContent, Arrow: PopoverArrow, Close: PopoverClose, Anchor: PopoverAnchor };
++const HoverCard = { Root: HoverCardRoot, Trigger: HoverCardTrigger, Portal: HoverCardPortal, Content: HoverCardContent, Arrow: HoverCardArrow };
+ const Component = computed(() => props.mode === "hover" ? HoverCard : Popover);
+ </script>
+ 

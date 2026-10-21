@@ -1,6 +1,7 @@
 import { join } from 'node:path'
 import { scanExports } from 'unimport'
-import { describe, expect, it } from 'vitest'
+import { runInNewContext } from 'node:vm'
+import { describe, expect, it, vi } from 'vitest'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 
 const root = process.cwd()
@@ -20,6 +21,25 @@ describe('release toolchain', () => {
     expect(docker).toContain('USER bun')
     expect(docker).toContain('HEALTHCHECK')
   })
+  it('checks readiness on the runtime port and reports unhealthy responses', async () => {
+    const command = read('Dockerfile').match(/HEALTHCHECK[^\n]*CMD bun -e "([^"]+)"/)?.[1]
+    expect(command).toBeTruthy()
+
+    for (const [env, expectedPort, ok] of [
+      [{}, '3000', true],
+      [{ PORT: '4100' }, '4100', true],
+      [{ PORT: '4100', NITRO_PORT: '4200' }, '4200', false],
+    ] as const) {
+      const fetch = vi.fn().mockResolvedValue({ ok })
+      const exit = vi.fn()
+      await runInNewContext(`(async () => { ${command} })()`, { fetch, process: { env, exit }, AbortSignal })
+      expect(fetch).toHaveBeenCalledWith(`http://127.0.0.1:${expectedPort}/api/health`, {
+        signal: expect.any(AbortSignal),
+      })
+      if (ok) expect(exit).not.toHaveBeenCalled()
+      else expect(exit).toHaveBeenCalledWith(1)
+    }
+  })
   it('registers every scheduled task, including expiry and DNS revalidation', () => {
     const config = read('nuxt.config.ts')
     for (const file of readdirSync(join(root, 'server/tasks')).filter((name) => name.endsWith('.ts')))
@@ -30,13 +50,18 @@ describe('release toolchain', () => {
     expect(read('public/sw-cache-cleanup.js')).toContain("caches.delete('api-cache')")
   })
   it('pins one Bun version across local, CI and Docker builds', () => {
-    const packageJson = JSON.parse(read('package.json')) as { packageManager?: string }
-    const toolVersion = read('.prototools').match(/^bun = "([^"]+)"$/m)?.[1]
+    const packageJson = JSON.parse(read('package.json')) as { packageManager?: string; engines?: { bun?: string } }
+    const toolVersion = packageJson.packageManager?.match(/^bun@(\d+\.\d+\.\d+)$/)?.[1]
 
     expect(toolVersion).toBeTruthy()
     expect(packageJson.packageManager).toBe(`bun@${toolVersion}`)
+    expect(packageJson.engines?.bun).toBe(`>=${toolVersion}`)
     expect(read('Dockerfile')).toContain(`FROM oven/bun:${toolVersion}-slim AS base`)
-    expect(read('.github/workflows/ci.yml')).toContain(`bun-version: ${toolVersion}`)
+    const ciVersions = [...read('.github/workflows/ci.yml').matchAll(/bun-version:\s*([^\s]+)/g)].map(
+      (match) => match[1],
+    )
+    expect(ciVersions.length).toBeGreaterThan(0)
+    expect([...new Set(ciVersions)]).toEqual([toolVersion])
   })
 
   it('gates releases on a frozen lockfile and compiled browser smoke test', () => {

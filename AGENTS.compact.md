@@ -45,7 +45,7 @@ commands whose target has not been resolved first.
 ## Architecture and implementation
 
 - Stack: Nuxt 4, Vue 3.5, TypeScript strict, Nuxt UI, VueUse, Tiptap 3, ZenStack 3/PostgreSQL, Bun
-  1.4.2, Vitest, and Playwright.
+  1.4.3, Vitest, and Playwright.
 - Use Bun only. Do not create npm, Yarn, or pnpm artifacts. Dependency changes must intentionally
   update `bun.lock` and pass a frozen install.
 - Keep changes small and cohesive. Avoid drive-by cleanup, dependency churn, speculative abstractions,

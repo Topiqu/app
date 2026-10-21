@@ -125,6 +125,7 @@
     },
   },
   "patchedDependencies": {
+    "@nuxt/ui@4.11.3": "patches/@nuxt%2Fui@4.11.3.patch",
     "@nuxt/devtools@3.4.2": "patches/@nuxt%2Fdevtools@3.4.2.patch",
     "@nuxt/image@2.1.0": "patches/@nuxt%2Fimage@2.1.0.patch",
   },
