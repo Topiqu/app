@@ -80,6 +80,8 @@ const queryDns = async (name: string, type: 'TXT' | 'CNAME'): Promise<DnsRespons
   $fetch<DnsResponse>('https://cloudflare-dns.com/dns-query' as string, {
     query: { name, type },
     headers: { accept: 'application/dns-json' },
+    // ofetch treats application/dns-json as a Blob unless JSON parsing is explicit.
+    responseType: 'json',
     timeout: 5000,
     retry: 1,
   })

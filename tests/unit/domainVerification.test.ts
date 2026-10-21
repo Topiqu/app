@@ -1,8 +1,32 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { evaluateDomainDns, nextReverificationState } from '../../server/utils/domainVerification'
+import { checkDomainDns, evaluateDomainDns, nextReverificationState } from '../../server/utils/domainVerification'
 
 describe('domain DNS verification', () => {
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('parses DNS JSON responses through ofetch before evaluating records', async () => {
+    const fetch = vi.fn(async (input: RequestInfo | URL) => {
+      const url = new URL(String(input))
+      const answer =
+        url.searchParams.get('type') === 'TXT'
+          ? { type: 16, data: '"topiqu-verification=fixture"' }
+          : { type: 5, data: 'domains.topiqu.com.' }
+      return new Response(JSON.stringify({ Status: 0, Answer: [answer] }), {
+        headers: { 'content-type': 'application/dns-json' },
+      })
+    })
+    vi.stubGlobal('fetch', fetch)
+
+    await expect(checkDomainDns('publication.example', 'fixture')).resolves.toMatchObject({
+      ownershipVerified: true,
+      routingVerified: true,
+      dnsStatus: { txt: 0, cname: 0 },
+      error: null,
+    })
+    expect(fetch).toHaveBeenCalledTimes(2)
+  })
+
   it('requires an exact TXT challenge and exact normalized CNAME target', () => {
     const result = evaluateDomainDns(
       { Status: 0, Answer: [{ type: 16, data: '"topiqu-verification=secret"' }] },
