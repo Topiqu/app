@@ -3,7 +3,8 @@ import { useQueryCache } from '@pinia/colada'
 export const useCacheInvalidation = () => {
   const queryCache = useQueryCache()
 
-  const invalidateArticles = () => queryCache.invalidateQueries({ key: queryKeys.articles.all })
+  const invalidateArticles = () =>
+    Promise.all([queryCache.invalidateQueries({ key: queryKeys.articles.all }), refreshClientSiteStatus()])
   const invalidateArticleLists = () => queryCache.invalidateQueries({ key: queryKeys.articles.lists })
   const invalidateArticleDetail = (articleId: string) =>
     queryCache.invalidateQueries({ key: queryKeys.articles.detail(articleId) })

@@ -5,6 +5,56 @@
       "description": "Richte deinen Blog ein und beginne dann, mit Topiqu Artikel zu schreiben und zu veröffentlichen.",
       "retry": "Erneut versuchen"
     },
+    "setup": {
+      "menu": "Erste Schritte",
+      "title": "Bereiten Sie Ihre erste Veröffentlichung vor",
+      "completeTitle": "Der Blog ist eingerichtet",
+      "progress": "{done} von {total} erledigt",
+      "next": "Nächster Schritt: {step}",
+      "expand": "Checkliste zur Blog-Einrichtung aufklappen",
+      "collapse": "Checkliste zur Blog-Einrichtung zuklappen",
+      "done": "Erledigt",
+      "remaining": "Offen",
+      "review": "Einstellungen prüfen",
+      "publishPermission": "Zum Veröffentlichen benötigen Sie Schreib- und Veröffentlichungsrechte. Wenden Sie sich an den Blog-Inhaber.",
+      "recommended": "Weitere Empfehlungen",
+      "optional": "Öffnen Sie die Checkliste erneut über Erste Schritte im Menü.",
+      "hide": "Checkliste ausblenden",
+      "steps": {
+        "branding": {
+          "title": "Stellen Sie Ihren Blog vor",
+          "description": "Beschreiben Sie kurz, was Leser in Ihrem Blog finden.",
+          "action": "Blog-Beschreibung ergänzen"
+        },
+        "voice": {
+          "title": "Themen und Zielgruppe festlegen",
+          "description": "Sagen Sie der KI, worüber sie schreiben und wem die Artikel helfen sollen.",
+          "action": "Inhaltliche Ausrichtung festlegen"
+        },
+        "domain": {
+          "title": "Eigene Domain verifizieren",
+          "description": "Richten Sie die DNS-Einträge für {domain} ein und prüfen Sie, ob die Domain funktioniert.",
+          "action": "Domain-Einstellungen öffnen"
+        },
+        "article": {
+          "title": "Ersten Artikel veröffentlichen",
+          "description": "Erstellen Sie einen Artikel, prüfen Sie die Vorschau und veröffentlichen Sie ihn. Entwürfe und für später geplante Artikel zählen noch nicht.",
+          "action": "Editor öffnen"
+        }
+      },
+      "recommendations": {
+        "logo": {
+          "title": "Logo hochladen",
+          "description": "Ihr Blog kann vorerst seinen Namen verwenden. Ein Logo können Sie jederzeit hinzufügen."
+        },
+        "knowledge": {
+          "title": "Quellen für die KI hinzufügen",
+          "description": "Fügen Sie Ihre Website oder Dokumente hinzu, damit die KI Informationen über Ihr Unternehmen hat.",
+          "processing": "Ihre Quellen werden verarbeitet. Danach stehen sie der KI zur Verfügung.",
+          "failed": "Einige Quellen konnten nicht verarbeitet werden. Öffnen Sie die Wissensdatenbank und versuchen Sie es erneut."
+        }
+      }
+    },
     "wallet": {
       "title": "Artikel",
       "available": "Verbleibende Artikel",

@@ -42,6 +42,17 @@
         :square="collapsed"
         :ui="{ base: collapsed ? 'self-center' : 'w-full justify-center' }"
       />
+      <UButton
+        v-if="showSetup"
+        color="neutral"
+        variant="ghost"
+        icon="mdi:list-status"
+        :label="collapsed ? undefined : $t('common.setup.menu')"
+        :aria-label="$t('common.setup.menu')"
+        :square="collapsed"
+        :ui="{ base: collapsed ? 'self-center' : 'w-full justify-start' }"
+        @click="openSetup"
+      />
       <UNavigationMenu
         :items="navigation"
         orientation="vertical"
@@ -95,7 +106,18 @@
 import type { NavigationMenuItem } from '@nuxt/ui'
 
 const isOpen = defineModel<boolean>('isOpen')
+const emit = defineEmits<{ openSetup: [] }>()
 const { data: auth } = useAuth()
+const route = useRoute()
+const can = useTenantScope()
+const showSetup = computed(
+  () =>
+    auth.value?.user.role === 'admin' && resolvePageShell(route.meta.shell) === 'dashboard' && can('TENANT_SETTINGS'),
+)
+const openSetup = () => {
+  emit('openSetup')
+  isOpen.value = false
+}
 const localePath = useLocalePath()
 const clientCreateOpen = useState('dashboard-client-create-open', () => false)
 const userListOpen = useState('dashboard-user-list-open', () => false)

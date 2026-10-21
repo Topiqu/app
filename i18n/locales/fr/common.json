@@ -5,6 +5,56 @@
       "description": "Configurez votre blog, puis commencez à rédiger et publier des articles avec Topiqu.",
       "retry": "Réessayer"
     },
+    "setup": {
+      "menu": "Premiers pas",
+      "title": "Préparez votre première publication",
+      "completeTitle": "Le blog est configuré",
+      "progress": "{done} sur {total} terminés",
+      "next": "Étape suivante : {step}",
+      "expand": "Développer la liste de configuration du blog",
+      "collapse": "Réduire la liste de configuration du blog",
+      "done": "Terminé",
+      "remaining": "À faire",
+      "review": "Vérifier les réglages",
+      "publishPermission": "Les autorisations de rédaction et de publication sont nécessaires pour publier. Contactez le propriétaire du blog.",
+      "recommended": "Autres recommandations",
+      "optional": "Rouvrez cette liste depuis Premiers pas dans le menu.",
+      "hide": "Masquer la liste",
+      "steps": {
+        "branding": {
+          "title": "Présentez votre blog",
+          "description": "Décrivez brièvement ce que les lecteurs trouveront sur votre blog.",
+          "action": "Ajouter une description"
+        },
+        "voice": {
+          "title": "Définissez les sujets et le public",
+          "description": "Indiquez à l’IA les sujets à traiter et les lecteurs que vos articles doivent aider.",
+          "action": "Définir la ligne éditoriale"
+        },
+        "domain": {
+          "title": "Vérifiez votre domaine personnalisé",
+          "description": "Configurez les enregistrements DNS de {domain} et vérifiez que le domaine fonctionne.",
+          "action": "Ouvrir les réglages du domaine"
+        },
+        "article": {
+          "title": "Publiez votre premier article",
+          "description": "Créez un article, vérifiez son aperçu et publiez-le. Les brouillons et les articles programmés pour plus tard ne comptent pas encore.",
+          "action": "Ouvrir l’éditeur"
+        }
+      },
+      "recommendations": {
+        "logo": {
+          "title": "Importez un logo",
+          "description": "Votre blog peut utiliser son nom pour le moment. Vous pourrez ajouter un logo à tout moment."
+        },
+        "knowledge": {
+          "title": "Ajoutez des sources pour l’IA",
+          "description": "Ajoutez votre site ou des documents pour que l’IA dispose d’informations sur votre entreprise.",
+          "processing": "Vos sources sont en cours de traitement. Elles seront ensuite disponibles pour l’IA.",
+          "failed": "Certaines sources n’ont pas pu être traitées. Ouvrez la base de connaissances et réessayez."
+        }
+      }
+    },
     "wallet": {
       "title": "Articles",
       "available": "Articles restants",

@@ -5,6 +5,56 @@
       "description": "Nastavte si blog a začněte psát a publikovat články s Topiqu.",
       "retry": "Zkusit znovu"
     },
+    "setup": {
+      "menu": "Začínáme",
+      "title": "Připravte první publikaci",
+      "completeTitle": "Nastavení blogu je hotové",
+      "progress": "Hotovo {done} z {total}",
+      "next": "Další krok: {step}",
+      "expand": "Rozbalit checklist nastavení blogu",
+      "collapse": "Sbalit checklist nastavení blogu",
+      "done": "Hotovo",
+      "remaining": "Zbývá",
+      "review": "Zkontrolovat nastavení",
+      "publishPermission": "K publikaci potřebujete oprávnění psát a publikovat články. Obraťte se na vlastníka blogu.",
+      "recommended": "Doporučené navíc",
+      "optional": "Checklist znovu otevřete přes Začínáme v menu.",
+      "hide": "Schovat checklist",
+      "steps": {
+        "branding": {
+          "title": "Představte blog čtenářům",
+          "description": "Doplňte krátký popis toho, co čtenáři na blogu najdou.",
+          "action": "Doplnit popis blogu"
+        },
+        "voice": {
+          "title": "Nastavte obsah a čtenáře",
+          "description": "Řekněte AI, o čem má psát a komu mají články pomáhat.",
+          "action": "Doplnit zaměření"
+        },
+        "domain": {
+          "title": "Ověřte vlastní doménu",
+          "description": "Nastavte DNS záznamy pro {domain} a ověřte, že doména funguje.",
+          "action": "Otevřít nastavení domény"
+        },
+        "article": {
+          "title": "Publikujte první článek",
+          "description": "Vytvořte článek, zkontrolujte náhled a publikujte. Koncepty a články naplánované do budoucna se zatím nepočítají.",
+          "action": "Otevřít editor"
+        }
+      },
+      "recommendations": {
+        "logo": {
+          "title": "Nahrajte logo",
+          "description": "Blog může zatím používat svůj název. Logo můžete přidat kdykoliv."
+        },
+        "knowledge": {
+          "title": "Přidejte podklady pro AI",
+          "description": "Přidejte svůj web nebo dokumenty, aby AI měla informace o vaší firmě.",
+          "processing": "Podklady se zpracovávají. Pro AI budou připravené po dokončení.",
+          "failed": "Některé podklady se nepodařilo zpracovat. Otevřete znalostní bázi a zkuste to znovu."
+        }
+      }
+    },
     "wallet": {
       "title": "Články",
       "available": "Zbývající články",

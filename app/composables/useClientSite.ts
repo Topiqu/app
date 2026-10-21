@@ -7,6 +7,8 @@ import { isValidDomain, normalizeDomain } from '~~/shared/utils/domain'
 export interface ClientSiteStatus {
   id: string
   name: string
+  description: string | null
+  logoUrl: string | null
   language: Language
   domain: string
   domainVerified: boolean
@@ -19,6 +21,10 @@ export interface ClientSiteStatus {
   }
   articlesRemaining: number
   knowledgeSources: number
+  setup: {
+    hasPublishedArticle: boolean
+    knowledge: { indexed: number; processing: number; failed: number }
+  }
   websiteUrl: string | null
   createdAt: string
   firstPaidAt: string | null

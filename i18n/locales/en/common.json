@@ -5,6 +5,56 @@
       "description": "Set up your blog, then start writing and publishing articles with Topiqu.",
       "retry": "Try again"
     },
+    "setup": {
+      "menu": "Getting started",
+      "title": "Prepare your first publication",
+      "completeTitle": "Blog setup is complete",
+      "progress": "{done} of {total} complete",
+      "next": "Next step: {step}",
+      "expand": "Expand the blog setup checklist",
+      "collapse": "Collapse the blog setup checklist",
+      "done": "Done",
+      "remaining": "Remaining",
+      "review": "Review settings",
+      "publishPermission": "Writing and publishing permissions are required to publish. Contact the blog owner.",
+      "recommended": "Recommended extras",
+      "optional": "Reopen this checklist from Getting started in the menu.",
+      "hide": "Hide checklist",
+      "steps": {
+        "branding": {
+          "title": "Introduce your blog",
+          "description": "Add a short description of what readers will find on your blog.",
+          "action": "Add a blog description"
+        },
+        "voice": {
+          "title": "Set your topics and audience",
+          "description": "Tell AI what to write about and who your articles should help.",
+          "action": "Set content direction"
+        },
+        "domain": {
+          "title": "Verify your custom domain",
+          "description": "Set up the DNS records for {domain} and verify that the domain works.",
+          "action": "Open domain settings"
+        },
+        "article": {
+          "title": "Publish your first article",
+          "description": "Create an article, check its preview and publish it. Drafts and articles scheduled for the future do not count yet.",
+          "action": "Open editor"
+        }
+      },
+      "recommendations": {
+        "logo": {
+          "title": "Upload a logo",
+          "description": "Your blog can use its name for now. You can add a logo anytime."
+        },
+        "knowledge": {
+          "title": "Add sources for AI",
+          "description": "Add your website or documents so AI has information about your business.",
+          "processing": "Your sources are being processed. They will be ready for AI when processing is complete.",
+          "failed": "Some sources could not be processed. Open the knowledge base and try again."
+        }
+      }
+    },
     "wallet": {
       "title": "Articles",
       "available": "Articles remaining",
