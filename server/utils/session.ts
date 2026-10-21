@@ -1,6 +1,7 @@
 import type { SessionUser } from '~~/shared/types/auth'
 
 import { UAParser } from 'ua-parser-js'
+import { isPreferenceLanguage, isPreferenceTheme } from '~~/shared/utils/preferences'
 
 import { clientIp } from './ip'
 import { TENANT_SCOPES } from './tenantMembership'
@@ -58,7 +59,15 @@ export const uniqueUsername = async (name: string | undefined, email: string) =>
 
 /** Resolves role, plan and tenant from the session's active tenant on every read, as the JWT callback did. */
 export const toSessionUser = async (
-  user: { id: string; name: string; email: string; image?: string | null; role?: string | null },
+  user: {
+    id: string
+    name: string
+    email: string
+    image?: string | null
+    role?: string | null
+    language?: string | null
+    theme?: string | null
+  },
   session: { id: string; clientSiteId?: string | null },
   hostTenantId?: string,
 ): Promise<SessionUser> => {
@@ -88,5 +97,7 @@ export const toSessionUser = async (
       superadmin || (active && membership.role === 'OWNER') ? [...TENANT_SCOPES] : active ? membership.scopes : [],
     avatarUrl: user.image ?? null,
     sessionId: session.id,
+    ...(isPreferenceLanguage(user.language) ? { language: user.language } : {}),
+    ...(isPreferenceTheme(user.theme) ? { theme: user.theme } : {}),
   }
 }

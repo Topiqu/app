@@ -5,7 +5,36 @@ import { createDatabaseClient } from '../../server/utils/database'
 
 test.use({
   storageState: join(process.cwd(), 'tests/e2e/.auth/admin.json'),
-  launchOptions: { args: ['--host-resolver-rules=MAP *.auth-transfer.test 127.0.0.1', '--no-proxy-server'] },
+  launchOptions: {
+    args: [
+      '--host-resolver-rules=MAP *.auth-transfer.test 127.0.0.1, MAP *.topiqu.com 127.0.0.1, MAP topiqu.com 127.0.0.1',
+      '--no-proxy-server',
+    ],
+  },
+})
+
+test('guests share interface preferences across Topiqu hosts', async ({ browser }) => {
+  const context = await browser.newContext({ storageState: { cookies: [], origins: [] }, colorScheme: 'light' })
+  try {
+    const page = await context.newPage()
+    await page.goto('http://app.topiqu.com:4173/en/auth')
+    await page.locator('html[data-topiqu-hydrated="true"]').waitFor()
+    await page.getByRole('button', { name: 'Toggle color mode', exact: true }).click()
+    await expect(page.locator('html')).toHaveClass(/dark/)
+    await page.getByRole('button', { name: 'Interface language', exact: true }).click()
+    await page.getByRole('menuitemcheckbox', { name: 'Čeština', exact: true }).click()
+    await expect(page).toHaveURL(/\/cs\/autorizace/)
+    const cookies = await context.cookies('http://app.topiqu.com:4173')
+    for (const name of ['topiqu-language', 'topiqu-theme']) {
+      expect(cookies.find((cookie) => cookie.name === name)?.domain).toBe('.topiqu.com')
+    }
+    await page.goto('http://topiqu.com:4173/')
+    await expect(page).toHaveURL(/\/cs(?:\/|$)/)
+    await page.locator('html[data-topiqu-hydrated="true"]').waitFor()
+    await expect(page.locator('html')).toHaveClass(/dark/)
+  } finally {
+    await context.close()
+  }
 })
 
 test('custom domains support credentials, SSR sessions and a browser-bound Topiqu handoff', async ({
@@ -19,6 +48,10 @@ test('custom domains support credentials, SSR sessions and a browser-bound Topiq
   const site = await db.clientSite.findUniqueOrThrow({
     where: { name: 'topiqu-dev' },
     select: { id: true, domain: true, domainVerified: true },
+  })
+  const account = await db.user.findUniqueOrThrow({
+    where: { email: 'admin@test.local' },
+    select: { id: true, language: true, theme: true },
   })
   try {
     await db.clientSite.update({ where: { id: site.id }, data: { domain: host, domainVerified: true } })
@@ -40,6 +73,30 @@ test('custom domains support credentials, SSR sessions and a browser-bound Topiq
     const customCookie = (await page.context().cookies(origin)).find((c) => c.name.endsWith('session_token'))!
     expect(customCookie.httpOnly).toBe(true)
     expect(customCookie.domain).toBe(host)
+    const preferences = await page.evaluate(async () => {
+      const session = await (await fetch('/api/auth/get-session')).json()
+      const saved = await fetch(`/api/users/${session.user.id}`, {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ language: 'cs', theme: 'dark' }),
+      })
+      return { status: saved.status, user: await saved.json() }
+    })
+    expect(preferences.status).toBe(200)
+    expect(preferences.user).toMatchObject({ language: 'cs', theme: 'dark' })
+    await page.goto(`${origin}/en/auth`)
+    await page.locator('html[data-topiqu-hydrated="true"]').waitFor()
+    await expect(page.locator('html')).toHaveClass(/dark/)
+    expect(new URL(page.url()).pathname).toMatch(/^\/en\//)
+    await page.goto(origin)
+    await expect(page).toHaveURL(/\/cs(?:\/|$)/)
+    await page.locator('html[data-topiqu-hydrated="true"]').waitFor()
+    await expect(page.locator('html')).toHaveClass(/dark/)
+    // Another origin reads the persisted account preference without sharing the customer's cookie.
+    const platformPreferences = await page.request.get('http://127.0.0.1:4173/api/auth/get-session')
+    expect((await platformPreferences.json()).user).toMatchObject({ language: 'cs', theme: 'dark' })
+    const preferenceCookie = (await page.context().cookies(origin)).find((c) => c.name === 'topiqu-theme')!
+    expect(preferenceCookie.domain).toBe(host)
     const isolated = await playwright.request.newContext({
       extraHTTPHeaders: { cookie: `${customCookie.name}=${customCookie.value}` },
     })
@@ -103,6 +160,7 @@ test('custom domains support credentials, SSR sessions and a browser-bound Topiq
       await cold.close()
     }
   } finally {
+    await db.user.update({ where: { id: account.id }, data: { language: account.language, theme: account.theme } })
     await db.clientSite.update({
       where: { id: site.id },
       data: { domain: site.domain, domainVerified: site.domainVerified },

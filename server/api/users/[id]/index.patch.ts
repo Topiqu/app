@@ -35,6 +35,7 @@ export default defineEventHandler(async (event) => {
     role: z.enum(['reader', 'admin', 'superadmin']).optional(),
     bio: z.string().max(BIO_MAX_LENGTH).nullable().optional(),
     language: LanguageSchema.optional(),
+    theme: z.enum(['light', 'dark']).optional(),
     allowNotifs: z.boolean().optional(),
     allowEmail: z.boolean().optional(),
     lastLogin: z.coerce.date().optional(),

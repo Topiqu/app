@@ -381,6 +381,8 @@ export default defineNuxtConfig({
     preference: 'system',
     fallback: 'light',
     storageKey: 'topiqu-color-mode',
+    storage: 'cookie',
+    cookieAttrs: { path: '/', sameSite: 'lax', secure: USE_PRODUCTION_SECURITY, maxAge: 31_536_000 },
   },
 
   stripe: {

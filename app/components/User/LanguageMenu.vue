@@ -44,6 +44,7 @@ defineProps<{ compact?: boolean }>()
 const { locale, setLocale } = useI18n()
 const { data: auth } = useAuth()
 const { saveProfile } = useProfile()
+const preferences = usePreferenceCookies()
 const saving = shallowRef(false)
 
 const current = computed(() => locales.find((item) => item.value === locale.value) ?? locales[0]!)
@@ -55,6 +56,7 @@ async function select(language: Language) {
   try {
     if (auth.value?.user) await saveProfile({ language })
     await setLocale(language)
+    preferences.language.value = language
   } finally {
     saving.value = false
   }

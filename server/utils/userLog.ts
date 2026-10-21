@@ -17,6 +17,8 @@ export async function saveUserWithLogging(event: H3Event, data: any, isUpdate = 
           role: true,
           clientSiteId: true,
           updatedAt: true,
+          language: true,
+          theme: true,
         },
       })
     : await db.user.create({

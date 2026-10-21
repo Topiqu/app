@@ -67,6 +67,15 @@ describe('session user', () => {
     expect(session.scopes).toEqual([...TENANT_SCOPES])
   })
 
+  it('includes account preferences in every host-scoped session', async () => {
+    stub(null)
+    expect(await toSessionUser({ ...user, language: 'cs', theme: 'dark' }, { id: 's1' }, 'host-site')).toMatchObject({
+      role: 'reader',
+      language: 'cs',
+      theme: 'dark',
+    })
+  })
+
   it('drops a tenant the user was removed from, on the session row too', async () => {
     const update = stub({
       deletedAt: new Date(),

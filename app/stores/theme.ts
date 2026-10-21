@@ -4,11 +4,13 @@ export const useThemeStore = defineStore('theme', () => {
   const { data: user } = useAuth()
   const colorMode = useColorMode()
   const requestFetch = useRequestFetch()
+  const preferences = usePreferenceCookies()
 
   const mode = computed<'light' | 'dark'>({
     get: () => (colorMode.value === 'dark' ? 'dark' : 'light'),
     set: (value) => {
       colorMode.preference = value
+      preferences.theme.value = value
     },
   })
 
@@ -21,6 +23,7 @@ export const useThemeStore = defineStore('theme', () => {
           method: 'PATCH',
           body: { theme: newMode },
         })
+        user.value.user.theme = newMode
       } catch (e) {
         console.error('Chyba při ukládání tématu:', e)
       }
@@ -30,6 +33,7 @@ export const useThemeStore = defineStore('theme', () => {
   const toggle = async () => {
     const newMode = isDark.value ? 'light' : 'dark'
     colorMode.preference = newMode
+    preferences.theme.value = newMode
     await persist(newMode)
   }
 

@@ -40,6 +40,8 @@ export function useProfile() {
     if (user.value?.user) {
       if (response.username) user.value.user.name = response.username
       if ('avatarUrl' in response) user.value.user.avatarUrl = response.avatarUrl
+      if (response.language) user.value.user.language = response.language
+      if (response.theme) user.value.user.theme = response.theme
     }
     return response
   }

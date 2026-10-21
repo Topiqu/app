@@ -199,7 +199,11 @@ const createAuth = (customOrigin?: string, customTenantId?: string) =>
     },
     user: {
       fields: { name: 'username', image: 'avatarUrl' },
-      additionalFields: { role: { type: 'string', input: false, required: false } },
+      additionalFields: {
+        role: { type: 'string', input: false, required: false },
+        language: { type: 'string', input: false, required: false },
+        theme: { type: 'string', input: false, required: false },
+      },
     },
     session: {
       expiresIn: 60 * 60 * 24 * 30,

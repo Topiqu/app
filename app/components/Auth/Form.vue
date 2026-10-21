@@ -160,9 +160,7 @@ const props = defineProps<{
 }>()
 
 const toast = useToast()
-const theme = useThemeStore()
 const { data, getSession } = useAuth()
-const { setLocale } = useI18n()
 const localePath = useLocalePath()
 const afterSignIn = () => {
   const role = data.value?.user.role ?? 'reader'
@@ -278,9 +276,6 @@ const submit = async () => {
           email: form.value.email,
           password: form.value.password,
         })
-        const user = await $fetch(`/api/users/${totpData.id}` as `/api/users/:id`)
-        setLocale(user.language)
-        theme.mode = user.theme
         toast.add({ color: 'success', title: $t('common.auth.loginSuccess') })
         afterSignIn()
         form.value = init
@@ -305,9 +300,6 @@ const verify = async () => {
       email: form.value.email,
       password: form.value.password,
     })
-    const user = await $fetch(`/api/users/${data.value?.user.id}` as `/api/users/:id`)
-    setLocale(user.language)
-    theme.mode = user.theme
     toast.add({ color: 'success', title: $t('common.auth.verifySuccess') })
     afterSignIn()
   } catch (e: any) {
@@ -332,9 +324,6 @@ const verifyTotp = async () => {
       password: form.value.password,
       totp: token,
     })
-    const user = await $fetch(`/api/users/${form.value.userId}` as `/api/users/:id`)
-    setLocale(user.language)
-    theme.mode = user.theme
     afterSignIn()
     form.value = init
     internalMode.value = 'login'
