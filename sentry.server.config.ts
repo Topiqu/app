@@ -1,5 +1,7 @@
 import * as Sentry from '@sentry/nuxt'
 
+import { scrubDomainTelemetry } from './server/utils/domainTelemetry'
+
 // This file is prepended as the very first import of the Nitro server entry (`autoInjectServerSentry`
 // in nuxt.config), so it runs before Nitro exists: `useRuntimeConfig()` here throws and kills the
 // process on boot. Read the environment directly — these mirror `runtimeConfig.public.sentry`,
@@ -10,4 +12,12 @@ Sentry.init({
   dsn: process.env.NUXT_PUBLIC_SENTRY_DSN || undefined,
   environment: APP_ENV,
   tracesSampleRate: APP_ENV === 'production' ? 0.2 : 1.0,
+  beforeSend: (event) => {
+    scrubDomainTelemetry(event)
+    return event
+  },
+  beforeSendTransaction: (event) => {
+    if (scrubDomainTelemetry(event)) for (const span of event.spans ?? []) span.data = {}
+    return event
+  },
 })
