@@ -1,12 +1,12 @@
 {
   "backlinks": {
     "title": "Backlinks",
-    "description": "Websites, die über Sie schreiben oder schreiben sollten, und Links, die bereits auf Ihre Website führen.",
+    "description": "Sehen Sie, wer auf Ihre Website verlinkt und wo Sie weitere Links gewinnen können.",
     "refresh": "Erneut suchen",
     "running": "Seiten werden gesucht…",
     "started": "Die Suche läuft. Die Ergebnisse erscheinen hier in wenigen Minuten.",
     "refreshedAt": "Zuletzt gesucht am {date}",
-    "nextRefresh": "Erneut suchen können Sie am {date}",
+    "nextRefresh": "Nächste Suche verfügbar am {date}",
     "neverRefreshed": "Noch nicht gesucht. Die Suche läuft einmal im Monat von selbst.",
     "loadFailed": "Die Backlinks konnten nicht geladen werden.",
     "failed": "Das hat nicht geklappt. Bitte versuchen Sie es erneut.",
@@ -14,35 +14,31 @@
     "disabledTitle": "Backlinks sind in den Tarifen Pro und Premium enthalten",
     "disabledDescription": "Wir finden Websites, die Sie ohne Link erwähnen, und prüfen jeden Link, den Sie gewinnen.",
     "upgrade": "Tarife ansehen",
-    "policy": "Wir kaufen und tauschen keine Links, Google bestraft das. Wir finden nur Seiten, die bereits über Sie schreiben oder einen Grund haben, Sie zu nennen, und Sie schreiben ihnen selbst.",
     "stats": {
       "live": {
         "label": "Bestätigte Links",
-        "hint": "davon mit Linkwert: {n}",
-        "info": "Seiten anderer Websites, auf denen wir einen Link zu Ihrer Website tatsächlich gefunden haben. Wir prüfen jeden Link jede Woche erneut. Links mit nofollow geben Suchmaschinen keinen Wert weiter, bringen aber Besucher."
+        "info": "Links zu Ihrer Website, die wir auf der Quellseite bestätigt haben. Wir prüfen sie jede Woche erneut."
       },
       "won": {
         "label": "Gewonnene Links",
-        "hint": "aus Ihren Anfragen",
-        "info": "Wie viele Websites einen Link gesetzt haben, nachdem Sie ihnen geschrieben haben. Wir zählen nur Links, die wir selbst auf der Seite bestätigt haben."
+        "hint": "Durch Ihre Kontaktaufnahme",
+        "info": "Links, die wir nach Ihrer Kontaktaufnahme mit der Website bestätigt haben."
       },
       "open": {
         "label": "Chancen",
-        "hint": "warten auf Sie oder auf eine Antwort",
-        "info": "Seiten, die Sie ohne Link erwähnen, und Hersteller der Marken, die Sie verkaufen. Prüfen Sie jede und entscheiden Sie, ob Sie schreiben."
+        "info": "Websites, die Sie kontaktieren können oder bei denen Sie auf einen Link warten."
       }
     },
     "opportunities": {
       "title": "Chancen",
-      "description": "Seiten, auf denen ein Link zu Ihrer Website sinnvoll ist. Schreiben Sie dem Autor oder Betreiber und bitten Sie darum.",
-      "empty": "Noch keine Chancen. Sobald wir welche finden, erscheinen sie hier.",
+      "empty": "Keine Websites zum Kontaktieren.",
       "suppliersLocked": "Herstellerseiten der Marken, die Sie verkaufen, suchen wir im Premium-Tarif.",
       "kind": {
         "UNLINKED_MENTION": "Erwähnung ohne Link",
         "SUPPLIER": "Hersteller"
       },
       "reason": {
-        "mention": "Die Seite erwähnt „{term}“, verlinkt aber nicht auf Ihre Website.",
+        "mention": "Die Seite erwähnt „{term}“, verlinkt aber nicht auf Ihre Website. Sie können den Autor bitten, einen Link hinzuzufügen.",
         "dealers": "Der Hersteller von {brand} nennt Händler, Sie sind nicht dabei. | Der Hersteller von {brand} nennt Händler, Sie sind nicht dabei. Sie verkaufen {n} seiner Produkte. | Der Hersteller von {brand} nennt Händler, Sie sind nicht dabei. Sie verkaufen {n} seiner Produkte.",
         "official": "Die offizielle Website von {brand}. Fragen Sie, ob dort Händler genannt werden. | Die offizielle Website von {brand}. Sie verkaufen {n} seiner Produkte; fragen Sie, ob dort Händler genannt werden. | Die offizielle Website von {brand}. Sie verkaufen {n} seiner Produkte; fragen Sie, ob dort Händler genannt werden."
       },
@@ -73,9 +69,9 @@
       "failed": "Der E-Mail-Entwurf konnte nicht geschrieben werden."
     },
     "links": {
-      "title": "Bestätigte Links",
-      "description": "Links zu Ihrer Website, die wir auf den Seiten gefunden haben. Wir prüfen sie jede Woche erneut.",
-      "empty": "Wir haben noch keinen Link bestätigt.",
+      "title": "Links zu Ihrer Website",
+      "description": "Wir prüfen diese Links jede Woche.",
+      "empty": "Wir haben noch keine Links gefunden.",
       "anchor": "Linktext: {anchor}",
       "since": "Seit {date}",
       "lostOn": "Verschwunden am {date}",

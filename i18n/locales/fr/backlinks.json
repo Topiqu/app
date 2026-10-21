@@ -1,12 +1,12 @@
 {
   "backlinks": {
     "title": "Backlinks",
-    "description": "Les sites qui parlent de vous ou devraient le faire, et les liens qui mènent déjà à votre site.",
+    "description": "Découvrez qui renvoie vers votre site et où vous pourriez obtenir d’autres liens.",
     "refresh": "Relancer la recherche",
     "running": "Recherche des pages…",
     "started": "La recherche est en cours. Les résultats apparaîtront ici d’ici quelques minutes.",
     "refreshedAt": "Dernière recherche le {date}",
-    "nextRefresh": "Nouvelle recherche possible le {date}",
+    "nextRefresh": "Prochaine recherche disponible le {date}",
     "neverRefreshed": "Pas encore de recherche. Elle se lance d’elle-même une fois par mois.",
     "loadFailed": "Impossible de charger les backlinks.",
     "failed": "L’action a échoué. Veuillez réessayer.",
@@ -14,35 +14,31 @@
     "disabledTitle": "Les backlinks font partie des forfaits Pro et Premium",
     "disabledDescription": "Nous trouvons les sites qui vous citent sans lien et vérifions chaque lien obtenu.",
     "upgrade": "Voir les forfaits",
-    "policy": "Nous n’achetons ni n’échangeons de liens, Google le sanctionne. Nous trouvons seulement les pages qui parlent déjà de vous ou ont une raison de vous citer, et c’est vous qui leur écrivez.",
     "stats": {
       "live": {
         "label": "Liens vérifiés",
-        "hint": "dont transmettant de la valeur : {n}",
-        "info": "Pages d’autres sites où nous avons réellement trouvé un lien vers votre site. Nous les revérifions chaque semaine. Les liens nofollow ne transmettent pas de valeur aux moteurs de recherche, mais amènent des visiteurs."
+        "info": "Liens vers votre site dont nous avons vérifié la présence sur la page source. Nous les revérifions chaque semaine."
       },
       "won": {
         "label": "Liens obtenus",
-        "hint": "grâce à vos demandes",
-        "info": "Combien de sites ont ajouté un lien après votre message. Seuls comptent les liens que nous avons vérifiés nous-mêmes sur la page."
+        "hint": "Après vos prises de contact",
+        "info": "Liens que nous avons vérifiés après votre prise de contact avec le site."
       },
       "open": {
         "label": "Opportunités",
-        "hint": "en attente de vous ou d’une réponse",
-        "info": "Pages qui vous citent sans lien, et fabricants des marques que vous vendez. Examinez-les et décidez si vous écrivez."
+        "info": "Sites que vous pouvez contacter ou dont vous attendez l’ajout d’un lien."
       }
     },
     "opportunities": {
       "title": "Opportunités",
-      "description": "Pages où un lien vers votre site a du sens. Écrivez à l’auteur ou au propriétaire du site pour le demander.",
-      "empty": "Aucune opportunité pour l’instant. Elles apparaîtront ici dès que nous en trouverons.",
+      "empty": "Aucun site à contacter.",
       "suppliersLocked": "Les pages des fabricants des marques que vous vendez sont recherchées avec le forfait Premium.",
       "kind": {
         "UNLINKED_MENTION": "Mention sans lien",
         "SUPPLIER": "Fabricant"
       },
       "reason": {
-        "mention": "La page cite « {term} » mais ne renvoie pas vers votre site.",
+        "mention": "La page cite « {term} » mais ne renvoie pas vers votre site. Vous pouvez demander à l’auteur d’ajouter un lien.",
         "dealers": "Le fabricant {brand} liste ses revendeurs et vous n’en faites pas partie. | Le fabricant {brand} liste ses revendeurs et vous n’en faites pas partie. Vous vendez {n} de ses produits. | Le fabricant {brand} liste ses revendeurs et vous n’en faites pas partie. Vous vendez {n} de ses produits.",
         "official": "Le site officiel de {brand}. Demandez s’il liste ses revendeurs. | Le site officiel de {brand}. Vous vendez {n} de ses produits ; demandez s’il liste ses revendeurs. | Le site officiel de {brand}. Vous vendez {n} de ses produits ; demandez s’il liste ses revendeurs."
       },
@@ -73,9 +69,9 @@
       "failed": "Impossible de rédiger le brouillon d’e-mail."
     },
     "links": {
-      "title": "Liens vérifiés",
-      "description": "Liens vers votre site trouvés sur les pages. Nous les revérifions chaque semaine.",
-      "empty": "Nous n’avons encore vérifié aucun lien.",
+      "title": "Liens vers votre site",
+      "description": "Nous vérifions ces liens chaque semaine.",
+      "empty": "Nous n’avons encore trouvé aucun lien.",
       "anchor": "Texte du lien : {anchor}",
       "since": "Depuis le {date}",
       "lostOn": "Disparu le {date}",
