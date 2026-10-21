@@ -27,8 +27,9 @@ export const sessionDevice = async (headers: RequestHeaders) => {
   }
 }
 
-/** The tenant a new session opens in: the last one used, else the user's home site, else the oldest membership. */
-export const initialTenant = async (userId: string): Promise<string | null> => {
+/** Custom-domain sessions stay on that tenant or have reader context. Platform
+ * sessions use the last active membership, home site, then oldest membership. */
+export const initialTenant = async (userId: string, preferredTenantId?: string): Promise<string | null> => {
   const [lastSession, user, memberships] = await Promise.all([
     prisma.session.findFirst({
       where: { userId, clientSiteId: { not: null } },
@@ -44,6 +45,7 @@ export const initialTenant = async (userId: string): Promise<string | null> => {
   ])
   const ids = memberships.map((membership) => membership.clientSiteId)
 
+  if (preferredTenantId) return ids.includes(preferredTenantId) ? preferredTenantId : null
   return [lastSession?.clientSiteId, user?.clientSiteId].find((id) => id && ids.includes(id)) ?? ids[0] ?? null
 }
 
@@ -58,6 +60,7 @@ export const uniqueUsername = async (name: string | undefined, email: string) =>
 export const toSessionUser = async (
   user: { id: string; name: string; email: string; image?: string | null; role?: string | null },
   session: { id: string; clientSiteId?: string | null },
+  hostTenantId?: string,
 ): Promise<SessionUser> => {
   const membership = session.clientSiteId
     ? await prisma.tenantMembership.findUnique({
@@ -65,7 +68,12 @@ export const toSessionUser = async (
         select: { deletedAt: true, role: true, scopes: true, clientSite: { select: { plan: true, deletedAt: true } } },
       })
     : null
-  const active = membership !== null && membership.deletedAt === null && membership.clientSite.deletedAt === null
+  const active =
+    membership !== null &&
+    membership.deletedAt === null &&
+    membership.clientSite.deletedAt === null &&
+    (!hostTenantId || session.clientSiteId === hostTenantId)
+  const superadmin = user.role === 'superadmin' && !hostTenantId
   if (session.clientSiteId && !active)
     await prisma.session.update({ where: { id: session.id }, data: { clientSiteId: null } })
 
@@ -73,15 +81,11 @@ export const toSessionUser = async (
     id: user.id,
     name: user.name,
     email: user.email,
-    role: user.role === 'superadmin' ? 'superadmin' : active ? 'admin' : 'reader',
+    role: superadmin ? 'superadmin' : active ? 'admin' : 'reader',
     clientSiteId: active ? session.clientSiteId! : '',
     plan: active ? membership.clientSite.plan : 'BASIC',
     scopes:
-      user.role === 'superadmin' || (active && membership.role === 'OWNER')
-        ? [...TENANT_SCOPES]
-        : active
-          ? membership.scopes
-          : [],
+      superadmin || (active && membership.role === 'OWNER') ? [...TENANT_SCOPES] : active ? membership.scopes : [],
     avatarUrl: user.image ?? null,
     sessionId: session.id,
   }

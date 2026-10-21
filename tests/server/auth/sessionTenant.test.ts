@@ -21,6 +21,8 @@ describe('login tenant selection', () => {
     })
 
     expect(await initialTenant('user')).toBe(expected)
+    expect(await initialTenant('user', 'test')).toBe(available.includes('test') ? 'test' : null)
+    expect(await initialTenant('user', 'foreign-tenant')).toBeNull()
   })
 })
 
@@ -89,6 +91,27 @@ describe('session user', () => {
       scopes: [...TENANT_SCOPES],
     })
     expect(update).not.toHaveBeenCalled()
+  })
+  it('does not carry global superadmin privileges onto a customer hostname', async () => {
+    stub(null)
+    expect(
+      await toSessionUser({ ...user, role: 'superadmin' }, { id: 's1', clientSiteId: null }, 'host-site'),
+    ).toMatchObject({ role: 'reader', clientSiteId: '', scopes: [] })
+  })
+  it('restricts a superadmin on a custom host to that host’s explicit membership', async () => {
+    stub({ deletedAt: null, role: 'MEMBER', scopes: ['ARTICLE_WRITE'], clientSite: { plan: 'PRO' } })
+    expect(
+      await toSessionUser({ ...user, role: 'superadmin' }, { id: 's1', clientSiteId: 'host-site' }, 'host-site'),
+    ).toMatchObject({ role: 'admin', clientSiteId: 'host-site', scopes: ['ARTICLE_WRITE'] })
+  })
+  it('cannot switch a custom-host session into another tenant’s administrative context', async () => {
+    const update = stub({ deletedAt: null, role: 'OWNER', scopes: [], clientSite: { plan: 'PRO' } })
+    expect(await toSessionUser(user, { id: 's1', clientSiteId: 'other-site' }, 'host-site')).toMatchObject({
+      role: 'reader',
+      clientSiteId: '',
+      scopes: [],
+    })
+    expect(update).toHaveBeenCalledWith({ where: { id: 's1' }, data: { clientSiteId: null } })
   })
   it('clears a deactivated tenant without granting its scopes', async () => {
     const update = stub({
