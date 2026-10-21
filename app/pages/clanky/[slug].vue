@@ -105,7 +105,7 @@
       </template>
 
       <template #related>
-        <LazyArticleRelated :articles="relatedArticles ?? []" :pending="pending" />
+        <LazyArticleRelated hydrateOnVisible :articles="relatedArticles ?? []" :pending="pending" />
       </template>
 
       <template #comments>
