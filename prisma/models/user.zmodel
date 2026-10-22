@@ -97,6 +97,7 @@ model TenantInvitation with Base {
 
 // Better Auth session. Revoking one deletes the row; only the auth adapter sees `token`.
 model Session with Base {
+    origin     String?  @length(0, 300)
     token      String   @unique @omit
     expiresAt  DateTime
     ip         String?  @length(0, 45)

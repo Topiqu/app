@@ -1,0 +1,15 @@
+model SystemTaskStatus {
+    name            String   @id
+    runId           String?
+    status          String   @default("unknown")
+    startedAt       DateTime?
+    finishedAt      DateTime?
+    durationMs      Int?
+    lastSucceededAt DateTime?
+    lastFailedAt    DateTime?
+    failureCode     String?
+    processed       Int?
+    failed          Int?
+    skipped         Int?
+    @@allow('read', auth().role == 'superadmin')
+}

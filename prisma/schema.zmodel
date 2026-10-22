@@ -21,6 +21,7 @@ import "./models/webhook"
 import "./models/keywordPlan"
 import "./models/backlink"
 import "./models/widget"
+import "./models/operations"
 
 datasource db {
     provider  = "postgresql"
