@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { articleSlug } from '~~/shared/utils/articleSlug'
 
 const BodySchema = z.object({
+  expectedUpdatedAt: z.iso.datetime().optional(),
   title: z.string().min(1).max(255).optional(),
   excerpt: z.string().max(500).nullable().optional(),
   content: z.string().min(1).max(50000).optional(),
@@ -16,6 +17,12 @@ export default defineEventHandler(async (event) => {
   const { user, db } = await requireDb(event, { minRole: 'admin', clientSite: true })
 
   const body = await readValidatedBody(event, BodySchema.parse)
+  if (!body.expectedUpdatedAt)
+    throw createError({
+      statusCode: 428,
+      message: t('articles.editor.history.versionRequired')!,
+      data: { code: 'ARTICLE_VERSION_REQUIRED' },
+    })
 
   const translation = await db.articleTranslation.findFirst({
     where: { id, clientSiteId: user.clientSiteId! },
@@ -31,6 +38,7 @@ export default defineEventHandler(async (event) => {
     },
   })
   if (translation) await requireArticleAccess(event, translation.articleId)
+  if (body.status === 'PUBLISHED') await requireTenantScope(event, 'ARTICLE_PUBLISH')
   if (!translation)
     throw createError({ statusCode: 404, message: t('common.errors.notFound') ?? 'Translation not found' })
 
@@ -53,29 +61,43 @@ export default defineEventHandler(async (event) => {
       translation.articleId,
     ))
 
-  const updated = await db.articleTranslation.update({
-    where: { id: translation.id },
-    data: {
-      ...(body.title !== undefined ? { title: body.title } : {}),
-      ...(body.excerpt !== undefined ? { excerpt: body.excerpt } : {}),
-      ...(body.content !== undefined ? { content: sanitizeHtml(body.content) } : {}),
-      ...(body.status !== undefined ? { status: body.status } : {}),
-      ...(body.title !== undefined || body.excerpt !== undefined || body.content !== undefined
-        ? { source: 'HUMAN' as const }
-        : {}),
-      slug,
-      error: null,
-    },
-    select: {
-      id: true,
-      language: true,
-      slug: true,
-      title: true,
-      excerpt: true,
-      content: true,
-      status: true,
-      source: true,
-    },
+  const updated = await db.$transaction(async (tx) => {
+    const changed = await tx.articleTranslation.updateMany({
+      where: { id: translation.id, clientSiteId: user.clientSiteId!, updatedAt: new Date(body.expectedUpdatedAt!) },
+      data: {
+        // updateMany does not advance @updatedAt in this ORM; CAS needs a fresh, monotonic token.
+        updatedAt: new Date(Math.max(Date.now(), new Date(body.expectedUpdatedAt!).getTime() + 1)),
+        ...(body.title !== undefined ? { title: body.title } : {}),
+        ...(body.excerpt !== undefined ? { excerpt: body.excerpt } : {}),
+        ...(body.content !== undefined ? { content: sanitizeHtml(body.content) } : {}),
+        ...(body.status !== undefined ? { status: body.status } : {}),
+        ...(body.title !== undefined || body.excerpt !== undefined || body.content !== undefined
+          ? { source: 'HUMAN' as const }
+          : {}),
+        slug,
+        error: null,
+      },
+    })
+    if (changed.count !== 1)
+      throw createError({
+        statusCode: 409,
+        message: t('articles.editor.history.conflict')!,
+        data: { code: 'ARTICLE_EDIT_CONFLICT' },
+      })
+    return tx.articleTranslation.findUniqueOrThrow({
+      where: { id: translation.id },
+      select: {
+        id: true,
+        language: true,
+        slug: true,
+        title: true,
+        excerpt: true,
+        content: true,
+        status: true,
+        source: true,
+        updatedAt: true,
+      },
+    })
   })
 
   await syncArticleMediaUsages(prisma, {

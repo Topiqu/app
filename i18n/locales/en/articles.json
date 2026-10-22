@@ -361,6 +361,25 @@
       }
     },
     "editor": {
+      "history": {
+        "title": "Version history",
+        "description": "The last 50 changes to the original article are retained. Loading a version changes your draft; it does not publish it or change its address or schedule.",
+        "currentVersion": "Current version: {version}",
+        "version": "Version {version}",
+        "empty": "No earlier versions yet",
+        "automated": "Automatic update or unknown editor",
+        "loadDraft": "Load into editor",
+        "loadFailed": "Version history could not be loaded.",
+        "restoreConfirm": "Replace the unsaved draft?",
+        "loaded": "Version loaded into the editor",
+        "loadedDescription": "Review the content and available tags, then save your changes.",
+        "conflict": "This article has changed in another session.",
+        "conflictDescription": "Your draft is still here. Download a copy before loading the latest version. Saving cannot overwrite someone else's changes.",
+        "downloadDraft": "Download my draft",
+        "reloadLatest": "Load latest version",
+        "reloadConfirm": "Unsaved changes will be discarded. Download your draft first if you want to keep it.",
+        "versionRequired": "Reload the editor before saving. Your draft has been kept."
+      },
       "slugConflict": "Another article already uses this URL. Change the URL or open the existing article.",
       "articlePublished": "Article published",
       "draftCreated": "Draft created",

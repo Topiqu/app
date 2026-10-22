@@ -361,6 +361,25 @@
       }
     },
     "editor": {
+      "history": {
+        "title": "Historique des versions",
+        "description": "Les 50 dernières modifications de l’article original sont conservées. Charger une version modifie le brouillon sans le publier ni changer son adresse ou sa programmation.",
+        "currentVersion": "Version actuelle : {version}",
+        "version": "Version {version}",
+        "empty": "Aucune version antérieure",
+        "automated": "Modification automatique ou auteur inconnu",
+        "loadDraft": "Charger dans l’éditeur",
+        "loadFailed": "Impossible de charger l’historique des versions.",
+        "restoreConfirm": "Remplacer les modifications non enregistrées ?",
+        "loaded": "Version chargée dans l’éditeur",
+        "loadedDescription": "Vérifiez le contenu et les étiquettes disponibles, puis enregistrez les modifications.",
+        "conflict": "Cet article a été modifié dans une autre session.",
+        "conflictDescription": "Votre brouillon est conservé. Téléchargez une copie avant de charger la version actuelle. L’enregistrement n’écrasera pas les modifications d’une autre personne.",
+        "downloadDraft": "Télécharger mon brouillon",
+        "reloadLatest": "Charger la version actuelle",
+        "reloadConfirm": "Les modifications non enregistrées seront perdues. Téléchargez d’abord votre brouillon pour le conserver.",
+        "versionRequired": "Rechargez l’éditeur avant d’enregistrer. Votre brouillon est conservé."
+      },
       "slugConflict": "Un autre article utilise déjà cette URL. Modifiez l’URL ou ouvrez l’article existant.",
       "articlePublished": "Article publié",
       "draftCreated": "Brouillon créé",

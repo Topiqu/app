@@ -189,8 +189,8 @@ describe('tenant boundary wiring', () => {
     expect(payload).not.toContain('...editedArticle.value')
     expect(payload).toContain('title: sourceDraft?.title ?? editedArticle.value.title')
     expect(payload).toContain('...(isNew ? { tags: articleTags.value } : {})')
-    expect(editor).toContain("method: 'PUT'")
-    expect(editor).toContain('body: { tagIds: articleTags.value }')
+    expect(payload).toContain('expectedVersion: article.value?.editVersion, tagIds: articleTags.value')
+    expect(editor).not.toContain("method: 'PUT'")
   })
 })
 

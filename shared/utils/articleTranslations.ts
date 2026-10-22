@@ -16,6 +16,7 @@ export interface ArticleTranslationRow {
   source: TranslationSource
   error: string | null
   translatedAt: string | Date | null
+  updatedAt?: string | Date
 }
 
 export interface TranslationDraft {

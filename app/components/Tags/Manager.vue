@@ -30,6 +30,7 @@
         icon="mdi:tag-plus-outline"
         :placeholder="$t('articles.tags.addExisting')"
         class="w-full"
+        :ui="{ base: 'whitespace-nowrap', placeholder: 'text-muted' }"
         @update:modelValue="addExisting"
       />
     </UFormField>
@@ -69,6 +70,7 @@
 </template>
 
 <script setup lang="ts">
+import type { InternalApi } from 'nitropack'
 import type { ArticleWithDetails } from '~~/types/article'
 
 import slugify from 'slugify'
@@ -100,8 +102,11 @@ const { data: allTags } = useQuery({
 
 const { data: articleTags } = useQuery({
   key: () => queryKeys.articles.tags(props.article?.id ?? ''),
-  query: () => requestFetch<ArticleTagRow[]>(`/api/articles/${props.article!.id}/tags`),
-  enabled: () => !!props.article?.id,
+  query: () =>
+    requestFetch<ArticleTagRow[], '/api/articles/:id/tags'>(
+      `/api/articles/${props.article!.id}/tags` as '/api/articles/:id/tags',
+    ),
+  enabled: () => !!props.article?.id && props.initialTags === undefined,
   placeholderData: () => [],
 })
 
@@ -115,7 +120,7 @@ const tagBuffer = shallowReactive<{ id: string; name: string }[]>([])
 watch(
   articleTags,
   (newVal) => {
-    if (!props.article?.id) return
+    if (!props.article?.id || props.initialTags !== undefined) return
     const rows = newVal ?? []
     tagBuffer.length = 0
     rows.forEach((tag) => tagBuffer.push({ id: tag.tagId, name: tag.tag.name }))
@@ -126,12 +131,13 @@ watch(
 watch(
   [() => props.initialTags, tagOptions],
   ([newIds]) => {
-    if (!props.article?.id && newIds?.length) {
-      const tagsToAdd = tagOptions.value.filter((tag) => newIds.includes(tag.id))
-      tagsToAdd.forEach((tag) => {
-        if (!tagBuffer.some((buffered) => buffered.id === tag.id)) tagBuffer.push({ id: tag.id, name: tag.name })
-      })
-    }
+    if (newIds === undefined) return
+    // Editor drafts, including history recovery, own their selection until Save.
+    const selected = newIds.flatMap((id) => {
+      const tag = tagOptions.value.find((tag) => tag.id === id) ?? tagBuffer.find((tag) => tag.id === id)
+      return tag ? [{ id: tag.id, name: tag.name }] : []
+    })
+    tagBuffer.splice(0, tagBuffer.length, ...selected)
   },
   { deep: true, immediate: true },
 )
@@ -165,7 +171,7 @@ const createNew = async () => {
 
   creating.value = true
   try {
-    const { id, name: createdName } = await $fetch('/api/tags', {
+    const { id, name: createdName } = await $fetch<InternalApi['/api/tags']['post'], '/api/tags'>('/api/tags', {
       method: 'POST',
       body: { name, slug: slugify(name, { lower: true, strict: true, trim: true }) },
     })

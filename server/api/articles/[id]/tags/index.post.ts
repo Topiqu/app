@@ -19,6 +19,14 @@ export default defineEventHandler(async (event) => {
   })
   if (!tag) throw createError({ statusCode: 404, message: t('common.errors.tagNotFound')! })
 
-  await db.articleTag.create({ data: { articleId, tagId: tag.id } })
+  await db.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT set_config('topiqu.tags_changed_article_id', ${articleId}, true), set_config('topiqu.actor_id', ${user.id}, true), set_config('topiqu.actor_name', ${user.name}, true)`
+    await tx.article.update({
+      where: { id: articleId, clientSiteId: user.clientSiteId! },
+      data: { editVersion: { increment: 1 } },
+    })
+    await tx.articleTag.create({ data: { articleId, tagId: tag.id } })
+  })
+  await invalidateFeed(user.clientSiteId!)
   return { success: true }
 })

@@ -18,6 +18,7 @@ export type ArticleWithDetails = {
   id: string
   slug: string
   sourceSlug?: string
+  editVersion?: number
   language?: Language
   title: string
   content: string | null

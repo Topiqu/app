@@ -34,7 +34,7 @@ const PUBLIC_FIELDS = {
 } as const
 
 /** The editor loads through this same route, so an admin still needs the internals. */
-const ADMIN_FIELDS = { prompt: true, savedAmount: true, savedTimeMinutes: true } as const
+const ADMIN_FIELDS = { editVersion: true, prompt: true, savedAmount: true, savedTimeMinutes: true } as const
 
 /** `reactions` is scoped to the caller: unfiltered it shipped every liker's id to answer one bool. */
 const articleSelect = (isAdmin: boolean, viewer: { userId?: string; sessionId?: string | null }) => ({

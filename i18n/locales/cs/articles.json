@@ -361,6 +361,25 @@
       }
     },
     "editor": {
+      "history": {
+        "title": "Historie verzí",
+        "description": "Uchovává se posledních 50 změn původního článku. Načtení verze upraví rozepsaný obsah; nezveřejní ho ani nezmění adresu nebo plán publikace.",
+        "currentVersion": "Aktuální verze: {version}",
+        "version": "Verze {version}",
+        "empty": "Zatím nejsou žádné starší verze",
+        "automated": "Automatická změna nebo neznámý editor",
+        "loadDraft": "Načíst do editoru",
+        "loadFailed": "Historii verzí se nepodařilo načíst.",
+        "restoreConfirm": "Nahradit neuložené úpravy?",
+        "loaded": "Verze je načtená v editoru",
+        "loadedDescription": "Zkontrolujte obsah a dostupné štítky a potom změny uložte.",
+        "conflict": "Článek se změnil v jiném přihlášení.",
+        "conflictDescription": "Vaše úpravy tu zůstaly. Před načtením aktuální verze si stáhněte kopii. Uložení nepřepíše cizí změny.",
+        "downloadDraft": "Stáhnout moje úpravy",
+        "reloadLatest": "Načíst aktuální verzi",
+        "reloadConfirm": "Neuložené úpravy se zahodí. Pokud je chcete zachovat, nejprve si je stáhněte.",
+        "versionRequired": "Před uložením znovu načtěte editor. Vaše úpravy zůstaly zachované."
+      },
       "slugConflict": "Tuto URL už používá jiný článek. Změňte URL, nebo otevřete existující článek.",
       "articlePublished": "Článek publikován",
       "draftCreated": "Koncept vytvořen",

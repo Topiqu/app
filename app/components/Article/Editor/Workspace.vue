@@ -68,6 +68,15 @@
           :sourceValue="isNew ? primaryLanguage : ''"
           :disabled="aiGenerating"
         />
+        <UButton
+          v-if="!isNew && tr.isSource"
+          icon="mdi:history"
+          color="neutral"
+          variant="ghost"
+          :aria-label="$t('articles.editor.history.title')"
+          :disabled="submitting || aiGenerating"
+          @click="historyOpen = true"
+        />
 
         <UButton
           v-if="isNew && drafts?.length"
@@ -133,6 +142,25 @@
     />
 
     <UProgress v-if="!isNew && tr.status === 'pending'" class="mb-6" :aria-label="$t('common.loading')" />
+
+    <UAlert
+      v-if="editConflict || tr.conflict"
+      class="mb-6"
+      color="warning"
+      variant="soft"
+      icon="mdi:source-branch"
+      :title="$t('articles.editor.history.conflict')"
+      :description="$t('articles.editor.history.conflictDescription')"
+    >
+      <template #actions>
+        <UButton color="neutral" variant="soft" @click="downloadDraft">
+          {{ $t('articles.editor.history.downloadDraft') }}
+        </UButton>
+        <UButton color="warning" @click="reloadLatest">
+          {{ $t('articles.editor.history.reloadLatest') }}
+        </UButton>
+      </template>
+    </UAlert>
 
     <UAlert
       v-if="recoverableGeneration && recoverableGeneration.id !== generation.sessionId"
@@ -251,19 +279,28 @@
           @dismiss="generation.clear()"
         />
         <div ref="titleTarget" class="rounded-(--topiqu-surface-radius) transition-shadow">
-          <UFormField :label="$t('common.labels.articleTitle')">
-            <UInput v-model="titleModel" :placeholder="$t('common.labels.articleTitle')" class="w-full" />
+          <UFormField name="title" :label="$t('common.labels.articleTitle')">
+            <UInput
+              :id="`${editorFieldId}-title`"
+              v-model="titleModel"
+              name="title"
+              :placeholder="$t('common.labels.articleTitle')"
+              class="w-full"
+            />
           </UFormField>
         </div>
         <UFormField
           v-if="tr.isSource"
+          name="slug"
           :label="$t('articles.editor.slug.label')"
           :help="slugRedirected ? $t('articles.editor.slug.redirectNote') : undefined"
         >
           <UFieldGroup class="w-full">
             <UBadge color="neutral" variant="outline" size="lg" :label="slugPrefix" />
             <UInput
+              :id="`${editorFieldId}-slug`"
               v-model="slugModel"
+              name="slug"
               class="w-full"
               :placeholder="$t('articles.editor.slug.placeholder')"
               @blur="normalizeSlug"
@@ -271,8 +308,10 @@
           </UFieldGroup>
         </UFormField>
         <div ref="excerptTarget" class="rounded-(--topiqu-surface-radius) transition-shadow">
-          <UFormField :label="$t('common.labels.articleExcerpt')">
+          <UFormField name="perex" :label="$t('common.labels.articleExcerpt')">
             <UTextarea
+              :id="`${editorFieldId}-perex`"
+              name="perex"
               :modelValue="excerptModel ?? undefined"
               :placeholder="$t('common.labels.articleExcerpt')"
               class="w-full"
@@ -383,6 +422,13 @@
       :loading="loading"
       @select="loadDraft"
       @close="draftsOpen = false"
+    />
+    <LazyArticleEditorHistory
+      v-if="historyOpen && article"
+      v-model:open="historyOpen"
+      :articleId="article.id"
+      :currentVersion="article.editVersion ?? 0"
+      @restore="restoreRevision"
     />
 
     <UModal
@@ -529,6 +575,7 @@ import type { ComponentPublicInstance } from 'vue'
 import type { ArticleWithDetails } from '~~/types/article'
 import type { CoverCredit } from '~~/shared/utils/imageCredit'
 import type { OptimizationTarget } from '~~/shared/types/articleOptimization'
+import type { ArticleRevisionSnapshot } from '~~/shared/utils/articleRevision'
 import type { PublishChoice, ShopifyPublishMode } from '~~/shared/types/shopify'
 import type { MediaRightsItem, MediaRightsReport, MediaRightsReview } from '~~/shared/types/mediaRights'
 
@@ -540,6 +587,7 @@ import { setImageMediaId } from '~~/shared/utils/mediaRights'
 import { translationDraft } from '~~/shared/utils/articleTranslations'
 import { defaultArticleGenerationOptions } from '~~/shared/utils/articleGeneration'
 
+const editorFieldId = useId()
 const route = useRoute()
 const router = useRouter()
 const localePath = useLocalePath()
@@ -557,6 +605,8 @@ const sidebarOpen = shallowRef(false)
 const settingsExpanded = useLocalStorage('topiqu-editor-settings-expanded', true)
 const discardConfirmOpen = shallowRef(false)
 const submitting = shallowRef(false)
+const historyOpen = shallowRef(false)
+const editConflict = shallowRef(false)
 const mediaPublishReviewOpen = shallowRef(false)
 const pendingMediaReport = shallowRef<MediaRightsReport | null>(null)
 const pendingMediaTarget = shallowRef<'draft' | 'published'>('published')
@@ -668,9 +718,12 @@ const { drafts, loading, draftsOpen, successMessage, lastSavedAt, saving, loadDr
 
 if (!isNew) {
   try {
-    const data = await requestFetch<any>(`/api/articles/${route.params.id}`, {
-      query: { clientSiteId: clientSite.value?.id },
-    })
+    const data = await requestFetch<ArticleWithDetails, '/api/articles/:id'>(
+      `/api/articles/${route.params.id}` as '/api/articles/:id',
+      {
+        query: { clientSiteId: clientSite.value?.id },
+      },
+    )
     article.value = data as any
     editedArticle.value = {
       ...article.value,
@@ -982,7 +1035,7 @@ const slugRedirected = computed(
   () => !isNew && Boolean(article.value?.publishedAt) && editedArticle.value.slug !== article.value?.slug,
 )
 const addTag = (id: string) => {
-  if (!articleTags.value.includes(id)) articleTags.value.push(id)
+  if (!articleTags.value.includes(id)) articleTags.value = [...articleTags.value, id]
 }
 const removeTag = (id: string) => {
   articleTags.value = articleTags.value.filter((tag) => tag !== id)
@@ -1037,7 +1090,13 @@ const handleUpload = (file: { url: string; optimizedUrl: string; mediaAsset?: { 
 }
 
 const resolveGenerationSession = async (id: string, action: 'restore' | 'dismiss') => {
-  await $fetch(`/api/articles/generations/${id}`, { method: 'PATCH', body: { action } })
+  await $fetch<unknown, '/api/articles/generations/:id'>(
+    `/api/articles/generations/${id}` as '/api/articles/generations/:id',
+    {
+      method: 'PATCH',
+      body: { action },
+    },
+  )
   recoverableGeneration.value = null
 }
 const markGenerationSessionsSaved = async () => {
@@ -1140,6 +1199,7 @@ const submit = async (
 
   const payload = {
     title: sourceDraft?.title ?? editedArticle.value.title,
+    ...(!isNew ? { expectedVersion: article.value?.editVersion, tagIds: articleTags.value } : {}),
     ...(isNew ? { language: primaryLanguage.value } : {}),
     excerpt: sourceDraft?.excerpt ?? editedArticle.value.excerpt,
     content: sourceDraft?.content ?? editedArticle.value.content,
@@ -1157,7 +1217,7 @@ const submit = async (
     savedTimeMinutes: editedArticle.value.savedTimeMinutes,
     allowedComments: editedArticle.value.allowedComments,
     answer: editedArticle.value.answer,
-    keyTakeaways: editedArticle.value.keyTakeaways,
+    keyTakeaways: editedArticle.value.keyTakeaways ?? [],
     faq: editedArticle.value.faq,
     format: editedArticle.value.format,
     structureVariant: editedArticle.value.structureVariant,
@@ -1172,7 +1232,7 @@ const submit = async (
   submitting.value = true
   try {
     if (isNew) {
-      const created = await $fetch<{ id: string; slug: string }>('/api/articles', {
+      const created = await $fetch<{ id: string; slug: string }, '/api/articles'>('/api/articles', {
         method: 'POST',
         body: payload,
       })
@@ -1180,10 +1240,13 @@ const submit = async (
         (Object.entries(newLanguageDrafts) as [Language, ReturnType<typeof translationDraft>][])
           .filter(([language, draft]) => language !== primaryLanguage.value && draft.title && draft.content)
           .map(([language, draft]) =>
-            $fetch(`/api/articles/${created.id}/translations`, {
-              method: 'POST',
-              body: { language, ...draft },
-            }),
+            $fetch<unknown, '/api/articles/:id/translations'>(
+              `/api/articles/${created.id}/translations` as '/api/articles/:id/translations',
+              {
+                method: 'POST',
+                body: { language, ...draft },
+              },
+            ),
           ),
       )
       toast.add({
@@ -1224,14 +1287,16 @@ const submit = async (
         state: shopifyHandoff(shopify, mediaRightsReview),
       })
     } else {
-      await $fetch(`/api/articles/${article.value!.id}`, {
-        method: 'PATCH',
-        body: payload,
-      })
-      await $fetch(`/api/articles/${article.value!.id}/tags`, {
-        method: 'PUT',
-        body: { tagIds: articleTags.value },
-      })
+      const saved = await $fetch<{ success: boolean; editVersion: number }, '/api/articles/:id'>(
+        `/api/articles/${article.value!.id}` as '/api/articles/:id',
+        {
+          method: 'PATCH',
+          body: payload,
+        },
+      )
+      // Keep the version even if a subsequent tag/cache request fails after the article was saved.
+      article.value = { ...article.value!, editVersion: saved.editVersion }
+      editConflict.value = false
       toast.add({
         color: 'success',
         title: t('common.messages.saveSuccess'),
@@ -1278,6 +1343,10 @@ const submit = async (
     }
   } catch (e: any) {
     const responseData = e?.data?.data ?? e?.data ?? e?.response?._data?.data ?? e?.response?._data
+    if (['ARTICLE_EDIT_CONFLICT', 'ARTICLE_VERSION_REQUIRED'].includes(responseData?.code)) {
+      editConflict.value = true
+      return
+    }
     if (responseData?.code === 'MEDIA_RIGHTS_REVIEW_REQUIRED' && responseData.report) {
       pendingMediaReport.value = responseData.report
       pendingMediaTarget.value = targetStatus
@@ -1316,6 +1385,58 @@ const hasChanges = computed(() => {
 const allowNavigation = shallowRef(false)
 const pendingDestination = shallowRef<string | null>(null)
 
+const restoreRevision = async (snapshot: ArticleRevisionSnapshot) => {
+  if (submitting.value || aiGenerating.value || !tr.isSource) return
+  if (
+    hasChanges.value &&
+    !(await confirm({
+      title: t('articles.editor.history.restoreConfirm'),
+      message: t('common.messages.discardChangesText'),
+      confirmText: t('articles.editor.history.loadDraft'),
+      cancelText: t('common.actions.cancel'),
+      variant: 'danger',
+    }))
+  )
+    return
+  const { tagIds, ...fields } = snapshot
+  Object.assign(editedArticle.value, fields)
+  articleTags.value = tagIds
+  historyOpen.value = false
+  toast.add({
+    color: 'success',
+    title: t('articles.editor.history.loaded'),
+    description: t('articles.editor.history.loadedDescription'),
+  })
+}
+
+const downloadDraft = () => {
+  const snapshot = tr.isSource
+    ? { article: editedArticle.value, tagIds: articleTags.value }
+    : { articleId: article.value?.id, language: tr.activeLang, ...tr.draft }
+  const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `${articleSlug(editedArticle.value.title) || 'article'}-draft.json`
+  link.click()
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
+
+const reloadLatest = async () => {
+  if (
+    !(await confirm({
+      title: t('articles.editor.history.reloadLatest'),
+      message: t('articles.editor.history.reloadConfirm'),
+      confirmText: t('articles.editor.history.reloadLatest'),
+      cancelText: t('common.actions.cancel'),
+      variant: 'danger',
+    }))
+  )
+    return
+  allowNavigation.value = true
+  window.location.reload()
+}
+
 // Returning restores the store's article, so it takes the author's edits of the result along.
 const keepGeneratedEdits = () => {
   const { title, excerpt, content, slug, imageUrl, imageCredit, coverMediaId, sources, answer, keyTakeaways, faq } =
@@ -1353,7 +1474,7 @@ onBeforeRouteLeave((to) => {
 
 if (import.meta.client) {
   useEventListener(window, 'beforeunload', (event) => {
-    if (aiGenerating.value || !hasChanges.value) return
+    if (allowNavigation.value || aiGenerating.value || !hasChanges.value) return
     event.preventDefault()
   })
 }

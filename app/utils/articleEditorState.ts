@@ -12,6 +12,12 @@ export interface ArticleEditorSourceState {
   savedAmount?: number | null
   savedTimeMinutes?: number | null
   aiInvolvement?: string | null
+  answer?: string | null
+  keyTakeaways?: string[] | null
+  faq?: unknown
+  format?: string | null
+  structureVariant?: string | null
+  prompt?: string | null
 }
 
 /** Only persisted editor inputs belong in the dirty check; API-derived counters and relations do not. */
@@ -37,6 +43,12 @@ export const articleEditorSnapshot = (article: ArticleEditorSourceState, tags: s
     savedAmount: article.savedAmount ?? null,
     savedTimeMinutes: article.savedTimeMinutes ?? null,
     aiInvolvement: article.aiInvolvement ?? null,
+    answer: article.answer ?? null,
+    keyTakeaways: article.keyTakeaways ?? [],
+    faq: article.faq ?? null,
+    format: article.format ?? null,
+    structureVariant: article.structureVariant ?? null,
+    prompt: article.prompt ?? null,
     tags: [...tags].sort(),
     seriesId: seriesId ?? null,
   })

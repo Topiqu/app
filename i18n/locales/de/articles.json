@@ -361,6 +361,25 @@
       }
     },
     "editor": {
+      "history": {
+        "title": "Versionsverlauf",
+        "description": "Die letzten 50 Änderungen des Originalartikels bleiben erhalten. Eine geladene Version ändert den Entwurf; sie veröffentlicht ihn nicht und ändert weder Adresse noch Zeitplan.",
+        "currentVersion": "Aktuelle Version: {version}",
+        "version": "Version {version}",
+        "empty": "Noch keine früheren Versionen",
+        "automated": "Automatische Änderung oder unbekannter Bearbeiter",
+        "loadDraft": "In den Editor laden",
+        "loadFailed": "Der Versionsverlauf konnte nicht geladen werden.",
+        "restoreConfirm": "Ungespeicherte Änderungen ersetzen?",
+        "loaded": "Version in den Editor geladen",
+        "loadedDescription": "Prüfen Sie Inhalt und verfügbare Tags und speichern Sie dann die Änderungen.",
+        "conflict": "Der Artikel wurde in einer anderen Sitzung geändert.",
+        "conflictDescription": "Ihr Entwurf bleibt erhalten. Laden Sie eine Kopie herunter, bevor Sie die aktuelle Version laden. Speichern überschreibt keine fremden Änderungen.",
+        "downloadDraft": "Meinen Entwurf herunterladen",
+        "reloadLatest": "Aktuelle Version laden",
+        "reloadConfirm": "Ungespeicherte Änderungen gehen verloren. Laden Sie Ihren Entwurf zuerst herunter, um ihn zu behalten.",
+        "versionRequired": "Laden Sie den Editor vor dem Speichern neu. Ihr Entwurf bleibt erhalten."
+      },
       "slugConflict": "Diese URL verwendet bereits ein anderer Artikel. Ändern Sie die URL oder öffnen Sie den vorhandenen Artikel.",
       "articlePublished": "Artikel veröffentlicht",
       "draftCreated": "Entwurf erstellt",

@@ -47,4 +47,34 @@ describe('articleEditorSnapshot', () => {
       articleEditorSnapshot({ ...article, sources: ['', '   '] }, [], null),
     )
   })
+
+  it.each([
+    { field: 'answer', change: { answer: 'Restored direct answer.' } },
+    { field: 'keyTakeaways', change: { keyTakeaways: ['Restored takeaway.'] } },
+    { field: 'faq', change: { faq: [{ question: 'Restored question?', answer: 'Restored answer.' }] } },
+    { field: 'format', change: { format: 'GUIDE' } },
+    { field: 'structureVariant', change: { structureVariant: 'comparison' } },
+    { field: 'prompt', change: { prompt: 'Restored article brief.' } },
+  ])('detects a history restore that changes only $field', ({ change }) => {
+    const baseline = articleEditorSnapshot(article, ['tag-a'], 'series-1')
+    expect(articleEditorSnapshot({ ...article, ...change }, ['tag-a'], 'series-1')).not.toBe(baseline)
+  })
+
+  it('treats missing restored metadata like its empty persisted defaults', () => {
+    expect(
+      articleEditorSnapshot(
+        {
+          ...article,
+          answer: null,
+          keyTakeaways: [],
+          faq: null,
+          format: null,
+          structureVariant: null,
+          prompt: null,
+        },
+        [],
+        null,
+      ),
+    ).toBe(articleEditorSnapshot(article, [], null))
+  })
 })

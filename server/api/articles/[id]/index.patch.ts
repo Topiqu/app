@@ -1,10 +1,12 @@
+import { z } from 'zod'
 import { DbNull } from '@zenstackhq/orm'
 import { articlePath } from '~~/shared/utils/routes'
 import { articleSlug } from '~~/shared/utils/articleSlug'
 import { ArticleStatus } from '~~/generated/zenstack/models'
 import { ArticleUpdateSchema } from '~~/shared/databaseSchemas'
+import { requiresArticleVersion } from '~~/shared/utils/articleRevision'
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async (event): Promise<{ success: true; editVersion: number }> => {
   const { translate: t } = await useServerI18n(event)
   const id = getRouterParam(event, 'id')
   const { user, membership } = await requireTenantScope(event, 'ARTICLE_WRITE')
@@ -12,8 +14,28 @@ export default defineEventHandler(async (event) => {
   if (!id) throw createError({ statusCode: 400, message: t('common.errors.missing')! })
 
   const db = await getEnhancedPrisma(user)
-  const rawBody = await readBody(event)
-  const mediaRightsReview = rawBody.mediaRightsReview
+  const { expectedVersion, tagIds, ...rawBody } = z
+    .object({
+      expectedVersion: z.number().int().nonnegative().optional(),
+      tagIds: z
+        .array(z.string().uuid())
+        .max(100)
+        .transform((ids) => [...new Set(ids)])
+        .optional(),
+    })
+    .passthrough()
+    .parse(await readBody(event))
+  delete rawBody.editVersion
+  if ((requiresArticleVersion(rawBody) || tagIds !== undefined) && expectedVersion === undefined)
+    throw createError({
+      statusCode: 428,
+      message: t('articles.editor.history.versionRequired')!,
+      data: { code: 'ARTICLE_VERSION_REQUIRED' },
+    })
+  const mediaRightsReview =
+    rawBody.mediaRightsReview === undefined
+      ? undefined
+      : z.object({ fingerprint: z.string(), acknowledged: z.literal(true) }).parse(rawBody.mediaRightsReview)
   delete rawBody.mediaRightsReview
   if (rawBody.imageCredit === null) rawBody.imageCredit = DbNull
   const body = ArticleUpdateSchema.parse(rawBody)
@@ -33,6 +55,7 @@ export default defineEventHandler(async (event) => {
     where: { id },
     select: {
       slug: true,
+      editVersion: true,
       status: true,
       publishedAt: true,
       aiInvolvement: true,
@@ -54,6 +77,13 @@ export default defineEventHandler(async (event) => {
   })
 
   if (!previousArticle) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
+  const conflict = () =>
+    createError({
+      statusCode: 409,
+      message: t('articles.editor.history.conflict')!,
+      data: { code: 'ARTICLE_EDIT_CONFLICT' },
+    })
+  if (expectedVersion !== undefined && expectedVersion !== previousArticle.editVersion) throw conflict()
   if (body.language !== undefined && body.language !== previousArticle.language)
     throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
   delete body.language
@@ -151,7 +181,33 @@ export default defineEventHandler(async (event) => {
 
   const article = await db
     .$transaction(async (tx) => {
+      const [locked] = await tx.$queryRaw<
+        { editVersion: number }[]
+      >`SELECT "editVersion" FROM "Article" WHERE id = ${id} AND "clientSiteId" = ${user.clientSiteId} FOR UPDATE`
+      if (!locked || locked.editVersion !== (expectedVersion ?? previousArticle.editVersion)) throw conflict()
+      await tx.$queryRaw`SELECT set_config('topiqu.actor_id', ${user.id}, true), set_config('topiqu.actor_name', ${user.name}, true)`
+      if (tagIds !== undefined) {
+        const validTags = await tx.tag.count({ where: { id: { in: tagIds }, clientSiteId: user.clientSiteId! } })
+        if (validTags !== tagIds.length)
+          throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
+        const existing = await tx.articleTag.findMany({ where: { articleId: id }, select: { tagId: true } })
+        if (existing.length !== tagIds.length || existing.some((tag) => !tagIds.includes(tag.tagId)))
+          await tx.$queryRaw`SELECT set_config('topiqu.tags_changed_article_id', ${id}, true)`
+      }
+      if (typeof data.content === 'string') {
+        data.content = sanitizeHtml(
+          await syncArticlePolls(tx as unknown as Parameters<typeof syncArticlePolls>[0], id, data.content),
+        )
+      }
       const updated = await tx.article.update({ where: { id }, data })
+      if (tagIds !== undefined) {
+        await tx.articleTag.deleteMany({ where: { articleId: id, tagId: { notIn: tagIds } } })
+        if (tagIds.length)
+          await tx.articleTag.createMany({
+            data: tagIds.map((tagId) => ({ articleId: id, tagId })),
+            skipDuplicates: true,
+          })
+      }
       // Only an address readers could have seen needs to keep working. A live article always wins
       // the lookup, so a stale redirect is harmless until the slug is freed again; then it is re-aimed.
       if (previousSlug && previousArticle.publishedAt)
@@ -166,17 +222,6 @@ export default defineEventHandler(async (event) => {
       if (isUniqueViolation(error)) throw createError({ statusCode: 409, message: t('articles.editor.slugConflict')! })
       throw error
     })
-
-  if ('content' in data) {
-    const contentWithPolls = await syncArticlePolls(
-      db as unknown as Parameters<typeof syncArticlePolls>[0],
-      article.id,
-      data.content,
-    )
-    if (contentWithPolls !== data.content) {
-      await db.article.update({ where: { id: article.id }, data: { content: sanitizeHtml(contentWithPolls) } })
-    }
-  }
 
   const usageArticle = await prisma.article.findFirst({
     where: { id: article.id, clientSiteId: user.clientSiteId! },
@@ -248,5 +293,5 @@ export default defineEventHandler(async (event) => {
     void announceArticle(article.id, article.clientSiteId, removedPaths)
   }
 
-  return { success: true }
+  return { success: true, editVersion: article.editVersion }
 })

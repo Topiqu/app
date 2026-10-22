@@ -81,6 +81,7 @@ export const useArticleTranslations = (articleId?: string, initialLang = '') => 
   const isDirty = computed(() => isTranslationDirty(draft.value, pristine.value))
 
   const pending = shallowRef<'save' | 'publish' | 'translate' | 'discard' | null>(null)
+  const conflict = shallowRef(false)
 
   const run = async (kind: NonNullable<typeof pending.value>, fn: () => Promise<unknown>, successKey: string) => {
     if (pending.value) return
@@ -88,6 +89,7 @@ export const useArticleTranslations = (articleId?: string, initialLang = '') => 
     const language = activeLang.value
     try {
       await fn()
+      conflict.value = false
       await refresh()
       await invalidateArticleLists()
       toast.add({
@@ -96,6 +98,11 @@ export const useArticleTranslations = (articleId?: string, initialLang = '') => 
         description: language ? t(`languages.${language}`) : undefined,
       })
     } catch (e: any) {
+      const code = e?.data?.data?.code ?? e?.data?.code
+      if (code === 'ARTICLE_EDIT_CONFLICT' || code === 'ARTICLE_VERSION_REQUIRED') {
+        conflict.value = true
+        return
+      }
       toast.add({ color: 'error', title: fetchErrorMessage(e, t('common.messages.saveFailed')) })
     } finally {
       pending.value = null
@@ -106,9 +113,10 @@ export const useArticleTranslations = (articleId?: string, initialLang = '') => 
     run(
       status ? 'publish' : 'save',
       () =>
-        $fetch<unknown>(`/api/translations/${active.value!.id}`, {
+        $fetch<unknown, '/api/translations/:id'>(`/api/translations/${active.value!.id}` as '/api/translations/:id', {
           method: 'PATCH',
           body: {
+            expectedUpdatedAt: active.value?.updatedAt ? new Date(active.value.updatedAt).toISOString() : undefined,
             title: draft.value.title,
             excerpt: draft.value.excerpt || null,
             content: draft.value.content,
@@ -122,17 +130,23 @@ export const useArticleTranslations = (articleId?: string, initialLang = '') => 
     run(
       'translate',
       () =>
-        $fetch<unknown>(`/api/articles/${articleId}/translate`, {
-          method: 'POST',
-          body: { language: activeLang.value },
-        }),
+        $fetch<unknown, '/api/articles/:id/translate'>(
+          `/api/articles/${articleId}/translate` as '/api/articles/:id/translate',
+          {
+            method: 'POST',
+            body: { language: activeLang.value },
+          },
+        ),
       'articles.translations.messages.translated',
     )
 
   const discard = () =>
     run(
       'discard',
-      () => $fetch<unknown>(`/api/translations/${active.value!.id}`, { method: 'DELETE' }),
+      () =>
+        $fetch<unknown, '/api/translations/:id'>(`/api/translations/${active.value!.id}` as '/api/translations/:id', {
+          method: 'DELETE',
+        }),
       'articles.translations.messages.discarded',
     )
 
@@ -148,6 +162,7 @@ export const useArticleTranslations = (articleId?: string, initialLang = '') => 
     hasBody,
     isDirty,
     pending,
+    conflict,
     status,
     error,
     save,
