@@ -1,5 +1,14 @@
 {
   "admin": {
+    "integrationsConnection": {
+      "title": "Integration verbinden",
+      "target": "{provider} für {host} verbinden.",
+      "explanation": "Melden Sie sich mit dem Topiqu-Konto an, mit dem Sie diese Anfrage gestartet haben, und bestätigen Sie die Verbindung. Das hier ausgewählte Projekt ändert das Ziel nicht.",
+      "confirm": "Als {name} fortfahren",
+      "wrongAccount": "Melden Sie sich mit dem Topiqu-Konto an, mit dem Sie diese Anfrage gestartet haben.",
+      "failed": "Die Verbindung konnte nicht fortgesetzt werden.",
+      "restart": "Die Anfrage ist möglicherweise abgelaufen oder Ihre Zugriffsrechte haben sich geändert. Kehren Sie zu den Integrationseinstellungen des ursprünglichen Projekts zurück und versuchen Sie es erneut."
+    },
     "title": "Übersicht",
     "trial": {
       "continueFreeSuccess": "Ihr Tarif wurde auf Kostenlos umgestellt."

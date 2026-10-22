@@ -1,5 +1,14 @@
 {
   "admin": {
+    "integrationsConnection": {
+      "title": "Connecter une intégration",
+      "target": "Connecter {provider} pour {host}.",
+      "explanation": "Connectez-vous avec le compte Topiqu qui a lancé cette demande, puis confirmez la connexion. Le projet sélectionné ici ne change pas la destination.",
+      "confirm": "Continuer en tant que {name}",
+      "wrongAccount": "Connectez-vous avec le compte Topiqu qui a lancé cette demande.",
+      "failed": "La connexion n’a pas pu continuer.",
+      "restart": "La demande a peut-être expiré ou vos droits d’accès ont changé. Retournez aux paramètres d’intégration du projet d’origine et réessayez."
+    },
     "title": "Tableau de bord",
     "trial": {
       "continueFreeSuccess": "Votre offre est passée à Gratuit."

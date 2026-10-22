@@ -1,5 +1,14 @@
 {
   "admin": {
+    "integrationsConnection": {
+      "title": "Connect an integration",
+      "target": "Connect {provider} for {host}.",
+      "explanation": "Sign in with the same Topiqu account that started this request, then confirm the connection. Your selected project here will not change the destination.",
+      "confirm": "Continue as {name}",
+      "wrongAccount": "Sign in with the Topiqu account that started this request.",
+      "failed": "The connection could not continue.",
+      "restart": "The request may have expired or your access changed. Return to the original project's integration settings and try again."
+    },
     "title": "Dashboard",
     "trial": {
       "continueFreeSuccess": "Your plan was changed to Free."

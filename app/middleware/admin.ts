@@ -5,15 +5,14 @@ export default defineNuxtRouteMiddleware(async (to) => {
   const nuxtApp = useNuxtApp()
   const url = useRequestURL()
   const baseDomain = useRuntimeConfig().public.baseDomain
-  // Platform cookies and OAuth state cannot be shared with unrelated customer domains.
-  if (url.protocol === 'https:' && !isManagedDomain(url.hostname, baseDomain))
-    return navigateTo(`https://app.${normalizeDomain(baseDomain)}${to.fullPath}`, { external: true })
   const { data: auth } = useAuth()
   const user = auth.value?.user
 
   if (!user || user.role !== 'admin') return navigateTo('/')
 
   const host = await useClientSite()
+  // Verified customer hosts have their own authenticated session. Tenant equality still
+  // gates their administration; provider OAuth separately confirms the account centrally.
   if (!isForeignHost(host?.id, user.clientSiteId)) return
 
   // Foreign blog: the page would read its plan, ids and domain from that tenant while every

@@ -101,6 +101,8 @@
 </template>
 
 <script setup lang="ts">
+import type { InternalApi } from 'nitropack'
+
 defineProps<{ embedded?: boolean }>()
 
 interface Status {
@@ -125,17 +127,29 @@ interface Property {
   permissionLevel: string
 }
 const toast = useToast()
+const { locale, t } = useI18n()
 const { data, pending, refresh } = await useFetch<Status>('/api/search-console/status')
 const properties = shallowRef<Property[]>([])
 const selectedProperty = shallowRef('')
 const autopilotPending = shallowRef(false)
 const rollbackPending = shallowRef(false)
 const propertyItems = computed(() => properties.value.map((property) => property.siteUrl))
-const connect = () => {
-  window.location.href = '/api/search-console/connect'
+const connect = async () => {
+  try {
+    const result = await $fetch<InternalApi['/api/integrations/start']['post'], '/api/integrations/start'>(
+      '/api/integrations/start',
+      {
+        method: 'POST',
+        body: { provider: 'search-console', locale: locale.value },
+      },
+    )
+    await navigateTo(result.url, { external: true })
+  } catch {
+    toast.add({ color: 'error', title: t('admin.integrationsConnection.failed') })
+  }
 }
 const loadProperties = async () => {
-  properties.value = await $fetch<Property[]>('/api/search-console/properties')
+  properties.value = await $fetch<Property[], '/api/search-console/properties'>('/api/search-console/properties')
 }
 watch(
   () => data.value?.connection?.propertyUrl,
@@ -145,7 +159,7 @@ watch(
   { immediate: true },
 )
 const saveProperty = async () => {
-  await $fetch('/api/search-console/property', {
+  await $fetch<unknown, '/api/search-console/property'>('/api/search-console/property', {
     method: 'PATCH',
     body: { propertyUrl: selectedProperty.value },
   })
@@ -153,13 +167,13 @@ const saveProperty = async () => {
   await refresh()
 }
 const disconnect = async () => {
-  await $fetch('/api/search-console', { method: 'DELETE' })
+  await $fetch<unknown, '/api/search-console'>('/api/search-console', { method: 'DELETE' })
   await refresh()
 }
 const setAutopilot = async (enabled: boolean) => {
   autopilotPending.value = true
   try {
-    await $fetch('/api/search-console/autopilot', {
+    await $fetch<unknown, '/api/search-console/autopilot'>('/api/search-console/autopilot', {
       method: 'PATCH',
       body: { enabled },
     })
@@ -173,7 +187,10 @@ const rollbackLastAction = async () => {
   if (!data.value?.lastAction) return
   rollbackPending.value = true
   try {
-    await $fetch(`/api/search-console/autopilot/${data.value.lastAction.id}/rollback`, { method: 'POST' })
+    await $fetch<unknown, '/api/search-console/autopilot/:logId/rollback'>(
+      `/api/search-console/autopilot/${data.value.lastAction.id}/rollback` as '/api/search-console/autopilot/:logId/rollback',
+      { method: 'POST' },
+    )
     toast.add({ color: 'success', title: $t('common.searchConsole.rollbackSuccess') })
     await refresh()
   } finally {

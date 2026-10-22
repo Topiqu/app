@@ -1,5 +1,14 @@
 {
   "admin": {
+    "integrationsConnection": {
+      "title": "Připojení integrace",
+      "target": "Připojit {provider} pro {host}.",
+      "explanation": "Přihlaste se stejným účtem Topiqu, ze kterého jste požadavek zahájili, a potvrďte připojení. Zde vybraný projekt nezmění cíl připojení.",
+      "confirm": "Pokračovat jako {name}",
+      "wrongAccount": "Přihlaste se účtem Topiqu, ze kterého jste tento požadavek zahájili.",
+      "failed": "V připojení nelze pokračovat.",
+      "restart": "Požadavek mohl vypršet nebo se změnil váš přístup. Vraťte se do nastavení integrací původního projektu a zkuste to znovu."
+    },
     "title": "Přehled",
     "trial": {
       "continueFreeSuccess": "Váš tarif byl změněn na Free."

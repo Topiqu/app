@@ -58,6 +58,8 @@
 </template>
 
 <script setup lang="ts">
+import type { InternalApi } from 'nitropack'
+
 const props = defineProps<{
   embedded?: boolean
   clientSiteId: string
@@ -67,7 +69,8 @@ const props = defineProps<{
 
 const emit = defineEmits(['update:mode', 'update:type'])
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
+const toast = useToast()
 
 const isConnected = shallowRef(false)
 const localType = shallowRef(props.type || 'personal')
@@ -86,7 +89,7 @@ const modeItems = computed(() => [
 
 onMounted(async () => {
   try {
-    const res = await $fetch('/api/companies/my-company', {
+    const res = await $fetch<unknown, '/api/companies/my-company'>('/api/companies/my-company', {
       query: { type: localType.value },
     })
     if (res && (res as any).connected) {
@@ -118,9 +121,20 @@ function emitUpdate() {
   emit('update:type', localType.value)
 }
 
-function connectLinkedIn() {
+async function connectLinkedIn() {
   localType.value = 'personal'
   emit('update:type', 'personal')
-  window.location.href = `/api/linkedin/connect?appType=personal&clientSiteId=${props.clientSiteId}`
+  try {
+    const result = await $fetch<InternalApi['/api/integrations/start']['post'], '/api/integrations/start'>(
+      '/api/integrations/start',
+      {
+        method: 'POST',
+        body: { provider: 'linkedin', clientSiteId: props.clientSiteId, locale: locale.value },
+      },
+    )
+    await navigateTo(result.url, { external: true })
+  } catch {
+    toast.add({ color: 'error', title: t('admin.integrationsConnection.failed') })
+  }
 }
 </script>

@@ -4,7 +4,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs'
 
 const API = resolve(process.cwd(), 'server/api')
 const GUARD =
-  /requireTenantScope|requireTenantMember|requireArticleAccess|hasTenantScope|requireDomainAccess|requireShopifyAccess|requireWebhookAccess|requireKnowledgeAccess|resolveAiUser/
+  /requireTenantScope|requireTenantMember|requireArticleAccess|hasTenantScope|requireDomainAccess|requireShopifyAccess|requireWebhookAccess|requireKnowledgeAccess|resolveAiUser|createIntegrationTicket|requireIntegrationActor/
 
 // Routes that write without a tenant scope, each for a reason that is not "nobody checked".
 const exempt: Record<string, string> = {

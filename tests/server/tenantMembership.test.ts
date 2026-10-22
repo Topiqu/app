@@ -136,14 +136,17 @@ describe('tenant boundary wiring', () => {
 
   it('guards integrations, moderation, translations and article tags', () => {
     const expectations = [
-      ['server/api/search-console/callback.get.ts', 'INTEGRATION_CONTROL'],
-      ['server/api/linkedin/callback.get.ts', 'INTEGRATION_CONTROL'],
+      ['server/api/search-console/callback.get.ts', 'consumeIntegrationOAuth'],
+      ['server/api/linkedin/callback.get.ts', 'consumeIntegrationOAuth'],
       ['server/api/bans/[id]/index.post.ts', 'CONTENT_MODERATE'],
       ['server/api/comments/[id]/index.delete.ts', 'CONTENT_MODERATE'],
       ['server/api/translations/[id]/index.patch.ts', 'requireArticleAccess'],
       ['server/api/articles/[id]/tags/index.post.ts', 'requireArticleAccess'],
     ]
     for (const [file, guard] of expectations) expect(source(file)).toContain(guard)
+    const integration = source('server/utils/integrationOAuth.ts')
+    expect(integration).toContain("requireTenantScope(event, 'INTEGRATION_CONTROL', tenantId)")
+    expect(integration).toContain('requireIntegrationActor(event, data)')
   })
 
   it('uses ARTICLE_WRITE_OTHERS when building the admin article list', () => {
