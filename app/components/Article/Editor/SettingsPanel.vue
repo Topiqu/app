@@ -1,148 +1,148 @@
 <template>
-  <UTabs
-    v-model="tab"
-    :items="tabs"
-    variant="link"
-    :unmountOnHide="false"
-    class="w-full"
-    :ui="{
-      root: 'gap-5',
-      list: 'bg-default',
-      trigger: 'flex-1 justify-center',
-    }"
-    data-article-settings-panel
-  >
-    <template #list-trailing>
+  <div class="relative w-full" data-article-settings-panel>
+    <UTabs
+      v-model="tab"
+      :items="tabs"
+      variant="link"
+      :unmountOnHide="false"
+      class="w-full"
+      :ui="{
+        root: 'gap-5',
+        list: $slots.actions ? 'bg-default pe-10' : 'bg-default',
+        trigger: 'flex-1 justify-center whitespace-nowrap',
+      }"
+    >
+      <template #article>
+        <div class="flex flex-col gap-6">
+          <section ref="imageSection" class="flex flex-col gap-3">
+            <h3 :class="headingClass">
+              <UIcon size="16" name="mdi:image-outline" />
+              {{ $t('common.labels.image') }}
+            </h3>
+            <FileUploader
+              :imageUrl="imageUrl"
+              type="article-image"
+              aspectRatio="16 / 9"
+              :maxWidth="3840"
+              :maxHeight="2160"
+              @upload="$emit('upload', $event)"
+            />
+            <UButton color="neutral" variant="soft" icon="mdi:image-multiple-outline" @click="mediaPickerOpen = true">
+              {{ $t('media.choose') }}
+            </UButton>
+            <MediaPicker v-model:open="mediaPickerOpen" mode="cover" @select="selectCoverMedia" />
+          </section>
+
+          <section ref="sourcesSection" class="flex flex-col gap-3">
+            <h3 :class="headingClass">
+              <UIcon size="16" name="mdi:link-variant" />
+              {{ $t('articles.columns.sources') }}
+            </h3>
+            <ArticleSources ref="sourcesEditor" v-model="sources" compact />
+          </section>
+
+          <section class="flex flex-col gap-3">
+            <h3 :class="headingClass">
+              <UIcon size="16" name="mdi:bookmark-multiple-outline" />
+              {{ $t('common.labels.series') }}
+            </h3>
+            <ArticleSeriesSelector v-model="selectedSeries" compact />
+          </section>
+
+          <section class="flex flex-col gap-3">
+            <h3 :class="headingClass">
+              <UIcon size="16" name="mdi:tag-multiple-outline" />
+              {{ $t('common.labels.tags') }}
+            </h3>
+            <TagsManager
+              :article="article"
+              :initialTags="articleTags"
+              @add:tag="$emit('addTag', $event)"
+              @create:tag="$emit('addTag', $event)"
+              @delete:tag="$emit('removeTag', $event)"
+            />
+          </section>
+
+          <section class="flex flex-col gap-3">
+            <h3 :class="headingClass">
+              <UIcon size="16" name="mdi:calendar-clock" />
+              {{ $t('common.labels.releaseDate') }}
+            </h3>
+            <UFormField :label="$t('common.labels.releaseDate')" :ui="{ label: 'sr-only' }">
+              <AppDateInput :modelValue="releaseAt" time @update:modelValue="releaseAt = $event || null" />
+            </UFormField>
+            <div class="flex flex-wrap gap-2">
+              <UButton
+                v-for="kind in quickReleaseKinds"
+                :key="kind"
+                size="sm"
+                color="neutral"
+                variant="soft"
+                @click="$emit('quickRelease', kind)"
+              >
+                {{ $t(`articles.releaseQuick.${kind}`) }}
+              </UButton>
+              <UButton
+                v-if="releaseAt"
+                size="sm"
+                color="neutral"
+                variant="ghost"
+                icon="mdi:close"
+                @click="$emit('quickRelease', 'clear')"
+              >
+                {{ $t('articles.releaseQuick.clear') }}
+              </UButton>
+            </div>
+          </section>
+        </div>
+      </template>
+
+      <template #ai>
+        <ArticleEditorGenerationForm
+          v-if="aiAvailable"
+          v-model:customPrompt="customPrompt"
+          v-model:aiOptions="aiOptions"
+          :aiGenerating="aiGenerating"
+          @generate="$emit('generate')"
+        />
+        <ArticleEditorAiUpsell v-else />
+      </template>
+
+      <template #checks>
+        <div class="flex flex-col divide-y divide-default">
+          <ArticleEditorOptimization
+            class="pb-3"
+            :state="optimizationState"
+            :result="optimizationResult"
+            @retry="$emit('retryOptimization')"
+            @navigate="$emit('navigateOptimization', $event)"
+          />
+          <ArticleEditorFactCheck
+            class="py-3"
+            :state="factCheckState"
+            :result="factCheckResult"
+            :canRun="factCheckCanRun"
+            :errorKind="factCheckErrorKind"
+            :locked="!aiAvailable"
+            @run="$emit('runFactCheck')"
+            @navigate="$emit('navigateFactCheck', $event)"
+            @navigateSources="$emit('navigateFactCheckSources')"
+          />
+          <ArticleEditorMediaRights
+            class="pt-3"
+            :state="mediaRightsState"
+            :result="mediaRightsResult"
+            @navigate="$emit('navigateMedia', $event)"
+            @attach="(item, mediaId) => $emit('attachMedia', item, mediaId)"
+            @updated="$emit('refreshMediaRights')"
+          />
+        </div>
+      </template>
+    </UTabs>
+    <div v-if="$slots.actions" class="absolute end-0 top-1">
       <slot name="actions" />
-    </template>
-
-    <template #article>
-      <div class="flex flex-col gap-6">
-        <section ref="imageSection" class="flex flex-col gap-3">
-          <h3 :class="headingClass">
-            <UIcon size="16" name="mdi:image-outline" />
-            {{ $t('common.labels.image') }}
-          </h3>
-          <FileUploader
-            :imageUrl="imageUrl"
-            type="article-image"
-            aspectRatio="16 / 9"
-            :maxWidth="3840"
-            :maxHeight="2160"
-            @upload="$emit('upload', $event)"
-          />
-          <UButton color="neutral" variant="soft" icon="mdi:image-multiple-outline" @click="mediaPickerOpen = true">
-            {{ $t('media.choose') }}
-          </UButton>
-          <MediaPicker v-model:open="mediaPickerOpen" mode="cover" @select="selectCoverMedia" />
-        </section>
-
-        <section ref="sourcesSection" class="flex flex-col gap-3">
-          <h3 :class="headingClass">
-            <UIcon size="16" name="mdi:link-variant" />
-            {{ $t('articles.columns.sources') }}
-          </h3>
-          <ArticleSources ref="sourcesEditor" v-model="sources" compact />
-        </section>
-
-        <section class="flex flex-col gap-3">
-          <h3 :class="headingClass">
-            <UIcon size="16" name="mdi:bookmark-multiple-outline" />
-            {{ $t('common.labels.series') }}
-          </h3>
-          <ArticleSeriesSelector v-model="selectedSeries" compact />
-        </section>
-
-        <section class="flex flex-col gap-3">
-          <h3 :class="headingClass">
-            <UIcon size="16" name="mdi:tag-multiple-outline" />
-            {{ $t('common.labels.tags') }}
-          </h3>
-          <TagsManager
-            :article="article"
-            :initialTags="articleTags"
-            @add:tag="$emit('addTag', $event)"
-            @create:tag="$emit('addTag', $event)"
-            @delete:tag="$emit('removeTag', $event)"
-          />
-        </section>
-
-        <section class="flex flex-col gap-3">
-          <h3 :class="headingClass">
-            <UIcon size="16" name="mdi:calendar-clock" />
-            {{ $t('common.labels.releaseDate') }}
-          </h3>
-          <UFormField :label="$t('common.labels.releaseDate')" :ui="{ label: 'sr-only' }">
-            <AppDateInput :modelValue="releaseAt" time @update:modelValue="releaseAt = $event || null" />
-          </UFormField>
-          <div class="flex flex-wrap gap-2">
-            <UButton
-              v-for="kind in quickReleaseKinds"
-              :key="kind"
-              size="sm"
-              color="neutral"
-              variant="soft"
-              @click="$emit('quickRelease', kind)"
-            >
-              {{ $t(`articles.releaseQuick.${kind}`) }}
-            </UButton>
-            <UButton
-              v-if="releaseAt"
-              size="sm"
-              color="neutral"
-              variant="ghost"
-              icon="mdi:close"
-              @click="$emit('quickRelease', 'clear')"
-            >
-              {{ $t('articles.releaseQuick.clear') }}
-            </UButton>
-          </div>
-        </section>
-      </div>
-    </template>
-
-    <template #ai>
-      <ArticleEditorGenerationForm
-        v-if="aiAvailable"
-        v-model:customPrompt="customPrompt"
-        v-model:aiOptions="aiOptions"
-        :aiGenerating="aiGenerating"
-        @generate="$emit('generate')"
-      />
-      <ArticleEditorAiUpsell v-else />
-    </template>
-
-    <template #checks>
-      <div class="flex flex-col divide-y divide-default">
-        <ArticleEditorOptimization
-          class="pb-3"
-          :state="optimizationState"
-          :result="optimizationResult"
-          @retry="$emit('retryOptimization')"
-          @navigate="$emit('navigateOptimization', $event)"
-        />
-        <ArticleEditorFactCheck
-          class="py-3"
-          :state="factCheckState"
-          :result="factCheckResult"
-          :canRun="factCheckCanRun"
-          :errorKind="factCheckErrorKind"
-          :locked="!aiAvailable"
-          @run="$emit('runFactCheck')"
-          @navigate="$emit('navigateFactCheck', $event)"
-          @navigateSources="$emit('navigateFactCheckSources')"
-        />
-        <ArticleEditorMediaRights
-          class="pt-3"
-          :state="mediaRightsState"
-          :result="mediaRightsResult"
-          @navigate="$emit('navigateMedia', $event)"
-          @attach="(item, mediaId) => $emit('attachMedia', item, mediaId)"
-          @updated="$emit('refreshMediaRights')"
-        />
-      </div>
-    </template>
-  </UTabs>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">

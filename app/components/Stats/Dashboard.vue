@@ -131,14 +131,17 @@
               class="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
             >
               {{ $t('stats.savedAmount.title') }}
-              <span
-                v-tippy="{ content: savingsTooltip, theme: 'light', placement: 'top' }"
-                class="inline-flex"
-                tabindex="0"
-                :aria-label="$t('stats.savedAmount.method')"
-              >
-                <UIcon name="mdi:help-circle-outline" class="size-3.5 cursor-help" />
-              </span>
+              <UTooltip :text="savingsTooltip">
+                <UButton
+                  icon="mdi:help-circle-outline"
+                  color="neutral"
+                  variant="ghost"
+                  size="xs"
+                  square
+                  :aria-label="$t('stats.savedAmount.method')"
+                  :ui="{ base: 'size-6 p-0', leadingIcon: 'size-3.5' }"
+                />
+              </UTooltip>
             </p>
             <p class="mt-1 text-3xl font-semibold tracking-tight tabular-nums text-primary sm:text-4xl">
               {{ headlineValue ? `~${formatMoney(headlineValue.estimatedAmountUsd)}` : '—' }}
@@ -333,13 +336,13 @@
                   :key="entry.key"
                   class="flex items-center gap-1.5 lg:flex-col lg:items-start lg:rounded-[var(--ui-radius)] lg:bg-elevated lg:p-3"
                 >
-                  <UIcon :name="entry.icon" class="hidden size-5 text-primary lg:block" />
-                  <div class="flex min-w-0 items-center gap-1.5">
-                    <span class="size-2 shrink-0 rounded-full lg:hidden" :class="entry.dot" />
-                    <dt class="truncate text-neutral-500 dark:text-neutral-400">
+                  <dt class="flex min-w-0 items-center gap-1.5 text-toned lg:flex-col lg:items-start">
+                    <UIcon :name="entry.icon" class="hidden size-5 text-primary lg:block" />
+                    <span class="size-2 shrink-0 rounded-full lg:hidden" :class="entry.dot" aria-hidden="true" />
+                    <span class="truncate">
                       {{ $t(`stats.aiInvolvement.${entry.key}`) }}
-                    </dt>
-                  </div>
+                    </span>
+                  </dt>
                   <dd class="font-semibold tabular-nums text-neutral-900 lg:text-lg dark:text-neutral-100">
                     {{ entry.count }}
                   </dd>
@@ -421,7 +424,7 @@
       </div>
     </section>
 
-    <p v-if="stats.generatedAt" class="text-xs text-neutral-400 dark:text-neutral-500">
+    <p v-if="stats.generatedAt" class="text-xs text-toned">
       {{ $t('stats.updatedAt') }} <NuxtTime :datetime="stats.generatedAt" timeStyle="short" :locale />
     </p>
   </div>

@@ -5,7 +5,7 @@
     color="neutral"
     variant="ghost"
     square
-    aria-label="Toggle color mode"
+    :aria-label="$t('common.actions.toggleTheme')"
     @click="theme.toggle"
   />
 </template>

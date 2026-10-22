@@ -7,6 +7,11 @@
     :maxValue
     :disabled
     class="w-full"
+    :ui="{
+      base: 'min-h-10',
+      segment:
+        'inline-flex min-h-6 min-w-6 items-center justify-center data-[segment=literal]:min-w-0 data-placeholder:text-muted',
+    }"
     @update:modelValue="update($event as DateValue | undefined)"
   >
     <template #trailing>

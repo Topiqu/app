@@ -16,7 +16,13 @@
     <ArticleEditorPromptTools v-model="customPrompt" :format="aiOptions.format" />
 
     <UFormField :label="$t('articles.editor.ai.outputLabel')">
-      <USelect :modelValue="aiOptions.format" :items="formatItems" class="w-full" @update:modelValue="selectFormat" />
+      <USelect
+        :modelValue="aiOptions.format"
+        :items="formatItems"
+        class="w-full"
+        :ui="{ base: 'whitespace-nowrap' }"
+        @update:modelValue="selectFormat"
+      />
     </UFormField>
 
     <UCollapsible v-model:open="advancedOpen" :ui="{ root: 'border-y border-default' }">

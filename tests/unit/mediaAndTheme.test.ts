@@ -122,16 +122,16 @@ describe('stable media and theme controls', () => {
   })
 
   it('reserves the color-mode control before hydration', () => {
+    const translate = vi.fn((key: string) => (key === 'common.actions.toggleTheme' ? 'Přepnout barevný režim' : key))
     const wrapper = mount(ThemeToggle, {
       global: {
-        stubs: {
-          UColorModeButton: {
-            template: '<button data-color-mode class="size-10" aria-label="Theme" />',
-          },
-        },
+        mocks: { $t: translate },
       },
     })
-    expect(wrapper.get('[data-color-mode]').classes()).toContain('size-10')
+    const control = wrapper.get('[data-color-mode]')
+    expect(control.classes()).toContain('size-10')
+    expect(control.attributes('aria-label')).toBe('Přepnout barevný režim')
+    expect(translate).toHaveBeenCalledWith('common.actions.toggleTheme')
   })
 
   it('whitelists tenant accents and supplies a contrasting foreground', () => {

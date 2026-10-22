@@ -17,7 +17,14 @@
     </figcaption>
 
     <div class="relative h-72 min-w-0 w-full">
-      <component :is="currentChart" :key="chartType" :data="chartData" :options="chartOptions" :plugins="valueLabels" />
+      <component
+        :is="currentChart"
+        :key="chartType"
+        :data="chartData"
+        :options="chartOptions"
+        :plugins="valueLabels"
+        :aria-label="title"
+      />
     </div>
 
     <!-- The table twin: the values stay readable when the colours don't carry them. -->
