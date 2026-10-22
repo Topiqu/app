@@ -1,0 +1,95 @@
+{
+  "operations": {
+    "title": "Betriebsübersicht",
+    "description": "Status gemeinsamer Aufgaben, wartende Arbeit und Integrationen mit Handlungsbedarf. Aktualisieren Sie die Übersicht für den neuesten Stand.",
+    "clients": "Kunden",
+    "refresh": "Status aktualisieren",
+    "checkedAt": "Geprüft",
+    "loadFailed": "Der Betriebsstatus konnte nicht geladen werden",
+    "loadFailedHelp": "Prüfen Sie die Datenbankverfügbarkeit und die Betriebsmigration und aktualisieren Sie erneut. Zuvor geladene Werte können veraltet sein.",
+    "cache": {
+      "ready": "Redis ist verfügbar",
+      "unavailable": "Redis ist nicht verfügbar",
+      "unconfigured": "Redis ist nicht konfiguriert"
+    },
+    "cacheHelp": {
+      "ready": "Die Cache-Verbindung hat auf eine aktuelle Zustandsprüfung geantwortet.",
+      "unavailable": "Die Anwendung greift ersatzweise auf die Datenbank zu. Prüfen Sie Redis und die Verbindung; Antwortzeiten können steigen.",
+      "unconfigured": "Caching ist deaktiviert. Konfigurieren Sie die bestehende Redis-Verbindung, wenn ein gemeinsamer Cache benötigt wird."
+    },
+    "queuesTitle": "Wartende und laufende Arbeit",
+    "queues": {
+      "scheduledGeneration": "Anstehende geplante Generierungen",
+      "activeGeneration": "Laufende Generierungen",
+      "interruptedGeneration": "Unterbrochene oder fehlgeschlagene Generierungen",
+      "pendingTranslations": "Wartende Übersetzungen",
+      "activeTranslations": "Laufende Übersetzungen",
+      "failedTranslations": "Fehlgeschlagene Übersetzungen",
+      "pendingWebhooks": "Wartende Webhook-Zustellungen",
+      "failedWebhooks": "Fehlgeschlagene Webhook-Zustellungen"
+    },
+    "queuesHelp": "Geplante Kandidaten benötigen weiterhin eine aktive Funktion und verfügbare Artikel. Übersetzungswarteschlangen können ungeeignete Tarife oder unveröffentlichte Ausgangsartikel enthalten. Stellen Sie unterbrochene Generierungen im Editor des Kunden wieder her und prüfen Sie dort Übersetzungsfehler vor neuer kostenpflichtiger Arbeit.",
+    "tasksTitle": "Geplante Aufgaben",
+    "tasksHelp": "Der Status wird zwischen Replikaten geteilt und bleibt nach Neustarts erhalten. Ein erfolgreicher Lauf enthält keine gemeldeten Einzelfehler. Vor dem ersten Lauf nach der Betriebsmigration gelten Aufgaben als noch nicht erfasst.",
+    "status": {
+      "unknown": "Noch nicht erfasst",
+      "running": "Läuft",
+      "succeeded": "Erfolgreich",
+      "degraded": "Teilweise fehlgeschlagen",
+      "failed": "Fehlgeschlagen"
+    },
+    "overdue": "Erfolg überfällig",
+    "overdueHelp": "Seit mehr als zwei erwarteten Intervallen plus fünf Minuten gab es keinen fehlerfreien Abschluss. Prüfen Sie Zeitplanung und Aufgabenprotokolle vor einer Wiederholung.",
+    "lastSuccess": "Letzter erfolgreicher Lauf",
+    "lastRun": "Letzter Start",
+    "notObserved": "Noch nicht erfasst",
+    "interval": "Erwartetes Intervall",
+    "minutes": "{count} Min.",
+    "latestCounts": "Verarbeitet / Fehler / übersprungen",
+    "taskFailure": {
+      "ITEM_FAILURES": "Die Aufgabe wurde mit Einzelfehlern abgeschlossen. Prüfen Sie das Aufgaben-Audit und den betroffenen Kunden vor einer Wiederholung.",
+      "TASK_FAILED": "Die Aufgabe wurde vorzeitig beendet. Prüfen Sie Serverprotokolle und angebundene Dienste; kostenpflichtige Generierungen müssen über den Editor wiederhergestellt werden."
+    },
+    "webhooksTitle": "Webhook-Zustellungsprobleme ({count})",
+    "boundedList": "Es werden höchstens 20 Einträge mit Handlungsbedarf angezeigt.",
+    "noWebhookFailures": "Keine fehlgeschlagenen oder erneut geplanten Webhook-Zustellungen.",
+    "deliveryStatus": { "FAILED": "Fehlgeschlagen", "PENDING": "Automatische Wiederholung geplant" },
+    "attempts": "Versuche: {count}",
+    "httpStatus": "HTTP {code}",
+    "nextRetry": "Nächster möglicher Versuch:",
+    "retryDelivery": "Fehlgeschlagene Zustellung wiederholen",
+    "retryConfirm": "Der Empfänger könnte einen früheren Versuch bereits verarbeitet haben, auch wenn Topiqu keine Antwort erhielt. Bestätigen Sie, dass eine doppelte Zustellung sicher ist. Ein weiterer Versuch wird mit derselben Zustellungs-ID und unverändertem Inhalt eingeplant, damit der Empfänger Duplikate erkennen kann. Deaktivierte Endpunkte werden nicht aktiviert.",
+    "retryQueued": "Die bestehende Zustellung wurde eingereiht. Der Webhook-Worker verarbeitet sie bei seinem nächsten Lauf.",
+    "retryFailed": "Die Zustellung konnte nicht eingereiht werden",
+    "retryConflict": "Die Zustellung ist nicht mehr fehlgeschlagen, ihr Endpunkt ist deaktiviert oder ihr Tarif ist ungeeignet. Aktualisieren und prüfen Sie den aktuellen Status.",
+    "retryRateLimited": "Zu viele manuelle Wiederholungen. Warten Sie zehn Minuten vor dem nächsten Versuch.",
+    "retryUnavailable": "Die Einreihung konnte nicht bestätigt werden. Aktualisieren Sie vor einem erneuten Versuch, da die Anfrage bereits verarbeitet worden sein könnte.",
+    "domainsTitle": "Zu prüfende Domains ({count})",
+    "noDomainIssues": "Keine Domain-Verbindung muss geprüft werden.",
+    "reviewClient": "Kunden prüfen",
+    "domainStates": {
+      "OWNERSHIP": "Inhaberschaft",
+      "DNS_UNAVAILABLE": "DNS nicht verfügbar",
+      "CERTIFICATE": "Zertifikat",
+      "ROUTING": "Routing",
+      "READY": "Verbunden",
+      "DISCONNECTING": "Wird getrennt",
+      "DISCONNECTED": "Getrennt"
+    },
+    "reasons": {
+      "endpointDisabled": "Der Endpunkt ist deaktiviert oder der Tarif erlaubt keine Webhooks mehr. Prüfen Sie die Integration vor der Aktivierung.",
+      "endpointAuthorization": "Der Empfänger hat die Authentifizierung abgelehnt. Prüfen Sie Signaturprüfung und Endpunktkonfiguration.",
+      "endpointMissing": "Der Empfängerendpunkt existiert nicht mehr. Korrigieren Sie seine Adresse in den Integrationseinstellungen.",
+      "endpointRateLimited": "Der Empfänger begrenzt Anfragen. Warten Sie vor einer Wiederholung auf freie Kapazität.",
+      "endpointUnavailable": "Der Empfänger hat einen Serverfehler gemeldet. Prüfen Sie seinen Zustand vor einer Wiederholung.",
+      "endpointRejected": "Der Empfänger hat die Anfrage abgelehnt. Prüfen Sie Ereignisformat und Antwortcode.",
+      "endpointUnreachable": "Es wurde keine verwertbare HTTP-Antwort empfangen. Prüfen Sie DNS, TLS und die Erreichbarkeit des Empfängers.",
+      "planRequired": "Der aktuelle Tarif unterstützt diese Domain-Verbindung nicht. Prüfen Sie den Kundentarif.",
+      "domainOwnership": "Die Domain-Inhaberschaft ist nicht bestätigt. Prüfen Sie den erforderlichen TXT-Eintrag mit dem Domaininhaber.",
+      "domainDns": "Die DNS-Prüfung ist nicht verfügbar. Prüfen Sie den DNS-Anbieter und wiederholen Sie die Prüfung im bestehenden Domain-Einrichtungsablauf.",
+      "domainCertificate": "Das Zertifikat benötigt Aufmerksamkeit oder läuft bald ab. Prüfen Sie Validierungseinträge und erneuern Sie eigene Zertifikate in den Domaineinstellungen.",
+      "domainCleanup": "Die Trennung der Domain steht noch aus. Prüfen Sie die Anbieter und den bestehenden Trennungsablauf.",
+      "domainRouting": "Die Domain ist nicht vollständig geroutet. Prüfen Sie DNS und Anbieterstatus im bestehenden Domain-Einrichtungsablauf."
+    }
+  }
+}

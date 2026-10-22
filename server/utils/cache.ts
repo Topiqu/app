@@ -53,6 +53,28 @@ function activeClient(): Redis | null {
   return redis && redis.status === 'ready' ? redis : null
 }
 
+/** A live probe, without exposing connection strings or waiting through reconnects. */
+export async function cacheAvailability(): Promise<'ready' | 'unavailable' | 'unconfigured'> {
+  const redis = getClient()
+  if (!redis) return 'unconfigured'
+  if (redis.status !== 'ready') return 'unavailable'
+  let timeout: ReturnType<typeof setTimeout> | undefined
+  try {
+    return (await Promise.race([
+      redis.ping(),
+      new Promise<null>((resolve) => {
+        timeout = setTimeout(() => resolve(null), 1000)
+      }),
+    ])) === 'PONG'
+      ? 'ready'
+      : 'unavailable'
+  } catch {
+    return 'unavailable'
+  } finally {
+    if (timeout) clearTimeout(timeout)
+  }
+}
+
 const logErr = (op: string, key: string, e: unknown) =>
   console.warn(`[cache] ${op} failed for "${key}"`, (e as Error)?.message)
 

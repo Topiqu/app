@@ -1,0 +1,95 @@
+{
+  "operations": {
+    "title": "Operations overview",
+    "description": "Shared task health, waiting work and integrations that need attention. Refresh to load the latest state.",
+    "clients": "Clients",
+    "refresh": "Refresh status",
+    "checkedAt": "Checked",
+    "loadFailed": "Operations status could not be loaded",
+    "loadFailedHelp": "Check database availability and the operations migration, then refresh. Previously loaded values may be out of date.",
+    "cache": {
+      "ready": "Redis is available",
+      "unavailable": "Redis is unavailable",
+      "unconfigured": "Redis is not configured"
+    },
+    "cacheHelp": {
+      "ready": "The cache connection answered a live health probe.",
+      "unavailable": "The application uses database fallbacks. Check the Redis service and connectivity; this can increase response times.",
+      "unconfigured": "Caching is disabled. Configure the existing Redis connection when shared caching is required."
+    },
+    "queuesTitle": "Waiting and active work",
+    "queues": {
+      "scheduledGeneration": "Upcoming scheduled generation",
+      "activeGeneration": "Active generation sessions",
+      "interruptedGeneration": "Interrupted or failed generation",
+      "pendingTranslations": "Waiting translations",
+      "activeTranslations": "Active translations",
+      "failedTranslations": "Failed translations",
+      "pendingWebhooks": "Waiting webhook deliveries",
+      "failedWebhooks": "Failed webhook deliveries"
+    },
+    "queuesHelp": "Scheduled candidates still need an active feature and an available article balance. Translation queues can include ineligible plans or unpublished source articles. Restore interrupted generation in its tenant editor; review translation failures there before starting new paid work.",
+    "tasksTitle": "Scheduled tasks",
+    "tasksHelp": "Status is shared across replicas and survives restarts. A successful run has no reported item failures. Tasks appear as not observed until their first run after the monitoring migration.",
+    "status": {
+      "unknown": "Not observed",
+      "running": "Running",
+      "succeeded": "Succeeded",
+      "degraded": "Partial failure",
+      "failed": "Failed"
+    },
+    "overdue": "Success overdue",
+    "overdueHelp": "No clean completion for more than two expected intervals plus five minutes. Check the scheduler and task logs before rerunning work.",
+    "lastSuccess": "Last successful run",
+    "lastRun": "Latest start",
+    "notObserved": "Not observed",
+    "interval": "Expected interval",
+    "minutes": "{count} min",
+    "latestCounts": "Processed / failed / skipped",
+    "taskFailure": {
+      "ITEM_FAILURES": "The task completed with item failures. Inspect the task audit and the affected tenant before retrying.",
+      "TASK_FAILED": "The task stopped before completing. Check its server logs and upstream service health; paid generation must be recovered through the editor."
+    },
+    "webhooksTitle": "Webhook delivery issues ({count})",
+    "boundedList": "Shows at most 20 items that need attention.",
+    "noWebhookFailures": "No failed or retrying webhook deliveries.",
+    "deliveryStatus": { "FAILED": "Failed", "PENDING": "Automatic retry scheduled" },
+    "attempts": "Attempts: {count}",
+    "httpStatus": "HTTP {code}",
+    "nextRetry": "Next eligible retry:",
+    "retryDelivery": "Retry failed delivery",
+    "retryConfirm": "The recipient may already have processed an earlier attempt, even if Topiqu did not receive a response. Confirm that duplicate delivery is safe. This queues one more attempt with the same delivery ID and unchanged payload so the recipient can deduplicate it. Disabled endpoints are not reactivated.",
+    "retryQueued": "The existing delivery was queued. The webhook worker will pick it up on its next run.",
+    "retryFailed": "Delivery could not be queued",
+    "retryConflict": "The delivery is no longer failed, its endpoint is disabled, or its plan is ineligible. Refresh and review its current state.",
+    "retryRateLimited": "Too many manual retries. Wait ten minutes before trying again.",
+    "retryUnavailable": "The retry could not be confirmed. Refresh before trying again in case the request already queued it.",
+    "domainsTitle": "Domains needing review ({count})",
+    "noDomainIssues": "No domain connections need review.",
+    "reviewClient": "Review client",
+    "domainStates": {
+      "OWNERSHIP": "Ownership",
+      "DNS_UNAVAILABLE": "DNS unavailable",
+      "CERTIFICATE": "Certificate",
+      "ROUTING": "Routing",
+      "READY": "Connected",
+      "DISCONNECTING": "Disconnecting",
+      "DISCONNECTED": "Disconnected"
+    },
+    "reasons": {
+      "endpointDisabled": "The endpoint is disabled or the plan no longer permits webhooks. Review the integration before enabling it.",
+      "endpointAuthorization": "The recipient rejected authentication. Check its signature verification and endpoint configuration.",
+      "endpointMissing": "The recipient endpoint no longer exists. Correct its address in the integration settings.",
+      "endpointRateLimited": "The recipient is rate limiting requests. Wait for its capacity to recover before retrying.",
+      "endpointUnavailable": "The recipient returned a server error. Check its health before retrying.",
+      "endpointRejected": "The recipient rejected the request. Check its expected event format and response code.",
+      "endpointUnreachable": "No usable HTTP response was received. Check DNS, TLS and recipient availability.",
+      "planRequired": "The current plan does not support this domain connection. Review the tenant plan.",
+      "domainOwnership": "Domain ownership is not confirmed. Review the required TXT record with the domain owner.",
+      "domainDns": "DNS verification is unavailable. Check the DNS provider and retry through the existing domain setup workflow.",
+      "domainCertificate": "The certificate needs attention or expires soon. Review validation records and renew custom certificates in domain settings.",
+      "domainCleanup": "Domain disconnection is still pending. Check provider availability and the existing cleanup workflow.",
+      "domainRouting": "The domain is not fully routed. Review its DNS and provider state in the existing domain setup workflow."
+    }
+  }
+}

@@ -74,6 +74,6 @@ export default defineMonitoredTask({
         })
       }
     }
-    return { result: { connections: connections.length, synced } }
+    return { result: { connections: connections.length, synced, failed: connections.length - synced } }
   },
 })

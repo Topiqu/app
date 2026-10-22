@@ -1,3 +1,5 @@
+import type { ShopifyPublicationStatus } from '~~/generated/zenstack/models'
+
 import { randomUUID } from 'node:crypto'
 
 import { shopifyEligible } from './config'
@@ -37,7 +39,7 @@ const articleHandles = async (articleId: string, handle: string) => {
 const ARTICLE_FIELDS =
   'id handle isPublished blog { id handle } marker: metafield(namespace: "topiqu", key: "article_id") { value }'
 
-export const publishShopifyArticle = async (id: string) => {
+export const publishShopifyArticle = async (id: string): Promise<ShopifyPublicationStatus | 'SKIPPED'> => {
   const lease = randomUUID()
   const claimed = await prisma.shopifyPublication.updateMany({
     where: {
@@ -48,7 +50,7 @@ export const publishShopifyArticle = async (id: string) => {
     },
     data: { status: 'PUBLISHING', lease, leaseUntil: new Date(Date.now() + 120_000), attempts: { increment: 1 } },
   })
-  if (!claimed.count) return
+  if (!claimed.count) return 'SKIPPED'
   const publication = await prisma.shopifyPublication.findUnique({
     where: { id },
     select: {
@@ -71,7 +73,7 @@ export const publishShopifyArticle = async (id: string) => {
       },
     },
   })
-  if (!publication) return
+  if (!publication) return 'SKIPPED'
   let creating = false
   const finish = (data: Parameters<typeof prisma.shopifyPublication.updateMany>[0]['data']) =>
     prisma.shopifyPublication.updateMany({
@@ -81,7 +83,7 @@ export const publishShopifyArticle = async (id: string) => {
   try {
     if (publication.connection.clientSite.publishToShopify === false) {
       await finish({ status: 'QUEUED', attempts: { decrement: 1 } })
-      return
+      return 'SKIPPED'
     }
     if (
       publication.connection.status !== 'CONNECTED' ||
@@ -152,7 +154,7 @@ export const publishShopifyArticle = async (id: string) => {
     })
     if (!authorized.count) {
       await finish({ status: 'QUEUED', attempts: { decrement: 1 } })
-      return
+      return 'SKIPPED'
     }
     creating = !remoteId
     const result = await call<Record<string, { article: RemoteArticle | null; userErrors: { message: string }[] }>>(
@@ -172,7 +174,7 @@ export const publishShopifyArticle = async (id: string) => {
     const remote = operation.article
     const storefront = new URL(publication.connection.storefrontUrl)
     if (storefront.protocol !== 'https:') throw new ShopifyApiError('REJECTED', 'Invalid Shopify storefront URL')
-    await finish({
+    const finished = await finish({
       status: 'SYNCED',
       shopifyArticleId: remote.id,
       handle: remote.handle,
@@ -181,6 +183,7 @@ export const publishShopifyArticle = async (id: string) => {
       lastSyncedAt: new Date(),
       lastError: null,
     })
+    return finished.count ? 'SYNCED' : 'SKIPPED'
   } catch (error) {
     const failure =
       error instanceof ShopifyApiError
@@ -196,15 +199,17 @@ export const publishShopifyArticle = async (id: string) => {
         where: { id: publication.connectionId, status: 'CONNECTED' },
         data: { status: 'REAUTH_REQUIRED' },
       })
-    await finish({
-      status:
-        failure.code === 'UNCERTAIN'
-          ? 'UNCERTAIN'
-          : failure.code === 'RETRY' && publication.attempts < 5
-            ? 'QUEUED'
-            : 'FAILED',
+    const status =
+      failure.code === 'UNCERTAIN'
+        ? 'UNCERTAIN'
+        : failure.code === 'RETRY' && publication.attempts < 5
+          ? 'QUEUED'
+          : 'FAILED'
+    const finished = await finish({
+      status,
       nextAttemptAt: new Date(Date.now() + Math.min(15 * 60_000, 30_000 * 2 ** publication.attempts)),
       lastError: failure.message,
     })
+    return finished.count ? status : 'SKIPPED'
   }
 }

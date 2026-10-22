@@ -1,0 +1,95 @@
+{
+  "operations": {
+    "title": "Vue des opérations",
+    "description": "État des tâches partagées, travail en attente et intégrations nécessitant une intervention. Actualisez pour charger le dernier état.",
+    "clients": "Clients",
+    "refresh": "Actualiser l’état",
+    "checkedAt": "Vérifié",
+    "loadFailed": "Impossible de charger l’état des opérations",
+    "loadFailedHelp": "Vérifiez la disponibilité de la base et la migration des opérations, puis actualisez. Les valeurs précédemment chargées peuvent être obsolètes.",
+    "cache": {
+      "ready": "Redis est disponible",
+      "unavailable": "Redis est indisponible",
+      "unconfigured": "Redis n’est pas configuré"
+    },
+    "cacheHelp": {
+      "ready": "La connexion au cache a répondu à une vérification en direct.",
+      "unavailable": "L’application utilise la base de données en remplacement. Vérifiez Redis et la connectivité ; les réponses peuvent être plus lentes.",
+      "unconfigured": "Le cache est désactivé. Configurez la connexion Redis existante si un cache partagé est nécessaire."
+    },
+    "queuesTitle": "Travail en attente et en cours",
+    "queues": {
+      "scheduledGeneration": "Générations planifiées à venir",
+      "activeGeneration": "Générations en cours",
+      "interruptedGeneration": "Générations interrompues ou échouées",
+      "pendingTranslations": "Traductions en attente",
+      "activeTranslations": "Traductions en cours",
+      "failedTranslations": "Traductions échouées",
+      "pendingWebhooks": "Livraisons webhook en attente",
+      "failedWebhooks": "Livraisons webhook échouées"
+    },
+    "queuesHelp": "Les générations planifiées nécessitent encore une fonctionnalité active et des articles disponibles. Les files de traduction peuvent inclure des offres non éligibles ou des articles sources non publiés. Restaurez les générations interrompues dans l’éditeur du client et examinez-y les échecs de traduction avant tout nouveau travail payant.",
+    "tasksTitle": "Tâches planifiées",
+    "tasksHelp": "L’état est partagé entre les réplicas et persiste après les redémarrages. Une exécution réussie ne signale aucun échec individuel. Les tâches restent non observées jusqu’à leur première exécution après la migration des opérations.",
+    "status": {
+      "unknown": "Non observé",
+      "running": "En cours",
+      "succeeded": "Réussi",
+      "degraded": "Échec partiel",
+      "failed": "Échoué"
+    },
+    "overdue": "Réussite en retard",
+    "overdueHelp": "Aucune exécution sans erreur depuis plus de deux intervalles prévus et cinq minutes. Vérifiez le planificateur et les journaux avant de relancer le travail.",
+    "lastSuccess": "Dernière exécution réussie",
+    "lastRun": "Dernier démarrage",
+    "notObserved": "Non observé",
+    "interval": "Intervalle prévu",
+    "minutes": "{count} min",
+    "latestCounts": "Traités / échecs / ignorés",
+    "taskFailure": {
+      "ITEM_FAILURES": "La tâche s’est terminée avec des échecs individuels. Consultez son audit et le client concerné avant de réessayer.",
+      "TASK_FAILED": "La tâche s’est arrêtée avant la fin. Vérifiez les journaux serveur et les services associés ; les générations payantes doivent être restaurées dans l’éditeur."
+    },
+    "webhooksTitle": "Problèmes de livraison webhook ({count})",
+    "boundedList": "Affiche au maximum 20 éléments nécessitant une intervention.",
+    "noWebhookFailures": "Aucune livraison webhook échouée ou à réessayer.",
+    "deliveryStatus": { "FAILED": "Échoué", "PENDING": "Nouvelle tentative automatique prévue" },
+    "attempts": "Tentatives : {count}",
+    "httpStatus": "HTTP {code}",
+    "nextRetry": "Prochaine tentative possible :",
+    "retryDelivery": "Réessayer la livraison échouée",
+    "retryConfirm": "Le destinataire a peut-être déjà traité une tentative précédente, même si Topiqu n’a reçu aucune réponse. Confirmez qu’une livraison en double est sans risque. Une tentative supplémentaire est mise en file avec le même identifiant de livraison et le même contenu pour permettre la déduplication. Les points de terminaison désactivés ne seront pas réactivés.",
+    "retryQueued": "La livraison existante a été mise en file. La tâche webhook la traitera lors de sa prochaine exécution.",
+    "retryFailed": "Impossible de mettre la livraison en file",
+    "retryConflict": "La livraison n’est plus en échec, son point de terminaison est désactivé ou son offre n’est pas éligible. Actualisez et vérifiez son état actuel.",
+    "retryRateLimited": "Trop de tentatives manuelles. Attendez dix minutes avant de réessayer.",
+    "retryUnavailable": "La mise en file n’a pas pu être confirmée. Actualisez avant de réessayer, car la demande a peut-être déjà été traitée.",
+    "domainsTitle": "Domaines à examiner ({count})",
+    "noDomainIssues": "Aucune connexion de domaine ne nécessite de vérification.",
+    "reviewClient": "Examiner le client",
+    "domainStates": {
+      "OWNERSHIP": "Propriété",
+      "DNS_UNAVAILABLE": "DNS indisponible",
+      "CERTIFICATE": "Certificat",
+      "ROUTING": "Routage",
+      "READY": "Connecté",
+      "DISCONNECTING": "Déconnexion",
+      "DISCONNECTED": "Déconnecté"
+    },
+    "reasons": {
+      "endpointDisabled": "Le point de terminaison est désactivé ou l’offre ne permet plus les webhooks. Examinez l’intégration avant de l’activer.",
+      "endpointAuthorization": "Le destinataire a refusé l’authentification. Vérifiez la signature et la configuration du point de terminaison.",
+      "endpointMissing": "Le point de terminaison du destinataire n’existe plus. Corrigez son adresse dans les paramètres d’intégration.",
+      "endpointRateLimited": "Le destinataire limite les requêtes. Attendez que sa capacité soit rétablie avant de réessayer.",
+      "endpointUnavailable": "Le destinataire a renvoyé une erreur serveur. Vérifiez son état avant de réessayer.",
+      "endpointRejected": "Le destinataire a refusé la requête. Vérifiez le format attendu et le code de réponse.",
+      "endpointUnreachable": "Aucune réponse HTTP exploitable n’a été reçue. Vérifiez le DNS, TLS et la disponibilité du destinataire.",
+      "planRequired": "L’offre actuelle ne prend pas en charge cette connexion de domaine. Vérifiez l’offre du client.",
+      "domainOwnership": "La propriété du domaine n’est pas confirmée. Vérifiez l’enregistrement TXT requis avec son propriétaire.",
+      "domainDns": "La vérification DNS est indisponible. Vérifiez le fournisseur DNS et réessayez dans le parcours existant de configuration du domaine.",
+      "domainCertificate": "Le certificat nécessite une intervention ou expire bientôt. Vérifiez les enregistrements de validation et renouvelez les certificats personnalisés dans les paramètres du domaine.",
+      "domainCleanup": "La déconnexion du domaine reste en attente. Vérifiez les fournisseurs et le parcours existant de déconnexion.",
+      "domainRouting": "Le domaine n’est pas entièrement routé. Vérifiez le DNS et l’état du fournisseur dans le parcours existant de configuration du domaine."
+    }
+  }
+}

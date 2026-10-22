@@ -21,6 +21,12 @@ class FakeRedis {
     return this.store.has(key) ? this.store.get(key)! : null
   }
 
+  async ping(): Promise<string> {
+    if (this.failOn === 'ping') throw new Error('connection refused')
+    if (this.failOn === 'hang') return new Promise(() => {})
+    return 'PONG'
+  }
+
   async set(key: string, value: string, _token: string, ttl: number) {
     if (this.failOn === 'set') throw new Error('connection refused')
     this.store.set(key, value)
@@ -66,6 +72,32 @@ async function loadCache({ configured = true } = {}) {
 
 beforeEach(() => {
   vi.spyOn(console, 'warn').mockImplementation(() => {})
+})
+
+describe('cache availability', () => {
+  it('distinguishes disabled caching from an unavailable connection and a successful live probe', async () => {
+    const disabled = await loadCache({ configured: false })
+    await expect(disabled.cacheAvailability()).resolves.toBe('unconfigured')
+    const configured = await loadCache()
+    await expect(configured.cacheAvailability()).resolves.toBe('ready')
+    mockInstance.status = 'reconnecting'
+    await expect(configured.cacheAvailability()).resolves.toBe('unavailable')
+    mockInstance.status = 'ready'
+    mockInstance.failOn = 'ping'
+    await expect(configured.cacheAvailability()).resolves.toBe('unavailable')
+  })
+  it('bounds a stalled live probe to one second', async () => {
+    vi.useFakeTimers()
+    try {
+      const { cacheAvailability } = await loadCache()
+      mockInstance.failOn = 'hang'
+      const result = cacheAvailability()
+      await vi.advanceTimersByTimeAsync(1001)
+      await expect(result).resolves.toBe('unavailable')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
 })
 
 describe('cached', () => {

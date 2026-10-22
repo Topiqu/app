@@ -80,7 +80,8 @@ describe('Shopify publication processing', () => {
     vi.mocked(shopifyGraphql)
       .mockResolvedValueOnce({ articles: { nodes: [] } })
       .mockResolvedValueOnce({ articleCreate: { article: remote(), userErrors: [] } })
-    await Promise.all([publishShopifyArticle('publication-1'), publishShopifyArticle('publication-1')])
+    const outcomes = await Promise.all([publishShopifyArticle('publication-1'), publishShopifyArticle('publication-1')])
+    expect(outcomes.sort()).toEqual(['SKIPPED', 'SYNCED'])
     expect(row).toMatchObject({
       status: 'SYNCED',
       shopifyArticleId: 'gid://shopify/Article/123',
@@ -98,7 +99,7 @@ describe('Shopify publication processing', () => {
     vi.mocked(shopifyGraphql)
       .mockResolvedValueOnce({ article: remote() })
       .mockResolvedValueOnce({ articleUpdate: { article: { ...remote(), isPublished: true }, userErrors: [] } })
-    await publishShopifyArticle('publication-1')
+    await expect(publishShopifyArticle('publication-1')).resolves.toBe('SYNCED')
     expect(row.isPublished).toBe(true)
     expect(vi.mocked(shopifyGraphql).mock.calls[1]![2]).toContain('articleUpdate')
   })
@@ -117,7 +118,7 @@ describe('Shopify publication processing', () => {
   it('does not create again when the previous create cannot be confirmed', async () => {
     row.createStartedAt = new Date()
     vi.mocked(shopifyGraphql).mockResolvedValueOnce({ articles: { nodes: [] } })
-    await publishShopifyArticle('publication-1')
+    await expect(publishShopifyArticle('publication-1')).resolves.toBe('UNCERTAIN')
     expect(row.status).toBe('UNCERTAIN')
     expect(vi.mocked(shopifyGraphql).mock.calls.some((call) => call[4])).toBe(false)
   })
@@ -126,7 +127,7 @@ describe('Shopify publication processing', () => {
     vi.mocked(shopifyGraphql).mockResolvedValueOnce({
       articles: { nodes: [{ ...remote(), marker: { value: 'somebody-else' } }] },
     })
-    await publishShopifyArticle('publication-1')
+    await expect(publishShopifyArticle('publication-1')).resolves.toBe('FAILED')
     expect(row.status).toBe('FAILED')
     expect(shopifyGraphql).toHaveBeenCalledTimes(1)
   })
@@ -144,7 +145,7 @@ describe('Shopify publication processing', () => {
     vi.mocked(shopifyGraphql)
       .mockResolvedValueOnce({ articles: { nodes: [] } })
       .mockRejectedValueOnce(new ShopifyApiError('RETRY', 'rate limited'))
-    await publishShopifyArticle('publication-1')
+    await expect(publishShopifyArticle('publication-1')).resolves.toBe('QUEUED')
     expect(row.status).toBe('QUEUED')
     expect(row.createStartedAt).toBeNull()
     expect(row.nextAttemptAt.getTime()).toBeGreaterThan(Date.now())
@@ -159,7 +160,7 @@ describe('Shopify publication processing', () => {
 
   it('pauses a queued publication without failing it or consuming attempts, then resumes after enabling Shopify', async () => {
     row.connection.clientSite.publishToShopify = false
-    await publishShopifyArticle('publication-1')
+    await expect(publishShopifyArticle('publication-1')).resolves.toBe('SKIPPED')
     expect(row).toMatchObject({ status: 'QUEUED', attempts: 0, lease: null })
     expect(shopifyAccessToken).not.toHaveBeenCalled()
     expect(shopifyGraphql).not.toHaveBeenCalled()
@@ -177,7 +178,7 @@ describe('Shopify publication processing', () => {
       row.connection.clientSite.publishToShopify = false
       return structuredClone(row) as never
     })
-    await publishShopifyArticle('publication-1')
+    await expect(publishShopifyArticle('publication-1')).resolves.toBe('SKIPPED')
     expect(row).toMatchObject({ status: 'QUEUED', attempts: 0, lease: null })
     expect(shopifyAccessToken).not.toHaveBeenCalled()
     expect(shopifyGraphql).not.toHaveBeenCalled()
@@ -199,7 +200,7 @@ describe('Shopify publication processing', () => {
       row.lease = null
       return { articles: { nodes: [] } }
     })
-    await publishShopifyArticle('publication-1')
+    await expect(publishShopifyArticle('publication-1')).resolves.toBe('SKIPPED')
     expect(row.status).toBe('FAILED')
     expect(vi.mocked(shopifyGraphql).mock.calls.some((call) => call[4])).toBe(false)
   })

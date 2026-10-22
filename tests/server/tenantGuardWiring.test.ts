@@ -10,6 +10,8 @@ const GUARD =
 const exempt: Record<string, string> = {
   'domain/probe.post.ts': 'public nonce-bound routing proof; rate limited, no session or tenant content',
   'admin/verify-domain.post.ts': 're-exports domain-verification/check.post',
+  'admin/webhook-deliveries/[id]/retry.post.ts':
+    'superadmin-only immutable delivery requeue with same-origin guard and atomic audit',
   'clients/[id]/index.delete.ts': 'superadmin only',
   'clients/[id]/wallet-adjustments.post.ts': 'superadmin only',
   'clients/index.post.ts': 'superadmin only',
@@ -24,10 +26,10 @@ const exempt: Record<string, string> = {
   'users/unsubscribe.post.ts': 'signed unsubscribe link',
   'sessions/ping.post.ts': 'own session',
   'sessions/[sessionId].delete.ts': 'own session',
-  'notifications/index.post.ts': 'own notifications',
-  'notifications/[id]/index.delete.ts': 'own notifications',
   'sessions/others.delete.ts':
     'only the current account’s other sessions; current-session exclusion and same-origin guard',
+  'notifications/index.post.ts': 'own notifications',
+  'notifications/[id]/index.delete.ts': 'own notifications',
   'follows/index.post.ts': 'reader action',
   'follows/[id]/index.delete.ts': 'reader action',
   'consent/analytics.delete.ts': 'visitor consent',

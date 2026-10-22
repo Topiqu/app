@@ -1,0 +1,95 @@
+{
+  "operations": {
+    "title": "Provozní přehled",
+    "description": "Stav sdílených úloh, čekající práce a integrace vyžadující pozornost. Obnovte přehled pro aktuální údaje.",
+    "clients": "Klienti",
+    "refresh": "Obnovit stav",
+    "checkedAt": "Zkontrolováno",
+    "loadFailed": "Provozní stav se nepodařilo načíst",
+    "loadFailedHelp": "Zkontrolujte dostupnost databáze a provozní migraci a přehled obnovte. Dříve načtené hodnoty mohou být zastaralé.",
+    "cache": {
+      "ready": "Redis je dostupný",
+      "unavailable": "Redis je nedostupný",
+      "unconfigured": "Redis není nakonfigurovaný"
+    },
+    "cacheHelp": {
+      "ready": "Připojení ke cache odpovědělo na aktuální kontrolní dotaz.",
+      "unavailable": "Aplikace používá náhradní dotazy do databáze. Zkontrolujte službu Redis a připojení; odezvy mohou být pomalejší.",
+      "unconfigured": "Cache je vypnutá. Pokud potřebujete sdílenou cache, nastavte stávající připojení k Redis."
+    },
+    "queuesTitle": "Čekající a probíhající práce",
+    "queues": {
+      "scheduledGeneration": "Nadcházející plánovaná generování",
+      "activeGeneration": "Probíhající generování",
+      "interruptedGeneration": "Přerušená nebo neúspěšná generování",
+      "pendingTranslations": "Čekající překlady",
+      "activeTranslations": "Probíhající překlady",
+      "failedTranslations": "Neúspěšné překlady",
+      "pendingWebhooks": "Čekající doručení webhooků",
+      "failedWebhooks": "Neúspěšná doručení webhooků"
+    },
+    "queuesHelp": "Plánované položky stále vyžadují aktivní funkci a dostatek článků na účtu. Fronta překladů může zahrnovat nevyhovující tarify nebo nepublikované zdrojové články. Přerušené generování obnovte v editoru daného klienta; před novou placenou prací tam prověřte i neúspěšné překlady.",
+    "tasksTitle": "Plánované úlohy",
+    "tasksHelp": "Stav je sdílený mezi replikami a přetrvá restart. Úspěšný běh nemá hlášené chyby položek. Do prvního běhu po provozní migraci se úlohy zobrazují jako dosud nezaznamenané.",
+    "status": {
+      "unknown": "Dosud nezaznamenáno",
+      "running": "Probíhá",
+      "succeeded": "Úspěšné",
+      "degraded": "Částečné selhání",
+      "failed": "Selhalo"
+    },
+    "overdue": "Chybí včasný úspěšný běh",
+    "overdueHelp": "Úloha nemá bezchybný výsledek déle než dva očekávané intervaly a pět minut. Před opakováním práce zkontrolujte plánovač a protokoly úlohy.",
+    "lastSuccess": "Poslední úspěšný běh",
+    "lastRun": "Poslední spuštění",
+    "notObserved": "Dosud nezaznamenáno",
+    "interval": "Očekávaný interval",
+    "minutes": "{count} min",
+    "latestCounts": "Zpracováno / chybné / přeskočeno",
+    "taskFailure": {
+      "ITEM_FAILURES": "Úloha doběhla s chybami některých položek. Před opakováním prověřte audit úlohy a dotčeného klienta.",
+      "TASK_FAILED": "Úloha skončila před dokončením. Zkontrolujte serverové protokoly a dostupnost navazujících služeb; placené generování obnovujte přes editor."
+    },
+    "webhooksTitle": "Problémy s doručením webhooků ({count})",
+    "boundedList": "Zobrazuje se nejvýše 20 položek vyžadujících pozornost.",
+    "noWebhookFailures": "Žádná neúspěšná ani opakovaná doručení webhooků.",
+    "deliveryStatus": { "FAILED": "Selhalo", "PENDING": "Naplánován automatický další pokus" },
+    "attempts": "Pokusy: {count}",
+    "httpStatus": "HTTP {code}",
+    "nextRetry": "Nejbližší možný další pokus:",
+    "retryDelivery": "Zopakovat neúspěšné doručení",
+    "retryConfirm": "Příjemce už mohl dřívější pokus zpracovat, i když Topiqu nedostalo odpověď. Potvrďte, že opakované doručení je bezpečné. Do fronty se zařadí jeden další pokus se stejným ID doručení a nezměněným obsahem, aby příjemce mohl odhalit duplicitu. Vypnuté endpointy se nezapnou.",
+    "retryQueued": "Stávající doručení bylo zařazeno do fronty. Úloha webhooků jej zpracuje při příštím běhu.",
+    "retryFailed": "Doručení se nepodařilo zařadit do fronty",
+    "retryConflict": "Doručení už není neúspěšné, jeho endpoint je vypnutý nebo tarif nevyhovuje. Obnovte přehled a prověřte aktuální stav.",
+    "retryRateLimited": "Příliš mnoho ručních pokusů. Před dalším pokusem počkejte deset minut.",
+    "retryUnavailable": "Zařazení se nepodařilo potvrdit. Před dalším pokusem obnovte přehled, protože požadavek už mohl být zpracován.",
+    "domainsTitle": "Domény vyžadující kontrolu ({count})",
+    "noDomainIssues": "Žádné připojení domény nevyžaduje kontrolu.",
+    "reviewClient": "Prověřit klienta",
+    "domainStates": {
+      "OWNERSHIP": "Vlastnictví",
+      "DNS_UNAVAILABLE": "DNS není dostupné",
+      "CERTIFICATE": "Certifikát",
+      "ROUTING": "Směrování",
+      "READY": "Připojeno",
+      "DISCONNECTING": "Odpojování",
+      "DISCONNECTED": "Odpojeno"
+    },
+    "reasons": {
+      "endpointDisabled": "Endpoint je vypnutý nebo tarif již nepovoluje webhooky. Před zapnutím prověřte integraci.",
+      "endpointAuthorization": "Příjemce odmítl ověření. Zkontrolujte ověřování podpisu a nastavení endpointu.",
+      "endpointMissing": "Endpoint příjemce již neexistuje. Opravte jeho adresu v nastavení integrace.",
+      "endpointRateLimited": "Příjemce omezuje počet požadavků. Před dalším pokusem vyčkejte na obnovení jeho kapacity.",
+      "endpointUnavailable": "Příjemce vrátil chybu serveru. Před dalším pokusem zkontrolujte jeho dostupnost.",
+      "endpointRejected": "Příjemce požadavek odmítl. Zkontrolujte očekávaný formát události a kód odpovědi.",
+      "endpointUnreachable": "Nepřišla použitelná HTTP odpověď. Zkontrolujte DNS, TLS a dostupnost příjemce.",
+      "planRequired": "Aktuální tarif toto připojení domény nepodporuje. Prověřte tarif klienta.",
+      "domainOwnership": "Vlastnictví domény není potvrzené. S vlastníkem domény prověřte požadovaný TXT záznam.",
+      "domainDns": "Ověření DNS není dostupné. Zkontrolujte poskytovatele DNS a kontrolu zopakujte ve stávajícím průvodci připojením domény.",
+      "domainCertificate": "Certifikát vyžaduje pozornost nebo brzy vyprší. Prověřte ověřovací záznamy a obnovte vlastní certifikáty v nastavení domény.",
+      "domainCleanup": "Odpojení domény stále čeká na dokončení. Zkontrolujte dostupnost poskytovatelů a stávající postup odpojení.",
+      "domainRouting": "Doména není plně nasměrovaná. Ve stávajícím průvodci připojením domény prověřte DNS a stav poskytovatele."
+    }
+  }
+}
