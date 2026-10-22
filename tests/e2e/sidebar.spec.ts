@@ -24,8 +24,15 @@ test('Web and Dashboard navigate in the same tab while retaining the authorized 
   const openMenu = page.getByRole('button', { name: /^(Open navigation|Otevřít navigaci)$/ })
   if (isMobile) await openMenu.click()
   const web = page.getByRole('link', { name: /^(Web|Website)$/ })
+  const write = page.getByRole('link', { name: /^(Write article|Napsat článek)$/ })
+  const setup = page.getByRole('button', { name: /^(Getting started|Začínáme)$/ })
   await expect(web).toHaveAttribute('href', `/${locale}`)
+  await expect(setup).toBeVisible()
   expect(await web.getAttribute('target')).toBeNull()
+  const adminButtonBackground = await write.evaluate((element) => getComputedStyle(element).backgroundColor)
+  const adminActiveColor = await page
+    .getByRole('link', { name: /^(Dashboard|Přehled)$/ })
+    .evaluate((element) => getComputedStyle(element).color)
   await page.evaluate(() => Object.assign(window, { topiquNavigationProbe: true }))
   const tabs = context.pages().length
   await web.click()
@@ -35,6 +42,13 @@ test('Web and Dashboard navigate in the same tab while retaining the authorized 
   expect(await page.evaluate(() => Reflect.get(window, 'topiquNavigationProbe'))).toBe(true)
   if (isMobile) await openMenu.click()
   await expect(web).toHaveAttribute('aria-current', 'page')
+  await expect(setup).toBeVisible()
+  expect(await write.evaluate((element) => getComputedStyle(element).backgroundColor)).toBe(adminButtonBackground)
+  expect(await web.evaluate((element) => getComputedStyle(element).color)).toBe(adminActiveColor)
+  const publicationCta = page.locator('[data-editorial-hero] .publication-primary-cta')
+  expect(await publicationCta.evaluate((element) => getComputedStyle(element).backgroundColor)).not.toBe(
+    adminButtonBackground,
+  )
   const dashboard = page.getByRole('link', { name: /^(Dashboard|Přehled)$/ })
   await expect(dashboard).toBeVisible()
   await expect(dashboard).not.toHaveAttribute('aria-current', 'page')
@@ -44,9 +58,15 @@ test('Web and Dashboard navigate in the same tab while retaining the authorized 
   await logo.click()
   await expect(page).toHaveURL(`${origin}/${locale}`)
   await expect(page.locator('[data-editorial-hero]')).toBeVisible()
+  if (isMobile) await openMenu.click()
+  await setup.focus()
+  await page.keyboard.press('Enter')
+  await expect(page).toHaveURL(`${origin}/${locale}/admin`)
+  await expect(page.locator('[data-setup-checklist]')).toBeVisible()
+  await expect(page.locator('[data-setup-toggle]')).toHaveAttribute('aria-expanded', 'true')
 })
 
-test('the central Topiqu logo leads to the dashboard and Web targets the selected publication', async ({
+test('the central Topiqu logo leads to the dashboard and Open site stays external in the footer', async ({
   page,
 }, testInfo) => {
   const locale = testInfo.project.name.endsWith('-cs') ? 'cs' : 'en'
@@ -58,9 +78,12 @@ test('the central Topiqu logo leads to the dashboard and Web targets the selecte
   )
   if ((page.viewportSize()?.width ?? 0) < 1024)
     await page.getByRole('button', { name: /^(Open navigation|Otevřít navigaci)$/ }).click()
-  const web = page.getByRole('link', { name: /^(Web|Website)$/ })
-  await expect(web).toHaveAttribute('href', 'http://localhost:4173/cs')
-  expect(await web.getAttribute('target')).toBeNull()
+  await expect(page.getByRole('link', { name: /^(Web|Website)$/ })).toHaveCount(0)
+  const openSite = page.locator('[data-slot="footer"]').getByRole('link', { name: /^(Open site|Otevřít web)$/ })
+  await expect(openSite).toBeVisible()
+  await expect(openSite).toHaveAttribute('href', 'http://localhost:4173/cs')
+  await expect(openSite).toHaveAttribute('target', '_blank')
+  await expect(openSite).toHaveAttribute('rel', /noopener/)
 })
 
 test('Web navigation preserves the editor confirmation and unsaved draft', async ({ page }, testInfo) => {

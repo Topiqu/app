@@ -8,7 +8,7 @@
       storageKey="topiqu-dashboard-sidebar"
       class="topiqu-dashboard-group fixed inset-x-0 bottom-0 top-16"
     >
-      <LazySidebar v-model:isOpen="isSidebarOpen" @openSetup="setupChecklist?.show()" />
+      <LazySidebar v-model:isOpen="isSidebarOpen" @openSetup="openSetup" />
       <UDashboardPanel>
         <AdminSetupChecklist v-if="shell === 'dashboard' && auth?.user?.role === 'admin'" ref="setupChecklist" />
         <div class="topiqu-dashboard-scroll flex min-h-0 flex-1 flex-col overflow-y-auto">
@@ -65,6 +65,25 @@ const footerVisible = computed(
 )
 const isSidebarOpen = shallowRef<boolean>(false)
 const setupChecklist = useTemplateRef('setupChecklist')
+const setupRequested = shallowRef(false)
+const localePath = useLocalePath()
+const openSetup = async () => {
+  if (shell.value !== 'dashboard') {
+    const failure = await navigateTo(localePath({ name: 'admin' }))
+    if (failure) return
+  }
+  setupRequested.value = true
+}
+// Nuxt may finish navigation before the dashboard checklist mounts.
+watch(
+  [setupRequested, setupChecklist],
+  ([requested, checklist]) => {
+    if (!requested || !checklist) return
+    setupRequested.value = false
+    checklist.show()
+  },
+  { flush: 'post' },
+)
 const tagsOpen = useState('dashboard-tags-open', () => false)
 const clientCreateOpen = useState('dashboard-client-create-open', () => false)
 const userListOpen = useState('dashboard-user-list-open', () => false)

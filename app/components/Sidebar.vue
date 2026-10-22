@@ -7,7 +7,8 @@
     :maxSize="272"
     :collapsedSize="72"
     :ui="{
-      root: 'group/sidebar',
+      root: 'group/sidebar topiqu-admin-sidebar',
+      content: 'topiqu-admin-sidebar',
       header: 'group-data-[collapsed=true]/sidebar:px-2',
       body: 'group-data-[collapsed=true]/sidebar:px-2',
       footer: 'group-data-[collapsed=true]/sidebar:px-2',
@@ -63,6 +64,20 @@
 
     <template #footer="{ collapsed }">
       <div class="flex w-full flex-col gap-1">
+        <UButton
+          v-if="!hasInternalSiteLink"
+          :to="siteUrl"
+          :disabled="!siteUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          icon="mdi:open-in-new"
+          color="neutral"
+          variant="ghost"
+          :label="collapsed ? undefined : $t('common.navigation.openSite')"
+          :aria-label="$t('common.navigation.openSite')"
+          :square="collapsed"
+          :ui="{ base: collapsed ? 'self-center' : 'w-full justify-start' }"
+        />
         <template v-if="auth?.user?.role === 'superadmin'">
           <UButton
             icon="mdi:account-plus"
@@ -95,12 +110,8 @@ import type { NavigationMenuItem } from '@nuxt/ui'
 const isOpen = defineModel<boolean>('isOpen')
 const emit = defineEmits<{ openSetup: [] }>()
 const { data: auth } = useAuth()
-const route = useRoute()
 const can = useTenantScope()
-const showSetup = computed(
-  () =>
-    auth.value?.user.role === 'admin' && resolvePageShell(route.meta.shell) === 'dashboard' && can('TENANT_SETTINGS'),
-)
+const showSetup = computed(() => auth.value?.user.role === 'admin' && can('TENANT_SETTINGS'))
 const openSetup = () => {
   emit('openSetup')
   isOpen.value = false
@@ -112,24 +123,30 @@ const userListOpen = useState('dashboard-user-list-open', () => false)
 const { data: clientStatus } = await useClientSiteStatus()
 const requestUrl = useRequestURL()
 const siteUrl = computed(() => publicationNavigationUrl(clientStatus.value, localePath({ name: 'index' }), requestUrl))
+// Only a publication on this origin belongs in the same-tab page navigation.
+const hasInternalSiteLink = computed(() => siteUrl.value?.startsWith('/') ?? false)
 
 // Groups render with a divider between them: home, content, reach, settings.
 const navigation = computed<NavigationMenuItem[][]>(() => {
-  const web: NavigationMenuItem = {
-    label: $t('common.navigation.publication'),
-    icon: 'mdi:web',
-    to: siteUrl.value,
-    disabled: !siteUrl.value,
-    exact: true,
-  }
+  const web: NavigationMenuItem[] = hasInternalSiteLink.value
+    ? [
+        {
+          label: $t('common.navigation.publication'),
+          icon: 'mdi:web',
+          to: siteUrl.value,
+          disabled: !siteUrl.value,
+          exact: true,
+        },
+      ]
+    : []
   if (auth.value?.user.role === 'superadmin')
     return [
-      [web, { label: $t('master.title'), icon: 'mdi:view-dashboard-outline', to: localePath({ name: 'master' }) }],
+      [...web, { label: $t('master.title'), icon: 'mdi:view-dashboard-outline', to: localePath({ name: 'master' }) }],
     ]
 
   return [
     [
-      web,
+      ...web,
       {
         label: $t('common.navigation.dashboard'),
         icon: 'mdi:view-dashboard-outline',

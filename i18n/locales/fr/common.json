@@ -467,6 +467,7 @@
     "breadcrumbs": "Fil d'Ariane",
     "navigation": {
       "publication": "Site",
+      "openSite": "Ouvrir le site",
       "settings": "Paramètres",
       "dashboard": "Tableau de bord",
       "media": "Médias",

@@ -92,6 +92,12 @@
   );
 }
 
+/* Admin navigation keeps its ink palette, including the teleported mobile drawer. */
+.topiqu-admin-sidebar {
+  --ui-primary: var(--ui-bg-inverted);
+  --topiqu-action: var(--ui-bg-inverted);
+}
+
 /* Clip instead of translate, so a brand gradient stays anchored left and fills in as you read. */
 .reading-progress [data-slot='indicator'] {
   transform: none !important;
