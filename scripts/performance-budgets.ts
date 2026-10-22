@@ -1,7 +1,7 @@
 import { gzipSync } from 'node:zlib'
 import { pathToFileURL } from 'node:url'
-import { basename, join, resolve } from 'node:path'
 import { readFileSync, readdirSync } from 'node:fs'
+import { basename, dirname, join, resolve } from 'node:path'
 
 import budgets from '../performance-budgets.json'
 
@@ -16,6 +16,51 @@ interface PrecomputedManifest {
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+
+export const readStyleManifest = async (filename: string): Promise<unknown> => {
+  const manifest = resolve(filename)
+  const buildDirectory = resolve(dirname(manifest), '../build')
+  const assetUrl = (prefix: string) =>
+    `(...paths) => ${JSON.stringify(prefix)} + paths.map(path => path.replace(/^\\/+|\\/+$/g, '')).join('/')`
+  // Bun's Nitro preset can import asset URL helpers from the server entrypoint.
+  // Bundle only the style graph and replace those helpers before evaluating CSS.
+  const result = await Bun.build({
+    entrypoints: [manifest],
+    target: 'bun',
+    plugins: [
+      {
+        name: 'isolated-nitro-styles',
+        setup(build) {
+          build.onResolve({ filter: /.*/ }, (args) => {
+            const file = resolve(args.resolveDir, args.path)
+            if (
+              file === manifest ||
+              (dirname(file) === buildDirectory && /^[\w.-]+-styles[\w.-]*\.mjs$/.test(basename(file)))
+            )
+              return { path: file }
+            throw new Error(`Unsupported dependency in Nitro style graph: ${args.path}`)
+          })
+          build.onLoad({ filter: /\.mjs$/ }, (args) => {
+            const source = readFileSync(args.path, 'utf8')
+              .replace(
+                /(^|;)import \{ [\w$]+ as (buildAssetsURL|publicAssetsURL) \} from ['"]\.\.\/\.\.\/index\.mjs['"];?$/gm,
+                (_, prefix: string, name: string) =>
+                  `${prefix}const ${name} = ${assetUrl(name === 'buildAssetsURL' ? '/_nuxt/' : '/')};`,
+              )
+              // Nitro emits redundant runtime side-effect imports alongside the asset helper.
+              .replace(/^import ['"][^'"\r\n]+['"];?$/gm, '')
+            return { contents: source, loader: 'js' }
+          })
+        },
+      },
+    ],
+  })
+  if (!result.success || result.outputs.length !== 1)
+    throw new Error('Unable to isolate Nitro styles; review the performance budget adapter.')
+  const source = await result.outputs[0]!.text()
+  const { default: styles } = await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`)
+  return styles
+}
 
 export const loadInlineStyles = async (input: unknown, requiredModules: string[]): Promise<Set<string>> => {
   if (!isRecord(input) || !Object.keys(input).length)
@@ -119,9 +164,7 @@ if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.m
     pathToFileURL(join(root, '.output/server/chunks/virtual/precomputed.mjs')).href
   )
   preloadedScripts(manifest, [])
-  const { default: styleManifest } = await import(
-    pathToFileURL(join(root, '.output/server/chunks/virtual/styles.mjs')).href
-  )
+  const styleManifest = await readStyleManifest(join(root, '.output/server/chunks/virtual/styles.mjs'))
   const styles = await loadInlineStyles(styleManifest, manifest.entrypoints)
   const results = budgetResults(measureBuild(join(root, '.output/public/_nuxt'), manifest, styles))
   for (const result of results)
