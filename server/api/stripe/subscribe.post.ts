@@ -16,11 +16,13 @@ export default defineEventHandler(async (event) => {
     interval: bodyInterval,
     clientSiteId: bodyClientSiteId,
     origin,
+    locale,
   } = await readBody<{
     plan: 'PRO' | 'PREMIUM'
     interval?: 'month' | 'year'
     clientSiteId?: string
     origin: string
+    locale?: string
   }>(event)
   if (user.role !== 'superadmin') await requireTenantScope(event, 'BILLING_CHANGE', user.clientSiteId)
 
@@ -48,7 +50,7 @@ export default defineEventHandler(async (event) => {
   }
   rejectShopifyBilled(event, clientSite.billingProvider)
 
-  const returnOrigin = await billingReturnOrigin(event, origin)
+  const returnUrl = await billingReturnUrl(event, origin, locale, user.language)
   if (bodyInterval !== undefined && !['month', 'year'].includes(bodyInterval))
     throw createError({ statusCode: 400, message: 'Invalid billing interval' })
   const interval: 'month' | 'year' = bodyInterval ?? (clientSite.billingPlan === 'ANNUAL' ? 'year' : 'month')
@@ -70,8 +72,8 @@ export default defineEventHandler(async (event) => {
     {
       mode: 'subscription',
       line_items: [{ price, quantity: 1 }],
-      success_url: `${returnOrigin}/settings?tab=billing`,
-      cancel_url: `${returnOrigin}/settings?tab=billing`,
+      success_url: returnUrl,
+      cancel_url: returnUrl,
       client_reference_id: clientSiteId,
       customer: clientSite.stripeCustomerId ?? undefined,
       metadata: { plan, clientSiteId, interval },

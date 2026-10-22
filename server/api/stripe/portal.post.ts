@@ -7,9 +7,14 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 403, message: 'Forbidden' })
   }
 
-  const { clientSiteId: bodyClientSiteId, origin } = await readBody<{
+  const {
+    clientSiteId: bodyClientSiteId,
+    origin,
+    locale,
+  } = await readBody<{
     clientSiteId?: string
     origin: string
+    locale?: string
   }>(event)
 
   // clientSiteId is derived from the session; only a superadmin may act on another site.
@@ -28,10 +33,10 @@ export default defineEventHandler(async (event) => {
   }
 
   const stripe = useStripe()
-  const returnOrigin = await billingReturnOrigin(event, origin)
+  const returnUrl = await billingReturnUrl(event, origin, locale, session.language)
   const portalSession = await stripe.billingPortal.sessions.create({
     customer: clientSite.stripeCustomerId,
-    return_url: `${returnOrigin}/settings?tab=billing`,
+    return_url: returnUrl,
   })
 
   return { url: portalSession.url }

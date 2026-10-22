@@ -12,10 +12,12 @@ export default defineEventHandler(async (event) => {
     pack,
     clientSiteId: bodyClientSiteId,
     origin,
+    locale,
   } = await readBody<{
     pack: string
     clientSiteId?: string
     origin: string
+    locale?: string
   }>(event)
 
   // clientSiteId is derived from the session; only a superadmin may act on another site.
@@ -41,7 +43,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const stripe = useStripe()
-  const returnOrigin = await billingReturnOrigin(event, origin)
+  const returnUrl = await billingReturnUrl(event, origin, locale, session.language)
   const stripeSession = await stripe.checkout.sessions.create({
     mode: 'payment',
     line_items: [
@@ -54,8 +56,8 @@ export default defineEventHandler(async (event) => {
         quantity: 1,
       },
     ],
-    success_url: `${returnOrigin}/settings?tab=billing`,
-    cancel_url: `${returnOrigin}/settings?tab=billing`,
+    success_url: returnUrl,
+    cancel_url: returnUrl,
     client_reference_id: clientSiteId,
     metadata: { articles: articlePack.articles.toString(), packId: articlePack.id, clientSiteId },
   })
