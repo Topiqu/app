@@ -1,6 +1,13 @@
 // The audit log records far more than the account owner needs to see; this is the subset that
 // tells them "is someone else in my account" — logins, revoked devices, credential and role changes.
-const SECURITY_ACTIONS = ['SESSION_CREATE', 'SESSION_REVOKE', 'PASSWORD_CHANGE', 'PASSWORD_SET', 'ROLE_CHANGE']
+const SECURITY_ACTIONS = [
+  'SESSION_CREATE',
+  'SESSION_REVOKE',
+  'SESSIONS_REVOKE_OTHERS',
+  'PASSWORD_CHANGE',
+  'PASSWORD_SET',
+  'ROLE_CHANGE',
+]
 
 const EVENT_LIMIT = 20
 

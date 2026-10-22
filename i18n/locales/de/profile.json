@@ -69,6 +69,15 @@
     "registrationDate": "Registrierungsdatum",
     "noActiveSessions": "Keine angemeldeten Geräte",
     "sessionRevokedSuccess": "Gerät entfernt",
+    "revokeOtherSessions": "Andere Sitzungen abmelden",
+    "revokeOtherSessionsConfirmTitle": "Alle anderen Sitzungen abmelden?",
+    "revokeOtherSessionsConfirmText": "Du wirst aus allen anderen Sitzungen auf Topiqu und verbundenen Domains abgemeldet. Diese Sitzung bleibt angemeldet.",
+    "otherSessionsRevokedSuccess": "Andere Sitzungen abgemeldet",
+    "revokeSessionConfirmTitle": "Diese Sitzung abmelden?",
+    "revokeSessionConfirmText": "Diese Sitzung wird auf der Domain abgemeldet, auf der sie verwendet wird.",
+    "sessionOrigin": "Angemeldet über: {domain}",
+    "sessionOriginUnknown": "Domain nicht erfasst",
+    "domainLogoutDescription": "Beim Abmelden endet diese Sitzung. Andere eigene Domains haben separate Sitzungen und bleiben angemeldet. Topiqu-Subdomains teilen eine Sitzung. Melde die anderen Sitzungen ab, um überall sonst abgemeldet zu werden.",
     "deactivateAccount": "Konto deaktivieren",
     "deactivateAccountConfirmTitle": "Konto deaktivieren?",
     "deactivateAccountConfirmText": "Dein Konto wird deaktiviert und du wirst abgemeldet. Diese Aktion lässt sich nicht einfach rückgängig machen. Möchtest du fortfahren?",
@@ -117,6 +126,7 @@
     "events": {
       "SESSION_CREATE": "Anmeldung",
       "SESSION_REVOKE": "Gerät entfernt",
+      "SESSIONS_REVOKE_OTHERS": "Andere Sitzungen abgemeldet",
       "PASSWORD_CHANGE": "Passwort geändert",
       "PASSWORD_SET": "Passwort festgelegt",
       "ROLE_CHANGE": "Rolle geändert"
@@ -126,6 +136,6 @@
     "notificationsDescription": "Wie wir dich erreichen können. Beide Optionen lassen sich jederzeit deaktivieren.",
     "statsTitle": "Übersicht",
     "healthDescription": "Eine Übersicht über die Sicherheit deines Kontos. Mit der Aktion bei einer fehlgeschlagenen Prüfung gelangst du direkt dorthin.",
-    "sessionsDescription": "Geräte, auf denen du derzeit angemeldet bist."
+    "sessionsDescription": "Aktive Sitzungen auf Topiqu und verbundenen Websites."
   }
 }

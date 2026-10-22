@@ -217,6 +217,7 @@ const createAuth = (customOrigin?: string, customTenantId?: string) =>
         region: { type: 'string', input: false, required: false },
         country: { type: 'string', input: false, required: false },
         clientSiteId: { type: 'string', input: false, required: false },
+        origin: { type: 'string', input: false, required: false },
       },
     },
     account: {
@@ -256,6 +257,7 @@ const createAuth = (customOrigin?: string, customTenantId?: string) =>
                 ...session,
                 ...device,
                 ipAddress: device.ip,
+                origin: customOrigin ?? new URL(ctx?.request?.url ?? centralAuthOrigin()).origin,
                 clientSiteId: await initialTenant(session.userId, customTenantId),
               },
             }

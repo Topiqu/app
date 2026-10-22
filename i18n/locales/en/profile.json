@@ -69,6 +69,15 @@
     "registrationDate": "Registration Date",
     "noActiveSessions": "No signed-in devices",
     "sessionRevokedSuccess": "Device removed",
+    "revokeOtherSessions": "Revoke other sessions",
+    "revokeOtherSessionsConfirmTitle": "Revoke all other sessions?",
+    "revokeOtherSessionsConfirmText": "You will be signed out of all other sessions on Topiqu and connected domains. This session will stay signed in.",
+    "otherSessionsRevokedSuccess": "Other sessions revoked",
+    "revokeSessionConfirmTitle": "Revoke this session?",
+    "revokeSessionConfirmText": "This session will be signed out on the domain where it is used.",
+    "sessionOrigin": "Signed in through: {domain}",
+    "sessionOriginUnknown": "Domain not recorded",
+    "domainLogoutDescription": "Signing out ends this session. Other custom domains have separate sessions and stay signed in. Topiqu subdomains share a session. Revoke other sessions to sign out everywhere else.",
     "deactivateAccount": "Deactivate account",
     "deactivateAccountConfirmTitle": "Deactivate account?",
     "deactivateAccountConfirmText": "Your account will be deactivated and you will be signed out. This action cannot be easily undone. Do you want to continue?",
@@ -117,6 +126,7 @@
     "events": {
       "SESSION_CREATE": "Sign-in",
       "SESSION_REVOKE": "Device revoked",
+      "SESSIONS_REVOKE_OTHERS": "Other sessions revoked",
       "PASSWORD_CHANGE": "Password changed",
       "PASSWORD_SET": "Password set",
       "ROLE_CHANGE": "Role changed"
@@ -126,6 +136,6 @@
     "notificationsDescription": "Where we may reach you. Both can be turned off at any time.",
     "statsTitle": "Overview",
     "healthDescription": "A summary of your account security. Use the action on a failing check to jump straight to it.",
-    "sessionsDescription": "Devices you are currently signed in on."
+    "sessionsDescription": "Active sessions across Topiqu and connected sites."
   }
 }

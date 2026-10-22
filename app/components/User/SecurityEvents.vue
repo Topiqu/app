@@ -40,11 +40,12 @@
 </template>
 
 <script setup lang="ts">
-const { data: events } = await useFetch('/api/users/security-events')
+const { data: events } = await useFetch('/api/users/security-events', { key: 'user-security-events' })
 
 const ICONS: Record<string, string> = {
   SESSION_CREATE: 'mdi:login-variant',
   SESSION_REVOKE: 'mdi:logout-variant',
+  SESSIONS_REVOKE_OTHERS: 'mdi:logout-variant',
   PASSWORD_CHANGE: 'mdi:lock-reset',
   PASSWORD_SET: 'mdi:lock-outline',
   ROLE_CHANGE: 'mdi:shield-account-outline',

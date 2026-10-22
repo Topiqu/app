@@ -26,6 +26,8 @@ const exempt: Record<string, string> = {
   'sessions/[sessionId].delete.ts': 'own session',
   'notifications/index.post.ts': 'own notifications',
   'notifications/[id]/index.delete.ts': 'own notifications',
+  'sessions/others.delete.ts':
+    'only the current account’s other sessions; current-session exclusion and same-origin guard',
   'follows/index.post.ts': 'reader action',
   'follows/[id]/index.delete.ts': 'reader action',
   'consent/analytics.delete.ts': 'visitor consent',

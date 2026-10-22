@@ -1,5 +1,16 @@
 <template>
-  <div>
+  <div class="space-y-4">
+    <UButton
+      v-if="otherSessionCount"
+      color="error"
+      variant="outline"
+      icon="mdi:logout-variant"
+      :disabled="busy || !currentSessionId"
+      :loading="pending === 'others'"
+      @click="revokeOtherSessions"
+    >
+      {{ $t('profile.revokeOtherSessions') }}
+    </UButton>
     <ul v-if="sessions?.length" class="divide-y divide-neutral-100 dark:divide-neutral-800">
       <li
         v-for="session in sessions"
@@ -26,6 +37,9 @@
               {{ [session.city, session.region, session.country].filter(Boolean).join(', ') || $t('common.unknown') }}
               · {{ $t('profile.lastUsed', [formatDate(session.lastUsedAt)]) }}
             </p>
+            <p class="mt-0.5 break-all text-xs text-muted">
+              {{ $t('profile.sessionOrigin', { domain: sessionDomain(session) }) }}
+            </p>
           </div>
         </div>
 
@@ -34,7 +48,8 @@
           color="neutral"
           variant="ghost"
           class="shrink-0 self-start !text-red-600 dark:!text-red-400 sm:self-auto"
-          :disabled="session.id === currentSessionId || isLoading"
+          :disabled="session.id === currentSessionId || busy"
+          :loading="pending === session.id"
           @click="revokeSession(session.id)"
         >
           {{ $t('common.actions.revoke') }}
@@ -43,6 +58,7 @@
     </ul>
 
     <p v-else class="text-sm text-neutral-500 dark:text-neutral-400">{{ $t('profile.noActiveSessions') }}</p>
+    <p class="text-sm text-muted">{{ $t('profile.domainLogoutDescription') }}</p>
   </div>
 </template>
 
@@ -65,6 +81,22 @@ const emit = defineEmits<{
 }>()
 
 const toast = useToast()
+const confirm = useConfirm()
+const pending = shallowRef<string | null>(null)
+const busy = computed(() => isLoading || pending.value !== null)
+const otherSessionCount = computed(() => (sessions ?? []).filter((session) => session.id !== currentSessionId).length)
+
+function sessionDomain(session: Session) {
+  if (session.origin) {
+    try {
+      const url = new URL(session.origin)
+      if (url.protocol === 'https:' || url.protocol === 'http:') return url.host
+    } catch {
+      // Sessions created before domain tracking do not have a usable origin.
+    }
+  }
+  return $t('profile.sessionOriginUnknown')
+}
 
 function deviceIcon(session: { device: string | null; os: string | null }) {
   const device = session.device?.toLowerCase() || ''
@@ -81,18 +113,66 @@ function deviceLabel(session: { device: string | null; os: string | null }) {
 }
 
 async function revokeSession(sessionId: string) {
+  if (busy.value || sessionId === currentSessionId) return
+  if (
+    !(await confirm({
+      title: $t('profile.revokeSessionConfirmTitle'),
+      message: $t('profile.revokeSessionConfirmText'),
+      confirmText: $t('common.actions.revoke'),
+      cancelText: $t('common.actions.cancel'),
+      variant: 'danger',
+    }))
+  )
+    return
+
   try {
+    pending.value = sessionId
     emit('update:isLoading', true)
-    await $fetch(`/api/sessions/${sessionId}`, { method: 'DELETE' })
+    await $fetch<unknown, '/api/sessions/:sessionId'>(`/api/sessions/${sessionId}` as '/api/sessions/:sessionId', {
+      method: 'DELETE',
+    })
     emit(
       'update:sessions',
       (sessions ?? []).filter((s) => s.id !== sessionId),
     )
     if (sessionId === currentSessionId) emit('signOut')
     toast.add({ color: 'success', title: $t('profile.sessionRevokedSuccess') })
-  } catch (err: any) {
+    await refreshNuxtData('user-security-events')
+  } catch (err) {
     toast.add({ color: 'error', title: fetchErrorMessage(err, $t('common.messages.operationFailed')) })
   } finally {
+    pending.value = null
+    emit('update:isLoading', false)
+  }
+}
+
+async function revokeOtherSessions() {
+  if (busy.value || !currentSessionId || !otherSessionCount.value) return
+  if (
+    !(await confirm({
+      title: $t('profile.revokeOtherSessionsConfirmTitle'),
+      message: $t('profile.revokeOtherSessionsConfirmText'),
+      confirmText: $t('profile.revokeOtherSessions'),
+      cancelText: $t('common.actions.cancel'),
+      variant: 'danger',
+    }))
+  )
+    return
+
+  try {
+    pending.value = 'others'
+    emit('update:isLoading', true)
+    await $fetch<unknown, '/api/sessions/others'>('/api/sessions/others', { method: 'DELETE' })
+    emit(
+      'update:sessions',
+      (sessions ?? []).filter((session) => session.id === currentSessionId),
+    )
+    toast.add({ color: 'success', title: $t('profile.otherSessionsRevokedSuccess') })
+    await refreshNuxtData('user-security-events')
+  } catch (err) {
+    toast.add({ color: 'error', title: fetchErrorMessage(err, $t('common.messages.operationFailed')) })
+  } finally {
+    pending.value = null
     emit('update:isLoading', false)
   }
 }

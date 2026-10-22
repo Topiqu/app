@@ -69,6 +69,15 @@
     "registrationDate": "Datum registrace",
     "noActiveSessions": "Žádná přihlášená zařízení",
     "sessionRevokedSuccess": "Zařízení odebráno",
+    "revokeOtherSessions": "Odhlásit ostatní relace",
+    "revokeOtherSessionsConfirmTitle": "Odhlásit všechny ostatní relace?",
+    "revokeOtherSessionsConfirmText": "Odhlásíte se ze všech ostatních relací na Topiqu i připojených doménách. Tato relace zůstane přihlášená.",
+    "otherSessionsRevokedSuccess": "Ostatní relace odhlášeny",
+    "revokeSessionConfirmTitle": "Odhlásit tuto relaci?",
+    "revokeSessionConfirmText": "Tato relace bude odhlášena na doméně, kde se používá.",
+    "sessionOrigin": "Přihlášení přes: {domain}",
+    "sessionOriginUnknown": "Doména nebyla zaznamenána",
+    "domainLogoutDescription": "Odhlášení ukončí tuto relaci. Ostatní vlastní domény mají samostatné relace a zůstanou přihlášené. Subdomény Topiqu sdílejí jednu relaci. Pro odhlášení všude jinde odhlaste ostatní relace.",
     "deactivateAccount": "Deaktivovat účet",
     "deactivateAccountConfirmTitle": "Deaktivovat účet?",
     "deactivateAccountConfirmText": "Váš účet bude deaktivován a budete odhlášeni. Tuto akci nelze snadno vrátit. Chcete pokračovat?",
@@ -117,6 +126,7 @@
     "events": {
       "SESSION_CREATE": "Přihlášení",
       "SESSION_REVOKE": "Odebrání zařízení",
+      "SESSIONS_REVOKE_OTHERS": "Odhlášení ostatních relací",
       "PASSWORD_CHANGE": "Změna hesla",
       "PASSWORD_SET": "Nastavení hesla",
       "ROLE_CHANGE": "Změna role"
@@ -126,6 +136,6 @@
     "notificationsDescription": "Kde vás smíme kontaktovat. Obojí jde kdykoliv vypnout.",
     "statsTitle": "Přehled",
     "healthDescription": "Souhrn zabezpečení účtu. Kliknutím u nesplněné položky skočíte rovnou na nastavení.",
-    "sessionsDescription": "Zařízení, na kterých jste právě přihlášení."
+    "sessionsDescription": "Aktivní relace na Topiqu a připojených webech."
   }
 }

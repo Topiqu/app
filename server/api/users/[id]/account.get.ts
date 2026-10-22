@@ -50,8 +50,6 @@ export default defineEventHandler(async (event) => {
         where: { expiresAt: { gt: new Date() } },
         select: {
           id: true,
-          ip: true,
-          userAgent: true,
           device: true,
           os: true,
           browser: true,
@@ -59,8 +57,7 @@ export default defineEventHandler(async (event) => {
           region: true,
           country: true,
           lastUsedAt: true,
-          clientSiteId: true,
-          userId: true,
+          origin: true,
         },
       },
     },
@@ -108,8 +105,6 @@ export default defineEventHandler(async (event) => {
     likedArticles: userData.articleReactions.map((r) => ({ id: r.article.id })),
     sessions: userData.sessions.map((s) => ({
       id: s.id,
-      ip: s.ip,
-      userAgent: s.userAgent,
       device: s.device,
       os: s.os,
       browser: s.browser,
@@ -117,8 +112,7 @@ export default defineEventHandler(async (event) => {
       region: s.region,
       country: s.country,
       lastUsedAt: s.lastUsedAt.toISOString(),
-      clientSiteId: s.clientSiteId,
-      userId: s.userId,
+      origin: s.origin,
     })),
   }
 })

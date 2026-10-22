@@ -69,6 +69,15 @@
     "registrationDate": "Date d'inscription",
     "noActiveSessions": "Aucun appareil connecté",
     "sessionRevokedSuccess": "Appareil supprimé",
+    "revokeOtherSessions": "Révoquer les autres sessions",
+    "revokeOtherSessionsConfirmTitle": "Révoquer toutes les autres sessions ?",
+    "revokeOtherSessionsConfirmText": "Vous serez déconnecté de toutes les autres sessions sur Topiqu et les domaines connectés. Cette session restera ouverte.",
+    "otherSessionsRevokedSuccess": "Autres sessions révoquées",
+    "revokeSessionConfirmTitle": "Révoquer cette session ?",
+    "revokeSessionConfirmText": "Cette session sera fermée sur le domaine où elle est utilisée.",
+    "sessionOrigin": "Connexion via : {domain}",
+    "sessionOriginUnknown": "Domaine non enregistré",
+    "domainLogoutDescription": "La déconnexion ferme cette session. Les autres domaines personnalisés ont des sessions distinctes qui restent ouvertes. Les sous-domaines Topiqu partagent une session. Révoquez les autres sessions pour vous déconnecter partout ailleurs.",
     "deactivateAccount": "Désactiver le compte",
     "deactivateAccountConfirmTitle": "Désactiver le compte ?",
     "deactivateAccountConfirmText": "Votre compte sera désactivé et vous serez déconnecté. Cette action ne peut pas être facilement annulée. Voulez-vous continuer ?",
@@ -112,6 +121,7 @@
     "events": {
       "SESSION_CREATE": "Connexion",
       "SESSION_REVOKE": "Appareil révoqué",
+      "SESSIONS_REVOKE_OTHERS": "Autres sessions révoquées",
       "PASSWORD_CHANGE": "Mot de passe modifié",
       "PASSWORD_SET": "Mot de passe défini",
       "ROLE_CHANGE": "Rôle modifié"
@@ -121,6 +131,6 @@
     "notificationsDescription": "Comment nous pouvons vous joindre. Les deux options peuvent être désactivées à tout moment.",
     "statsTitle": "Vue d'ensemble",
     "healthDescription": "Résumé de la sécurité de votre compte. Utilisez l'action d'un contrôle échoué pour y accéder directement.",
-    "sessionsDescription": "Appareils sur lesquels vous êtes actuellement connecté."
+    "sessionsDescription": "Sessions actives sur Topiqu et les sites connectés."
   }
 }
