@@ -39,6 +39,7 @@
     "knowledge:eval": "bun run scripts/knowledge-eval.ts",
     "seo:check": "bun run scripts/seo-check.ts",
     "perf:check": "bun run scripts/performance-budgets.ts",
+    "backup:verify": "bun run scripts/verify-backup-restore.ts",
     "openapi:generate": "bun run scripts/generate-openapi.ts",
     "openapi:check": "bun run scripts/generate-openapi.ts --check",
     "media:backfill": "bun run scripts/backfill-media-library.ts",
