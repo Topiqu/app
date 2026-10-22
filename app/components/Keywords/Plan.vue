@@ -116,7 +116,7 @@ const showDifficulty = computed(
 const toggle = async (cluster: KeywordPlanCluster, target: Exclude<KeywordPlanStatus, 'OPEN'>) => {
   busy.value = cluster.id
   try {
-    await $fetch(`/api/keyword-plan/${cluster.id}`, {
+    await $fetch<unknown, '/api/keyword-plan/:id'>(`/api/keyword-plan/${cluster.id}` as '/api/keyword-plan/:id', {
       method: 'PATCH',
       body: { status: cluster.status === target ? 'OPEN' : target },
     })

@@ -115,8 +115,8 @@ describe('tenant boundary wiring', () => {
     expect(endpoint).toContain('MAX_OWNED_BASIC_TENANTS = 3')
     expect(endpoint).toContain('tx.session.update')
     expect(endpoint).not.toContain('stripe')
-    expect(createDialog).toContain("$fetch('/api/tenant'")
-    expect(createDialog).toContain("$fetch<{ url: string | null }>('/api/stripe/subscribe'")
+    expect(createDialog).toMatch(/\$fetch(?:<[^\n]+>)?\(\s*'\/api\/tenant'/)
+    expect(createDialog).toMatch(/\$fetch<[^\n]+>\(\s*'\/api\/stripe\/subscribe'/)
     expect(createDialog).toContain("{ id: 'review', label: $t('common.tenant.steps.review') }")
     expect(createDialog).toContain(
       "$t('common.actions.selectTheme', { theme: $t(`common.preferences.branding.colors.${theme}`) })",

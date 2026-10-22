@@ -321,10 +321,13 @@ const activeTab = computed<string>({
 const toggleFeature = async ({ code, enabled }: { code: 'AI' | 'SENTIMENT' | 'ARTICLE_CRONS'; enabled: boolean }) => {
   if (!client.value?.id) return
   try {
-    const res = await $fetch<{ activeFeatures: string[]; monthlyPayment: number; annualPayment: number }>(
-      `/api/clients/${client.value.id}/features`,
-      { method: 'PATCH', body: { code, enabled } },
-    )
+    const res = await $fetch<
+      { activeFeatures: string[]; monthlyPayment: number; annualPayment: number },
+      '/api/clients/:id/features'
+    >(`/api/clients/${client.value.id}/features` as '/api/clients/:id/features', {
+      method: 'PATCH',
+      body: { code, enabled },
+    })
     client.value = {
       ...client.value,
       activeFeatures: res.activeFeatures,
@@ -345,7 +348,7 @@ const savePreferences = async () => {
   if (!clientId.value) return toast.add({ color: 'error', title: $t('common.preferences.messages.noClientId') })
   isSaving.value = true
   try {
-    await $fetch(`/api/clients/${clientId.value}` as `/api/clients/:id`, {
+    await $fetch<unknown, '/api/clients/:id'>(`/api/clients/${clientId.value}` as '/api/clients/:id', {
       method: 'PATCH',
       body: buildClientSettingsPatch(form.value, pristine.value),
     })
@@ -387,7 +390,10 @@ const generateApiKey = async () => {
     if (!confirmed) return
   }
   try {
-    const res = await $fetch<{ apiKey: string }>(`/api/clients/${clientId.value}/api-key`, { method: 'POST' })
+    const res = await $fetch<{ apiKey: string }, '/api/clients/:id/api-key'>(
+      `/api/clients/${clientId.value}/api-key` as '/api/clients/:id/api-key',
+      { method: 'POST' },
+    )
     form.value.apiKey = res.apiKey
     pristine.value.apiKey = res.apiKey
     toast.add({ color: 'success', title: $t('common.preferences.api.generateSuccess') })

@@ -43,7 +43,9 @@ const loadPublication = async () => {
   const articleId = props.articleId
   loadingPublication.value = true
   try {
-    const next = await $fetch<ShopifyPublication | null>(`/api/articles/${articleId}/shopify`)
+    const next = await $fetch<ShopifyPublication | null, '/api/articles/:id/shopify'>(
+      `/api/articles/${articleId}/shopify` as '/api/articles/:id/shopify',
+    )
     if (articleId !== props.articleId) return
     publication.value = next
     loadFailed.value = false
@@ -81,10 +83,13 @@ const post = async (nextMode: ShopifyPublishMode, rights?: MediaRightsReview | n
   mode.value = nextMode
   busy.value = true
   try {
-    publication.value = await $fetch<ShopifyPublication>(`/api/articles/${props.articleId}/shopify`, {
-      method: 'POST',
-      body: { mode: nextMode, ...(rights ? { mediaRightsReview: rights } : {}) },
-    })
+    publication.value = await $fetch<ShopifyPublication, '/api/articles/:id/shopify'>(
+      `/api/articles/${props.articleId}/shopify` as '/api/articles/:id/shopify',
+      {
+        method: 'POST',
+        body: { mode: nextMode, ...(rights ? { mediaRightsReview: rights } : {}) },
+      },
+    )
     if (publication.value?.status === 'SYNCED') toast.add({ color: 'success', title: t('common.shopify.sent') })
     await refresh()
   } catch (error: unknown) {

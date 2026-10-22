@@ -19,11 +19,14 @@ export function useArticleTracking(articleIdRef: Ref<string | undefined>) {
     const controller = new AbortController()
     request = controller
     try {
-      const result = await $fetch<{ counted: boolean }>(`/api/articles/${id}/view`, {
-        method: 'POST',
-        body: { referrer: document.referrer || undefined },
-        signal: controller.signal,
-      })
+      const result = await $fetch<{ counted: boolean }, '/api/articles/:id/view'>(
+        `/api/articles/${id}/view` as '/api/articles/:id/view',
+        {
+          method: 'POST',
+          body: { referrer: document.referrer || undefined },
+          signal: controller.signal,
+        },
+      )
       if (result.counted && analyticsGranted.value) {
         try {
           window.sessionStorage.setItem(key, String(now))

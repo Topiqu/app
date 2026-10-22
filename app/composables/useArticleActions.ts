@@ -35,7 +35,7 @@ export function useArticleActions(dataRef: MaybeRefOrGetter<any>, refreshContext
     article.allowedComments = next
     optimisticStatus.saving()
     try {
-      await $fetch(`/api/articles/${article.id}`, {
+      await $fetch<unknown, '/api/articles/:id'>(`/api/articles/${article.id}` as '/api/articles/:id', {
         method: 'PATCH',
         body: { allowedComments: next },
       })
@@ -64,7 +64,10 @@ export function useArticleActions(dataRef: MaybeRefOrGetter<any>, refreshContext
     statusPending.value = true
     optimisticStatus.saving()
     try {
-      await $fetch(`/api/articles/${id}`, { method: 'PATCH', body: { status } })
+      await $fetch<unknown, '/api/articles/:id'>(`/api/articles/${id}` as '/api/articles/:id', {
+        method: 'PATCH',
+        body: { status },
+      })
       await refreshContext()
       optimisticStatus.saved()
       toast.add({

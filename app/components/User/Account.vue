@@ -181,9 +181,13 @@ const loadUserData = async () => {
   if (!currentUser?.id || loadedUserId.value === currentUser.id) return
 
   try {
-    userData.value = await $fetch<User>(`/api/users/${currentUser.id}/account`)
+    userData.value = await $fetch<User, '/api/users/:id/account'>(
+      `/api/users/${currentUser.id}/account` as '/api/users/:id/account',
+    )
     clientData.value = ['admin', 'superadmin'].includes(currentUser.role)
-      ? await $fetch<Client | null>(`/api/clients/${currentUser.id}/by-userid`)
+      ? await $fetch<Client | null, '/api/clients/:id/by-userid'>(
+          `/api/clients/${currentUser.id}/by-userid` as '/api/clients/:id/by-userid',
+        )
       : null
     loadedUserId.value = currentUser.id
   } catch (e: unknown) {

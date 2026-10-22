@@ -108,6 +108,7 @@
 </template>
 
 <script lang="ts" setup>
+import type { InternalApi } from 'nitropack'
 import type { Language } from '~~/shared/utils/language'
 
 import { formatDate } from '~~/shared/utils'
@@ -163,9 +164,12 @@ const pollActive = computed(() => pollEnabled.value && visibility.value === 'vis
 const poll = async () => {
   if (!pollEnabled.value) return
   try {
-    const res = await $fetch<{ notifications: Notif[]; unreadCount: number }>('/api/notifications/poll', {
-      query: { since: data.value[0]?.createdAt ?? undefined },
-    })
+    const res = await $fetch<{ notifications: Notif[]; unreadCount: number }, '/api/notifications/poll'>(
+      '/api/notifications/poll',
+      {
+        query: { since: data.value[0]?.createdAt ?? undefined },
+      },
+    )
     const known = new Set(data.value.map((n) => n.id))
     const fresh = res.notifications.filter(
       (n) => n?.id && !known.has(n.id) && !deletingKeys.value.has(notificationKey(n)),
@@ -286,7 +290,14 @@ const del = async (id: string) => {
   void focusAfterRemoval(focusId)
 
   try {
-    await Promise.all(toDelete.map((n) => $fetch(`/api/notifications/${n.id}`, { method: 'DELETE' })))
+    await Promise.all(
+      toDelete.map((n) =>
+        $fetch<InternalApi['/api/notifications/:id']['delete'], '/api/notifications/:id'>(
+          `/api/notifications/${n.id}` as '/api/notifications/:id',
+          { method: 'DELETE' },
+        ),
+      ),
+    )
     optimisticStatus.saved()
   } catch (e: any) {
     const known = new Set(data.value.map((n) => n.id))

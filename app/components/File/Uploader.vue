@@ -227,11 +227,14 @@ const handleFile = async (file: File) => {
   )
 
   try {
-    const { url, optimizedUrl, mediaAsset } = await $fetch<{
-      url: string
-      optimizedUrl: string
-      mediaAsset: { id: string }
-    }>('/api/upload', { method: 'POST', body: formData })
+    const { url, optimizedUrl, mediaAsset } = await $fetch<
+      {
+        url: string
+        optimizedUrl: string
+        mediaAsset: { id: string }
+      },
+      '/api/upload'
+    >('/api/upload', { method: 'POST', body: formData })
     emit('upload', { url, optimizedUrl, mediaAsset })
   } catch (e: any) {
     toast.add({

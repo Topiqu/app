@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 // CNB publishes one table per working day and every target derives from it, so cache the table, not the answer.
 const cnbRates = defineCachedFunction(
-  async () => (await $fetch<{ rates: FxRate[] }>('https://api.cnb.cz/cnbapi/exrates/daily')).rates,
+  async () => (await $fetch<{ rates: FxRate[] }, string>('https://api.cnb.cz/cnbapi/exrates/daily')).rates,
   { name: 'cnb-rates', maxAge: 60 * 60 * 6, swr: true },
 )
 

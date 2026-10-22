@@ -202,7 +202,9 @@ const changed = async () => {
 }
 const prepareCurrent = () =>
   run('verify', async () => {
-    await $fetch('/api/admin/domain-verification/start' as string, { method: 'POST' })
+    await $fetch<unknown, '/api/admin/domain-verification/start'>('/api/admin/domain-verification/start', {
+      method: 'POST',
+    })
     await changed()
   })
 
@@ -240,7 +242,10 @@ const run = async (key: NonNullable<typeof busy.value>, task: () => Promise<void
 
 const request = () =>
   run('request', async () => {
-    await $fetch('/api/domain/pending', { method: 'POST', body: { domain: domain.value.trim() } })
+    await $fetch<unknown, '/api/domain/pending'>('/api/domain/pending', {
+      method: 'POST',
+      body: { domain: domain.value.trim() },
+    })
     domain.value = ''
     notYet.value = false
     await refetch()
@@ -248,9 +253,12 @@ const request = () =>
 
 const verify = () =>
   run('verify', async () => {
-    const result = await $fetch<{ verified: boolean; domain?: string }>('/api/domain/pending/verify', {
-      method: 'POST',
-    })
+    const result = await $fetch<{ verified: boolean; domain?: string }, '/api/domain/pending/verify'>(
+      '/api/domain/pending/verify',
+      {
+        method: 'POST',
+      },
+    )
     if (result.verified && result.domain) switchedTo.value = result.domain
     await changed()
     notYet.value = !result.verified
@@ -259,7 +267,7 @@ const verify = () =>
 const cancel = async () => {
   if (!(await confirm({ title: t('common.domain.cancel'), message: t('common.domain.cancelConfirm') }))) return
   await run('cancel', async () => {
-    await $fetch('/api/domain/pending', { method: 'DELETE' })
+    await $fetch<unknown, '/api/domain/pending'>('/api/domain/pending', { method: 'DELETE' })
     notYet.value = false
     changeOpen.value = false
     await refetch()

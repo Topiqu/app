@@ -18,10 +18,13 @@ export function useCommentAnchor(articleId: Ref<string>, comments: ShallowRef<Co
 
         try {
           if (!document.getElementById(hash.slice(1))) {
-            const result = await $fetch<{ comments: CommentWithReplies[] }>(`/api/comments/${articleId.value}`, {
-              query: { target: id },
-              signal: controller.signal,
-            })
+            const result = await $fetch<{ comments: CommentWithReplies[] }, '/api/comments/:id'>(
+              `/api/comments/${articleId.value}` as '/api/comments/:id',
+              {
+                query: { target: id },
+                signal: controller.signal,
+              },
+            )
             if (controller.signal.aborted) return
             comments.value = [
               ...result.comments.filter((comment) => !comments.value.some((item) => item.id === comment.id)),

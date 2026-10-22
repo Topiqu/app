@@ -289,7 +289,10 @@ const items = computed(() => (activeTab === 'likedArticles' ? filteredArticles.v
 
 async function unlikeArticle(articleId: string) {
   try {
-    await $fetch(`/api/articles/${articleId}/reaction`, { method: 'POST' })
+    await $fetch<unknown, '/api/articles/:id/reaction'>(
+      `/api/articles/${articleId}/reaction` as '/api/articles/:id/reaction',
+      { method: 'POST' },
+    )
     allArticles.value = allArticles.value.filter((a) => a.id !== articleId)
     await refresh()
     toast.add({ color: 'success', title: $t('common.messages.successGeneral') })
@@ -320,7 +323,7 @@ async function confirmDelete(commentId: string) {
   if (!answer) return
 
   try {
-    await $fetch(`/api/comments/${commentId}`, {
+    await $fetch<unknown, '/api/comments/:id'>(`/api/comments/${commentId}` as '/api/comments/:id', {
       method: 'DELETE',
       body: { reason: '' },
     })

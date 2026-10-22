@@ -157,7 +157,10 @@ const mailto = computed(() =>
 const writeDraft = async () => {
   drafting.value = true
   try {
-    await $fetch(`/api/backlinks/${props.opportunity.id}`, { method: 'POST', body: { action: 'draft' } })
+    await $fetch<unknown, '/api/backlinks/:id'>(`/api/backlinks/${props.opportunity.id}` as '/api/backlinks/:id', {
+      method: 'POST',
+      body: { action: 'draft' },
+    })
     await refetch()
     // The prop arrives with the parent's next render.
     await nextTick()

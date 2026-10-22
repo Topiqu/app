@@ -94,6 +94,7 @@
 </template>
 
 <script setup lang="ts">
+import type { InternalApi } from 'nitropack'
 import type { ClientSite } from '~~/generated/zenstack/models'
 
 const props = defineProps<{ client: ClientSite }>()
@@ -141,14 +142,17 @@ const saveEdit = async () => {
   if (!isFormValid.value) return
 
   try {
-    const response = await $fetch(`/api/clients/${editedClient.value.id}` as `/api/clients/:id`, {
-      method: 'PATCH',
-      body: {
-        ...editedClient.value,
-        logoUrl: editedClient.value.logoUrl,
-        keywords: editedClient.value.keywords.length ? editedClient.value.keywords : undefined,
+    const response = await $fetch<InternalApi['/api/clients/:id']['patch'], '/api/clients/:id'>(
+      `/api/clients/${editedClient.value.id}` as '/api/clients/:id',
+      {
+        method: 'PATCH',
+        body: {
+          ...editedClient.value,
+          logoUrl: editedClient.value.logoUrl,
+          keywords: editedClient.value.keywords.length ? editedClient.value.keywords : undefined,
+        },
       },
-    })
+    )
 
     if (response?.clientSite) {
       toast.add({ color: 'success', title: t('master.clientEdit.messages.success') })

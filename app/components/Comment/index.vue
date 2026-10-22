@@ -315,7 +315,7 @@ const report = async () => {
   )
     return
   try {
-    await $fetch('/api/notifications', {
+    await $fetch<unknown, '/api/notifications'>('/api/notifications', {
       method: 'POST',
       body: { commentId: props.comment.id },
     })
@@ -334,7 +334,7 @@ const confirmDelete = () => {
 const banUser = async () => {
   if (!banReason.value.trim()) return
   try {
-    await $fetch(`/api/bans/${props.comment.id}`, {
+    await $fetch<unknown, '/api/bans/:id'>(`/api/bans/${props.comment.id}` as '/api/bans/:id', {
       method: 'POST',
       body: {
         reason: banReason.value,
@@ -355,7 +355,7 @@ const banUser = async () => {
 
 const unbanUser = async () => {
   try {
-    await $fetch(`/api/bans/${props.comment.id}`, { method: 'DELETE' })
+    await $fetch<unknown, '/api/bans/:id'>(`/api/bans/${props.comment.id}` as '/api/bans/:id', { method: 'DELETE' })
     toast.add({
       color: 'success',
       title: $t('articles.comments.unbanSuccess'),

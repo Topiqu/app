@@ -19,7 +19,7 @@ const noticeKey = computed(() => (['linked', 'expired'].includes(notice.value) ?
 const loadBlogs = async () => {
   blogsError.value = false
   try {
-    blogs.value = await $fetch<ShopifyBlog[]>('/api/shopify/blogs')
+    blogs.value = await $fetch<ShopifyBlog[], '/api/shopify/blogs'>('/api/shopify/blogs')
   } catch {
     blogsError.value = true
   }
@@ -47,13 +47,13 @@ const action = async (run: () => Promise<void>) => {
 }
 const link = () =>
   action(async () => {
-    await $fetch('/api/shopify/link', { method: 'POST' })
+    await $fetch<unknown, '/api/shopify/link'>('/api/shopify/link', { method: 'POST' })
     await refresh()
     toast.add({ color: 'success', title: t('common.shopify.callback.linked') })
   })
 const cancelLink = () =>
   action(async () => {
-    await $fetch('/api/shopify/link', { method: 'DELETE' })
+    await $fetch<unknown, '/api/shopify/link'>('/api/shopify/link', { method: 'DELETE' })
     await refresh()
   })
 // Reconnecting and new scopes are granted by opening the app in the store admin.
@@ -62,7 +62,10 @@ const openInShopify = () => {
 }
 const save = () =>
   action(async () => {
-    await $fetch('/api/shopify/settings', { method: 'PATCH', body: { blogId: blogId.value, author: author.value } })
+    await $fetch<unknown, '/api/shopify/settings'>('/api/shopify/settings', {
+      method: 'PATCH',
+      body: { blogId: blogId.value, author: author.value },
+    })
     await refresh()
     toast.add({ color: 'success', title: t('common.messages.saveSuccess') })
   })
@@ -76,7 +79,7 @@ const disconnect = async () => {
   )
     return
   await action(async () => {
-    await $fetch('/api/shopify', { method: 'DELETE' })
+    await $fetch<unknown, '/api/shopify'>('/api/shopify', { method: 'DELETE' })
     await refresh()
   })
 }

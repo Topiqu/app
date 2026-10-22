@@ -20,7 +20,7 @@ describe('manual article generation stream', () => {
     expect(endpoint).not.toMatch(/event\.node\.res\.on\(['"]close['"]/)
     expect(endpoint).toContain("if (session?.failureReason !== 'USER_STOP_REQUESTED') return")
     expect(stopEndpoint).toContain("data: { failureReason: 'USER_STOP_REQUESTED' }")
-    expect(store).toContain('await $fetch(`/api/articles/generations/${sessionId.value}/stop`')
+    expect(store).toMatch(/await \$fetch(?:<[^>]+>)?\(\s*`\/api\/articles\/generations\/\$\{sessionId\.value\}\/stop`/)
   })
 
   it('returns the stream through the Fetch Response contract', () => {

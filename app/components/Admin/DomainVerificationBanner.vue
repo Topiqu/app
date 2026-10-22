@@ -64,9 +64,12 @@ const isCustomDomain = computed(() => {
 onMounted(async () => {
   if (!isCustomDomain.value || clientSite.value?.domainVerified) return
   try {
-    instructions.value = await $fetch<VerificationInstructions>('/api/admin/domain-verification/start' as string, {
-      method: 'POST',
-    })
+    instructions.value = await $fetch<VerificationInstructions, '/api/admin/domain-verification/start'>(
+      '/api/admin/domain-verification/start',
+      {
+        method: 'POST',
+      },
+    )
   } catch (error) {
     toast.add({ color: 'error', title: fetchErrorMessage(error, $t('domainVerification.error')) })
   }
@@ -77,7 +80,10 @@ const verify = async () => {
   pending.value = true
 
   try {
-    const res = await $fetch<VerificationResult>('/api/admin/domain-verification/check' as string, { method: 'POST' })
+    const res = await $fetch<VerificationResult, '/api/admin/domain-verification/check'>(
+      '/api/admin/domain-verification/check',
+      { method: 'POST' },
+    )
     result.value = res
     if (res.verified) {
       toast.add({ color: 'success', title: $t('domainVerification.success'), description: clientSite.value.domain })

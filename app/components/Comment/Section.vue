@@ -303,13 +303,16 @@ const submitComment = async () => {
   optimisticStatus.saving()
 
   try {
-    const created = await $fetch<{
-      id: string
-      content: string
-      gifUrl: string | null
-      createdAt: string
-      parentId: string | null
-    }>('/api/comments', {
+    const created = await $fetch<
+      {
+        id: string
+        content: string
+        gifUrl: string | null
+        createdAt: string
+        parentId: string | null
+      },
+      '/api/comments'
+    >('/api/comments', {
       method: 'POST',
       body: {
         articleId: props.articleId,
@@ -390,7 +393,7 @@ const handleDelete = async (c: CommentWithReplies, r: string | null) => {
   optimisticStatus.saving()
 
   try {
-    await $fetch(`/api/comments/${c.id}`, {
+    await $fetch<unknown, '/api/comments/:id'>(`/api/comments/${c.id}` as '/api/comments/:id', {
       method: 'DELETE',
       body: { reason: r },
     })

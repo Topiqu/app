@@ -55,7 +55,10 @@ export function useCommentReactions(
     optimisticStatus.saving()
 
     try {
-      await $fetch('/api/comments/reaction', { method: 'POST', body: { commentId: comment.value.id, type } })
+      await $fetch<unknown, '/api/comments/reaction'>('/api/comments/reaction', {
+        method: 'POST',
+        body: { commentId: comment.value.id, type },
+      })
       optimisticStatus.saved()
     } catch {
       Object.assign(state, { likes, dislikes, userReaction, publicationLikes })

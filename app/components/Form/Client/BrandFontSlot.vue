@@ -105,10 +105,13 @@ const upload = async (file: File | null | undefined) => {
     const form = new FormData()
     form.append('slot', props.fontRole)
     form.append('file', file)
-    const result = await $fetch<{ url: string }>(`/api/clients/${props.clientId}/fonts`, {
-      method: 'POST',
-      body: form,
-    })
+    const result = await $fetch<{ url: string }, '/api/clients/:id/fonts'>(
+      `/api/clients/${props.clientId}/fonts` as '/api/clients/:id/fonts',
+      {
+        method: 'POST',
+        body: form,
+      },
+    )
     emit('update:url', result.url)
   } catch {
     error.value = $t('common.preferences.branding.fontUploadError')
@@ -121,7 +124,10 @@ const remove = async () => {
   busy.value = true
   error.value = ''
   try {
-    await $fetch(`/api/clients/${props.clientId}/fonts/${props.fontRole}`, { method: 'DELETE' })
+    await $fetch<unknown, '/api/clients/:id/fonts/:slot'>(
+      `/api/clients/${props.clientId}/fonts/${props.fontRole}` as '/api/clients/:id/fonts/:slot',
+      { method: 'DELETE' },
+    )
     emit('update:url', '')
   } catch {
     error.value = $t('common.preferences.branding.fontUploadError')

@@ -304,16 +304,19 @@ const toggleFollow = async () => {
 
   try {
     if (previousFollowing) {
-      const response = await $fetch<{ success: true; followerCount: number }>(`/api/follows/${data.value.user.id}`, {
-        method: 'DELETE',
-      })
+      const response = await $fetch<{ success: true; followerCount: number }, '/api/follows/:id'>(
+        `/api/follows/${data.value.user.id}` as '/api/follows/:id',
+        {
+          method: 'DELETE',
+        },
+      )
       if (data.value) data.value.followerCount = response.followerCount ?? 0
       toast.add({
         color: 'success',
         title: $t('common.messages.successGeneral'),
       })
     } else {
-      const response = await $fetch<{ followerCount: number }>(`/api/follows/`, {
+      const response = await $fetch<{ followerCount: number }, '/api/follows'>(`/api/follows/` as '/api/follows', {
         method: 'POST',
         body: { followedId: data.value.user.id },
       })

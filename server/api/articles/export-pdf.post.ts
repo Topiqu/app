@@ -19,7 +19,7 @@ const stripHtml = (html: string | null | undefined): string => {
 const fetchImageBuffer = async (url: string): Promise<Buffer | null> => {
   try {
     if (!isCdnImageUrl(url)) return null
-    const blob = await $fetch<Blob>(url, { responseType: 'blob' })
+    const blob = await $fetch<Blob, string>(url, { responseType: 'blob' })
     return Buffer.from(await blob.arrayBuffer())
   } catch {
     return null

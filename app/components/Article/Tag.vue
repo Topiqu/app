@@ -95,13 +95,19 @@ type AvailableTag = { id: string; name: string }
 
 const { data: articleTags } = useQuery({
   key: () => queryKeys.articles.tags(props.articleId),
-  query: () => requestFetch<ArticleTagRow[]>(`/api/articles/${props.articleId}/tags`),
+  query: () =>
+    requestFetch<ArticleTagRow[], '/api/articles/:id/tags'>(
+      `/api/articles/${props.articleId}/tags` as '/api/articles/:id/tags',
+    ),
   placeholderData: () => [],
 })
 
 const { data: availableTags } = useQuery({
   key: () => queryKeys.articles.availableTags(props.articleId),
-  query: () => requestFetch<AvailableTag[]>(`/api/articles/${props.articleId}/available-tags`),
+  query: () =>
+    requestFetch<AvailableTag[], '/api/articles/:id/available-tags'>(
+      `/api/articles/${props.articleId}/available-tags` as '/api/articles/:id/available-tags',
+    ),
   placeholderData: () => [],
 })
 
@@ -127,10 +133,13 @@ const addTag = async (tagId: string) => {
   optimisticArticleTags.value.push(optimistic)
   optimisticStatus.saving()
   try {
-    await $fetch(`/api/articles/${props.articleId}/tags` as `/api/articles/:id/tags`, {
-      method: 'POST',
-      body: { tagId },
-    })
+    await $fetch<unknown, '/api/articles/:id/tags'>(
+      `/api/articles/${props.articleId}/tags` as `/api/articles/:id/tags`,
+      {
+        method: 'POST',
+        body: { tagId },
+      },
+    )
     await invalidateTags()
     optimisticStatus.saved()
     toast.add({ color: 'success', title: $t('articles.tags.addTagSuccess') })
@@ -148,7 +157,12 @@ const removeTag = async (tagId: string) => {
   removingTagIds.value = new Set([...removingTagIds.value, tagId])
   optimisticStatus.saving()
   try {
-    await $fetch(`/api/articles/${props.articleId}/tags/${tagId}`, { method: 'DELETE' })
+    await $fetch<unknown, '/api/articles/:id/tags/:tagId'>(
+      `/api/articles/${props.articleId}/tags/${tagId}` as '/api/articles/:id/tags/:tagId',
+      {
+        method: 'DELETE',
+      },
+    )
     await invalidateTags()
     optimisticStatus.saved()
     toast.add({ color: 'success', title: $t('articles.tags.removeTagSuccess') })
@@ -172,14 +186,17 @@ const createAndAddTag = async () => {
   newTag.slug = ''
   optimisticStatus.saving()
   try {
-    const tag = await $fetch<{ id: string }>('/api/tags', {
+    const tag = await $fetch<{ id: string }, '/api/tags'>('/api/tags', {
       method: 'POST',
       body: draft,
     })
-    await $fetch(`/api/articles/${props.articleId}/tags` as `/api/articles/:id/tags`, {
-      method: 'POST',
-      body: { tagId: tag.id },
-    })
+    await $fetch<unknown, '/api/articles/:id/tags'>(
+      `/api/articles/${props.articleId}/tags` as `/api/articles/:id/tags`,
+      {
+        method: 'POST',
+        body: { tagId: tag.id },
+      },
+    )
     await Promise.all([invalidateTags(), invalidateTagLibrary()])
     optimisticStatus.saved()
     toast.add({ color: 'success', title: $t('articles.tags.addTagSuccess') })

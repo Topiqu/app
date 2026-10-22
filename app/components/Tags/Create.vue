@@ -192,7 +192,7 @@ const createTag = async () => {
   query.value = ''
   optimisticStatus.saving()
   try {
-    const created = await $fetch<{ id: string; name: string }>('/api/tags', {
+    const created = await $fetch<{ id: string; name: string }, '/api/tags'>('/api/tags', {
       method: 'POST',
       body: draft,
     })
@@ -234,7 +234,7 @@ const deleteTag = async (id: string, name: string) => {
   optimisticStatus.saving()
   await focusTag(focusId)
   try {
-    await $fetch(`/api/tags/${id}`, { method: 'DELETE' })
+    await $fetch<unknown, '/api/tags/:id'>(`/api/tags/${id}` as '/api/tags/:id', { method: 'DELETE' })
     optimisticStatus.saved()
     toast.add({ color: 'success', title: $t('common.messages.deleteSuccess') })
   } catch (error: any) {
@@ -291,10 +291,13 @@ const saveEdit = async (tag: TagItem, refocus = true) => {
   if (refocus) focusTag(tag.id)
   optimisticStatus.saving()
   try {
-    const response = await $fetch<{ tag: { name: string } }>(`/api/tags/${tag.id}`, {
-      method: 'PATCH',
-      body: { name, slug: toSlug(name) },
-    })
+    const response = await $fetch<{ tag: { name: string } }, '/api/tags/:id'>(
+      `/api/tags/${tag.id}` as '/api/tags/:id',
+      {
+        method: 'PATCH',
+        body: { name, slug: toSlug(name) },
+      },
+    )
     target.name = response.tag.name
     optimisticStatus.saved()
     toast.add({ color: 'success', title: $t('articles.tags.updateSuccess') })

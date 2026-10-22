@@ -62,16 +62,19 @@ async function submit() {
   pending.value = true
   key.value ||= crypto.randomUUID()
   try {
-    await $fetch(`/api/clients/${props.clientSiteId}/wallet-adjustments`, {
-      method: 'POST',
-      body: {
-        kind: kind.value,
-        amount: amount.value,
-        reason: reason.value,
-        operationId: operationId.value || undefined,
-        key: key.value,
+    await $fetch<unknown, '/api/clients/:id/wallet-adjustments'>(
+      `/api/clients/${props.clientSiteId}/wallet-adjustments` as '/api/clients/:id/wallet-adjustments',
+      {
+        method: 'POST',
+        body: {
+          kind: kind.value,
+          amount: amount.value,
+          reason: reason.value,
+          operationId: operationId.value || undefined,
+          key: key.value,
+        },
       },
-    })
+    )
     reason.value = ''
     key.value = ''
     await refreshClientSiteStatus()

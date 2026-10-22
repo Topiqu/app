@@ -167,7 +167,7 @@ const selectDraft = (draft: ArticleDraft) => {
 
 const deleteDraft = async (draftId: string) => {
   try {
-    await $fetch('/api/articles/draft', { method: 'DELETE', body: { id: draftId } })
+    await $fetch<unknown, '/api/articles/draft'>('/api/articles/draft', { method: 'DELETE', body: { id: draftId } })
     localDrafts.value = localDrafts.value.filter((d) => d.id !== draftId)
     toast.add({ color: 'success', title: t('common.messages.deleteSuccess') })
   } catch {

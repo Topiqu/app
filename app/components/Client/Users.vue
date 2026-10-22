@@ -188,7 +188,7 @@ const del = async (id: string) => {
   })
   if (!r) return
   try {
-    await $fetch(`/api/users/${id}` as `/api/users/:id`, { method: 'DELETE' })
+    await $fetch<unknown, '/api/users/:id'>(`/api/users/${id}` as '/api/users/:id', { method: 'DELETE' })
     toast.add({ color: 'success', title: t('master.clientUsers.messages.blocked') })
     await refresh()
   } catch (e: any) {
@@ -198,7 +198,10 @@ const del = async (id: string) => {
 
 const restore = async (id: string) => {
   try {
-    await $fetch(`/api/users/${id}` as `/api/users/:id`, { method: 'PATCH', body: { deletedAt: null } })
+    await $fetch<unknown, '/api/users/:id'>(`/api/users/${id}` as '/api/users/:id', {
+      method: 'PATCH',
+      body: { deletedAt: null },
+    })
     const user = users.value.find((u) => u.id === id)
     if (user) user.deletedAt = null
     await refresh()

@@ -55,7 +55,7 @@ describe('custom emoji optimistic UI', () => {
 
   it('shows a local create preview before starting the upload and removes it afterward', () => {
     const optimistic = component.indexOf('optimisticEmojis.value.push')
-    const request = component.indexOf("$fetch<{ emoji: Omit<EmojiRecord, '_count'> }>('/api/emojis'")
+    const request = component.search(/\$fetch<[^\n]+>\(\s*'\/api\/emojis',/)
     const cleanup = component.indexOf('optimisticEmojis.value = optimisticEmojis.value.filter')
 
     expect(optimistic).toBeGreaterThan(-1)
@@ -65,7 +65,7 @@ describe('custom emoji optimistic UI', () => {
 
   it('removes a deleted emoji before the request and restores it on failure', () => {
     const optimisticRemoval = component.indexOf('filter((candidate) => candidate.id !== emoji.id)')
-    const request = component.indexOf('$fetch(`/api/emojis/${emoji.id}`')
+    const request = component.search(/\$fetch(?:<[^\n]+>)?\(\s*`\/api\/emojis\/\$\{emoji\.id\}`/)
     const rollback = component.indexOf('restored.splice')
 
     expect(optimisticRemoval).toBeGreaterThan(-1)

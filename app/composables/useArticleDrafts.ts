@@ -78,7 +78,7 @@ export const useArticleDrafts = async (
 
     saving.value = true
     try {
-      const { draft } = await $fetch<{ draft: ArticleDraft }>('/api/articles/draft', {
+      const { draft } = await $fetch<{ draft: ArticleDraft }, '/api/articles/draft'>('/api/articles/draft', {
         method: 'POST',
         body: {
           id: draftId.value ?? undefined,

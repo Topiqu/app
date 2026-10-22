@@ -432,7 +432,7 @@ const submitQueue = async () => {
       const formData = new FormData()
       formData.append('file', item.file)
       formData.append('shortcode', item.shortcode)
-      const response = await $fetch<{ emoji: Omit<EmojiRecord, '_count'> }>('/api/emojis', {
+      const response = await $fetch<{ emoji: Omit<EmojiRecord, '_count'> }, '/api/emojis'>('/api/emojis', {
         method: 'POST',
         body: formData,
       })
@@ -481,7 +481,7 @@ const confirmDelete = async (emoji: EmojiRecord) => {
   emojis.value = (emojis.value || []).filter((candidate) => candidate.id !== emoji.id)
   optimisticStatus.saving()
   try {
-    await $fetch(`/api/emojis/${emoji.id}` as `/api/emojis/:id`, {
+    await $fetch<unknown, '/api/emojis/:id'>(`/api/emojis/${emoji.id}` as '/api/emojis/:id', {
       method: 'DELETE',
     })
     optimisticStatus.saved()
@@ -516,10 +516,13 @@ const saveEmoji = async (emoji: EmojiRecord) => {
   cancelEditing()
   optimisticStatus.saving()
   try {
-    const response = await $fetch<{ emoji: EmojiRecord }>(`/api/emojis/${emoji.id}` as `/api/emojis/:id`, {
-      method: 'PATCH',
-      body: { shortcode },
-    })
+    const response = await $fetch<{ emoji: EmojiRecord }, '/api/emojis/:id'>(
+      `/api/emojis/${emoji.id}` as `/api/emojis/:id`,
+      {
+        method: 'PATCH',
+        body: { shortcode },
+      },
+    )
     emoji.shortcode = response.emoji.shortcode
     optimisticStatus.saved()
   } catch (requestError: any) {

@@ -38,12 +38,15 @@ const openWorkspace = async () => {
     if (!auth.value?.user) return await navigateTo(localePath({ name: 'autorizace' }))
     if (auth.value.user.role === 'superadmin') return await navigateTo(localePath({ name: 'master' }))
 
-    const memberships = await $fetch<{ clientSiteId: string }[]>('/api/tenant/memberships')
+    const memberships = await $fetch<{ clientSiteId: string }[], '/api/tenant/memberships'>('/api/tenant/memberships')
     const active = memberships.find((item) => item.clientSiteId === auth.value?.user.clientSiteId) ?? memberships[0]
     if (!active) return
 
     if (active.clientSiteId !== auth.value.user.clientSiteId) {
-      await $fetch('/api/tenant/active', { method: 'POST', body: { clientSiteId: active.clientSiteId } })
+      await $fetch<unknown, '/api/tenant/active'>('/api/tenant/active', {
+        method: 'POST',
+        body: { clientSiteId: active.clientSiteId },
+      })
       await getSession()
       clearNuxtData()
     }

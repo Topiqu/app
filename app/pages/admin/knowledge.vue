@@ -249,7 +249,12 @@ const run = async (request: () => Promise<unknown>, success?: string) => {
 }
 
 const toggleUse = (id: string, useInArticles: boolean) =>
-  run(() => $fetch<unknown>(`/api/knowledge/${id}`, { method: 'PATCH', body: { useInArticles } }))
+  run(() =>
+    $fetch<unknown, '/api/knowledge/:id'>(`/api/knowledge/${id}` as '/api/knowledge/:id', {
+      method: 'PATCH',
+      body: { useInArticles },
+    }),
+  )
 
 const remove = async (source: Source) => {
   if (
@@ -260,7 +265,13 @@ const remove = async (source: Source) => {
     }))
   )
     return
-  await run(() => $fetch<unknown>(`/api/knowledge/${source.id}`, { method: 'DELETE' }), t('knowledge.deleted'))
+  await run(
+    () =>
+      $fetch<unknown, '/api/knowledge/:id'>(`/api/knowledge/${source.id}` as '/api/knowledge/:id', {
+        method: 'DELETE',
+      }),
+    t('knowledge.deleted'),
+  )
 }
 
 const actions = (source: Source): DropdownMenuItem[][] => [
@@ -276,7 +287,13 @@ const actions = (source: Source): DropdownMenuItem[][] => [
             label: t(['URL', 'FEED', 'SHOPIFY'].includes(source.kind) ? 'knowledge.refresh' : 'knowledge.retry'),
             icon: 'mdi:refresh',
             disabled: source.status === 'PROCESSING',
-            onSelect: () => run(() => $fetch<unknown>(`/api/knowledge/${source.id}/refresh`, { method: 'POST' })),
+            onSelect: () =>
+              run(() =>
+                $fetch<unknown, '/api/knowledge/:id/refresh'>(
+                  `/api/knowledge/${source.id}/refresh` as '/api/knowledge/:id/refresh',
+                  { method: 'POST' },
+                ),
+              ),
           },
         ]
       : []),

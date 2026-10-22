@@ -6,13 +6,17 @@ export interface AuthSession {
 }
 
 const fetchSession = async (): Promise<AuthSession | null> => {
-  if (import.meta.client) return $fetch<AuthSession | null>('/api/auth/get-session')
+  if (import.meta.client)
+    return $fetch<AuthSession | null, '/api/auth/**:all'>('/api/auth/get-session' as '/api/auth/**:all')
 
   // Read both before the await: the Nuxt context is gone once it resumes.
   const headers = useRequestHeaders(['cookie', 'host', 'x-forwarded-host', 'x-forwarded-proto'])
   const res = useRequestEvent()?.node.res
   // Better Auth extends an aging session by re-issuing its cookie; pass that on to the browser.
-  const response = await $fetch.raw<AuthSession | null>('/api/auth/get-session', { headers })
+  const response = await $fetch.raw<AuthSession | null, '/api/auth/**:all'>(
+    '/api/auth/get-session' as '/api/auth/**:all',
+    { headers },
+  )
   for (const cookie of response.headers.getSetCookie()) res?.appendHeader('set-cookie', cookie)
   return response._data ?? null
 }
@@ -28,7 +32,7 @@ export const useAuth = () => {
 
   // A full reload drops every store that still holds the signed-out user's data.
   const signOut = async ({ callbackUrl = useRequestURL().href }: { callbackUrl?: string } = {}) => {
-    await $fetch('/api/auth/sign-out', { method: 'POST', body: {} })
+    await $fetch<unknown, '/api/auth/**:all'>('/api/auth/sign-out' as '/api/auth/**:all', { method: 'POST', body: {} })
     data.value = null
     await navigateTo(callbackUrl, { external: true })
   }

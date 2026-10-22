@@ -21,7 +21,7 @@ export const searchConsoleClientId = () =>
 
 export const exchangeSearchConsoleCode = async (code: string, redirectUri: string): Promise<GoogleTokens> => {
   const { clientId, clientSecret } = credentials()
-  return await $fetch<GoogleTokens>(TOKEN_URL, {
+  return await $fetch<GoogleTokens, string>(TOKEN_URL, {
     method: 'POST',
     body: new URLSearchParams({
       code,
@@ -35,7 +35,7 @@ export const exchangeSearchConsoleCode = async (code: string, redirectUri: strin
 
 export const refreshSearchConsoleAccess = async (refreshToken: string): Promise<string> => {
   const { clientId, clientSecret } = credentials()
-  const result = await $fetch<GoogleTokens>(TOKEN_URL, {
+  const result = await $fetch<GoogleTokens, string>(TOKEN_URL, {
     method: 'POST',
     body: new URLSearchParams({
       refresh_token: refreshToken,
@@ -48,14 +48,17 @@ export const refreshSearchConsoleAccess = async (refreshToken: string): Promise<
 }
 
 export const listSearchConsoleSites = async (accessToken: string) => {
-  const result = await $fetch<{ siteEntry?: { siteUrl: string; permissionLevel: string }[] }>(`${API_BASE}/sites`, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  })
+  const result = await $fetch<{ siteEntry?: { siteUrl: string; permissionLevel: string }[] }, string>(
+    `${API_BASE}/sites`,
+    {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    },
+  )
   return result.siteEntry ?? []
 }
 
 export const getGoogleIdentity = async (accessToken: string) =>
-  await $fetch<{ sub: string; email?: string }>('https://openidconnect.googleapis.com/v1/userinfo', {
+  await $fetch<{ sub: string; email?: string }, string>('https://openidconnect.googleapis.com/v1/userinfo', {
     headers: { Authorization: `Bearer ${accessToken}` },
   })
 
@@ -95,10 +98,13 @@ export const querySearchConsole = async (
   endDate: string,
 ) => {
   const encoded = encodeURIComponent(propertyUrl)
-  const result = await $fetch<{ rows?: SearchConsoleRow[] }>(`${API_BASE}/sites/${encoded}/searchAnalytics/query`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${accessToken}` },
-    body: { startDate, endDate, dimensions: ['date', 'page', 'query'], rowLimit: 25000, dataState: 'final' },
-  })
+  const result = await $fetch<{ rows?: SearchConsoleRow[] }, string>(
+    `${API_BASE}/sites/${encoded}/searchAnalytics/query`,
+    {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${accessToken}` },
+      body: { startDate, endDate, dimensions: ['date', 'page', 'query'], rowLimit: 25000, dataState: 'final' },
+    },
+  )
   return result.rows ?? []
 }

@@ -40,7 +40,10 @@ if (route.query.redirect?.length) navigateTo(route.query.redirect.toString(), { 
 
 const finishOnboardingLogin = async (token: string) => {
   try {
-    await $fetch('/api/auth/sign-in/token', { method: 'POST', body: { token } })
+    await $fetch<unknown, '/api/auth/**:all'>('/api/auth/sign-in/token' as '/api/auth/**:all', {
+      method: 'POST',
+      body: { token },
+    })
     await getSession()
     const role = data.value?.user?.role
     toast.add({ color: 'success', title: $t('common.auth.loginSuccess') })

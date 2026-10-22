@@ -64,7 +64,10 @@ const result = shallowRef<Result | null>(null)
 const run = async () => {
   loading.value = true
   try {
-    result.value = await $fetch<Result>('/api/knowledge/test', { method: 'POST', body: { topic: topic.value } })
+    result.value = await $fetch<Result, '/api/knowledge/test'>('/api/knowledge/test', {
+      method: 'POST',
+      body: { topic: topic.value },
+    })
   } catch (cause: any) {
     toast.add({ color: 'error', title: fetchErrorMessage(cause, t('knowledge.actionError')) })
   } finally {

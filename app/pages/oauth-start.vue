@@ -25,10 +25,13 @@ onMounted(async () => {
 
   try {
     // Better Auth rejects a callbackURL outside `trustedOrigins`, so a foreign return address fails here.
-    const { url } = await $fetch<{ url: string }>('/api/auth/sign-in/social', {
-      method: 'POST',
-      body: { provider, callbackURL: callbackUrl },
-    })
+    const { url } = await $fetch<{ url: string }, '/api/auth/**:all'>(
+      '/api/auth/sign-in/social' as '/api/auth/**:all',
+      {
+        method: 'POST',
+        body: { provider, callbackURL: callbackUrl },
+      },
+    )
     window.location.replace(url)
   } catch {
     window.location.replace('/')

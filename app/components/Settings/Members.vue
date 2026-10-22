@@ -315,7 +315,7 @@ const canEdit = (member: Member) =>
 const invite = async () => {
   busy.value = true
   try {
-    await $fetch('/api/tenant/invitations', {
+    await $fetch<unknown, '/api/tenant/invitations'>('/api/tenant/invitations', {
       method: 'POST',
       body: { email: email.value, scopes: selected.value },
     })
@@ -337,10 +337,13 @@ const toggle = async (member: Member, scope: Scope) => {
   pendingMemberIds.value = new Set([...pendingMemberIds.value, member.id])
   optimisticStatus.saving()
   try {
-    const updated = await $fetch<{ scopes: Scope[] }>(`/api/tenant/members/${member.id}`, {
-      method: 'PATCH',
-      body: { scopes: next },
-    })
+    const updated = await $fetch<{ scopes: Scope[] }, '/api/tenant/members/:id'>(
+      `/api/tenant/members/${member.id}` as '/api/tenant/members/:id',
+      {
+        method: 'PATCH',
+        body: { scopes: next },
+      },
+    )
     member.scopes = updated.scopes
     optimisticStatus.saved()
   } catch (error: any) {
@@ -374,7 +377,9 @@ const remove = async (member: Member) => {
   await nextTick()
   if (focusId) membersSection.value?.querySelector<HTMLElement>(`[data-member-id="${focusId}"]`)?.focus()
   try {
-    await $fetch(`/api/tenant/members/${member.id}`, { method: 'DELETE' })
+    await $fetch<unknown, '/api/tenant/members/:id'>(`/api/tenant/members/${member.id}` as '/api/tenant/members/:id', {
+      method: 'DELETE',
+    })
     optimisticStatus.saved()
     toast.add({
       color: 'success',
@@ -405,7 +410,10 @@ const revoke = async (id: string) => {
   data.value.invitations.splice(index, 1)
   optimisticStatus.saving()
   try {
-    await $fetch(`/api/tenant/invitations/${id}`, { method: 'DELETE' })
+    await $fetch<unknown, '/api/tenant/invitations/:id'>(
+      `/api/tenant/invitations/${id}` as '/api/tenant/invitations/:id',
+      { method: 'DELETE' },
+    )
     optimisticStatus.saved()
   } catch (error: any) {
     data.value.invitations.splice(index, 0, invitation)
@@ -421,7 +429,10 @@ const resend = async (id: string) => {
   if (resendingIds.value.has(id)) return
   resendingIds.value = new Set([...resendingIds.value, id])
   try {
-    await $fetch(`/api/tenant/invitations/${id}/resend`, { method: 'POST' })
+    await $fetch<unknown, '/api/tenant/invitations/:id/resend'>(
+      `/api/tenant/invitations/${id}/resend` as '/api/tenant/invitations/:id/resend',
+      { method: 'POST' },
+    )
     toast.add({ color: 'success', title: $t('common.members.sent') })
   } catch (error: any) {
     toast.add({ color: 'error', title: fetchErrorMessage(error, t('common.messages.operationFailed')) })

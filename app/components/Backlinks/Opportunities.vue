@@ -52,10 +52,13 @@ const CHECK_TOAST = {
 const run = async (opportunity: BacklinkOpportunityView, command: BacklinkCommand) => {
   busy.value = opportunity.id
   try {
-    const result = await $fetch<{ outcome?: keyof typeof CHECK_TOAST }>(`/api/backlinks/${opportunity.id}`, {
-      method: 'POST',
-      body: { action: command },
-    })
+    const result = await $fetch<{ outcome?: keyof typeof CHECK_TOAST }, '/api/backlinks/:id'>(
+      `/api/backlinks/${opportunity.id}` as '/api/backlinks/:id',
+      {
+        method: 'POST',
+        body: { action: command },
+      },
+    )
     await refetch()
     if (result.outcome)
       toast.add({ color: CHECK_TOAST[result.outcome], title: t(`backlinks.opportunities.check.${result.outcome}`) })

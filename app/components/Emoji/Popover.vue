@@ -59,6 +59,8 @@
 </template>
 
 <script setup lang="ts">
+import type { InternalApi } from 'nitropack'
+
 const props = defineProps<{ commentId: string; articleId: string }>()
 const emit = defineEmits<{
   (
@@ -116,7 +118,10 @@ const toggleEmoji = async (emojiId: string, close: () => void) => {
   pendingEmojiIds.value = new Set([...pendingEmojiIds.value, emojiId])
   optimisticStatus.saving()
   try {
-    const res = await $fetch('/api/emojis/reaction', { method: 'POST', body: { commentId: props.commentId, emojiId } })
+    const res = await $fetch<InternalApi['/api/emojis/reaction']['post'], '/api/emojis/reaction'>(
+      '/api/emojis/reaction',
+      { method: 'POST', body: { commentId: props.commentId, emojiId } },
+    )
     if (!res.success) throw new Error()
     optimisticStatus.saved()
   } catch {

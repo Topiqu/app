@@ -63,6 +63,7 @@
 </template>
 
 <script setup lang="ts">
+import type { InternalApi } from 'nitropack'
 import type { ConsentCapabilities } from '~~/shared/utils/consent'
 import type { PublicClientSite } from '~~/shared/utils/clientSiteFields'
 
@@ -91,7 +92,10 @@ const bannerText = computed(() =>
 
 let cleanup: Promise<unknown> | undefined
 const clearAnalytics = () => {
-  cleanup ??= $fetch('/api/consent/analytics', { method: 'DELETE', timeout: 3000 })
+  cleanup ??= $fetch<InternalApi['/api/consent/analytics']['delete'], '/api/consent/analytics'>(
+    '/api/consent/analytics',
+    { method: 'DELETE', timeout: 3000 },
+  )
     .catch(() => {})
     .finally(() => {
       cleanup = undefined

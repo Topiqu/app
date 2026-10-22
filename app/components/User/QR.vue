@@ -68,6 +68,8 @@
 </template>
 
 <script setup lang="ts">
+import type { InternalApi } from 'nitropack'
+
 const enabled = defineModel<boolean>('enabled', { required: true })
 const { userId } = defineProps<{ userId: string }>()
 const emit = defineEmits<{ error: [message: string] }>()
@@ -93,7 +95,10 @@ const statusDescription = computed(() => {
 })
 
 const patch = (body: Record<string, string>) =>
-  $fetch(`/api/users/${userId}` as `/api/users/:id`, { method: 'PATCH', body })
+  $fetch<InternalApi['/api/users/:id']['patch'], '/api/users/:id'>(`/api/users/${userId}` as '/api/users/:id', {
+    method: 'PATCH',
+    body,
+  })
 
 async function enable2FA() {
   try {

@@ -23,7 +23,7 @@ watchDebounced(
     ready.value = parsed.success ? parsed.data : null
     data.value = null
     if (!parsed.success) return
-    const result = await $fetch<PriceData | WeatherData>('/api/widgets/preview', {
+    const result = await $fetch<PriceData | WeatherData, '/api/widgets/preview'>('/api/widgets/preview', {
       method: 'POST',
       body: parsed.data,
     }).catch(() => null)

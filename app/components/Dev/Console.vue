@@ -272,8 +272,14 @@ const impersonate = async (email: string) => {
   if (currentUser.value === email) return
   busy.value = true
   try {
-    const { token } = await $fetch<{ token: string }>('/api/_dev/impersonate', { method: 'POST', body: { email } })
-    await $fetch('/api/auth/sign-in/token', { method: 'POST', body: { token } })
+    const { token } = await $fetch<{ token: string }, '/api/_dev/impersonate'>('/api/_dev/impersonate', {
+      method: 'POST',
+      body: { email },
+    })
+    await $fetch<unknown, '/api/auth/**:all'>('/api/auth/sign-in/token' as '/api/auth/**:all', {
+      method: 'POST',
+      body: { token },
+    })
     reloadNuxtApp({ force: true })
   } catch {
     busy.value = false
@@ -284,7 +290,7 @@ const switchPlan = async (plan: (typeof plans)[number]) => {
   if (!clientSite || clientSite.plan === plan) return
   busy.value = true
   try {
-    await $fetch('/api/_dev/plan', { method: 'PATCH', body: { id: clientSite.id, plan } })
+    await $fetch<unknown, '/api/_dev/plan'>('/api/_dev/plan', { method: 'PATCH', body: { id: clientSite.id, plan } })
     await getSession()
     reloadNuxtApp({ force: true })
   } catch {

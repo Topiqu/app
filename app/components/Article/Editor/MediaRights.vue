@@ -118,7 +118,7 @@ const edit = async (item: MediaRightsItem) => {
   active.value = item
   let asset = item.asset
   if (!asset) {
-    const response = await $fetch<{ asset: MediaRightsItem['asset'] }>('/api/media/external', {
+    const response = await $fetch<{ asset: MediaRightsItem['asset'] }, '/api/media/external'>('/api/media/external', {
       method: 'POST',
       body: { url: item.url },
     })

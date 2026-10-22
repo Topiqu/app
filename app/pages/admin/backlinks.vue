@@ -122,7 +122,7 @@ const stats = computed((): StatTile[] => {
 const start = async () => {
   starting.value = true
   try {
-    await $fetch('/api/backlinks/discover', { method: 'POST' })
+    await $fetch<unknown, '/api/backlinks/discover'>('/api/backlinks/discover', { method: 'POST' })
     await refetch()
     toast.add({ color: 'success', title: t('backlinks.started') })
   } catch (failure) {

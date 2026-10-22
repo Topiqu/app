@@ -277,7 +277,7 @@ const run = async (task: () => Promise<unknown>) => {
 }
 const refresh = () =>
   run(() =>
-    $fetch<{ ready: boolean; state: string }>('/api/domain/refresh' as string, {
+    $fetch<{ ready: boolean; state: string }, '/api/domain/refresh'>('/api/domain/refresh', {
       method: 'POST',
       body: { connectionId: props.connection.id },
     }),
@@ -291,7 +291,7 @@ const adopt = async () => {
   )
     return
   await run(() =>
-    $fetch<{ success: boolean }>('/api/domain/adopt' as string, {
+    $fetch<{ success: boolean }, '/api/domain/adopt'>('/api/domain/adopt', {
       method: 'POST',
       body: { connectionId: props.connection.id },
     }),
@@ -306,7 +306,7 @@ const disconnect = async () => {
   )
     return
   await run(() =>
-    $fetch<{ domain: string }>('/api/domain/disconnect' as string, {
+    $fetch<{ domain: string }, '/api/domain/disconnect'>('/api/domain/disconnect', {
       method: 'POST',
       body: { fallback: fallback.value },
     }),
@@ -315,7 +315,7 @@ const disconnect = async () => {
 const upload = () =>
   run(async () => {
     try {
-      await $fetch<{ ready: boolean; state: string }>('/api/domain/certificate' as string, {
+      await $fetch<{ ready: boolean; state: string }, '/api/domain/certificate'>('/api/domain/certificate', {
         method: 'POST',
         body: { connectionId: props.connection.id, certificate: certificate.value, privateKey: privateKey.value },
       })

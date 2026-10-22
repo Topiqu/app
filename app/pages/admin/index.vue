@@ -28,7 +28,7 @@ onMounted(() => {
 const handleContinueFree = async () => {
   try {
     const toast = useToast()
-    await $fetch('/api/clients/end-trial', { method: 'POST' })
+    await $fetch<unknown, '/api/clients/end-trial'>('/api/clients/end-trial', { method: 'POST' })
     isOpen.value = false
     toast.add({
       color: 'success',

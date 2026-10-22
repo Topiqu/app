@@ -114,7 +114,7 @@ export const useTiptapRewrite = (editor: Editor) => {
     if (action === 'improve' && (!request || request.length > TEXT_EDIT_INSTRUCTION_MAX_LENGTH)) return false
     pending.value = action
     try {
-      const { html } = await $fetch<{ html: string }>('/api/articles/rewrite', {
+      const { html } = await $fetch<{ html: string }, '/api/articles/rewrite'>('/api/articles/rewrite', {
         method: 'POST',
         body: { html: passage.html, action, ...(request ? { instruction: request } : {}) },
       })
@@ -155,7 +155,7 @@ export const useTiptapRewrite = (editor: Editor) => {
 
     pending.value = 'document'
     try {
-      const { blocks } = await $fetch<{ blocks: string[] }>('/api/articles/rewrite', {
+      const { blocks } = await $fetch<{ blocks: string[] }, '/api/articles/rewrite'>('/api/articles/rewrite', {
         method: 'POST',
         body: { blocks: passages.map((passage) => passage.html), action: 'improve', instruction: request },
       })

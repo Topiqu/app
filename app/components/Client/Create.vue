@@ -344,7 +344,7 @@ const createClient = async () => {
       }
       [key: string]: any
     }
-    const response = await $fetch<CreateClientResponse>('/api/clients', {
+    const response = await $fetch<CreateClientResponse, '/api/clients'>('/api/clients', {
       method: 'POST',
       body: {
         ...newClient.value,

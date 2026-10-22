@@ -50,7 +50,10 @@ const run = async (action: ContentActionView, command: ContentActionCommand) => 
     return
   busy.value = action.id
   try {
-    await $fetch(`/api/content-actions/${action.id}`, { method: 'POST', body: { action: command } })
+    await $fetch<unknown, '/api/content-actions/:id'>(
+      `/api/content-actions/${action.id}` as '/api/content-actions/:id',
+      { method: 'POST', body: { action: command } },
+    )
     await refetch()
     if (command === 'apply') toast.add({ color: 'success', title: t('common.contentActions.applied') })
   } catch (error) {

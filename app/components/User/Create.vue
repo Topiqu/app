@@ -101,6 +101,8 @@
 </template>
 
 <script lang="ts" setup>
+import type { InternalApi } from 'nitropack'
+
 import { useVirtualizer } from '@tanstack/vue-virtual'
 
 const open = defineModel<boolean>({ default: false })
@@ -155,7 +157,7 @@ const createUser = async () => {
   if (creating.value) return
   creating.value = true
   try {
-    const response = await $fetch('/api/users', {
+    const response = await $fetch<InternalApi['/api/users']['post'], '/api/users'>('/api/users', {
       method: 'POST',
       body: { ...newUser.value, clientSiteId: props.clientId },
     })
@@ -178,10 +180,13 @@ const assignToClientSite = async (userId: string | undefined) => {
 
   assigningUserId.value = userId
   try {
-    const response = await $fetch(`/api/users/${userId}` as `/api/users/:id`, {
-      method: 'PATCH',
-      body: { clientSiteId: props.clientId, role: 'admin' },
-    })
+    const response = await $fetch<InternalApi['/api/users/:id']['patch'], '/api/users/:id'>(
+      `/api/users/${userId}` as '/api/users/:id',
+      {
+        method: 'PATCH',
+        body: { clientSiteId: props.clientId, role: 'admin' },
+      },
+    )
     if (!response) throw createError('Chyba')
 
     toast.add({ color: 'success', title: t('master.userCreate.messages.assigned') })

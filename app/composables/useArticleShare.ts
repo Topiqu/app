@@ -7,10 +7,13 @@ export function useArticleShare() {
   return async (articleId: string, platform: SharePlatform) => {
     if (!analyticsGranted.value) return
     try {
-      const res = await $fetch<{ shared?: number }>(`/api/articles/${articleId}/share`, {
-        method: 'POST',
-        body: { platform },
-      })
+      const res = await $fetch<{ shared?: number }, '/api/articles/:id/share'>(
+        `/api/articles/${articleId}/share` as '/api/articles/:id/share',
+        {
+          method: 'POST',
+          body: { platform },
+        },
+      )
       return res.shared
     } catch (e) {
       // Non-fatal for the visitor, but a silent catch once hid a 500 on every share.

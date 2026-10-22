@@ -37,6 +37,8 @@
 </template>
 
 <script setup lang="ts">
+import type { InternalApi } from 'nitropack'
+
 // Defaults rather than `required`: the panel renders before `/account` resolves.
 const email = defineModel<string>('email', { default: '' })
 const isEmailVerified = defineModel<boolean>('isEmailVerified', { default: false })
@@ -49,7 +51,10 @@ const isVerificationCodeSent = shallowRef(false)
 async function sendVerificationCode() {
   try {
     isLoading.value = true
-    const response = await $fetch('/api/users/send-verification', { method: 'POST' })
+    const response = await $fetch<InternalApi['/api/users/send-verification']['post'], '/api/users/send-verification'>(
+      '/api/users/send-verification',
+      { method: 'POST' },
+    )
     isVerificationCodeSent.value = true
     toast.add({ color: 'success', title: response.message })
   } catch (err: any) {
@@ -62,7 +67,7 @@ async function sendVerificationCode() {
 async function verifyEmail() {
   try {
     isLoading.value = true
-    await $fetch('/api/auth/verify', {
+    await $fetch<unknown, '/api/auth/verify'>('/api/auth/verify', {
       method: 'POST',
       body: { code: verificationCode.value },
     })

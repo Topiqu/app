@@ -283,7 +283,10 @@ async function saveAsset() {
     form.append('type', isFavicon.value ? 'client-favicon' : 'client-logo')
     form.append('maxWidth', String(outputWidth))
     form.append('maxHeight', String(outputHeight))
-    const result = await $fetch<{ url: string; optimizedUrl: string }>('/api/upload', { method: 'POST', body: form })
+    const result = await $fetch<{ url: string; optimizedUrl: string }, '/api/upload'>('/api/upload', {
+      method: 'POST',
+      body: form,
+    })
     emit('upload', { url: result.url, optimizedUrl: result.optimizedUrl })
     open.value = false
   } catch (error: any) {

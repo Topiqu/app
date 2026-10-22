@@ -84,7 +84,7 @@ const upgrade = async () => {
   if (!target.value) return
   loading.value = true
   try {
-    const { url } = await $fetch<{ url: string }>('/api/stripe/subscribe', {
+    const { url } = await $fetch<{ url: string }, '/api/stripe/subscribe'>('/api/stripe/subscribe', {
       method: 'POST',
       body: {
         plan: target.value,

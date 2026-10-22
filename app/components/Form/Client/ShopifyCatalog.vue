@@ -24,9 +24,13 @@ const sync = async () => {
   if (busy.value) return
   busy.value = true
   try {
-    if (data.value?.source) await $fetch(`/api/knowledge/${data.value.source.id}/refresh`, { method: 'POST' })
+    if (data.value?.source)
+      await $fetch<unknown, '/api/knowledge/:id/refresh'>(
+        `/api/knowledge/${data.value.source.id}/refresh` as '/api/knowledge/:id/refresh',
+        { method: 'POST' },
+      )
     else
-      await $fetch('/api/shopify/catalog', {
+      await $fetch<unknown, '/api/shopify/catalog'>('/api/shopify/catalog', {
         method: 'POST',
         body: { language: language.value, confirmed: confirmed.value },
       })

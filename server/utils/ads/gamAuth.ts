@@ -70,7 +70,7 @@ export const getGamAccessToken = async (): Promise<string> => {
   const key = parseServiceAccountKey(raw)
   const assertion = buildAssertion(key, Math.floor(now / 1000))
 
-  const token = await $fetch<TokenResponse>(key.token_uri || DEFAULT_TOKEN_URI, {
+  const token = await $fetch<TokenResponse, string>(key.token_uri || DEFAULT_TOKEN_URI, {
     method: 'POST',
     body: new URLSearchParams({
       grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',

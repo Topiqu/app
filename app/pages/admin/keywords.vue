@@ -147,7 +147,7 @@ const stats = computed((): StatTile[] => {
 const saveMarket = async (market: string) => {
   savingMarket.value = true
   try {
-    await $fetch('/api/keyword-plan', { method: 'PATCH', body: { market } })
+    await $fetch<unknown, '/api/keyword-plan'>('/api/keyword-plan', { method: 'PATCH', body: { market } })
     await refetch()
     toast.add({ color: 'success', title: t('common.keywordPlan.marketSaved') })
   } catch (failure) {

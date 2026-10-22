@@ -150,6 +150,8 @@
 </template>
 
 <script setup lang="ts">
+import type { InternalApi } from 'nitropack'
+
 import { z } from 'zod'
 import { signInSchema } from '~~/shared/utils/auth'
 import { isManagedDomain } from '~~/shared/utils/domain'
@@ -218,7 +220,10 @@ const credentialErrors: Record<string, string> = {
 
 const signInWithCredentials = async (credentials: { email: string; password: string; totp?: string }) => {
   try {
-    await $fetch('/api/auth/sign-in/credentials', { method: 'POST', body: credentials })
+    await $fetch<unknown, '/api/auth/**:all'>('/api/auth/sign-in/credentials' as '/api/auth/**:all', {
+      method: 'POST',
+      body: credentials,
+    })
   } catch (e: any) {
     const key = credentialErrors[e?.data?.code] ?? 'common.errors.invalidCredentials'
     throw createError({ statusCode: e?.statusCode || 401, message: $t(key) })
@@ -248,7 +253,7 @@ const submit = async () => {
   try {
     if (internalMode.value === 'register') {
       if (!isPasswordFormValid.value) return toast.add({ color: 'error', title: $t('common.auth.passwordsMismatch') })
-      const res = await $fetch('/api/auth/register', {
+      const res = await $fetch<InternalApi['/api/auth/register']['post'], '/api/auth/register'>('/api/auth/register', {
         method: 'POST',
         body: {
           username: form.value.username,
@@ -260,7 +265,7 @@ const submit = async () => {
       verifyMode.value = true
       toast.add({ color: 'success', title: $t('common.auth.verificationCodeSent'), description: form.value.email })
     } else {
-      const totpData = await $fetch('/api/users/totp', {
+      const totpData = await $fetch<InternalApi['/api/users/totp']['post'], '/api/users/totp'>('/api/users/totp', {
         method: 'POST',
         body: {
           email: form.value.email,
@@ -292,7 +297,7 @@ const verify = async () => {
   if (!form.value.code || submitting.value) return
   submitting.value = true
   try {
-    await $fetch('/api/auth/verify', {
+    await $fetch<unknown, '/api/auth/verify'>('/api/auth/verify', {
       method: 'POST',
       body: { email: form.value.email, code: form.value.code },
     })
@@ -314,10 +319,13 @@ const verifyTotp = async () => {
   submitting.value = true
   try {
     const token = form.value.totpCode.replace(/\s/g, '')
-    const res = await $fetch('/api/users/verify-totp', {
-      method: 'POST',
-      body: { token, challenge: form.value.totpChallenge },
-    })
+    const res = await $fetch<InternalApi['/api/users/verify-totp']['post'], '/api/users/verify-totp'>(
+      '/api/users/verify-totp',
+      {
+        method: 'POST',
+        body: { token, challenge: form.value.totpChallenge },
+      },
+    )
     if (!res.isValid) throw createError({ statusCode: 400, message: 'Neplatný TOTP kód' })
     await signInWithCredentials({
       email: form.value.email,
@@ -339,14 +347,17 @@ const customAuthDomain =
   !isManagedDomain(authHost) && authHost !== 'localhost' && authHost !== '127.0.0.1' && !authHost.endsWith('.localhost')
 const { locale } = useI18n()
 const startAuthTransfer = async (provider?: 'google' | 'github') => {
-  const result = await $fetch('/api/auth/transfer/start', {
-    method: 'POST',
-    body: {
-      returnTo: resolveAuthRedirect(window.location.href, props.redirectTo),
-      locale: locale.value,
-      provider,
+  const result = await $fetch<InternalApi['/api/auth/transfer/start']['post'], '/api/auth/transfer/start'>(
+    '/api/auth/transfer/start',
+    {
+      method: 'POST',
+      body: {
+        returnTo: resolveAuthRedirect(window.location.href, props.redirectTo),
+        locale: locale.value,
+        provider,
+      },
     },
-  })
+  )
   window.location.assign(result.url)
 }
 const handleTopiquAuth = async () => {
@@ -370,10 +381,13 @@ const handleSocialAuth = async (provider: 'google' | 'github') => {
       return
     }
 
-    const { url } = await $fetch<{ url: string }>('/api/auth/sign-in/social', {
-      method: 'POST',
-      body: { provider, callbackURL: finalRedirectUrl },
-    })
+    const { url } = await $fetch<{ url: string }, '/api/auth/**:all'>(
+      '/api/auth/sign-in/social' as '/api/auth/**:all',
+      {
+        method: 'POST',
+        body: { provider, callbackURL: finalRedirectUrl },
+      },
+    )
     window.location.href = url
   } catch {
     const errorKey = provider === 'google' ? 'common.auth.googleSignInFailed' : 'common.auth.githubSignInFailed'

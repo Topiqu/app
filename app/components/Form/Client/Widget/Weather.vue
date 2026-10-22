@@ -50,7 +50,9 @@ watchDebounced(
     }
     searching.value = true
     try {
-      const res = await $fetch<{ places: Place[] }>('/api/widgets/places', { query: { q, locale: locale.value } })
+      const res = await $fetch<{ places: Place[] }, '/api/widgets/places'>('/api/widgets/places', {
+        query: { q, locale: locale.value },
+      })
       places.value = res.places
     } catch {
       places.value = []

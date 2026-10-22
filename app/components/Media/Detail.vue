@@ -164,7 +164,7 @@ const load = async () => {
   loading.value = true
   error.value = false
   try {
-    detail.value = await $fetch<MediaLibraryDetail>(`/api/media/${props.id}`)
+    detail.value = await $fetch<MediaLibraryDetail, '/api/media/:id'>(`/api/media/${props.id}` as '/api/media/:id')
     const asset = detail.value.asset
     Object.assign(form, {
       name: asset.name ?? '',
@@ -188,7 +188,7 @@ const save = async () => {
   if (!props.id) return
   saving.value = true
   try {
-    await $fetch(`/api/media/${props.id}`, {
+    await $fetch<unknown, '/api/media/:id'>(`/api/media/${props.id}` as '/api/media/:id', {
       method: 'PATCH',
       body: {
         name: form.name || null,
@@ -211,13 +211,17 @@ const save = async () => {
 }
 const archive = async () => {
   if (!props.id || !(await confirm({ title: t('media.archiveTitle'), message: t('media.archiveDescription') }))) return
-  await $fetch(`/api/media/${props.id}/archive`, { method: 'POST' })
+  await $fetch<unknown, '/api/media/:id/archive'>(`/api/media/${props.id}/archive` as '/api/media/:id/archive', {
+    method: 'POST',
+  })
   await load()
   emit('updated')
 }
 const restore = async () => {
   if (!props.id) return
-  await $fetch(`/api/media/${props.id}/restore`, { method: 'POST' })
+  await $fetch<unknown, '/api/media/:id/restore'>(`/api/media/${props.id}/restore` as '/api/media/:id/restore', {
+    method: 'POST',
+  })
   await load()
   emit('updated')
 }
@@ -228,7 +232,7 @@ const scheduleDelete = async () => {
   )
     return
   try {
-    await $fetch(`/api/media/${props.id}`, { method: 'DELETE' })
+    await $fetch<unknown, '/api/media/:id'>(`/api/media/${props.id}` as '/api/media/:id', { method: 'DELETE' })
     toast.add({ color: 'success', title: t('media.deleteScheduled') })
     open.value = false
     emit('removed')

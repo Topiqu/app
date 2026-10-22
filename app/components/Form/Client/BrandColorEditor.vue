@@ -327,10 +327,13 @@ const suggestFromLogo = async () => {
   suggesting.value = true
   suggestionError.value = false
   try {
-    const result = await $fetch<{ colors: string[] }>(`/api/clients/${props.clientId}/palette`, {
-      method: 'POST',
-      body: { logoUrl: props.logoUrl },
-    })
+    const result = await $fetch<{ colors: string[] }, '/api/clients/:id/palette'>(
+      `/api/clients/${props.clientId}/palette` as '/api/clients/:id/palette',
+      {
+        method: 'POST',
+        body: { logoUrl: props.logoUrl },
+      },
+    )
     suggestions.value = result.colors
     suggestionError.value = !result.colors.length
   } catch {

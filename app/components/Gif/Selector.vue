@@ -258,7 +258,7 @@ const loadCategories = async () => {
   categoriesLoading.value = true
   categoriesError.value = ''
   try {
-    const response = await $fetch<{ data: GiphyCategory[] }>('/api/gifs', {
+    const response = await $fetch<{ data: GiphyCategory[] }, '/api/gifs'>('/api/gifs', {
       query: { action: 'list-categories' },
       retry: 0,
     })
@@ -276,7 +276,7 @@ const loadGifs = async (append: boolean) => {
   if (append) loadingMore.value = true
   else gifsLoading.value = true
   try {
-    const response = await $fetch<GiphyResponse>('/api/gifs', {
+    const response = await $fetch<GiphyResponse, '/api/gifs'>('/api/gifs', {
       query: { page: page.value, limit: 18, ...(activeQuery.value ? { query: activeQuery.value } : {}) },
       retry: 0,
     })

@@ -81,7 +81,10 @@ const fetchClientSite = async () => {
 
   return await useAsyncData(
     clientSiteKey(hostname),
-    () => $fetch<PublicClientSite>(`/api/clients/slug/${encodeURIComponent(hostname)}`),
+    () =>
+      $fetch<PublicClientSite, '/api/clients/slug/:slug'>(
+        `/api/clients/slug/${encodeURIComponent(hostname)}` as '/api/clients/slug/:slug',
+      ),
     {
       // A manual refresh must bypass the payload, or refreshClientSite() would keep handing back the stale copy.
       getCachedData: (key, nuxtApp, ctx) =>

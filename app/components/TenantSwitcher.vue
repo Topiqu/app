@@ -58,7 +58,7 @@ const switchTenant = async (clientSiteId: string) => {
   if (clientSiteId === auth.value?.user.clientSiteId || switching.value) return
   switching.value = true
   try {
-    const site = await $fetch<{ domain: string; domainVerified: boolean }>('/api/tenant/active', {
+    const site = await $fetch<{ domain: string; domainVerified: boolean }, '/api/tenant/active'>('/api/tenant/active', {
       method: 'POST',
       body: { clientSiteId },
     })

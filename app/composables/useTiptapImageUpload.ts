@@ -24,11 +24,14 @@ export function useTiptapImageUpload(
     form.append('type', 'article-image')
 
     try {
-      const { success, optimizedUrl, mediaAsset } = await $fetch<{
-        success: boolean
-        optimizedUrl: string
-        mediaAsset: { id: string }
-      }>('/api/upload', { method: 'POST', body: form })
+      const { success, optimizedUrl, mediaAsset } = await $fetch<
+        {
+          success: boolean
+          optimizedUrl: string
+          mediaAsset: { id: string }
+        },
+        '/api/upload'
+      >('/api/upload', { method: 'POST', body: form })
       if (success) {
         editor.value?.chain().focus().setFigure({ src: optimizedUrl, alt, mediaId: mediaAsset.id }).run()
       }

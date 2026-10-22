@@ -430,9 +430,12 @@ const performDelete = async (mode: 'hard' | 'soft') => {
   deleteOpen.value = false
   if (!target) return
   try {
-    await $fetch(`/api/clients/${target.id}${mode === 'hard' ? '?hard=true' : ''}` as `api/clients/:id`, {
-      method: 'DELETE',
-    })
+    await $fetch<unknown, '/api/clients/:id'>(
+      `/api/clients/${target.id}${mode === 'hard' ? '?hard=true' : ''}` as '/api/clients/:id',
+      {
+        method: 'DELETE',
+      },
+    )
     toast.add({
       color: 'success',
       title: t(
@@ -461,7 +464,7 @@ const restore = async (id: string) => {
   })
   if (!confirmed) return
   try {
-    await $fetch(`/api/clients/${id}` as `api/clients/:id`, {
+    await $fetch<unknown, '/api/clients/:id'>(`/api/clients/${id}` as '/api/clients/:id', {
       method: 'PATCH',
       body: { deletedAt: null },
     })

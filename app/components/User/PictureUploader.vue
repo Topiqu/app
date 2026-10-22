@@ -234,7 +234,10 @@ async function confirmRemove() {
   busy.value = true
   errorMessage.value = ''
   try {
-    await $fetch(endpoint.value, { method: 'DELETE' })
+    await $fetch<unknown, '/api/users/avatar' | '/api/clients/:id/ai-avatar'>(
+      endpoint.value as '/api/users/avatar' | '/api/clients/:id/ai-avatar',
+      { method: 'DELETE' },
+    )
     savedAvatar.value = null
     avatar.value = null
     if (isOwnAvatar.value) {

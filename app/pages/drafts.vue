@@ -158,7 +158,10 @@ async function approveDraft(id: string) {
   pendingDraftIds.value = new Set([...pendingDraftIds.value, id])
   optimisticStatus.saving()
   try {
-    const response = await $fetch<{ draft: { status: DraftStatus } }>(`/api/drafts/${id}/approve`, { method: 'POST' })
+    const response = await $fetch<{ draft: { status: DraftStatus } }, '/api/drafts/:id/approve'>(
+      `/api/drafts/${id}/approve` as '/api/drafts/:id/approve',
+      { method: 'POST' },
+    )
     draft.status = response.draft.status
     optimisticStatus.saved()
   } catch (err: any) {
@@ -191,10 +194,13 @@ async function submitRejection() {
   pendingDraftIds.value = new Set([...pendingDraftIds.value, id])
   optimisticStatus.saving()
   try {
-    const response = await $fetch<{ draft: { status: DraftStatus } }>(`/api/drafts/${id}/reject`, {
-      method: 'POST',
-      body: { reason },
-    })
+    const response = await $fetch<{ draft: { status: DraftStatus } }, '/api/drafts/:id/reject'>(
+      `/api/drafts/${id}/reject` as '/api/drafts/:id/reject',
+      {
+        method: 'POST',
+        body: { reason },
+      },
+    )
     draft.status = response.draft.status
     optimisticStatus.saved()
   } catch (err: any) {
@@ -221,7 +227,7 @@ async function publishDraft(id: string) {
   if (!confirmed) return
   publishingId.value = id
   try {
-    await $fetch(`/api/publish/${id}`, { method: 'POST' })
+    await $fetch<unknown, '/api/publish/:id'>(`/api/publish/${id}` as '/api/publish/:id', { method: 'POST' })
     await refresh()
     toast.add({ color: 'success', title: $t('articles.workflowDrafts.publishSuccess') })
   } catch (err: any) {

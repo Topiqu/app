@@ -61,9 +61,10 @@ const optimisticStatus = useOptimisticStatus()
 const fetchResults = async () => {
   if (!props.articleId || !props.poll.pollId) return
   try {
-    const res = await $fetch<{ pollResult: string | null; voteCounts: Record<string, number> }>(
-      `/api/articles/${props.articleId}/vote?pollId=${props.poll.pollId}`,
-    )
+    const res = await $fetch<
+      { pollResult: string | null; voteCounts: Record<string, number> },
+      '/api/articles/:id/vote'
+    >(`/api/articles/${props.articleId}/vote?pollId=${props.poll.pollId}` as '/api/articles/:id/vote')
     Object.assign(voteCounts, res.voteCounts || {})
     hasVoted.value = !!res.pollResult
     selectedOption.value = res.pollResult ? String(res.pollResult) : null
@@ -94,8 +95,8 @@ const vote = async (optionId?: string) => {
   voteCounts[optionId] = (voteCounts[optionId] ?? 0) + 1
   optimisticStatus.saving()
   try {
-    const res = await $fetch<{ pollResult: string; voteCounts: Record<string, number> }>(
-      `/api/articles/${props.articleId}/vote`,
+    const res = await $fetch<{ pollResult: string; voteCounts: Record<string, number> }, '/api/articles/:id/vote'>(
+      `/api/articles/${props.articleId}/vote` as '/api/articles/:id/vote',
       {
         method: 'POST',
         body: { pollId: props.poll.pollId, optionId },

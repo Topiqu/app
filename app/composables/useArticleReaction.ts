@@ -6,7 +6,8 @@ type ReactionRequest = (url: string, options: { method: 'POST' }) => Promise<Art
 export function useArticleReaction(
   articleId: MaybeRefOrGetter<string | null | undefined>,
   initialReaction: MaybeRefOrGetter<ArticleReaction>,
-  request: ReactionRequest = (url, options) => $fetch<ArticleReaction>(url, options),
+  request: ReactionRequest = (url, options) =>
+    $fetch<ArticleReaction, '/api/articles/:id/reaction'>(url as '/api/articles/:id/reaction', options),
 ) {
   const state = useState<Record<string, ArticleReaction>>('article-card-reactions', () => ({}))
   const pending = useState<Record<string, boolean>>('article-reaction-pending', () => ({}))

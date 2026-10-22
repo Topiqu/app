@@ -169,7 +169,7 @@ const run = async (key: string, task: () => Promise<void>) => {
 
 const add = () =>
   run('add', async () => {
-    const created = await $fetch<{ secret: string }>('/api/webhooks', {
+    const created = await $fetch<{ secret: string }, '/api/webhooks'>('/api/webhooks', {
       method: 'POST',
       body: { url: url.value.trim(), events: events.value },
     })
@@ -180,7 +180,10 @@ const add = () =>
 
 const test = (id: string) =>
   run(`test:${id}`, async () => {
-    const result = await $fetch<{ ok: boolean; status: number | null }>(`/api/webhooks/${id}/test`, { method: 'POST' })
+    const result = await $fetch<{ ok: boolean; status: number | null }, '/api/webhooks/:id/test'>(
+      `/api/webhooks/${id}/test` as '/api/webhooks/:id/test',
+      { method: 'POST' },
+    )
     const status = result.status
       ? t('common.webhooks.httpStatus', { status: result.status })
       : t('common.webhooks.unreachable')
@@ -193,7 +196,10 @@ const test = (id: string) =>
 
 const toggle = (webhook: Webhook) =>
   run(`toggle:${webhook.id}`, async () => {
-    await $fetch(`/api/webhooks/${webhook.id}`, { method: 'PATCH', body: { active: !webhook.active } })
+    await $fetch<unknown, '/api/webhooks/:id'>(`/api/webhooks/${webhook.id}` as '/api/webhooks/:id', {
+      method: 'PATCH',
+      body: { active: !webhook.active },
+    })
     await refetch()
   })
 
@@ -207,7 +213,12 @@ const rotate = async (id: string) => {
   )
     return
   await run(`rotate:${id}`, async () => {
-    secret.value = (await $fetch<{ secret: string }>(`/api/webhooks/${id}/secret`, { method: 'POST' })).secret
+    secret.value = (
+      await $fetch<{ secret: string }, '/api/webhooks/:id/secret'>(
+        `/api/webhooks/${id}/secret` as '/api/webhooks/:id/secret',
+        { method: 'POST' },
+      )
+    ).secret
   })
 }
 
@@ -221,7 +232,7 @@ const remove = async (id: string) => {
   )
     return
   await run(`delete:${id}`, async () => {
-    await $fetch(`/api/webhooks/${id}`, { method: 'DELETE' })
+    await $fetch<unknown, '/api/webhooks/:id'>(`/api/webhooks/${id}` as '/api/webhooks/:id', { method: 'DELETE' })
     await refetch()
   })
 }

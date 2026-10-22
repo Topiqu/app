@@ -161,6 +161,8 @@
 </template>
 
 <script setup lang="ts">
+import type { InternalApi } from 'nitropack'
+
 import { isLanguage, locales, type Language } from '~~/shared/utils/language'
 import { KNOWLEDGE_CURRENCIES, KNOWLEDGE_LIMITS } from '~~/shared/utils/knowledge'
 
@@ -276,7 +278,10 @@ const normalizeSourceUrl = (value: string) => {
 }
 
 const discoverSitemap = () =>
-  $fetch('/api/knowledge/sitemap', { method: 'POST', body: { url: normalizeSourceUrl(form.url) } })
+  $fetch<InternalApi['/api/knowledge/sitemap']['post'], '/api/knowledge/sitemap'>('/api/knowledge/sitemap', {
+    method: 'POST',
+    body: { url: normalizeSourceUrl(form.url) },
+  })
 
 // Pages go through the regular URL endpoint two at a time, gentle on the site and on the
 // per-tenant rate limit; a full quota or the rate limit ends the import early.
@@ -288,7 +293,7 @@ const importSitemap = async (urls: string[]) => {
   const worker = async () => {
     while (queue.length && !stopped) {
       try {
-        await $fetch('/api/knowledge', { method: 'POST', body: pageForm(queue.shift()!) })
+        await $fetch<unknown, '/api/knowledge'>('/api/knowledge', { method: 'POST', body: pageForm(queue.shift()!) })
         added += 1
       } catch (cause: any) {
         if (cause?.data?.data?.code === 'KNOWLEDGE_QUOTA' || cause?.statusCode === 429) stopped = true
@@ -324,7 +329,7 @@ const submit = async () => {
   if (kind.value === 'FEED' && !feedPreview.value) {
     saving.value = true
     try {
-      feedPreview.value = await $fetch<FeedPreview>('/api/knowledge/feed', {
+      feedPreview.value = await $fetch<FeedPreview, '/api/knowledge/feed'>('/api/knowledge/feed', {
         method: 'POST',
         body: { url: normalizeSourceUrl(form.url), currency: form.currency },
       })
@@ -352,7 +357,7 @@ const submit = async () => {
 
   saving.value = true
   try {
-    await $fetch('/api/knowledge', { method: 'POST', body })
+    await $fetch<unknown, '/api/knowledge'>('/api/knowledge', { method: 'POST', body })
     toast.add({ color: 'success', title: t('knowledge.added') })
     open.value = false
     emit('created')

@@ -443,10 +443,14 @@ const selectedPricePeriod = computed(() =>
   checkoutInterval.value === 'year' ? $t('common.preferences.annually') : $t('common.preferences.monthly'),
 )
 
-const redirectTo = async (url: string, action: string, body: Record<string, unknown>) => {
+const redirectTo = async (
+  url: '/api/stripe/checkout' | '/api/stripe/portal' | '/api/stripe/subscribe',
+  action: string,
+  body: Record<string, unknown>,
+) => {
   pendingAction.value = action
   try {
-    const res = await $fetch<{ url: string | null }>(url, {
+    const res = await $fetch<{ url: string | null }, typeof url>(url, {
       method: 'POST',
       body: { ...body, origin: window.location.origin },
     })

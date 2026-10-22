@@ -9,7 +9,7 @@ export const useMediaRights = (input: ComputedRef<ArticleMediaInput>) => {
   const analyze = async () => {
     state.value = result.value ? 'analyzing' : 'loading'
     try {
-      result.value = await $fetch<MediaRightsReport>('/api/media/rights-check' as any, {
+      result.value = await $fetch<MediaRightsReport, '/api/media/rights-check'>('/api/media/rights-check', {
         method: 'POST',
         body: input.value,
       })

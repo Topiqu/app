@@ -88,7 +88,9 @@ watch([open, () => props.id], async ([value, id]) => {
   if (!value || !id) return
   loading.value = true
   try {
-    const { source, chunks: preview } = await $fetch<Detail>(`/api/knowledge/${id}`)
+    const { source, chunks: preview } = await $fetch<Detail, '/api/knowledge/:id'>(
+      `/api/knowledge/${id}` as '/api/knowledge/:id',
+    )
     isNote.value = source.kind === 'NOTE'
     isFeed.value = ['FEED', 'SHOPIFY'].includes(source.kind)
     loadedText.value = source.content ?? ''
@@ -111,7 +113,7 @@ watch([open, () => props.id], async ([value, id]) => {
 const save = async () => {
   saving.value = true
   try {
-    await $fetch(`/api/knowledge/${props.id}`, {
+    await $fetch<unknown, '/api/knowledge/:id'>(`/api/knowledge/${props.id}` as '/api/knowledge/:id', {
       method: 'PATCH',
       body: {
         title: form.title.trim(),

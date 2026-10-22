@@ -126,6 +126,8 @@
 </template>
 
 <script setup lang="ts">
+import type { InternalApi } from 'nitropack'
+
 import slugify from 'slugify'
 
 const modelValue = defineModel<any>({ default: null })
@@ -168,7 +170,7 @@ const createAndSelect = async () => {
   if (!newSeriesName.value.trim()) return
 
   try {
-    const newSeries = await $fetch('/api/series', {
+    const newSeries = await $fetch<InternalApi['/api/series']['post'], '/api/series'>('/api/series', {
       method: 'POST',
       body: {
         name: newSeriesName.value.trim(),
@@ -194,10 +196,13 @@ const saveSeries = async () => {
   if (!modelValue.value?.id || !editedSeriesName.value.trim() || saving.value) return
   saving.value = true
   try {
-    const updated = await $fetch(`/api/series/${modelValue.value.id}`, {
-      method: 'PATCH',
-      body: { name: editedSeriesName.value.trim() },
-    })
+    const updated = await $fetch<InternalApi['/api/series/:id']['patch'], '/api/series/:id'>(
+      `/api/series/${modelValue.value.id}` as '/api/series/:id',
+      {
+        method: 'PATCH',
+        body: { name: editedSeriesName.value.trim() },
+      },
+    )
     modelValue.value = { ...modelValue.value, ...updated }
     await refresh()
     editModal.value = false
@@ -223,7 +228,9 @@ const deleteSeries = async () => {
 
   deleting.value = true
   try {
-    await $fetch(`/api/series/${modelValue.value.id}`, { method: 'DELETE' })
+    await $fetch<unknown, '/api/series/:id'>(`/api/series/${modelValue.value.id}` as '/api/series/:id', {
+      method: 'DELETE',
+    })
     modelValue.value = null
     editModal.value = false
     await refresh()

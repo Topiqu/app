@@ -140,8 +140,11 @@ const toggleFollow = async () => {
   followPending.value = true
   try {
     const result = isFollowing.value
-      ? await $fetch<{ followerCount: number }>(`/api/follows/${author.value.id}`, { method: 'DELETE' })
-      : await $fetch<{ followerCount: number }>('/api/follows', {
+      ? await $fetch<{ followerCount: number }, '/api/follows/:id'>(
+          `/api/follows/${author.value.id}` as '/api/follows/:id',
+          { method: 'DELETE' },
+        )
+      : await $fetch<{ followerCount: number }, '/api/follows'>('/api/follows', {
           method: 'POST',
           body: { followedId: author.value.id },
         })

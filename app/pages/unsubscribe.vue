@@ -44,7 +44,7 @@ const state = shallowRef<'idle' | 'pending' | 'done' | 'error'>('idle')
 const unsubscribe = async () => {
   state.value = 'pending'
   try {
-    await $fetch('/api/users/unsubscribe', { method: 'POST', body: { u, t } })
+    await $fetch<unknown, '/api/users/unsubscribe'>('/api/users/unsubscribe', { method: 'POST', body: { u, t } })
     state.value = 'done'
   } catch {
     state.value = 'error'

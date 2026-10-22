@@ -74,10 +74,13 @@ const goToSignIn = () => navigateTo(localePath({ name: 'autorizace', query: { in
 const respond = async (action: 'accept' | 'decline') => {
   busy.value = true
   try {
-    const result = await $fetch<{ accepted: boolean }>(`/api/invitations/${token}`, {
-      method: 'POST',
-      body: { action },
-    })
+    const result = await $fetch<{ accepted: boolean }, '/api/invitations/:token'>(
+      `/api/invitations/${token}` as '/api/invitations/:token',
+      {
+        method: 'POST',
+        body: { action },
+      },
+    )
     if (result.accepted) {
       await getSession()
       toast.add({ color: 'success', title: $t('common.invitation.accepted') })

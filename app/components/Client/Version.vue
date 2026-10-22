@@ -218,6 +218,8 @@
 </template>
 
 <script setup lang="ts">
+import type { InternalApi } from 'nitropack'
+
 import { buildArticlePackViews } from '~/utils/articlePackPresentation'
 
 const config = useRuntimeConfig()
@@ -303,10 +305,13 @@ const planBadgeColor = computed(() =>
 const buyArticles = async (pack: string) => {
   checkoutPack.value = pack
   try {
-    const res = await $fetch('/api/stripe/checkout', {
-      method: 'POST',
-      body: { pack, origin: window.location.origin },
-    })
+    const res = await $fetch<InternalApi['/api/stripe/checkout']['post'], '/api/stripe/checkout'>(
+      '/api/stripe/checkout',
+      {
+        method: 'POST',
+        body: { pack, origin: window.location.origin },
+      },
+    )
     if (res.url) window.location.href = res.url
   } finally {
     checkoutPack.value = null

@@ -342,10 +342,13 @@ const translateArticle = async (article: ArticleWithDetails, language: Language)
   if (translatingArticleId.value) return
   translatingArticleId.value = article.id
   try {
-    await $fetch(`/api/articles/${article.id}/translate`, {
-      method: 'POST',
-      body: { language },
-    })
+    await $fetch<unknown, '/api/articles/:id/translate'>(
+      `/api/articles/${article.id}/translate` as '/api/articles/:id/translate',
+      {
+        method: 'POST',
+        body: { language },
+      },
+    )
     await invalidateArticleLists()
     toast.add({ color: 'success', title: $t('articles.translations.messages.translated') })
   } catch (e: any) {
@@ -407,7 +410,9 @@ const {
 } = useQuery({
   key: () => ['articles', 'list', listQuery.value],
   query: () =>
-    requestFetch<{ data: ArticleWithDetails[]; total: number }>('/api/articles/search', { query: listQuery.value }),
+    requestFetch<{ data: ArticleWithDetails[]; total: number }, '/api/articles/search'>('/api/articles/search', {
+      query: listQuery.value,
+    }),
   placeholderData: (previous) => previous,
 })
 
@@ -539,7 +544,7 @@ const setStatus = async ({ id, status }: { id: string; status: ArticleStatus }) 
   optimisticStatus.saving()
 
   try {
-    await $fetch(`/api/articles/${id}` as `/api/articles/:id`, {
+    await $fetch<unknown, '/api/articles/:id'>(`/api/articles/${id}` as `/api/articles/:id`, {
       method: 'PATCH',
       body: { status },
     })
@@ -568,7 +573,8 @@ const setStatus = async ({ id, status }: { id: string; status: ArticleStatus }) 
 
 const debouncedSetStatus = useDebounceFn((id: string, status: ArticleStatus) => void setStatus({ id, status }), 100)
 const { mutate: deleteArticle, isLoading: isDeleting } = useMutation({
-  mutation: async (id: string) => $fetch<unknown>(`/api/articles/${id}` as string, { method: 'DELETE' }),
+  mutation: async (id: string) =>
+    $fetch<unknown, '/api/articles/:id'>(`/api/articles/${id}` as '/api/articles/:id', { method: 'DELETE' }),
   onSuccess: () =>
     toast.add({
       color: 'success',

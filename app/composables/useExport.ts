@@ -83,7 +83,7 @@ export function useExport() {
     const arr = normalizeInput(data)
     if (!arr.length) return
 
-    const blob = await $fetch<Blob>('/api/articles/export-pdf', {
+    const blob = await $fetch<Blob, '/api/articles/export-pdf'>('/api/articles/export-pdf', {
       method: 'POST',
       body: { ids: arr.map((a) => a.id) },
       responseType: 'blob',

@@ -102,10 +102,13 @@ const hasVoted = computed(() => !!votedCookie.value)
 const submitVote = async (isHelpful: boolean) => {
   isLoading.value = true
   try {
-    await $fetch(`/api/articles/${props.articleId}/feedback`, {
-      method: 'POST',
-      body: { isHelpful, reason: isHelpful ? null : reasonText.value },
-    })
+    await $fetch<unknown, '/api/articles/:id/feedback'>(
+      `/api/articles/${props.articleId}/feedback` as '/api/articles/:id/feedback',
+      {
+        method: 'POST',
+        body: { isHelpful, reason: isHelpful ? null : reasonText.value },
+      },
+    )
     votedCookie.value = isHelpful ? 'helpful' : 'unhelpful'
     if (isHelpful) toast.add({ color: 'success', title: $t('feedback.thanks_short') })
     showReasonInput.value = false

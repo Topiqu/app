@@ -527,9 +527,12 @@ const checkAvailability = useDebounceFn(async () => {
   availability.value = 'checking'
   availabilityReason.value = null
   try {
-    const result = await $fetch<{ ok: boolean; reason?: DomainReason }>('/api/onboarding/check-domain', {
-      query: { domain: requested, type: requestedType },
-    })
+    const result = await $fetch<{ ok: boolean; reason?: DomainReason }, '/api/onboarding/check-domain'>(
+      '/api/onboarding/check-domain',
+      {
+        query: { domain: requested, type: requestedType },
+      },
+    )
     if (requestedDomain.value !== requested || domainType.value !== requestedType) return
     availability.value = result.ok ? 'available' : 'unavailable'
     availabilityReason.value = result.ok ? null : (result.reason ?? 'invalid')
@@ -607,7 +610,7 @@ const createTenant = async () => {
   creating.value = true
   let created = false
   try {
-    await $fetch('/api/tenant', {
+    await $fetch<unknown, '/api/tenant'>('/api/tenant', {
       method: 'POST',
       body: {
         name: form.name,
@@ -624,7 +627,7 @@ const createTenant = async () => {
     await getSession()
 
     if (form.plan !== 'BASIC') {
-      const { url } = await $fetch<{ url: string | null }>('/api/stripe/subscribe', {
+      const { url } = await $fetch<{ url: string | null }, '/api/stripe/subscribe'>('/api/stripe/subscribe', {
         method: 'POST',
         body: { plan: form.plan, interval: form.interval, origin: window.location.origin },
       })

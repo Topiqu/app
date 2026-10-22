@@ -5,7 +5,7 @@ export const resolveGeo = async (ip: string) => {
   if (!ip || ip === '::1' || ip.startsWith('127.')) return { city: null, region: null, country: null }
 
   try {
-    const data = await $fetch<Success | Fail>(`https://ipwho.is/${ip}`)
+    const data = await $fetch<Success | Fail, string>(`https://ipwho.is/${ip}`)
     if (!data.success) return { city: null, region: null, country: null }
 
     return {

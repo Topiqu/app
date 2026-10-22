@@ -9,7 +9,7 @@ export default defineCachedEventHandler(
     if (action === 'list-categories') {
       const url = `${API_BASE}/categories?api_key=${process.env.GIPHY_API_KEY}`
       try {
-        const res = await $fetch(url)
+        const res = await $fetch<unknown, string>(url)
         return res
       } catch {
         throw createError({ statusCode: 500, message: t('common.errors.giphyCategoriesFailed')! })
@@ -23,7 +23,7 @@ export default defineCachedEventHandler(
     const url = `${API_BASE}/${endpoint}?api_key=${process.env.GIPHY_API_KEY}&limit=${take}&offset=${skip}${query ? `&q=${encodeURIComponent(query)}` : ''}`
 
     try {
-      const res = await $fetch(url)
+      const res = await $fetch<unknown, string>(url)
       return res
     } catch {
       throw createError({ statusCode: 500, message: t('common.errors.giphyFetchFailed')! })

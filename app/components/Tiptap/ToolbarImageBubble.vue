@@ -159,7 +159,7 @@ const saveDetails = async (details: {
   update({ alt: details.alt, title: details.title, ...(isFigure.value ? { href: details.href } : {}) })
   if (!details.saveDefault || !mediaId) return
   try {
-    await $fetch(`/api/media/${encodeURIComponent(mediaId)}`, {
+    await $fetch<unknown, '/api/media/:id'>(`/api/media/${encodeURIComponent(mediaId)}` as '/api/media/:id', {
       method: 'PATCH',
       body: { defaultAltText: details.alt || null },
     })

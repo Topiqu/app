@@ -1,7 +1,8 @@
+import type { InternalApi } from 'nitropack'
 import type { User, Session as _Session } from '~~/generated/zenstack/models'
 
-export type Session = Omit<_Session, 'createdAt' | 'updatedAt' | 'deletedAt' | 'lastUsedAt' | 'token' | 'expiresAt'> & {
-  lastUsedAt?: string
+export type Session = Pick<_Session, 'id' | 'device' | 'os' | 'browser' | 'city' | 'region' | 'country' | 'origin'> & {
+  lastUsedAt: string
 }
 
 export type Profile = Omit<Partial<User>, 'createdAt' | 'updatedAt' | 'deletedAt' | 'lastLogin'> & {
@@ -28,7 +29,10 @@ export function useProfile() {
   async function patchSelf(body: Record<string, unknown>) {
     const id = user.value?.user?.id
     if (!id) throw new Error('User not authenticated')
-    const response = await $fetch(`/api/users/${id}` as `/api/users/:id`, { method: 'PATCH', body })
+    const response = await $fetch<InternalApi['/api/users/:id']['patch'], '/api/users/:id'>(
+      `/api/users/${id}` as '/api/users/:id',
+      { method: 'PATCH', body },
+    )
     toast.add({ color: 'success', title: t('common.messages.saveSuccess') })
     return response
   }
@@ -52,7 +56,7 @@ export function useProfile() {
   async function deactivateAccount() {
     const id = user.value?.user?.id
     if (!id) throw new Error('User not authenticated')
-    await $fetch(`/api/users/${id}` as `/api/users/:id`, { method: 'DELETE' })
+    await $fetch<unknown, '/api/users/:id'>(`/api/users/${id}` as '/api/users/:id', { method: 'DELETE' })
     await signOut()
   }
 

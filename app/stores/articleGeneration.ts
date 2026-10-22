@@ -108,7 +108,12 @@ export const useArticleGenerationStore = defineStore('articleGeneration', () => 
     if (!sessionId.value || stopping) return
     stopping = true
     try {
-      await $fetch(`/api/articles/generations/${sessionId.value}/stop`, { method: 'POST' })
+      await $fetch<unknown, '/api/articles/generations/:id/stop'>(
+        `/api/articles/generations/${sessionId.value}/stop` as '/api/articles/generations/:id/stop',
+        {
+          method: 'POST',
+        },
+      )
       abort()
     } catch {
       stopRequested.value = false
@@ -257,7 +262,9 @@ export const useArticleGenerationStore = defineStore('articleGeneration', () => 
     if (!id) return settleResumed({ message: t('articles.editor.aiContentFailed') })
     const deadline = Date.now() + RESUME_LIMIT_MS
     for (;;) {
-      const session = await $fetch<ResumedSession>(`/api/articles/generations/${id}/status`).catch((error) =>
+      const session = await $fetch<ResumedSession, '/api/articles/generations/:id/status'>(
+        `/api/articles/generations/${id}/status` as '/api/articles/generations/:id/status',
+      ).catch((error) =>
         error?.statusCode === 404
           ? ({ status: 'FAILED', recoverableSnapshot: null, failureReason: null } as const)
           : null,

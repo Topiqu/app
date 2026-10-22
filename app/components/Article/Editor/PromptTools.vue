@@ -70,10 +70,13 @@ watch(prompt, (value) => {
 const run = async (action: PromptEditAction) => {
   pending.value = action
   try {
-    const result = await $fetch<{ prompt?: string; questions?: string[] }>('/api/articles/generate/enhance', {
-      method: 'POST',
-      body: { prompt: prompt.value, action, format },
-    })
+    const result = await $fetch<{ prompt?: string; questions?: string[] }, '/api/articles/generate/enhance'>(
+      '/api/articles/generate/enhance',
+      {
+        method: 'POST',
+        body: { prompt: prompt.value, action, format },
+      },
+    )
     if (result.questions) {
       questions.value = result.questions
       answers.value = result.questions.map(() => '')

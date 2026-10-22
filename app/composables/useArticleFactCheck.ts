@@ -49,7 +49,7 @@ export const useArticleFactCheck = (input: MaybeRefOrGetter<ArticleFactCheckInpu
     failure.value = null
     errorKind.value = 'unknown'
     try {
-      result.value = await $fetch<ArticleFactCheckResult>('/api/articles/fact-check', {
+      result.value = await $fetch<ArticleFactCheckResult, '/api/articles/fact-check'>('/api/articles/fact-check', {
         method: 'POST',
         body: current,
       })

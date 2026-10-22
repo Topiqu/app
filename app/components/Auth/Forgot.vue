@@ -126,7 +126,7 @@ const forgot = async () => {
   if (submitting.value) return
   submitting.value = true
   try {
-    await $fetch('/api/auth/forgot', {
+    await $fetch<unknown, '/api/auth/forgot'>('/api/auth/forgot', {
       method: 'POST',
       body: { email: form.value.email },
     })
@@ -147,7 +147,7 @@ const reset = async () => {
   }
   submitting.value = true
   try {
-    await $fetch('/api/auth/reset', {
+    await $fetch<unknown, '/api/auth/reset'>('/api/auth/reset', {
       method: 'POST',
       body: {
         email: form.value.email,

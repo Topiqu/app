@@ -453,7 +453,7 @@ async function save() {
   invalidKey.value = ''
   saving.value = true
   try {
-    await $fetch('/api/widgets', { method: 'PUT', body: parsed.data })
+    await $fetch<unknown, '/api/widgets'>('/api/widgets', { method: 'PUT', body: parsed.data })
     await Promise.all([refetch(), refreshClientSite()])
     editingKey.value = null
     toast.add({ color: 'success', title: t('common.messages.saveSuccess') })

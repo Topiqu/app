@@ -30,6 +30,8 @@
 </template>
 
 <script setup lang="ts">
+import type { InternalApi } from 'nitropack'
+
 definePageMeta({ shell: 'product', dashboardSidebar: false })
 const route = useRoute()
 const { data: session, signOut } = useAuth()
@@ -41,10 +43,13 @@ const { data, status, error } = await useFetch('/api/auth/transfer/request', {
 const authorize = async () => {
   busy.value = true
   try {
-    const result = await $fetch('/api/auth/transfer/authorize', {
-      method: 'POST',
-      body: { request: route.query.request },
-    })
+    const result = await $fetch<InternalApi['/api/auth/transfer/authorize']['post'], '/api/auth/transfer/authorize'>(
+      '/api/auth/transfer/authorize',
+      {
+        method: 'POST',
+        body: { request: route.query.request },
+      },
+    )
     await navigateTo(result.url, { external: true })
   } catch {
     failed.value = true
