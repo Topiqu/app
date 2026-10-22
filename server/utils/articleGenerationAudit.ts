@@ -1,4 +1,5 @@
 import { toDatabaseJson } from './databaseJson'
+import { withArticleUsageStage } from './ai/articleUsage'
 
 export type ArticleGenerationStage =
   | 'configuration'
@@ -116,11 +117,11 @@ export const auditArticleStep = async <T>(
   summarize?: (result: T) => Metadata,
   metadata: Metadata = {},
 ): Promise<T> => {
-  if (!audit) return run()
+  if (!audit) return withArticleUsageStage(stage, run)
   const step = await audit.startStep(stage, metadata)
   let result: T
   try {
-    result = await run()
+    result = await withArticleUsageStage(stage, run)
   } catch (error) {
     await step.fail(error)
     throw error

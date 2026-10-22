@@ -56,15 +56,15 @@
       }
     },
     "wallet": {
-      "title": "Články",
-      "available": "Zbývající články",
-      "unit": "článků | článek | články | článků",
-      "bonusExpiry": "Bonusové články mohou mít datum platnosti; dokoupené články neexpirují.",
-      "generationReservation": "Každé generování dočasně zablokuje 1 článek. Po úspěšném dokončení se odečte; při chybě nebo přerušení se vrátí.",
-      "neverExpires": "Články z tarifu platí pro dané období. Dokoupené články neexpirují.",
-      "explanation": "Tarif přidává články každý měsíc. Dokoupené články neexpirují a spotřebují se až po článcích z tarifu.",
+      "title": "Kredity na články",
+      "available": "Dostupné kredity",
+      "unit": "kredit | kredity | kreditů",
+      "bonusExpiry": "Bonusové kredity mohou expirovat, dokoupené ne.",
+      "generationReservation": "Článek rezervuje podle kvality 1, 2 nebo 3 kredity. Kontrola i jedna automatická oprava jsou v ceně. Při technické chybě se rezervace vrátí.",
+      "neverExpires": "Kredity z tarifu platí pro dané období. Dokoupené kredity neexpirují.",
+      "explanation": "Tarif přidává kredity každý měsíc. Standard stojí 1, High 2 a Ultra 3 kredity za článek včetně kontroly a jedné automatické opravy. Dokoupené kredity neexpirují a čerpají se až po kreditech z tarifu.",
       "reserved": "Dočasně rezervováno",
-      "reservedHint": "Každé generování rezervuje 1 článek. Při chybě se uvolní.",
+      "reservedHint": "Článek podle kvality rezervuje 1, 2 nebo 3 kredity. Při technické chybě se celá částka vrátí.",
       "reasons": {
         "manualArticle": "Ručně vytvořený článek",
         "scheduledArticle": "Automaticky vytvořený článek",
@@ -72,25 +72,26 @@
       },
       "periodUsage": "Spotřeba za {period}",
       "expires": "Platnost do",
-      "topup": "Dokoupit články",
-      "history": "Historie článků",
-      "empty": "Zatím žádné pohyby článků.",
-      "initial": "Počáteční počet článků",
-      "adjustment": "Úprava počtu článků",
+      "topup": "Dokoupit kredity",
+      "history": "Historie kreditů",
+      "empty": "Zatím žádné pohyby kreditů.",
+      "initial": "Počáteční počet kreditů",
+      "adjustment": "Úprava kreditů",
       "reason": "Povinný důvod",
-      "amount": "Počet článků",
+      "amount": "Počet kreditů",
       "operation": "ID původní operace (pro vrácení)",
       "apply": "Provést úpravu",
       "kinds": {
-        "CREDIT": "Připsání článků",
+        "CREDIT": "Připsané kredity",
         "DEBIT": "Spotřeba",
         "RELEASE": "Uvolnění rezervace",
-        "EXPIRY": "Expirace",
-        "EXPIRE": "Expirace",
-        "REFUND": "Vrácení článků",
+        "EXPIRY": "Expirované kredity",
+        "EXPIRE": "Expirované kredity",
+        "REFUND": "Vrácené kredity",
         "BONUS": "Bonus",
         "ADJUSTMENT": "Ruční odečet"
-      }
+      },
+      "affordableArticles": "Vystačí na {count} článek v kvalitě {quality}. | Vystačí na {count} články v kvalitě {quality}. | Vystačí na {count} článků v kvalitě {quality}."
     },
     "searchConsole": {
       "title": "Google Search Console",
@@ -991,8 +992,8 @@
         "monthly": "– Měsíční platba",
         "intervalMonthly": "Měsíčně",
         "intervalAnnual": "Ročně",
-        "tokenBalance": "Zbývající články",
-        "buyTokens": "Dokoupit články",
+        "tokenBalance": "Dostupné kredity",
+        "buyTokens": "Dokoupit kredity",
         "manage": "Spravovat předplatné a faktury",
         "openPortal": "Spravovat fakturaci",
         "invoicesTitle": "Faktury a platby",
@@ -1219,7 +1220,7 @@
         "previewInterval": "Příklad nejbližších vydání (přesné časy losujeme)",
         "perMonth": "Žádný článek v příštích 30 dnech | ≈ {count} článek v příštích 30 dnech | ≈ {count} články v příštích 30 dnech | ≈ {count} článků v příštích 30 dnech",
         "creditsUntil": "kredity vystačí zhruba do {date}",
-        "noCredits": "Nemáte kredity. Pro další vydávání je doplňte.",
+        "noCredits": "Na článek ve zvolené kvalitě nemáte dost kreditů. Doplňte je nebo zvolte nižší kvalitu.",
         "errors": {
           "timeZone": "Vyberte platné časové pásmo.",
           "releaseHour": "Vyberte čas vydání.",
@@ -1265,6 +1266,16 @@
           "empty": "Pro váš primární jazyk nejsou k dispozici žádné další jazyky."
         },
         "tokenWarning": "Automatický překlad vytvoří samostatnou jazykovou verzi každého publikovaného článku pro každý cílový jazyk."
+      },
+      "articleQuality": {
+        "title": "Kvalita článků",
+        "description": "Zvolte kvalitu nových článků z editoru i automatického plánování. Cena zahrnuje kontrolu a jednu automatickou opravu, pokud ji článek potřebuje.",
+        "options": {
+          "STANDARD": "Standardní",
+          "HIGH": "Vysoká",
+          "ULTRA": "Nejvyšší"
+        },
+        "cost": "{count} kredit za článek | {count} kredity za článek | {count} kreditů za článek"
       },
       "aiAuthor": {
         "title": "Nastavení AI autora",
@@ -1525,17 +1536,17 @@
       "declined": "Pozvánka odmítnuta"
     },
     "articlePacks": {
-      "title": "Rozšiřte publikační kapacitu",
-      "pack5": "5 článků",
-      "pack12": "12 článků",
-      "pack25": "25 článků",
+      "title": "Kredity na další články",
+      "pack5": "5 kreditů",
+      "pack12": "12 kreditů",
+      "pack25": "25 kreditů",
       "bestValue": "Nejvýhodnější",
       "volumeDiscount": "{discount} % množstevní sleva",
-      "articles": "článků | článek | články | článků",
+      "articles": "kredit | kredity | kreditů",
       "taxExclusive": "bez DPH",
       "buy": "Koupit",
-      "buyPack": "Koupit balíček s {count} články",
-      "purchaseHint": "Doplňte si články podle potřeby. Připíšeme je ihned a neexpirují.",
+      "buyPack": "Koupit balíček {count} kreditů",
+      "purchaseHint": "Kredity jsou dostupné hned a neexpirují. Článek stojí podle kvality 1, 2 nebo 3 kredity včetně kontroly a jedné automatické opravy.",
       "neverExpires": "Bez expirace",
       "upgradeToPremium": "Povýšit na PREMIUM"
     },

@@ -4,7 +4,10 @@
     "greeting": "Hallo,",
     "intro": "<b>{userName}</b> hat deinen Artikel „<i>{articleTitle}</i>“ kommentiert: „<i>{commentContent}</i>“",
     "button": "Kommentar ansehen",
-    "unsubscribe": { "text": "Du möchtest keine Benachrichtigungen mehr erhalten?", "link": "Abmelden" }
+    "unsubscribe": {
+      "text": "Du möchtest keine Benachrichtigungen mehr erhalten?",
+      "link": "Abmelden"
+    }
   },
   "commentReply": {
     "subject": "Neue Antwort auf deinen Kommentar",
@@ -12,14 +15,20 @@
     "intro": "<b>{userName}</b> hat geantwortet: „<i>{commentContent}</i>“",
     "parent": "Dein Kommentar: „<i>{parentContent}</i>“",
     "button": "Antwort ansehen",
-    "unsubscribe": { "text": "Du möchtest keine Benachrichtigungen mehr erhalten?", "link": "Abmelden" }
+    "unsubscribe": {
+      "text": "Du möchtest keine Benachrichtigungen mehr erhalten?",
+      "link": "Abmelden"
+    }
   },
   "deleteComment": {
     "subject": "Dein Kommentar wurde entfernt",
     "greeting": "Hallo {userName},",
     "intro": "Dein Kommentar „<i>{commentContent}</i>“ wurde entfernt.",
     "reason": "Grund: {deleteReason}",
-    "unsubscribe": { "text": "Du möchtest keine Benachrichtigungen mehr erhalten?", "link": "Abmelden" }
+    "unsubscribe": {
+      "text": "Du möchtest keine Benachrichtigungen mehr erhalten?",
+      "link": "Abmelden"
+    }
   },
   "verificationCode": {
     "subject": "Bestätigungscode für {userName}",
@@ -27,7 +36,10 @@
     "intro": "Um {actionType} abzuschließen, verwende bitte diesen Bestätigungscode:",
     "expiration": "Dieser Code ist 24 Stunden gültig. Falls du ihn nicht angefordert hast, kannst du diese E-Mail ignorieren.",
     "resetExpiration": "Dieser Code zum Zurücksetzen des Passworts ist 15 Minuten gültig. Falls du ihn nicht angefordert hast, ignoriere diese E-Mail.",
-    "actions": { "signup": "die Kontoerstellung", "emailVerification": "die Bestätigung deiner E-Mail-Adresse" }
+    "actions": {
+      "signup": "die Kontoerstellung",
+      "emailVerification": "die Bestätigung deiner E-Mail-Adresse"
+    }
   },
   "tenantInvitation": {
     "subject": "Einladung zu {tenantName}",
@@ -58,16 +70,19 @@
     "intro_with_reason_temporary": "Dein Konto wurde auf der Subdomain <b>{clientSiteId}</b> aus folgendem Grund gesperrt: {reason}. Die Sperre gilt bis {banDuration}.",
     "intro_no_reason": "Dein Konto wurde auf der Subdomain <b>{clientSiteId}</b> gesperrt.",
     "reason": "{reason}",
-    "unsubscribe": { "text": "Du möchtest keine Benachrichtigungen mehr erhalten?", "link": "Abmelden" }
+    "unsubscribe": {
+      "text": "Du möchtest keine Benachrichtigungen mehr erhalten?",
+      "link": "Abmelden"
+    }
   },
   "creditsDepleted": {
-    "subject": "{tenantName} hat keine Artikel mehr",
-    "preview": "Die geplante Veröffentlichung pausiert, bis Sie aufladen.",
+    "subject": "{tenantName} benötigt mehr Credits",
+    "preview": "Lade Credits für den nächsten KI-Artikel auf.",
     "greeting": "Ihre Publikation braucht neue Artikel",
-    "intro": "<b>{tenantName}</b> hat keine Artikel mehr, deshalb schreibt der KI-Autor nicht weiter.",
-    "paused": "Die geplante Veröffentlichung ist pausiert. Der nächste Artikel Ihres Rhythmus wird erstellt, sobald Sie Artikel aufladen – sonst müssen Sie nichts ändern.",
+    "intro": "<b>{tenantName}</b> hat nicht genug Credits für den nächsten Artikel in der gewählten Qualität.",
+    "paused": "Neue geplante Artikel sind pausiert. Sobald du genug Credits hinzufügst oder eine niedrigere Qualität wählst, wird das automatische Schreiben nach Zeitplan fortgesetzt.",
     "safe": "Alles, was bereits veröffentlicht, geplant oder als Entwurf gespeichert ist, bleibt unverändert.",
-    "button": "Artikel aufladen",
+    "button": "Credits aufladen",
     "footer": "Wir senden diese E-Mail nur einmal pro Aufladung, Ihr Postfach bleibt also übersichtlich."
   }
 }

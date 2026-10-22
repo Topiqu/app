@@ -56,15 +56,15 @@
       }
     },
     "wallet": {
-      "title": "Articles",
-      "available": "Articles restants",
-      "unit": "article | articles",
-      "bonusExpiry": "Les articles bonus peuvent expirer ; les articles achetés n'expirent pas.",
-      "generationReservation": "Chaque génération réserve temporairement 1 article. Il est décompté en cas de réussite et restitué en cas d'erreur ou d'annulation.",
-      "neverExpires": "Les articles inclus dans l'offre sont valables pour la période concernée. Les articles achetés n'expirent pas.",
-      "explanation": "Votre offre ajoute des articles chaque mois. Les articles achetés n'expirent jamais et sont utilisés après ceux de l'offre.",
+      "title": "Crédits pour articles",
+      "available": "Crédits disponibles",
+      "unit": "crédit | crédits",
+      "bonusExpiry": "Les crédits bonus peuvent expirer ; les crédits achetés n’expirent pas.",
+      "generationReservation": "Chaque article réserve 1, 2 ou 3 crédits selon la qualité. La vérification et une révision automatique sont incluses. Un échec technique restitue toute la réservation.",
+      "neverExpires": "Les crédits du forfait sont valables pour leur période. Les crédits achetés n’expirent pas.",
+      "explanation": "Votre forfait ajoute des crédits chaque mois. Standard coûte 1, High 2 et Ultra 3 crédits par article, vérification et une révision automatique incluses. Les crédits achetés n’expirent pas et sont utilisés après ceux du forfait.",
       "reserved": "Réservés temporairement",
-      "reservedHint": "Chaque génération réserve 1 article. Il est libéré en cas d'échec.",
+      "reservedHint": "Chaque article réserve 1, 2 ou 3 crédits selon la qualité. Un échec technique restitue la totalité.",
       "reasons": {
         "manualArticle": "Article créé manuellement",
         "scheduledArticle": "Article créé automatiquement",
@@ -72,25 +72,26 @@
       },
       "periodUsage": "Utilisés pendant {period}",
       "expires": "Valable jusqu'au",
-      "topup": "Acheter des articles supplémentaires",
-      "history": "Historique des articles",
-      "empty": "Aucun mouvement d'articles pour le moment.",
-      "initial": "Quota initial d'articles",
-      "adjustment": "Ajustement du quota d'articles",
+      "topup": "Acheter des crédits",
+      "history": "Historique des crédits",
+      "empty": "Aucun mouvement de crédits.",
+      "initial": "Crédits initiaux",
+      "adjustment": "Ajustement des crédits",
       "reason": "Motif obligatoire",
-      "amount": "Nombre d'articles",
+      "amount": "Nombre de crédits",
       "operation": "Identifiant de l'opération initiale (pour les remboursements)",
       "apply": "Appliquer l'ajustement",
       "kinds": {
-        "CREDIT": "Articles ajoutés",
+        "CREDIT": "Crédits ajoutés",
         "DEBIT": "Utilisation",
         "RELEASE": "Réservation libérée",
-        "EXPIRY": "Articles expirés",
-        "EXPIRE": "Articles expirés",
-        "REFUND": "Articles restitués",
+        "EXPIRY": "Crédits expirés",
+        "EXPIRE": "Crédits expirés",
+        "REFUND": "Crédits restitués",
         "BONUS": "Bonus",
         "ADJUSTMENT": "Débit manuel"
-      }
+      },
+      "affordableArticles": "Suffisant pour {count} article de qualité {quality}. | Suffisant pour {count} articles de qualité {quality}."
     },
     "searchConsole": {
       "title": "Google Search Console",
@@ -991,8 +992,8 @@
         "monthly": "– Facturation mensuelle",
         "intervalMonthly": "Mensuel",
         "intervalAnnual": "Annuel",
-        "tokenBalance": "Articles restants",
-        "buyTokens": "Acheter des articles supplémentaires",
+        "tokenBalance": "Crédits disponibles",
+        "buyTokens": "Acheter des crédits",
         "manage": "Gérer l'abonnement et les factures",
         "openPortal": "Gérer la facturation",
         "invoicesTitle": "Factures et paiements",
@@ -1219,7 +1220,7 @@
         "previewInterval": "Exemple des prochaines publications (les heures exactes sont tirées au sort)",
         "perMonth": "Aucun article dans les 30 prochains jours | ≈ {count} article dans les 30 prochains jours | ≈ {count} articles dans les 30 prochains jours",
         "creditsUntil": "les crédits suffisent jusqu’au {date} environ",
-        "noCredits": "Vous n'avez plus de crédits. Rechargez pour continuer à publier.",
+        "noCredits": "Il manque des crédits pour un article de la qualité choisie. Rechargez ou choisissez une qualité inférieure.",
         "errors": {
           "timeZone": "Choisissez un fuseau horaire valide.",
           "releaseHour": "Choisissez une heure de publication.",
@@ -1265,6 +1266,16 @@
           "empty": "Aucune autre langue n'est disponible pour votre langue principale."
         },
         "tokenWarning": "La traduction automatique crée une version distincte de chaque article publié pour chaque langue cible."
+      },
+      "articleQuality": {
+        "title": "Qualité des articles",
+        "description": "Choisissez la qualité des nouveaux articles manuels et planifiés. Le prix comprend la vérification et une révision automatique si nécessaire.",
+        "options": {
+          "STANDARD": "Standard",
+          "HIGH": "Élevée",
+          "ULTRA": "Maximale"
+        },
+        "cost": "{count} crédit par article | {count} crédits par article"
       },
       "aiAuthor": {
         "title": "Paramètres de l'auteur IA",
@@ -1525,17 +1536,17 @@
       "declined": "Invitation refusée"
     },
     "articlePacks": {
-      "title": "Augmentez votre capacité de publication",
-      "pack5": "5 articles",
-      "pack12": "12 articles",
-      "pack25": "25 articles",
+      "title": "Crédits pour de nouveaux articles",
+      "pack5": "5 crédits",
+      "pack12": "12 crédits",
+      "pack25": "25 crédits",
       "bestValue": "Meilleur rapport qualité-prix",
       "volumeDiscount": "{discount} % de remise sur volume",
-      "articles": "article | articles",
+      "articles": "crédit | crédits",
       "taxExclusive": "hors TVA",
       "buy": "Acheter",
-      "buyPack": "Acheter un pack de {count} articles",
-      "purchaseHint": "Ajoutez des articles selon vos besoins. Ils sont disponibles immédiatement et n'expirent jamais.",
+      "buyPack": "Acheter {count} crédits",
+      "purchaseHint": "Les crédits sont disponibles immédiatement et n’expirent pas. Chaque article coûte 1, 2 ou 3 crédits selon la qualité, vérification et une révision automatique incluses.",
       "neverExpires": "N'expire jamais",
       "upgradeToPremium": "Passer à PREMIUM"
     },

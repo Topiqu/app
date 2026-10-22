@@ -1,7 +1,7 @@
 {
   "legal": {
     "lastUpdated": "Zuletzt aktualisiert: {date}",
-    "updatedAt": "10. Oktober 2026",
+    "updatedAt": "18. Oktober 2026",
     "placeholderNote": "Die Postanschrift wird bewusst nicht aufgeführt — stattdessen ist ARES verlinkt; die Anschrift wird auf Anfrage mitgeteilt.",
     "tos": {
       "title": "Nutzungsbedingungen",
@@ -17,7 +17,7 @@
           "icon": "mdi:credit-card-outline",
           "iconColor": "text-emerald-500",
           "title": "2. Tarife und Zahlungen",
-          "content": "<ul class='list-disc pl-5 mt-2 space-y-1'><li>Es gelten die bei der Bestellung angezeigten Preise, inklusive Umsatzsteuer, soweit anwendbar. Zahlungen wickelt Stripe ab.</li><li>Abonnements verlängern sich automatisch. Du kannst jederzeit in den Einstellungen zum Ende des Abrechnungszeitraums kündigen.</li><li>Eine erfolgreiche KI-Generierung verbraucht einen Artikel. Artikel im Tarif gelten für den jeweiligen Monatszeitraum, zugekaufte Artikel verfallen nicht.</li><li>Bei ausbleibender Zahlung können wir kostenpflichtige Funktionen nach einem Hinweis sperren.</li></ul>Preisänderungen kündigen wir vorab per E-Mail an. Sie gelten ab dem nächsten Zeitraum, bis dahin kannst du kündigen."
+          "content": "<ul class='list-disc pl-5 mt-2 space-y-1'><li>Es gelten die bei der Bestellung angezeigten Preise, inklusive Umsatzsteuer, soweit anwendbar. Zahlungen wickelt Stripe ab.</li><li>Abonnements verlängern sich automatisch. Du kannst jederzeit in den Einstellungen zum Ende des Abrechnungszeitraums kündigen.</li><li>Ein KI-Artikel verbraucht bei Standard 1, bei High 2 oder bei Ultra 3 Credits inklusive Prüfung und einer automatischen Überarbeitung. Bei einem technischen Fehler wird die gesamte Reservierung freigegeben. Tarif-Credits gelten für den jeweiligen Monatszeitraum, gekaufte Credits verfallen nicht.</li><li>Bei ausbleibender Zahlung können wir kostenpflichtige Funktionen nach einem Hinweis sperren.</li></ul>Preisänderungen kündigen wir vorab per E-Mail an. Sie gelten ab dem nächsten Zeitraum, bis dahin kannst du kündigen."
         },
         {
           "icon": "mdi:keyboard-return",

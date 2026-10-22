@@ -147,6 +147,8 @@ export default defineEventHandler(async (event) => {
         },
       })
 
+      await ensureAiAuthor(site.id, tx)
+
       if (trial)
         await creditArticleCredits(
           {

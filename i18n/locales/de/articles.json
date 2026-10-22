@@ -295,7 +295,7 @@
       "articleSavedAsDraft": "Artikel als Entwurf gespeichert",
       "insightGenerated": "Erkenntnis erstellt",
       "lowTokensWarning": "Ein Artikel verbleibt",
-      "lowTokensHint": "Kaufe weitere Artikel oder warte auf die monatliche Erneuerung deines Tarifs.",
+      "lowTokensHint": "Kaufe Credits oder warte auf die monatliche Tarif-Erneuerung.",
       "insightSkipped": "Erkenntnis übersprungen"
     },
     "dateFormats": {
@@ -464,7 +464,7 @@
         "waitingWriting": "Seit {seconds} s kam kein neuer Text. Nach 30 s ohne Text wird das Schreiben beendet.",
         "waitingResearch": "Die Quellenprüfung dauert länger als üblich. Der Vorgang läuft noch und kann sicher gestoppt werden.",
         "waitingImages": "Die Vorbereitung eines Bildes kann bis zu 45 s dauern. Falls der Dienst kein Bild liefert, wird der Artikel ohne Bild abgeschlossen.",
-        "reservedDuringRun": "Vorübergehend reserviert: {count} Artikel",
+        "reservedDuringRun": "Vorübergehend reserviert: {count} Credits",
         "writerIdleError": "Die Generierung wurde gestoppt: 30 Sekunden lang kam kein Text. Versuche es erneut.",
         "writerDeadlineError": "Die Generierung wurde nach Erreichen des 90-Sekunden-Limits für das Schreiben gestoppt.",
         "output": {
@@ -541,9 +541,9 @@
         },
         "youtubeHint": "Ein Video wird nur eingebettet, wenn die Recherche eine bestätigte YouTube-URL findet.",
         "reservationLabel": "So werden Artikel berechnet",
-        "reservationSummary": "Jede Generierung reserviert vorübergehend 1 Artikel. Für zwei gleichzeitig laufende Vorgänge müssen daher mindestens 2 Artikel übrig sein.",
+        "reservationSummary": "Vor dem Start werden {count} Credits reserviert. Prüfung und eine automatische Überarbeitung sind enthalten.",
         "billingDetails": "Abrechnungsdetails",
-        "billingExplanation": "Der Artikel wird erst nach erfolgreichem Abschluss abgezogen. Bei einem Fehler oder Abbruch wird der reservierte Artikel zurückgegeben.",
+        "billingExplanation": "Credits werden für einen fertigen Artikel abgezogen. Bei einem technischen Fehler wird die gesamte Reservierung freigegeben. Ein gestoppter Lauf wird nur berechnet, wenn nutzbarer Text zur Wiederherstellung gespeichert wurde.",
         "reviewFailed": "Der Artikel hat die redaktionelle Prüfung auch nach der Überarbeitung nicht bestanden.",
         "allowGeneratedImages": "KI-Illustrationen als letzte Möglichkeit erlauben",
         "useKnowledge": "Wissensbasis verwenden",
@@ -558,7 +558,7 @@
           "words": "Wörter: {count}",
           "retry": "Erneut versuchen",
           "dismiss": "Bericht schließen",
-          "creditReturned": "Der reservierte Artikel wurde Ihrem Guthaben gutgeschrieben; dieser Durchlauf wurde nicht berechnet.",
+          "creditReturned": "Alle reservierten Credits wurden zurückgegeben. Dieser Lauf wurde nicht berechnet.",
           "failedHere": "Der Durchlauf wurde bei diesem Schritt abgebrochen.",
           "openVideo": "Video öffnen",
           "cover": "Titelbild",
@@ -660,7 +660,8 @@
           "title": "KI-Generierung ist Teil des PRO-Plans",
           "description": "Machen Sie aus einem Thema einen Artikel mit Recherche, Quellen, Bildern und Faktencheck.",
           "cta": "Pläne ansehen"
-        }
+        },
+        "insufficientCredits": "Dieser Artikel benötigt {required} Credits. Verfügbar sind {available}."
       },
       "drafts": {
         "loadDrafts": "Entwürfe laden",

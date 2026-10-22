@@ -6,6 +6,7 @@ import { randomBytes } from 'crypto'
 import { DbNull } from '@zenstackhq/orm'
 import { models } from '~~/shared/databaseSchemas'
 import { auditChanges } from '~~/server/utils/auditChanges'
+import { defaultAiAuthorName } from '~~/shared/utils/aiAuthor'
 import { FooterSettingsSchema } from '~~/shared/utils/publicationFooter'
 import { PUBLICATION_CHANNELS } from '~~/shared/utils/publicationChannels'
 import { nextRelease, releaseScheduleError } from '~~/shared/utils/releaseSchedule'
@@ -63,7 +64,10 @@ export default defineEventHandler(async (event) => {
 
   const clientSite = await db.clientSite.findUnique({
     where: { id },
-    include: { socials: true, users: { where: { role: 'ai' }, take: 1 } },
+    include: {
+      socials: true,
+      users: { where: { role: 'ai', deletedAt: null }, orderBy: { createdAt: 'asc' }, take: 1 },
+    },
   })
 
   if (!clientSite) throw createError({ statusCode: 404, message: t('common.errors.clientNotFound')! })
@@ -149,43 +153,30 @@ export default defineEventHandler(async (event) => {
   // AI identity and writing preferences are configuration, not article consumption. Keeping them
   // editable on Basic lets the client prepare the workspace before activating AI generation.
   if (hasAiPayload) {
+    const author = currentAiUser ?? (await ensureAiAuthor(id))
+    // The form previews a default name for older sites. Keep the allocated suffix if that name was taken.
+    const username =
+      !currentAiUser && aiUserPayload.username === defaultAiAuthorName(clientSite.name, clientSite.language)
+        ? author.username
+        : aiUserPayload.username
     // `avatarUrl` is deliberately absent: it belongs to `ai-avatar.post`/`.delete`, which write it
     // straight to the row. Saving settings used to send it back and blank it out.
     const aiData = {
       bio: aiUserPayload.bio || '',
-      ...(aiUserPayload.username ? { username: aiUserPayload.username } : {}),
+      ...(username ? { username } : {}),
     }
 
-    if (currentAiUser) {
-      const updatedAiUser = await db.user.update({ where: { id: currentAiUser.id }, data: aiData })
-      await invalidateAuthor(currentAiUser.id)
-      const aiChanges = auditChanges(currentAiUser, updatedAiUser, Object.keys(aiData))
-      if (Object.keys(aiChanges).length)
-        await logAction({
-          action: 'AI_USER_UPDATE',
-          userId: user.id,
-          clientSiteId: id,
-          ip: getIp(event),
-          metadata: { aiUserId: currentAiUser.id, updatedFields: Object.keys(aiChanges), changes: aiChanges },
-        })
-    } else {
-      const newAi = await db.user.create({
-        data: {
-          ...aiData,
-          username: aiUserPayload.username || `ai-${id}-${Date.now()}`,
-          email: `ai-${randomBytes(8).toString('hex')}@generated.ai`,
-          role: 'ai',
-          clientSiteId: id,
-        },
-      })
+    const updatedAiUser = await db.user.update({ where: { id: author.id }, data: aiData })
+    await invalidateAuthor(author.id)
+    const aiChanges = auditChanges(author, updatedAiUser, Object.keys(aiData))
+    if (Object.keys(aiChanges).length)
       await logAction({
-        action: 'AI_USER_CREATE',
+        action: 'AI_USER_UPDATE',
         userId: user.id,
         clientSiteId: id,
         ip: getIp(event),
-        metadata: { aiUserId: newAi.id },
+        metadata: { aiUserId: author.id, updatedFields: Object.keys(aiChanges), changes: aiChanges },
       })
-    }
   }
 
   if (socials) {
@@ -235,7 +226,10 @@ export default defineEventHandler(async (event) => {
   const updateArgs = {
     where: { id },
     data,
-    include: { socials: true, users: { where: { role: 'ai' as const }, take: 1 } },
+    include: {
+      socials: true,
+      users: { where: { role: 'ai' as const, deletedAt: null }, orderBy: { createdAt: 'asc' as const }, take: 1 },
+    },
   } satisfies ClientSiteUpdateArgs
 
   // A plan column without matching ClientFeature rows is not a valid committed state. Keep the

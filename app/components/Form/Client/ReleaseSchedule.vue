@@ -149,6 +149,7 @@
       <FormClientReleaseSchedulePreview
         :rules="rules"
         :articlesRemaining="articlesRemaining"
+        :articleQuality="articleQuality"
         :nextReleaseAt="nextReleaseAt"
       />
     </ClientOnly>
@@ -156,6 +157,8 @@
 </template>
 
 <script setup lang="ts">
+import type { ArticleQuality } from '~~/shared/utils/articleQuality'
+
 import {
   MAX_INTERVAL_HOURS,
   MIN_INTERVAL_HOURS,
@@ -164,8 +167,13 @@ import {
   type ReleaseScheduleSettings,
 } from '~~/shared/utils/releaseSchedule'
 
-const { articlesRemaining = null, nextReleaseAt = null } = defineProps<{
+const {
+  articlesRemaining = null,
+  nextReleaseAt = null,
+  articleQuality = 'STANDARD',
+} = defineProps<{
   articlesRemaining?: number | null
+  articleQuality?: ArticleQuality
   /** Saved slot; the page passes null while the schedule has unsaved edits. */
   nextReleaseAt?: string | null
 }>()

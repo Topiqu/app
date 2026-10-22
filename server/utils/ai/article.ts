@@ -1,4 +1,5 @@
 import type { Language } from '~~/generated/zenstack/models'
+import type { ArticleQuality } from '~~/shared/utils/articleQuality'
 import type { ResearchDepth } from '~~/shared/utils/articleGeneration'
 
 import { generateText, streamText } from 'ai'
@@ -30,6 +31,7 @@ export const generateArticle = async (
     knowledgeQuery?: string | null
     requireClearRights?: boolean
     audit?: ArticleGenerationAudit
+    articleQuality?: ArticleQuality
   },
 ) => {
   const {
@@ -187,6 +189,7 @@ export const streamArticle = async (
     /** The article being regenerated, so it is never offered as its own link target. */
     articleId?: string | null
     audit?: ArticleGenerationAudit
+    articleQuality?: ArticleQuality
   } = {},
 ) => {
   const audit = opts.audit

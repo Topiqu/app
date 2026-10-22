@@ -132,19 +132,28 @@ describe('manual article generation stream', () => {
   })
 
   it('streams the authoritative article balance after settlement', () => {
-    expect(endpoint).toContain("type: 'billing', articlesCharged: 1, articlesRemaining: articleWallet.available")
+    expect(endpoint).toContain('articlesCharged: articleReservation.reserved')
+    expect(endpoint).toContain('articlesRemaining: articleWallet.available')
   })
 
-  it('holds one customer-visible article and logs provider usage separately', () => {
+  it('holds the selected quality price and logs provider usage separately', () => {
     expect(endpoint).toContain("reserveArticleCredit(clientSiteId, 'MANUAL_ARTICLE'")
-    expect(endpoint).toContain("send(controller, { type: 'reservation', articles: 1 })")
+    expect(endpoint).toContain("send(controller, { type: 'reservation', articles: articleReservation.reserved })")
+    expect(endpoint).toContain(
+      "reserveArticleCredit(clientSiteId, 'MANUAL_ARTICLE', attemptId, runConfig, creditsRequired)",
+    )
     expect(endpoint).toContain("'MANUAL_GENERATION_COMPLETED'")
     expect(endpoint).not.toContain('reserveTokens')
   })
 
   it('stamps every billed run with the options and models that drove its cost', () => {
+    expect(endpoint).toContain('const articleQuality = articleQualityOf(client.articleQuality)')
+    expect(endpoint).toContain('const creditsRequired = articleCreditCost(articleQuality)')
+    expect(endpoint).toContain('creditPolicyVersion: ARTICLE_CREDIT_POLICY_VERSION')
     expect(endpoint).toContain('researchDepth: options?.research.enabled ? options.research.depth : null')
     expect(endpoint).toContain("models: { research: aiModelId('articleResearch'), writer: aiModelId('articleWriter') }")
+    expect(endpoint).toContain('writerEffort: ARTICLE_QUALITY_EFFORT[articleQuality]')
+    expect(endpoint).toMatch(/generation = await streamArticle\(clientSiteId, prompt, \{\s+articleQuality,/)
     // Completed and aborted both bill, so both have to be attributable.
     expect(endpoint.match(/\.\.\.runConfig,/g)?.length).toBeGreaterThanOrEqual(2)
   })

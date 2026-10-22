@@ -2,6 +2,8 @@ import type { ThemeSchema, LanguageSchema } from '~~/shared/siteSchemas'
 import type { SocialPlatform, ClientSite as _ClientSite } from '~~/generated/zenstack/models'
 
 import equal from 'fast-deep-equal'
+import { defaultAiAuthorName } from '~~/shared/utils/aiAuthor'
+import { articleQualityOf, type ArticleQuality } from '~~/shared/utils/articleQuality'
 import { parseBrandGradient, type BrandGradient } from '~~/shared/utils/publicationBranding'
 import { releaseScheduleSettings, type ReleaseScheduleSettings } from '~~/shared/utils/releaseSchedule'
 import { publicationChannelSettings, type PublicationChannelSettings } from '~~/shared/utils/publicationChannels'
@@ -60,6 +62,7 @@ export interface ClientSettingsForm extends PublicationChannelSettings, ReleaseS
   commentsEnabled: boolean
   commentGifsEnabled: boolean
   aiSeriesEnabled: boolean
+  articleQuality: ArticleQuality
   generationFrequency: 'DAILY' | 'WEEKLY' | 'INTERVAL' | 'NONE'
   translationMode: 'OFF' | 'MANUAL' | 'AUTO' | 'HYBRID'
   translationLanguages: string[]
@@ -98,6 +101,7 @@ const emptyForm = (): ClientSettingsForm => ({
   commentGifsEnabled: true,
   ...publicationChannelSettings(),
   aiSeriesEnabled: false,
+  articleQuality: 'STANDARD',
   generationFrequency: 'NONE',
   ...releaseScheduleSettings(),
   translationMode: 'OFF',
@@ -142,9 +146,9 @@ export function buildClientSettingsForm(client?: ClientSite | null): ClientSetti
     socials: client.socials ?? [],
     apiKey: client.apiKey ?? '',
     aiUser: {
-      username: client.aiUser?.username ?? '',
+      username: client.aiUser?.username ?? defaultAiAuthorName(client.name ?? '', client.language),
       bio: client.aiUser?.bio ?? '',
-      avatarUrl: client.aiUser?.avatarUrl ?? '',
+      avatarUrl: client.aiUser ? (client.aiUser.avatarUrl ?? '') : (client.logoUrl ?? ''),
       optimizedAvatarUrl: '',
     },
     aiToneOfVoice: client.aiToneOfVoice ?? '',
@@ -156,6 +160,7 @@ export function buildClientSettingsForm(client?: ClientSite | null): ClientSetti
     commentGifsEnabled: client.commentGifsEnabled ?? true,
     ...publicationChannelSettings(client),
     aiSeriesEnabled: client.aiSeriesEnabled ?? false,
+    articleQuality: articleQualityOf(client.articleQuality),
     generationFrequency: client.generationFrequency ?? 'NONE',
     ...releaseScheduleSettings(client),
     translationMode: client.translationMode ?? 'OFF',

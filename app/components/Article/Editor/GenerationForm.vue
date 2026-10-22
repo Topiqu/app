@@ -116,9 +116,23 @@
       </template>
     </UCollapsible>
 
+    <p v-if="!aiGenerating && insufficientCredits" role="status" class="text-sm text-warning">
+      {{
+        $t('articles.editor.ai.insufficientCredits', {
+          required: creditCost,
+          available: status?.articlesRemaining ?? 0,
+        })
+      }}
+    </p>
     <div class="flex items-center gap-2 pt-2">
-      <UButton block size="lg" :disabled="aiGenerating || !customPrompt.trim()" @click="$emit('generate')">
+      <UButton
+        block
+        size="lg"
+        :disabled="aiGenerating || insufficientCredits || !customPrompt.trim()"
+        @click="$emit('generate')"
+      >
         {{ $t(aiGenerating ? 'articles.editor.ai.run.title.running' : 'articles.editor.ai.generateButton') }}
+        <span v-if="!aiGenerating">· {{ creditCost }} {{ $t('common.wallet.unit', creditCost) }}</span>
       </UButton>
       <UPopover :content="{ side: 'top', align: 'end' }">
         <UButton
@@ -131,7 +145,7 @@
         />
         <template #content>
           <div class="max-w-72 space-y-1 p-3 text-xs leading-5 text-muted">
-            <p>{{ $t('articles.editor.ai.reservationSummary') }}</p>
+            <p>{{ $t('articles.editor.ai.reservationSummary', { count: creditCost }) }}</p>
             <p>{{ $t('articles.editor.ai.billingExplanation') }}</p>
           </div>
         </template>
@@ -141,6 +155,7 @@
 </template>
 
 <script setup lang="ts">
+import { articleCreditCost } from '~~/shared/utils/articleCredits'
 import {
   ARTICLE_GENERATION_FORMATS,
   ARTICLE_GENERATION_MODULES,
@@ -151,12 +166,17 @@ import {
   type ArticleGenerationModule,
 } from '~~/shared/utils/articleGeneration'
 
+import type { ClientSiteStatus } from '~/composables/useClientSite'
+
 defineProps<{ aiGenerating: boolean }>()
 defineEmits<{ generate: [] }>()
 
 const customPrompt = defineModel<string>('customPrompt', { required: true })
 const aiOptions = defineModel<ArticleGenerationOptions>('aiOptions', { required: true })
 const { t } = useI18n()
+const { data: status } = useNuxtData<ClientSiteStatus | null>('clientsite-status')
+const creditCost = computed(() => articleCreditCost(status.value?.articleQuality))
+const insufficientCredits = computed(() => !!status.value && status.value.articlesRemaining < creditCost.value)
 const researchDepthName = useId()
 const advancedOpen = shallowRef(false)
 

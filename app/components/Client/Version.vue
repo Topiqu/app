@@ -65,6 +65,18 @@
                 >
                 <span class="text-sm text-muted">{{ $t('common.wallet.unit', articlesRemaining) }}</span>
               </p>
+              <p class="mt-2 text-xs leading-5 text-muted">
+                {{
+                  $t(
+                    'common.wallet.affordableArticles',
+                    {
+                      count: affordableArticles,
+                      quality: $t(`common.preferences.articleQuality.options.${status?.articleQuality ?? 'STANDARD'}`),
+                    },
+                    affordableArticles,
+                  )
+                }}
+              </p>
             </div>
 
             <dl v-if="wallet" class="mt-4 grid gap-2 border-t border-default pt-4 text-sm">
@@ -220,6 +232,8 @@
 <script setup lang="ts">
 import type { InternalApi } from 'nitropack'
 
+import { affordableArticleCount } from '~~/shared/utils/articleCredits'
+
 import { buildArticlePackViews } from '~/utils/articlePackPresentation'
 
 const config = useRuntimeConfig()
@@ -288,7 +302,8 @@ watch(
 
 const articlesRemaining = computed(() => status.value?.articlesRemaining ?? 0)
 const articleUnit = (count: number) => t('common.articlePacks.articles', count)
-const isLowArticles = computed(() => articlesRemaining.value <= 1)
+const affordableArticles = computed(() => affordableArticleCount(articlesRemaining.value, status.value?.articleQuality))
+const isLowArticles = computed(() => affordableArticles.value <= 1)
 // Summary numbers come from the status payload, which is already loaded — the paginated
 // /wallet fetch is deliberately not the source, it would render zeros until it resolves.
 const wallet = computed(() => status.value?.articleWallet)

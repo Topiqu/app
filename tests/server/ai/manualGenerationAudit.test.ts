@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 beforeEach(() => vi.resetModules())
 afterEach(() => vi.unstubAllGlobals())
 
-const setup = async (failure: 'plan' | 'lookup' | 'reservation' | 'session') => {
+const setup = async (failure: 'plan' | 'lookup' | 'reservation' | 'session', articleQuality = 'STANDARD') => {
   const log = vi.fn().mockResolvedValue({})
   const settle = vi.fn()
   vi.stubGlobal('defineEventHandler', (handler: unknown) => handler)
@@ -21,15 +21,16 @@ const setup = async (failure: 'plan' | 'lookup' | 'reservation' | 'session') => 
     clientSite: {
       findUnique: async () => {
         if (failure === 'lookup') throw new Error('Lookup failed')
-        return { plan: failure === 'plan' ? 'BASIC' : 'PRO' }
+        return { plan: failure === 'plan' ? 'BASIC' : 'PRO', articleQuality }
       },
     },
   })
   vi.stubGlobal('aiModelId', () => 'test-model')
-  vi.stubGlobal('reserveArticleCredit', async () => {
+  const reserve = vi.fn(async (...args: unknown[]) => {
     if (failure === 'reservation') throw new Error('No credits')
-    return { id: 'operation-1' }
+    return { id: 'operation-1', reserved: args[4] }
   })
+  vi.stubGlobal('reserveArticleCredit', reserve)
   vi.stubGlobal('createGenerationSession', async () => {
     throw new Error('Recovery session unavailable')
   })
@@ -37,10 +38,26 @@ const setup = async (failure: 'plan' | 'lookup' | 'reservation' | 'session') => 
   vi.stubGlobal('logAction', log)
   vi.stubGlobal('reportCaughtError', vi.fn())
   const handler = (await import('../../../server/api/articles/generate/index.post')).default
-  return { run: () => handler({} as never), log, settle }
+  return { run: () => handler({} as never), log, settle, reserve }
 }
 
 describe('manual generation preflight audit', () => {
+  it.each([
+    ['STANDARD', 'high', 1],
+    ['HIGH', 'xhigh', 2],
+    ['ULTRA', 'max', 3],
+  ] as const)('reserves the saved %s price before starting provider work', async (quality, effort, amount) => {
+    const { run, reserve, settle } = await setup('session', quality)
+    await expect(run()).rejects.toThrow('Recovery session unavailable')
+    expect(reserve).toHaveBeenCalledWith(
+      'tenant-1',
+      'MANUAL_ARTICLE',
+      expect.any(String),
+      expect.objectContaining({ articleQuality: quality, writerEffort: effort, creditsRequired: amount }),
+      amount,
+    )
+    expect(settle).toHaveBeenCalledWith(expect.objectContaining({ reserved: amount }), false, expect.anything())
+  })
   it.each([
     ['plan', 'MANUAL_GENERATION_REJECTED', 'preflight'],
     ['lookup', 'MANUAL_GENERATION_FAILED', 'preflight'],

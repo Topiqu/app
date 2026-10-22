@@ -295,7 +295,7 @@
       "articleSavedAsDraft": "Article enregistré comme brouillon",
       "insightGenerated": "Analyse générée",
       "lowTokensWarning": "Il reste un article",
-      "lowTokensHint": "Achetez des articles supplémentaires ou attendez le renouvellement mensuel de votre offre.",
+      "lowTokensHint": "Achetez des crédits ou attendez le renouvellement mensuel de votre forfait.",
       "insightSkipped": "Analyse ignorée"
     },
     "dateFormats": {
@@ -464,7 +464,7 @@
         "waitingWriting": "Aucun nouveau texte depuis {seconds} s. La rédaction s'arrête après 30 s sans texte.",
         "waitingResearch": "La vérification des sources prend plus de temps que prévu. La tâche est toujours active et peut être arrêtée sans risque.",
         "waitingImages": "La préparation d'une image peut prendre jusqu'à 45 s. Si le service n'en fournit pas, l'article sera terminé sans image.",
-        "reservedDuringRun": "Réservé temporairement : {count} article",
+        "reservedDuringRun": "Réservés temporairement : {count} crédits",
         "writerIdleError": "La génération s'est arrêtée : aucun texte reçu pendant 30 secondes. Réessayez.",
         "writerDeadlineError": "La génération s'est arrêtée après avoir atteint la limite de rédaction de 90 secondes.",
         "output": {
@@ -541,9 +541,9 @@
         },
         "youtubeHint": "Une vidéo n'est intégrée que si la recherche trouve une URL YouTube vérifiée.",
         "reservationLabel": "Comment les articles sont décomptés",
-        "reservationSummary": "Chaque génération réserve temporairement 1 article. Deux générations simultanées nécessitent donc au moins 2 articles restants.",
+        "reservationSummary": "{count} crédits sont réservés avant la génération. La vérification et une révision automatique sont incluses.",
         "billingDetails": "Détails de la facturation",
-        "billingExplanation": "L'article n'est décompté qu'après une génération réussie. En cas d'erreur ou d'annulation, l'article réservé est restitué.",
+        "billingExplanation": "Les crédits sont débités pour un article terminé. Un échec technique restitue toute la réservation. Une génération arrêtée n’est facturée que si du texte utilisable a été enregistré pour être récupéré.",
         "reviewFailed": "L'article n'a pas passé la vérification éditoriale après révision.",
         "allowGeneratedImages": "Autoriser les illustrations IA en dernier recours",
         "useKnowledge": "Utiliser la base de connaissances",
@@ -558,7 +558,7 @@
           "words": "Mots : {count}",
           "retry": "Réessayer",
           "dismiss": "Fermer le rapport",
-          "creditReturned": "L’article réservé a été rendu à votre solde ; cette exécution n’a pas été facturée.",
+          "creditReturned": "Tous les crédits réservés ont été restitués ; cette génération n’a pas été facturée.",
           "failedHere": "L’exécution s’est arrêtée à cette étape.",
           "openVideo": "Ouvrir la vidéo",
           "cover": "Couverture",
@@ -660,7 +660,8 @@
           "title": "La génération IA fait partie du forfait PRO",
           "description": "Transformez un sujet en article avec recherche, sources, images et vérification des faits.",
           "cta": "Voir les forfaits"
-        }
+        },
+        "insufficientCredits": "Cet article nécessite {required} crédits. Vous en avez {available}."
       },
       "drafts": {
         "loadDrafts": "Charger les brouillons",

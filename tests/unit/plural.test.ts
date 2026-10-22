@@ -1,6 +1,7 @@
 import { createI18n } from 'vue-i18n'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
+import csCommon from '../../i18n/locales/cs/common.json'
 import csArticles from '../../i18n/locales/cs/articles.json'
 import deArticles from '../../i18n/locales/de/articles.json'
 import enArticles from '../../i18n/locales/en/articles.json'
@@ -23,8 +24,34 @@ describe('czechPluralIndex', () => {
   it('maps counts onto the four Czech forms', () => {
     expect(czechPluralIndex(0)).toBe(0)
     expect(czechPluralIndex(1)).toBe(1)
-    expect([2, 3, 4].map(czechPluralIndex)).toEqual([2, 2, 2])
-    expect([5, 11, 21, 100].map(czechPluralIndex)).toEqual([3, 3, 3, 3])
+    expect([2, 3, 4].map((count) => czechPluralIndex(count))).toEqual([2, 2, 2])
+    expect([5, 11, 21, 100].map((count) => czechPluralIndex(count))).toEqual([3, 3, 3, 3])
+  })
+
+  it('keeps the shared rule and self-contained Nuxt runtime config identical', async () => {
+    vi.stubGlobal('defineI18nConfig', (config: () => unknown) => config)
+    try {
+      const { default: config } = await import('../../i18n/i18n.config')
+      const runtime = (config as unknown as () => { pluralRules: { cs: typeof czechPluralIndex } })().pluralRules.cs
+      for (const forms of [1, 2, 3, 4])
+        for (const count of [0, 1, 2, 4, 5, 12, 25]) expect(runtime(count, forms)).toBe(czechPluralIndex(count, forms))
+    } finally {
+      vi.unstubAllGlobals()
+    }
+  })
+
+  it('renders three-form credit labels and two-form copy without crashing the settings page', () => {
+    const { global } = createI18n({
+      legacy: false,
+      locale: 'cs',
+      pluralRules: { cs: czechPluralIndex },
+      messages: { cs: { ...csCommon, pair: 'Jedna položka | Více položek' } },
+    })
+    for (const count of [0, 1, 2, 4, 5, 12, 25]) {
+      expect(global.t('common.articlePacks.articles', count)).toMatch(/kredit/)
+      expect(global.t('common.wallet.unit', count)).toMatch(/kredit/)
+      expect(global.t('pair', count)).toBe(count === 1 ? 'Jedna položka' : 'Více položek')
+    }
   })
 })
 

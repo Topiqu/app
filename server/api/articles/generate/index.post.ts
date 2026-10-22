@@ -1,7 +1,10 @@
 import { z } from 'zod'
 import { randomUUID } from 'node:crypto'
 import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
+import { bindArticleUsage } from '~~/server/utils/ai/articleUsage'
 import { articleWriterStream } from '~~/server/utils/ai/articleStream'
+import { ARTICLE_QUALITY_EFFORT, articleQualityOf } from '~~/shared/utils/articleQuality'
+import { ARTICLE_CREDIT_POLICY_VERSION, articleCreditCost } from '~~/shared/utils/articleCredits'
 import { auditArticleStep, createArticleGenerationAudit } from '~~/server/utils/articleGenerationAudit'
 import {
   ARTICLE_GENERATION_FORMATS,
@@ -77,7 +80,7 @@ export default defineEventHandler(async (event) => {
   const client = await prisma.clientSite
     .findUnique({
       where: { id: clientSiteId },
-      select: { plan: true, humanHourlyRateUsd: true, humanWordsPerHour: true },
+      select: { plan: true, humanHourlyRateUsd: true, humanWordsPerHour: true, articleQuality: true },
     })
     .catch(async (error) => {
       await auditAttempt('MANUAL_GENERATION_FAILED', { stage: 'preflight', reason: 'client_lookup_failed' })
@@ -120,7 +123,12 @@ export default defineEventHandler(async (event) => {
   // Cost swings by an order of magnitude with these, and again with the model behind them. Both go
   // into the operation so spend can be segmented per model — numbers measured against one model say
   // nothing after a provider switch.
+  const articleQuality = articleQualityOf(client.articleQuality)
+  const creditsRequired = articleCreditCost(articleQuality)
   const runConfig = {
+    articleQuality,
+    creditsRequired,
+    creditPolicyVersion: ARTICLE_CREDIT_POLICY_VERSION,
     mode: 'manual',
     articleId: articleId ?? null,
     format: options?.format ?? null,
@@ -129,6 +137,7 @@ export default defineEventHandler(async (event) => {
     allowGeneratedImages: options?.allowGeneratedImages !== false,
     useKnowledge: options?.useKnowledge !== false,
     models: { research: aiModelId('articleResearch'), writer: aiModelId('articleWriter') },
+    writerEffort: ARTICLE_QUALITY_EFFORT[articleQuality],
   }
 
   const generationOptions = options ?? defaultArticleGenerationOptions()
@@ -137,8 +146,8 @@ export default defineEventHandler(async (event) => {
     articleReservation = await auditArticleStep(
       audit,
       'reservation',
-      () => reserveArticleCredit(clientSiteId, 'MANUAL_ARTICLE', attemptId, runConfig),
-      (operation) => ({ articleOperationId: operation.id }),
+      () => reserveArticleCredit(clientSiteId, 'MANUAL_ARTICLE', attemptId, runConfig, creditsRequired),
+      (operation) => ({ articleOperationId: operation.id, creditsReserved: operation.reserved }),
     )
   } catch (error) {
     await auditAttempt('MANUAL_GENERATION_REJECTED', {
@@ -167,8 +176,16 @@ export default defineEventHandler(async (event) => {
     await settleArticleCredit(articleReservation, false, { ...runConfig, stage: 'session' })
     throw error
   }
+  const usageContext = {
+    attemptId,
+    clientSiteId,
+    operationId: articleReservation.id,
+    articleQuality,
+    mode: 'manual' as const,
+    userId: user.id,
+  }
   const stream = new ReadableStream({
-    async start(controller) {
+    start: bindArticleUsage(usageContext, async (controller: ReadableStreamDefaultController) => {
       try {
         // Bun closes an HTTP connection after 10 seconds without bytes by default. Research and the
         // writer's time-to-first-token can both exceed that, so keep the response active below both
@@ -176,7 +193,7 @@ export default defineEventHandler(async (event) => {
         const heartbeat = setInterval(() => send(controller, { type: 'heartbeat' }), 5_000)
 
         try {
-          send(controller, { type: 'reservation', articles: 1 })
+          send(controller, { type: 'reservation', articles: articleReservation.reserved })
           send(controller, { type: 'session', id: recoverySession!.id })
           send(controller, {
             type: 'phase',
@@ -193,6 +210,7 @@ export default defineEventHandler(async (event) => {
           // Research used to run before the Response existed. A slow web-search call therefore left
           // the origin completely silent and Bun could kill the request before streaming began.
           generation = await streamArticle(clientSiteId, prompt, {
+            articleQuality,
             abortSignal: abortController.signal,
             research: options?.research.enabled === false ? false : undefined,
             researchDepth: options?.research.depth,
@@ -340,7 +358,7 @@ export default defineEventHandler(async (event) => {
                 title: finalized.title,
                 apiTokens,
               }),
-            (wallet) => ({ articlesCharged: 1, articlesRemaining: wallet.available }),
+            (wallet) => ({ articlesCharged: articleReservation.reserved, articlesRemaining: wallet.available }),
           )
           await auditArticleStep(
             audit,
@@ -379,7 +397,11 @@ export default defineEventHandler(async (event) => {
             article: { ...finalized, metrics, aiInvolvement: 'ASSIST' },
             missingModules: missingArticleModules(finalized, options?.modules ?? []),
           })
-          send(controller, { type: 'billing', articlesCharged: 1, articlesRemaining: articleWallet.available })
+          send(controller, {
+            type: 'billing',
+            articlesCharged: articleReservation.reserved,
+            articlesRemaining: articleWallet.available,
+          })
         } catch (error: any) {
           await writingAuditStep?.fail(error)
           if (abortController.signal.aborted && !timedOutStage) {
@@ -490,7 +512,7 @@ export default defineEventHandler(async (event) => {
           /* already closed */
         }
       }
-    },
+    }),
     async cancel(reason) {
       clientAlive = false
       // Leaving the page disconnects the stream, but the durable generation session keeps

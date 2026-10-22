@@ -173,7 +173,7 @@ describe('tenant boundary wiring', () => {
   it('attributes fully generated manual articles to the configured AI author', () => {
     const create = source('server/api/articles/index.post.ts')
     expect(create).toContain("body.aiInvolvement === 'FULL'")
-    expect(create).toContain("role: 'ai'")
+    expect(create).toContain('await ensureAiAuthor(user.clientSiteId!)')
     expect(create).toContain('userId: aiAuthor?.id ?? user.id')
   })
 

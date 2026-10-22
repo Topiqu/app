@@ -83,6 +83,11 @@ describe('AI model registry', () => {
     expect(aiModelId('visibility')).toMatch(/^gpt-/)
   })
 
+  it('writes every article quality with Luna', () => {
+    expect(aiModelId('articleWriter')).toBe('gpt-6-luna')
+    expect(aiModelProvider('articleWriter')).toBe('openai')
+  })
+
   it('measures Claude visibility with Haiku, not a costlier tier', () => {
     expect(AI_VISIBILITY_MODELS.ANTHROPIC).toBe('claude-haiku-5-5')
   })

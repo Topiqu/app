@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { DatabaseTransaction } from '../../server/utils/database'
 
 import { grantPlanArticleCredits } from '../../server/utils/articleCreditWallet'
+import { ARTICLE_CREDIT_POLICY_VERSION } from '../../shared/utils/articleCredits'
 
 const periodStart = new Date('2026-10-05T00:00:00Z')
 const periodEnd = new Date('2026-11-05T00:00:00Z')
@@ -49,7 +50,7 @@ describe('plan article grants', () => {
         periodStart,
         periodEnd,
         expiresAt: periodEnd,
-        policyVersion: '2026-10-articles-v2',
+        policyVersion: ARTICLE_CREDIT_POLICY_VERSION,
       }),
     })
     expect(tx.articleCreditWallet.update).toHaveBeenCalledWith({

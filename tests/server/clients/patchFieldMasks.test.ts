@@ -32,6 +32,14 @@ const settingsPayload = () => ({
 })
 
 describe('client site PATCH field masks', () => {
+  it('accepts only the supported article quality levels', () => {
+    for (const articleQuality of ['STANDARD', 'HIGH', 'ULTRA']) {
+      expect(TenantSchema.parse(pickFields({ articleQuality }, TENANT_EDITABLE_CLIENT_SITE_FIELDS))).toEqual({
+        articleQuality,
+      })
+    }
+    expect(TenantSchema.safeParse({ articleQuality: 'arbitrary-model-id' }).success).toBe(false)
+  })
   it('accepts a settings payload that mixes tenant and privileged fields', () => {
     const body = settingsPayload()
 

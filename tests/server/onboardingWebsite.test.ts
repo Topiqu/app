@@ -48,6 +48,7 @@ beforeAll(async () => {
   vi.stubGlobal('inboxOwnsSite', async () => false)
   vi.stubGlobal('creditArticleCredits', vi.fn())
   vi.stubGlobal('syncPlanFeatures', vi.fn())
+  vi.stubGlobal('ensureAiAuthor', vi.fn().mockResolvedValue({ id: 'default-ai' }))
   vi.stubGlobal('TENANT_SCOPES', ['TENANT_SETTINGS'])
   vi.stubGlobal('getRequestURL', () => new URL('https://app.topiqu.com/api/onboarding/checkout'))
   handler = (await import('../../server/api/onboarding/checkout.post')).default
@@ -72,6 +73,7 @@ describe('company website at signup', () => {
   ])('stores %s as %s without blocking signup', async (raw, expected) => {
     const result = await signup(raw)
     expect(mocks.createSite).toHaveBeenCalledWith({ data: expect.objectContaining({ websiteUrl: expected }) })
+    expect(ensureAiAuthor).toHaveBeenCalledWith('site-1', expect.any(Object))
     expect(result.url).toContain('created=true&token=')
   })
 

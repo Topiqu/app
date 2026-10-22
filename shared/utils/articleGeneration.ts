@@ -57,6 +57,7 @@ export interface GenerationReview {
 }
 
 export interface ArticleGenerationBilling {
+  /** Credit amounts, including the selected writing quality. */
   articlesCharged: number
   articlesRemaining: number
 }

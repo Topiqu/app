@@ -1,7 +1,7 @@
 {
   "legal": {
     "lastUpdated": "Last updated: {date}",
-    "updatedAt": "10 October 2026",
+    "updatedAt": "18 October 2026",
     "placeholderNote": "The postal address is deliberately omitted — ARES is linked instead and the address is given on request.",
     "tos": {
       "title": "Terms of Service",
@@ -17,7 +17,7 @@
           "icon": "mdi:credit-card-outline",
           "iconColor": "text-emerald-500",
           "title": "2. Plans and payments",
-          "content": "<ul class='list-disc pl-5 mt-2 space-y-1'><li>The prices shown at checkout apply, including VAT where applicable. Payments are processed by Stripe.</li><li>Subscriptions renew automatically. You can cancel at any time in settings, effective at the end of the billing period.</li><li>One successful AI generation uses one article. Plan articles are valid for their monthly period; purchased articles do not expire.</li><li>If a payment fails, we may suspend paid features after notifying you.</li></ul>We announce price changes in advance by email. They apply from the next period, and you can cancel before then."
+          "content": "<ul class='list-disc pl-5 mt-2 space-y-1'><li>The prices shown at checkout apply, including VAT where applicable. Payments are processed by Stripe.</li><li>Subscriptions renew automatically. You can cancel at any time in settings, effective at the end of the billing period.</li><li>An AI article uses 1 credit at Standard, 2 at High or 3 at Ultra quality, including review and one automatic revision. A technical failure returns the full reservation. Plan credits are valid for their monthly period; purchased credits do not expire.</li><li>If a payment fails, we may suspend paid features after notifying you.</li></ul>We announce price changes in advance by email. They apply from the next period, and you can cancel before then."
         },
         {
           "icon": "mdi:keyboard-return",

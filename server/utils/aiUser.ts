@@ -1,9 +1,6 @@
 import type { H3Event } from 'h3'
 
-import { randomBytes } from 'crypto'
-
-// The AI author row is created lazily by the settings save, so anything that edits it before the
-// first save has to be able to bring it into existence itself.
+// Older publications may predate the default editorial author.
 export async function resolveAiUser(event: H3Event, clientSiteId: string, create = false) {
   const { translate: t } = await useServerI18n(event)
   const user = await getSessionUser(event)
@@ -20,31 +17,13 @@ export async function resolveAiUser(event: H3Event, clientSiteId: string, create
   if (!site) throw createError({ statusCode: 404, message: t('common.errors.clientNotFound')! })
 
   const existing = await db.user.findFirst({
-    where: { clientSiteId, role: 'ai' },
+    where: { clientSiteId, role: 'ai', deletedAt: null },
+    orderBy: { createdAt: 'asc' },
     select: { id: true, avatarUrl: true },
   })
   if (existing || !create) return { db, user, aiUser: existing }
 
-  const aiUser = await db.user.create({
-    data: {
-      username: `ai-${clientSiteId}-${Date.now()}`,
-      email: `ai-${randomBytes(8).toString('hex')}@generated.ai`,
-      role: 'ai',
-      clientSiteId,
-      emailVerified: true,
-      allowNotifs: false,
-      allowEmail: false,
-    },
-    select: { id: true, avatarUrl: true },
-  })
-
-  await logAction({
-    action: 'AI_USER_CREATE',
-    userId: user.id,
-    clientSiteId,
-    ip: getIp(event),
-    metadata: { aiUserId: aiUser.id },
-  })
+  const aiUser = await ensureAiAuthor(clientSiteId)
 
   return { db, user, aiUser }
 }

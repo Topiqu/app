@@ -56,15 +56,15 @@
       }
     },
     "wallet": {
-      "title": "Articles",
-      "available": "Articles remaining",
-      "unit": "article | articles",
-      "bonusExpiry": "Bonus articles may expire; purchased articles do not.",
-      "generationReservation": "Each generation temporarily holds 1 article. It is charged on success and returned after an error or cancellation.",
-      "neverExpires": "Plan articles are valid for their period. Purchased articles do not expire.",
-      "explanation": "Your plan adds articles each month. Purchased articles never expire and are used after plan articles.",
+      "title": "Article credits",
+      "available": "Available credits",
+      "unit": "credit | credits",
+      "bonusExpiry": "Bonus credits may expire; purchased credits do not.",
+      "generationReservation": "Each article reserves 1, 2 or 3 credits according to quality. Review and one automatic revision are included. A technical failure returns the full reservation.",
+      "neverExpires": "Plan credits are valid for their period. Purchased credits do not expire.",
+      "explanation": "Your plan adds credits each month. Standard costs 1, High 2 and Ultra 3 credits per article, including review and one automatic revision. Purchased credits never expire and are used after plan credits.",
       "reserved": "Temporarily reserved",
-      "reservedHint": "Each generation reserves 1 article. It is released if generation fails.",
+      "reservedHint": "Each article reserves 1, 2 or 3 credits according to quality. A technical failure returns the full amount.",
       "reasons": {
         "manualArticle": "Manually created article",
         "scheduledArticle": "Automatically created article",
@@ -72,25 +72,26 @@
       },
       "periodUsage": "Used in {period}",
       "expires": "Valid until",
-      "topup": "Buy more articles",
-      "history": "Article history",
-      "empty": "No article movements yet.",
-      "initial": "Initial article allowance",
-      "adjustment": "Article allowance adjustment",
+      "topup": "Buy more credits",
+      "history": "Credit history",
+      "empty": "No credit movements yet.",
+      "initial": "Initial credit allowance",
+      "adjustment": "Credit adjustment",
       "reason": "Required reason",
-      "amount": "Number of articles",
+      "amount": "Number of credits",
       "operation": "Original operation ID (for refunds)",
       "apply": "Apply adjustment",
       "kinds": {
-        "CREDIT": "Articles added",
+        "CREDIT": "Credits added",
         "DEBIT": "Usage",
         "RELEASE": "Reservation released",
-        "EXPIRY": "Articles expired",
-        "EXPIRE": "Articles expired",
-        "REFUND": "Articles returned",
+        "EXPIRY": "Credits expired",
+        "EXPIRE": "Credits expired",
+        "REFUND": "Credits returned",
         "BONUS": "Bonus",
         "ADJUSTMENT": "Manual debit"
-      }
+      },
+      "affordableArticles": "Enough for {count} article at {quality} quality. | Enough for {count} articles at {quality} quality."
     },
     "searchConsole": {
       "title": "Google Search Console",
@@ -991,8 +992,8 @@
         "monthly": "– Monthly billing",
         "intervalMonthly": "Monthly",
         "intervalAnnual": "Annual",
-        "tokenBalance": "Articles remaining",
-        "buyTokens": "Buy more articles",
+        "tokenBalance": "Available credits",
+        "buyTokens": "Buy more credits",
         "manage": "Manage subscription & invoices",
         "openPortal": "Manage billing",
         "invoicesTitle": "Invoices and payments",
@@ -1219,7 +1220,7 @@
         "previewInterval": "Example of upcoming releases (exact times are drawn at random)",
         "perMonth": "No articles in the next 30 days | ≈ {count} article in the next 30 days | ≈ {count} articles in the next 30 days",
         "creditsUntil": "credits last until about {date}",
-        "noCredits": "You have no credits. Top up to keep publishing.",
+        "noCredits": "You need more credits for an article at the selected quality. Top up or choose a lower quality.",
         "errors": {
           "timeZone": "Choose a valid time zone.",
           "releaseHour": "Choose a release time.",
@@ -1265,6 +1266,16 @@
           "empty": "No other languages available for your primary language."
         },
         "tokenWarning": "Automatic translation creates a separate version of every published article for each target language."
+      },
+      "articleQuality": {
+        "title": "Article quality",
+        "description": "Choose the quality of new manual and scheduled articles. The price includes review and one automatic revision when needed.",
+        "options": {
+          "STANDARD": "Standard",
+          "HIGH": "High",
+          "ULTRA": "Highest"
+        },
+        "cost": "{count} credit per article | {count} credits per article"
       },
       "aiAuthor": {
         "title": "AI Author Settings",
@@ -1525,17 +1536,17 @@
       "declined": "Invitation declined"
     },
     "articlePacks": {
-      "title": "Expand your publishing capacity",
-      "pack5": "5 articles",
-      "pack12": "12 articles",
-      "pack25": "25 articles",
+      "title": "Credits for more articles",
+      "pack5": "5 credits",
+      "pack12": "12 credits",
+      "pack25": "25 credits",
       "bestValue": "Best value",
       "volumeDiscount": "{discount}% volume discount",
-      "articles": "article | articles",
+      "articles": "credit | credits",
       "taxExclusive": "excl. VAT",
       "buy": "Buy",
-      "buyPack": "Buy a {count}-article pack",
-      "purchaseHint": "Add articles whenever you need them. They are available immediately and never expire.",
+      "buyPack": "Buy a pack of {count} credits",
+      "purchaseHint": "Credits are available immediately and never expire. Each article costs 1, 2 or 3 credits according to quality, including review and one automatic revision.",
       "neverExpires": "Never expires",
       "upgradeToPremium": "Upgrade to PREMIUM"
     },

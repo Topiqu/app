@@ -27,6 +27,7 @@ describe('article creation tags', () => {
     vi.stubGlobal('createError', createError)
     vi.stubGlobal('useServerI18n', async () => ({ translate: () => 'Invalid request' }))
     vi.stubGlobal('requireTenantScope', async () => ({ user: { id: 'user-1', clientSiteId: 'site-1' } }))
+    vi.stubGlobal('ensureAiAuthor', async () => ({ id: 'editorial-ai' }))
     const db = {
       user: { findFirst: vi.fn().mockResolvedValue(null) },
       tag: { findMany },
@@ -61,6 +62,9 @@ describe('article creation tags', () => {
       select: { id: true },
     })
     expect(create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ tags: undefined }) }))
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ userId: 'editorial-ai' }) }),
+    )
   })
 
   it('persists a Czech source language on an English-first site', async () => {

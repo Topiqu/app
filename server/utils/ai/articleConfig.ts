@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { Output } from 'ai'
 import { hasAiPlan } from '~~/shared/utils/plans'
 import { LANGUAGE_NAMES } from '~~/shared/utils/language'
+import { ARTICLE_QUALITY_EFFORT, articleQualityOf, type ArticleQuality } from '~~/shared/utils/articleQuality'
 import {
   articleGenerationOptimizationInstructions,
   optimizationScoringConfig,
@@ -158,6 +159,7 @@ export const buildArticleConfig = async (
     knowledgeQuery: knowledgeQueryOption,
     illustrative = false,
     audit,
+    articleQuality: requestedQuality,
   }: {
     research?: ResearchOption
     /** Defaults to the research query; set it when research is off but the subject is still known. */
@@ -173,6 +175,7 @@ export const buildArticleConfig = async (
     /** Manual editor only: the author may ask for an invented illustrative story. */
     illustrative?: boolean
     audit?: ArticleGenerationAudit
+    articleQuality?: ArticleQuality
   } = {},
 ) => {
   const {
@@ -186,6 +189,7 @@ export const buildArticleConfig = async (
     language,
     plan,
     features,
+    articleQuality,
   } = await auditArticleStep(audit, 'configuration', () =>
     prisma.clientSite.findFirstOrThrow({
       select: {
@@ -198,12 +202,14 @@ export const buildArticleConfig = async (
         tags: { select: { id: true, name: true } },
         aiToneOfVoice: true,
         aiControversyLevel: true,
+        articleQuality: true,
         communityInsight: true,
       },
       where: { id: clientSiteId },
     }),
   )
   const articleLanguage = requestedLanguage ?? language
+  const writingQuality = requestedQuality ?? articleQualityOf(articleQuality)
 
   const editorialDirection = editorialPolicy(format, aiControversyLevel, illustrative)
 
@@ -417,7 +423,7 @@ export const buildArticleConfig = async (
     },
     config: {
       model: aiModel('articleWriter'),
-      providerOptions: aiReasoning('high'),
+      providerOptions: aiReasoning(ARTICLE_QUALITY_EFFORT[writingQuality]),
       maxOutputTokens: 8000,
       instructions,
       prompt,

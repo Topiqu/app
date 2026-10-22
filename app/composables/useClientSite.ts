@@ -1,5 +1,6 @@
 import type { TrialState } from '~~/shared/utils/trial'
 import type { Language } from '~~/shared/utils/language'
+import type { ArticleQuality } from '~~/shared/utils/articleQuality'
 import type { PublicClientSite } from '~~/shared/utils/clientSiteFields'
 
 import { isValidDomain, normalizeDomain } from '~~/shared/utils/domain'
@@ -13,6 +14,7 @@ export interface ClientSiteStatus {
   domain: string
   domainVerified: boolean
   plan: string
+  articleQuality: ArticleQuality
   articleWallet: {
     available: number
     reserved: number

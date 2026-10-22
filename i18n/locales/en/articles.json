@@ -295,7 +295,7 @@
       "articleSavedAsDraft": "Article saved as draft",
       "insightGenerated": "Insight generated",
       "lowTokensWarning": "One article remaining",
-      "lowTokensHint": "Buy more articles or wait for your plan's monthly refresh.",
+      "lowTokensHint": "Buy more credits or wait for your plan’s monthly refresh.",
       "insightSkipped": "Insight skipped"
     },
     "dateFormats": {
@@ -464,7 +464,7 @@
         "waitingWriting": "No new text for {seconds}s. Writing stops after 30s without text.",
         "waitingResearch": "Source verification is taking longer than usual. The run is still active and can be stopped safely.",
         "waitingImages": "Preparing an image can take up to 45s. If the service does not return one, the article will finish without it.",
-        "reservedDuringRun": "Temporarily held: {count} article",
+        "reservedDuringRun": "Temporarily held: {count} credits",
         "writerIdleError": "Generation stopped: no text arrived for 30 seconds. Try again.",
         "writerDeadlineError": "Generation stopped after reaching the 90-second writing limit.",
         "output": {
@@ -541,9 +541,9 @@
         },
         "youtubeHint": "A video is embedded only if research finds a verified YouTube URL.",
         "reservationLabel": "How articles are charged",
-        "reservationSummary": "Each generation temporarily holds 1 article. Two concurrent runs therefore require at least 2 remaining articles.",
+        "reservationSummary": "{count} credits are reserved before generation. Review and one automatic revision are included.",
         "billingDetails": "Billing details",
-        "billingExplanation": "The article is deducted only after successful completion. An error or cancellation returns the held article.",
+        "billingExplanation": "Credits are charged for a completed article. A technical failure returns the full reservation. Stopped generation is charged only when usable text has been saved for recovery.",
         "reviewFailed": "The article did not pass editorial review after revision.",
         "allowGeneratedImages": "Allow AI illustrations as a last resort",
         "useKnowledge": "Use knowledge",
@@ -558,7 +558,7 @@
           "words": "{count} words",
           "retry": "Try again",
           "dismiss": "Close report",
-          "creditReturned": "The held article was returned to your balance; this run was not charged.",
+          "creditReturned": "All reserved credits were returned to your balance; this run was not charged.",
           "failedHere": "The run stopped at this step.",
           "openVideo": "Open the video",
           "cover": "Cover",
@@ -660,7 +660,8 @@
           "title": "AI generation is part of the PRO plan",
           "description": "Turn a topic into an article with research, sources, images and fact-checking.",
           "cta": "View plans"
-        }
+        },
+        "insufficientCredits": "This article needs {required} credits. You have {available} available."
       },
       "drafts": {
         "loadDrafts": "Load Drafts",

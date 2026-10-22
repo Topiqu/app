@@ -15,6 +15,7 @@ export default defineEventHandler(async (event) => {
       domain: true,
       domainVerified: true,
       plan: true,
+      articleQuality: true,
       createdAt: true,
       trialStartedAt: true,
       trialEndsAt: true,

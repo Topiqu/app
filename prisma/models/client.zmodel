@@ -26,6 +26,12 @@ enum GenerationFrequency {
     INTERVAL
 }
 
+enum ArticleQuality {
+    STANDARD
+    HIGH
+    ULTRA
+}
+
 enum FeatureCodes {
     AI
     CRONS
@@ -160,6 +166,7 @@ model ClientSite with Base {
     backlinksAttemptedAt DateTime?
     webhookDeliveries    WebhookDelivery[]
     aiSeriesEnabled      Boolean             @default(false)
+    articleQuality       ArticleQuality      @default(STANDARD)
     keywords             Json?
     audience             String?
     lastGeneratedAt      DateTime?
