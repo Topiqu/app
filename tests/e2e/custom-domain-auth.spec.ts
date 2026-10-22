@@ -47,14 +47,14 @@ test('custom domains support credentials, SSR sessions and a browser-bound Topiq
   const origin = `http://${host}:4173`
   const site = await db.clientSite.findUniqueOrThrow({
     where: { name: 'topiqu-dev' },
-    select: { id: true, domain: true, domainVerified: true },
+    select: { id: true, domain: true, domainVerified: true, plan: true },
   })
   const account = await db.user.findUniqueOrThrow({
     where: { email: 'admin@test.local' },
     select: { id: true, language: true, theme: true },
   })
   try {
-    await db.clientSite.update({ where: { id: site.id }, data: { domain: host, domainVerified: true } })
+    await db.clientSite.update({ where: { id: site.id }, data: { domain: host, domainVerified: true, plan: 'PRO' } })
     await page.goto(`${origin}/en/auth`)
     await page.locator('html[data-topiqu-hydrated="true"]').waitFor()
     await page.getByLabel('Email').fill('admin@test.local')
@@ -73,6 +73,22 @@ test('custom domains support credentials, SSR sessions and a browser-bound Topiq
     const customCookie = (await page.context().cookies(origin)).find((c) => c.name.endsWith('session_token'))!
     expect(customCookie.httpOnly).toBe(true)
     expect(customCookie.domain).toBe(host)
+    // Integration consent is confirmed centrally without losing the requesting tenant host.
+    await page.goto(`${origin}/en/settings?tab=integrations`)
+    await page.locator('html[data-topiqu-hydrated="true"]').waitFor()
+    expect(new URL(page.url()).origin).toBe(origin)
+    await page
+      .locator('[data-slot="body"]')
+      .filter({ has: page.getByText('LinkedIn', { exact: true }) })
+      .getByRole('button', { name: 'Open settings', exact: true })
+      .click()
+    await page.getByRole('button', { name: 'Connect Personal', exact: true }).click()
+    await page.waitForURL(/127\.0\.0\.1:4173\/en\/integrations-connect\?request=/)
+    await page.locator('html[data-topiqu-hydrated="true"]').waitFor()
+    await expect(page.getByText(new RegExp(`LinkedIn.*${host.replaceAll('.', '\\.')}`))).toBeVisible()
+    await page.getByRole('button', { name: 'Cancel', exact: true }).click()
+    await page.waitForURL((current) => current.origin === origin && current.pathname === '/en/settings')
+    expect(new URL(page.url()).searchParams.get('linkedin')).toBe('cancelled')
     const preferences = await page.evaluate(async () => {
       const session = await (await fetch('/api/auth/get-session')).json()
       const saved = await fetch(`/api/users/${session.user.id}`, {
@@ -163,7 +179,7 @@ test('custom domains support credentials, SSR sessions and a browser-bound Topiq
     await db.user.update({ where: { id: account.id }, data: { language: account.language, theme: account.theme } })
     await db.clientSite.update({
       where: { id: site.id },
-      data: { domain: site.domain, domainVerified: site.domainVerified },
+      data: { domain: site.domain, domainVerified: site.domainVerified, plan: site.plan },
     })
     await db.$disconnect()
   }

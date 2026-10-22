@@ -1,7 +1,13 @@
 import { join } from 'node:path'
 import { expect, test } from '@playwright/test'
 
-import { expectAccessible, expectNoHorizontalOverflow, expectOverlayWithinViewport, preparePage } from './helpers'
+import {
+  applyProjectColorScheme,
+  expectAccessible,
+  expectNoHorizontalOverflow,
+  expectOverlayWithinViewport,
+  preparePage,
+} from './helpers'
 
 const authDir = join(process.cwd(), 'tests/e2e/.auth')
 const localeFor = (projectName: string) => (projectName.endsWith('-cs') ? 'cs' : 'en')
@@ -107,6 +113,25 @@ test.describe('admin', () => {
     )
     expect(wrappingButtons, 'Visible button labels must remain on one line').toEqual([])
 
+    const settings = page.locator('[data-article-settings-panel]:visible')
+    const tablist = settings.getByRole('tablist')
+    await expect(tablist.getByRole('tab')).toHaveCount(3)
+    await expect(tablist.getByRole('button')).toHaveCount(0)
+    await expect(settings.getByRole('button', { name: /Collapse sidebar|Sbalit postranní panel/ })).toBeVisible()
+
+    const dateTargets = await settings.getByRole('spinbutton').evaluateAll((nodes) =>
+      nodes.map((node) => ({
+        label: node.getAttribute('aria-label'),
+        width: node.getBoundingClientRect().width,
+        height: node.getBoundingClientRect().height,
+      })),
+    )
+    expect(dateTargets.length).toBeGreaterThan(0)
+    for (const target of dateTargets) {
+      expect(target.width, `${target.label} width`).toBeGreaterThanOrEqual(24)
+      expect(target.height, `${target.label} height`).toBeGreaterThanOrEqual(24)
+    }
+
     const toolbar = page.locator('[data-editor-toolbar]')
     await toolbar.scrollIntoViewIfNeeded()
     const [commandBox, toolbarBox] = await Promise.all([
@@ -131,22 +156,22 @@ test.describe('admin', () => {
     await expectNoHorizontalOverflow(page)
   })
 
-  test('statistics and tags use accessible dialogs', async ({ page }, testInfo) => {
+  test('statistics page and tags dialog remain accessible', async ({ page }, testInfo) => {
     test.skip((page.viewportSize()?.width ?? 0) < 1024, 'Desktop sidebar interaction')
     await preparePage(page)
     await page.goto(`/${localeFor(testInfo.project.name)}/admin`)
     await expect(page.locator('main')).toBeVisible()
     await page.locator('html[data-topiqu-hydrated="true"]').waitFor()
 
-    await page
-      .locator('button')
-      .filter({ hasText: /Blog Statistics|Statistiky blogu/ })
-      .first()
-      .click()
-    await expect(page.getByRole('dialog')).toBeVisible()
-    await expectOverlayWithinViewport(page)
+    await page.getByRole('link', { name: /^(Statistics|Statistiky)$/ }).click()
+    await expect(page).toHaveURL(/\/admin\/stats(?:[?#]|$)/)
+    await expect(page.getByRole('heading', { name: /Statistics|Statistiky/ })).toBeVisible()
+    await applyProjectColorScheme(page)
+    await expectNoHorizontalOverflow(page)
     await expectAccessible(page)
-    await page.keyboard.press('Escape')
+
+    await page.goto(`/${localeFor(testInfo.project.name)}/admin`)
+    await page.locator('html[data-topiqu-hydrated="true"]').waitFor()
 
     await page
       .locator('button')
@@ -192,7 +217,8 @@ test.describe('admin', () => {
     await page.goto('http://localhost:4173/cs/clanky/jak-postavit-udrzitelnou-redakci')
     await page.locator('html[data-topiqu-hydrated="true"]').waitFor()
 
-    await expect(page.locator('[data-slot="root"][data-collapsed]')).toHaveCount(0)
+    // Owners retain administration on their own publication; the foreign-host scenario is separate.
+    await expect(page.getByRole('button', { name: 'Sbalit postranní panel', exact: true })).toBeVisible()
     const tocLinks = page.locator('aside nav a')
     expect(await tocLinks.count()).toBeGreaterThan(1)
     const secondHeading = tocLinks.nth(1)
@@ -202,7 +228,9 @@ test.describe('admin', () => {
     const progress = page.locator('[aria-label="Reading progress"] [role="progressbar"]')
     await expect
       .poll(async () => {
-        await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
+        await page
+          .locator('.topiqu-dashboard-scroll')
+          .evaluate((element) => element.scrollTo({ top: element.scrollHeight, behavior: 'instant' }))
         return Number(await progress.getAttribute('aria-valuenow'))
       })
       .toBeGreaterThanOrEqual(99)

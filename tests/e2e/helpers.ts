@@ -119,12 +119,17 @@ export const waitForPageReady = async (page: Page) => {
   await page.evaluate(() => document.fonts.ready)
   await page.evaluate(async () => {
     for (const image of document.querySelectorAll<HTMLImageElement>('img[loading="lazy"]')) image.loading = 'eager'
-    const viewportStep = Math.max(window.innerHeight * 0.8, 320)
-    for (let y = 0; y < document.documentElement.scrollHeight; y += viewportStep) {
-      window.scrollTo(0, y)
+    // Signed-in publications scroll inside the dashboard. Visit that viewport so
+    // visible hydration and lazy-media fallbacks actually run before checking them.
+    const dashboard = document.querySelector<HTMLElement>('.topiqu-dashboard-scroll')
+    const viewportStep = Math.max((dashboard?.clientHeight ?? window.innerHeight) * 0.8, 320)
+    const scrollTo = (top: number) =>
+      dashboard ? dashboard.scrollTo({ top, behavior: 'instant' }) : window.scrollTo({ top, behavior: 'instant' })
+    for (let y = 0; y < (dashboard?.scrollHeight ?? document.documentElement.scrollHeight); y += viewportStep) {
+      scrollTo(y)
       await new Promise<void>((resolve) => setTimeout(resolve, 50))
     }
-    window.scrollTo(0, 0)
+    scrollTo(0)
   })
   try {
     await expect.poll(() => page.locator('[data-media-state="loading"]').count(), { timeout: 10_000 }).toBe(0)
@@ -151,6 +156,18 @@ export const waitForPageReady = async (page: Page) => {
   if (!failures?.expectedErrorPage) {
     await expect(page.locator('nuxt-error-overlay, #nuxt-error-overlay')).toHaveCount(0)
   }
+}
+
+export const applyProjectColorScheme = async (page: Page) => {
+  await page.locator('html[data-topiqu-hydrated="true"]').waitFor()
+  const dark = await page.evaluate(() => window.matchMedia('(prefers-color-scheme: dark)').matches)
+  const root = page.locator('html')
+  // A saved account preference overrides the browser scheme. Select the matrix's
+  // intended theme through the real control before asserting dark/light accessibility.
+  if ((await root.evaluate((node) => node.classList.contains('dark'))) !== dark)
+    await page.locator('[data-color-mode]').click()
+  if (dark) await expect(root).toHaveClass(/\bdark\b/)
+  else await expect(root).not.toHaveClass(/\bdark\b/)
 }
 
 export const expectAccessible = async (page: Page, disabledRules: string[] = []) => {

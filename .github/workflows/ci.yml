@@ -201,14 +201,57 @@ jobs:
         env:
           NODE_OPTIONS: --max-old-space-size=6144
 
+      - name: Check production performance budgets
+        run: bun run perf:check
+
       - name: Install browser engines
         run: bunx playwright install --with-deps chromium webkit
 
       - name: Build deployment image without database credentials
         run: docker build --tag topiqu-ci:${{ github.sha }} .
 
+      - name: Check deployment image performance budgets without runtime credentials
+        run: |
+          docker run --rm --network none --entrypoint /bin/sh \
+            --mount "type=bind,src=$GITHUB_WORKSPACE/scripts/performance-budgets.ts,dst=/verify/scripts/performance-budgets.ts,readonly" \
+            --mount "type=bind,src=$GITHUB_WORKSPACE/performance-budgets.json,dst=/verify/performance-budgets.json,readonly" \
+            topiqu-ci:${{ github.sha }} -c \
+            'mkdir /tmp/topiqu-budget-check && ln -s /usr/src/app /tmp/topiqu-budget-check/.output && exec bun /verify/scripts/performance-budgets.ts /tmp/topiqu-budget-check'
+
+      - name: Verify deployment migrations and Bun runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          container="topiqu-runtime-${{ github.run_id }}-${{ github.run_attempt }}"
+          trap 'docker rm --force "$container" >/dev/null 2>&1 || true' EXIT
+          docker exec '${{ job.services.postgres.id }}' createdb -U postgres rasg_image_test
+          docker run --detach --name "$container" --network host \
+            --env DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/rasg_image_test \
+            --env AUTH_SECRET --env APP_ENV=test --env PGPOOL_MAX=2 \
+            --env HOST=127.0.0.1 --env PORT=4183 \
+            topiqu-ci:${{ github.sha }}
+          test "$(docker exec "$container" id -u)" != 0
+          test "$(docker exec "$container" bun --version)" = 1.4.3
+          ready=false
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent --output /dev/null http://127.0.0.1:4183/api/health; then
+              ready=true
+              break
+            fi
+            if test "$(docker inspect --format '{{.State.Running}}' "$container")" != true; then
+              echo 'Deployment container exited before readiness.'
+              exit 1
+            fi
+            sleep 1
+          done
+          test "$ready" = true
+          curl --fail --silent --output /dev/null http://127.0.0.1:4183/api/live
+
       - name: Test production assets and service worker
         run: bun run test:e2e:release
 
       - name: Test wallet pagination and scrolling
         run: bun run test:e2e token-wallet.spec.ts --project=desktop-light-en --project=mobile-light-en
+
+      - name: Test recovery, session controls and operator status
+        run: bun run test:e2e production-workflows.spec.ts --project=desktop-light-en --project=desktop-dark-cs --workers=1
