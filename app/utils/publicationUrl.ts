@@ -20,3 +20,14 @@ export const publicationUrl = (
     : `https://${domain}`
   return `${origin}${path ?? `/${site.language}`}`
 }
+
+/** Same-origin navigation stays in the router; other origins retain the publication's primary language. */
+export const publicationNavigationUrl = (
+  site: Parameters<typeof publicationUrl>[0],
+  homePath: string,
+  requestUrl: URL,
+) => {
+  const destination = publicationUrl(site, undefined, requestUrl)
+  if (!destination) return undefined
+  return new URL(destination).origin === requestUrl.origin ? homePath : destination
+}
