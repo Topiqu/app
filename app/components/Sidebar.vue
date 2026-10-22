@@ -63,19 +63,6 @@
 
     <template #footer="{ collapsed }">
       <div class="flex w-full flex-col gap-1">
-        <UButton
-          class="text-muted hover:text-highlighted"
-          icon="mdi:open-in-new"
-          color="neutral"
-          variant="ghost"
-          :to="siteUrl"
-          target="_blank"
-          :disabled="!siteUrl"
-          :label="collapsed ? undefined : $t('common.navigation.publication')"
-          :aria-label="$t('common.navigation.publication')"
-          :square="collapsed"
-          :ui="{ base: collapsed ? 'self-center' : 'w-full justify-start' }"
-        />
         <template v-if="auth?.user?.role === 'superadmin'">
           <UButton
             icon="mdi:account-plus"
@@ -124,19 +111,30 @@ const userListOpen = useState('dashboard-user-list-open', () => false)
 
 const { data: clientStatus } = await useClientSiteStatus()
 const requestUrl = useRequestURL()
-const siteUrl = computed(() => publicationUrl(clientStatus.value, undefined, requestUrl))
+const siteUrl = computed(() => publicationNavigationUrl(clientStatus.value, localePath({ name: 'index' }), requestUrl))
 
 // Groups render with a divider between them: home, content, reach, settings.
 const navigation = computed<NavigationMenuItem[][]>(() => {
+  const web: NavigationMenuItem = {
+    label: $t('common.navigation.publication'),
+    icon: 'mdi:web',
+    to: siteUrl.value,
+    disabled: !siteUrl.value,
+    exact: true,
+  }
   if (auth.value?.user.role === 'superadmin')
-    return [[{ label: $t('master.title'), icon: 'mdi:view-dashboard-outline', to: localePath({ name: 'master' }) }]]
+    return [
+      [web, { label: $t('master.title'), icon: 'mdi:view-dashboard-outline', to: localePath({ name: 'master' }) }],
+    ]
 
   return [
     [
+      web,
       {
         label: $t('common.navigation.dashboard'),
         icon: 'mdi:view-dashboard-outline',
         to: localePath({ name: 'admin' }),
+        exact: true,
       },
       { label: $t('common.navigation.stats'), icon: 'mdi:chart-line', to: localePath({ name: 'admin-stats' }) },
     ],

@@ -25,13 +25,14 @@
         :aria-label="$t('common.actions.back')"
       />
       <NuxtLink
-        :to="localePath({ name: 'index' })"
+        :to="logoTo"
+        :aria-label="clientSite?.name || 'Topiqu'"
         class="flex items-center justify-center gap-2 transition-[width,opacity] motion-reduce:transition-none"
         :class="articleState.showHeader && articleHeader ? 'pointer-events-none w-0 overflow-hidden opacity-0' : ''"
         :aria-hidden="articleState.showHeader && !!articleHeader"
         :tabindex="articleState.showHeader && articleHeader ? -1 : undefined"
       >
-        <AppWordmark v-if="!isPublicationSurface" class="h-10 w-14 sm:w-32 rounded-md" />
+        <AppWordmark v-if="!clientSite" class="h-10 w-14 sm:w-32 rounded-md" />
         <AppMedia
           v-else
           :src="logoSrc"
@@ -100,14 +101,24 @@ const route = useRoute()
 // Live ref, not a snapshot: the header sits in the persistent layout, so a settings save would otherwise
 // keep showing the previous logo until a full reload.
 const clientSite = await useLiveClientSite()
+const { data: auth } = useAuth()
 const localePath = useLocalePath()
 const articleHeader = useArticleHeaderContext()
 const articleState = useArticleScrollState()
 const articleLikeBus = useArticleLikeBus()
 const isArticleRoute = computed(() => String(route.name || '').includes('clanky-slug'))
 
-const shell = computed(() => resolvePageShell(route.meta.shell))
 const showDashboard = useDashboardAccess(clientSite)
-const isPublicationSurface = computed(() => Boolean(clientSite.value && shell.value === 'publication'))
+const logoTo = computed(() =>
+  localePath({
+    name: clientSite.value
+      ? 'index'
+      : auth.value?.user.role === 'superadmin'
+        ? 'master'
+        : auth.value?.user.role === 'admin'
+          ? 'admin'
+          : 'autorizace',
+  }),
+)
 const logoSrc = computed(() => clientSite.value?.logoUrl || null)
 </script>
