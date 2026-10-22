@@ -21,7 +21,7 @@
 
 ## Features
 
-- 📝 **AI-assisted publishing** — Tiptap editor, article generation, drafts and translations.
+- 📝 **AI-assisted publishing** — Tiptap editor, article generation, drafts, translations and recoverable source-article versions.
 - 🌐 **Client sites** — isolated tenants, subdomains, custom domains and configurable site widgets.
 - 🔎 **SEO & AI visibility** — search insights, citation monitoring and content opportunities.
 - 💬 **Community** — comments, follows and reader notifications.
@@ -167,6 +167,16 @@ Production requires runtime `DATABASE_URL` and an `AUTH_SECRET` of at least 32 c
 
 Verified custom domains support host-only sign-in sessions. Continue with Topiqu and Google/GitHub use an explicitly confirmed, single-use handoff from the central auth origin; cookies are not copied across domains. `AUTH_ORIGIN`, when pinned, must remain the central auth origin (include the actual port locally). See [custom-domain authentication](docs/custom-domain-auth.md) for isolation, recovery and provider smoke checks.
 
+LinkedIn and Search Console connections also use explicit confirmation on the central auth origin. Their provider callback URLs must resolve to that origin; no per-customer OAuth callback registration is needed. Stripe returns preserve a validated interface locale. Account settings can revoke all other sessions, including sessions on custom domains, while retaining the current session.
+
+Source article saves use database-owned content versions and reject stale writes without discarding the editor draft. The last 50 source-article changes are retained; loading history creates an unsaved editor draft and preserves publication status, URL and schedule. Translation saves compare their last-observed update timestamp. These changes require migration `20261022010000_production_workflows`, which also adds session-origin and durable task-status storage. Reload editors opened before this release before saving; download unsaved work first.
+
+Superadmins can inspect `/master/operations` for shared task status, queues, cache availability and integration failures. A failed webhook can be requeued explicitly with its original delivery ID, after acknowledging possible duplicate processing. This view does not trigger AI generation or change domain infrastructure. See [production workflows](docs/operations/production-workflows.md) for rollout and provider smoke checks.
+
+`bun run perf:check` enforces gzip asset ceilings in [performance-budgets.json](performance-budgets.json) after a production build. Consenting production visitors are sampled for LCP, INP and CLS using the existing Sentry DSN. Field p75 results require production samples; asset checks do not establish those results. The [backup/restore runbook](docs/operations/backup-restore.md) includes a dry-run-first local restore rehearsal, available as `bun run backup:verify --container NAME --source-db TEST_DATABASE`.
+
+Release CI starts the deployment image on a separate empty database and verifies migration startup, non-root execution, Bun 1.4.3, readiness and liveness. Compiled browser checks cover recovery, sessions and operator status in addition to the existing release and wallet scenarios. An upgrade rehearsal against a recent production backup remains an operator step.
+
 Release order is operator-controlled: identify the target database and image, take a backup and verify restore on a separate database, configure runtime credentials, then roll out the tested image. Startup applies pending migrations before serving requests; migration failure exits the container without starting the app. `DIRECT_DATABASE_URL`, when set, is used only by migrations; the app keeps `DATABASE_URL`. Database credentials must permit the committed DDL, and deployment startup/readiness timeouts must allow migrations to finish. Prisma's advisory lock serializes migration attempts across replicas; lock timeout fails startup and requires an orchestrator retry. Keep rolling-release schema changes backward compatible with old replicas. Check readiness, login, tenant access, publication and cron heartbeats. Retain the previous image. Roll it back only if it is compatible with the applied schema; otherwise use a reviewed forward fix or restore the verified backup under a maintenance plan. Never assume rolling back an image rolls back migrations. Neither a Git push nor an image build authorizes these production operations.
 
 Password reset codes issued before the reset hardening change must be requested again: reset tokens now use a separate purpose-bound store, expire in 15 minutes and revoke all previous sessions on success. No new database migration is needed for this change. Existing verification codes for account activation remain separate.
@@ -178,6 +188,8 @@ When invoking Nuxt through Node instead of Bun, use a supported Node version (`^
 ## Documentation
 
 Custom-domain provisioning configuration, migration order and operational limitations are documented in [Custom domains](./docs/custom-domains.md).
+
+Operations, workflow rollout and field-performance measurement are documented in [Production workflows](./docs/operations/production-workflows.md). Database recovery rehearsals are described in [Backup and restore](./docs/operations/backup-restore.md).
 
 - 🗺️ [Architecture](./MAP.md) — source layout, data flows and implementation details.
 - 📐 [Project conventions](./CLAUDE.md) — coding standards and contribution rules.
