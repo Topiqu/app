@@ -14,7 +14,7 @@
       "fetchesNote": "aucune page pour l'instant | {n} page | {n} pages différentes",
       "coverageHint": "Chaque semaine, nous posons vos questions suivies aux moteurs de recherche IA (ChatGPT, Gemini, Perplexity…). Ce chiffre indique combien de réponses renvoyaient vers votre site.",
       "referralsHint": "Personnes arrivées sur votre site en cliquant sur un lien dans une réponse IA. Certaines applications n'indiquent pas d'où vient la visite : le chiffre réel peut être plus élevé.",
-      "fetchesHint": "Nombre de fois où les robots des entreprises d'IA (OpenAI, Google, Anthropic…) ont téléchargé vos pages pour y puiser des réponses ou s'entraîner. Ce ne sont pas des personnes, mais cela montre que l'IA lit votre contenu."
+      "fetchesHint": "Nombre de fois où les robots des entreprises d'IA (OpenAI, Google, Anthropic…) ont téléchargé vos pages pour y puiser des réponses ou s'entraîner."
     },
     "emptyValue": "Pas encore mesuré",
     "onboarding": {

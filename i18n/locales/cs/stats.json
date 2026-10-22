@@ -53,7 +53,15 @@
     "sentiment": {
       "title": "Vaše komunita",
       "current": "Aktuální souhrn",
-      "toxicity": "{value} toxicita"
+      "toxicity": "{value} toxicita",
+      "emotions": {
+        "joy": "Radost",
+        "anger": "Hněv",
+        "sadness": "Smutek",
+        "fear": "Obavy",
+        "surprise": "Překvapení",
+        "curiosity": "Zvědavost"
+      }
     },
     "totalShares": {
       "title": "Sdílení"

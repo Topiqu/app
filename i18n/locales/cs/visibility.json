@@ -14,7 +14,7 @@
       "fetchesNote": "zatím žádná stránka | {n} stránka | {n} různé stránky | {n} různých stránek",
       "coverageHint": "Každý týden pokládáme vaše sledované otázky AI vyhledávačům (ChatGPT, Gemini, Perplexity…). Číslo ukazuje, kolik odpovědí odkazovalo na váš web.",
       "referralsHint": "Lidé, kteří na váš web přišli kliknutím na odkaz v odpovědi AI. Některé aplikace neprozradí, odkud návštěva přišla, takže skutečné číslo může být vyšší.",
-      "fetchesHint": "Kolikrát si roboti AI firem (OpenAI, Google, Anthropic…) stáhli vaše stránky, aby z nich mohli odpovídat nebo se učit. Nejsou to lidé, ale ukazují, že AI váš obsah čte."
+      "fetchesHint": "Kolikrát si roboti AI firem (OpenAI, Google, Anthropic…) stáhli vaše stránky, aby z nich mohli odpovídat nebo se učit."
     },
     "emptyValue": "Zatím neměřeno",
     "onboarding": {

@@ -14,7 +14,7 @@
       "fetchesNote": "no pages yet | {n} page | {n} different pages",
       "coverageHint": "Every week we ask AI search engines (ChatGPT, Gemini, Perplexity…) your tracked questions. This shows how many answers linked to your site.",
       "referralsHint": "People who reached your site by clicking a link in an AI answer. Some apps don't say where a visit came from, so the real number may be higher.",
-      "fetchesHint": "How often AI companies' bots (OpenAI, Google, Anthropic…) downloaded your pages to answer from them or learn from them. These aren't people, but they show AI is reading your content."
+      "fetchesHint": "How often AI companies' bots (OpenAI, Google, Anthropic…) downloaded your pages to answer from them or learn from them."
     },
     "emptyValue": "Not measured yet",
     "onboarding": {

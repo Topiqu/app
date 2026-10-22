@@ -218,7 +218,7 @@
 }
 
 .social-platform-button[data-platform='INSTAGRAM'] {
-  background: #a21caf;
+  background: linear-gradient(35deg, #ed1c24, #e1306c 55%, #833ab4);
 }
 
 .social-platform-button[data-platform='YOUTUBE'] {

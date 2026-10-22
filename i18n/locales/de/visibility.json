@@ -14,7 +14,7 @@
       "fetchesNote": "noch keine Seiten | {n} Seite | {n} verschiedene Seiten",
       "coverageHint": "Jede Woche stellen wir KI-Suchmaschinen (ChatGPT, Gemini, Perplexity…) deine beobachteten Fragen. Die Zahl zeigt, wie viele Antworten auf deine Website verlinkt haben.",
       "referralsHint": "Menschen, die über einen Link in einer KI-Antwort auf deine Website gekommen sind. Manche Apps verraten nicht, woher ein Besuch kommt, die echte Zahl kann also höher sein.",
-      "fetchesHint": "Wie oft Bots von KI-Firmen (OpenAI, Google, Anthropic…) deine Seiten abgerufen haben, um daraus zu antworten oder zu lernen. Das sind keine Menschen, aber es zeigt, dass KI deine Inhalte liest."
+      "fetchesHint": "Wie oft Bots von KI-Firmen (OpenAI, Google, Anthropic…) deine Seiten abgerufen haben, um daraus zu antworten oder zu lernen."
     },
     "emptyValue": "Noch nicht gemessen",
     "onboarding": {

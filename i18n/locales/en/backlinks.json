@@ -14,6 +14,15 @@
     "disabledTitle": "Backlinks are part of the Pro and Premium plans",
     "disabledDescription": "We find sites that mention you without a link and verify every link you earn.",
     "upgrade": "See plans",
+    "empty": {
+      "title": "No links or opportunities yet",
+      "description": "We look for websites that mention you without a link, then regularly check the links we find.",
+      "steps": {
+        "discover": "We find an unlinked mention",
+        "contact": "You ask the author for a link",
+        "verify": "We verify the new link"
+      }
+    },
     "stats": {
       "live": {
         "label": "Verified links",
