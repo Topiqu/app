@@ -1,42 +1,47 @@
 <template>
   <div
-    data-client-version-bar
-    class="bottom-action-bar fixed right-3 bottom-3 z-overlay flex max-w-[calc(100vw-1.5rem)] items-center gap-1 rounded-[calc(var(--ui-radius)+0.25rem)] bg-elevated p-1 shadow-lg ring ring-default"
+    class="pointer-events-none fixed right-3 bottom-3 z-overlay flex max-w-[calc(100vw-1.5rem)] flex-col items-end gap-2"
   >
-    <UButton
-      class="min-w-0"
-      color="neutral"
-      variant="soft"
-      trailingIcon="mdi:chevron-up"
-      :aria-label="$t('common.wallet.title')"
-      @click="show = true"
+    <AdminSetupChecklist />
+    <div
+      data-client-version-bar
+      class="bottom-action-bar pointer-events-auto flex max-w-full items-center gap-1 rounded-[calc(var(--ui-radius)+0.25rem)] bg-elevated p-1 shadow-lg ring ring-default"
     >
-      <span class="hidden shrink-0 sm:inline">Topiqu {{ config.public.appVersion }}</span>
-      <UBadge class="min-w-0 shrink truncate" :color="planBadgeColor" variant="soft">{{
-        site?.plan ?? $t('articles.userMenu.noClientAssigned')
-      }}</UBadge>
-      <UBadge
-        v-if="status?.articlesRemaining != null"
-        class="ml-auto min-w-0 max-w-[8.5rem] shrink truncate tabular-nums"
-        :title="$t('common.wallet.available')"
-        :color="isLowArticles ? 'error' : 'success'"
-        variant="soft"
-      >
-        {{ status.articlesRemaining.toLocaleString(locale) }}
-      </UBadge>
-    </UButton>
-
-    <UTooltip :text="$t('common.consent.openSettings')">
       <UButton
-        data-consent-settings
-        square
+        class="min-w-0"
         color="neutral"
         variant="soft"
-        icon="mdi:cookie-settings-outline"
-        :aria-label="$t('common.consent.openSettings')"
-        @click="openConsentSettings"
-      />
-    </UTooltip>
+        trailingIcon="mdi:chevron-up"
+        :aria-label="$t('common.wallet.title')"
+        @click="show = true"
+      >
+        <span class="hidden shrink-0 sm:inline">Topiqu {{ config.public.appVersion }}</span>
+        <UBadge class="min-w-0 shrink truncate" :color="planBadgeColor" variant="soft">{{
+          site?.plan ?? $t('articles.userMenu.noClientAssigned')
+        }}</UBadge>
+        <UBadge
+          v-if="status?.articlesRemaining != null"
+          class="ml-auto min-w-0 max-w-[8.5rem] shrink truncate tabular-nums"
+          :title="$t('common.wallet.available')"
+          :color="isLowArticles ? 'error' : 'success'"
+          variant="soft"
+        >
+          {{ status.articlesRemaining.toLocaleString(locale) }}
+        </UBadge>
+      </UButton>
+
+      <UTooltip :text="$t('common.consent.openSettings')">
+        <UButton
+          data-consent-settings
+          square
+          color="neutral"
+          variant="soft"
+          icon="mdi:cookie-settings-outline"
+          :aria-label="$t('common.consent.openSettings')"
+          @click="openConsentSettings"
+        />
+      </UTooltip>
+    </div>
   </div>
 
   <USlideover

@@ -259,12 +259,13 @@ const scopeItems = computed(() =>
   })),
 )
 const filters = ['all', 'owners', 'members'] as const
-const { data, refresh } = await useFetch<{
+const { data, refresh: refreshMembers } = await useFetch<{
   members: Member[]
   invitations: Invitation[]
   currentMembershipId: string
   canControl: boolean
 }>('/api/tenant/members')
+const refresh = () => Promise.all([refreshMembers(), refreshClientSiteStatus()])
 const email = shallowRef('')
 const selected = ref<Scope[]>(['ARTICLE_WRITE'])
 const showInvite = shallowRef(false)
@@ -380,6 +381,7 @@ const remove = async (member: Member) => {
     await $fetch<unknown, '/api/tenant/members/:id'>(`/api/tenant/members/${member.id}` as '/api/tenant/members/:id', {
       method: 'DELETE',
     })
+    await refreshClientSiteStatus()
     optimisticStatus.saved()
     toast.add({
       color: 'success',
@@ -414,6 +416,7 @@ const revoke = async (id: string) => {
       `/api/tenant/invitations/${id}` as '/api/tenant/invitations/:id',
       { method: 'DELETE' },
     )
+    await refreshClientSiteStatus()
     optimisticStatus.saved()
   } catch (error: any) {
     data.value.invitations.splice(index, 0, invitation)
@@ -433,6 +436,7 @@ const resend = async (id: string) => {
       `/api/tenant/invitations/${id}/resend` as '/api/tenant/invitations/:id/resend',
       { method: 'POST' },
     )
+    await refresh()
     toast.add({ color: 'success', title: $t('common.members.sent') })
   } catch (error: any) {
     toast.add({ color: 'error', title: fetchErrorMessage(error, t('common.messages.operationFailed')) })

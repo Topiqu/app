@@ -238,6 +238,15 @@ body:has(.bottom-action-bar) .back-to-top {
   bottom: max(4.5rem, calc(env(safe-area-inset-bottom) + 4rem));
 }
 
+body:has([data-setup-widget]) .back-to-top {
+  right: auto;
+  left: 1rem;
+}
+
+body:has([data-setup-widget][data-expanded='true']) .back-to-top {
+  visibility: hidden;
+}
+
 .disabled-primary-action:disabled {
   background: var(--ui-bg-accented);
   color: var(--ui-text-muted);
@@ -252,6 +261,11 @@ body:has(.bottom-action-bar) .back-to-top {
 
   body:has(.bottom-action-bar) .back-to-top {
     bottom: max(5rem, calc(env(safe-area-inset-bottom) + 4.5rem));
+  }
+
+  body:has([data-setup-widget]) .back-to-top {
+    right: 25rem;
+    left: auto;
   }
 }
 

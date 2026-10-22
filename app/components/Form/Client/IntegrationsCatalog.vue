@@ -459,8 +459,18 @@ const linkedinOpen = dialogModel('linkedin')
 const shopifyOpen = dialogModel('shopify')
 const webhooksOpen = dialogModel('webhooks')
 const route = useRoute()
+const linkedDialog = computed(() => {
+  const id = route.query.integration
+  return typeof id === 'string' && ['gsc', 'analytics', 'gam', 'linkedin', 'shopify', 'webhooks'].includes(id)
+    ? (id as DialogId)
+    : null
+})
 onMounted(() => {
   if (typeof route.query.shopify === 'string') activeDialog.value = 'shopify'
+  else if (linkedDialog.value) activeDialog.value = linkedDialog.value
+})
+watch(linkedDialog, (id) => {
+  if (id) activeDialog.value = id
 })
 watch(
   () => route.query.shopify,

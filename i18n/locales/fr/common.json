@@ -6,29 +6,121 @@
       "retry": "Réessayer"
     },
     "setup": {
-      "menu": "Premiers pas",
-      "title": "Préparez votre première publication",
+      "checklist": {
+        "title": "Configurer le blog",
+        "description": "Terminez la configuration du blog pour préparer vos publications.",
+        "expand": "Développer le guide de configuration du blog",
+        "collapse": "Réduire le guide de configuration du blog",
+        "processing": "En cours de traitement",
+        "attention": "À vérifier",
+        "saved": "Les modifications enregistrées mettent automatiquement cette liste à jour.",
+        "permission": "Un membre de l’équipe disposant de l’autorisation nécessaire doit terminer cette étape.",
+        "resumeDraft": "Ouvrir le brouillon",
+        "resumeDescription": "Vous avez déjà un brouillon. Ouvrez-le, vérifiez l’aperçu et publiez-le.",
+        "viewArticles": "Voir les articles",
+        "progress": "{done} étapes sur {total} réglées",
+        "optional": "Facultatif",
+        "skip": "Passer pour le moment",
+        "skipped": "Ignoré",
+        "restore": "Reprendre cette étape",
+        "confirmPublishing": "Confirmer ce mode",
+        "manualDescription": "Les articles attendent votre validation. Confirmez ce mode ou activez la publication automatique et ajustez le calendrier dans les réglages.",
+        "automaticDescription": "Les articles IA sont publiés automatiquement. Vérifiez ce mode et, pour une création régulière, la fréquence, les jours, l’heure et le fuseau horaire.",
+        "requirements": {
+          "name": "Nom du blog",
+          "logo": "Logo du blog",
+          "description": "Description pour les lecteurs",
+          "authorName": "Nom de l’auteur",
+          "avatar": "Portrait de l’auteur",
+          "bio": "Biographie de l’auteur",
+          "tone": "Style d’écriture",
+          "focus": "Thèmes du blog",
+          "audience": "Public cible",
+          "source": "Source traitée et activée pour l’IA",
+          "domain": "Connexion du domaine vérifiée",
+          "article": "Article publié",
+          "publishingMode": "Mode de publication choisi",
+          "schedule": "Calendrier de création valide",
+          "measurement": "Analytics activé ou Search Console connectée",
+          "teammate": "Autre membre de l’équipe ou invitation valide",
+          "channel": "Blog Shopify ou profil LinkedIn connecté et activé"
+        },
+        "steps": {
+          "branding": {
+            "title": "Complétez le profil du blog",
+            "description": "Ajoutez un logo et une courte description pour que les lecteurs sachent à qui appartient le blog et ce qu’ils y trouveront.",
+            "action": "Modifier l’identité visuelle"
+          },
+          "author": {
+            "title": "Présentez votre auteur IA",
+            "description": "Ajoutez le portrait et la biographie de l’auteur et choisissez un style d’écriture. Ce profil apparaît avec ses articles.",
+            "action": "Définir le profil et le style"
+          },
+          "voice": {
+            "title": "Définissez les sujets et le public",
+            "description": "Précisez les thèmes et le public cible. L’IA s’en sert pour choisir les sujets et les explications adaptées.",
+            "action": "Définir le contenu"
+          },
+          "knowledge": {
+            "title": "Ajoutez des sources pour l’IA",
+            "description": "Ajoutez le site de votre entreprise ou un document. L’étape est terminée dès qu’une source est traitée et activée pour l’IA.",
+            "action": "Ajouter des sources"
+          },
+          "domain": {
+            "title": "Connectez votre domaine",
+            "description": "Complétez les enregistrements DNS de {domain} et vérifiez la connexion.",
+            "action": "Terminer la connexion du domaine"
+          },
+          "article": {
+            "title": "Publiez votre premier article",
+            "description": "Créez un article, vérifiez son aperçu et publiez-le. Les brouillons et les publications futures ne comptent pas encore.",
+            "action": "Créer le premier article"
+          },
+          "publishing": {
+            "title": "Choisissez le mode de publication",
+            "description": "Choisissez la validation des articles ou la publication automatique. Pour une création régulière, définissez la fréquence, les jours, l’heure et le fuseau horaire.",
+            "action": "Configurer la publication"
+          },
+          "measurement": {
+            "title": "Configurez les mesures",
+            "description": "Activez Google Analytics avec un identifiant de mesure ou connectez Search Console et sélectionnez une propriété. La disponibilité dépend de votre offre.",
+            "action": "Configurer les mesures"
+          },
+          "team": {
+            "title": "Invitez un collègue",
+            "description": "Invitez un collègue dans la rédaction et choisissez ses autorisations. Une invitation envoyée et valide suffit, sans attendre son acceptation.",
+            "action": "Inviter un collègue"
+          },
+          "channels": {
+            "title": "Connectez un canal de publication",
+            "description": "Connectez Shopify et choisissez un blog de destination ou liez un profil LinkedIn. La publication doit être activée pour le canal connecté.",
+            "action": "Connecter un canal"
+          }
+        }
+      },
+      "menu": "Terminer la configuration",
+      "title": "Terminez la configuration du blog",
       "completeTitle": "Le blog est configuré",
       "progress": "{done} sur {total} terminés",
       "next": "Étape suivante : {step}",
-      "expand": "Développer la liste de configuration du blog",
+      "expand": "Ouvrir les étapes restantes de configuration du blog",
       "collapse": "Réduire la liste de configuration du blog",
       "done": "Terminé",
       "remaining": "À faire",
       "review": "Vérifier les réglages",
       "publishPermission": "Les autorisations de rédaction et de publication sont nécessaires pour publier. Contactez le propriétaire du blog.",
       "recommended": "Autres recommandations",
-      "optional": "Rouvrez cette liste depuis Premiers pas dans le menu.",
+      "optional": "Ouvrez les étapes restantes dans le panneau Configuration du blog en bas à droite.",
       "hide": "Masquer la liste",
       "steps": {
         "branding": {
-          "title": "Présentez votre blog",
-          "description": "Décrivez brièvement ce que les lecteurs trouveront sur votre blog.",
+          "title": "Ajoutez une description du blog",
+          "description": "Dans Réglages → Identité visuelle, décrivez ce que vous publiez sur le blog.",
           "action": "Ajouter une description"
         },
         "voice": {
-          "title": "Définissez les sujets et le public",
-          "description": "Indiquez à l’IA les sujets à traiter et les lecteurs que vos articles doivent aider.",
+          "title": "Précisez les sujets et le public cible",
+          "description": "Dans Réglages → Contenu, indiquez les sujets à traiter par l’IA et le public visé.",
           "action": "Définir la ligne éditoriale"
         },
         "domain": {
@@ -38,7 +130,7 @@
         },
         "article": {
           "title": "Publiez votre premier article",
-          "description": "Créez un article, vérifiez son aperçu et publiez-le. Les brouillons et les articles programmés pour plus tard ne comptent pas encore.",
+          "description": "Rédigez ou générez un article dans l’éditeur, puis choisissez Publier. Les brouillons et les publications futures ne comptent pas.",
           "action": "Ouvrir l’éditeur"
         }
       },

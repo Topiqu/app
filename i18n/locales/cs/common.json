@@ -6,29 +6,121 @@
       "retry": "Zkusit znovu"
     },
     "setup": {
-      "menu": "Začínáme",
-      "title": "Připravte první publikaci",
+      "checklist": {
+        "title": "Nastavení blogu",
+        "description": "Dokončete nastavení a připravte blog na publikování.",
+        "expand": "Rozbalit průvodce nastavením blogu",
+        "collapse": "Sbalit průvodce nastavením blogu",
+        "processing": "Zpracovává se",
+        "attention": "Vyžaduje pozornost",
+        "saved": "Uložené změny se v checklistu projeví automaticky.",
+        "permission": "Tento krok musí dokončit člen týmu s příslušným oprávněním.",
+        "resumeDraft": "Otevřít rozepsaný článek",
+        "resumeDescription": "Máte rozepsaný článek. Otevřete ho, zkontrolujte náhled a publikujte.",
+        "viewArticles": "Zobrazit články",
+        "progress": "Vyřízeno {done} z {total}",
+        "optional": "Volitelné",
+        "skip": "Teď přeskočit",
+        "skipped": "Přeskočeno",
+        "restore": "Vrátit do seznamu",
+        "confirmPublishing": "Potvrdit tento režim",
+        "manualDescription": "Články čekají na vaše schválení. Tento režim můžete potvrdit, nebo v nastavení zapnout automatické publikování a upravit harmonogram.",
+        "automaticDescription": "AI články se publikují automaticky. Zkontrolujte režim a při pravidelné tvorbě i frekvenci, dny, čas a časové pásmo.",
+        "requirements": {
+          "name": "Název blogu",
+          "logo": "Logo blogu",
+          "description": "Popis pro čtenáře",
+          "authorName": "Jméno autora",
+          "avatar": "Portrét autora",
+          "bio": "Medailonek autora",
+          "tone": "Styl psaní",
+          "focus": "Zaměření blogu",
+          "audience": "Cílová skupina",
+          "source": "Zpracovaný zdroj zapnutý pro AI",
+          "domain": "Ověřené připojení domény",
+          "article": "Publikovaný článek",
+          "publishingMode": "Zvolený způsob publikování",
+          "schedule": "Platný harmonogram tvorby",
+          "measurement": "Zapnuté Analytics nebo připojená služba Search Console",
+          "teammate": "Další člen týmu nebo platná pozvánka",
+          "channel": "Připojený a zapnutý Shopify blog nebo LinkedIn profil"
+        },
+        "steps": {
+          "branding": {
+            "title": "Doplňte profil blogu",
+            "description": "Nahrajte logo a napište krátký popis, aby čtenáři věděli, čí blog čtou a co tu najdou.",
+            "action": "Upravit branding"
+          },
+          "author": {
+            "title": "Představte AI autora",
+            "description": "Doplňte portrét a medailonek autora a určete styl psaní. Profil se zobrazí u jeho článků.",
+            "action": "Nastavit profil a styl"
+          },
+          "voice": {
+            "title": "Určete témata a čtenáře",
+            "description": "Vyplňte zaměření a cílovou skupinu. AI podle nich vybírá témata i způsob vysvětlení.",
+            "action": "Nastavit obsah"
+          },
+          "knowledge": {
+            "title": "Přidejte podklady pro AI",
+            "description": "Přidejte firemní web nebo dokument. Krok je hotový, až je alespoň jeden zdroj zpracovaný a zapnutý pro AI.",
+            "action": "Přidat podklady"
+          },
+          "domain": {
+            "title": "Připojte vlastní doménu",
+            "description": "Dokončete DNS záznamy pro {domain} a ověřte připojení.",
+            "action": "Dokončit připojení domény"
+          },
+          "article": {
+            "title": "Publikujte první článek",
+            "description": "Vytvořte článek, zkontrolujte náhled a publikujte. Koncepty a budoucí publikace se zatím nepočítají.",
+            "action": "Vytvořit první článek"
+          },
+          "publishing": {
+            "title": "Zvolte způsob publikování",
+            "description": "Zvolte schvalování článků, nebo automatické publikování. Pro pravidelnou tvorbu nastavte frekvenci, dny, čas a časové pásmo.",
+            "action": "Nastavit publikování"
+          },
+          "measurement": {
+            "title": "Zapojte měření",
+            "description": "Zapněte Google Analytics s ID měření, nebo připojte Search Console a vyberte web. Dostupnost služeb závisí na vašem tarifu.",
+            "action": "Nastavit měření"
+          },
+          "team": {
+            "title": "Pozvěte kolegu",
+            "description": "Přizvěte kolegu do redakce a vyberte mu oprávnění. Platná odeslaná pozvánka stačí; na její přijetí čekat nemusíte.",
+            "action": "Pozvat kolegu"
+          },
+          "channels": {
+            "title": "Propojte publikační kanál",
+            "description": "Připojte Shopify a vyberte cílový blog, nebo propojte LinkedIn profil. Propojený kanál musí mít zapnuté publikování.",
+            "action": "Propojit kanál"
+          }
+        }
+      },
+      "menu": "Dokončit nastavení",
+      "title": "Dokončete nastavení blogu",
       "completeTitle": "Nastavení blogu je hotové",
       "progress": "Hotovo {done} z {total}",
       "next": "Další krok: {step}",
-      "expand": "Rozbalit checklist nastavení blogu",
+      "expand": "Otevřít zbývající kroky nastavení blogu",
       "collapse": "Sbalit checklist nastavení blogu",
       "done": "Hotovo",
       "remaining": "Zbývá",
       "review": "Zkontrolovat nastavení",
       "publishPermission": "K publikaci potřebujete oprávnění psát a publikovat články. Obraťte se na vlastníka blogu.",
       "recommended": "Doporučené navíc",
-      "optional": "Checklist znovu otevřete přes Začínáme v menu.",
+      "optional": "Zbývající kroky otevřete v panelu Nastavení blogu vpravo dole.",
       "hide": "Schovat checklist",
       "steps": {
         "branding": {
-          "title": "Představte blog čtenářům",
-          "description": "Doplňte krátký popis toho, co čtenáři na blogu najdou.",
+          "title": "Doplňte popis blogu",
+          "description": "V Nastavení → Branding vyplňte popis toho, co na blogu publikujete.",
           "action": "Doplnit popis blogu"
         },
         "voice": {
-          "title": "Nastavte obsah a čtenáře",
-          "description": "Řekněte AI, o čem má psát a komu mají články pomáhat.",
+          "title": "Doplňte zaměření a cílovou skupinu",
+          "description": "V Nastavení → Obsah vyplňte, o čem má AI psát a pro koho.",
           "action": "Doplnit zaměření"
         },
         "domain": {
@@ -38,7 +130,7 @@
         },
         "article": {
           "title": "Publikujte první článek",
-          "description": "Vytvořte článek, zkontrolujte náhled a publikujte. Koncepty a články naplánované do budoucna se zatím nepočítají.",
+          "description": "V editoru napište nebo vygenerujte článek a zvolte Publikovat. Koncept ani budoucí publikace se nepočítá.",
           "action": "Otevřít editor"
         }
       },

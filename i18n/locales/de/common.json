@@ -6,29 +6,121 @@
       "retry": "Erneut versuchen"
     },
     "setup": {
-      "menu": "Erste Schritte",
-      "title": "Bereiten Sie Ihre erste Veröffentlichung vor",
+      "checklist": {
+        "title": "Blog einrichten",
+        "description": "Schließen Sie die Einrichtung ab und bereiten Sie Ihren Blog auf die Veröffentlichung vor.",
+        "expand": "Anleitung zur Blog-Einrichtung aufklappen",
+        "collapse": "Anleitung zur Blog-Einrichtung zuklappen",
+        "processing": "In Bearbeitung",
+        "attention": "Prüfung erforderlich",
+        "saved": "Gespeicherte Änderungen aktualisieren diese Checkliste automatisch.",
+        "permission": "Ein Teammitglied mit der erforderlichen Berechtigung muss diesen Schritt abschließen.",
+        "resumeDraft": "Entwurf öffnen",
+        "resumeDescription": "Sie haben bereits einen Entwurf. Öffnen Sie ihn, prüfen Sie die Vorschau und veröffentlichen Sie ihn.",
+        "viewArticles": "Artikel anzeigen",
+        "progress": "{done} von {total} geklärt",
+        "optional": "Optional",
+        "skip": "Vorerst überspringen",
+        "skipped": "Übersprungen",
+        "restore": "Schritt wieder aufnehmen",
+        "confirmPublishing": "Diesen Modus bestätigen",
+        "manualDescription": "Artikel warten auf Ihre Freigabe. Bestätigen Sie diesen Modus oder aktivieren Sie die automatische Veröffentlichung und passen Sie den Zeitplan an.",
+        "automaticDescription": "KI-Artikel werden automatisch veröffentlicht. Prüfen Sie den Modus und bei regelmäßiger Erstellung auch Häufigkeit, Tage, Uhrzeit und Zeitzone.",
+        "requirements": {
+          "name": "Blogname",
+          "logo": "Bloglogo",
+          "description": "Beschreibung für Leser",
+          "authorName": "Name des Autors",
+          "avatar": "Porträt des Autors",
+          "bio": "Biografie des Autors",
+          "tone": "Schreibstil",
+          "focus": "Thematischer Schwerpunkt",
+          "audience": "Zielgruppe",
+          "source": "Verarbeitete und für KI aktivierte Quelle",
+          "domain": "Verifizierte Domain-Verbindung",
+          "article": "Veröffentlichter Artikel",
+          "publishingMode": "Veröffentlichungsmodus gewählt",
+          "schedule": "Gültiger Erstellungszeitplan",
+          "measurement": "Analytics aktiviert oder Search Console verbunden",
+          "teammate": "Weiteres Teammitglied oder gültige Einladung",
+          "channel": "Shopify-Blog oder LinkedIn-Profil verbunden und aktiviert"
+        },
+        "steps": {
+          "branding": {
+            "title": "Blogprofil vervollständigen",
+            "description": "Laden Sie ein Logo hoch und ergänzen Sie eine kurze Beschreibung, damit Leser wissen, wessen Blog sie lesen und was sie dort finden.",
+            "action": "Branding bearbeiten"
+          },
+          "author": {
+            "title": "KI-Autor vorstellen",
+            "description": "Ergänzen Sie Porträt und Biografie des Autors und wählen Sie einen Schreibstil. Das Profil erscheint bei seinen Artikeln.",
+            "action": "Profil und Stil festlegen"
+          },
+          "voice": {
+            "title": "Themen und Leser festlegen",
+            "description": "Legen Sie Schwerpunkt und Zielgruppe fest. Die KI wählt danach Themen und passende Erklärungen aus.",
+            "action": "Inhalte festlegen"
+          },
+          "knowledge": {
+            "title": "Quellen für die KI hinzufügen",
+            "description": "Fügen Sie Ihre Firmenwebsite oder ein Dokument hinzu. Der Schritt ist abgeschlossen, sobald eine Quelle verarbeitet und für die KI aktiviert ist.",
+            "action": "Quellen hinzufügen"
+          },
+          "domain": {
+            "title": "Eigene Domain verbinden",
+            "description": "Vervollständigen Sie die DNS-Einträge für {domain} und verifizieren Sie die Verbindung.",
+            "action": "Domain-Verbindung abschließen"
+          },
+          "article": {
+            "title": "Ersten Artikel veröffentlichen",
+            "description": "Erstellen Sie einen Artikel, prüfen Sie die Vorschau und veröffentlichen Sie ihn. Entwürfe und zukünftige Veröffentlichungen zählen noch nicht.",
+            "action": "Ersten Artikel erstellen"
+          },
+          "publishing": {
+            "title": "Veröffentlichungsmodus wählen",
+            "description": "Wählen Sie die Freigabe von Artikeln oder automatische Veröffentlichung. Legen Sie für regelmäßige Erstellung Häufigkeit, Tage, Uhrzeit und Zeitzone fest.",
+            "action": "Veröffentlichung einrichten"
+          },
+          "measurement": {
+            "title": "Messung einrichten",
+            "description": "Aktivieren Sie Google Analytics mit einer Mess-ID oder verbinden Sie Search Console und wählen Sie eine Property. Die Verfügbarkeit hängt vom Tarif ab.",
+            "action": "Messung einrichten"
+          },
+          "team": {
+            "title": "Kollegen einladen",
+            "description": "Laden Sie einen Kollegen in die Redaktion ein und wählen Sie seine Berechtigungen. Eine gültige versandte Einladung reicht aus; die Annahme muss nicht abgewartet werden.",
+            "action": "Kollegen einladen"
+          },
+          "channels": {
+            "title": "Veröffentlichungskanal verbinden",
+            "description": "Verbinden Sie Shopify und wählen Sie einen Zielblog oder verknüpfen Sie ein LinkedIn-Profil. Die Veröffentlichung muss für den verbundenen Kanal aktiviert sein.",
+            "action": "Kanal verbinden"
+          }
+        }
+      },
+      "menu": "Einrichtung abschließen",
+      "title": "Schließen Sie die Blog-Einrichtung ab",
       "completeTitle": "Der Blog ist eingerichtet",
       "progress": "{done} von {total} erledigt",
       "next": "Nächster Schritt: {step}",
-      "expand": "Checkliste zur Blog-Einrichtung aufklappen",
+      "expand": "Verbleibende Schritte der Blog-Einrichtung öffnen",
       "collapse": "Checkliste zur Blog-Einrichtung zuklappen",
       "done": "Erledigt",
       "remaining": "Offen",
       "review": "Einstellungen prüfen",
       "publishPermission": "Zum Veröffentlichen benötigen Sie Schreib- und Veröffentlichungsrechte. Wenden Sie sich an den Blog-Inhaber.",
       "recommended": "Weitere Empfehlungen",
-      "optional": "Öffnen Sie die Checkliste erneut über Erste Schritte im Menü.",
+      "optional": "Öffnen Sie die verbleibenden Schritte im Bereich Blog einrichten unten rechts.",
       "hide": "Checkliste ausblenden",
       "steps": {
         "branding": {
-          "title": "Stellen Sie Ihren Blog vor",
-          "description": "Beschreiben Sie kurz, was Leser in Ihrem Blog finden.",
+          "title": "Blog-Beschreibung ergänzen",
+          "description": "Beschreiben Sie unter Einstellungen → Branding, was Sie auf Ihrem Blog veröffentlichen.",
           "action": "Blog-Beschreibung ergänzen"
         },
         "voice": {
-          "title": "Themen und Zielgruppe festlegen",
-          "description": "Sagen Sie der KI, worüber sie schreiben und wem die Artikel helfen sollen.",
+          "title": "Schwerpunkt und Zielgruppe ergänzen",
+          "description": "Geben Sie unter Einstellungen → Inhalt an, worüber die KI schreiben soll und für wen.",
           "action": "Inhaltliche Ausrichtung festlegen"
         },
         "domain": {
@@ -38,7 +130,7 @@
         },
         "article": {
           "title": "Ersten Artikel veröffentlichen",
-          "description": "Erstellen Sie einen Artikel, prüfen Sie die Vorschau und veröffentlichen Sie ihn. Entwürfe und für später geplante Artikel zählen noch nicht.",
+          "description": "Schreiben oder generieren Sie im Editor einen Artikel und wählen Sie Veröffentlichen. Entwürfe und zukünftige Veröffentlichungen zählen nicht.",
           "action": "Editor öffnen"
         }
       },

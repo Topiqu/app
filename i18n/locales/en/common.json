@@ -6,29 +6,121 @@
       "retry": "Try again"
     },
     "setup": {
-      "menu": "Getting started",
-      "title": "Prepare your first publication",
+      "checklist": {
+        "title": "Blog setup",
+        "description": "Finish setting up your blog and get ready to publish.",
+        "expand": "Expand the blog setup guide",
+        "collapse": "Collapse the blog setup guide",
+        "processing": "Processing",
+        "attention": "Needs attention",
+        "saved": "Saved changes update this checklist automatically.",
+        "permission": "A team member with the required permission must complete this step.",
+        "resumeDraft": "Open your draft",
+        "resumeDescription": "You already have a draft. Open it, check the preview and publish it.",
+        "viewArticles": "View articles",
+        "progress": "Resolved {done} of {total}",
+        "optional": "Optional",
+        "skip": "Skip for now",
+        "skipped": "Skipped",
+        "restore": "Restore step",
+        "confirmPublishing": "Confirm this mode",
+        "manualDescription": "Articles wait for your approval. Confirm this mode, or enable automatic publishing and adjust the schedule in settings.",
+        "automaticDescription": "AI articles are published automatically. Review this mode and, for scheduled creation, the frequency, days, time and time zone.",
+        "requirements": {
+          "name": "Blog name",
+          "logo": "Blog logo",
+          "description": "Description for readers",
+          "authorName": "Author name",
+          "avatar": "Author portrait",
+          "bio": "Author biography",
+          "tone": "Writing style",
+          "focus": "Blog focus",
+          "audience": "Target audience",
+          "source": "Processed source enabled for AI",
+          "domain": "Verified domain connection",
+          "article": "Published article",
+          "publishingMode": "Publishing mode chosen",
+          "schedule": "Valid creation schedule",
+          "measurement": "Analytics enabled or Search Console connected",
+          "teammate": "Another team member or a valid invitation",
+          "channel": "Shopify blog or LinkedIn profile connected and enabled"
+        },
+        "steps": {
+          "branding": {
+            "title": "Complete your blog profile",
+            "description": "Upload a logo and add a short description so readers know whose blog this is and what they will find.",
+            "action": "Edit branding"
+          },
+          "author": {
+            "title": "Introduce your AI author",
+            "description": "Add the author's portrait and biography and choose a writing style. This profile appears with their articles.",
+            "action": "Set profile and style"
+          },
+          "voice": {
+            "title": "Define topics and readers",
+            "description": "Set your focus and target audience. AI uses them to choose topics and explain them to the right readers.",
+            "action": "Set content direction"
+          },
+          "knowledge": {
+            "title": "Add sources for AI",
+            "description": "Add your company website or a document. This step is complete once a source has been processed and enabled for AI.",
+            "action": "Add sources"
+          },
+          "domain": {
+            "title": "Connect your custom domain",
+            "description": "Complete the DNS records for {domain} and verify the connection.",
+            "action": "Finish domain connection"
+          },
+          "article": {
+            "title": "Publish your first article",
+            "description": "Create an article, check its preview and publish it. Drafts and future publications do not count yet.",
+            "action": "Create your first article"
+          },
+          "publishing": {
+            "title": "Choose how to publish",
+            "description": "Choose article approval or automatic publishing. For scheduled creation, set the frequency, days, time and time zone.",
+            "action": "Set up publishing"
+          },
+          "measurement": {
+            "title": "Set up measurement",
+            "description": "Enable Google Analytics with a measurement ID, or connect Search Console and select a property. Availability depends on your plan.",
+            "action": "Set up measurement"
+          },
+          "team": {
+            "title": "Invite a colleague",
+            "description": "Invite a colleague to your editorial team and choose their permissions. A valid sent invitation counts; you do not need to wait for acceptance.",
+            "action": "Invite a colleague"
+          },
+          "channels": {
+            "title": "Connect a publishing channel",
+            "description": "Connect Shopify and select a destination blog, or link a LinkedIn profile. Publishing must be enabled for the connected channel.",
+            "action": "Connect a channel"
+          }
+        }
+      },
+      "menu": "Finish setup",
+      "title": "Finish setting up your blog",
       "completeTitle": "Blog setup is complete",
       "progress": "{done} of {total} complete",
       "next": "Next step: {step}",
-      "expand": "Expand the blog setup checklist",
+      "expand": "Open remaining blog setup steps",
       "collapse": "Collapse the blog setup checklist",
       "done": "Done",
       "remaining": "Remaining",
       "review": "Review settings",
       "publishPermission": "Writing and publishing permissions are required to publish. Contact the blog owner.",
       "recommended": "Recommended extras",
-      "optional": "Reopen this checklist from Getting started in the menu.",
+      "optional": "Open the remaining steps in the Blog setup panel at the bottom right.",
       "hide": "Hide checklist",
       "steps": {
         "branding": {
-          "title": "Introduce your blog",
-          "description": "Add a short description of what readers will find on your blog.",
+          "title": "Add a blog description",
+          "description": "In Settings → Branding, describe what you publish on your blog.",
           "action": "Add a blog description"
         },
         "voice": {
-          "title": "Set your topics and audience",
-          "description": "Tell AI what to write about and who your articles should help.",
+          "title": "Add your focus and target audience",
+          "description": "In Settings → Content, enter what AI should write about and who it is for.",
           "action": "Set content direction"
         },
         "domain": {
@@ -38,7 +130,7 @@
         },
         "article": {
           "title": "Publish your first article",
-          "description": "Create an article, check its preview and publish it. Drafts and articles scheduled for the future do not count yet.",
+          "description": "Write or generate an article in the editor, then select Publish. Drafts and future publications do not count.",
           "action": "Open editor"
         }
       },

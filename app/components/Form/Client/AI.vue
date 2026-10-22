@@ -21,6 +21,7 @@
               v-model="avatarUrl"
               :api="`/api/clients/${clientId}/ai-avatar`"
               :name="username || $t('common.preferences.aiAuthor.title')"
+              @upload="onAvatarUploaded"
             >
               <template #default="{ open }">
                 <button
@@ -249,6 +250,7 @@ import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
 import { BIO_MAX_LENGTH } from '~~/shared/utils/profile'
 
 const { t, locale } = useI18n()
+const onAvatarUploaded = () => refreshClientSiteStatus()
 
 const props = defineProps<{
   clientId: string
