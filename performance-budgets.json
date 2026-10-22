@@ -1,0 +1,13 @@
+{
+  "fieldP75": { "LCP": 2500, "INP": 200, "CLS": 0.1 },
+  "rumSampleRate": 0.1,
+  "build": {
+    "entryJsGzipBytes": 450560,
+    "publicationJsGzipBytes": 655360,
+    "articleJsGzipBytes": 696320,
+    "editorShellJsGzipBytes": 634880,
+    "largestJsGzipBytes": 163840,
+    "totalJsGzipBytes": 1740800,
+    "totalCssGzipBytes": 81920
+  }
+}
