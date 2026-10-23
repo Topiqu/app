@@ -1,7 +1,7 @@
 import { createError } from 'h3'
 import { resolve } from 'node:path'
 import { readFileSync } from 'node:fs'
-import { authenticator } from 'otplib'
+import { generateSecret, generateSync } from 'otplib'
 import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -63,12 +63,12 @@ describe('TOTP tokens', () => {
 })
 
 describe('checkTotpCode', () => {
-  const secret = authenticator.generateSecret()
+  const secret = generateSecret()
 
   it('accepts the current code', async () => {
     stubUtilGlobals()
     const { checkTotpCode } = await loadUtil()
-    await expect(checkTotpCode('u1', secret, authenticator.generate(secret))).resolves.toBe('ok')
+    await expect(checkTotpCode('u1', secret, generateSync({ secret }))).resolves.toBe('ok')
   })
 
   it('rejects a wrong or missing code and a missing secret', async () => {
@@ -76,18 +76,18 @@ describe('checkTotpCode', () => {
     const { checkTotpCode } = await loadUtil()
     await expect(checkTotpCode('u1', secret, '000000')).resolves.toBe('invalid')
     await expect(checkTotpCode('u1', secret, undefined)).resolves.toBe('invalid')
-    await expect(checkTotpCode('u1', null, authenticator.generate(secret))).resolves.toBe('invalid')
+    await expect(checkTotpCode('u1', null, generateSync({ secret }))).resolves.toBe('invalid')
   })
 
   it('stops checking once the per-user budget is spent, even for a correct code', async () => {
     stubUtilGlobals(false)
     const { checkTotpCode } = await loadUtil()
-    await expect(checkTotpCode('u1', secret, authenticator.generate(secret))).resolves.toBe('limited')
+    await expect(checkTotpCode('u1', secret, generateSync({ secret }))).resolves.toBe('limited')
   })
 })
 
 describe('PATCH /api/users/:id 2FA and password', () => {
-  const secret = authenticator.generateSecret()
+  const secret = generateSecret()
 
   const setup = async (options: {
     body: Record<string, unknown>
@@ -159,7 +159,7 @@ describe('PATCH /api/users/:id 2FA and password', () => {
     stubUtilGlobals()
     const { signTotpSetup } = await loadUtil()
     const { run, updateMany } = await setup({
-      body: { totpSetup: signTotpSetup('u1', secret), totpCode: authenticator.generate(secret) },
+      body: { totpSetup: signTotpSetup('u1', secret), totpCode: generateSync({ secret }) },
     })
     await expect(run()).resolves.toEqual({ verified: true })
     expect(updateMany).toHaveBeenCalledWith({ where: { id: 'u1', totpSecret: null }, data: { totpSecret: secret } })
@@ -169,7 +169,7 @@ describe('PATCH /api/users/:id 2FA and password', () => {
     stubUtilGlobals()
     const { signTotpSetup } = await loadUtil()
     const { run } = await setup({
-      body: { totpSetup: signTotpSetup('u1', secret), totpCode: authenticator.generate(secret) },
+      body: { totpSetup: signTotpSetup('u1', secret), totpCode: generateSync({ secret }) },
       claimed: 0,
     })
     await expect(run()).rejects.toMatchObject({ statusCode: 409 })
@@ -189,7 +189,7 @@ describe('PATCH /api/users/:id 2FA and password', () => {
     await expect(denied.run()).rejects.toMatchObject({ statusCode: 403 })
     expect(denied.update).not.toHaveBeenCalled()
 
-    const allowed = await setup({ body: { totpAction: 'disable', totpCode: authenticator.generate(secret) }, stored })
+    const allowed = await setup({ body: { totpAction: 'disable', totpCode: generateSync({ secret }) }, stored })
     await expect(allowed.run()).resolves.toEqual({ verified: false })
     expect(allowed.update).toHaveBeenCalledWith({ where: { id: 'u1' }, data: { totpSecret: null } })
   })

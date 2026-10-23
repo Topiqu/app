@@ -1,5 +1,6 @@
-import { authenticator } from 'otplib'
 import { createHmac, timingSafeEqual } from 'node:crypto'
+
+import { verifyTotpToken } from './totp'
 
 const LOGIN_TTL_MS = 5 * 60 * 1000
 const SETUP_TTL_MS = 10 * 60 * 1000
@@ -65,5 +66,5 @@ export const verifyTotpSetup = (token: string, userId: string): string => {
 export const checkTotpCode = async (userId: string, secret: string | null | undefined, code: string | undefined) => {
   if (!(await consumeRateLimit(`totp:${userId}`, 10, 15 * 60))) return 'limited' as const
   const token = code?.replace(/\s/g, '')
-  return secret && token && authenticator.verify({ token, secret }) ? ('ok' as const) : ('invalid' as const)
+  return secret && token && verifyTotpToken(secret, token) ? ('ok' as const) : ('invalid' as const)
 }
