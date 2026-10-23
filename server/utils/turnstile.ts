@@ -12,11 +12,14 @@ export const verifyTurnstile = async (event: H3Event, token: string | undefined)
 
   try {
     const res = await $fetch<TurnstileResponse, string>('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      signal: AbortSignal.timeout(5000),
+      retry: 0,
       method: 'POST',
       body: { secret, response: token, remoteip: getIp(event) },
     })
     return res.success === true
   } catch {
+    await reportCaughtError('Turnstile verification unavailable', new Error('TURNSTILE_UNAVAILABLE')).catch(() => {})
     return false
   }
 }
