@@ -1,6 +1,6 @@
 import { z } from 'zod'
 export const insightSchema = z.object({
-  summary: z.string().min(20).max(400),
+  summary: z.string().min(20).max(250),
   avgScore: z.number().min(-1).max(1),
   topEmotion: z.string().nullable(),
   toxicity: z.number().min(0).max(1),
