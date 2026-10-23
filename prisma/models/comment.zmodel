@@ -27,9 +27,18 @@ model Comment with Base, Ownable {
     replies         Comment[]         @relation("CommentReplies")
     sentiment       Json?
     sentimentStatus SentimentStatus   @default(PENDING)
+    sentimentClaimToken String?        @omit
+    sentimentClaimedAt DateTime?
+    sentimentAttempts Int             @default(0)
 
     @@allow('read', true)
-    @@allow('create', auth() != null && article.allowedComments && article.clientSite.commentsEnabled && (gifUrl == null || article.clientSite.commentGifsEnabled))
+    @@allow('create', auth().id == userId && auth() != null &&
+        article.deletedAt == null && article.clientSite.deletedAt == null &&
+        ((article.status == 'published' && (article.releaseAt == null || article.releaseAt <= now())) ||
+            auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == article.clientSiteId)) &&
+        (parentId == null || (parent.articleId == articleId && parent.deletedAt == null)) &&
+        article.allowedComments && article.clientSite.commentsEnabled &&
+        (gifUrl == null || article.clientSite.commentGifsEnabled))
     @@allow('update,delete', auth().id == userId || (auth().role == 'admin' && article.clientSiteId == auth().clientSiteId) || auth().role == 'superadmin')
     @@index([sentimentStatus])
 }
@@ -39,7 +48,11 @@ model CommentReaction with Ownable {
     type      ReactionType
     comment   Comment      @relation(fields: [commentId], references: [id], onDelete: Cascade)
     @@id([userId, commentId])
-    @@allow('create', auth().id != null)
+    @@allow('create', auth().id == userId && auth() != null && comment.deletedAt == null &&
+        comment.article.deletedAt == null && comment.article.clientSite.deletedAt == null &&
+        ((comment.article.status == 'published' && (comment.article.releaseAt == null || comment.article.releaseAt <= now())) ||
+            auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == comment.article.clientSiteId)) &&
+        comment.article.allowedComments && comment.article.clientSite.commentsEnabled)
     @@allow('update', auth().id == userId)
     @@allow('delete', auth().id == userId || (auth().role == 'admin' && comment.article.clientSiteId == auth().clientSiteId) || auth().role == 'superadmin')
     @@allow('read', true)
@@ -62,7 +75,12 @@ model EmojiReaction with Ownable {
     comment   Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
     emoji     Emoji   @relation(fields: [emojiId], references: [id], onDelete: Cascade)
     @@id([userId, commentId, emojiId])
-    @@allow('create', auth().id != null)
+    @@allow('create', auth().id == userId && auth() != null && comment.deletedAt == null &&
+        emoji.deletedAt == null && emoji.clientSiteId == comment.article.clientSiteId &&
+        comment.article.deletedAt == null && comment.article.clientSite.deletedAt == null &&
+        ((comment.article.status == 'published' && (comment.article.releaseAt == null || comment.article.releaseAt <= now())) ||
+            auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == comment.article.clientSiteId)) &&
+        comment.article.allowedComments && comment.article.clientSite.commentsEnabled)
     @@allow('delete', auth().id == userId || (auth().role == 'admin' && comment.article.clientSiteId == auth().clientSiteId) || auth().role == 'superadmin')
     @@allow('read', true)
 }

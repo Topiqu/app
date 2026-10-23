@@ -175,6 +175,12 @@ model ClientSite with Base {
     discloseAiContent   Boolean             @default(false)
     communityInsight     Json?
     insightUpdatedAt     DateTime?
+    insightClaimToken    String?             @omit
+    insightClaimedAt     DateTime?
+    insightAttemptedAt   DateTime?
+    insightAttempts      Int                 @default(0)
+    insightNextAttemptAt DateTime?
+    insightError         String?             @length(0, 500)
     aiPromptsSeededAt    DateTime?
     billingPlan          BillingPlans        @default(MONTHLY)
     billingProvider      BillingProvider     @default(STRIPE)

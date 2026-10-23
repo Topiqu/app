@@ -69,6 +69,9 @@ model DraftPost with Base {
     score       Int            @default(0)
     policyFlags Json?
     status      DraftStatus    @default(DRAFT)
+    publicationAttemptedAt DateTime?
+    publicationUrn         String?
+    publicationError       String?
 
     approvals   Approval[]
     published   PublishedPost?

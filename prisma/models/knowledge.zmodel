@@ -48,6 +48,7 @@ model KnowledgeSource with Base {
     embeddingModel   String?
     chunkCount       Int                   @default(0)
     attempts         Int                   @default(0)
+    indexingToken    String?               @omit
     error            String?               @length(0, 500)
     indexedAt        DateTime?
     /// When the content was true; staleness review reads this, falling back to fetchedAt, then indexedAt.
@@ -65,6 +66,7 @@ model KnowledgeSource with Base {
     shopifyConnection ShopifyConnection? @relation(fields: [shopifyConnectionId], references: [id], onDelete: Cascade)
     chunks           KnowledgeChunk[]
     products         KnowledgeProduct[]
+    productStages    KnowledgeProductStage[]
 
     @@allow('read', auth().role == 'superadmin' || auth().clientSiteId == clientSiteId)
     @@allow('all', auth().role == 'admin' && auth().clientSiteId == clientSiteId)
@@ -118,4 +120,20 @@ model KnowledgeProduct {
     @@allow('read', auth().role == 'superadmin' || auth().clientSiteId == clientSiteId)
     @@unique([sourceId, externalId])
     @@index([clientSiteId])
+}
+
+/// Bounded per-source catalog reservation and resumable embedding cache. Live product facts and
+/// chunks change together only after the whole snapshot is ready; failed batches keep serving the
+/// previous catalog. System indexing alone may read or write these temporary rows.
+model KnowledgeProductStage {
+    sourceId       String
+    source         KnowledgeSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+    externalId     String          @length(1, 128)
+    textHash       String          @length(64, 64)
+    embeddingModel String
+    embedding      Unsupported("vector(1536)")?
+    updatedAt      DateTime        @default(now()) @updatedAt
+
+    @@id([sourceId, externalId])
+    @@deny('all', true)
 }
