@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-import { DIVIDER_STYLES, type DividerConfig } from '~~/shared/utils/widgets'
+import type { DividerConfig } from '~~/shared/utils/widgets'
 
 const config = defineModel<DividerConfig>('config', { required: true })
 const { t } = useI18n()

@@ -1,10 +1,31 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import {
-  reconcileDomainConnection,
-  reserveDomainConnection,
-  withDomainLease,
-} from '../../server/utils/domains/connections'
+import { stubNitroImports } from '../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(
+    import('../../server/utils/domains/certificates'),
+    'decryptDomainCertificate',
+    'verifyDomainCertificate',
+  )
+  await stubNitroImports(import('../../server/utils/domains/probe'), 'probeDomainRouting')
+  await stubNitroImports(
+    import('../../server/utils/domains/providers'),
+    'DomainProviderError',
+    'cloudflareDomain',
+    'checkCloudflareFallback',
+    'cloudflareValidationRecords',
+    'dokployDomainSchema',
+    'dokployRequest',
+    'domainProviderConfig',
+    'findDokployDomain',
+  )
+}
+
+await stubImports()
+
+const { reconcileDomainConnection, reserveDomainConnection, withDomainLease } =
+  await import('../../server/utils/domains/connections')
 
 const mocks = vi.hoisted(() => ({ cf: vi.fn(), find: vi.fn(), dokploy: vi.fn(), probe: vi.fn(), config: vi.fn() }))
 vi.mock('../../server/utils/domains/providers', async (original) => ({
@@ -208,3 +229,5 @@ describe('domain connection lifecycle', () => {
     )
   })
 })
+
+beforeEach(stubImports)

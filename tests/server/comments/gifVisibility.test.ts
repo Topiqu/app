@@ -1,4 +1,10 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi, beforeEach } from 'vitest'
+
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/articleViewerAccess'), 'canReadArticle')
+}
 
 describe('comment GIF visibility', () => {
   afterEach(() => vi.unstubAllGlobals())
@@ -71,3 +77,5 @@ describe('comment GIF visibility', () => {
     expect(result.comments[0]!.replies[0]!.gifUrl).toBe(saved[1]!.gifUrl)
   })
 })
+
+beforeEach(stubImports)

@@ -3,10 +3,6 @@ import sharp from 'sharp'
 import PDFDocument from 'pdfkit'
 import { Transform } from 'node:stream'
 import { pipeline } from 'node:stream/promises'
-import { languageTag } from '~~/shared/utils/language'
-import { htmlToText } from '~~/shared/utils/articleBlocks'
-
-import { fetchPublicUrl, readLimitedBody } from '../../utils/images/publicFetch'
 
 const inputSchema = z.object({ ids: z.array(z.string().min(1).max(128)).min(1).max(100) }).strict()
 let activeExports = 0

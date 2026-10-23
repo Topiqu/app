@@ -109,9 +109,6 @@
 
 <script lang="ts" setup>
 import type { InternalApi } from 'nitropack'
-import type { Language } from '~~/shared/utils/language'
-
-import { formatDate } from '~~/shared/utils'
 
 type Notif = {
   id: string

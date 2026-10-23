@@ -1,5 +1,4 @@
 import prisma from '../prisma'
-import { refreshAccessToken } from './api'
 
 const EXPIRY_BUFFER_MS = 5 * 60 * 1000
 

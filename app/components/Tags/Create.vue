@@ -116,10 +116,6 @@
 </template>
 
 <script setup lang="ts">
-import { tagSlug } from '~~/shared/utils/tagSlug'
-
-import { emptyAsyncDataList } from '~/utils/asyncDataDefaults'
-
 type TagItem = { id: string; name: string }
 
 const open = defineModel<boolean>({ default: false })

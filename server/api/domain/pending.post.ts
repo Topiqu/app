@@ -1,9 +1,5 @@
 import { z } from 'zod'
 import { randomBytes } from 'node:crypto'
-import { isManagedDomain, domainError, normalizeDomain } from '~~/shared/utils/domain'
-
-import { DomainProviderError } from '../../utils/domains/providers'
-import { reserveDomainConnection } from '../../utils/domains/connections'
 
 export default defineEventHandler(async (event) => {
   const { user, db, clientSiteId } = await requireDomainAccess(event)

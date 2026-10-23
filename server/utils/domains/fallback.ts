@@ -1,7 +1,4 @@
 import { randomBytes } from 'node:crypto'
-import { domainError, isManagedDomain } from '~~/shared/utils/domain'
-
-import { isDomainTaken } from '../domainVerification'
 
 export async function chooseDomainFallback(clientSiteId: string) {
   const aliases = await prisma.domainRedirect.findMany({

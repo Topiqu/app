@@ -1,5 +1,3 @@
-import { isManagedDomain, isValidDomain, normalizeDomain } from '~~/shared/utils/domain'
-
 /** A tenant change starts at its dashboard so tenant-specific route IDs cannot carry over. */
 export const tenantAdminUrl = (
   site: { domain: string; domainVerified: boolean },

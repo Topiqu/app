@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import { passwordResetHash, passwordResetIdentifier } from '~~/server/utils/passwordReset'
 
 const schema = z.object({
   email: z.email().transform((value) => value.trim().toLowerCase()),

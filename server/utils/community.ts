@@ -2,9 +2,6 @@ import type { ClientPlan } from '~~/generated/zenstack/models'
 
 import { z } from 'zod'
 
-import { insightSchema } from './ai/insight'
-import { activeFeatureFilter } from './planFeatures'
-
 export const communitySiteWhere = () => ({
   deletedAt: null,
   plan: { in: ['PREMIUM', 'CUSTOM'] as ClientPlan[] },

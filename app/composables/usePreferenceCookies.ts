@@ -1,7 +1,5 @@
 import type { Language } from '~~/generated/zenstack/models'
 
-import { preferenceCookieDomain } from '~~/shared/utils/preferences'
-
 export const usePreferenceCookies = () => {
   const url = useRequestURL()
   const options = {

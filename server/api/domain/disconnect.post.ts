@@ -1,7 +1,4 @@
 import { z } from 'zod'
-import { domainError, isManagedDomain, normalizeDomain } from '~~/shared/utils/domain'
-
-import { attemptDomainCleanup, withDomainLease } from '../../utils/domains/connections'
 
 export default defineEventHandler(async (event) => {
   const { db, user, clientSiteId } = await requireDomainAccess(event)

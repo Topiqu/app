@@ -1,10 +1,17 @@
 import { createError } from 'h3'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/articleViewerAccess'), 'canReadArticle')
+}
+
 describe('POST /api/comments reply', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.resetModules()
     vi.unstubAllGlobals()
+    await stubImports()
   })
 
   const setup = async (

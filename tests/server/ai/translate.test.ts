@@ -1,6 +1,15 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, beforeEach } from 'vitest'
 
-import { maskContentBlocks, rebuildContent } from '../../../server/utils/ai/translate'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/sanitize'), 'escapeHtml')
+  await stubNitroImports(import('../../../server/utils/ai/reasoning'), 'aiReasoning')
+}
+
+await stubImports()
+
+const { maskContentBlocks, rebuildContent } = await import('../../../server/utils/ai/translate')
 
 const optionsAttr = (opts: Array<{ id: string; label: string }>) => JSON.stringify(opts).replace(/"/g, '&quot;')
 
@@ -139,3 +148,5 @@ describe('rebuildContent', () => {
     expect(rebuildContent(masked, verbatim, polls, images)).toContain('<h1>Title</h1>')
   })
 })
+
+beforeEach(stubImports)

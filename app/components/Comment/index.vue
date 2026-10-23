@@ -247,8 +247,6 @@
 <script setup lang="ts">
 import type { CommentWithReplies } from '~~/types/comment'
 
-import { formatDate } from '~~/shared/utils'
-
 const {
   comment,
   isReplying,

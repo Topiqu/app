@@ -109,8 +109,6 @@
 </template>
 
 <script setup lang="ts">
-import { ARTICLE_PROSE_CLASS } from '~~/shared/utils/articleProse'
-
 const props = defineProps<{ action: ContentActionView; allowed: boolean; busy: boolean }>()
 const emit = defineEmits<{ run: [command: ContentActionCommand] }>()
 

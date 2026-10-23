@@ -1,13 +1,4 @@
 import { z } from 'zod'
-import { KNOWLEDGE_LIMITS } from '~~/shared/utils/knowledge'
-import { discoverSitemapPages } from '~~/server/utils/knowledge/sitemap'
-import {
-  assertCitableUrl,
-  knowledgeExtractFailure,
-  knowledgeLimits,
-  limitKnowledgeRequests,
-  requireKnowledgeAccess,
-} from '~~/server/utils/knowledge/sources'
 
 const InputSchema = z.object({ url: z.string().trim().url().max(2048) })
 

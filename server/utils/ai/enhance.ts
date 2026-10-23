@@ -1,11 +1,7 @@
-import type { PromptEditAction, TextEditAction } from '~~/shared/utils/aiEdit'
-
 import { z } from 'zod'
 import { load } from 'cheerio'
 import { generateText, Output } from 'ai'
 import DOMPurify from 'isomorphic-dompurify'
-
-import { aiReasoning } from './reasoning'
 
 const LANGUAGE_RULE = 'Answer in the same language as the input, and return the result alone, with no preamble.'
 const PLAIN_BRIEF_RULE = 'Return plain text only. Do not use Markdown headings, bold, italics, code fences or HTML.'

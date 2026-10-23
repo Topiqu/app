@@ -1,7 +1,6 @@
 import type { Language, MediaOrigin, MediaUsagePlacement } from '~~/generated/zenstack/models'
 
 import { createHash, randomUUID } from 'node:crypto'
-import { extractArticleMedia } from '~~/shared/utils/mediaRights'
 
 type RegisterMediaInput = {
   clientSiteId: string

@@ -1,6 +1,25 @@
 import { createError } from 'h3'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/logger'), 'logger')
+  await stubNitroImports(import('../../../server/utils/authErrorMessage'), 'sanitizeAuthErrorMessage')
+  await stubNitroImports(import('../../../server/utils/authErrorLogger'), 'logAuthError')
+  await stubNitroImports(import('../../../server/utils/ip'), 'clientIp')
+  await stubNitroImports(import('../../../server/utils/tenantMembership'), 'TENANT_SCOPES')
+  await stubNitroImports(
+    import('../../../server/utils/session'),
+    'headerRecord',
+    'initialTenant',
+    'sessionDevice',
+    'toSessionUser',
+    'uniqueUsername',
+  )
+  await stubNitroImports(import('../../../server/utils/authCookie'), 'isSecureAuth', 'sessionCookieDomain')
+}
+
 const factory = vi.hoisted(() => vi.fn((options: unknown) => ({ options, api: {} })))
 vi.mock('better-auth', () => ({ betterAuth: factory }))
 vi.mock('@zenstackhq/better-auth', () => ({ zenstackAdapter: () => ({}) }))
@@ -59,3 +78,5 @@ describe('custom-domain authentication isolation', () => {
     await expect(instance('http://blog.example.test')).rejects.toMatchObject({ statusCode: 403 })
   })
 })
+
+beforeEach(stubImports)

@@ -1,7 +1,5 @@
 import { createError } from 'h3'
 
-import type { getEnhancedPrisma } from '../zenstack'
-
 export async function decideDraft(input: {
   db: Awaited<ReturnType<typeof getEnhancedPrisma>>
   draftId: string

@@ -23,11 +23,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  canPreviewWidgetSlot,
-  widgetPagePreviewEventSchema,
-  type WidgetPagePreviewState,
-} from '~/utils/widgetPagePreview'
+import type { WidgetPagePreviewState } from '~/utils/widgetPagePreview'
 
 const {
   source,

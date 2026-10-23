@@ -1,6 +1,3 @@
-import type { MaybeRefOrGetter } from 'vue'
-import type { PublicAuthorSummary } from '~~/shared/types/article'
-
 const authorSummaryQuery =
   (requestFetch: ReturnType<typeof useRequestFetch>, userId: string) =>
   ({ signal }: { signal: AbortSignal }) =>

@@ -17,8 +17,6 @@
 </template>
 
 <script lang="ts" setup>
-import { authErrorKey } from '~~/shared/utils/authError'
-
 definePageMeta({ middleware: 'auth', shell: 'product', dashboardSidebar: false })
 
 const route = useRoute()

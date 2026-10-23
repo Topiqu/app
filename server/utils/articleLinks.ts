@@ -1,8 +1,6 @@
 import type { Language } from '~~/generated/zenstack/models'
 
 import * as cheerio from 'cheerio'
-import { articlePath } from '~~/shared/utils/routes'
-import { articleLinkTarget } from '~~/shared/utils/articleOptimization'
 
 type LinkDb = {
   article: { findMany: (args: any) => Promise<any[]> }

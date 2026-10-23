@@ -1,5 +1,3 @@
-import { allowEmailVerificationRequest, issueEmailVerification } from '~~/server/utils/emailVerification'
-
 export default defineEventHandler(async (e) => {
   const { translate: t } = await useServerI18n(e)
   const user = await getSessionUser(e)

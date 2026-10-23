@@ -2,9 +2,6 @@ import type { JsonValue } from '@zenstackhq/orm'
 import type { ArticleCreditOperation } from '~~/generated/zenstack/models'
 
 import { randomUUID } from 'node:crypto'
-import { ARTICLE_CREDIT_POLICY_VERSION, articleCreditsForPlan } from '~~/shared/utils/articleCredits'
-
-import type { DatabaseTransaction } from './database'
 
 type Tx = DatabaseTransaction
 type Allocation = { id: string; amount: number }[]

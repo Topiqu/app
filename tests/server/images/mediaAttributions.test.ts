@@ -1,6 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { applyMediaAttributions } from '../../../server/utils/mediaRights'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/sanitize'), 'escapeHtml')
+}
+
+await stubImports()
+
+const { applyMediaAttributions } = await import('../../../server/utils/mediaRights')
 
 describe('applyMediaAttributions', () => {
   beforeEach(() => {
@@ -39,3 +47,5 @@ describe('applyMediaAttributions', () => {
     expect(await applyMediaAttributions('site', content)).toBe(content)
   })
 })
+
+beforeEach(stubImports)

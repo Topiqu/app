@@ -1,10 +1,15 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, beforeEach } from 'vitest'
 
-import {
-  filterResearchSources,
-  researchEvidence,
-  retrievedResearchSources,
-} from '../../../server/utils/ai/researchEvidence'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/ai/reasoning'), 'aiReasoning')
+}
+
+await stubImports()
+
+const { filterResearchSources, researchEvidence, retrievedResearchSources } =
+  await import('../../../server/utils/ai/researchEvidence')
 
 describe('research evidence', () => {
   it('uses provider search results and opened pages when there are no inline citations', () => {
@@ -68,3 +73,5 @@ it('splits concatenated model citations while retaining only retrieved URLs', ()
     b = 'https://publisher.test/b'
   expect(filterResearchSources([a + b + '  https://invented.test/c'], a + ' ' + b)).toEqual([a, b])
 })
+
+beforeEach(stubImports)

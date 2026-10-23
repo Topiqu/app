@@ -1,7 +1,15 @@
 import { generateText } from 'ai'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { enhancePrompt, plainTextBrief } from '../../../server/utils/ai/enhance'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/ai/reasoning'), 'aiReasoning')
+}
+
+await stubImports()
+
+const { enhancePrompt, plainTextBrief } = await import('../../../server/utils/ai/enhance')
 
 vi.mock('ai', async (importOriginal) => ({
   ...(await importOriginal<typeof import('ai')>()),
@@ -26,3 +34,5 @@ describe('plain article brief', () => {
     expect(plainTextBrief('**Důležité** a `konkrétní`')).toBe('Důležité a konkrétní')
   })
 })
+
+beforeEach(stubImports)

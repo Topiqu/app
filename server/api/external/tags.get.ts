@@ -1,5 +1,3 @@
-import { publicArticleWhere } from '../../utils/articleViewerAccess'
-
 export default defineEventHandler(async (event) => {
   const clientSite = await requireExternalClient(event)
   const where = { clientSiteId: clientSite.id, ...publicArticleWhere() }

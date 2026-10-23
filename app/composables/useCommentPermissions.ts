@@ -1,6 +1,3 @@
-import type { Ref } from 'vue'
-import type { CommentWithReplies } from '~~/types/comment'
-
 // Mirrors the server checks for the UI only; the endpoints enforce them.
 export function useCommentPermissions(comment: Ref<CommentWithReplies>, isReplying: Ref<boolean>) {
   const { data: session } = useAuth()

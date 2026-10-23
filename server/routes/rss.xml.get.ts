@@ -1,7 +1,3 @@
-import { articlePath } from '~~/shared/utils/routes'
-
-import { publicArticleWhere } from '../utils/articleViewerAccess'
-
 const xml = (value: string) =>
   value
     .replace(/&/g, '&amp;')

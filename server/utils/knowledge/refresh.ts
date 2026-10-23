@@ -1,9 +1,3 @@
-import { KNOWLEDGE_FEED_REFRESH_HOURS, KNOWLEDGE_REFRESH_DAYS } from '~~/shared/utils/knowledge'
-
-import { refetchKnowledgeUrl } from './sources'
-import { knowledgeSiteWhere } from './eligibility'
-import { aiEmbeddingModelId } from '../ai/modelRegistry'
-
 const BATCH_SIZE = 50
 
 /**

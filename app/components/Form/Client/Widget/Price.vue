@@ -15,7 +15,7 @@
 </template>
 
 <script setup lang="ts">
-import { CRYPTO, FIAT, type PriceConfig } from '~~/shared/utils/widgets'
+import type { PriceConfig } from '~~/shared/utils/widgets'
 
 const config = defineModel<PriceConfig>('config', { required: true })
 

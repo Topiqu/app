@@ -1,7 +1,16 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, beforeEach } from 'vitest'
 
-import { insightSchema } from '../../server/utils/ai/insight'
-import { communityAverages, communityTrend, readCommunityInsight } from '../../server/utils/community'
+import { stubNitroImports } from '../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../server/utils/ai/insight'), 'insightSchema')
+  await stubNitroImports(import('../../server/utils/planFeatures'), 'activeFeatureFilter')
+}
+
+await stubImports()
+
+const { insightSchema } = await import('../../server/utils/ai/insight')
+const { communityAverages, communityTrend, readCommunityInsight } = await import('../../server/utils/community')
 
 const report = {
   summary: 'Readers are discussing the article constructively.',
@@ -55,3 +64,5 @@ describe('community reporting contracts', () => {
     expect(readCommunityInsight({ ...report, summary: 'a'.repeat(400) })?.summary).toHaveLength(250)
   })
 })
+
+beforeEach(stubImports)

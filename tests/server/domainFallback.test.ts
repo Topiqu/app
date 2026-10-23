@@ -1,6 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { chooseDomainFallback } from '../../server/utils/domains/fallback'
+import { stubNitroImports } from '../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../server/utils/domainVerification'), 'isDomainTaken')
+}
+
+await stubImports()
+
+const { chooseDomainFallback } = await import('../../server/utils/domains/fallback')
 
 const taken = vi.hoisted(() => vi.fn())
 vi.mock('../../server/utils/domainVerification', () => ({ isDomainTaken: taken }))
@@ -33,3 +41,5 @@ describe('revoked domain fallback', () => {
     expect(taken).toHaveBeenCalledTimes(5)
   })
 })
+
+beforeEach(stubImports)

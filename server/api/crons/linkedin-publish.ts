@@ -1,6 +1,4 @@
 import prisma from '../../utils/prisma'
-import { mapLimit } from '../../utils/concurrency'
-import { publishApprovedDraft } from '../../utils/linkedin/publisher'
 
 export default defineEventHandler(async (event) => {
   requireCron(event)

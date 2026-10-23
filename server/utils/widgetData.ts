@@ -1,12 +1,3 @@
-import {
-  CRYPTO,
-  FIAT,
-  type PriceConfig,
-  type PriceData,
-  type WeatherConfig,
-  type WeatherData,
-} from '~~/shared/utils/widgets'
-
 // MET Norway and Nominatim refuse anonymous clients; both ask for an identifying User-Agent.
 const USER_AGENT = 'Topiqu/1.0 (+https://topiqu.com)'
 const fetchJson = <T>(url: string) => $fetch<T, string>(url, { timeout: 5000, headers: { 'user-agent': USER_AGENT } })

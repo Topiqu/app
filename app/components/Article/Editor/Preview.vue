@@ -16,10 +16,6 @@
 <script setup lang="ts">
 import type { CoverCredit } from '~~/shared/utils/imageCredit'
 
-import { readFaq } from '~~/shared/utils/articleFaq'
-
-import type { ClientSiteStatus } from '~/composables/useClientSite'
-
 // Polls are inert here: a poll only gets its `data-poll-id` from `syncArticlePolls` on save, and
 // `ArticleParsed` degrades an unstamped block to raw HTML.
 const props = defineProps<{

@@ -1,6 +1,3 @@
-import type { MaybeRefOrGetter } from 'vue'
-
-import { AVATAR_MAX_UPLOAD_BYTES } from '~~/shared/utils/uploadLimits'
 type Translate = (key: string) => string
 export type ImageFrameFit = 'cover' | 'contain'
 

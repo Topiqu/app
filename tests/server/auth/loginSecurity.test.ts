@@ -1,8 +1,16 @@
 import { resolve } from 'node:path'
 import { readFileSync } from 'node:fs'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, beforeEach } from 'vitest'
 
-import { credentialFailure, loginRequestContext, normalizeLoginEmail } from '../../../server/utils/authLogin'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/ip'), 'clientIp')
+}
+
+await stubImports()
+
+const { credentialFailure, loginRequestContext, normalizeLoginEmail } = await import('../../../server/utils/authLogin')
 
 describe('credential login decisions', () => {
   it.each([
@@ -67,3 +75,5 @@ describe('credential login wiring', () => {
     expect(form.match(/signInWithCredentials\(/g)).toHaveLength(3)
   })
 })
+
+beforeEach(stubImports)

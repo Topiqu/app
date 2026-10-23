@@ -1,6 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { auditArticleStep, createArticleGenerationAudit } from '../../server/utils/articleGenerationAudit'
+import { stubNitroImports } from '../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../server/utils/databaseJson'), 'toDatabaseJson')
+}
+
+await stubImports()
+
+const { auditArticleStep, createArticleGenerationAudit } = await import('../../server/utils/articleGenerationAudit')
 
 const log = vi.fn()
 const report = vi.fn()
@@ -158,3 +166,5 @@ describe('article generation audit', () => {
     expect(audit.stageForError(reviewFailure)).toBe('review')
   })
 })
+
+beforeEach(stubImports)

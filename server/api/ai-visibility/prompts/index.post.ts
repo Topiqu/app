@@ -1,6 +1,4 @@
 import { z } from 'zod'
-import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
-import { promptIntent } from '~~/shared/utils/aiVisibility'
 
 const Body = z.object({
   text: z.string().trim().min(3).max(1000),

@@ -1,6 +1,4 @@
 import { z } from 'zod'
-import { retrieveKnowledge } from '~~/server/utils/knowledge/retrieve'
-import { limitKnowledgeRequests, requireKnowledgeAccess } from '~~/server/utils/knowledge/sources'
 
 /** The playground: shows what a writer would receive for a topic, without counting as usage. */
 export default defineEventHandler(async (event) => {

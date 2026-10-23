@@ -101,11 +101,7 @@
 </template>
 
 <script setup lang="ts">
-import type { MediaLibraryAsset, MediaLibraryPage } from '~~/shared/types/mediaLibrary'
-
-import { MEDIA_ORIGINS } from '~~/shared/types/mediaRights'
-
-import { createAsyncDataRequest } from '~/utils/asyncDataRequest'
+import type { MediaLibraryAsset } from '~~/shared/types/mediaLibrary'
 
 const { selectable = false, selectedId = null } = defineProps<{ selectable?: boolean; selectedId?: string | null }>()
 const emit = defineEmits<{ select: [asset: MediaLibraryAsset]; inspect: [id: string] }>()

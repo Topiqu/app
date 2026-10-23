@@ -5,9 +5,32 @@ import { randomUUID } from 'node:crypto'
 import { PolicyPlugin } from '@zenstackhq/plugin-policy'
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { createDatabaseClient } from '../../../server/utils/database'
-import { fetchPublicUrl } from '../../../server/utils/images/publicFetch'
-import { indexKnowledgeSource } from '../../../server/utils/knowledge/indexing'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(
+    import('../../../server/utils/knowledge/extract'),
+    'normalizeKnowledgeText',
+    'extractKnowledgeUrl',
+    'KnowledgeExtractError',
+  )
+  await stubNitroImports(import('../../../server/utils/knowledge/indexing'), 'indexKnowledgeSource')
+  await stubNitroImports(
+    import('../../../server/utils/knowledge/sources'),
+    'assertCitableUrl',
+    'hashKnowledge',
+    'kickKnowledgeIndex',
+    'KNOWLEDGE_SOURCE_VIEW',
+    'requireKnowledgeAccess',
+  )
+  await stubNitroImports(import('../../../server/utils/images/publicFetch'), 'assertPublicHttpsUrl')
+}
+
+await stubImports()
+
+const { createDatabaseClient } = await import('../../../server/utils/database')
+const { fetchPublicUrl } = await import('../../../server/utils/images/publicFetch')
+const { indexKnowledgeSource } = await import('../../../server/utils/knowledge/indexing')
 
 vi.mock('ai', async (original) => ({ ...(await original<typeof import('ai')>()), embedMany: vi.fn() }))
 vi.mock('../../../server/utils/images/publicFetch', async (original) => ({
@@ -367,3 +390,5 @@ describe.skipIf(!enabled)('knowledge indexing claim ownership on PostgreSQL', ()
     expect(vi.mocked(embedMany).mock.calls.flatMap(([options]) => options.values)).toHaveLength(500)
   })
 })
+
+beforeEach(stubImports)

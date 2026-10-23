@@ -73,10 +73,6 @@
 import type { InternalApi } from 'nitropack'
 import type { ArticleWithDetails } from '~~/types/article'
 
-import { tagSlug } from '~~/shared/utils/tagSlug'
-
-import { useTagQueries } from '~/composables/useTagQueries'
-
 const props = defineProps<{
   article?: ArticleWithDetails
   initialTags?: string[]

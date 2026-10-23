@@ -1,6 +1,13 @@
 // @vitest-environment node
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { stubNitroImports } from '../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../server/utils/searchConsole/crypto'), 'decryptSearchConsoleToken')
+  await stubNitroImports(import('../../server/utils/shopify/publication'), 'publishShopifyArticle')
+}
+
 const publish = vi.hoisted(() => vi.fn())
 vi.mock('../../server/utils/shopify/publication', () => ({ publishShopifyArticle: publish }))
 vi.mock('../../server/utils/searchConsole/crypto', () => ({ decryptSearchConsoleToken: () => 'fixture' }))
@@ -90,3 +97,5 @@ describe('scheduled task outcome summaries', () => {
     expect(publish).not.toHaveBeenCalled()
   })
 })
+
+beforeEach(stubImports)

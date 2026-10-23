@@ -3,8 +3,6 @@ import type { DraftStatus } from '~~/generated/zenstack/models'
 import { createError } from 'h3'
 
 import prisma from '../prisma'
-import { getValidAccessToken } from './token'
-import { isLinkedInPostUrn, LinkedInPostError, createPost } from './api'
 
 const PUBLISHABLE_FROM: DraftStatus[] = ['DRAFT', 'AWAITING_APPROVAL', 'APPROVED', 'REJECTED', 'FAILED']
 const publicationSelect = {

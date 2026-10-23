@@ -1,5 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/ai/translationRow'), 'nextTranslationVersion')
+}
+
 beforeEach(() => vi.resetModules())
 afterEach(() => vi.unstubAllGlobals())
 
@@ -158,3 +164,5 @@ describe('queued translation ownership', () => {
     expect(fixture.report).toHaveBeenCalled()
   })
 })
+
+beforeEach(stubImports)

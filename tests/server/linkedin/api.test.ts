@@ -2,13 +2,16 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import {
-  createPost,
-  getAccessToken,
-  getPersonalUrn,
-  getPostMetrics,
-  refreshAccessToken,
-} from '../../../server/utils/linkedin/api'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/images/publicFetch'), 'readLimitedBody')
+}
+
+await stubImports()
+
+const { createPost, getAccessToken, getPersonalUrn, getPostMetrics, refreshAccessToken } =
+  await import('../../../server/utils/linkedin/api')
 
 const request = vi.fn<typeof fetch>()
 beforeEach(() => {
@@ -148,3 +151,5 @@ describe('LinkedIn read and token deadlines', () => {
     )
   })
 })
+
+beforeEach(stubImports)

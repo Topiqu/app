@@ -3,12 +3,7 @@ import type { Language } from '~~/generated/zenstack/models'
 import { z } from 'zod'
 import * as cheerio from 'cheerio'
 import { generateText, Output } from 'ai'
-import { articlePath } from '~~/shared/utils/routes'
 import { isTag, isText, type AnyNode, type Text } from 'domhandler'
-import { articleLinkTarget } from '~~/shared/utils/articleOptimization'
-
-import { escapeHtml } from '../sanitize'
-import { aiReasoning } from './reasoning'
 
 export const MAX_ARTICLE_LINKS = 3
 const CANDIDATE_POOL = 200

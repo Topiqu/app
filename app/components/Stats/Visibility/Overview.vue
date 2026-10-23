@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
 
-import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
-import { isLanguage, type Language } from '~~/shared/utils/language'
-
 import type { StatTile } from '~/components/AppStatTiles.vue'
 import type {
   VisibilityOverview as Overview,

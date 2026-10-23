@@ -1,15 +1,5 @@
-import type { Language } from '~~/shared/utils/language'
-
 import { z } from 'zod'
 import { randomBytes } from 'node:crypto'
-import { LanguageSchema, ThemeSchema } from '~~/shared/siteSchemas'
-import {
-  domainVerificationDefaults,
-  isManagedDomain,
-  isValidDomain,
-  normalizeDomain,
-  validateSubdomain,
-} from '~~/shared/utils/domain'
 
 const MAX_OWNED_BASIC_TENANTS = 3
 

@@ -3,7 +3,20 @@
 import { randomUUID } from 'node:crypto'
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { createDatabaseClient } from '../../../server/utils/database'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/linkedin/token'), 'getValidAccessToken')
+  await stubNitroImports(
+    import('../../../server/utils/linkedin/api'),
+    'isLinkedInPostUrn',
+    'LinkedInPostError',
+    'createPost',
+    'refreshAccessToken',
+  )
+}
+
+const { createDatabaseClient } = await import('../../../server/utils/database')
 
 const { createPost } = vi.hoisted(() => ({ createPost: vi.fn() }))
 vi.mock('../../../server/utils/linkedin/api', async (original) => ({
@@ -195,3 +208,5 @@ describe.skipIf(!enabled)('LinkedIn publication safety on PostgreSQL', () => {
     expect(await db!.publishedPost.count({ where: { draftId: draft.id } })).toBe(0)
   })
 })
+
+beforeEach(stubImports)

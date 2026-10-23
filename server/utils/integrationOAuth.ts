@@ -1,13 +1,6 @@
 import type { H3Event } from 'h3'
-import type { SessionUser } from '~~/shared/types/auth'
 
 import { z } from 'zod'
-import { isRootHost } from '~~/shared/utils/domain'
-import { isLanguage } from '~~/shared/utils/language'
-
-import { isSecureAuth } from './authCookie'
-import { getLinkedInRedirectUri } from './linkedin/redirectUri'
-import { authTransferHash, authTransferOrigin, authTransferSecret, centralAuthOrigin } from './authTransfer'
 
 export const INTEGRATION_OAUTH_IDENTIFIER = 'integration-oauth'
 export const integrationProviderSchema = z.enum(['linkedin', 'search-console'])

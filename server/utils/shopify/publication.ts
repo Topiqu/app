@@ -2,11 +2,6 @@ import type { ShopifyPublicationStatus } from '~~/generated/zenstack/models'
 
 import { randomUUID } from 'node:crypto'
 
-import { shopifyEligible } from './config'
-import { shopifyAccessToken } from './token'
-import { ShopifyApiError, shopifyGraphql } from './api'
-import { shopifyHandle, type ShopifyArticlePayload } from './content'
-
 export const shopifyPublicationSelect = {
   id: true,
   status: true,

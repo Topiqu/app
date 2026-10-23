@@ -80,8 +80,6 @@
 <script setup lang="ts">
 import type { ConsentCapabilities, ConsentDecision, ConsentSite } from '~~/shared/utils/consent'
 
-import { hasAnalyticsConsent, hasMarketingConsent } from '~~/shared/utils/consent'
-
 const props = defineProps<{
   site: ConsentSite | null | undefined
   capabilities: ConsentCapabilities

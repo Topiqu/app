@@ -3,9 +3,6 @@ import type { H3Event } from 'h3'
 import { z } from 'zod'
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto'
 
-import { isSecureAuth } from './authCookie'
-import { isPlatformAuthHost } from './authHost'
-
 export const AUTH_TRANSFER_IDENTIFIER = 'custom-auth-transfer'
 export const AUTH_TRANSFER_COOKIE = `${isSecureAuth ? '__Host-' : ''}topiqu.auth-transfer`
 export const authTransferCookieOptions = { httpOnly: true, secure: isSecureAuth, sameSite: 'lax' as const, path: '/' }

@@ -1,5 +1,3 @@
-import { isPreferenceLanguage, isPreferenceTheme } from '~~/shared/utils/preferences'
-
 export default defineNuxtPlugin({
   name: 'preferences',
   dependsOn: ['auth', 'i18n:plugin'],

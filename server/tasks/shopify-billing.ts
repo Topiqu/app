@@ -1,5 +1,3 @@
-import { shopifyBillingConfigured, syncShopifyPlan } from '../utils/shopify/billing'
-
 // Shopify App Pricing sends no webhooks; cancellations, freezes and renewals are polled.
 export default defineMonitoredTask({
   meta: { name: 'shopify-billing', description: 'Syncs Shopify App Pricing subscriptions to project plans' },

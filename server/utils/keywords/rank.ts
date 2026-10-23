@@ -1,11 +1,5 @@
 import type { Language } from '~~/generated/zenstack/models'
 
-import { articlePath } from '~~/shared/utils/routes'
-import { keywordLocation } from '~~/shared/utils/keywordPlan'
-
-import { activeFeatureFilter } from '../planFeatures'
-import { dataForSeo, hasDataForSeo } from './dataforseo'
-
 const DAY_MS = 86_400_000
 // Checked depth; DataForSEO bills per 10 results, so top 30 is three units ($0.006).
 const RANK_DEPTH = 30

@@ -1,10 +1,5 @@
 import type { Language } from '~~/generated/zenstack/models'
 
-import { readFaq } from '~~/shared/utils/articleFaq'
-import { LOCALIZED_SEGMENTS } from '~~/shared/utils/routes'
-
-import { canReadArticle } from '../../utils/articleViewerAccess'
-
 /** `/md/{locale}/{segment}/{slug}[.md]` — the plain-text article for LLM and agent consumption. */
 export default defineEventHandler(async (event) => {
   const tenant = await tenantByHost(event)

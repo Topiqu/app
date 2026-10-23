@@ -1,5 +1,3 @@
-import { isValidEmojiShortcode, normalizeEmojiShortcode } from '#shared/utils/emoji'
-
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const { user } = await requireTenantScope(event, 'TENANT_SETTINGS')

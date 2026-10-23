@@ -1,7 +1,4 @@
 import { z } from 'zod'
-import { articleSlug } from '~~/shared/utils/articleSlug'
-
-import { nextTranslationVersion, translationSelect } from '../../../utils/ai/translationRow'
 
 const BodySchema = z.object({
   expectedUpdatedAt: z.iso.datetime().nullable().optional(),

@@ -1,8 +1,4 @@
 import { randomBytes } from 'node:crypto'
-import { isLanguage } from '~~/shared/utils/language'
-
-import { renderShopifyAppHome } from '../../utils/shopify/appHome'
-import { normalizeShopifyShop, shopifyConfigured, shopifyCredentials, shopifyOrigin } from '../../utils/shopify/config'
 
 // The App Home URL. Outside the Shopify admin there is nothing to show, so it leads to Topiqu.
 export default defineEventHandler(async (event) => {

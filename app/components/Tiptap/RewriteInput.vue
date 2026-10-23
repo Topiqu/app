@@ -47,8 +47,6 @@
 </template>
 
 <script setup lang="ts">
-import { TEXT_EDIT_INSTRUCTION_MAX_LENGTH } from '~~/shared/utils/aiEdit'
-
 const { pending = false } = defineProps<{ pending?: boolean }>()
 const emit = defineEmits<{ submit: [instruction: string]; cancel: [] }>()
 const instruction = shallowRef('')

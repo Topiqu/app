@@ -1,6 +1,3 @@
-import { KnowledgeExtractError } from './extract'
-import { fetchPublicUrl, readLimitedBody } from '../images/publicFetch'
-
 const MAX_SITEMAP_BYTES = 5 * 1024 * 1024
 const MAX_CHILD_SITEMAPS = 5
 // Bounds the `sourceUrl IN (…)` duplicate check; a larger site is imported one sitemap at a time.

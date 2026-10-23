@@ -1,5 +1,4 @@
 import type Stripe from 'stripe'
-import type { BillingInvoice, BillingInvoiceStatus } from '~~/shared/types/billing'
 
 const isInvoiceStatus = (status: unknown): status is BillingInvoiceStatus =>
   status === 'draft' || status === 'open' || status === 'paid' || status === 'uncollectible' || status === 'void'

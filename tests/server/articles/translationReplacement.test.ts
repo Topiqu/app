@@ -1,5 +1,15 @@
 import { createError } from 'h3'
-import { afterEach, expect, it, vi } from 'vitest'
+import { afterEach, expect, it, vi, beforeEach } from 'vitest'
+
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(
+    import('../../../server/utils/ai/translationRow'),
+    'translationSelect',
+    'nextTranslationVersion',
+  )
+}
 
 const observed = '2026-10-20T12:00:00.000Z'
 afterEach(() => {
@@ -182,3 +192,5 @@ it('replaces exactly the observed translation when its version is unchanged', as
   expect(f.updateMany).toHaveBeenCalledOnce()
   expect(new Date(f.getRow()?.updatedAt as Date).getTime()).toBeGreaterThan(new Date(observed).getTime())
 })
+
+beforeEach(stubImports)

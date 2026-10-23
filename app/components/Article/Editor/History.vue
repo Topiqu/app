@@ -48,8 +48,6 @@
 <script setup lang="ts">
 import type { ArticleRevisionSnapshot } from '~~/shared/utils/articleRevision'
 
-import { useArticleRevisions } from '~/composables/useArticleRevisions'
-
 const props = defineProps<{ articleId: string; currentVersion: number }>()
 const open = defineModel<boolean>('open', { default: false })
 const emit = defineEmits<{ restore: [snapshot: ArticleRevisionSnapshot] }>()

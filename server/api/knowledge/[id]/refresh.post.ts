@@ -1,12 +1,3 @@
-import {
-  kickKnowledgeIndex,
-  knowledgeExtractFailure,
-  KNOWLEDGE_SOURCE_VIEW,
-  limitKnowledgeRequests,
-  refetchKnowledgeUrl,
-  requireKnowledgeAccess,
-} from '~~/server/utils/knowledge/sources'
-
 /** Re-fetches a URL source or feed (re-embedding only what changed) or retries a failed index. */
 export default defineEventHandler(async (event) => {
   const { user, clientSiteId, db } = await requireKnowledgeAccess(event)

@@ -1,7 +1,4 @@
 import prisma from '../../utils/prisma'
-import { checkPolicyAndScore } from '../../utils/linkedin/policy'
-import { generateContentForTask } from '../../utils/linkedin/generator'
-import { publishDecisionAndExecute } from '../../utils/linkedin/publisher'
 
 export default defineEventHandler(async (event) => {
   requireCron(event)

@@ -1,6 +1,3 @@
-import { syncShopifyPlan } from '../../utils/shopify/billing'
-import { clearShopifyLink, linkedShopifyInstallation } from '../../utils/shopify/installation'
-
 // Links the pending installation to the signed-in user's active project. The installation and any
 // stale connection are system rows, so this runs on raw prisma; the project comes from the session.
 export default defineEventHandler(async (event) => {

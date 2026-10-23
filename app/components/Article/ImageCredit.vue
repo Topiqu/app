@@ -18,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import { creditSegments, creditSeparator, type CoverCredit } from '~~/shared/utils/imageCredit'
+import type { CoverCredit } from '~~/shared/utils/imageCredit'
 
 const { cover, discloseAi = true } = defineProps<{ cover?: CoverCredit | null; discloseAi?: boolean }>()
 

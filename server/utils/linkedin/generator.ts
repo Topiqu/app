@@ -1,9 +1,5 @@
 import { generateText } from 'ai'
 
-import { aiModel } from '../ai/models'
-import { aiReasoning } from '../ai/reasoning'
-import { readCommunityInsight } from '../community'
-
 export async function generateContentForTask(
   topic: string,
   voice: { tone: string | null; audience: string | null },

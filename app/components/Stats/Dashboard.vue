@@ -434,8 +434,6 @@
 import type { InternalApi } from 'nitropack/types'
 
 import { directive as vTippy } from 'vue-tippy'
-import { selectWritingEstimate } from '~~/shared/utils/valueMetrics'
-import { DEFAULT_HOURLY_RATE_USD, DEFAULT_WORDS_PER_HOUR } from '~~/shared/utils/savings'
 
 type DashboardStats = InternalApi['/api/stats/dashboard']['default']
 type CommunityInsight = InternalApi['/api/clients/sentiment']['get']

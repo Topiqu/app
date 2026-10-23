@@ -1,7 +1,4 @@
 import { randomBytes } from 'crypto'
-import { isManagedDomain, domainVerificationDefaults, normalizeDomain } from '~~/shared/utils/domain'
-
-import { reserveDomainConnection } from '../../../utils/domains/connections'
 
 export default defineEventHandler(async (event) => {
   const { user, db, clientSiteId } = await requireDomainAccess(event)

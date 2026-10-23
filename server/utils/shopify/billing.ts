@@ -1,10 +1,5 @@
 import type { H3Event } from 'h3'
 
-import { SHOPIFY_INSTALL_COOKIE } from '~~/shared/utils/shopify'
-import { nextArticleCreditMonth } from '~~/shared/utils/articleCredits'
-
-import type { DatabaseTransaction } from '../database'
-
 const PARTNER_API_VERSION = '2026-07'
 const CHECK_INTERVAL_MS = 5 * 60_000
 

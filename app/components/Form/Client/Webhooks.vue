@@ -115,8 +115,6 @@
 </template>
 
 <script setup lang="ts">
-import { MAX_WEBHOOKS, WEBHOOK_EVENTS, webhookUrlError, type WebhookEventCode } from '~~/shared/utils/webhooks'
-
 type WebhookState = 'active' | 'paused' | 'disabled'
 interface Webhook {
   id: string

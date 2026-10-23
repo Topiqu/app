@@ -66,13 +66,6 @@
 </template>
 
 <script setup lang="ts">
-import type { ArticleCardData, PublicAuthorSummary } from '~~/shared/types/article'
-
-import { formatDate } from '~~/shared/utils'
-
-import { useArticleFeed } from '~/composables/useArticleFeed'
-import { createAsyncDataDefault } from '~/utils/asyncDataDefaults'
-
 type AuthorArticlesResponse = PublicAuthorSummary & {
   articles: Array<{ articleId: string; article: ArticleCardData }>
   hasMore: boolean

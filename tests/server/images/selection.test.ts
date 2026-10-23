@@ -1,7 +1,17 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, beforeEach } from 'vitest'
 
-import { pickOpenverseImage } from '../../../server/utils/images/openverse'
-import { createImageSelection, matchesImageQuery, photoSubjectQuery } from '../../../server/utils/images/selection'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/images/selection'), 'matchesImageQuery')
+  await stubNitroImports(import('../../../server/utils/images/http'), 'fetchJson', 'imageApiHeaders')
+}
+
+await stubImports()
+
+const { pickOpenverseImage } = await import('../../../server/utils/images/openverse')
+const { createImageSelection, matchesImageQuery, photoSubjectQuery } =
+  await import('../../../server/utils/images/selection')
 
 describe('article image relevance and uniqueness', () => {
   it('can simplify a person query without dropping an installment number', () => {
@@ -74,3 +84,5 @@ describe('library image matching', () => {
     expect(matchesImageQuery('DSC_0012', 'office meeting')).toBe(false)
   })
 })
+
+beforeEach(stubImports)

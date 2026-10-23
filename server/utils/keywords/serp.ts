@@ -1,5 +1,3 @@
-import type { SearchResult } from '~~/shared/utils/keywordOpportunity'
-
 export interface SerpItem {
   type: string
   rank_absolute?: number

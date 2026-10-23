@@ -1,5 +1,4 @@
 import type { H3Event } from 'h3'
-import type { SessionUser } from '~~/shared/types/auth'
 import type { BetterAuthPlugin, GenericEndpointContext } from '@better-auth/core'
 
 import { z } from 'zod'
@@ -10,10 +9,6 @@ import { customSession } from 'better-auth/plugins'
 import { setSessionCookie } from 'better-auth/cookies'
 import { zenstackAdapter } from '@zenstackhq/better-auth'
 import { APIError, createAuthEndpoint } from 'better-auth/api'
-
-import { logAuthError } from './authErrorLogger'
-import { isSecureAuth, sessionCookieDomain } from './authCookie'
-import { headerRecord, initialTenant, sessionDevice, toSessionUser, uniqueUsername } from './session'
 
 declare module 'h3' {
   interface H3EventContext {

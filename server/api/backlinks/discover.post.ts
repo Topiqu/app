@@ -1,7 +1,3 @@
-import { hasDataForSeo } from '~~/server/utils/keywords/dataforseo'
-import { claimBacklinkDiscovery, runBacklinkDiscovery } from '~~/server/utils/backlinks/discover'
-import { BACKLINK_DAY_MS, BACKLINK_MANUAL_DAYS, backlinkAllowance } from '~~/shared/utils/backlinks'
-
 export default defineEventHandler(async (event) => {
   const { user, db } = await requireDb(event, { clientSite: true })
   await requireTenantScope(event, 'ANALYTICS_READ', user.clientSiteId)

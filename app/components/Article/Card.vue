@@ -144,8 +144,6 @@
 import type { ArticleCardData, ArticleCardLayout, ArticleCardVariant } from '~~/shared/types/article'
 
 import slugify from 'slugify'
-import { formatDate } from '~~/shared/utils'
-import { articleExcerpt } from '~~/shared/utils/articleBlocks'
 
 const {
   article,

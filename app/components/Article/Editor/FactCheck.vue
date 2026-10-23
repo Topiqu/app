@@ -224,9 +224,7 @@
 </template>
 
 <script setup lang="ts">
-import type { FactCheckVerdict, ArticleFactCheckResult } from '~~/shared/types/articleFactCheck'
-
-import { sortFactCheckClaims } from '~~/shared/utils/articleFactCheck'
+import type { ArticleFactCheckResult } from '~~/shared/types/articleFactCheck'
 
 import type { ArticleFactCheckState, ArticleFactCheckErrorKind } from '~/composables/useArticleFactCheck'
 

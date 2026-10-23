@@ -1,6 +1,3 @@
-import { buildEarningRow } from '~~/server/utils/adRevenue'
-import { fetchGamRevenueByClient, isGamConfigured } from '~~/server/utils/ads/gamReport'
-
 const previousUtcDay = (now: Date): { start: Date; end: Date } => {
   const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
   const start = new Date(end)

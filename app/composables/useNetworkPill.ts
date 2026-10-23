@@ -1,7 +1,3 @@
-import type { Ref } from 'vue'
-
-import { onScopeDispose, shallowRef, watch } from 'vue'
-
 export const NETWORK_RECOVERY_MS = 2500
 
 // Offline is a state, not an event — the pill stays for as long as it lasts. Only the recovery is

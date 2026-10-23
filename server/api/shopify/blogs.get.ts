@@ -1,9 +1,3 @@
-import type { ShopifyBlog } from '~~/shared/types/shopify'
-
-import { shopifyGraphql } from '../../utils/shopify/api'
-import { shopifyAccessToken } from '../../utils/shopify/token'
-import { requireShopifyAccess } from '../../utils/shopify/access'
-
 export default defineEventHandler(async (event) => {
   const { db, site } = await requireShopifyAccess(event)
   const connection = await db.shopifyConnection.findUnique({

@@ -1,5 +1,4 @@
 import sharp from 'sharp'
-import { FAVICON_MAX_BYTES, FAVICON_MAX_SIZE, FAVICON_MIN_SIZE, isFaviconMimeType } from '~~/shared/utils/favicon'
 
 export type FaviconRejection = 'type' | 'bytes' | 'unreadable' | 'square' | 'dimensions'
 

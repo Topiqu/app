@@ -32,8 +32,6 @@
 </template>
 
 <script setup lang="ts">
-import { normalizeImageHref } from '~/utils/articleFigure'
-
 interface ImageDetails {
   alt: string
   title: string | null

@@ -1,8 +1,5 @@
 import { z } from 'zod'
 
-import { cloudflareDomain, findDokployDomain } from '../../utils/domains/providers'
-import { loadDomainConnection, withDomainLease } from '../../utils/domains/connections'
-
 export default defineEventHandler(async (event) => {
   const { db, user, clientSiteId } = await requireDomainAccess(event)
   if (user.role !== 'superadmin') throw createError({ statusCode: 403 })

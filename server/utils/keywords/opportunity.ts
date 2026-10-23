@@ -1,10 +1,5 @@
-import type { SearchResult } from '~~/shared/utils/keywordOpportunity'
-
 import { z } from 'zod'
 import { generateText, Output } from 'ai'
-
-import { aiReasoning } from '../ai/reasoning'
-import { siteProfile, type ScopeSite } from './scope'
 
 export type OpportunityCandidate = {
   keyword: string

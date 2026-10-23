@@ -1,7 +1,3 @@
-import { getArticlePack } from '~~/shared/utils/articlePacks'
-
-import { rejectShopifyBilled } from '../../utils/shopify/billing'
-
 export default defineEventHandler(async (event) => {
   const session = await getSessionUser(event)
   if (!session) {

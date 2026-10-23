@@ -2,12 +2,6 @@ import { DbNull } from '@zenstackhq/orm'
 import { randomUUID } from 'node:crypto'
 import { generateText, Output } from 'ai'
 
-import { mapLimit } from '../utils/concurrency'
-import { insightSchema } from '../utils/ai/insight'
-import { aiReasoning } from '../utils/ai/reasoning'
-import { toDatabaseJson } from '../utils/databaseJson'
-import { communityAverages, communitySiteWhere, communityTrend, readCommunityInsight } from '../utils/community'
-
 const BATCH_SIZE = 50
 const CONCURRENCY = 2
 const LEASE_MS = 5 * 60_000

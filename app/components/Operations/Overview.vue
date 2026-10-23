@@ -37,8 +37,6 @@
 </template>
 
 <script setup lang="ts">
-import type { OperationsOverview } from '~~/shared/types/operations'
-
 const { data, error, status, refresh } = await useFetch<OperationsOverview>('/api/admin/operations', {
   key: 'master-operations',
 })

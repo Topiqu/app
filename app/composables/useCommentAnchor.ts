@@ -1,7 +1,3 @@
-import type { CommentWithReplies } from '~~/types/comment'
-
-import { mergeCommentThreads } from '~~/shared/utils/commentThreads'
-
 export function useCommentAnchor(articleId: Ref<string>, comments: ShallowRef<CommentWithReplies[]>) {
   const route = useRoute()
   const toast = useToast()

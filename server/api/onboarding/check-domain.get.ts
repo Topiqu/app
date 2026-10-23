@@ -1,5 +1,3 @@
-import { isManagedDomain, isValidDomain, validateSubdomain } from '~~/shared/utils/domain'
-
 type Reason = 'empty' | 'tooShort' | 'invalid' | 'reserved' | 'taken'
 
 export default defineEventHandler(async (event) => {

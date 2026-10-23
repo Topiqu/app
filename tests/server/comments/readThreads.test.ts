@@ -1,5 +1,6 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi, beforeEach } from 'vitest'
 
+import { stubNitroImports } from '../../helpers/nitroImports'
 import { commentReadFixture, storedComment } from './readFixture'
 import {
   COMMENT_CONTEXT_LIMIT,
@@ -7,6 +8,10 @@ import {
   indexCommentThreads,
   mergeCommentThreads,
 } from '../../../shared/utils/commentThreads'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/articleViewerAccess'), 'canReadArticle')
+}
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -217,3 +222,5 @@ describe('bounded comment threads', () => {
     expect(state.db.comment.findMany.mock.calls[0]?.[0].take).toBe(COMMENT_THREAD_NODE_LIMIT)
   })
 })
+
+beforeEach(stubImports)

@@ -1,7 +1,5 @@
 import type { Language } from '~~/generated/zenstack/models'
 
-import { isLanguage } from '~~/shared/utils/language'
-
 /**
  * Emails a scheduled tenant's owners and billing members that its articles ran out. Once per
  * depletion: the key names the newest grant, so only a top-up re-arms it. Sent before the audit

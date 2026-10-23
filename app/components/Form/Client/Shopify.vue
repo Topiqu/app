@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import type { ShopifyBlog } from '~~/shared/types/shopify'
-
 const { t } = useI18n()
 const toast = useToast()
 const confirm = useConfirm()

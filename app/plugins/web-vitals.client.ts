@@ -1,5 +1,3 @@
-import { vitalPage, webVitalsSampleRate } from '~~/shared/utils/webVitals'
-
 export default defineNuxtPlugin((nuxtApp) => {
   const route = useRoute()
   const consent = useAnalyticsConsent()

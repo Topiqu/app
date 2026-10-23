@@ -1,16 +1,5 @@
-import type { Language } from '~~/shared/utils/language'
-import type {
-  ArticleMediaInput,
-  MediaAssetRecord,
-  MediaRightsReport,
-  MediaRightsReview,
-} from '~~/shared/types/mediaRights'
-
 import * as cheerio from 'cheerio'
 import { createHash } from 'node:crypto'
-import { buildMediaRightsItems, extractArticleMedia, mediaRightsCounts } from '~~/shared/utils/mediaRights'
-
-import { escapeHtml } from './sanitize'
 
 export const evaluateMediaRights = async (
   db: typeof prisma,

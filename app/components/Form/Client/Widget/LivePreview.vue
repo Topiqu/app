@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import { widgetPreviewSchema, type PriceData, type WeatherData, type WidgetPreview } from '~~/shared/utils/widgets'
+import type { WidgetPreview } from '~~/shared/utils/widgets'
 
 const { widget } = defineProps<{ widget: WidgetPreview }>()
 

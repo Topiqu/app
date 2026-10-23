@@ -1,16 +1,6 @@
 import { z } from 'zod'
 import { createHash } from 'node:crypto'
 import { generateText, Output } from 'ai'
-import { keywordLocation } from '~~/shared/utils/keywordPlan'
-import { keywordOpportunity } from '~~/shared/utils/keywordOpportunity'
-
-import { rankHistoryFor } from './rank'
-import { suggestExpansions } from './refresh'
-import { aiReasoning } from '../ai/reasoning'
-import { serpSignals, type SerpItem } from './serp'
-import { assessOpportunities } from './opportunity'
-import { dataForSeo, hasDataForSeo } from './dataforseo'
-import { inScope, siteKeywords, siteProfile, type ScopeSite } from './scope'
 
 const DAY_MS = 86_400_000
 const REFRESH_DAYS = 30

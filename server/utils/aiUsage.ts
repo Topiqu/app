@@ -1,7 +1,5 @@
 import type { H3Event } from 'h3'
 
-import { toDatabaseJson } from './databaseJson'
-
 /** Internal cost telemetry. Never throws: a logging outage must not fail the work it measures. */
 export async function recordAiUsage(
   clientSiteId: string,

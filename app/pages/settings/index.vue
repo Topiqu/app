@@ -220,12 +220,8 @@
 
 <script setup lang="ts">
 import equal from 'fast-deep-equal'
-import { releaseScheduleSettings, type ReleaseScheduleSettings } from '~~/shared/utils/releaseSchedule'
-import { publicationChannelSettings, type PublicationChannelSettings } from '~~/shared/utils/publicationChannels'
 
 import type { TabItem } from '~/components/TabNav.vue'
-
-import { buildClientSettingsForm, buildClientSettingsPatch, type ClientSite } from '~/utils/buildClientSettingsForm'
 
 definePageMeta({ middleware: 'admin', shell: 'dashboard' })
 

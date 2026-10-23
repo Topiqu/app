@@ -47,8 +47,6 @@
 <script setup lang="ts">
 import type { SiteSetupInfo } from '~~/shared/utils/siteSetup'
 
-import { hasAiPlan } from '~~/shared/utils/plans'
-
 const { site } = defineProps<{ site?: SiteSetupInfo | null }>()
 
 const localePath = useLocalePath()

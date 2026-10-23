@@ -2,14 +2,16 @@ import { resolve } from 'node:path'
 import { readFileSync } from 'node:fs'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import {
-  briefQuestions,
-  enhancePrompt,
-  rewriteDocumentBlocks,
-  rewritePassage,
-  sanitizeInlineText,
-  sanitizePassage,
-} from '../../../server/utils/ai/enhance'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/ai/reasoning'), 'aiReasoning')
+}
+
+await stubImports()
+
+const { briefQuestions, enhancePrompt, rewriteDocumentBlocks, rewritePassage, sanitizeInlineText, sanitizePassage } =
+  await import('../../../server/utils/ai/enhance')
 
 const { generateStructuredText, generatePlainText } = vi.hoisted(() => ({
   generateStructuredText: vi.fn<(typeof import('ai'))['generateText']>(),
@@ -131,3 +133,5 @@ describe('author first-hand account', () => {
     expect(quality).toContain('never invent names of people, officials or companies, amounts, exact dates')
   })
 })
+
+beforeEach(stubImports)

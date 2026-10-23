@@ -1,5 +1,3 @@
-import type { ConsentSite } from '~~/shared/utils/consent'
-
 const removeAnalyticsCookies = () => {
   const names = document.cookie
     .split(';')

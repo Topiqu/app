@@ -1,14 +1,18 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, beforeEach } from 'vitest'
 
 import type { KnowledgeCandidate } from '../../../server/utils/knowledge/retrieve'
 
-import { filterResearchSources } from '../../../server/utils/ai/researchEvidence'
-import {
-  formatKnowledgeBrief,
-  knowledgeSearchTerms,
-  knowledgeUsage,
-  shortlistKnowledge,
-} from '../../../server/utils/knowledge/retrieve'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/ai/reasoning'), 'aiReasoning')
+}
+
+await stubImports()
+
+const { filterResearchSources } = await import('../../../server/utils/ai/researchEvidence')
+const { formatKnowledgeBrief, knowledgeSearchTerms, knowledgeUsage, shortlistKnowledge } =
+  await import('../../../server/utils/knowledge/retrieve')
 
 const candidate = (overrides: Partial<KnowledgeCandidate>): KnowledgeCandidate => ({
   id: 'chunk',
@@ -141,3 +145,5 @@ describe('knowledge retrieval', () => {
     ])
   })
 })
+
+beforeEach(stubImports)

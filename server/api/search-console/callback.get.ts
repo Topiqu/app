@@ -1,5 +1,3 @@
-import { encryptSearchConsoleToken } from '../../utils/searchConsole/crypto'
-
 export default defineEventHandler(async (event) => {
   setResponseHeader(event, 'cache-control', 'no-store')
   setResponseHeader(event, 'referrer-policy', 'no-referrer')

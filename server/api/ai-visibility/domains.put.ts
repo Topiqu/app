@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import { toHostname } from '~~/shared/utils/domain'
 
 const Body = z.object({
   domain: z

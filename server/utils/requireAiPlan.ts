@@ -1,5 +1,3 @@
-import { hasAiPlan } from '~~/shared/utils/plans'
-
 /**
  * Gates on the plan column, not on ClientFeature rows: tenants provisioned before feature
  * provisioning existed have none, so reading those would lock out paying customers. A trial

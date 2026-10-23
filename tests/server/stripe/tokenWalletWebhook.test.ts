@@ -2,6 +2,19 @@ import Stripe from 'stripe'
 import { createError } from 'h3'
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest'
 
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(
+    import('../../../server/utils/stripeWebhook'),
+    'extractSubscriptionId',
+    'isSubscribablePlan',
+    'marksFirstPayment',
+    'planFromPriceId',
+    'revokesPlan',
+  )
+}
+
 const stripe = new Stripe('sk_test_dummy')
 const secret = 'whsec_wallet_test_only'
 const credit = vi.fn()
@@ -66,3 +79,5 @@ describe('wallet checkout webhook handler', () => {
     expect(credit).not.toHaveBeenCalled()
   })
 })
+
+beforeEach(stubImports)

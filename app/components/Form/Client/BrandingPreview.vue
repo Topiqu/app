@@ -76,9 +76,6 @@
 import type { BrandGradient } from '~~/shared/utils/publicationBranding'
 import type { PublicationTypography } from '~~/generated/zenstack/models'
 
-import { resolveBrandAccent, tenantThemeStyle } from '~~/shared/utils/tenantTheme'
-import { activeBrandGradient, gradientCss } from '~~/shared/utils/publicationBranding'
-
 const props = defineProps<{
   logoUrl: string
   name: string

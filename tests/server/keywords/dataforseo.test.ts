@@ -1,8 +1,29 @@
 import { $fetch } from 'ofetch'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi, beforeEach } from 'vitest'
 
-import { ideasFromLabs } from '../../../server/utils/keywords/plan'
-import { dataForSeo } from '../../../server/utils/keywords/dataforseo'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/planFeatures'), 'activeFeatureFilter')
+  await stubNitroImports(import('../../../server/utils/keywords/dataforseo'), 'dataForSeo', 'hasDataForSeo')
+  await stubNitroImports(
+    import('../../../server/utils/keywords/rank'),
+    'rankHistoryFor',
+    'blogPosition',
+    'isArticleUrl',
+  )
+  await stubNitroImports(import('../../../server/utils/keywords/serp'), 'serpSignals')
+  await stubNitroImports(import('../../../server/utils/ai/reasoning'), 'aiReasoning')
+  await stubNitroImports(import('../../../server/utils/ai/researchEvidence'), 'researchTopic')
+  await stubNitroImports(import('../../../server/utils/keywords/refresh'), 'suggestExpansions')
+  await stubNitroImports(import('../../../server/utils/keywords/scope'), 'inScope', 'siteKeywords', 'siteProfile')
+  await stubNitroImports(import('../../../server/utils/keywords/opportunity'), 'assessOpportunities')
+}
+
+await stubImports()
+
+const { ideasFromLabs } = await import('../../../server/utils/keywords/plan')
+const { dataForSeo } = await import('../../../server/utils/keywords/dataforseo')
 
 vi.mock('ofetch', () => ({ $fetch: vi.fn() }))
 afterEach(() => vi.clearAllMocks())
@@ -50,3 +71,5 @@ describe('DataForSEO response contract', () => {
     await expect(dataForSeo('/test', {})).rejects.toThrow('No credit')
   })
 })
+
+beforeEach(stubImports)

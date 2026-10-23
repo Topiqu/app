@@ -312,13 +312,8 @@
 </template>
 
 <script setup lang="ts">
-import type { Language } from '~~/shared/utils/language'
-import type { ArticleWithDetails } from '~~/types/article'
 import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
 import type { ArticleStatus } from '~~/generated/zenstack/models'
-
-import { useQueryCache } from '@pinia/colada'
-import { translationVersion } from '~~/shared/utils/articleTranslations'
 
 const router = useRouter()
 const route = useRoute()

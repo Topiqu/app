@@ -1,11 +1,15 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi, beforeEach } from 'vitest'
 
-import {
-  AI_SERIES_MAX_PER_WINDOW,
-  applyArticleSeriesDecision,
-  articleSeriesDecisionSchema,
-  loadAiSeriesContext,
-} from '../../../server/utils/ai/articleSeries'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/ai/reasoning'), 'aiReasoning')
+}
+
+await stubImports()
+
+const { AI_SERIES_MAX_PER_WINDOW, applyArticleSeriesDecision, articleSeriesDecisionSchema, loadAiSeriesContext } =
+  await import('../../../server/utils/ai/articleSeries')
 
 const now = new Date('2026-09-20T12:00:00.000Z')
 const dateAt = (index: number) => new Date(now.getTime() - index * 60_000)
@@ -221,3 +225,5 @@ describe('applying an AI series decision', () => {
     expect(result.action).toBe('none')
   })
 })
+
+beforeEach(stubImports)

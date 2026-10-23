@@ -1,7 +1,3 @@
-import type { Ref } from 'vue'
-
-import { isRootHost } from '~~/shared/utils/domain'
-
 /** UI gating only: tenant authorization remains enforced at each server endpoint. */
 export const useDashboardAccess = (clientSite: Readonly<Ref<{ id: string } | null | undefined>>) => {
   const { data: auth } = useAuth()

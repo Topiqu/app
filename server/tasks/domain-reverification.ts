@@ -1,9 +1,3 @@
-import { DomainProviderError } from '../utils/domains/providers'
-import { chooseDomainFallback } from '../utils/domains/fallback'
-import { nextReverificationState } from '../utils/domainVerification'
-import { reconcileDomainConnection } from '../utils/domains/connections'
-import { domainAdminNotifications } from '../utils/domains/notifications'
-
 export default defineMonitoredTask({
   meta: {
     name: 'domain-reverification',

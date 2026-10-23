@@ -1,5 +1,3 @@
-import { publishShopifyArticle } from '../utils/shopify/publication'
-
 export default defineMonitoredTask({
   meta: { name: 'shopify-publish', description: 'Retries queued Shopify article publications' },
   async run() {

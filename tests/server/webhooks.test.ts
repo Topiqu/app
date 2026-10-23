@@ -1,10 +1,17 @@
 import { createHmac } from 'node:crypto'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { stubNitroImports } from '../helpers/nitroImports'
 import { webhookEventType, webhookUrlError } from '../../shared/utils/webhooks'
+
+async function stubImports() {
+  await stubNitroImports(import('../../server/utils/images/publicFetch'), 'postPublicUrl')
+}
 
 const postPublicUrl = vi.fn()
 vi.mock('../../server/utils/images/publicFetch', () => ({ postPublicUrl }))
+
+await stubImports()
 
 const { deliverDueWebhooks, enqueueArticleWebhook, signWebhook, webhookRetryAt, WEBHOOK_DISABLE_AFTER } =
   await import('../../server/utils/webhooks')
@@ -167,3 +174,5 @@ describe('enqueueArticleWebhook', () => {
     await expect(enqueueArticleWebhook('ARTICLE_UPDATED', { id: 'a1', clientSiteId: 's1' })).resolves.toBeUndefined()
   })
 })
+
+beforeEach(stubImports)

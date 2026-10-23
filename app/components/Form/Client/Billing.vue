@@ -366,16 +366,7 @@
 </template>
 
 <script setup lang="ts">
-import type { PlanPrice, PlanPricing } from '~~/shared/types/planPricing'
-import type { BillingInvoice, BillingInvoiceStatus } from '~~/shared/types/billing'
-
-import { languageTag } from '~~/shared/utils/language'
-import { getUpgradeTarget } from '~~/shared/utils/plans'
-
 import type { ClientSite } from '~/utils/buildClientSettingsForm'
-
-import { buildArticlePackViews } from '~/utils/articlePackPresentation'
-import { createAsyncDataDefault, emptyAsyncDataList } from '~/utils/asyncDataDefaults'
 
 const { client, rate } = defineProps<{
   client: ClientSite | null

@@ -1,5 +1,5 @@
 import type { H3Event } from 'h3'
-import type { SessionRole as Role, SessionUser } from '~~/shared/types/auth'
+import type { SessionRole as Role } from '~~/shared/types/auth'
 
 const ROLE_RANK: Record<Role, number> = { reader: 0, ai: 0, admin: 1, superadmin: 2 }
 

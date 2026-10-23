@@ -2,9 +2,16 @@
 
 import sharp from 'sharp'
 import { createError } from 'h3'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi, beforeEach } from 'vitest'
 
+import { stubNitroImports } from '../../helpers/nitroImports'
 import { EMOJI_MAX_UPLOAD_BYTES } from '../../../shared/utils/uploadLimits'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/emojiImage'), 'EMOJI_CONTENT_TYPE', 'prepareEmojiImage')
+  await stubNitroImports(import('../../../server/utils/imageAnalysis'), 'analyzeImage')
+  await stubNitroImports(import('../../../server/utils/storage'), 'deleteFromCdn', 'putToCdn')
+}
 
 const { analyze, put, remove } = vi.hoisted(() => ({ analyze: vi.fn(), put: vi.fn(), remove: vi.fn() }))
 vi.mock('../../../server/utils/imageAnalysis', () => ({ analyzeImage: analyze }))
@@ -87,3 +94,5 @@ describe('emoji upload validation', () => {
     expect(remove).toHaveBeenCalledWith(put.mock.calls[0]![0], 'uploads/')
   })
 })
+
+beforeEach(stubImports)

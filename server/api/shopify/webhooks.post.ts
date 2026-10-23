@@ -1,8 +1,3 @@
-import { normalizeShopifyShop } from '../../utils/shopify/config'
-import { queueShopifyCatalog } from '../../utils/shopify/catalog'
-import { releaseShopifyBilling } from '../../utils/shopify/billing'
-import { verifyShopifyWebhookHmac } from '../../utils/shopify/security'
-
 export default defineEventHandler(async (event) => {
   const raw = await readRawBody(event, 'utf8')
   if (!raw || !verifyShopifyWebhookHmac(raw, getHeader(event, 'x-shopify-hmac-sha256')))

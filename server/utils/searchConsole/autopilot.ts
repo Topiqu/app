@@ -1,5 +1,3 @@
-import type { SearchTrend } from './opportunities'
-
 export type SeoAutopilotAction = 'CTR_OPTIMIZATION' | 'CONTENT_REFRESH'
 
 export type SeoAutopilotCandidate = {

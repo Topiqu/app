@@ -1,12 +1,16 @@
 import { createError } from 'h3'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi, beforeEach } from 'vitest'
 
-import {
-  externalArticleWhere,
-  flattenExternalArticle,
-  parseExternalTagFilter,
-  requireExternalClient,
-} from '../../server/utils/externalApi'
+import { stubNitroImports } from '../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../server/utils/articleViewerAccess'), 'publicArticleWhere')
+}
+
+await stubImports()
+
+const { externalArticleWhere, flattenExternalArticle, parseExternalTagFilter, requireExternalClient } =
+  await import('../../server/utils/externalApi')
 
 describe('external API authentication', () => {
   afterEach(() => vi.unstubAllGlobals())
@@ -104,3 +108,5 @@ describe('external article source identity', () => {
     await expect(route({} as never)).resolves.toMatchObject({ meta: { siteId: 'tenant-page-owner' } })
   })
 })
+
+beforeEach(stubImports)

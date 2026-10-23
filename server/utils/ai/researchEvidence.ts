@@ -1,9 +1,4 @@
-import type { ResearchDepth, YoutubeOutcome } from '~~/shared/utils/articleGeneration'
-
 import { generateText } from 'ai'
-import { youtubeVideoId } from '~~/shared/utils/youtube'
-
-import { aiReasoning } from './reasoning'
 
 export const extractResearchUrls = (text: string) =>
   (text.replace(/(?<!^)(https?:\/\/)/g, ' $1').match(/https?:\/\/[^\s)\]}>,`"'<>*]+/g) ?? []).map((url) =>

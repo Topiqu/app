@@ -44,8 +44,6 @@
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { ArticleGenerationFormat } from '~~/shared/utils/articleGeneration'
 
-import { PROMPT_EDIT_ACTIONS, type PromptEditAction } from '~~/shared/utils/aiEdit'
-
 const { format } = defineProps<{ format: ArticleGenerationFormat }>()
 const prompt = defineModel<string>({ required: true })
 

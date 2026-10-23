@@ -1,7 +1,15 @@
 // @vitest-environment node
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, beforeEach } from 'vitest'
 
-import { readPage } from '../../../server/utils/backlinks/page'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/images/publicFetch'), 'fetchPublicUrl', 'readLimitedBody')
+}
+
+await stubImports()
+
+const { readPage } = await import('../../../server/utils/backlinks/page')
 
 const html = `<!doctype html><html><head><title> Nejlepší kavárny  v Praze </title>
 <script>var x = 'kava.cz'</script></head><body>
@@ -37,3 +45,5 @@ describe('readPage', () => {
     expect(page.links).toEqual([])
   })
 })
+
+beforeEach(stubImports)

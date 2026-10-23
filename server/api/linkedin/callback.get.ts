@@ -1,6 +1,3 @@
-import { getAccessToken, getPersonalUrn } from '../../utils/linkedin/api'
-import { getLinkedInRedirectUri } from '../../utils/linkedin/redirectUri'
-
 export default defineEventHandler(async (event) => {
   setResponseHeader(event, 'cache-control', 'no-store')
   setResponseHeader(event, 'referrer-policy', 'no-referrer')

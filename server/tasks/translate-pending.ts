@@ -1,7 +1,5 @@
 import type { ClientPlan } from '~~/generated/zenstack/models'
 
-import { nextTranslationVersion } from '../utils/ai/translationRow'
-
 const TRANSLATION_PLANS: ClientPlan[] = ['PRO', 'PREMIUM', 'CUSTOM']
 const BATCH_SIZE = 10
 

@@ -33,15 +33,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  ANNOUNCEMENT_ALIGNMENTS,
-  ANNOUNCEMENT_LINK_STYLES,
-  ANNOUNCEMENT_SPACINGS,
-  ANNOUNCEMENT_TEXT_SIZES,
-  ANNOUNCEMENT_TONES,
-  type AnnouncementAppearance,
-  type AnnouncementConfig,
-} from '~~/shared/utils/widgets'
+import type { AnnouncementAppearance, AnnouncementConfig } from '~~/shared/utils/widgets'
 
 const appearance = defineModel<AnnouncementAppearance>({ required: true })
 const tone = defineModel<AnnouncementConfig['tone']>('tone', { required: true })

@@ -1,10 +1,18 @@
 // @vitest-environment node
 import { randomUUID } from 'node:crypto'
-import { afterAll, afterEach, describe, expect, it, vi } from 'vitest'
+import { afterAll, afterEach, describe, expect, it, vi, beforeEach } from 'vitest'
 
-import { createDatabaseClient } from '../../../server/utils/database'
-import { activeFeatureFilter } from '../../../server/utils/planFeatures'
-import { syncArticleTranslationQueue } from '../../../server/utils/ai/translationQueue'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/ai/translationRow'), 'nextTranslationVersion')
+}
+
+await stubImports()
+
+const { createDatabaseClient } = await import('../../../server/utils/database')
+const { activeFeatureFilter } = await import('../../../server/utils/planFeatures')
+const { syncArticleTranslationQueue } = await import('../../../server/utils/ai/translationQueue')
 
 const url = process.env.TEST_DATABASE_URL
 const enabled = !!url && /test/i.test(new URL(url).pathname) && url !== process.env.DATABASE_URL
@@ -184,3 +192,5 @@ describe.skipIf(!enabled)('translation claims and source conflicts on PostgreSQL
     expect(row.updatedAt!.getTime()).toBe(future.getTime() + 1)
   })
 })
+
+beforeEach(stubImports)

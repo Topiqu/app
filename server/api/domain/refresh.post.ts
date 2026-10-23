@@ -1,7 +1,5 @@
 import { z } from 'zod'
 
-import { reconcileDomainConnection } from '../../utils/domains/connections'
-
 export default defineEventHandler(async (event) => {
   const { db, user, clientSiteId } = await requireDomainAccess(event)
   if (!(await consumeRateLimit(`domain-refresh:${clientSiteId}`, 5, 600))) throw createError({ statusCode: 429 })

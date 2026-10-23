@@ -1,5 +1,3 @@
-import type { MaybeRefOrGetter } from 'vue'
-
 import type { AsyncDataOptions, NuxtApp } from '#app'
 
 type FollowCacheContext = Parameters<NonNullable<AsyncDataOptions<unknown>['getCachedData']>>[2]

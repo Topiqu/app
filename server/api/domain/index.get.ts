@@ -1,5 +1,3 @@
-import { domainConnectionPublicSelect } from '../../utils/domains/connections'
-
 export default defineEventHandler(async (event) => {
   const { db, clientSiteId } = await requireDomainAccess(event)
   const site = await db.clientSite.findUnique({

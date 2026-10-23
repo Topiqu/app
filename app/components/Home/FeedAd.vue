@@ -19,8 +19,6 @@
 <script setup lang="ts">
 import type { AdProvider } from '~~/shared/utils/advertising'
 
-import type { GamSizeMapping } from '~/composables/useGam'
-
 defineProps<{ provider: AdProvider }>()
 
 const adsenseSlot = String(useRuntimeConfig().public.adsenseFeedSlot || '')

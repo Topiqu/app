@@ -1,5 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { stubNitroImports } from '../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../server/utils/domains/providers'), 'DomainProviderError')
+  await stubNitroImports(import('../../server/utils/domainVerification'), 'nextReverificationState')
+  await stubNitroImports(import('../../server/utils/domains/fallback'), 'chooseDomainFallback')
+  await stubNitroImports(import('../../server/utils/domains/connections'), 'reconcileDomainConnection')
+  await stubNitroImports(import('../../server/utils/domains/notifications'), 'domainAdminNotifications')
+}
+
 const reconcile = vi.hoisted(() => vi.fn())
 vi.mock('../../server/utils/domains/connections', () => ({ reconcileDomainConnection: reconcile }))
 vi.mock('../../server/utils/domains/notifications', () => ({ domainAdminNotifications: async () => [] }))
@@ -94,3 +104,5 @@ describe('scheduled domain verification', () => {
     expect(connectionUpdate).not.toHaveBeenCalled()
   })
 })
+
+beforeEach(stubImports)

@@ -1,7 +1,3 @@
-import { toHostname } from '~~/shared/utils/domain'
-import { detectCrawler } from '~~/shared/utils/crawlers'
-import { crawlerKind, crawlerSurface } from '~~/shared/utils/aiVisibility'
-
 // Assets dominate request volume and say nothing about crawl coverage.
 const IGNORED =
   /^\/(_nuxt|_fonts|_ipx|__og-image__|__nuxt|_scripts|api\/_)|\.(js|css|map|png|jpg|jpeg|webp|avif|svg|ico|woff2?)$/

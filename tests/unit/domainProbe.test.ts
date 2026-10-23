@@ -1,6 +1,14 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi, beforeEach } from 'vitest'
 
-import { domainProbeSignature, probeDomainRouting } from '../../server/utils/domains/probe'
+import { stubNitroImports } from '../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../server/utils/images/publicFetch'), 'postPublicUrl', 'readLimitedBody')
+}
+
+await stubImports()
+
+const { domainProbeSignature, probeDomainRouting } = await import('../../server/utils/domains/probe')
 
 const request = vi.hoisted(() => vi.fn())
 vi.mock('../../server/utils/images/publicFetch', () => ({
@@ -31,3 +39,5 @@ describe('routing proof', () => {
     await expect(probeDomainRouting('blog.example.com', 'fixture-secret')).resolves.toBe(false)
   })
 })
+
+beforeEach(stubImports)

@@ -1,8 +1,27 @@
 import { readFileSync } from 'node:fs'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { AI_EMBEDDING_MODELS } from '../../../server/utils/ai/modelRegistry'
-import { buildEditorialReviewPrompt, reviewArticle } from '../../../server/utils/ai/articleQuality'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/ai/reasoning'), 'aiReasoning')
+  await stubNitroImports(
+    import('../../../server/utils/ai/editorialPolicy'),
+    'AUTHORIAL_REASONING',
+    'ILLUSTRATIVE_STORY',
+  )
+  await stubNitroImports(
+    import('../../../server/utils/ai/researchEvidence'),
+    'extractResearchUrls',
+    'researchEvidence',
+    'retrievedResearchSources',
+  )
+}
+
+await stubImports()
+
+const { AI_EMBEDDING_MODELS } = await import('../../../server/utils/ai/modelRegistry')
+const { buildEditorialReviewPrompt, reviewArticle } = await import('../../../server/utils/ai/articleQuality')
 
 const { generateStructuredText, generatePlainText } = vi.hoisted(() => ({
   generateStructuredText: vi.fn<(typeof import('ai'))['generateText']>(),
@@ -70,3 +89,5 @@ describe('embedding registry', () => {
     expect(migration).toContain(`vector(${AI_EMBEDDING_MODELS.knowledge.dimensions})`)
   })
 })
+
+beforeEach(stubImports)

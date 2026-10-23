@@ -163,9 +163,6 @@
 <script setup lang="ts">
 import type { InternalApi } from 'nitropack'
 
-import { isLanguage, locales, type Language } from '~~/shared/utils/language'
-import { KNOWLEDGE_CURRENCIES, KNOWLEDGE_LIMITS } from '~~/shared/utils/knowledge'
-
 import AddSourceConsent from './AddSourceConsent.vue'
 import AddSourceSettings from './AddSourceSettings.vue'
 

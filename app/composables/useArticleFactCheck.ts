@@ -1,8 +1,3 @@
-import type { MaybeRefOrGetter } from 'vue'
-import type { ArticleFactCheckInput, ArticleFactCheckResult } from '~~/shared/types/articleFactCheck'
-
-import { htmlToText } from '~~/shared/utils/articleBlocks'
-
 export type ArticleFactCheckState = 'idle' | 'running' | 'complete' | 'stale' | 'error'
 export type ArticleFactCheckErrorKind =
   'invalid-request' | 'not-configured' | 'not-in-plan' | 'rate-limited' | 'service-unavailable' | 'unknown'

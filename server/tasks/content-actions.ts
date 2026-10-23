@@ -1,5 +1,3 @@
-import { measureContentActions, processQueuedActions } from '~~/server/utils/keywords/refresh'
-
 export default defineMonitoredTask({
   meta: {
     name: 'content-actions',

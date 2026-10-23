@@ -1,7 +1,5 @@
 import type { H3Event } from 'h3'
 
-import { isSecureAuth } from './authCookie'
-
 // Confirmation and provider callbacks both run on the central origin. Host-only cookies also
 // prevent another managed subdomain from injecting the callback's CSRF state.
 const options = {

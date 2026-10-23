@@ -1,7 +1,3 @@
-import type { ShopifyCollectionInsight } from '~~/shared/types/shopify'
-
-import { requireShopifyAccess } from '../../utils/shopify/access'
-
 export default defineEventHandler(async (event) => {
   const { db, site } = await requireShopifyAccess(event)
   const { membership } = await requireTenantMember(event, site.id)

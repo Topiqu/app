@@ -30,7 +30,7 @@
 </template>
 
 <script setup lang="ts">
-import { DEFAULT_ANNOUNCEMENT_APPEARANCE, type AnnouncementConfig } from '~~/shared/utils/widgets'
+import type { AnnouncementConfig } from '~~/shared/utils/widgets'
 
 const config = defineModel<AnnouncementConfig>('config', { required: true })
 const dismissibleId = useId()

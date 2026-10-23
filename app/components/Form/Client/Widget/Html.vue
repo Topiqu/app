@@ -29,7 +29,7 @@
 </template>
 
 <script setup lang="ts">
-import { MAX_HTML_BYTES, type HtmlConfig } from '~~/shared/utils/widgets'
+import type { HtmlConfig } from '~~/shared/utils/widgets'
 
 const config = defineModel<HtmlConfig>('config', { required: true })
 const bytes = computed(() => new TextEncoder().encode(config.value.html).length)

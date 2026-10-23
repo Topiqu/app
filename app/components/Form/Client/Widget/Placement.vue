@@ -73,9 +73,7 @@
 </template>
 
 <script setup lang="ts">
-import { WIDGET_SLOTS, type WidgetInput, type WidgetKind, type WidgetSlot } from '~~/shared/utils/widgets'
-
-import { canPreviewWidgetSlot, widgetPagePreviewDraft, type WidgetPagePreviewState } from '~/utils/widgetPagePreview'
+import type { WidgetInput, WidgetKind } from '~~/shared/utils/widgets'
 
 const modelValue = defineModel<string>({ required: true })
 const {

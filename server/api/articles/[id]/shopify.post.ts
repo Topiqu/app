@@ -1,10 +1,5 @@
 import { z } from 'zod'
 
-import { escapeHtml } from '../../../utils/sanitize'
-import { requireShopifyAccess } from '../../../utils/shopify/access'
-import { publishShopifyArticle, shopifyPublicationSelect } from '../../../utils/shopify/publication'
-import { exportShopifyContent, shopifyHandle, type ShopifyArticlePayload } from '../../../utils/shopify/content'
-
 const Request = z.object({
   mode: z.enum(['draft', 'published']),
   mediaRightsReview: z.object({ fingerprint: z.string(), acknowledged: z.literal(true) }).optional(),

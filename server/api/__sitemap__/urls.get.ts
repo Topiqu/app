@@ -1,11 +1,6 @@
 import type { Language } from '~~/generated/zenstack/models'
 
-import { hasSeoPlan } from '~~/shared/utils/seo'
-import { articlePath, authorPath, homePath, tagPath } from '~~/shared/utils/routes'
-
 import type { SitemapUrl } from '#sitemap/types'
-
-import { publicArticleWhere } from '../../utils/articleViewerAccess'
 
 type Alternative = { hreflang: string; href: string }
 

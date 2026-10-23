@@ -1,5 +1,3 @@
-import type { DatabaseTransaction } from './database'
-
 const GMAIL_DOMAINS = new Set(['gmail.com', 'googlemail.com'])
 
 /** One spelling per inbox: `+tags` are dropped everywhere; Gmail also ignores dots. */

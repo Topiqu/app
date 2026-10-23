@@ -76,8 +76,6 @@
 import type { Language } from '~~/shared/utils/language'
 import type { Comment as _Comment } from '~~/generated/zenstack/models'
 
-import { formatDate } from '~~/shared/utils'
-
 export type ActivityComment = Pick<_Comment, 'id' | 'content' | 'userId' | 'parentId'> & {
   articleSlug: string
   articleLanguage?: Language

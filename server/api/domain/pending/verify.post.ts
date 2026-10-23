@@ -1,7 +1,3 @@
-import { domainError, isManagedDomain } from '~~/shared/utils/domain'
-
-import { reconcileDomainConnection } from '../../../utils/domains/connections'
-
 export default defineEventHandler(async (event) => {
   const { user, db, clientSiteId } = await requireDomainAccess(event)
   if (!(await consumeRateLimit(`domain-switch:${clientSiteId}`, 5, 600)))

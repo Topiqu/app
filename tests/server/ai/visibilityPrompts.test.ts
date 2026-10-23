@@ -1,7 +1,15 @@
 import { generateText } from 'ai'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { AUTO_PROMPT_LIMIT, seedVisibilityPrompts } from '../../../server/utils/ai/visibilityPrompts'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/ai/reasoning'), 'aiReasoning')
+}
+
+await stubImports()
+
+const { AUTO_PROMPT_LIMIT, seedVisibilityPrompts } = await import('../../../server/utils/ai/visibilityPrompts')
 
 vi.mock('ai', async (importOriginal) => ({
   ...(await importOriginal<typeof import('ai')>()),
@@ -82,3 +90,5 @@ describe('visibility prompt seeding', () => {
     expect(vi.mocked(generateText).mock.calls[0]![0].prompt).toContain('Write up to 2 distinct questions')
   })
 })
+
+beforeEach(stubImports)

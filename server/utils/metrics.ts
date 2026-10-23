@@ -1,6 +1,4 @@
 import { Parser } from 'htmlparser2'
-import { writingSavings } from '~~/shared/utils/savings'
-import { normalizePollOptions } from '~~/shared/utils/polls'
 
 const BLOCK_TAGS = new Set([
   'address',

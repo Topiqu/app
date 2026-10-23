@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import { KEYWORD_PLAN_EDITABLE_STATUSES } from '~~/shared/utils/keywordPlan'
 
 export default defineEventHandler(async (event) => {
   const { user, db } = await requireDb(event, { role: ['admin', 'superadmin'], clientSite: true })

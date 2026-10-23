@@ -1,5 +1,3 @@
-import { hostedFontUrl } from '~~/shared/utils/publicationBranding'
-
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
   const slot = getRouterParam(event, 'slot')

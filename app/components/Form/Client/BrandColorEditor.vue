@@ -218,11 +218,8 @@
 </template>
 
 <script setup lang="ts">
+import type { ThemeKey } from '~~/shared/utils/tenantTheme'
 import type { BrandGradient } from '~~/shared/utils/publicationBranding'
-
-import { ThemeSchema } from '~~/shared/siteSchemas'
-import { resolveBrandAccent, themeColors, type ThemeKey } from '~~/shared/utils/tenantTheme'
-import { hasAdvancedBranding, gradientCss, mixBrandColor } from '~~/shared/utils/publicationBranding'
 
 const props = defineProps<{
   theme: ThemeKey

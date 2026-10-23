@@ -18,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import { translationStatusDot, type ArticleTranslationRow } from '~~/shared/utils/articleTranslations'
+import type { ArticleTranslationRow } from '~~/shared/utils/articleTranslations'
 
 const modelValue = defineModel<string>({ required: true })
 

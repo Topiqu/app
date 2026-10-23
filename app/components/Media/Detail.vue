@@ -120,10 +120,7 @@
 </template>
 
 <script setup lang="ts">
-import type { MediaOrigin } from '~~/shared/types/mediaRights'
-import type { MediaLibraryAsset, MediaLibraryDetail } from '~~/shared/types/mediaLibrary'
-
-import { MEDIA_ORIGINS } from '~~/shared/types/mediaRights'
+import type { MediaLibraryAsset } from '~~/shared/types/mediaLibrary'
 
 const props = defineProps<{ id?: string | null }>()
 const emit = defineEmits<{ updated: [asset?: MediaLibraryAsset]; removed: [] }>()

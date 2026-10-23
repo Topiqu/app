@@ -4,19 +4,6 @@ import type { ClientSiteUpdateArgs } from '~~/generated/zenstack/input'
 import equal from 'fast-deep-equal'
 import { randomBytes } from 'crypto'
 import { DbNull } from '@zenstackhq/orm'
-import { models } from '~~/shared/databaseSchemas'
-import { auditChanges } from '~~/server/utils/auditChanges'
-import { FooterSettingsSchema } from '~~/shared/utils/publicationFooter'
-import { PUBLICATION_CHANNELS } from '~~/shared/utils/publicationChannels'
-import { nextRelease, releaseScheduleError } from '~~/shared/utils/releaseSchedule'
-import { domainError, domainVerificationDefaults, isValidDomain, normalizeDomain } from '~~/shared/utils/domain'
-import { hasAdvancedBranding, normalizeAccentColor, parseBrandGradient } from '~~/shared/utils/publicationBranding'
-import {
-  PRIVILEGED_CLIENT_SITE_FIELDS,
-  TENANT_EDITABLE_CLIENT_SITE_FIELDS,
-  fieldMask,
-  pickFields,
-} from '~~/shared/utils/clientSiteFields'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)

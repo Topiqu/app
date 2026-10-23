@@ -1,7 +1,5 @@
 import { z } from 'zod'
 
-import { readLimitedBody } from '../images/publicFetch'
-
 const baseUrl = 'https://api.linkedin.com/v2'
 const restBaseUrl = 'https://api.linkedin.com/rest'
 const linkedInVersion = process.env.LINKEDIN_API_VERSION || '202604'

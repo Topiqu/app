@@ -1,7 +1,3 @@
-import { markdownPath } from '~~/shared/utils/routes'
-
-import { publicArticleWhere } from '../utils/articleViewerAccess'
-
 /** Tenant index for LLM crawlers: what the blog is, and every article as a markdown link. */
 export default defineEventHandler(async (event) => {
   const tenant = await tenantByHost(event)

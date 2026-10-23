@@ -1,7 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { createArticleGenerationAudit } from '../../../server/utils/articleGenerationAudit'
-import { insertArticleLinks, linkArticle, loadLinkCandidates } from '../../../server/utils/ai/articleLinks'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/databaseJson'), 'toDatabaseJson')
+  await stubNitroImports(import('../../../server/utils/sanitize'), 'escapeHtml')
+  await stubNitroImports(import('../../../server/utils/ai/reasoning'), 'aiReasoning')
+}
+
+await stubImports()
+
+const { createArticleGenerationAudit } = await import('../../../server/utils/articleGenerationAudit')
+const { insertArticleLinks, linkArticle, loadLinkCandidates } = await import('../../../server/utils/ai/articleLinks')
 
 const { generateStructuredText } = vi.hoisted(() => ({
   generateStructuredText: vi.fn<(typeof import('ai'))['generateText']>(),
@@ -140,3 +150,5 @@ describe('linkArticle', () => {
     )
   })
 })
+
+beforeEach(stubImports)

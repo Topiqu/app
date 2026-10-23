@@ -1,8 +1,6 @@
 import argon from 'argon2'
 import { definePlugin } from '@zenstackhq/orm'
 
-import { articleTextMetrics } from './metrics'
-import { createDatabaseClient } from './database'
 import { schema } from '../../generated/zenstack/schema'
 
 export const appMutationPlugin = definePlugin(schema, {

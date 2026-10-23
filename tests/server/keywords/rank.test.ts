@@ -1,7 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/planFeatures'), 'activeFeatureFilter')
+  await stubNitroImports(import('../../../server/utils/keywords/dataforseo'), 'dataForSeo', 'hasDataForSeo')
+}
+
 const dataForSeo = vi.fn()
 vi.mock('../../../server/utils/keywords/dataforseo', () => ({ dataForSeo, hasDataForSeo: () => true }))
+
+await stubImports()
 
 const { blogPosition, checkDueRanks, firstRankCheck, isArticleUrl, nextRankCheck, rankHistoryFor } =
   await import('../../../server/utils/keywords/rank')
@@ -188,3 +197,5 @@ describe('checkDueRanks', () => {
     expect(isArticleUrl('not-a-url', 'kava.cz', 'cs', 'a')).toBe(false)
   })
 })
+
+beforeEach(stubImports)

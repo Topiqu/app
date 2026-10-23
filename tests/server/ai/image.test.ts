@@ -1,8 +1,20 @@
 import sharp from 'sharp'
 import { createHash } from 'node:crypto'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi, beforeEach } from 'vitest'
 
-import { generateImage } from '../../../server/utils/ai/image'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(
+    import('../../../server/utils/images/optimize'),
+    'IMMUTABLE_IMAGE_CACHE_CONTROL',
+    'optimizeGeneratedImage',
+  )
+}
+
+await stubImports()
+
+const { generateImage } = await import('../../../server/utils/ai/image')
 
 const { generate } = vi.hoisted(() => ({ generate: vi.fn() }))
 vi.mock('ai', () => ({ generateImage: generate }))
@@ -74,3 +86,5 @@ describe('generated image storage', () => {
     expect(generate).not.toHaveBeenCalled()
   })
 })
+
+beforeEach(stubImports)

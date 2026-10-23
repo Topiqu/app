@@ -1,6 +1,15 @@
 // @vitest-environment node
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/concurrency'), 'mapLimit')
+  await stubNitroImports(import('../../../server/utils/backlinks/page'), 'fetchPage')
+  await stubNitroImports(import('../../../server/utils/keywords/dataforseo'), 'dataForSeo')
+  await stubNitroImports(import('../../../server/utils/backlinks/match'), 'mentionsBusiness')
+}
+
 const dataForSeo = vi.fn()
 vi.mock('../../../server/utils/keywords/dataforseo', () => ({ dataForSeo, hasDataForSeo: () => true }))
 const fetchPage = vi.fn()
@@ -10,6 +19,8 @@ vi.mock('../../../server/utils/backlinks/page', async (importOriginal) => ({
 }))
 const mentionsBusiness = vi.fn()
 vi.mock('../../../server/utils/backlinks/match', () => ({ mentionsBusiness, supplierPages: vi.fn() }))
+
+await stubImports()
 
 const { findMentions } = await import('../../../server/utils/backlinks/mentions')
 
@@ -117,3 +128,5 @@ describe('findMentions', () => {
     await expect(findMentions(site, owned)).rejects.toThrow('DataForSEO down')
   })
 })
+
+beforeEach(stubImports)

@@ -1,13 +1,4 @@
 import { z } from 'zod'
-import { normalizeKnowledgeText } from '~~/server/utils/knowledge/extract'
-import { KNOWLEDGE_CONSENT_VERSION, KNOWLEDGE_LIMITS } from '~~/shared/utils/knowledge'
-import {
-  assertCitableUrl,
-  hashKnowledge,
-  kickKnowledgeIndex,
-  KNOWLEDGE_SOURCE_VIEW,
-  requireKnowledgeAccess,
-} from '~~/server/utils/knowledge/sources'
 
 const InputSchema = z.object({
   title: z.string().trim().min(1).max(200).optional(),

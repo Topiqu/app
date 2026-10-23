@@ -1,12 +1,27 @@
 // @vitest-environment node
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/concurrency'), 'mapLimit')
+  await stubNitroImports(import('../../../server/utils/ai/reasoning'), 'aiReasoning')
+  await stubNitroImports(import('../../../server/utils/backlinks/match'), 'supplierPages', 'mentionsBusiness')
+  await stubNitroImports(import('../../../server/utils/backlinks/suppliers'), 'findSuppliers')
+  await stubNitroImports(import('../../../server/utils/backlinks/mentions'), 'findMentions')
+  await stubNitroImports(import('../../../server/utils/backlinks/discover'), 'BACKLINK_PLANS', 'recordBacklink')
+  await stubNitroImports(import('../../../server/utils/backlinks/page'), 'fetchPage')
+  await stubNitroImports(import('../../../server/utils/keywords/dataforseo'), 'hasDataForSeo', 'dataForSeo')
+}
+
 vi.mock('../../../server/utils/keywords/dataforseo', () => ({ dataForSeo: vi.fn(), hasDataForSeo: () => true }))
 const fetchPage = vi.fn()
 vi.mock('../../../server/utils/backlinks/page', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../server/utils/backlinks/page')>()),
   fetchPage,
 }))
+
+await stubImports()
 
 const { checkDueBacklinks, checkOpportunity } = await import('../../../server/utils/backlinks/check')
 
@@ -146,3 +161,5 @@ describe('checkDueBacklinks', () => {
     expect(await checkDueBacklinks(NOW)).toMatchObject({ lost: 1 })
   })
 })
+
+beforeEach(stubImports)

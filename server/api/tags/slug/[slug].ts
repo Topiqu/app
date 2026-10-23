@@ -1,5 +1,3 @@
-import { hasArticleAdminAccess, publicArticleWhere } from '../../../utils/articleViewerAccess'
-
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
 

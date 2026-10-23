@@ -1,7 +1,26 @@
 import { generateText } from 'ai'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { reviewArticle } from '../../../server/utils/ai/articleQuality'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/ai/reasoning'), 'aiReasoning')
+  await stubNitroImports(
+    import('../../../server/utils/ai/editorialPolicy'),
+    'AUTHORIAL_REASONING',
+    'ILLUSTRATIVE_STORY',
+  )
+  await stubNitroImports(
+    import('../../../server/utils/ai/researchEvidence'),
+    'extractResearchUrls',
+    'researchEvidence',
+    'retrievedResearchSources',
+  )
+}
+
+await stubImports()
+
+const { reviewArticle } = await import('../../../server/utils/ai/articleQuality')
 
 vi.mock('ai', async (importOriginal) => ({
   ...(await importOriginal<typeof import('ai')>()),
@@ -42,3 +61,5 @@ describe('comparison table review', () => {
     expect(result.review.approved).toBe(true)
   })
 })
+
+beforeEach(stubImports)

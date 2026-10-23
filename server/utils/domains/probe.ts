@@ -1,7 +1,5 @@
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto'
 
-import { postPublicUrl, readLimitedBody } from '../images/publicFetch'
-
 export const domainProbeSignature = (secret: string, host: string, nonce: string) =>
   createHmac('sha256', secret).update(`${host}\n${nonce}`).digest('hex')
 

@@ -52,7 +52,6 @@
 </template>
 
 <script setup lang="ts">
-import type { TaskStatus } from '~~/shared/utils/operations'
 import type { OperationsTask } from '~~/shared/types/operations'
 
 defineProps<{ tasks: OperationsTask[] }>()

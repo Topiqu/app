@@ -29,8 +29,6 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
 
-import { tenantAdminUrl } from '../utils/tenantAdminUrl'
-
 defineProps<{ collapsed: boolean }>()
 
 type MembershipOption = {

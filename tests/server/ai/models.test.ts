@@ -3,8 +3,22 @@ import { z } from 'zod'
 import { generateText, Output } from 'ai'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { aiReasoning } from '../../../server/utils/ai/reasoning'
-import { aiModel, aiWebSearchTool } from '../../../server/utils/ai/models'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(
+    import('../../../server/utils/ai/modelRegistry'),
+    'aiEmbeddingModelId',
+    'aiImageModelId',
+    'aiModelId',
+    'aiModelProvider',
+  )
+}
+
+await stubImports()
+
+const { aiReasoning } = await import('../../../server/utils/ai/reasoning')
+const { aiModel, aiWebSearchTool } = await import('../../../server/utils/ai/models')
 
 const { requests } = vi.hoisted(() => ({ requests: [] as { url: string; body: Record<string, any> }[] }))
 
@@ -246,3 +260,5 @@ describe('AI model integration', () => {
     })
   })
 })
+
+beforeEach(stubImports)

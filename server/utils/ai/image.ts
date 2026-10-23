@@ -1,8 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { generateImage as generateImg } from 'ai'
 
-import { IMMUTABLE_IMAGE_CACHE_CONTROL, optimizeGeneratedImage } from '../images/optimize'
-
 const IMAGE_EXTENSIONS: Record<string, string> = {
   'image/webp': 'webp',
   'image/png': 'png',

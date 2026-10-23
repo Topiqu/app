@@ -1,5 +1,3 @@
-import { drainKnowledgeQueue } from '../utils/knowledge/indexing'
-
 export default defineMonitoredTask({
   meta: {
     name: 'knowledge-index',

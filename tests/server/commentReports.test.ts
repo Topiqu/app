@@ -1,5 +1,11 @@
 import { createError } from 'h3'
-import { afterEach, expect, it, vi } from 'vitest'
+import { afterEach, expect, it, vi, beforeEach } from 'vitest'
+
+import { stubNitroImports } from '../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../server/utils/articleViewerAccess'), 'canReadArticle')
+}
 
 afterEach(() => {
   vi.useRealTimers()
@@ -133,3 +139,5 @@ it('does not clear a newer window claim when a delayed old report fails', async 
   await run()
   expect(createMany).toHaveBeenCalledTimes(2)
 })
+
+beforeEach(stubImports)

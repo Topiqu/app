@@ -1,9 +1,3 @@
-import {
-  canPreviewWidgetSlot,
-  widgetPagePreviewUpdateSchema,
-  type WidgetPagePreviewState,
-} from '~/utils/widgetPagePreview'
-
 export function useWidgetPagePreview() {
   const route = useRoute()
   const active = computed(() => route.query.widgetPreview === '1')

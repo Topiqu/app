@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import { refreshAllowance, refreshesThisMonth } from '~~/server/utils/keywords/refresh'
 
 const proposalView = z
   .object({

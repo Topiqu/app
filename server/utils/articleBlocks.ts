@@ -1,5 +1,4 @@
 import * as cheerio from 'cheerio'
-import { buildArticleBlocks, headingSlug, type ArticleNode } from '~~/shared/utils/articleBlocks'
 
 /**
  * Stamps anchor ids on save. `buildArticleBlocks` also does this at render for bodies written

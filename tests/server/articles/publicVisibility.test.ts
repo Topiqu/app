@@ -1,7 +1,15 @@
 import { createError } from 'h3'
-import { afterEach, expect, it, vi } from 'vitest'
+import { afterEach, expect, it, vi, beforeEach } from 'vitest'
 
-import { hasArticleAdminAccess, sessionTenantId } from '../../../server/utils/articleViewerAccess'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/articleViewerAccess'), 'canReadArticle')
+}
+
+await stubImports()
+
+const { hasArticleAdminAccess, sessionTenantId } = await import('../../../server/utils/articleViewerAccess')
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -89,3 +97,5 @@ it.each([{ deleted: true }, { future: true }, { tenantDeleted: true }])(
     await expect(run()).rejects.toMatchObject({ statusCode: 404, data: undefined })
   },
 )
+
+beforeEach(stubImports)

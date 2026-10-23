@@ -1,7 +1,5 @@
 import equal from 'fast-deep-equal'
 
-import { toDatabaseJson } from './databaseJson'
-
 /** Callers supply an explicit list of persisted fields, never the raw request body. */
 export const auditChanges = (
   before: Record<string, unknown>,

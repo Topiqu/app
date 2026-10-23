@@ -7,7 +7,15 @@ import { readFile } from 'node:fs/promises'
 import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { sendEmail } from '../../server/utils/sendEmail'
+import { stubNitroImports } from '../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../server/utils/sanitize'), 'escapeHtml')
+}
+
+await stubImports()
+
+const { sendEmail } = await import('../../server/utils/sendEmail')
 
 const { sentCommands, sentSignals } = vi.hoisted(() => ({
   sentCommands: [] as SendEmailCommandInput[],
@@ -172,3 +180,5 @@ describe('transactional email rendering', () => {
     }
   })
 })
+
+beforeEach(stubImports)

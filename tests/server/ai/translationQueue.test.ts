@@ -1,6 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { resolveTargetLanguages, syncArticleTranslationQueue } from '../../../server/utils/ai/translationQueue'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/ai/translationRow'), 'nextTranslationVersion')
+}
+
+await stubImports()
+
+const { resolveTargetLanguages, syncArticleTranslationQueue } =
+  await import('../../../server/utils/ai/translationQueue')
 
 // `features` mirrors the `isActive AI` probe in the real select — a non-empty array means
 // the tenant currently holds the AI feature.
@@ -116,3 +125,5 @@ describe('syncArticleTranslationQueue', () => {
     expect(db.articleTranslation.updateMany).not.toHaveBeenCalled()
   })
 })
+
+beforeEach(stubImports)

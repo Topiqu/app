@@ -1,14 +1,23 @@
 import { createError, getRequestHeader, getRequestURL } from 'h3'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import {
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/authCookie'), 'isSecureAuth')
+  await stubNitroImports(import('../../../server/utils/authHost'), 'isPlatformAuthHost')
+}
+
+await stubImports()
+
+const {
   authReturnPath,
   authTransferHash,
   consumeAuthTransfer,
   loadAuthTransfer,
   requireSameAuthOrigin,
   requireTransferTarget,
-} from '../../../server/utils/authTransfer'
+} = await import('../../../server/utils/authTransfer')
 
 const find = vi.fn()
 const target = vi.fn()
@@ -120,3 +129,5 @@ describe('custom domain authentication handoff', () => {
     await expect(requireTransferTarget('https://app.topiqu.com')).rejects.toMatchObject({ statusCode: 403 })
   })
 })
+
+beforeEach(stubImports)

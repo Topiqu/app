@@ -1,6 +1,25 @@
 import { generateText } from 'ai'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/planFeatures'), 'activeFeatureFilter')
+  await stubNitroImports(
+    import('../../../server/utils/keywords/rank'),
+    'rankHistoryFor',
+    'blogPosition',
+    'isArticleUrl',
+  )
+  await stubNitroImports(import('../../../server/utils/keywords/serp'), 'serpSignals')
+  await stubNitroImports(import('../../../server/utils/ai/reasoning'), 'aiReasoning')
+  await stubNitroImports(import('../../../server/utils/ai/researchEvidence'), 'researchTopic')
+  await stubNitroImports(import('../../../server/utils/keywords/refresh'), 'suggestExpansions')
+  await stubNitroImports(import('../../../server/utils/keywords/scope'), 'inScope', 'siteKeywords', 'siteProfile')
+  await stubNitroImports(import('../../../server/utils/keywords/opportunity'), 'assessOpportunities')
+  await stubNitroImports(import('../../../server/utils/keywords/dataforseo'), 'dataForSeo', 'hasDataForSeo')
+}
+
 const dataForSeo = vi.fn()
 vi.mock('../../../server/utils/keywords/dataforseo', () => ({ dataForSeo, hasDataForSeo: () => true }))
 vi.mock('ai', async (importOriginal) => ({
@@ -37,6 +56,8 @@ const mockModels = (keep: (items: string[]) => number[] = (items) => items.map((
     return { output: { keep: keep(items) }, usage: {} }
   }) as never)
 }
+
+await stubImports()
 
 const {
   clusterIdeas,
@@ -709,3 +730,5 @@ describe('refreshKeywordPlan', () => {
     expect(tx.keywordCluster.deleteMany).not.toHaveBeenCalled()
   })
 })
+
+beforeEach(stubImports)

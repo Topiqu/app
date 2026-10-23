@@ -3,13 +3,6 @@ import type { Language } from '~~/generated/zenstack/models'
 import { z } from 'zod'
 import * as cheerio from 'cheerio'
 import { generateText, Output } from 'ai'
-import { readFaq } from '~~/shared/utils/articleFaq'
-import { articleSlug } from '~~/shared/utils/articleSlug'
-import { LANGUAGE_NAMES } from '~~/shared/utils/language'
-import { normalizePollOptions } from '~~/shared/utils/polls'
-
-import { escapeHtml } from '../sanitize'
-import { aiReasoning } from './reasoning'
 
 const verbatimToken = (i: number) => `[[BLK_${i}]]`
 const pollToken = (i: number) => `[[POLLBLK_${i}]]`

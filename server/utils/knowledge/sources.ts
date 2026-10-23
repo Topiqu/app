@@ -1,11 +1,6 @@
 import type { H3Event } from 'h3'
 
 import { createHash } from 'node:crypto'
-import { knowledgeQuota } from '~~/shared/utils/knowledge'
-
-import { indexKnowledgeSource } from './indexing'
-import { assertPublicHttpsUrl } from '../images/publicFetch'
-import { extractKnowledgeUrl, KnowledgeExtractError } from './extract'
 
 /** What the list and detail UI receive; `content` stays server-side. */
 export const KNOWLEDGE_SOURCE_VIEW = {

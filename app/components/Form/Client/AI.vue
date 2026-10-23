@@ -240,10 +240,6 @@
 <script setup lang="ts">
 import type { ReleaseFrequency, ReleaseScheduleSettings } from '~~/shared/utils/releaseSchedule'
 
-import { languageTag } from '~~/shared/utils/language'
-import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
-import { BIO_MAX_LENGTH } from '~~/shared/utils/profile'
-
 const { t, locale } = useI18n()
 
 const props = defineProps<{

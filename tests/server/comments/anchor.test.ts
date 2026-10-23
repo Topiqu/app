@@ -1,4 +1,10 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi, beforeEach } from 'vitest'
+
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/articleViewerAccess'), 'canReadArticle')
+}
 
 const makeComment = (id: string, parentId: string | null = null, articleId = 'article-1') => ({
   id,
@@ -104,3 +110,5 @@ describe('comment permalink threads', () => {
     expect(db.comment.findFirst).not.toHaveBeenCalled()
   })
 })
+
+beforeEach(stubImports)

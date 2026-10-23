@@ -1,11 +1,21 @@
 // @vitest-environment node
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/backlinks/suppliers'), 'findSuppliers')
+  await stubNitroImports(import('../../../server/utils/keywords/dataforseo'), 'hasDataForSeo')
+  await stubNitroImports(import('../../../server/utils/backlinks/mentions'), 'findMentions')
+}
+
 vi.mock('../../../server/utils/keywords/dataforseo', () => ({ dataForSeo: vi.fn(), hasDataForSeo: () => true }))
 const findMentions = vi.fn()
 vi.mock('../../../server/utils/backlinks/mentions', () => ({ findMentions }))
 const findSuppliers = vi.fn()
 vi.mock('../../../server/utils/backlinks/suppliers', () => ({ findSuppliers }))
+
+await stubImports()
 
 const { discoverBacklinks } = await import('../../../server/utils/backlinks/discover')
 
@@ -141,3 +151,5 @@ describe('discoverBacklinks', () => {
     expect(db.clientSite.update).not.toHaveBeenCalled()
   })
 })
+
+beforeEach(stubImports)

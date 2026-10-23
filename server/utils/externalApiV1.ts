@@ -1,5 +1,3 @@
-import { externalArticleSelect } from './externalApi'
-
 export const externalArticleSummaryV1Select = {
   ...externalArticleSelect,
   content: false,

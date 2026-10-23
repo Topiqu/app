@@ -37,8 +37,6 @@
 </template>
 
 <script setup lang="ts">
-import { useFollowProfiles } from '~/composables/useFollowProfiles'
-
 const localePath = useLocalePath()
 
 const open = defineModel<boolean>({ default: false })

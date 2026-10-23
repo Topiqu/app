@@ -1,6 +1,3 @@
-import { publicWidgets } from '~~/shared/utils/widgets'
-import { publicClientSiteSelect } from '~~/shared/utils/clientSiteFields'
-
 export default defineEventHandler(async (event) => {
   const userId = getRouterParam(event, 'id')
   if (!userId) throw createError({ statusCode: 400, message: 'Neplatný požadavek' })

@@ -1,5 +1,11 @@
 import { createError } from 'h3'
-import { afterEach, expect, it, vi } from 'vitest'
+import { afterEach, expect, it, vi, beforeEach } from 'vitest'
+
+import { stubNitroImports } from '../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../server/utils/articleViewerAccess'), 'canReadArticle')
+}
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -60,3 +66,5 @@ it('returns a committed comment reaction when its notification fails', async () 
   expect(create).toHaveBeenCalledOnce()
   expect(reportCaughtError).toHaveBeenCalledOnce()
 })
+
+beforeEach(stubImports)

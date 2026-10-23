@@ -1,5 +1,3 @@
-import { decideDraft } from '../../../utils/linkedin/decision'
-
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   // Approval queues the post for the LinkedIn publish cron — the same act as publish/[id].

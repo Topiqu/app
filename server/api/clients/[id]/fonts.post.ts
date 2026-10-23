@@ -1,6 +1,4 @@
 import { randomUUID } from 'node:crypto'
-import { FONT_MAX_UPLOAD_BYTES } from '~~/shared/utils/uploadLimits'
-import { hasAdvancedBranding, hostedFontUrl } from '~~/shared/utils/publicationBranding'
 
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')

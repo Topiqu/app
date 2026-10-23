@@ -131,8 +131,6 @@ import type { ArticleSeriesSelection } from '~~/types/article'
 
 import slugify from 'slugify'
 
-import { emptyAsyncDataList } from '~/utils/asyncDataDefaults'
-
 const modelValue = defineModel<ArticleSeriesSelection | null>({ default: null })
 
 defineProps<{ compact?: boolean }>()

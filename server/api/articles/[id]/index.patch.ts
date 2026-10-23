@@ -1,10 +1,6 @@
 import { z } from 'zod'
 import { DbNull } from '@zenstackhq/orm'
-import { articlePath } from '~~/shared/utils/routes'
-import { articleSlug } from '~~/shared/utils/articleSlug'
 import { ArticleStatus } from '~~/generated/zenstack/models'
-import { ArticleUpdateSchema } from '~~/shared/databaseSchemas'
-import { requiresArticleVersion } from '~~/shared/utils/articleRevision'
 
 export default defineEventHandler(async (event): Promise<{ success: true; editVersion: number }> => {
   const { translate: t } = await useServerI18n(event)

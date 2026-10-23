@@ -1,9 +1,26 @@
 // @vitest-environment node
 import { createOpenAI } from '@ai-sdk/openai'
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi, beforeEach } from 'vitest'
 
-import { pickArticleTopic } from '../../server/utils/ai/topic'
-import { AI_MODELS } from '../../server/utils/ai/modelRegistry'
+import { stubNitroImports } from '../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../server/utils/ai/reasoning'), 'aiReasoning')
+  await stubNitroImports(
+    import('../../server/utils/ai/formats'),
+    'allowedModulesFor',
+    'ARTICLE_FORMAT_NAMES',
+    'ARTICLE_MODULE_NAMES',
+    'ARTICLE_STRUCTURE_VARIANTS',
+    'formatMenu',
+    'isStructureVariantFor',
+  )
+}
+
+await stubImports()
+
+const { pickArticleTopic } = await import('../../server/utils/ai/topic')
+const { AI_MODELS } = await import('../../server/utils/ai/modelRegistry')
 
 const cases = [
   {
@@ -53,3 +70,5 @@ describe.skipIf(process.env.AI_EVAL !== '1')('keyword plan reaches the topic pic
     120_000,
   )
 })
+
+beforeEach(stubImports)

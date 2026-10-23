@@ -2,10 +2,26 @@
 import { randomUUID } from 'node:crypto'
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { createDatabaseClient } from '../../../server/utils/database'
-import { extractKnowledgeUrl } from '../../../server/utils/knowledge/extract'
-import { refreshKnowledgeSources } from '../../../server/utils/knowledge/refresh'
-import { hashKnowledge, refetchKnowledgeUrl } from '../../../server/utils/knowledge/sources'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/knowledge/eligibility'), 'knowledgeSiteWhere')
+  await stubNitroImports(import('../../../server/utils/ai/modelRegistry'), 'aiEmbeddingModelId')
+  await stubNitroImports(import('../../../server/utils/images/publicFetch'), 'assertPublicHttpsUrl')
+  await stubNitroImports(import('../../../server/utils/knowledge/sources'), 'refetchKnowledgeUrl')
+  await stubNitroImports(
+    import('../../../server/utils/knowledge/extract'),
+    'extractKnowledgeUrl',
+    'KnowledgeExtractError',
+  )
+}
+
+await stubImports()
+
+const { createDatabaseClient } = await import('../../../server/utils/database')
+const { extractKnowledgeUrl } = await import('../../../server/utils/knowledge/extract')
+const { refreshKnowledgeSources } = await import('../../../server/utils/knowledge/refresh')
+const { hashKnowledge, refetchKnowledgeUrl } = await import('../../../server/utils/knowledge/sources')
 
 vi.mock('../../../server/utils/knowledge/extract', async (original) => ({
   ...(await original<typeof import('../../../server/utils/knowledge/extract')>()),
@@ -147,3 +163,5 @@ describe.skipIf(!enabled)('knowledge refresh on PostgreSQL', () => {
     })
   })
 })
+
+beforeEach(stubImports)

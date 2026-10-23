@@ -2,6 +2,14 @@ import { createError } from 'h3'
 import { EventEmitter } from 'node:events'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { stubNitroImports } from '../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../server/utils/cache'), 'closeCache')
+  await stubNitroImports(import('../../server/utils/tagFeeds'), 'tagFeedTenants')
+  await stubNitroImports(import('../../server/utils/ai/translationRow'), 'nextTranslationVersion', 'translationSelect')
+}
+
 /**
  * In-memory stand-in for ioredis. It stores strings and nothing else — which is
  * the whole point: Upstash used to JSON-serialize for us, ioredis does not, so
@@ -84,7 +92,9 @@ async function loadCache({ configured = true } = {}) {
   failConstruction = false
   if (configured) process.env.REDIS_URL = 'redis://localhost:6379'
   else delete process.env.REDIS_URL
-  return import('../../server/utils/cache')
+  const cache = await import('../../server/utils/cache')
+  vi.stubGlobal('closeCache', cache.closeCache)
+  return cache
 }
 
 beforeEach(() => {
@@ -673,3 +683,5 @@ describe('consumeRateLimit', () => {
     await expect(consumeRateLimit('login:identity:b', 1, 900)).resolves.toBe(true)
   })
 })
+
+beforeEach(stubImports)

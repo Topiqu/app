@@ -6,10 +6,18 @@
 import { join } from 'node:path'
 import { createOpenAI } from '@ai-sdk/openai'
 import { mkdirSync, writeFileSync } from 'node:fs'
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi, beforeEach } from 'vitest'
 
-import { inScope } from '../../server/utils/keywords/scope'
-import { AI_MODELS } from '../../server/utils/ai/modelRegistry'
+import { stubNitroImports } from '../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../server/utils/ai/reasoning'), 'aiReasoning')
+}
+
+await stubImports()
+
+const { inScope } = await import('../../server/utils/keywords/scope')
+const { AI_MODELS } = await import('../../server/utils/ai/modelRegistry')
 
 type Verdict = 'keep' | 'drop' | 'either'
 type Blog = {
@@ -144,3 +152,5 @@ describe.skipIf(process.env.AI_EVAL !== '1')('keyword scope eval', () => {
     120_000,
   )
 })
+
+beforeEach(stubImports)

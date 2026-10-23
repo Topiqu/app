@@ -1,11 +1,6 @@
-import type { ThemeSchema, LanguageSchema } from '~~/shared/siteSchemas'
 import type { SocialPlatform, ClientSite as _ClientSite } from '~~/generated/zenstack/models'
 
 import equal from 'fast-deep-equal'
-import { parseBrandGradient, type BrandGradient } from '~~/shared/utils/publicationBranding'
-import { releaseScheduleSettings, type ReleaseScheduleSettings } from '~~/shared/utils/releaseSchedule'
-import { publicationChannelSettings, type PublicationChannelSettings } from '~~/shared/utils/publicationChannels'
-import { parseFooterSettings, resolveFooterSettings, type FooterSettings } from '~~/shared/utils/publicationFooter'
 
 export interface ClientSite extends Omit<
   _ClientSite,

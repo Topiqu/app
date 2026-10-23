@@ -156,13 +156,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  MAX_INTERVAL_HOURS,
-  MIN_INTERVAL_HOURS,
-  releaseScheduleError,
-  type ReleaseFrequency,
-  type ReleaseScheduleSettings,
-} from '~~/shared/utils/releaseSchedule'
+import type { ReleaseFrequency, ReleaseScheduleSettings } from '~~/shared/utils/releaseSchedule'
 
 const { articlesRemaining = null, nextReleaseAt = null } = defineProps<{
   articlesRemaining?: number | null

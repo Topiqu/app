@@ -1,5 +1,11 @@
 import { createError } from 'h3'
-import { afterEach, expect, it, vi } from 'vitest'
+import { afterEach, expect, it, vi, beforeEach } from 'vitest'
+
+import { stubNitroImports } from '../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../server/utils/articleViewerAccess'), 'canReadArticle')
+}
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -111,3 +117,5 @@ it('validates identifiers before loading or writing targets', async () => {
   expect(db.comment.findUnique).not.toHaveBeenCalled()
   expect(create).not.toHaveBeenCalled()
 })
+
+beforeEach(stubImports)

@@ -1,5 +1,3 @@
-import { attemptDomainCleanup, withDomainLease } from '../../utils/domains/connections'
-
 export default defineEventHandler(async (event) => {
   const { user, db, clientSiteId } = await requireDomainAccess(event)
   const site = await db.clientSite.findUniqueOrThrow({

@@ -68,8 +68,6 @@
 </template>
 
 <script setup lang="ts">
-import { FONT_MAX_UPLOAD_BYTES } from '~~/shared/utils/uploadLimits'
-
 const props = defineProps<{
   fontRole: 'heading' | 'body'
   clientId: string

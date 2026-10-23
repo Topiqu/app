@@ -1,5 +1,3 @@
-import { articleCreditsForPlan, nextArticleCreditMonth } from '~~/shared/utils/articleCredits'
-
 export default defineMonitoredTask({
   meta: {
     name: 'grant-annual-article-credits',

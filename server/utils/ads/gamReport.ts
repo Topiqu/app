@@ -1,5 +1,3 @@
-import { getGamAccessToken } from './gamAuth'
-
 export interface GamReportPeriod {
   start: Date
   end: Date

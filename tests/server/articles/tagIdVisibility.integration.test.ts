@@ -2,9 +2,18 @@
 import { createError } from 'h3'
 import { randomUUID } from 'node:crypto'
 import { PolicyPlugin } from '@zenstackhq/plugin-policy'
-import { afterAll, afterEach, describe, expect, it, vi } from 'vitest'
+import { afterAll, afterEach, describe, expect, it, vi, beforeEach } from 'vitest'
 
-import { createDatabaseClient } from '../../../server/utils/database'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/articleCard'), 'articleCardSelect')
+  await stubNitroImports(import('../../../server/utils/articleViewerAccess'), 'publicArticleWhere')
+}
+
+await stubImports()
+
+const { createDatabaseClient } = await import('../../../server/utils/database')
 
 const url = process.env.TEST_DATABASE_URL
 const enabled = !!url && /test/i.test(new URL(url).pathname) && url !== process.env.DATABASE_URL
@@ -140,3 +149,5 @@ describe.skipIf(!enabled)('tag ID reader boundary on PostgreSQL', () => {
     await expect(data.run('anonymous')).rejects.toMatchObject({ statusCode: 401 })
   })
 })
+
+beforeEach(stubImports)

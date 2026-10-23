@@ -1,6 +1,4 @@
 import { z } from 'zod'
-import { hasDataForSeo } from '~~/server/utils/keywords/dataforseo'
-import { BACKLINK_DAY_MS, BACKLINK_MANUAL_DAYS, backlinkAllowance } from '~~/shared/utils/backlinks'
 
 const RUNNING_MS = 15 * 60_000
 

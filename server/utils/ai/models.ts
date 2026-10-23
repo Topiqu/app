@@ -1,10 +1,7 @@
 import { wrapLanguageModel, type LanguageModelMiddleware } from 'ai'
 
-import type { AiEmbeddingTask, AiImageTask, AiProvider, AiTask } from './modelRegistry'
-
 import openAi from './openai'
 import anthropic from './anthropic'
-import { aiEmbeddingModelId, aiImageModelId, aiModelId, aiModelProvider } from './modelRegistry'
 
 // Both providers count reasoning against the output limit. Call-site budgets size the answer;
 // reserve additional space for thinking, with more headroom at high effort.

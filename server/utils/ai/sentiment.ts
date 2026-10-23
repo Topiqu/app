@@ -3,8 +3,6 @@ import type { ClientPlan } from '~~/generated/zenstack/models'
 import { z } from 'zod'
 import { generateText, Output } from 'ai'
 
-import { aiReasoning } from './reasoning'
-
 const proportion = z.number().min(0).max(1)
 
 const basicSchema = z.object({

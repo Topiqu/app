@@ -1,5 +1,3 @@
-import type { MaybeRefOrGetter } from 'vue'
-import type { ArticleWithDetails } from '~~/types/article'
 import type { SharePlatform } from '~~/generated/zenstack/models'
 
 type ActionArticle = Pick<ArticleWithDetails, 'id' | 'status' | 'allowedComments'> & { shared?: number }

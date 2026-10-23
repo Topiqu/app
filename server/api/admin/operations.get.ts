@@ -1,12 +1,3 @@
-import type { OperationsOverview, OperationsTask } from '~~/shared/types/operations'
-
-import {
-  domainFailureReason,
-  monitoredTaskIntervals,
-  taskIsOverdue,
-  webhookFailureReason,
-} from '~~/shared/utils/operations'
-
 export default defineEventHandler(async (event): Promise<OperationsOverview> => {
   const { db } = await requireDb(event, { role: 'superadmin' })
   setResponseHeader(event, 'Cache-Control', 'private, no-store')

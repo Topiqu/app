@@ -1,11 +1,26 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, beforeEach } from 'vitest'
 
-import {
-  buildEditorialReviewPrompt,
-  buildRevisionPrompt,
-  editorialReviewSchema,
-  verdictLines,
-} from '../../../server/utils/ai/articleQuality'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/ai/reasoning'), 'aiReasoning')
+  await stubNitroImports(
+    import('../../../server/utils/ai/editorialPolicy'),
+    'AUTHORIAL_REASONING',
+    'ILLUSTRATIVE_STORY',
+  )
+  await stubNitroImports(
+    import('../../../server/utils/ai/researchEvidence'),
+    'extractResearchUrls',
+    'researchEvidence',
+    'retrievedResearchSources',
+  )
+}
+
+await stubImports()
+
+const { buildEditorialReviewPrompt, buildRevisionPrompt, editorialReviewSchema, verdictLines } =
+  await import('../../../server/utils/ai/articleQuality')
 
 const draft = {
   title: 'Switch 2 zachová část knihovny',
@@ -70,3 +85,5 @@ describe('verification audit', () => {
     expect(verdictLines('No verdicts here.')).toBeNull()
   })
 })
+
+beforeEach(stubImports)

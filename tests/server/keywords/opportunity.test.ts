@@ -1,7 +1,16 @@
 import { generateText } from 'ai'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { assessOpportunities } from '../../../server/utils/keywords/opportunity'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/ai/reasoning'), 'aiReasoning')
+  await stubNitroImports(import('../../../server/utils/keywords/scope'), 'siteProfile')
+}
+
+await stubImports()
+
+const { assessOpportunities } = await import('../../../server/utils/keywords/opportunity')
 
 vi.mock('ai', async (importOriginal) => ({ ...(await importOriginal<typeof import('ai')>()), generateText: vi.fn() }))
 
@@ -121,3 +130,5 @@ describe('keyword opportunities', () => {
     expect(generateText).not.toHaveBeenCalled()
   })
 })
+
+beforeEach(stubImports)

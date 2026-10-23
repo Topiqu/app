@@ -214,8 +214,6 @@
 <script setup lang="ts">
 import type { InternalApi } from 'nitropack'
 
-import { buildArticlePackViews } from '~/utils/articlePackPresentation'
-
 const config = useRuntimeConfig()
 const { locale, t } = useI18n()
 const { data: status, refresh: refreshStatus } = await useClientSiteStatus()

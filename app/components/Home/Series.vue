@@ -51,8 +51,6 @@
 </template>
 
 <script setup lang="ts">
-import type { Language } from '~~/shared/utils/language'
-
 const { site } = defineProps<{ site: string }>()
 
 const localePath = useLocalePath()

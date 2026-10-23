@@ -1,8 +1,5 @@
 import type { Language } from '~~/generated/zenstack/models'
 
-import { articleCardSelect } from '~~/server/utils/articleCard'
-import { canReadArticle } from '~~/server/utils/articleViewerAccess'
-
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const user = await getSessionUser(event)

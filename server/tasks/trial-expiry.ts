@@ -1,5 +1,3 @@
-import { needsTrialDowngrade } from '~~/shared/utils/trial'
-
 export default defineMonitoredTask({
   meta: {
     name: 'trial-expiry',

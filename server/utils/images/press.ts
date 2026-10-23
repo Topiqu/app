@@ -1,13 +1,5 @@
 import * as cheerio from 'cheerio'
 import { createHash } from 'node:crypto'
-import { youtubeVideoId } from '~~/shared/utils/youtube'
-
-import type { StockImage } from './types'
-
-import { putToCdn } from '../storage'
-import { storeMediaSource } from './stores'
-import { fetchPublicUrl, readLimitedBody } from './publicFetch'
-import { optimizeGeneratedImage, IMMUTABLE_IMAGE_CACHE_CONTROL } from './optimize'
 
 const terms = (text: string) =>
   text

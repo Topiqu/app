@@ -2,11 +2,27 @@
 import { join } from 'node:path'
 import { createOpenAI } from '@ai-sdk/openai'
 import { mkdirSync, writeFileSync } from 'node:fs'
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi, beforeEach } from 'vitest'
 
-import { AI_MODELS } from '../../server/utils/ai/modelRegistry'
-import { refreshKeywordPlan } from '../../server/utils/keywords/plan'
+import { stubNitroImports } from '../helpers/nitroImports'
 import { keywordOpportunity } from '../../shared/utils/keywordOpportunity'
+
+async function stubImports() {
+  await stubNitroImports(import('../../server/utils/planFeatures'), 'activeFeatureFilter')
+  await stubNitroImports(import('../../server/utils/keywords/dataforseo'), 'dataForSeo', 'hasDataForSeo')
+  await stubNitroImports(import('../../server/utils/keywords/rank'), 'rankHistoryFor', 'blogPosition', 'isArticleUrl')
+  await stubNitroImports(import('../../server/utils/keywords/serp'), 'serpSignals')
+  await stubNitroImports(import('../../server/utils/ai/reasoning'), 'aiReasoning')
+  await stubNitroImports(import('../../server/utils/ai/researchEvidence'), 'researchTopic')
+  await stubNitroImports(import('../../server/utils/keywords/refresh'), 'suggestExpansions')
+  await stubNitroImports(import('../../server/utils/keywords/scope'), 'inScope', 'siteKeywords', 'siteProfile')
+  await stubNitroImports(import('../../server/utils/keywords/opportunity'), 'assessOpportunities')
+}
+
+await stubImports()
+
+const { AI_MODELS } = await import('../../server/utils/ai/modelRegistry')
+const { refreshKeywordPlan } = await import('../../server/utils/keywords/plan')
 
 // Opt-in provider smoke: real search data and AI, with all database writes replaced by an in-memory plan.
 const sites = [
@@ -95,3 +111,5 @@ describe.skipIf(process.env.AI_EVAL !== '1' || process.env.DATAFORSEO_EVAL !== '
     180_000,
   )
 })
+
+beforeEach(stubImports)

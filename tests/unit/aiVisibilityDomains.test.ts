@@ -1,7 +1,15 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, beforeEach } from 'vitest'
 
-import { promptSource, seedDue } from '../../server/utils/ai/visibilityPrompts'
+import { stubNitroImports } from '../helpers/nitroImports'
 import { citedDomains, interleaveByTenant, isReferenceDomain, rankDomains } from '../../shared/utils/aiVisibility'
+
+async function stubImports() {
+  await stubNitroImports(import('../../server/utils/ai/reasoning'), 'aiReasoning')
+}
+
+await stubImports()
+
+const { promptSource, seedDue } = await import('../../server/utils/ai/visibilityPrompts')
 
 const run = (promptId: string, ...domains: string[]) => ({
   promptId,
@@ -74,3 +82,5 @@ describe('visibility scheduling', () => {
     expect(seedDue(new Date('2026-09-20T05:00:00Z'), now)).toBe(true)
   })
 })
+
+beforeEach(stubImports)

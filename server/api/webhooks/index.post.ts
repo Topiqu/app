@@ -1,6 +1,4 @@
 import { z } from 'zod'
-import { MAX_WEBHOOKS } from '~~/shared/utils/webhooks'
-import { assertPublicWebhookUrl, webhookEventsSchema, webhookUrlSchema } from '~~/server/utils/webhookInput'
 
 export default defineEventHandler(async (event) => {
   const { user, db, clientSiteId } = await requireWebhookAccess(event)

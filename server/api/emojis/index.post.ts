@@ -1,10 +1,5 @@
 import sharp from 'sharp'
 import { randomUUID } from 'node:crypto'
-import { analyzeImage } from '~~/server/utils/imageAnalysis'
-import { deleteFromCdn, putToCdn } from '~~/server/utils/storage'
-import { EMOJI_CONTENT_TYPE, prepareEmojiImage } from '~~/server/utils/emojiImage'
-
-import { isValidEmojiShortcode, normalizeEmojiShortcode } from '#shared/utils/emoji'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)

@@ -3,9 +3,28 @@ import { createError } from 'h3'
 import { createHmac } from 'node:crypto'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { requireShopifyAccess } from '../../../server/utils/shopify/access'
-import { queueShopifyCatalog } from '../../../server/utils/shopify/catalog'
-import { kickKnowledgeIndex, knowledgeLimits } from '../../../server/utils/knowledge/sources'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/shopify/config'), 'normalizeShopifyShop')
+  await stubNitroImports(import('../../../server/utils/shopify/billing'), 'releaseShopifyBilling')
+  await stubNitroImports(import('../../../server/utils/shopify/security'), 'verifyShopifyWebhookHmac')
+  await stubNitroImports(import('../../../server/utils/shopify/access'), 'requireShopifyAccess')
+  await stubNitroImports(
+    import('../../../server/utils/knowledge/sources'),
+    'hashKnowledge',
+    'knowledgeLimits',
+    'limitKnowledgeRequests',
+    'kickKnowledgeIndex',
+  )
+  await stubNitroImports(import('../../../server/utils/shopify/catalog'), 'queueShopifyCatalog')
+}
+
+await stubImports()
+
+const { requireShopifyAccess } = await import('../../../server/utils/shopify/access')
+const { queueShopifyCatalog } = await import('../../../server/utils/shopify/catalog')
+const { kickKnowledgeIndex, knowledgeLimits } = await import('../../../server/utils/knowledge/sources')
 
 vi.mock('../../../server/utils/shopify/access', () => ({ requireShopifyAccess: vi.fn() }))
 vi.mock('../../../server/utils/shopify/catalog', () => ({ queueShopifyCatalog: vi.fn() }))
@@ -136,3 +155,5 @@ describe('Shopify catalog routes', () => {
     expect(queueShopifyCatalog).toHaveBeenCalledWith('store.myshopify.com')
   })
 })
+
+beforeEach(stubImports)

@@ -1,9 +1,3 @@
-import { isLanguage } from '~~/shared/utils/language'
-import { SHOPIFY_INSTALL_COOKIE } from '~~/shared/utils/shopify'
-
-import { verifyShopifyLink } from '../../utils/shopify/security'
-import { SHOPIFY_LINK_COOKIE, shopifyOrigin } from '../../utils/shopify/config'
-
 const MAX_AGE_SECONDS = 900
 
 // Opened from App Home in a new tab. Moves the signed link out of the URL and into a cookie, so the

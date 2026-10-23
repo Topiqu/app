@@ -1,8 +1,3 @@
-import { articlePath } from '~~/shared/utils/routes'
-import { CommentCreateSchema } from '~~/shared/databaseSchemas'
-
-import { canReadArticle } from '../../utils/articleViewerAccess'
-
 const emailExcerpt = (content: string) => {
   const graphemes = new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(content)
   return `${Array.from(graphemes, ({ segment }) => segment)

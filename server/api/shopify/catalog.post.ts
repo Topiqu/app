@@ -1,14 +1,4 @@
 import { z } from 'zod'
-import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
-import { KNOWLEDGE_CONSENT_VERSION } from '~~/shared/utils/knowledge'
-
-import { requireShopifyAccess } from '../../utils/shopify/access'
-import {
-  hashKnowledge,
-  knowledgeLimits,
-  limitKnowledgeRequests,
-  kickKnowledgeIndex,
-} from '../../utils/knowledge/sources'
 
 const InputSchema = z.object({ language: z.enum(LANGUAGE_OPTIONS), confirmed: z.literal(true) })
 

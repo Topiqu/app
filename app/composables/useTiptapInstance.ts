@@ -1,5 +1,3 @@
-import type { Ref } from 'vue'
-
 import StarterKit from '@tiptap/starter-kit'
 import { Link } from '@tiptap/extension-link'
 import { Indent } from '~~/extensions/indent'

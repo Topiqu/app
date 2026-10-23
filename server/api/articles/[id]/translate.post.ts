@@ -1,8 +1,5 @@
 import { z } from 'zod'
-import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
 import { type ClientPlan, Language } from '~~/generated/zenstack/models'
-
-import { nextTranslationVersion, translationSelect } from '../../../utils/ai/translationRow'
 
 const TRANSLATION_PLANS: ClientPlan[] = ['PRO', 'PREMIUM', 'CUSTOM']
 export default defineEventHandler(async (event) => {

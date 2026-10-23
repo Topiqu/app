@@ -1,15 +1,4 @@
-import type { CommentPage, CommentWithReplies } from '~~/types/comment'
-
 import { z } from 'zod'
-import {
-  COMMENT_CONTEXT_LIMIT,
-  COMMENT_INITIAL_REPLY_DEPTH,
-  COMMENT_REPLY_PAGE_LIMIT,
-  COMMENT_ROOT_PAGE_LIMIT,
-  COMMENT_THREAD_NODE_LIMIT,
-} from '~~/shared/utils/commentThreads'
-
-import { canReadArticle } from '../../../utils/articleViewerAccess'
 
 const querySchema = z
   .object({

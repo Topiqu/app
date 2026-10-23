@@ -7,11 +7,23 @@ import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vites
 import type { SessionUser } from '../../../shared/types/auth'
 import type { ArticleUpdateArgs } from '../../../generated/zenstack/input'
 
-import { sanitizeHtml } from '../../../server/utils/sanitize'
-import { createDatabaseClient } from '../../../server/utils/database'
-import { changesReaderText } from '../../../server/utils/articleModified'
+import { stubNitroImports } from '../../helpers/nitroImports'
 import { articleRevisionSnapshot } from '../../../shared/utils/articleRevision'
-import { requireArticleAccess, requireTenantScope } from '../../../server/utils/tenantMembership'
+
+async function stubImports() {
+  await stubNitroImports(
+    import('../../../server/utils/ai/translationRow'),
+    'nextTranslationVersion',
+    'translationSelect',
+  )
+}
+
+await stubImports()
+
+const { sanitizeHtml } = await import('../../../server/utils/sanitize')
+const { createDatabaseClient } = await import('../../../server/utils/database')
+const { changesReaderText } = await import('../../../server/utils/articleModified')
+const { requireArticleAccess, requireTenantScope } = await import('../../../server/utils/tenantMembership')
 
 const url = process.env.TEST_DATABASE_URL
 const enabled = !!url && /test/i.test(new URL(url).pathname) && url !== process.env.DATABASE_URL
@@ -534,3 +546,5 @@ describe.skipIf(!enabled)('article version history on PostgreSQL', () => {
     ).rejects.toThrow()
   })
 })
+
+beforeEach(stubImports)

@@ -1,12 +1,23 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, beforeEach } from 'vitest'
 
-import { createImageSelection } from '../../../server/utils/images/selection'
-import {
-  ccLicenseName,
-  parsePressImages,
-  pickPressImage,
-  youtubeThumbnailImage,
-} from '../../../server/utils/images/press'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/storage'), 'putToCdn')
+  await stubNitroImports(import('../../../server/utils/images/stores'), 'storeMediaSource')
+  await stubNitroImports(import('../../../server/utils/images/publicFetch'), 'fetchPublicUrl', 'readLimitedBody')
+  await stubNitroImports(
+    import('../../../server/utils/images/optimize'),
+    'optimizeGeneratedImage',
+    'IMMUTABLE_IMAGE_CACHE_CONTROL',
+  )
+}
+
+await stubImports()
+
+const { createImageSelection } = await import('../../../server/utils/images/selection')
+const { ccLicenseName, parsePressImages, pickPressImage, youtubeThumbnailImage } =
+  await import('../../../server/utils/images/press')
 
 describe('official first-party media', () => {
   it('discovers structured and press-download assets without a publisher allowlist', () => {
@@ -85,3 +96,5 @@ describe('official first-party media', () => {
     expect(youtubeThumbnailImage('https://youtube.com/channel/not-a-video')).toBeNull()
   })
 })
+
+beforeEach(stubImports)

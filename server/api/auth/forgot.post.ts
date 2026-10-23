@@ -1,6 +1,5 @@
 import { z } from 'zod'
 import { randomBytes } from 'crypto'
-import { passwordResetHash, passwordResetIdentifier } from '~~/server/utils/passwordReset'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)

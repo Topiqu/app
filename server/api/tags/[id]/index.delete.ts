@@ -1,5 +1,3 @@
-import { tagFeedTenants } from '~~/server/utils/tagFeeds'
-
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const { user } = await requireTenantScope(event, 'ARTICLE_WRITE')

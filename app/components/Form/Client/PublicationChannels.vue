@@ -46,7 +46,7 @@
 </template>
 
 <script setup lang="ts">
-import { PUBLICATION_CHANNELS, type PublicationChannelSettings } from '~~/shared/utils/publicationChannels'
+import type { PublicationChannelSettings } from '~~/shared/utils/publicationChannels'
 
 const settings = defineModel<PublicationChannelSettings>({ required: true })
 const props = defineProps<{ linkedinConnected: boolean }>()

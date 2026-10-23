@@ -1,5 +1,3 @@
-import { refreshKnowledgeSources } from '../utils/knowledge/refresh'
-
 export default defineMonitoredTask({
   meta: {
     name: 'knowledge-refresh',

@@ -1,8 +1,3 @@
-import type { ImageProvider, StockImage } from './types'
-
-import { matchesImageQuery } from './selection'
-import { fetchJson, imageApiHeaders } from './http'
-
 const SEARCH_URL = 'https://api.openverse.org/v1/images/'
 
 const LICENSE_NAMES: Record<string, string> = { cc0: 'CC0', pdm: 'Public Domain Mark' }

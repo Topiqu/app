@@ -1,6 +1,4 @@
 import { DbNull } from '@zenstackhq/orm'
-import { LanguageSchema } from '~~/shared/siteSchemas'
-import { articleSlug } from '~~/shared/utils/articleSlug'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)

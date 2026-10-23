@@ -94,10 +94,6 @@
 
 <script setup lang="ts">
 import type { RouteLocationRaw } from 'vue-router'
-import type { SetupStepId } from '~~/shared/utils/siteSetup'
-
-import { hasAiPlan } from '~~/shared/utils/plans'
-import { buildSetupSteps, setupProgress } from '~~/shared/utils/siteSetup'
 
 const { data: auth } = useAuth()
 const { data: site, error, refresh } = useClientSiteStatus()

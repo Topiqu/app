@@ -1,17 +1,5 @@
-import type { GenerationSnapshot } from '~~/shared/types/articleGeneration'
-
 import { z } from 'zod'
 import { randomUUID } from 'node:crypto'
-import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
-import { articleWriterStream } from '~~/server/utils/ai/articleStream'
-import { auditArticleStep, createArticleGenerationAudit } from '~~/server/utils/articleGenerationAudit'
-import {
-  ARTICLE_GENERATION_FORMATS,
-  ARTICLE_GENERATION_MODULES,
-  RESEARCH_DEPTHS,
-  defaultArticleGenerationOptions,
-  missingArticleModules,
-} from '~~/shared/utils/articleGeneration'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)

@@ -1,6 +1,37 @@
 import { createError } from 'h3'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { stubNitroImports } from '../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(
+    import('../../server/utils/domains/providers'),
+    'cloudflareDomain',
+    'findDokployDomain',
+    'DomainProviderError',
+    'checkCloudflareFallback',
+    'cloudflareValidationRecords',
+    'dokployDomainSchema',
+    'dokployRequest',
+    'domainProviderConfig',
+  )
+  await stubNitroImports(import('../../server/utils/images/publicFetch'), 'postPublicUrl', 'readLimitedBody')
+  await stubNitroImports(import('../../server/utils/domains/probe'), 'probeDomainRouting')
+  await stubNitroImports(
+    import('../../server/utils/domains/certificates'),
+    'decryptDomainCertificate',
+    'verifyDomainCertificate',
+    'encryptDomainCertificate',
+  )
+  await stubNitroImports(
+    import('../../server/utils/domains/connections'),
+    'loadDomainConnection',
+    'withDomainLease',
+    'reconcileDomainConnection',
+  )
+  await stubNitroImports(import('../../server/utils/domains/request'), 'readDomainBody')
+}
+
 const rawBody = vi.hoisted(() => vi.fn())
 vi.mock('../../server/utils/domains/request', () => ({ readDomainBody: rawBody }))
 
@@ -54,3 +85,5 @@ describe('domain mutation authorization', () => {
     )
   })
 })
+
+beforeEach(stubImports)

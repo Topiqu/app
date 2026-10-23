@@ -1,6 +1,4 @@
 import { z } from 'zod'
-import { assertPublicHttpsUrl } from '~~/server/utils/images/publicFetch'
-import { WEBHOOK_EVENTS, webhookUrlError } from '~~/shared/utils/webhooks'
 
 export const webhookUrlSchema = z
   .string()

@@ -1,6 +1,3 @@
-import type { ArticleWithDetails } from '~~/types/article'
-import type { GenerationSnapshot } from '~~/shared/types/articleGeneration'
-
 type RecoverableGeneration = { id: string; recoverableSnapshot: GenerationSnapshot | null }
 
 /** Durable recovery belongs to this document; the running generation remains owned by the store. */

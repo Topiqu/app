@@ -1,29 +1,7 @@
 import type { Language } from '~~/generated/zenstack/models'
-import type { ResearchDepth } from '~~/shared/utils/articleGeneration'
 
 import { z } from 'zod'
 import { Output } from 'ai'
-import { hasAiPlan } from '~~/shared/utils/plans'
-import { LANGUAGE_NAMES } from '~~/shared/utils/language'
-import {
-  articleGenerationOptimizationInstructions,
-  optimizationScoringConfig,
-} from '~~/shared/utils/articleOptimization'
-
-import { aiReasoning } from './reasoning'
-import { researchTopic } from './researchEvidence'
-import { editorialPolicy } from './editorialPolicy'
-import { readCommunityInsight } from '../community'
-import { AUTHOR_ACCOUNT_RULE } from './articleQuality'
-import { retrieveKnowledge } from '../knowledge/retrieve'
-import { auditArticleStep, type ArticleGenerationAudit } from '../articleGenerationAudit'
-import {
-  formatRules,
-  selectedModulesFor,
-  type ArticleFormat,
-  type ArticleModule,
-  type ArticleStructureVariant,
-} from './formats'
 
 const imageInstruction = z.object({
   type: z

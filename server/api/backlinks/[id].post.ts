@@ -1,7 +1,4 @@
 import { z } from 'zod'
-import { checkOpportunity } from '~~/server/utils/backlinks/check'
-import { draftOutreach } from '~~/server/utils/backlinks/outreach'
-import { BACKLINK_CHECK_DAYS, BACKLINK_DAY_MS, backlinkAllowance } from '~~/shared/utils/backlinks'
 
 const Body = z.object({ action: z.enum(['draft', 'sent', 'dismiss', 'reopen', 'check']) })
 

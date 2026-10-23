@@ -1,5 +1,3 @@
-import type { ArticleImage } from './types'
-
 const words = (text: string) =>
   text
     .normalize('NFKD')

@@ -137,14 +137,6 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
 
-import { urlHost } from '~~/shared/utils/backlinks'
-import {
-  isKnowledgeStale,
-  knowledgeAsOf,
-  KNOWLEDGE_FEED_ERRORS,
-  type KnowledgeFeedReport,
-} from '~~/shared/utils/knowledge'
-
 definePageMeta({ middleware: 'admin', shell: 'dashboard' })
 useSeoMeta({ title: () => $t('knowledge.title') })
 

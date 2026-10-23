@@ -1,6 +1,5 @@
 // `ImageCredit`/`ImageKind` live in `shared/` because the cover renders its credit client-side.
 // Not re-exported from here: two auto-import sources for one name, and unimport picks a winner.
-import type { ImageCredit, ImageKind } from '~~/shared/utils/imageCredit'
 
 /** What the article needs from a picture. The provider chain — not the model — decides where it comes from. */
 export type ImageIntent = 'photo' | 'stock' | 'generate'

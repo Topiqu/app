@@ -1,7 +1,4 @@
 /// <reference types="@types/google-publisher-tag" />
-import type { PublicClientSite } from '~~/shared/utils/clientSiteFields'
-
-import { tenantGamEnabled } from '~~/shared/utils/advertising'
 
 declare global {
   interface Window {

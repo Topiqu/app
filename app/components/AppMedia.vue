@@ -58,8 +58,6 @@
 </template>
 
 <script setup lang="ts">
-import { canOptimizeImageUrl } from '~~/shared/utils/imageHosts'
-
 const {
   src = null,
   originalSrc = null,

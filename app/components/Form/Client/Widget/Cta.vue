@@ -38,7 +38,6 @@
 
 <script setup lang="ts">
 import type { CtaConfig } from '~~/shared/utils/widgets'
-import type { MediaPickerSelection } from '~~/shared/types/mediaLibrary'
 
 const config = defineModel<CtaConfig>('config', { required: true })
 const { t } = useI18n()

@@ -1,4 +1,10 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi, beforeEach } from 'vitest'
+
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/articleCard'), 'articleCardSelect')
+}
 
 const article = (id: string, views: number) => ({
   id,
@@ -59,3 +65,5 @@ describe('featured homepage endpoint', () => {
     })
   })
 })
+
+beforeEach(stubImports)

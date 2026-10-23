@@ -1,7 +1,16 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi, beforeEach } from 'vitest'
 
-import { logAuthError } from '../../../server/utils/authErrorLogger'
-import { sanitizeAuthErrorMessage } from '../../../server/utils/authErrorMessage'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/authErrorMessage'), 'sanitizeAuthErrorMessage')
+  await stubNitroImports(import('../../../server/utils/logger'), 'logger')
+}
+
+await stubImports()
+
+const { logAuthError } = await import('../../../server/utils/authErrorLogger')
+const { sanitizeAuthErrorMessage } = await import('../../../server/utils/authErrorMessage')
 
 const betterStack = vi.hoisted(() => ({ error: vi.fn().mockResolvedValue(undefined) }))
 vi.mock('../../../server/utils/logger', () => ({ logger: betterStack }))
@@ -69,3 +78,5 @@ describe('OAuth diagnostics', () => {
     vi.unstubAllEnvs()
   })
 })
+
+beforeEach(stubImports)

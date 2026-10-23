@@ -1,6 +1,12 @@
 import { createError } from 'h3'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { stubNitroImports } from '../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../server/utils/domains/connections'), 'reconcileDomainConnection')
+}
+
 const reconcile = vi.hoisted(() => vi.fn())
 vi.mock('../../server/utils/domains/connections', () => ({ reconcileDomainConnection: reconcile }))
 const find = vi.fn()
@@ -51,3 +57,5 @@ describe('scoped cleanup retry', () => {
     expect(reconcile).not.toHaveBeenCalled()
   })
 })
+
+beforeEach(stubImports)

@@ -1,5 +1,3 @@
-import type { ArticleMediaInput, MediaRightsReport } from '~~/shared/types/mediaRights'
-
 export type MediaRightsState = 'loading' | 'analyzing' | 'complete' | 'error'
 
 export const useMediaRights = (input: ComputedRef<ArticleMediaInput>) => {

@@ -1,5 +1,3 @@
-import type { MaybeRefOrGetter } from 'vue'
-
 type ArticleReaction = { liked: boolean; likes: number }
 type ReactionRequest = (url: string, options: { method: 'POST' }) => Promise<ArticleReaction>
 

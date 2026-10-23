@@ -1,5 +1,4 @@
 import { createHash, randomBytes } from 'node:crypto'
-import { isLanguage } from '~~/shared/utils/language'
 
 export const invitationToken = () => randomBytes(32).toString('base64url')
 export const invitationTokenHash = (token: string) => createHash('sha256').update(token).digest('hex')

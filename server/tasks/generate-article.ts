@@ -1,29 +1,4 @@
 import { randomUUID } from 'node:crypto'
-import { articleSlug } from '~~/shared/utils/articleSlug'
-import { toDatabaseJson } from '~~/server/utils/databaseJson'
-import { firstRankCheck } from '~~/server/utils/keywords/rank'
-import { readCommunityInsight } from '~~/server/utils/community'
-import { linkableSources } from '~~/shared/utils/articleSources'
-import { hasDataForSeo } from '~~/server/utils/keywords/dataforseo'
-import { fetchNews, newsSignal } from '~~/server/utils/keywords/news'
-import { countGeneratedWords, type ValueEvent } from '~~/shared/utils/valueMetrics'
-import { isExistingArticleOpportunity } from '~~/server/utils/searchConsole/autopilot'
-import { auditArticleStep, createArticleGenerationAudit } from '~~/server/utils/articleGenerationAudit'
-import { keywordPlanFor, planSignal, sameKeyword, type PlanCandidate } from '~~/server/utils/keywords/plan'
-import {
-  getSearchOpportunities,
-  getSearchTrends,
-  searchOpportunitySignal,
-  searchTrendSignal,
-} from '~~/server/utils/searchConsole/opportunities'
-import {
-  applyArticleSeriesDecision,
-  chooseArticleSeries,
-  loadAiSeriesContext,
-  type ArticleSeriesDecision,
-} from '~~/server/utils/ai/articleSeries'
-
-import type { DatabaseTransaction } from '../utils/database'
 
 type ScheduledClient = Awaited<ReturnType<typeof loadGenerationCandidates>>[number]
 type GeneratedArticle = Awaited<ReturnType<typeof generateArticle>>

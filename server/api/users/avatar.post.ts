@@ -1,6 +1,3 @@
-import { deleteFromCdn, putToCdn } from '~~/server/utils/storage'
-import { AVATAR_CONTENT_TYPE, avatarKeyFromUrl, moderateAvatar, prepareAvatar } from '~~/server/utils/avatar'
-
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const sessionUser = await getSessionUser(event)

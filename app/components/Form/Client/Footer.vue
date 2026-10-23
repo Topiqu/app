@@ -63,9 +63,7 @@
 </template>
 
 <script setup lang="ts">
-import { isSafeWidgetLink } from '~~/shared/utils/widgets'
-import { hasAdvancedBranding } from '~~/shared/utils/publicationBranding'
-import { MAX_FOOTER_LINKS, type FooterSettings } from '~~/shared/utils/publicationFooter'
+import type { FooterSettings } from '~~/shared/utils/publicationFooter'
 
 const settings = defineModel<FooterSettings>({ required: true })
 const props = defineProps<{ plan: string }>()

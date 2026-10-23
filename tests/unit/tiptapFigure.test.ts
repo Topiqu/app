@@ -3,14 +3,22 @@
 import { Editor } from '@tiptap/core'
 import StarterKit from '@tiptap/starter-kit'
 import { NodeSelection } from '@tiptap/pm/state'
-import { afterEach, describe, expect, it } from 'vitest'
 import { TextAlign } from '@tiptap/extension-text-align'
+import { afterEach, describe, expect, it, beforeEach } from 'vitest'
 
 import { InlineImage } from '../../extensions/image'
-import { sanitizeHtml } from '../../server/utils/sanitize'
+import { stubNitroImports } from '../helpers/nitroImports'
 import { AiDisclosure } from '../../extensions/aiDisclosure'
 import { Figcaption, Figure } from '../../extensions/figure'
-import { buildImageHtml } from '../../server/utils/images/caption'
+
+async function stubImports() {
+  await stubNitroImports(import('../../server/utils/sanitize'), 'escapeHtml')
+}
+
+await stubImports()
+
+const { sanitizeHtml } = await import('../../server/utils/sanitize')
+const { buildImageHtml } = await import('../../server/utils/images/caption')
 
 const editors: Editor[] = []
 
@@ -137,3 +145,5 @@ describe('Figure', () => {
     expect(editor.getHTML()).toContain('data-align="left" style="width: 75%"')
   })
 })
+
+beforeEach(stubImports)

@@ -1,15 +1,16 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, beforeEach } from 'vitest'
 
-import {
-  buildReportDefinition,
-  gamDateRange,
-  microsToCents,
-  parseReportRows,
-  readValue,
-  toGamDate,
-  type GamConfig,
-  type GamReportRow,
-} from '../../server/utils/ads/gamReport'
+import type { GamConfig, GamReportRow } from '../../server/utils/ads/gamReport'
+
+import { stubNitroImports } from '../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../server/utils/ads/gamAuth'), 'getGamAccessToken')
+}
+
+await stubImports()
+const { buildReportDefinition, gamDateRange, microsToCents, parseReportRows, readValue, toGamDate } =
+  await import('../../server/utils/ads/gamReport')
 
 const config: GamConfig = {
   networkCode: '123456',
@@ -126,3 +127,5 @@ describe('parseReportRows', () => {
     expect(parseReportRows([], 'USD')).toEqual([])
   })
 })
+
+beforeEach(stubImports)

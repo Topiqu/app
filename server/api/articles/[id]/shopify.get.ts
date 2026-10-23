@@ -1,6 +1,3 @@
-import { requireShopifyAccess } from '../../../utils/shopify/access'
-import { shopifyPublicationSelect } from '../../../utils/shopify/publication'
-
 export default defineEventHandler(async (event) => {
   const { db, site } = await requireShopifyAccess(event, 'ARTICLE_WRITE')
   const articleId = getRouterParam(event, 'id')

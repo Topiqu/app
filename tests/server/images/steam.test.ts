@@ -1,8 +1,22 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi, beforeEach } from 'vitest'
 
-import { matchesStoreTitle } from '../../../server/utils/images/stores'
-import { createImageSelection } from '../../../server/utils/images/selection'
-import { createSteamImageSearch, steamScreenshots } from '../../../server/utils/images/steam'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/images/http'), 'fetchJson')
+  await stubNitroImports(
+    import('../../../server/utils/images/stores'),
+    'matchesStoreTitle',
+    'storeMediaSource',
+    'storeSearchTerm',
+  )
+}
+
+await stubImports()
+
+const { matchesStoreTitle } = await import('../../../server/utils/images/stores')
+const { createImageSelection } = await import('../../../server/utils/images/selection')
+const { createSteamImageSearch, steamScreenshots } = await import('../../../server/utils/images/steam')
 
 afterEach(() => vi.unstubAllGlobals())
 const screenshot = (id: string) =>
@@ -64,3 +78,5 @@ describe('official game screenshot catalogue', () => {
     expect(fetch).toHaveBeenCalledTimes(2)
   })
 })
+
+beforeEach(stubImports)

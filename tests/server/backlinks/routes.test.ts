@@ -2,6 +2,19 @@
 import { createError } from 'h3'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/backlinks/check'), 'checkOpportunity')
+  await stubNitroImports(import('../../../server/utils/backlinks/outreach'), 'draftOutreach')
+  await stubNitroImports(import('../../../server/utils/keywords/dataforseo'), 'hasDataForSeo')
+  await stubNitroImports(
+    import('../../../server/utils/backlinks/discover'),
+    'claimBacklinkDiscovery',
+    'runBacklinkDiscovery',
+  )
+}
+
 vi.mock('../../../server/utils/keywords/dataforseo', () => ({ dataForSeo: vi.fn(), hasDataForSeo: () => true }))
 const draftOutreach = vi.fn()
 vi.mock('../../../server/utils/backlinks/outreach', () => ({ draftOutreach }))
@@ -164,3 +177,5 @@ describe('backlink discovery route', () => {
     expect(runBacklinkDiscovery).toHaveBeenCalledWith('site1', expect.any(Date))
   })
 })
+
+beforeEach(stubImports)

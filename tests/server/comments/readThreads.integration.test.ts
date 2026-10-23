@@ -2,10 +2,18 @@
 import { createError } from 'h3'
 import { randomUUID } from 'node:crypto'
 import { PolicyPlugin } from '@zenstackhq/plugin-policy'
-import { afterAll, afterEach, describe, expect, it, vi } from 'vitest'
+import { afterAll, afterEach, describe, expect, it, vi, beforeEach } from 'vitest'
 
-import { createDatabaseClient } from '../../../server/utils/database'
+import { stubNitroImports } from '../../helpers/nitroImports'
 import { indexCommentThreads } from '../../../shared/utils/commentThreads'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/articleViewerAccess'), 'canReadArticle')
+}
+
+await stubImports()
+
+const { createDatabaseClient } = await import('../../../server/utils/database')
 
 const url = process.env.TEST_DATABASE_URL
 const enabled = !!url && /test/i.test(new URL(url).pathname) && url !== process.env.DATABASE_URL
@@ -132,3 +140,5 @@ describe.skipIf(!enabled)('comment reads on PostgreSQL', () => {
     await expect(f.run()).rejects.toMatchObject({ statusCode: 404 })
   })
 })
+
+beforeEach(stubImports)

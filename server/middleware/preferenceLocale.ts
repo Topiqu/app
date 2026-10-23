@@ -1,5 +1,3 @@
-import { isPreferenceLanguage } from '~~/shared/utils/preferences'
-
 /** Only an unlocalized entry uses the account/shared preference. Explicit links are authoritative. */
 export default defineEventHandler(async (event) => {
   if (getRequestURL(event).pathname !== '/' || !['GET', 'HEAD'].includes(event.method)) return

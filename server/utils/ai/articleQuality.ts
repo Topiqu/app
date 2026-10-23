@@ -2,10 +2,6 @@ import { z } from 'zod'
 import { load } from 'cheerio'
 import { generateText, Output } from 'ai'
 
-import { aiReasoning } from './reasoning'
-import { AUTHORIAL_REASONING, ILLUSTRATIVE_STORY } from './editorialPolicy'
-import { extractResearchUrls, researchEvidence, retrievedResearchSources } from './researchEvidence'
-
 const editorialIssueCode = z.enum([
   'unsupported_claim',
   'continuity_error',

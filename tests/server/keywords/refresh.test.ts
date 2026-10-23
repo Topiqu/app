@@ -5,13 +5,29 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { DatabaseClient } from '../../../server/utils/database'
 
-import { sanitizeHtml } from '../../../server/utils/sanitize'
+import { stubNitroImports } from '../../helpers/nitroImports'
 import { keywordLocation } from '../../../shared/utils/keywordPlan'
-import { stampHeadingIds } from '../../../server/utils/articleBlocks'
-import { calculateArticleMetrics } from '../../../server/utils/metrics'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/keywords/serp'), 'serpSignals')
+  await stubNitroImports(import('../../../server/utils/ai/reasoning'), 'aiReasoning')
+  await stubNitroImports(import('../../../server/utils/planFeatures'), 'activeFeatureFilter')
+  await stubNitroImports(import('../../../server/utils/keywords/rank'), 'blogPosition', 'isArticleUrl')
+  await stubNitroImports(import('../../../server/utils/keywords/dataforseo'), 'dataForSeo', 'hasDataForSeo')
+  await stubNitroImports(import('../../../server/utils/ai/researchEvidence'), 'researchTopic')
+}
+
+await stubImports()
+
+const { sanitizeHtml } = await import('../../../server/utils/sanitize')
+const { stampHeadingIds } = await import('../../../server/utils/articleBlocks')
+const { calculateArticleMetrics } = await import('../../../server/utils/metrics')
 
 const providers = vi.hoisted(() => ({ dataForSeo: vi.fn(), researchTopic: vi.fn() }))
-vi.mock('../../../server/utils/keywords/dataforseo', () => ({ dataForSeo: providers.dataForSeo }))
+vi.mock('../../../server/utils/keywords/dataforseo', () => ({
+  dataForSeo: providers.dataForSeo,
+  hasDataForSeo: () => true,
+}))
 vi.mock('../../../server/utils/ai/researchEvidence', () => ({ researchTopic: providers.researchTopic }))
 vi.mock('ai', async (original) => ({ ...(await original<typeof import('ai')>()), generateText: vi.fn() }))
 
@@ -533,3 +549,5 @@ describe('measurement without a keyword plan cluster', () => {
     expect(providers.dataForSeo).not.toHaveBeenCalled()
   })
 })
+
+beforeEach(stubImports)

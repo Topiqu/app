@@ -1,8 +1,6 @@
 import { z } from 'zod'
 import { generateText, Output } from 'ai'
 
-import { aiReasoning } from './reasoning'
-
 const ctrSchema = z.object({
   title: z.string().min(5).max(255),
   excerpt: z.string().min(20).max(500),

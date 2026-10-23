@@ -1,5 +1,3 @@
-import { KNOWLEDGE_SOURCE_VIEW, requireKnowledgeAccess } from '~~/server/utils/knowledge/sources'
-
 const PREVIEW_CHUNKS = 50
 
 export default defineEventHandler(async (event) => {

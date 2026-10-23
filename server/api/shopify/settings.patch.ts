@@ -1,9 +1,5 @@
 import { z } from 'zod'
 
-import { shopifyGraphql } from '../../utils/shopify/api'
-import { shopifyAccessToken } from '../../utils/shopify/token'
-import { requireShopifyAccess } from '../../utils/shopify/access'
-
 const Settings = z.object({
   blogId: z.string().regex(/^gid:\/\/shopify\/Blog\/\d+$/),
   author: z.string().trim().min(1).max(255),

@@ -125,7 +125,6 @@ import type { ArticleBlock } from '~~/shared/utils/articleBlocks'
 import type { SharePlatform } from '~~/generated/zenstack/models'
 
 import slugify from 'slugify'
-import { ARTICLE_PROSE_CLASS } from '~~/shared/utils/articleProse'
 
 type SeriesLink = {
   slug: string

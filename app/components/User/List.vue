@@ -91,8 +91,6 @@
 </template>
 
 <script setup lang="ts">
-import { useUserSearch } from '~/composables/useUserSearch'
-
 const open = defineModel<boolean>({ default: false })
 const confirm = useConfirm()
 const toast = useToast()

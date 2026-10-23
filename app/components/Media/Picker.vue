@@ -53,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import type { MediaLibraryAsset, MediaPickerSelection } from '~~/shared/types/mediaLibrary'
+import type { MediaPickerSelection } from '~~/shared/types/mediaLibrary'
 
 const { mode = 'cover' } = defineProps<{ mode?: 'cover' | 'body' }>()
 const emit = defineEmits<{ select: [asset: MediaPickerSelection, altText: string] }>()

@@ -3,8 +3,26 @@ import { generateText } from 'ai'
 import { randomUUID } from 'node:crypto'
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { createDatabaseClient } from '../../../server/utils/database'
-import { activeFeatureFilter } from '../../../server/utils/planFeatures'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/concurrency'), 'mapLimit')
+  await stubNitroImports(import('../../../server/utils/databaseJson'), 'toDatabaseJson')
+  await stubNitroImports(import('../../../server/utils/ai/insight'), 'insightSchema')
+  await stubNitroImports(
+    import('../../../server/utils/community'),
+    'communitySiteWhere',
+    'communityAverages',
+    'communityTrend',
+    'readCommunityInsight',
+  )
+  await stubNitroImports(import('../../../server/utils/ai/reasoning'), 'aiReasoning')
+}
+
+await stubImports()
+
+const { createDatabaseClient } = await import('../../../server/utils/database')
+const { activeFeatureFilter } = await import('../../../server/utils/planFeatures')
 
 vi.mock('ai', async (original) => ({ ...(await original<typeof import('ai')>()), generateText: vi.fn() }))
 
@@ -377,3 +395,5 @@ describe.skipIf(!enabled)('community paid processing on PostgreSQL', () => {
     })
   })
 })
+
+beforeEach(stubImports)

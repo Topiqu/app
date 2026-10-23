@@ -1,22 +1,4 @@
 import { z } from 'zod'
-import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
-import { KNOWLEDGE_CONSENT_VERSION, KNOWLEDGE_CURRENCIES, KNOWLEDGE_LIMITS } from '~~/shared/utils/knowledge'
-import {
-  extractKnowledgeFile,
-  extractKnowledgeUrl,
-  normalizeKnowledgeText,
-  type ExtractedKnowledge,
-} from '~~/server/utils/knowledge/extract'
-import {
-  assertCitableUrl,
-  hashKnowledge,
-  kickKnowledgeIndex,
-  knowledgeExtractFailure,
-  knowledgeLimits,
-  KNOWLEDGE_SOURCE_VIEW,
-  limitKnowledgeRequests,
-  requireKnowledgeAccess,
-} from '~~/server/utils/knowledge/sources'
 
 const flag = z.enum(['true', 'false']).transform((value) => value === 'true')
 

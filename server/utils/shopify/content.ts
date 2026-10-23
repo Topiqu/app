@@ -1,10 +1,6 @@
 import { load } from 'cheerio'
 import { createHash } from 'node:crypto'
 
-import { escapeHtml, sanitizeHtml } from '../sanitize'
-import { readFaq } from '../../../shared/utils/articleFaq'
-import { creditSegments, creditSeparator, type CoverCredit } from '../../../shared/utils/imageCredit'
-
 export interface ShopifyArticleContent {
   id: string
   slug: string

@@ -1,5 +1,3 @@
-import type { SessionUser } from '~~/shared/types/auth'
-
 import { PolicyPlugin } from '@zenstackhq/plugin-policy'
 
 // Raw SQL call sites either run system work or carry an explicit tenant predicate. This also

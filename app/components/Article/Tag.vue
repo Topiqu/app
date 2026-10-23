@@ -72,8 +72,6 @@
 </template>
 
 <script setup lang="ts">
-import { tagSlug } from '~~/shared/utils/tagSlug'
-
 const toast = useToast()
 const open = defineModel<boolean>({ default: false })
 const openDialog = () => (open.value = true)

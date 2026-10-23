@@ -1,5 +1,3 @@
-import { requireShopifyAccess } from '../../utils/shopify/access'
-
 export default defineEventHandler(async (event) => {
   // Disconnecting never needs a paid plan; Shopify billing continues until the app is uninstalled.
   const { db, site } = await requireShopifyAccess(event, 'INTEGRATION_CONTROL', { requirePlan: false })

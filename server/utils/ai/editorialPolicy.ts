@@ -1,5 +1,3 @@
-import type { ArticleFormat } from './formats'
-
 /** Shared by the writer and copy desk so an intentional argument survives editing. */
 export const AUTHORIAL_REASONING = `
 The author may contribute original reasoning: a thesis, comparison, criticism, explanation of a mechanism, or a clearly conditional scenario. Sources establish the factual premises; they need not contain the author's conclusion verbatim. Show the reasoning connecting those premises to the conclusion.

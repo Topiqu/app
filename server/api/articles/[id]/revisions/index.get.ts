@@ -1,5 +1,3 @@
-import type { ArticleRevisionSummary } from '~~/shared/utils/articleRevision'
-
 export default defineEventHandler(async (event): Promise<ArticleRevisionSummary[]> => {
   const { id } = getRouterParams(event) as { id: string }
   const { user } = await requireArticleAccess(event, id)

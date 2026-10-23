@@ -1,5 +1,3 @@
-import { requireKnowledgeAccess } from '~~/server/utils/knowledge/sources'
-
 /** A hard delete: chunks cascade, and there is no stored file behind it to purge. */
 export default defineEventHandler(async (event) => {
   const { user, clientSiteId, db } = await requireKnowledgeAccess(event)

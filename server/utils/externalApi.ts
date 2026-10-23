@@ -1,7 +1,5 @@
 import type { H3Event } from 'h3'
 
-import { publicArticleWhere } from './articleViewerAccess'
-
 export const externalArticleSelect = {
   id: true,
   title: true,

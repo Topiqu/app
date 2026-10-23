@@ -1,12 +1,3 @@
-import { linkedShopifyInstallation } from '../../utils/shopify/installation'
-import {
-  shopifyAdminAppUrl,
-  shopifyAppStoreUrl,
-  shopifyConfigured,
-  shopifyEligible,
-  shopifyPricingUrl,
-} from '../../utils/shopify/config'
-
 export default defineEventHandler(async (event) => {
   const user = await requireUser(event, { role: ['admin', 'superadmin'], clientSite: true })
   const db = await getEnhancedPrisma(user)

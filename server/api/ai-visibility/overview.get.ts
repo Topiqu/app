@@ -1,5 +1,4 @@
 import { subDays } from 'date-fns'
-import { citedDomains } from '~~/shared/utils/aiVisibility'
 
 export default defineEventHandler(async (event) => {
   const { user, db } = await requireDb(event, { clientSite: true })

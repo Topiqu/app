@@ -53,11 +53,8 @@
 
 <script setup lang="ts">
 import type { ChainedCommands } from '@tiptap/vue-3'
-import type { MediaLibraryAsset, MediaPickerSelection } from '~~/shared/types/mediaLibrary'
 
 import { EditorContent } from '@tiptap/vue-3'
-import { pollOptionsAttr } from '~~/shared/utils/polls'
-import { EDITOR_TABLE_CLASS } from '~~/shared/utils/articleProse'
 
 const content = defineModel<string | null>({ default: '<p></p>' })
 const edit = defineModel<boolean>('edit', { default: false })

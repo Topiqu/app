@@ -1,5 +1,3 @@
-import type { TrialInfo } from '~~/shared/utils/trial'
-
 export const TRIAL_SELECT = {
   id: true,
   plan: true,

@@ -1,7 +1,16 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi, beforeEach } from 'vitest'
 
-import { TENANT_SCOPES } from '../../../server/utils/tenantMembership'
-import { initialTenant, toSessionUser, uniqueUsername } from '../../../server/utils/session'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/ip'), 'clientIp')
+  await stubNitroImports(import('../../../server/utils/tenantMembership'), 'TENANT_SCOPES')
+}
+
+await stubImports()
+
+const { TENANT_SCOPES } = await import('../../../server/utils/tenantMembership')
+const { initialTenant, toSessionUser, uniqueUsername } = await import('../../../server/utils/session')
 
 afterEach(() => vi.unstubAllGlobals())
 
@@ -160,3 +169,5 @@ describe('OAuth username', () => {
     expect(name.length).toBeLessThanOrEqual(50)
   })
 })
+
+beforeEach(stubImports)

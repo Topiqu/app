@@ -1,5 +1,4 @@
 import sharp from 'sharp'
-import { EMOJI_MAX_UPLOAD_BYTES } from '~~/shared/utils/uploadLimits'
 
 export const EMOJI_SIZE = 128
 export const EMOJI_CONTENT_TYPE = 'image/webp'

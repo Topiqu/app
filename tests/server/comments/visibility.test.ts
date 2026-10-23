@@ -1,5 +1,11 @@
 import { createError } from 'h3'
-import { afterEach, expect, it, vi } from 'vitest'
+import { afterEach, expect, it, vi, beforeEach } from 'vitest'
+
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/articleViewerAccess'), 'canReadArticle')
+}
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -122,3 +128,5 @@ it('returns the committed comment when ancillary audience lookup fails', async (
     expect.objectContaining({ commentId: 'comment-1' }),
   )
 })
+
+beforeEach(stubImports)

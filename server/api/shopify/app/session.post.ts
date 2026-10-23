@@ -1,17 +1,5 @@
 import type { H3Event } from 'h3'
 
-import { ShopifyApiError } from '../../../utils/shopify/api'
-import { syncShopifyPlan } from '../../../utils/shopify/billing'
-import { signShopifyLink, verifyShopifyIdToken } from '../../../utils/shopify/security'
-import { exchangeShopifySession, pendingShopifyInstallation } from '../../../utils/shopify/installation'
-import {
-  shopifyConfigured,
-  shopifyEligible,
-  shopifyGrantsContent,
-  shopifyOrigin,
-  shopifyPricingUrl,
-} from '../../../utils/shopify/config'
-
 // App Bridge fetches a fresh ID token and retries once when it sees this header.
 const invalidSession = (event: H3Event) => {
   setHeader(event, 'X-Shopify-Retry-Invalid-Session-Request', '1')

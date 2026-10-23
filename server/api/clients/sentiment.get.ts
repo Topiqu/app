@@ -1,4 +1,3 @@
-import { readCommunityInsight } from '../../utils/community'
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const user = await getSessionUser(event)

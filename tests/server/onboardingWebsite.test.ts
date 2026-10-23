@@ -2,6 +2,14 @@
 import { createError } from 'h3'
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { stubNitroImports } from '../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../server/utils/log'), 'logAction')
+  await stubNitroImports(import('../../server/utils/userLog'), 'saveUserWithLogging')
+  await stubNitroImports(import('../../server/utils/onboardingTokens'), 'landingClientIp', 'verifyVerifiedToken')
+}
+
 const mocks = vi.hoisted(() => ({ verified: vi.fn(), createSite: vi.fn() }))
 vi.mock('../../server/utils/onboardingTokens', () => ({
   verifyVerifiedToken: mocks.verified,
@@ -82,3 +90,5 @@ describe('company website at signup', () => {
     expect(mocks.createSite).not.toHaveBeenCalled()
   })
 })
+
+beforeEach(stubImports)

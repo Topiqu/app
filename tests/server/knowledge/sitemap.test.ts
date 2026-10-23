@@ -1,6 +1,15 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, beforeEach } from 'vitest'
 
-import { sameSitePages, sitemapLocations } from '../../../server/utils/knowledge/sitemap'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/images/publicFetch'), 'fetchPublicUrl', 'readLimitedBody')
+  await stubNitroImports(import('../../../server/utils/knowledge/extract'), 'KnowledgeExtractError')
+}
+
+await stubImports()
+
+const { sameSitePages, sitemapLocations } = await import('../../../server/utils/knowledge/sitemap')
 
 describe('sitemap discovery', () => {
   it('reads plain and CDATA locations and decodes entities', () => {
@@ -33,3 +42,5 @@ describe('sitemap discovery', () => {
     expect(pages).toEqual(['https://example.com/a', 'https://www.example.com/b'])
   })
 })
+
+beforeEach(stubImports)

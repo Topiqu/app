@@ -1,5 +1,4 @@
 import { randomUUID } from 'node:crypto'
-import { taskResultCounts } from '~~/shared/utils/operations'
 
 type HeartbeatStatus = 'success' | 'fail'
 

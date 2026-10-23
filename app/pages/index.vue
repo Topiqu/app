@@ -440,14 +440,6 @@
 </template>
 
 <script setup lang="ts">
-import type { Language } from '~~/shared/utils/language'
-import type { PollOptionData } from '~~/shared/utils/polls'
-import type { ArticleCardData } from '~~/shared/types/article'
-
-import { formatDate } from '~~/shared/utils'
-import { formatNumber } from '~~/shared/utils/number'
-import { FEED_AD_AFTER, adProviderFor } from '~~/shared/utils/advertising'
-
 definePageMeta({ shell: 'publication' })
 
 type HomeArticle = ArticleCardData & { id: string; slug: string; title: string; createdAt: string }

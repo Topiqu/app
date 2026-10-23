@@ -22,12 +22,6 @@
 </template>
 
 <script setup lang="ts">
-import type { Language } from '~~/shared/utils/language'
-import type { ArticleCardData } from '~~/shared/types/article'
-
-import { useArticleFeed } from '~/composables/useArticleFeed'
-import { createAsyncDataDefault } from '~/utils/asyncDataDefaults'
-
 definePageMeta({ shell: 'publication' })
 
 const route = useRoute()

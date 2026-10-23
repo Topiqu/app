@@ -1,9 +1,4 @@
 <script setup lang="ts">
-import type { ShopifyCollectionInsight } from '~~/shared/types/shopify'
-
-import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
-import { isLanguage, type Language } from '~~/shared/utils/language'
-
 const emit = defineEmits<{ reconnect: [] }>()
 const { locale, t } = useI18n()
 const localePath = useLocalePath()

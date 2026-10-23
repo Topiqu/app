@@ -1,8 +1,3 @@
-import { planProfile } from '~~/server/utils/keywords/plan'
-import { rankHistoryFor } from '~~/server/utils/keywords/rank'
-import { keywordOpportunity } from '~~/shared/utils/keywordOpportunity'
-import { keywordMarketFor, keywordMarketsFor } from '~~/shared/utils/keywordPlan'
-
 const ORDER = { PINNED: 0, OPEN: 1, SKIPPED: 2, USED: 3 } as const
 
 export default defineEventHandler(async (event) => {

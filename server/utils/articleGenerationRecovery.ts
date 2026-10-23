@@ -1,9 +1,4 @@
 import type { JsonValue } from '@zenstackhq/orm'
-import type { GenerationSnapshot } from '~~/shared/types/articleGeneration'
-
-import { generatedWordsFromSnapshot } from '~~/shared/utils/valueMetrics'
-
-import { toDatabaseJson } from './databaseJson'
 
 // Safety contract for future maintainers/AI: billing and recovery are inseparable. An interrupted
 // run may consume an article credit only after a useful snapshot is durably stored for its author.

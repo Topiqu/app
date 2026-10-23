@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import { MEDIA_ORIGINS } from '~~/shared/types/mediaRights'
 
 const InputSchema = z.object({
   name: z.string().trim().max(255).nullable().optional(),

@@ -2,12 +2,46 @@ import type { JsonValue } from '@zenstackhq/orm'
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/databaseJson'), 'toDatabaseJson')
+  await stubNitroImports(import('../../../server/utils/planFeatures'), 'activeFeatureFilter')
+  await stubNitroImports(import('../../../server/utils/keywords/rank'), 'firstRankCheck')
+  await stubNitroImports(import('../../../server/utils/ai/insight'), 'insightSchema')
+  await stubNitroImports(import('../../../server/utils/community'), 'readCommunityInsight')
+  await stubNitroImports(import('../../../server/utils/ai/reasoning'), 'aiReasoning')
+  await stubNitroImports(import('../../../server/utils/keywords/scope'), 'inScope')
+  await stubNitroImports(import('../../../server/utils/keywords/news'), 'fetchNews', 'newsSignal')
+  await stubNitroImports(import('../../../server/utils/searchConsole/autopilot'), 'isExistingArticleOpportunity')
+  await stubNitroImports(
+    import('../../../server/utils/articleGenerationAudit'),
+    'auditArticleStep',
+    'createArticleGenerationAudit',
+  )
+  await stubNitroImports(
+    import('../../../server/utils/searchConsole/opportunities'),
+    'getSearchOpportunities',
+    'getSearchTrends',
+    'searchOpportunitySignal',
+    'searchTrendSignal',
+  )
+  await stubNitroImports(
+    import('../../../server/utils/ai/articleSeries'),
+    'applyArticleSeriesDecision',
+    'chooseArticleSeries',
+    'loadAiSeriesContext',
+  )
+  await stubNitroImports(import('../../../server/utils/keywords/dataforseo'), 'hasDataForSeo', 'dataForSeo')
+  await stubNitroImports(import('../../../server/utils/keywords/plan'), 'keywordPlanFor', 'planSignal', 'sameKeyword')
+}
+
 vi.mock('../../../server/utils/keywords/plan', () => ({
   keywordPlanFor: async () => [],
   planSignal: vi.fn(),
   sameKeyword: vi.fn(),
 }))
-vi.mock('../../../server/utils/keywords/dataforseo', () => ({ hasDataForSeo: () => false }))
+vi.mock('../../../server/utils/keywords/dataforseo', () => ({ hasDataForSeo: () => false, dataForSeo: vi.fn() }))
 
 beforeEach(() => vi.resetModules())
 afterEach(() => vi.unstubAllGlobals())
@@ -166,3 +200,5 @@ describe('scheduled generation audit', () => {
     },
   )
 })
+
+beforeEach(stubImports)

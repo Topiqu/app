@@ -1,6 +1,4 @@
 import { z } from 'zod'
-import { PROMPT_EDIT_ACTIONS } from '~~/shared/utils/aiEdit'
-import { ARTICLE_GENERATION_FORMATS } from '~~/shared/utils/articleGeneration'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)

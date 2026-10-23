@@ -151,9 +151,6 @@
 </template>
 
 <script setup lang="ts">
-import { createAsyncDataDefault } from '~/utils/asyncDataDefaults'
-import { compareBySort, matchesFilters } from '~/utils/activityFilters'
-
 import type { ActivityArticle } from './ActivityArticle.vue'
 import type { ActivityComment } from './ActivityComment.vue'
 

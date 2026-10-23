@@ -1,7 +1,5 @@
 import { format, subDays } from 'date-fns'
 
-import { decryptSearchConsoleToken } from '../utils/searchConsole/crypto'
-
 export default defineMonitoredTask({
   meta: { name: 'search-console-sync', description: 'Sync finalized performance for Search Console-enabled tenants' },
   async run() {

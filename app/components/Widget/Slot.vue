@@ -20,20 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  WIDGET_CONFIG_SCHEMAS,
-  slotWidgets,
-  type CtaConfig,
-  type DividerConfig,
-  type HtmlConfig,
-  type PriceConfig,
-  type PublicWidget,
-  type WeatherConfig,
-  type WidgetInput,
-  type WidgetSlot,
-} from '~~/shared/utils/widgets'
-
-import { canPreviewWidgetSlot } from '~/utils/widgetPagePreview'
+import type { WidgetSlot } from '~~/shared/utils/widgets'
 
 type HtmlFrame = Pick<HtmlConfig, 'title' | 'height'>
 

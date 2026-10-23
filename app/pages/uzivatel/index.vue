@@ -266,14 +266,7 @@
 </template>
 
 <script setup lang="ts">
-import { formatDate } from '~~/shared/utils'
-import { BIO_MAX_LENGTH } from '~~/shared/utils/profile'
-
 import type { TabItem } from '~/components/TabNav.vue'
-
-import { hasProfileChanges } from '~/utils/profileChanges'
-import { useProfile, type Profile } from '~/composables/useProfile'
-import { sectionId, tabForSection, toHandle } from '~/utils/profileSections'
 
 definePageMeta({ shell: 'product' })
 

@@ -137,8 +137,6 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
 
-import { emptyAsyncDataList } from '~/utils/asyncDataDefaults'
-
 const { t } = useI18n()
 const props = defineProps<{ clientId: string }>()
 const open = defineModel<boolean>({ default: false })

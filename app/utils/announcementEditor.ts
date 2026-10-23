@@ -1,7 +1,4 @@
 import type { JSONContent } from '@tiptap/vue-3'
-import type { AnnouncementTextRun } from '~~/shared/utils/widgets'
-
-import { isSafeWidgetLink } from '~~/shared/utils/widgets'
 
 export function announcementDocument(text: string, runs?: AnnouncementTextRun[] | null): JSONContent {
   const content: JSONContent[] = []

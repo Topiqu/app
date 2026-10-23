@@ -32,8 +32,6 @@
 </template>
 
 <script setup lang="ts">
-import { formatDate } from '~~/shared/utils'
-
 const { locale } = useI18n()
 
 // Every field is optional: the page renders this panel before `/account` resolves (and while an

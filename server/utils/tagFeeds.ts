@@ -1,5 +1,3 @@
-import type { getEnhancedPrisma } from './zenstack'
-
 export const tagFeedTenants = async (
   db: Awaited<ReturnType<typeof getEnhancedPrisma>>,
   tag: { id: string; clientSiteId: string | null },

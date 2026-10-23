@@ -1,6 +1,3 @@
-import { checkDueRanks } from '~~/server/utils/keywords/rank'
-import { measureApplied, suggestRefresh } from '~~/server/utils/keywords/refresh'
-
 export default defineMonitoredTask({
   meta: {
     name: 'keyword-rank',

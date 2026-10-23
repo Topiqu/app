@@ -80,12 +80,11 @@
 </template>
 
 <script setup lang="ts">
+import type { AnnouncementConfig } from '~~/shared/utils/widgets'
+
 import StarterKit from '@tiptap/starter-kit'
 import { EditorContent, useEditor } from '@tiptap/vue-3'
 import { CharacterCount } from '@tiptap/extension-character-count'
-import { isSafeWidgetLink, type AnnouncementConfig } from '~~/shared/utils/widgets'
-
-import { announcementDocument, announcementRuns } from '~/utils/announcementEditor'
 
 const config = defineModel<AnnouncementConfig>('config', { required: true })
 const { t } = useI18n()

@@ -64,8 +64,6 @@
 </template>
 
 <script setup lang="ts">
-import { snapImageWidth } from '~/utils/articleFigure'
-
 const {
   alt,
   centered = false,

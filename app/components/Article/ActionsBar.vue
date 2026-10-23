@@ -48,9 +48,6 @@
 </template>
 
 <script setup lang="ts">
-import { formatDate } from '~~/shared/utils'
-import { formatNumber } from '~~/shared/utils/number'
-
 const localePath = useLocalePath()
 const { locale } = useI18n()
 

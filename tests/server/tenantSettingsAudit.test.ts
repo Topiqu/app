@@ -1,5 +1,12 @@
 import { createError } from 'h3'
-import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeAll, describe, expect, it, vi, beforeEach } from 'vitest'
+
+import { stubNitroImports } from '../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../server/utils/databaseJson'), 'toDatabaseJson')
+  await stubNitroImports(import('../../server/utils/auditChanges'), 'auditChanges')
+}
 
 afterEach(() => vi.unstubAllGlobals())
 let handler: typeof import('../../server/api/clients/[id]/index.patch').default
@@ -176,3 +183,5 @@ describe('tenant settings audit', () => {
     expect(JSON.stringify(log.mock.calls)).not.toMatch(/domainVerificationToken|private-/)
   })
 })
+
+beforeEach(stubImports)

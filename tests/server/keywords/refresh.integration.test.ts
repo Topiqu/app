@@ -2,24 +2,27 @@
 import { createError } from 'h3'
 import { randomUUID } from 'node:crypto'
 import { PolicyPlugin } from '@zenstackhq/plugin-policy'
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi, beforeEach } from 'vitest'
 
-import { createDatabaseClient } from '../../../server/utils/database'
-import { calculateArticleMetrics } from '../../../server/utils/metrics'
-import {
-  creditArticleCredits,
-  getArticleCreditWallet,
-  reserveArticleCredit,
-  settleArticleCredit,
-} from '../../../server/utils/articleCreditWallet'
-import {
-  applyContentAction,
-  articleHash,
-  queueContentAction,
-  refreshAllowance,
-  rollbackContentAction,
-  suggestRefresh,
-} from '../../../server/utils/keywords/refresh'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/keywords/serp'), 'serpSignals')
+  await stubNitroImports(import('../../../server/utils/keywords/dataforseo'), 'dataForSeo', 'hasDataForSeo')
+  await stubNitroImports(import('../../../server/utils/ai/reasoning'), 'aiReasoning')
+  await stubNitroImports(import('../../../server/utils/planFeatures'), 'activeFeatureFilter')
+  await stubNitroImports(import('../../../server/utils/keywords/rank'), 'blogPosition', 'isArticleUrl')
+  await stubNitroImports(import('../../../server/utils/ai/researchEvidence'), 'researchTopic')
+}
+
+await stubImports()
+
+const { createDatabaseClient } = await import('../../../server/utils/database')
+const { calculateArticleMetrics } = await import('../../../server/utils/metrics')
+const { creditArticleCredits, getArticleCreditWallet, reserveArticleCredit, settleArticleCredit } =
+  await import('../../../server/utils/articleCreditWallet')
+const { applyContentAction, articleHash, queueContentAction, refreshAllowance, rollbackContentAction, suggestRefresh } =
+  await import('../../../server/utils/keywords/refresh')
 
 const url = process.env.TEST_DATABASE_URL
 const enabled = !!url && /test/i.test(new URL(url).pathname) && url !== process.env.DATABASE_URL
@@ -271,3 +274,5 @@ describe.skipIf(!enabled)('article updates on PostgreSQL', () => {
     })
   })
 })
+
+beforeEach(stubImports)

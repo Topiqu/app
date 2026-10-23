@@ -1,14 +1,3 @@
-import {
-  FIAT,
-  DEFAULT_ANNOUNCEMENT_APPEARANCE,
-  type PriceConfig,
-  type PriceData,
-  type WeatherData,
-  type WidgetInput,
-  type WidgetKind,
-  type WidgetSlot,
-} from '~~/shared/utils/widgets'
-
 export type WidgetDraft = WidgetInput & { key: string }
 
 export const WIDGET_ICONS: Record<WidgetKind, string> = {

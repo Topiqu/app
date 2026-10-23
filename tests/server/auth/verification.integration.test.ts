@@ -6,9 +6,25 @@ import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vites
 
 import type { UserCreateArgs } from '../../../generated/zenstack/input'
 
-import { appMutationPlugin } from '../../../server/utils/prisma'
-import { createDatabaseClient } from '../../../server/utils/database'
-import { shouldIssueVerificationCode, VERIFICATION_CODE_TTL_MS } from '../../../server/utils/emailVerification'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/metrics'), 'articleTextMetrics')
+  await stubNitroImports(import('../../../server/utils/database'), 'createDatabaseClient')
+  await stubNitroImports(
+    import('../../../server/utils/emailVerification'),
+    'allowEmailVerificationRequest',
+    'issueEmailVerification',
+    'consumeEmailVerification',
+  )
+}
+
+await stubImports()
+
+const { appMutationPlugin } = await import('../../../server/utils/prisma')
+const { createDatabaseClient } = await import('../../../server/utils/database')
+const { shouldIssueVerificationCode, VERIFICATION_CODE_TTL_MS } =
+  await import('../../../server/utils/emailVerification')
 
 const url = process.env.TEST_DATABASE_URL
 const enabled = !!url && /test/i.test(new URL(url).pathname) && url !== process.env.DATABASE_URL
@@ -243,3 +259,5 @@ describe.skipIf(!enabled)('account-bound email verification on PostgreSQL', () =
     expect(await scoped.verificationCode.count({ where: { userId: user.id } })).toBe(0)
   })
 })
+
+beforeEach(stubImports)

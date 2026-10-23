@@ -1,8 +1,3 @@
-import { keywordLocation } from '~~/shared/utils/keywordPlan'
-
-import { dataForSeo } from './dataforseo'
-import { inScope, type ScopeSite } from './scope'
-
 const NEWS_HOURS = 72
 const NEWS_ITEMS = 5
 const TERMS_PER_QUERY = 5

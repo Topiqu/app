@@ -1,14 +1,3 @@
-import {
-  isTranslationDirty,
-  resolveActiveLanguage,
-  translationDraft,
-  translationVersion,
-  translationHasBody,
-  countAwaitingReview,
-  type ArticleTranslationRow,
-  type TranslationDraft,
-} from '~~/shared/utils/articleTranslations'
-
 export interface ArticleTranslationsPayload {
   translations: ArticleTranslationRow[]
   targetLanguages: string[]

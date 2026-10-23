@@ -1,15 +1,6 @@
 import type Stripe from 'stripe'
 import type { ClientPlan } from '~~/generated/zenstack/models'
 
-import { nextArticleCreditMonth } from '~~/shared/utils/articleCredits'
-import {
-  extractSubscriptionId,
-  isSubscribablePlan,
-  marksFirstPayment,
-  planFromPriceId,
-  revokesPlan,
-} from '~~/server/utils/stripeWebhook'
-
 /**
  * `clearSubscription` only for a terminal deletion — an `unpaid` subscription still exists in
  * Stripe and revives the moment the invoice is paid, so we keep the id to stay attached to it.

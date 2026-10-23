@@ -1,5 +1,3 @@
-import type { BacklinkOpportunityKind, BacklinkOpportunityStatus } from '~~/shared/utils/backlinks'
-
 export type BacklinkCommand = 'draft' | 'sent' | 'dismiss' | 'reopen' | 'check'
 
 export interface BacklinkDraft {

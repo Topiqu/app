@@ -29,13 +29,6 @@
 
 <script setup lang="ts">
 import { cs, de, en, fr } from '@nuxt/ui/locale'
-import { languageTag } from '~~/shared/utils/language'
-import { isForeignHost } from '~~/shared/utils/domain'
-import { consentLauncherFor } from '~~/shared/utils/consent'
-import { brandTitle, toAbsoluteUrl } from '~~/shared/utils/seo'
-import { resolveBrandAccent } from '~~/shared/utils/tenantTheme'
-import { platformAdsEnabledForPlan } from '~~/shared/utils/advertising'
-import { activeBrandGradient, gradientCss } from '~~/shared/utils/publicationBranding'
 import manropeLatin from '@fontsource-variable/manrope/files/manrope-latin-wght-normal.woff2?url'
 
 const reqUrl = useRequestURL()

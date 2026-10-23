@@ -170,12 +170,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  generationSteps,
-  type ArticleGenerationModule,
-  type GenerationRun,
-  type GenerationStepState,
-} from '~~/shared/utils/articleGeneration'
+import type { GenerationRun } from '~~/shared/utils/articleGeneration'
 
 const { run, words, authorName } = defineProps<{
   run: GenerationRun

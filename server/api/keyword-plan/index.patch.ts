@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import { keywordMarketsFor } from '~~/shared/utils/keywordPlan'
 
 export default defineEventHandler(async (event) => {
   const { user, db } = await requireDb(event, { role: ['admin', 'superadmin'], clientSite: true })

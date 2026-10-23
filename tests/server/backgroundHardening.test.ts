@@ -1,5 +1,11 @@
 // @vitest-environment node
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi, beforeEach } from 'vitest'
+
+import { stubNitroImports } from '../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../server/utils/ai/translationRow'), 'nextTranslationVersion')
+}
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -82,3 +88,5 @@ describe('background work recovery', () => {
     await stalled
   })
 })
+
+beforeEach(stubImports)

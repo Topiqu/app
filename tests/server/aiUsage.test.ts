@@ -1,6 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { recordAiUsage } from '../../server/utils/aiUsage'
+import { stubNitroImports } from '../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../server/utils/databaseJson'), 'toDatabaseJson')
+}
+
+await stubImports()
+
+const { recordAiUsage } = await import('../../server/utils/aiUsage')
 
 const create = vi.fn()
 const logAction = vi.fn()
@@ -39,3 +47,5 @@ describe('AI usage log', () => {
     expect(reportCaughtError).toHaveBeenCalledWith('AI usage logging failed', expect.any(Error), expect.anything())
   })
 })
+
+beforeEach(stubImports)

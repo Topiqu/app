@@ -1,8 +1,5 @@
 import type { H3Event } from 'h3'
 
-import { buildCanonicalOrigin } from '~~/shared/utils/seo'
-import { isManagedDomain, isRootHost, toHostname } from '~~/shared/utils/domain'
-
 const TENANT_SELECT = {
   id: true,
   name: true,

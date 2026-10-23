@@ -1,7 +1,6 @@
 import type { Language, SharePlatform } from '~~/generated/zenstack/models'
 
 import { z } from 'zod'
-import { completedWritingValue, generatedWordsFromSnapshot } from '~~/shared/utils/valueMetrics'
 
 export default defineEventHandler(async (event) => {
   const { user, db } = await requireDb(event, { clientSite: true })

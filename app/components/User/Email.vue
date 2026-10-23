@@ -45,12 +45,6 @@
 <script setup lang="ts">
 import type { InternalApi } from 'nitropack'
 
-import {
-  EMAIL_VERIFICATION_CODE_LENGTH,
-  EMAIL_VERIFICATION_COOLDOWN_MS,
-  emailVerificationCodeSchema,
-} from '~~/shared/utils/auth'
-
 // Defaults rather than `required`: the panel renders before `/account` resolves.
 const email = defineModel<string>('email', { default: '' })
 const isEmailVerified = defineModel<boolean>('isEmailVerified', { default: false })

@@ -2,10 +2,21 @@
 import { join } from 'node:path'
 import { createOpenAI } from '@ai-sdk/openai'
 import { mkdirSync, writeFileSync } from 'node:fs'
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi, beforeEach } from 'vitest'
 
-import { AI_MODELS } from '../../server/utils/ai/modelRegistry'
-import { assessOpportunities, type OpportunityCandidate } from '../../server/utils/keywords/opportunity'
+import type { OpportunityCandidate } from '../../server/utils/keywords/opportunity'
+
+import { stubNitroImports } from '../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../server/utils/ai/reasoning'), 'aiReasoning')
+  await stubNitroImports(import('../../server/utils/keywords/scope'), 'siteProfile')
+}
+
+await stubImports()
+
+const { AI_MODELS } = await import('../../server/utils/ai/modelRegistry')
+const { assessOpportunities } = await import('../../server/utils/keywords/opportunity')
 
 // Controlled SERP fixtures test editorial decisions, not predictions of future traffic.
 const page = (title: string, path: string, description = '') => ({
@@ -166,3 +177,5 @@ describe.skipIf(process.env.AI_EVAL !== '1')('keyword opportunity eval', () => {
     120_000,
   )
 })
+
+beforeEach(stubImports)

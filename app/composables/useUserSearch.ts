@@ -1,7 +1,3 @@
-import type { Ref } from 'vue'
-
-import { createAsyncDataDefault } from '~/utils/asyncDataDefaults'
-
 const emptyUsers = createAsyncDataDefault({ data: [], total: 0 })
 
 // Callers pass plain value refs, so cached URL callbacks cannot retain a modal setup getter.

@@ -1,8 +1,22 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi, beforeEach } from 'vitest'
 
-import { storeMediaSource } from '../../../server/utils/images/stores'
-import { createImageSelection } from '../../../server/utils/images/selection'
-import { appStoreScreenshots, createAppStoreImageSearch } from '../../../server/utils/images/appStore'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/images/http'), 'fetchJson', 'imageApiHeaders')
+  await stubNitroImports(
+    import('../../../server/utils/images/stores'),
+    'matchesStoreTitle',
+    'storeMediaSource',
+    'storeSearchTerm',
+  )
+}
+
+await stubImports()
+
+const { storeMediaSource } = await import('../../../server/utils/images/stores')
+const { createImageSelection } = await import('../../../server/utils/images/selection')
+const { appStoreScreenshots, createAppStoreImageSearch } = await import('../../../server/utils/images/appStore')
 
 afterEach(() => vi.unstubAllGlobals())
 
@@ -62,3 +76,5 @@ describe('App Store screenshots', () => {
     expect((await search('Notion workspace screenshot', createImageSelection()))?.url).toBe(shot('a'))
   })
 })
+
+beforeEach(stubImports)

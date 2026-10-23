@@ -1,8 +1,3 @@
-import type { MaybeRefOrGetter, Ref } from 'vue'
-import type { CommentPage, CommentWithReplies } from '~~/types/comment'
-
-import { indexCommentThreads, mergeCommentThreads } from '~~/shared/utils/commentThreads'
-
 export function useCommentThreads(articleId: MaybeRefOrGetter<string>, sort: Ref<string>) {
   const { data: session } = useAuth()
   const requestFetch = useRequestFetch()

@@ -3,27 +3,34 @@ import { createError } from 'h3'
 import { randomUUID } from 'node:crypto'
 import { PolicyPlugin } from '@zenstackhq/plugin-policy'
 import { mockNuxtImport } from '@nuxt/test-utils/runtime'
-import { afterAll, afterEach, describe, expect, it, vi } from 'vitest'
+import { afterAll, afterEach, describe, expect, it, vi, beforeEach } from 'vitest'
 
-import { tenantByHost } from '../../../server/utils/tenant'
+import { stubNitroImports } from '../../helpers/nitroImports'
 import { articleExcerpt } from '../../../shared/utils/articleBlocks'
-import { createDatabaseClient } from '../../../server/utils/database'
-import { localizeArticles } from '../../../server/utils/articleLocale'
-import { articleModifiedAt } from '../../../server/utils/articleModified'
-import { resolveArticleBySlug } from '../../../server/utils/articleBySlug'
-import { hasArticleAdminAccess } from '../../../server/utils/articleViewerAccess'
-import {
-  externalArticleDetailV1Select,
-  externalArticleSummaryV1Select,
-  serializeExternalArticleV1,
-} from '../../../server/utils/externalApiV1'
-import {
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/externalApi'), 'externalArticleSelect')
+  await stubNitroImports(import('../../../server/utils/articleViewerAccess'), 'publicArticleWhere', 'canReadArticle')
+  await stubNitroImports(import('../../../server/utils/articleCard'), 'articleCardSelect')
+}
+
+await stubImports()
+
+const { tenantByHost } = await import('../../../server/utils/tenant')
+const { createDatabaseClient } = await import('../../../server/utils/database')
+const { localizeArticles } = await import('../../../server/utils/articleLocale')
+const { articleModifiedAt } = await import('../../../server/utils/articleModified')
+const { resolveArticleBySlug } = await import('../../../server/utils/articleBySlug')
+const { hasArticleAdminAccess } = await import('../../../server/utils/articleViewerAccess')
+const { externalArticleDetailV1Select, externalArticleSummaryV1Select, serializeExternalArticleV1 } =
+  await import('../../../server/utils/externalApiV1')
+const {
   externalArticleSelect,
   externalArticleWhere,
   flattenExternalArticle,
   parseExternalTagFilter,
   requireExternalClient,
-} from '../../../server/utils/externalApi'
+} = await import('../../../server/utils/externalApi')
 
 // Nuxt's Vite transform imports this composable directly; a global stub alone cannot replace it.
 mockNuxtImport('useRuntimeConfig', () => () => ({ public: { baseDomain: 'platform.invalid' } }))
@@ -331,3 +338,5 @@ describe.skipIf(!enabled)('public article collection visibility on PostgreSQL', 
     },
   )
 })
+
+beforeEach(stubImports)

@@ -2,15 +2,25 @@
 import argon from 'argon2'
 import { createError } from 'h3'
 import { randomUUID } from 'node:crypto'
-import { afterAll, afterEach, describe, expect, it, vi } from 'vitest'
+import { afterAll, afterEach, describe, expect, it, vi, beforeEach } from 'vitest'
 
-import { invalidateFeed } from '../../server/utils/cache'
+import { stubNitroImports } from '../helpers/nitroImports'
 import { backfillPolls } from '../../scripts/backfill-polls'
-import { appMutationPlugin } from '../../server/utils/prisma'
-import { createDatabaseClient } from '../../server/utils/database'
-import { articleCardSelect } from '../../server/utils/articleCard'
-import { requireTenantMember } from '../../server/utils/tenantMembership'
-import { passwordResetHash, passwordResetIdentifier } from '../../server/utils/passwordReset'
+
+async function stubImports() {
+  await stubNitroImports(import('../../server/utils/metrics'), 'articleTextMetrics')
+  await stubNitroImports(import('../../server/utils/database'), 'createDatabaseClient')
+  await stubNitroImports(import('../../server/utils/passwordReset'), 'passwordResetHash', 'passwordResetIdentifier')
+}
+
+await stubImports()
+
+const { invalidateFeed } = await import('../../server/utils/cache')
+const { appMutationPlugin } = await import('../../server/utils/prisma')
+const { createDatabaseClient } = await import('../../server/utils/database')
+const { articleCardSelect } = await import('../../server/utils/articleCard')
+const { requireTenantMember } = await import('../../server/utils/tenantMembership')
+const { passwordResetHash, passwordResetIdentifier } = await import('../../server/utils/passwordReset')
 
 vi.mock('../../server/utils/cache', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../server/utils/cache')>()),
@@ -267,3 +277,5 @@ describe.skipIf(!enabled)('production security boundaries on PostgreSQL', () => 
     expect((await db!.article.findUniqueOrThrow({ where: { id: article.id } })).status).toBe('published')
   })
 })
+
+beforeEach(stubImports)

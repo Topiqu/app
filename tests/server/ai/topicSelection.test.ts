@@ -1,7 +1,25 @@
 import { generateText } from 'ai'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi, beforeEach } from 'vitest'
 
-import { buildTopicPrompt, pickArticleTopic, researchRequest, topicSchema } from '../../../server/utils/ai/topic'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/ai/reasoning'), 'aiReasoning')
+  await stubNitroImports(
+    import('../../../server/utils/ai/formats'),
+    'allowedModulesFor',
+    'ARTICLE_FORMAT_NAMES',
+    'ARTICLE_MODULE_NAMES',
+    'ARTICLE_STRUCTURE_VARIANTS',
+    'formatMenu',
+    'isStructureVariantFor',
+  )
+}
+
+await stubImports()
+
+const { buildTopicPrompt, pickArticleTopic, researchRequest, topicSchema } =
+  await import('../../../server/utils/ai/topic')
 
 vi.mock('ai', async (importOriginal) => ({
   ...(await importOriginal<typeof import('ai')>()),
@@ -234,3 +252,5 @@ describe('unattended stories', () => {
     expect(researchRequest(topic)).toEqual({ query: newsTopic.topic })
   })
 })
+
+beforeEach(stubImports)

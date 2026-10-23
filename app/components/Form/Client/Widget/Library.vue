@@ -53,9 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import type { WidgetInput, WidgetKind } from '~~/shared/utils/widgets'
-
-import { LIBRARY_CATEGORIES, WIDGET_PRESETS, type LibraryCategory } from '~/utils/widgetPresets'
+import type { WidgetKind } from '~~/shared/utils/widgets'
 
 const { allowed, currency } = defineProps<{ allowed: WidgetKind[]; currency: string }>()
 const emit = defineEmits<{ pick: [presetId: string] }>()

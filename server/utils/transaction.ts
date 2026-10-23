@@ -1,9 +1,5 @@
 import { TransactionIsolationLevel } from '@zenstackhq/orm'
 
-import type { DatabaseTransaction } from './database'
-
-import { databaseErrorCode } from './databaseError'
-
 type Tx = DatabaseTransaction
 
 const RETRY_DELAYS_MS = [20, 50] as const

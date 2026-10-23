@@ -55,8 +55,6 @@
 </template>
 
 <script setup lang="ts">
-import { isFollowed } from '~~/shared/utils/backlinks'
-
 const { locale } = useI18n()
 const headingId = useId()
 

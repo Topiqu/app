@@ -55,7 +55,6 @@
 </template>
 
 <script setup lang="ts">
-import { resolveFooterSettings } from '~~/shared/utils/publicationFooter'
 const { data: auth } = useAuth()
 const route = useRoute()
 const preview = useWidgetPagePreview()

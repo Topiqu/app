@@ -2,10 +2,6 @@ import { z } from 'zod'
 import slugify from 'slugify'
 import { generateText, Output } from 'ai'
 
-import type { DatabaseTransaction } from '../database'
-
-import { aiReasoning } from './reasoning'
-
 export const AI_SERIES_RECENT_WINDOW = 10
 export const AI_SERIES_COOLDOWN = 2
 export const AI_SERIES_MAX_PER_WINDOW = 3

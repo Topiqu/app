@@ -81,8 +81,6 @@
 </template>
 
 <script setup lang="ts">
-import { formatArticleDate } from '~~/shared/utils/time'
-
 const {
   user,
   size = 'default',

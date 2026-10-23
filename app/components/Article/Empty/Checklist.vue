@@ -41,9 +41,6 @@
 
 <script setup lang="ts">
 import type { RouteLocationRaw } from 'vue-router'
-import type { SetupStepId } from '~~/shared/utils/siteSetup'
-
-import { buildSetupSteps, setupProgress } from '~~/shared/utils/siteSetup'
 
 const localePath = useLocalePath()
 const config = useRuntimeConfig()

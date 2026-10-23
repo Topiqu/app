@@ -47,14 +47,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  DEFAULT_ANNOUNCEMENT_APPEARANCE,
-  type AnnouncementAppearance,
-  type AnnouncementConfig,
-  type AnnouncementTextRun,
-} from '~~/shared/utils/widgets'
-
-import { emptyAsyncDataList } from '~/utils/asyncDataDefaults'
+import type { AnnouncementAppearance, AnnouncementConfig, AnnouncementTextRun } from '~~/shared/utils/widgets'
 
 const { announcement, preview = false } = defineProps<{
   announcement: Pick<AnnouncementConfig, 'text' | 'link' | 'tone' | 'dismissible'> & {

@@ -1,5 +1,3 @@
-import type { Ref } from 'vue'
-
 type TagOption = { id: string; name: string }
 type ArticleTagRow = { tagId: string; tag: TagOption }
 type RequestFetch = ReturnType<typeof useRequestFetch>

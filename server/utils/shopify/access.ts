@@ -1,7 +1,5 @@
 import type { H3Event } from 'h3'
 
-import { shopifyEligible } from './config'
-
 export const requireShopifyAccess = async (
   event: H3Event,
   scope: 'INTEGRATION_CONTROL' | 'ARTICLE_WRITE' | 'ARTICLE_PUBLISH' = 'INTEGRATION_CONTROL',

@@ -1,12 +1,5 @@
 import type { H3Event } from 'h3'
 
-import { SHOPIFY_INSTALL_COOKIE } from '~~/shared/utils/shopify'
-
-import { shopifyTokenFields } from './token'
-import { verifyShopifyLink } from './security'
-import { ShopifyApiError, shopifyGraphql, shopifyTokenExchange } from './api'
-import { SHOPIFY_LINK_COOKIE, shopifyGrantsContent, shopifyOrigin } from './config'
-
 const SHOP_QUERY = 'query TopiquShop { shop { id name primaryDomain { url } } }'
 
 /** Exchanges an App Bridge ID token for expiring offline tokens plus the store identity. */

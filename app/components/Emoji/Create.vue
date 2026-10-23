@@ -265,10 +265,6 @@
 </template>
 
 <script setup lang="ts">
-import { EMOJI_MAX_UPLOAD_BYTES } from '~~/shared/utils/uploadLimits'
-
-import { isValidEmojiShortcode, normalizeEmojiShortcode } from '#shared/utils/emoji'
-
 interface QueuedEmoji {
   id: string
   file: File

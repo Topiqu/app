@@ -1,8 +1,5 @@
 import { z } from 'zod'
 
-import { readDomainBody } from '../../utils/domains/request'
-import { domainProbeSignature } from '../../utils/domains/probe'
-
 // Public, nonce-bound routing proof; no tenant content, session or secret is returned.
 export default defineEventHandler(async (event) => {
   setResponseHeader(event, 'cache-control', 'no-store')

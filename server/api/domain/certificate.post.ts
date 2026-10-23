@@ -1,10 +1,5 @@
 import { z } from 'zod'
 
-import { readDomainBody } from '../../utils/domains/request'
-import { DomainProviderError } from '../../utils/domains/providers'
-import { encryptDomainCertificate, verifyDomainCertificate } from '../../utils/domains/certificates'
-import { loadDomainConnection, reconcileDomainConnection, withDomainLease } from '../../utils/domains/connections'
-
 export default defineEventHandler(async (event) => {
   const { db, clientSiteId } = await requireDomainAccess(event)
   if (!(await consumeRateLimit(`domain-certificate:${clientSiteId}`, 5, 600))) throw createError({ statusCode: 429 })

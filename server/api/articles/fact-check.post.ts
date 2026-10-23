@@ -1,8 +1,4 @@
 import { z } from 'zod'
-import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
-import { runArticleFactCheck } from '~~/server/utils/ai/factCheck'
-import { FACT_CHECK_LIMITS } from '~~/shared/utils/articleFactCheck'
-import { inspectFactCheckSources } from '~~/server/utils/factCheckSources'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)

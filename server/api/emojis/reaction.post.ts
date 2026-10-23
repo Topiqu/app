@@ -1,7 +1,5 @@
 import { z } from 'zod'
 
-import { canReadArticle } from '../../utils/articleViewerAccess'
-
 const bodySchema = z.object({
   commentId: z.string().min(1).max(128),
   emojiId: z.string().min(1).max(128),

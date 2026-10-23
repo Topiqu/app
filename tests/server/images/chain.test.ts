@@ -1,8 +1,19 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi, beforeEach } from 'vitest'
 
 import type { ImageProvider, StockImage } from '../../../server/utils/images/types'
 
-import { findStockImage, imageChains } from '../../../server/utils/images/chain'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/images/selection'), 'matchesImageQuery')
+  await stubNitroImports(import('../../../server/utils/images/http'), 'fetchJson', 'imageApiHeaders')
+  await stubNitroImports(import('../../../server/utils/images/openverse'), 'openverse')
+  await stubNitroImports(import('../../../server/utils/images/wikimedia'), 'wikimedia')
+}
+
+await stubImports()
+
+const { findStockImage, imageChains } = await import('../../../server/utils/images/chain')
 
 const hit = (source: string): StockImage => ({ url: `https://${source}/x.jpg`, credit: { source } })
 
@@ -70,3 +81,5 @@ describe('findStockImage', () => {
     expect(await findStockImage('stock', 'q', empty)).toBeNull()
   })
 })
+
+beforeEach(stubImports)

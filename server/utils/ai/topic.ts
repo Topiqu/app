@@ -1,19 +1,6 @@
 import { z } from 'zod'
 import { generateText, Output } from 'ai'
 
-import { aiReasoning } from './reasoning'
-import {
-  allowedModulesFor,
-  ARTICLE_FORMAT_NAMES,
-  ARTICLE_MODULE_NAMES,
-  ARTICLE_STRUCTURE_VARIANTS,
-  formatMenu,
-  isStructureVariantFor,
-  type ArticleFormat,
-  type ArticleModule,
-  type ArticleStructureVariant,
-} from './formats'
-
 const topicDraftSchema = z.object({
   topic: z
     .string()

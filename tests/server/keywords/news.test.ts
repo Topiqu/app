@@ -1,12 +1,22 @@
 import { generateText } from 'ai'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/ai/reasoning'), 'aiReasoning')
+  await stubNitroImports(import('../../../server/utils/keywords/scope'), 'inScope')
+  await stubNitroImports(import('../../../server/utils/keywords/dataforseo'), 'dataForSeo')
+}
+
 const dataForSeo = vi.fn()
 vi.mock('../../../server/utils/keywords/dataforseo', () => ({ dataForSeo, hasDataForSeo: () => true }))
 vi.mock('ai', async (importOriginal) => ({
   ...(await importOriginal<typeof import('ai')>()),
   generateText: vi.fn(),
 }))
+
+await stubImports()
 
 const { fetchNews, newsItems, newsQuery, newsSignal } = await import('../../../server/utils/keywords/news')
 
@@ -151,3 +161,5 @@ describe('newsSignal', () => {
     ).toBe('[2] "Titulek" (idnes.cz, 2026-10-03): Perex.')
   })
 })
+
+beforeEach(stubImports)

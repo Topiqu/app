@@ -3,10 +3,47 @@ import { createError } from 'h3'
 import { createHmac } from 'node:crypto'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { syncShopifyPlan } from '../../../server/utils/shopify/billing'
-import { renderShopifyAppHome } from '../../../server/utils/shopify/appHome'
-import { signShopifyLink, verifyShopifyLink } from '../../../server/utils/shopify/security'
-import { shopifyGraphql, shopifyTokenExchange, ShopifyApiError } from '../../../server/utils/shopify/api'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(
+    import('../../../server/utils/shopify/config'),
+    'shopifyConfigured',
+    'shopifyEligible',
+    'shopifyGrantsContent',
+    'shopifyOrigin',
+    'shopifyPricingUrl',
+    'SHOPIFY_LINK_COOKIE',
+  )
+  await stubNitroImports(
+    import('../../../server/utils/shopify/security'),
+    'signShopifyLink',
+    'verifyShopifyIdToken',
+    'verifyShopifyLink',
+  )
+  await stubNitroImports(import('../../../server/utils/shopify/token'), 'shopifyTokenFields')
+  await stubNitroImports(
+    import('../../../server/utils/shopify/installation'),
+    'exchangeShopifySession',
+    'pendingShopifyInstallation',
+    'clearShopifyLink',
+    'linkedShopifyInstallation',
+  )
+  await stubNitroImports(
+    import('../../../server/utils/shopify/api'),
+    'ShopifyApiError',
+    'shopifyGraphql',
+    'shopifyTokenExchange',
+  )
+  await stubNitroImports(import('../../../server/utils/shopify/billing'), 'syncShopifyPlan')
+}
+
+await stubImports()
+
+const { syncShopifyPlan } = await import('../../../server/utils/shopify/billing')
+const { renderShopifyAppHome } = await import('../../../server/utils/shopify/appHome')
+const { signShopifyLink, verifyShopifyLink } = await import('../../../server/utils/shopify/security')
+const { shopifyGraphql, shopifyTokenExchange, ShopifyApiError } = await import('../../../server/utils/shopify/api')
 
 vi.mock('../../../server/utils/shopify/api', async (original) => ({
   ...(await original<typeof import('../../../server/utils/shopify/api')>()),
@@ -343,3 +380,5 @@ describe('Shopify App Home document', () => {
     expect(html).not.toContain('<img src=x')
   })
 })
+
+beforeEach(stubImports)

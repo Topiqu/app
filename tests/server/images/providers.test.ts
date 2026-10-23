@@ -1,7 +1,16 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, beforeEach } from 'vitest'
 
-import { pickWikimediaImage, wikimediaImage } from '../../../server/utils/images/wikimedia'
-import { openverseImage, pickOpenverseImage } from '../../../server/utils/images/openverse'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/images/selection'), 'matchesImageQuery')
+  await stubNitroImports(import('../../../server/utils/images/http'), 'fetchJson', 'imageApiHeaders')
+}
+
+await stubImports()
+
+const { pickWikimediaImage, wikimediaImage } = await import('../../../server/utils/images/wikimedia')
+const { openverseImage, pickOpenverseImage } = await import('../../../server/utils/images/openverse')
 
 const commonsPage = (over: Record<string, any> = {}) => ({
   index: 1,
@@ -138,3 +147,5 @@ describe('openverseImage', () => {
     expect(pickOpenverseImage(results, undefined, () => false)).toBeNull()
   })
 })
+
+beforeEach(stubImports)

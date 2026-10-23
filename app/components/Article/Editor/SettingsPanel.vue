@@ -152,14 +152,11 @@
 
 <script setup lang="ts">
 import type { TabsItem } from '@nuxt/ui'
-import type { MediaPickerSelection } from '~~/shared/types/mediaLibrary'
 import type { ArticleFactCheckResult } from '~~/shared/types/articleFactCheck'
 import type { ArticleGenerationOptions } from '~~/shared/utils/articleGeneration'
 import type { ArticleSeriesSelection, ArticleWithDetails } from '~~/types/article'
 import type { MediaRightsItem, MediaRightsReport } from '~~/shared/types/mediaRights'
 import type { ArticleOptimizationResult, OptimizationTarget } from '~~/shared/types/articleOptimization'
-
-import { optimizationScoreColor } from '~~/shared/utils/articleOptimization'
 
 import type { MediaRightsState } from '~/composables/useMediaRights'
 import type { ArticleOptimizationState } from '~/composables/useArticleOptimization'

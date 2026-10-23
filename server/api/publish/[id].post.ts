@@ -1,6 +1,3 @@
-import { requirePublicationDraft } from '../../utils/linkedin/access'
-import { publishDecisionAndExecute } from '../../utils/linkedin/publisher'
-
 export default defineEventHandler(async (event) => {
   const { user, clientSiteId, draft, translate: t } = await requirePublicationDraft(event)
   if (draft.task.company.clientSite.publishToLinkedIn === false)

@@ -1,14 +1,6 @@
-import type { ReadableFactCheckSource } from '~~/server/utils/factCheckSources'
-import type { ArticleFactCheckInput, ArticleFactCheckResult } from '~~/shared/types/articleFactCheck'
-
 import { z } from 'zod'
 import * as cheerio from 'cheerio'
 import { generateText, Output } from 'ai'
-import { LANGUAGE_NAMES } from '~~/shared/utils/language'
-import { FACT_CHECK_LIMITS, factCheckCounts } from '~~/shared/utils/articleFactCheck'
-
-import { aiModel } from './models'
-import { aiReasoning } from './reasoning'
 
 const schema = z.object({
   claims: z

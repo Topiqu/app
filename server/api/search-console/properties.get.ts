@@ -1,5 +1,3 @@
-import { decryptSearchConsoleToken } from '../../utils/searchConsole/crypto'
-
 export default defineEventHandler(async (event) => {
   const user = await requireUser(event, { role: ['admin', 'superadmin'], clientSite: true })
   if (user.role !== 'superadmin') await requireTenantScope(event, 'INTEGRATION_CONTROL', user.clientSiteId)

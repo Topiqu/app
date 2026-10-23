@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import { LanguageSchema } from '~~/shared/siteSchemas'
 
 const DraftBody = z.object({
   id: z.uuid().optional(),

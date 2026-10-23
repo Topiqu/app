@@ -1,5 +1,3 @@
-import type { DatabaseClient } from './database'
-
 type NotificationDatabase = Pick<DatabaseClient, 'user' | 'follow' | 'notification'>
 
 export const notifyArticlePublished = async (

@@ -1,5 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/linkedin/token'), 'getValidAccessToken')
+  await stubNitroImports(
+    import('../../../server/utils/linkedin/api'),
+    'isLinkedInPostUrn',
+    'LinkedInPostError',
+    'createPost',
+    'refreshAccessToken',
+  )
+}
+
 const prismaMock = {
   draftPost: {
     findUnique: vi.fn(),
@@ -21,6 +34,8 @@ vi.mock('../../../server/utils/linkedin/api', async (original) => ({
   ...(await original<typeof import('../../../server/utils/linkedin/api')>()),
   createPost,
 }))
+
+await stubImports()
 
 const { publishApprovedDraft, executePublish, publishDecisionAndExecute, reconcilePublishedDraft } =
   await import('../../../server/utils/linkedin/publisher')
@@ -194,3 +209,5 @@ describe('executePublish — atomic claim', () => {
     expect(createPost).not.toHaveBeenCalled()
   })
 })
+
+beforeEach(stubImports)

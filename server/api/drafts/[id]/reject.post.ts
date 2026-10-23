@@ -1,7 +1,5 @@
 import { z } from 'zod'
 
-import { decideDraft } from '../../../utils/linkedin/decision'
-
 const bodySchema = z.object({ reason: z.string().trim().min(1).max(500) })
 
 export default defineEventHandler(async (event) => {

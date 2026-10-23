@@ -91,8 +91,6 @@
 </template>
 
 <script setup lang="ts">
-import { difficultyLevel } from '~~/shared/utils/keywordPlan'
-
 const PREVIEW = 5
 
 const { t } = useI18n()

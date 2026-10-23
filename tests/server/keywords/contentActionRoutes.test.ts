@@ -2,6 +2,18 @@
 import { createError } from 'h3'
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest'
 
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(
+    import('../../../server/utils/keywords/refresh'),
+    'applyContentAction',
+    'dismissContentAction',
+    'queueContentAction',
+    'rollbackContentAction',
+  )
+}
+
 const actions = vi.hoisted(() => ({
   queueContentAction: vi.fn(),
   applyContentAction: vi.fn(),
@@ -114,3 +126,5 @@ describe('content action authorization', () => {
     )
   })
 })
+
+beforeEach(stubImports)

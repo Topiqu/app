@@ -4,7 +4,20 @@ import sharp from 'sharp'
 import { createError } from 'h3'
 import { createHash } from 'node:crypto'
 import { mockNuxtImport } from '@nuxt/test-utils/runtime'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi, beforeEach } from 'vitest'
+
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(
+    import('../../../server/utils/imageAnalysis'),
+    'analyzeImage',
+    'IMAGE_MODERATION_POLICY_VERSION',
+  )
+  await stubNitroImports(import('../../../server/utils/databaseJson'), 'toDatabaseJson')
+  await stubNitroImports(import('../../../server/utils/mediaLibrary'), 'storageKeyFromMediaUrl')
+  await stubNitroImports(import('../../../server/utils/uploadModeration'), 'canReuseUpload', 'recordUploadModeration')
+}
 
 const { analyze } = vi.hoisted(() => ({ analyze: vi.fn() }))
 vi.mock('../../../server/utils/imageAnalysis', () => ({ analyzeImage: analyze, IMAGE_MODERATION_POLICY_VERSION: 1 }))
@@ -286,3 +299,5 @@ describe('validated tenant upload reuse', () => {
 })
 
 type TestAsset = Awaited<ReturnType<typeof setup>>['asset']
+
+beforeEach(stubImports)

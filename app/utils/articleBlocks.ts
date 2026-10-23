@@ -1,5 +1,3 @@
-import { buildArticleBlocks, type ArticleNode } from '~~/shared/utils/articleBlocks'
-
 /** Editor preview only — unsaved content that never went through the API. */
 export const parseArticleBlocks = (content: string | null | undefined) => {
   // No DOMParser while the editor shell server-renders; the preview is client-only anyway.

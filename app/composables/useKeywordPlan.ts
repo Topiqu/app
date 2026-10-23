@@ -1,5 +1,3 @@
-import type { KeywordMarket } from '~~/shared/utils/keywordPlan'
-
 export type KeywordPlanStatus = 'OPEN' | 'PINNED' | 'SKIPPED'
 
 export interface KeywordPlanCluster {

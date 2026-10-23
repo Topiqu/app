@@ -1,8 +1,16 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, beforeEach } from 'vitest'
 
 import type { ArticleImage } from '../../../server/utils/images/types'
+import type { CaptionLabels } from '../../../server/utils/images/caption'
 
-import { buildImageHtml, renderCredit, type CaptionLabels } from '../../../server/utils/images/caption'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/sanitize'), 'escapeHtml')
+}
+
+await stubImports()
+const { buildImageHtml, renderCredit } = await import('../../../server/utils/images/caption')
 
 const LABELS: CaptionLabels = {
   illustration: 'Ilustrační obrázek',
@@ -105,3 +113,5 @@ describe('buildImageHtml', () => {
     expect(buildImageHtml(image(), '', LABELS)).not.toContain('<figcaption')
   })
 })
+
+beforeEach(stubImports)

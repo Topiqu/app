@@ -145,7 +145,6 @@
 </template>
 
 <script setup lang="ts">
-import { isManagedDomain } from '~~/shared/utils/domain'
 interface DnsRecords {
   domain: string
   txt: { name: string; value: string }

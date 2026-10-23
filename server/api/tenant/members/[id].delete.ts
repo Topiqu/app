@@ -1,5 +1,3 @@
-import { languageTag } from '~~/shared/utils/language'
-
 export default defineEventHandler(async (event) => {
   const { user: actor, membership } = await requireTenantScope(event, 'MEMBER_CONTROL')
   const id = getRouterParam(event, 'id')!

@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import type { ShopifyPublication, ShopifyPublishMode } from '~~/shared/types/shopify'
-import type { MediaRightsReport, MediaRightsReview } from '~~/shared/types/mediaRights'
-
 type Handoff = { mode: ShopifyPublishMode; review: MediaRightsReview | null }
 
 const props = defineProps<{ articleId?: string; disabled?: boolean }>()

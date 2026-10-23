@@ -3,13 +3,20 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { SessionUser } from '../../shared/types/auth'
 
-import * as integration from '../../server/utils/integrationOAuth'
-import {
-  authTransferHash,
-  authTransferSecret,
-  requireCentralAuth,
-  requireSameAuthOrigin,
-} from '../../server/utils/authTransfer'
+import { stubNitroImports } from '../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../server/utils/authCookie'), 'isSecureAuth')
+  await stubNitroImports(import('../../server/utils/linkedin/redirectUri'), 'getLinkedInRedirectUri')
+  await stubNitroImports(import('../../server/utils/authHost'), 'isPlatformAuthHost')
+  await stubNitroImports(import('../../server/utils/authTransfer'), 'authTransferOrigin', 'centralAuthOrigin')
+}
+
+await stubImports()
+
+const integration = await import('../../server/utils/integrationOAuth')
+const { authTransferHash, authTransferSecret, requireCentralAuth, requireSameAuthOrigin } =
+  await import('../../server/utils/authTransfer')
 
 const request = 'r'.repeat(43)
 const secret = 's'.repeat(43)
@@ -265,3 +272,5 @@ describe('central integration OAuth handoff', () => {
     await expect(handler(event)).rejects.toMatchObject({ statusCode: 409 })
   })
 })
+
+beforeEach(stubImports)

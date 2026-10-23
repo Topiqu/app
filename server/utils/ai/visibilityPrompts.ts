@@ -1,9 +1,6 @@
 import { z } from 'zod'
 import { subDays } from 'date-fns'
 import { generateText, Output } from 'ai'
-import { promptIntent } from '~~/shared/utils/aiVisibility'
-
-import { aiReasoning } from './reasoning'
 
 export const AUTO_PROMPT_LIMIT = 10
 const RESEED_DAYS = 7

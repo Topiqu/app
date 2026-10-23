@@ -1,7 +1,19 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, beforeEach } from 'vitest'
 
-import { imageExtension } from '../../server/utils/ai/image'
-import {
+import { stubNitroImports } from '../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(
+    import('../../server/utils/images/optimize'),
+    'IMMUTABLE_IMAGE_CACHE_CONTROL',
+    'optimizeGeneratedImage',
+  )
+}
+
+await stubImports()
+
+const { imageExtension } = await import('../../server/utils/ai/image')
+const {
   AI_IMAGE_MODELS,
   AI_MODELS,
   AI_VISIBILITY_MODELS,
@@ -9,7 +21,7 @@ import {
   aiImageModelProvider,
   aiModelId,
   aiModelProvider,
-} from '../../server/utils/ai/modelRegistry'
+} = await import('../../server/utils/ai/modelRegistry')
 
 const ALL_ENTRIES = [...Object.entries(AI_MODELS), ...Object.entries(AI_IMAGE_MODELS)]
 const ACTIVE_MODEL_IDS = [
@@ -110,3 +122,5 @@ describe('imageExtension', () => {
     expect(imageExtension('')).toBe('png')
   })
 })
+
+beforeEach(stubImports)

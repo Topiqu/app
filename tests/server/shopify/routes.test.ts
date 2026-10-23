@@ -3,7 +3,18 @@ import { createError } from 'h3'
 import { createHmac } from 'node:crypto'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { requireShopifyAccess } from '../../../server/utils/shopify/access'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/shopify/config'), 'shopifyEligible', 'normalizeShopifyShop')
+  await stubNitroImports(import('../../../server/utils/shopify/security'), 'verifyShopifyWebhookHmac')
+  await stubNitroImports(import('../../../server/utils/shopify/catalog'), 'queueShopifyCatalog')
+  await stubNitroImports(import('../../../server/utils/shopify/billing'), 'releaseShopifyBilling')
+}
+
+await stubImports()
+
+const { requireShopifyAccess } = await import('../../../server/utils/shopify/access')
 
 describe('Shopify access gates and webhooks', () => {
   const connectionUpdate = vi.fn()
@@ -145,3 +156,5 @@ describe('Shopify access gates and webhooks', () => {
     expect(connectionDelete).toHaveBeenCalledTimes(1)
   })
 })
+
+beforeEach(stubImports)

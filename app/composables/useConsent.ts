@@ -1,16 +1,3 @@
-import type { ConsentCapabilities, ConsentDecision, ConsentSite } from '~~/shared/utils/consent'
-
-import {
-  CONSENT_COOKIE,
-  CONSENT_MAX_AGE,
-  consentCapabilities,
-  consentCovers,
-  createConsentDecision,
-  hasAnalyticsConsent,
-  hasMarketingConsent,
-  isConsentDecision,
-} from '~~/shared/utils/consent'
-
 export const useConsentDecision = () => {
   const cookie = useCookie<ConsentDecision | null>(CONSENT_COOKIE, {
     default: () => null,

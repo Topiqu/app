@@ -132,10 +132,6 @@
 </template>
 
 <script lang="ts" setup>
-import type { CommentWithReplies } from '~~/types/comment'
-
-import { flattenCommentThreads } from '~~/shared/utils/commentThreads'
-
 interface GiphyGif {
   id: string
   title: string

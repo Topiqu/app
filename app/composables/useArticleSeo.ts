@@ -1,9 +1,3 @@
-import type { MaybeRefOrGetter } from 'vue'
-
-import { hasSeoPlan } from '~~/shared/utils/seo'
-import { readFaq } from '~~/shared/utils/articleFaq'
-import { articleExcerpt } from '~~/shared/utils/articleBlocks'
-
 type ArticleAuthor = { id: string; username: string | null; avatarUrl: string | null; bio: string | null }
 
 type SeoArticle = {

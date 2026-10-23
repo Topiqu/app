@@ -1,5 +1,3 @@
-import type { ArticleWithDetails } from '~~/types/article'
-
 export function useExport() {
   const { locale } = useI18n()
 

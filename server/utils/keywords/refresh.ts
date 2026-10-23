@@ -4,17 +4,6 @@ import { z } from 'zod'
 import { load } from 'cheerio'
 import { createHash } from 'node:crypto'
 import { generateText, Output } from 'ai'
-import { keywordLocation } from '~~/shared/utils/keywordPlan'
-import { articleCreditsForPlan } from '~~/shared/utils/articleCredits'
-
-import type { DatabaseClient } from '../database'
-
-import { serpSignals } from './serp'
-import { dataForSeo } from './dataforseo'
-import { aiReasoning } from '../ai/reasoning'
-import { blogPosition, isArticleUrl } from './rank'
-import { activeFeatureFilter } from '../planFeatures'
-import { researchTopic } from '../ai/researchEvidence'
 
 const DAY_MS = 86_400_000
 // Positions where a better page most often moves to page one; below 8 a rewrite risks what already works.

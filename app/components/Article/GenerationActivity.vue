@@ -37,8 +37,6 @@
 </template>
 
 <script setup lang="ts">
-import { generationSteps } from '~~/shared/utils/articleGeneration'
-
 const route = useRoute()
 const generation = useArticleGenerationStore()
 const { now, pause, resume } = useNow({

@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import { suggestBrandColors } from '~~/server/utils/brandPalette'
 
 const InputSchema = z.object({ logoUrl: z.string().url().max(255) })
 const MAX_LOGO_BYTES = 15 * 1024 * 1024

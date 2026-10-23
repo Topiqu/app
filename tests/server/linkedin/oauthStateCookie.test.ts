@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/authCookie'), 'isSecureAuth')
+}
+
 const setCookie = vi.fn()
 const deleteCookie = vi.fn()
 const getCookie = vi.fn(() => 'state-value')
@@ -43,3 +49,5 @@ describe('OAuth state cookie', () => {
     })
   })
 })
+
+beforeEach(stubImports)

@@ -1,7 +1,5 @@
 import { z } from 'zod'
 import { randomInt } from 'crypto'
-import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
-import { issueChallenge } from '~~/server/utils/onboardingTokens'
 
 const schema = z.object({
   email: z.email(),

@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
 
-import { promptOutcome, runOutcome } from '~~/shared/utils/aiVisibility'
-
 import type { VisibilityOverview, VisibilityPrompt } from '~/types/visibility'
 const props = defineProps<{
   prompt: VisibilityPrompt

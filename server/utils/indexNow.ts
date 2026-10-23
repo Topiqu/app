@@ -1,8 +1,6 @@
 import type { Language } from '~~/generated/zenstack/models'
 
 import { createHmac } from 'node:crypto'
-import { articlePath } from '~~/shared/utils/routes'
-import { isManagedDomain } from '~~/shared/utils/domain'
 
 const ENDPOINT = 'https://api.indexnow.org/indexnow'
 export const INDEXNOW_KEY_PATH = '/indexnow.txt'

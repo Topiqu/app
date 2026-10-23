@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import { MEDIA_ORIGINS } from '~~/shared/types/mediaRights'
 
 const QuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),

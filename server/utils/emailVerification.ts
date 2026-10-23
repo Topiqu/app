@@ -1,7 +1,6 @@
 import type { H3Event } from 'h3'
 
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto'
-import { EMAIL_VERIFICATION_CODE_LENGTH, EMAIL_VERIFICATION_COOLDOWN_MS } from '~~/shared/utils/auth'
 
 export const RESEND_THROTTLE_MS = EMAIL_VERIFICATION_COOLDOWN_MS
 

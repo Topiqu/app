@@ -240,8 +240,6 @@
 import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
 import type { ClientSite } from '~~/generated/zenstack/models'
 
-import { languageTag } from '~~/shared/utils/language'
-
 const { t, locale } = useI18n()
 const { invalidateClients } = useCacheInvalidation()
 const requestFetch = useRequestFetch()

@@ -1,8 +1,6 @@
 import type { H3Event } from 'h3'
 import type { Language } from '~~/generated/zenstack/models'
 
-import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
-
 type Messages = Record<string, unknown>
 const messageCache = new Map<Language, Promise<Messages>>()
 

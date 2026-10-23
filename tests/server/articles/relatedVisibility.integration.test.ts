@@ -1,12 +1,21 @@
 // @vitest-environment node
 import { createError } from 'h3'
 import { randomUUID } from 'node:crypto'
-import { afterAll, afterEach, describe, expect, it, vi } from 'vitest'
+import { afterAll, afterEach, describe, expect, it, vi, beforeEach } from 'vitest'
 
-import { createDatabaseClient } from '../../../server/utils/database'
-import { localizeArticles } from '../../../server/utils/articleLocale'
-import { resolveArticleBySlug } from '../../../server/utils/articleBySlug'
-import { hasArticleAdminAccess } from '../../../server/utils/articleViewerAccess'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/articleCard'), 'articleCardSelect')
+  await stubNitroImports(import('../../../server/utils/articleViewerAccess'), 'canReadArticle')
+}
+
+await stubImports()
+
+const { createDatabaseClient } = await import('../../../server/utils/database')
+const { localizeArticles } = await import('../../../server/utils/articleLocale')
+const { resolveArticleBySlug } = await import('../../../server/utils/articleBySlug')
+const { hasArticleAdminAccess } = await import('../../../server/utils/articleViewerAccess')
 
 const url = process.env.TEST_DATABASE_URL
 const enabled = !!url && /test/i.test(new URL(url).pathname) && url !== process.env.DATABASE_URL
@@ -183,3 +192,5 @@ describe.skipIf(!enabled)('public related-article visibility on PostgreSQL', () 
     await expect(data.run({ slug: futureSlug, locale: 'en' })).rejects.toMatchObject({ statusCode: 404 })
   })
 })
+
+beforeEach(stubImports)

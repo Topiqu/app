@@ -63,8 +63,6 @@
 </template>
 
 <script setup lang="ts">
-import { formatDate } from '~~/shared/utils'
-
 import type { Session } from '~/composables/useProfile'
 
 // `sessions` is optional because the panel renders before `/account` resolves.

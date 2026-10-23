@@ -1,8 +1,5 @@
 import sharp from 'sharp'
 import { randomUUID } from 'node:crypto'
-import { analyzeImage } from '~~/server/utils/imageAnalysis'
-import { IMAGE_MAX_UPLOAD_BYTES } from '~~/shared/utils/uploadLimits'
-import { canReuseUpload, recordUploadModeration } from '~~/server/utils/uploadModeration'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)

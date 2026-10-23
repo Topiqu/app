@@ -5,6 +5,12 @@ import { generateSecret, generateSync } from 'otplib'
 import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/totp'), 'verifyTotpToken')
+}
+
 mockNuxtImport('useRuntimeConfig', () => () => ({ auth: { secret: 'test-secret' } }))
 
 const stubUtilGlobals = (allowed = true) => {
@@ -241,3 +247,5 @@ describe('GET /api/users/:id/account', () => {
     expect(source).not.toMatch(/totpSecret: userData|otpauthUrl/)
   })
 })
+
+beforeEach(stubImports)

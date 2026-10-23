@@ -64,7 +64,6 @@
 
 <script setup lang="ts">
 import type { InternalApi } from 'nitropack'
-import type { ConsentCapabilities } from '~~/shared/utils/consent'
 import type { PublicClientSite } from '~~/shared/utils/clientSiteFields'
 
 const props = defineProps<{ site: PublicClientSite | null | undefined; enabled: boolean }>()

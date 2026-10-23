@@ -1,5 +1,3 @@
-import { ARTICLE_PACK_LIST, formatArticlePackPrice, type ArticlePack } from '~~/shared/utils/articlePacks'
-
 export interface ArticlePackView {
   id: string
   name: string

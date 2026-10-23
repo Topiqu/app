@@ -1,5 +1,3 @@
-import { reconcileDomainConnection } from '../../../utils/domains/connections'
-
 export default defineEventHandler(async (event) => {
   const { user, db, clientSiteId } = await requireDomainAccess(event)
 

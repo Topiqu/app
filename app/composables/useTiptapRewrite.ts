@@ -1,14 +1,6 @@
-import type { ShallowRef } from 'vue'
 import type { Editor } from '@tiptap/vue-3'
 
 import { getHTMLFromFragment } from '@tiptap/core'
-import {
-  DOCUMENT_EDIT_MAX_BLOCKS,
-  DOCUMENT_EDIT_MAX_LENGTH,
-  TEXT_EDIT_INSTRUCTION_MAX_LENGTH,
-  TEXT_EDIT_MAX_LENGTH,
-  type TextEditAction,
-} from '~~/shared/utils/aiEdit'
 
 /** Only prose goes to the model; a selection spanning images, polls, videos or tables is refused. */
 const TEXT_NODES = new Set([

@@ -1,8 +1,5 @@
 import * as Sentry from '@sentry/nuxt'
 
-import { logger } from './logger'
-import { sanitizeAuthErrorMessage } from './authErrorMessage'
-
 // Never forward NextAuth metadata: it can contain profiles, tokens and request bodies.
 export function logAuthError(code: string, metadata: unknown) {
   const details = metadata && typeof metadata === 'object' ? (metadata as Record<string, unknown>) : {}

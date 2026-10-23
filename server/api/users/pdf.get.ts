@@ -1,6 +1,5 @@
 import PDFDocument from 'pdfkit'
 import { join } from 'node:path'
-import { languageTag } from '~~/shared/utils/language'
 
 const PAGE = { width: 595.28, height: 841.89, left: 48, right: 48, top: 44, bottom: 56 }
 const CONTENT_WIDTH = PAGE.width - PAGE.left - PAGE.right

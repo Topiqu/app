@@ -1,7 +1,5 @@
 import type { Language } from '~~/generated/zenstack/models'
 
-import { canReadArticle } from '../../../utils/articleViewerAccess'
-
 /** Explicit because the row also carries `prompt` and the tenant's savings figures. */
 const PUBLIC_FIELDS = {
   id: true,

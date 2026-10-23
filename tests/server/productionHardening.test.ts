@@ -1,10 +1,30 @@
 import sharp from 'sharp'
 import { createError } from 'h3'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi, beforeEach } from 'vitest'
 
-import { requireCron } from '../../server/utils/requireCron'
-import { articleCardSelect } from '../../server/utils/articleCard'
-import { passwordResetHash } from '../../server/utils/passwordReset'
+import { stubNitroImports } from '../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../server/utils/imageAnalysis'), 'analyzeImage', 'IMAGE_MODERATION_POLICY_VERSION')
+  await stubNitroImports(import('../../server/utils/databaseJson'), 'toDatabaseJson')
+  await stubNitroImports(import('../../server/utils/mediaLibrary'), 'storageKeyFromMediaUrl')
+  await stubNitroImports(import('../../server/utils/uploadModeration'), 'canReuseUpload', 'recordUploadModeration')
+  await stubNitroImports(import('../../server/utils/passwordReset'), 'passwordResetHash', 'passwordResetIdentifier')
+  await stubNitroImports(
+    import('../../server/utils/stripeWebhook'),
+    'extractSubscriptionId',
+    'isSubscribablePlan',
+    'marksFirstPayment',
+    'planFromPriceId',
+    'revokesPlan',
+  )
+}
+
+await stubImports()
+
+const { requireCron } = await import('../../server/utils/requireCron')
+const { articleCardSelect } = await import('../../server/utils/articleCard')
+const { passwordResetHash } = await import('../../server/utils/passwordReset')
 
 vi.mock('../../server/utils/imageAnalysis', () => ({
   analyzeImage: vi.fn().mockResolvedValue({ tags: [], moderation: 'clear' }),
@@ -173,3 +193,5 @@ describe('Stripe subscription reconciliation', () => {
     expect(sync).not.toHaveBeenCalled()
   })
 })
+
+beforeEach(stubImports)

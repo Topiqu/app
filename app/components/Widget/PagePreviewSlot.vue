@@ -30,8 +30,6 @@
 <script setup lang="ts">
 import type { WidgetSlot } from '~~/shared/utils/widgets'
 
-import { canPreviewWidgetSlot } from '~/utils/widgetPagePreview'
-
 const { name, hasContent = false } = defineProps<{ name: WidgetSlot; hasContent?: boolean }>()
 const { active, state } = useWidgetPagePreview()
 const selected = computed(() => state.value.slot === name)

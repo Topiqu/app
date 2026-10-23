@@ -1,15 +1,6 @@
 import { z } from 'zod'
 import argon2 from 'argon2'
 import { randomBytes } from 'crypto'
-import { logAction } from '~~/server/utils/log'
-import { authPath } from '~~/shared/utils/routes'
-import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
-import { saveUserWithLogging } from '~~/server/utils/userLog'
-import { TRIAL_PLAN, TRIAL_DAYS } from '~~/shared/utils/trial'
-import { TRIAL_ARTICLE_CREDITS } from '~~/shared/utils/articleCredits'
-import { landingClientIp, verifyVerifiedToken } from '~~/server/utils/onboardingTokens'
-import { normalizeAccentColor, parseBrandGradient } from '~~/shared/utils/publicationBranding'
-import { domainError, domainVerificationDefaults, isManagedDomain, normalizeDomain } from '~~/shared/utils/domain'
 
 const LOGIN_TOKEN_TTL_MS = 30 * 60 * 1000
 const SIGNUPS_PER_IP_PER_DAY = 10

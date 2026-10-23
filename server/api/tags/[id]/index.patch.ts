@@ -1,6 +1,3 @@
-import { tagFeedTenants } from '~~/server/utils/tagFeeds'
-import { TagCreateSchema } from '~~/shared/databaseSchemas'
-
 const bodySchema = TagCreateSchema.pick({ name: true, slug: true })
   .partial()
   .refine((body) => body.name !== undefined || body.slug !== undefined)

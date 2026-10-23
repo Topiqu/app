@@ -3,6 +3,19 @@
 import { createError } from 'h3'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/linkedin/access'), 'requirePublicationDraft')
+  await stubNitroImports(import('../../../server/utils/images/publicFetch'), 'readLimitedBody')
+  await stubNitroImports(import('../../../server/utils/linkedin/api'), 'isLinkedInPostUrn')
+  await stubNitroImports(
+    import('../../../server/utils/linkedin/publisher'),
+    'publishDecisionAndExecute',
+    'reconcilePublishedDraft',
+  )
+}
+
 const { publish, reconcile } = vi.hoisted(() => ({ publish: vi.fn(), reconcile: vi.fn() }))
 vi.mock('../../../server/utils/linkedin/publisher', () => ({
   publishDecisionAndExecute: publish,
@@ -100,3 +113,5 @@ describe('LinkedIn publication authorization and reconciliation', () => {
     expect(publish).not.toHaveBeenCalled()
   })
 })
+
+beforeEach(stubImports)

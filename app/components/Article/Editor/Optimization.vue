@@ -238,13 +238,7 @@
 </template>
 
 <script setup lang="ts">
-import type {
-  ArticleOptimizationResult,
-  OptimizationCheck,
-  OptimizationTarget,
-} from '~~/shared/types/articleOptimization'
-
-import { optimizationScoreColor } from '~~/shared/utils/articleOptimization'
+import type { ArticleOptimizationResult, OptimizationTarget } from '~~/shared/types/articleOptimization'
 
 import type { ArticleOptimizationState } from '~/composables/useArticleOptimization'
 

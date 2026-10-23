@@ -48,8 +48,6 @@
 </template>
 
 <script setup lang="ts">
-import { presentSourceUrl, sourceFaviconUrl } from '~/utils/sourcePresentation'
-
 const { sources } = defineProps<{ sources: string[] }>()
 const entries = computed(() =>
   sources.filter((source) => source.trim()).map((source) => ({ url: source.trim(), ...presentSourceUrl(source) })),

@@ -60,10 +60,6 @@
 </template>
 
 <script setup lang="ts">
-import type { ComponentPublicInstance } from 'vue'
-
-import { sourceFaviconUrl } from '~/utils/sourcePresentation'
-
 const sources = defineModel<string[]>({ required: true })
 
 defineProps<{ compact?: boolean }>()

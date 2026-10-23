@@ -1,6 +1,14 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, beforeEach } from 'vitest'
 
-import { hasUsefulGenerationSnapshot } from '../../server/utils/articleGenerationRecovery'
+import { stubNitroImports } from '../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../server/utils/databaseJson'), 'toDatabaseJson')
+}
+
+await stubImports()
+
+const { hasUsefulGenerationSnapshot } = await import('../../server/utils/articleGenerationRecovery')
 
 describe('article generation recovery', () => {
   it('charges only snapshots that give the author a recoverable result', () => {
@@ -10,3 +18,5 @@ describe('article generation recovery', () => {
     expect(hasUsefulGenerationSnapshot({ content: '<p>Usable partial article</p>' })).toBe(true)
   })
 })
+
+beforeEach(stubImports)

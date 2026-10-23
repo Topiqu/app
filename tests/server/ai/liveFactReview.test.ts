@@ -1,6 +1,25 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { buildRevisionPrompt, reviewArticle } from '../../../server/utils/ai/articleQuality'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/ai/reasoning'), 'aiReasoning')
+  await stubNitroImports(
+    import('../../../server/utils/ai/editorialPolicy'),
+    'AUTHORIAL_REASONING',
+    'ILLUSTRATIVE_STORY',
+  )
+  await stubNitroImports(
+    import('../../../server/utils/ai/researchEvidence'),
+    'extractResearchUrls',
+    'researchEvidence',
+    'retrievedResearchSources',
+  )
+}
+
+await stubImports()
+
+const { buildRevisionPrompt, reviewArticle } = await import('../../../server/utils/ai/articleQuality')
 
 const { generateStructuredText, generatePlainText } = vi.hoisted(() => ({
   generateStructuredText: vi.fn<(typeof import('ai'))['generateText']>(),
@@ -226,3 +245,5 @@ it('lets only an editor-requested story skip documentation of its plot', async (
   expect(cron).toContain('An invented protagonist, scene or event is invented_detail')
   expect(cron).not.toContain('never ask for its documentation')
 })
+
+beforeEach(stubImports)

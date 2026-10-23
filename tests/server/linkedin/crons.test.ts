@@ -2,6 +2,19 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/concurrency'), 'mapLimit')
+  await stubNitroImports(import('../../../server/utils/linkedin/policy'), 'checkPolicyAndScore')
+  await stubNitroImports(
+    import('../../../server/utils/linkedin/publisher'),
+    'publishApprovedDraft',
+    'publishDecisionAndExecute',
+  )
+  await stubNitroImports(import('../../../server/utils/linkedin/generator'), 'generateContentForTask')
+}
+
 const { publish, generate, database } = vi.hoisted(() => ({
   publish: vi.fn(),
   generate: vi.fn(),
@@ -74,3 +87,5 @@ describe('LinkedIn generation and publication boundary', () => {
     expect(generate).toHaveBeenCalledTimes(1)
   })
 })
+
+beforeEach(stubImports)

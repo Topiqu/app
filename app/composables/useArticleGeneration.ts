@@ -1,11 +1,3 @@
-import type {
-  ArticleGenerationOptions,
-  ArticleGenerationBilling,
-  GenerationEvent,
-  GenerationFailureStage,
-  GenerationResearchResult,
-} from '~~/shared/utils/articleGeneration'
-
 interface PartialArticle {
   title?: string
   perex?: string

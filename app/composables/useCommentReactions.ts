@@ -1,6 +1,3 @@
-import type { Ref } from 'vue'
-import type { CommentWithReplies } from '~~/types/comment'
-
 export type ReactionType = 'LIKE' | 'DISLIKE'
 
 export interface EmojiReactionState {

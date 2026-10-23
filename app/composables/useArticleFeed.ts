@@ -1,7 +1,3 @@
-import type { MaybeRefOrGetter } from 'vue'
-
-import { createAsyncDataRequest } from '~/utils/asyncDataRequest'
-
 /** Releases the page callback on unmount; options must contain only data or module-scoped defaults. */
 export function useArticleFeed<T, DefaultT = T>(
   key: MaybeRefOrGetter<string>,

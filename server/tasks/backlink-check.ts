@@ -1,5 +1,3 @@
-import { checkDueBacklinks } from '~~/server/utils/backlinks/check'
-
 export default defineMonitoredTask({
   meta: {
     name: 'backlink-check',

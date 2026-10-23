@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/linkedin/api'), 'refreshAccessToken')
+}
+
 const prismaMock = {
   linkedinCompany: {
     update: vi.fn(async () => ({})),
@@ -10,6 +16,8 @@ const refreshAccessToken = vi.fn()
 
 vi.mock('../../../server/utils/prisma', () => ({ default: prismaMock }))
 vi.mock('../../../server/utils/linkedin/api', () => ({ refreshAccessToken }))
+
+await stubImports()
 
 const { getValidAccessToken } = await import('../../../server/utils/linkedin/token')
 
@@ -102,3 +110,5 @@ describe('getValidAccessToken', () => {
     )
   })
 })
+
+beforeEach(stubImports)

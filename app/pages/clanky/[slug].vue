@@ -152,19 +152,6 @@
 </template>
 
 <script setup lang="ts">
-import type { Language } from '~~/shared/utils/language'
-import type { CoverCredit } from '~~/shared/utils/imageCredit'
-
-import { readFaq } from '~~/shared/utils/articleFaq'
-import { adProviderFor } from '~~/shared/utils/advertising'
-import { canManageArticle } from '~~/shared/utils/articleEditor'
-import { localeRedirectSlug } from '~~/shared/utils/articleLocale'
-
-import type { GamSizeMapping } from '~/composables/useGam'
-
-import { useArticleFeed } from '~/composables/useArticleFeed'
-import { emptyAsyncDataList } from '~/utils/asyncDataDefaults'
-
 definePageMeta({ shell: 'publication' })
 
 const route = useRoute()

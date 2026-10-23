@@ -1,11 +1,5 @@
-import type { BacklinkOpportunityKind } from '~~/shared/utils/backlinks'
-
 import { z } from 'zod'
 import { generateText, Output } from 'ai'
-
-import type { MatchSite } from './match'
-
-import { aiReasoning } from '../ai/reasoning'
 
 const RULES = `
 Write a short, polite e-mail asking the owner of a web page to add one link to a business.

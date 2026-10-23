@@ -1,8 +1,5 @@
 import type { H3Event } from 'h3'
 
-import { homePath } from '~~/shared/utils/routes'
-import { isLanguage } from '~~/shared/utils/language'
-
 /** Return URLs are same-origin navigation, never a client-selected external redirect. */
 export const billingReturnOrigin = async (event: H3Event, supplied: unknown) => {
   const expected = getRequestURL(event).origin

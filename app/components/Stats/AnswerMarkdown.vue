@@ -23,8 +23,6 @@
 </template>
 
 <script setup lang="ts">
-import { parseAnswerMarkdown } from '~~/shared/utils/answerMarkdown'
-
 const { text } = defineProps<{ text: string }>()
 const blocks = computed(() => parseAnswerMarkdown(text))
 </script>

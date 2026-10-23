@@ -1,7 +1,5 @@
 import type { H3Event } from 'h3'
 
-import { normalizeDomain } from '~~/shared/utils/domain'
-
 /** Taken by another tenant's live domain, or by an old domain that still redirects to its blog. */
 export const isDomainTaken = async (domain: string, exceptClientSiteId?: string) => {
   const host = normalizeDomain(domain)

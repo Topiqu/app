@@ -94,10 +94,6 @@
 <script setup lang="ts">
 import type { Language } from '~~/shared/utils/language'
 
-import { LanguageSchema } from '~~/shared/siteSchemas'
-
-import { addKeywords } from '~/utils/keywords'
-
 const focus = defineModel<string>('focus', { required: true })
 const audience = defineModel<string>('audience', { required: true })
 const language = defineModel<Language>('language', { required: true })

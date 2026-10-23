@@ -1,5 +1,3 @@
-import type { MaybeRefOrGetter, Ref } from 'vue'
-
 const currencyCode = (value: string | null | undefined) => (value || 'USD').toUpperCase()
 const defaultRate = () => ({ rate: 1 })
 // Nuxt retains options after unmount. Only a primitive snapshot may cross that boundary.

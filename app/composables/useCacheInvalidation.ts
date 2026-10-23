@@ -1,5 +1,3 @@
-import { useQueryCache } from '@pinia/colada'
-
 export const useCacheInvalidation = () => {
   const queryCache = useQueryCache()
 

@@ -503,22 +503,6 @@
 
 <script setup lang="ts">
 import type { HistoryState } from 'vue-router'
-import type { ComponentPublicInstance } from 'vue'
-import type { CoverCredit } from '~~/shared/utils/imageCredit'
-import type { OptimizationTarget } from '~~/shared/types/articleOptimization'
-import type { ArticleRevisionSnapshot } from '~~/shared/utils/articleRevision'
-import type { PublishChoice, ShopifyPublishMode } from '~~/shared/types/shopify'
-import type { ArticleGenerationOptions } from '~~/shared/utils/articleGeneration'
-import type { ArticleSeriesSelection, ArticleWithDetails } from '~~/types/article'
-import type { MediaRightsItem, MediaRightsReport, MediaRightsReview } from '~~/shared/types/mediaRights'
-
-import { hasAiPlan } from '~~/shared/utils/plans'
-import { readFaq } from '~~/shared/utils/articleFaq'
-import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
-import { articleSlug } from '~~/shared/utils/articleSlug'
-import { setImageMediaId } from '~~/shared/utils/mediaRights'
-import { translationDraft } from '~~/shared/utils/articleTranslations'
-import { defaultArticleGenerationOptions } from '~~/shared/utils/articleGeneration'
 
 import type SettingsPanel from './SettingsPanel.vue'
 

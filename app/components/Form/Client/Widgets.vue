@@ -269,20 +269,6 @@
 
 <script setup lang="ts">
 import type { z } from 'zod'
-import type { Language } from '~~/shared/utils/language'
-
-import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
-import {
-  MAX_PER_SLOT,
-  MAX_WIDGETS,
-  WIDGET_SLOTS,
-  resolveWidgetSlot,
-  widgetsInputSchema,
-  type WidgetKind,
-  type WidgetSlot,
-} from '~~/shared/utils/widgets'
-
-import { WIDGET_ICONS, WIDGET_PRESETS, type WidgetDraft } from '~/utils/widgetPresets'
 
 type StoredWidget = {
   id: string

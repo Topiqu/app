@@ -2,6 +2,7 @@ import { createError } from 'h3'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { resolveAiUser } from '../../server/utils/aiUser'
+import { stubNitroImports } from '../helpers/nitroImports'
 import { TENANT_SCOPES } from '../../server/utils/tenantMembership'
 import { requireDomainAccess } from '../../server/utils/domainVerification'
 
@@ -139,6 +140,7 @@ const run = async (file: string, scope: Scope, body: Record<string, unknown> = {
   vi.stubGlobal('TENANT_SCOPES', TENANT_SCOPES)
   vi.stubGlobal('isCoverImageUrl', () => true)
 
+  await stubNitroImports(import('../../server/utils/linkedin/access'), 'requirePublicationDraft')
   const { default: handler } = (await handlers[`../../server/api/${file}.ts`]!()) as {
     default: (event: unknown) => Promise<unknown>
   }

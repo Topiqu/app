@@ -1,6 +1,4 @@
 import { z } from 'zod'
-import { emailVerificationCodeSchema, emailVerificationEmailSchema } from '~~/shared/utils/auth'
-import { allowEmailVerificationRequest, consumeEmailVerification } from '~~/server/utils/emailVerification'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)

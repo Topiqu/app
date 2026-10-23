@@ -30,9 +30,7 @@
 </template>
 
 <script setup lang="ts">
-import type { AnnouncementConfig, CtaConfig, WidgetInput } from '~~/shared/utils/widgets'
-
-import { samplePrices, sampleWeather } from '~/utils/widgetPresets'
+import type { WidgetInput } from '~~/shared/utils/widgets'
 
 // `sample` swaps live data for fixed sample values, so the library renders without network calls.
 const { widget, sample = false } = defineProps<{ widget: WidgetInput; sample?: boolean }>()

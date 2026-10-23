@@ -1,6 +1,12 @@
 import { createError } from 'h3'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { stubNitroImports } from '../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../server/utils/domains/connections'), 'reconcileDomainConnection')
+}
+
 const provision = vi.hoisted(() => vi.fn())
 vi.mock('../../server/utils/domains/connections', () => ({ reconcileDomainConnection: provision }))
 
@@ -135,3 +141,5 @@ describe('domain switch verification', () => {
     expect(tx.domainRedirect.upsert).not.toHaveBeenCalled()
   })
 })
+
+beforeEach(stubImports)

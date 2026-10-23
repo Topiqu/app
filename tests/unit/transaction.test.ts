@@ -1,6 +1,14 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi, beforeEach } from 'vitest'
 
-import { isRetryableTransactionError, withTransactionRetry } from '../../server/utils/transaction'
+import { stubNitroImports } from '../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../server/utils/databaseError'), 'databaseErrorCode')
+}
+
+await stubImports()
+
+const { isRetryableTransactionError, withTransactionRetry } = await import('../../server/utils/transaction')
 
 describe('transaction retry', () => {
   it('retries PostgreSQL serialization conflicts and returns the replayed result', async () => {
@@ -30,3 +38,5 @@ describe('transaction retry', () => {
     expect(operation).toHaveBeenCalledOnce()
   })
 })
+
+beforeEach(stubImports)

@@ -1,6 +1,18 @@
 import { createError } from 'h3'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/ai/articleStream'), 'articleWriterStream')
+  await stubNitroImports(import('../../../server/utils/databaseJson'), 'toDatabaseJson')
+  await stubNitroImports(
+    import('../../../server/utils/articleGenerationAudit'),
+    'auditArticleStep',
+    'createArticleGenerationAudit',
+  )
+}
+
 beforeEach(() => vi.resetModules())
 afterEach(() => vi.unstubAllGlobals())
 
@@ -65,3 +77,5 @@ describe('manual generation preflight audit', () => {
     else expect(settle).not.toHaveBeenCalled()
   })
 })
+
+beforeEach(stubImports)

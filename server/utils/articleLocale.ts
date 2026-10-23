@@ -1,7 +1,5 @@
 import type { Language } from '~~/generated/zenstack/models'
 
-import { overlayTranslations, type LocalizableArticle } from '~~/shared/utils/articleLocale'
-
 type LocalizeDb = {
   articleTranslation: {
     findMany: (

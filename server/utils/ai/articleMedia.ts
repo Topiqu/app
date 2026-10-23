@@ -1,23 +1,4 @@
 import type { Language } from '~~/generated/zenstack/models'
-import type { MediaAssetRecord } from '~~/shared/types/mediaRights'
-import type { CoverCredit, ImageCredit, ImageKind } from '~~/shared/utils/imageCredit'
-import type { ArticleMediaProgress, ArticleMediaSource } from '~~/shared/utils/articleGeneration'
-
-import { mediaRightsIssues } from '~~/shared/utils/mediaRights'
-import { stripUntrustedIframes, youtubeEmbedUrl } from '~~/shared/utils/youtube'
-
-import type { ArticleObject } from './articleConfig'
-import type { ArticleImage, StockImage } from '../images/types'
-
-import { escapeHtml } from '../sanitize'
-import { findStockImage } from '../images/chain'
-import { storeMediaSource } from '../images/stores'
-import { createSteamImageSearch } from '../images/steam'
-import { auditArticleStep } from '../articleGenerationAudit'
-import { createAppStoreImageSearch } from '../images/appStore'
-import { buildImageHtml, type CaptionLabels } from '../images/caption'
-import { createImageSelection, photoSubjectQuery } from '../images/selection'
-import { findPressImage, loadPressImages, youtubeThumbnailImage } from '../images/press'
 
 type FinalizeImage = { slot: number; html: string }
 

@@ -89,8 +89,6 @@
 </template>
 
 <script setup lang="ts">
-import { difficultyLevel } from '~~/shared/utils/keywordPlan'
-
 /** `position` is the queue order; skipped topics have none. */
 const props = defineProps<{
   cluster: KeywordPlanCluster

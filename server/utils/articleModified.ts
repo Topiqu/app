@@ -1,5 +1,3 @@
-import { htmlToText } from '~~/shared/utils/articleBlocks'
-
 type ArticleText = {
   title?: string | null
   excerpt?: string | null

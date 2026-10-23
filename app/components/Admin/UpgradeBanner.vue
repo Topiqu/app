@@ -47,8 +47,6 @@
 </template>
 
 <script setup lang="ts">
-import { getUpgradeTarget } from '~~/shared/utils/plans'
-
 // Session, not `useClientSite()`: the banner offers a plan for whichever tenant Stripe will
 // actually charge, and the host tenant is not always that one.
 const { data: auth } = useAuth()

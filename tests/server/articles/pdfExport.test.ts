@@ -5,7 +5,13 @@ import { createError } from 'h3'
 import { Writable } from 'node:stream'
 import { EventEmitter } from 'node:events'
 import { mockNuxtImport } from '@nuxt/test-utils/runtime'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi, beforeEach } from 'vitest'
+
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/images/publicFetch'), 'fetchPublicUrl', 'readLimitedBody')
+}
 
 const { fetchImage } = vi.hoisted(() => ({ fetchImage: vi.fn() }))
 vi.mock('../../../server/utils/images/publicFetch', async (original) => ({
@@ -199,3 +205,5 @@ describe('PDF export resource bounds', () => {
     })
   })
 })
+
+beforeEach(stubImports)

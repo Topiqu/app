@@ -1,7 +1,19 @@
 import { createError } from 'h3'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { sanitizeHtml } from '../../../server/utils/sanitize'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(
+    import('../../../server/utils/ai/translationRow'),
+    'nextTranslationVersion',
+    'translationSelect',
+  )
+}
+
+await stubImports()
+
+const { sanitizeHtml } = await import('../../../server/utils/sanitize')
 
 const observed = '2026-10-20T12:34:56.000Z'
 const update = vi.fn()
@@ -127,3 +139,5 @@ describe('translation optimistic updates', () => {
     expect(media).toHaveBeenCalledTimes(1)
   })
 })
+
+beforeEach(stubImports)

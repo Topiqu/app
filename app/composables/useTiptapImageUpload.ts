@@ -1,4 +1,3 @@
-import type { Ref } from 'vue'
 import type { Editor } from '@tiptap/vue-3'
 
 const cleanAltFromFilename = (name: string) =>

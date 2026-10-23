@@ -36,7 +36,6 @@
 
 <script setup lang="ts">
 import { ZxcvbnFactory } from '@zxcvbn-ts/core'
-import { signInSchema } from '~~/shared/utils/auth'
 
 const {
   isValid = true,

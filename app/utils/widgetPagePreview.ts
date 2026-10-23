@@ -1,13 +1,4 @@
 import { z } from 'zod'
-import {
-  WIDGET_KINDS,
-  WIDGET_SLOTS,
-  isSafeWidgetLink,
-  widgetInputSchema,
-  type WidgetInput,
-  type WidgetKind,
-  type WidgetSlot,
-} from '~~/shared/utils/widgets'
 
 const slotSchema = z.enum(Object.keys(WIDGET_SLOTS) as [WidgetSlot, ...WidgetSlot[]])
 

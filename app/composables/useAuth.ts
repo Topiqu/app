@@ -1,5 +1,3 @@
-import type { SessionUser } from '~~/shared/types/auth'
-
 export interface AuthSession {
   user: SessionUser
   session: { id: string; expiresAt: string }

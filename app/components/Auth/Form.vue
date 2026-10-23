@@ -164,13 +164,6 @@
 import type { InternalApi } from 'nitropack'
 
 import { z } from 'zod'
-import { isManagedDomain } from '~~/shared/utils/domain'
-import {
-  EMAIL_VERIFICATION_CODE_LENGTH,
-  EMAIL_VERIFICATION_COOLDOWN_MS,
-  emailVerificationCodeSchema,
-  signInSchema,
-} from '~~/shared/utils/auth'
 
 const props = defineProps<{
   mode?: 'login' | 'register' | 'forgot' | 'reset'

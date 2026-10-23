@@ -89,10 +89,6 @@ import type { BubbleMenuPluginProps } from '@tiptap/extension-bubble-menu'
 import { NodeSelection } from '@tiptap/pm/state'
 import { BubbleMenu } from '@tiptap/vue-3/menus'
 
-import type { FigureAlign } from '~/utils/articleFigure'
-
-import { IMAGE_WIDTHS } from '~/utils/articleFigure'
-
 const { editor } = defineProps<{ editor: Editor }>()
 const emit = defineEmits<{ replace: [pos: number]; inspect: [mediaId: string, pos: number] }>()
 

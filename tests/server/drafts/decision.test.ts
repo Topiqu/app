@@ -1,7 +1,15 @@
 import { createError } from 'h3'
-import { afterEach, expect, it, vi } from 'vitest'
+import { afterEach, expect, it, vi, beforeEach } from 'vitest'
 
-import { decideDraft } from '../../../server/utils/linkedin/decision'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/linkedin/decision'), 'decideDraft')
+}
+
+await stubImports()
+
+const { decideDraft } = await import('../../../server/utils/linkedin/decision')
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -117,3 +125,5 @@ it('does not expose a draft outside the active tenant or with a deleted parent',
   expect(updateMany).not.toHaveBeenCalled()
   expect(create).not.toHaveBeenCalled()
 })
+
+beforeEach(stubImports)

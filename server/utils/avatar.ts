@@ -1,5 +1,4 @@
 import sharp from 'sharp'
-import { AVATAR_MAX_UPLOAD_BYTES } from '~~/shared/utils/uploadLimits'
 import { DetectModerationLabelsCommand, RekognitionClient } from '@aws-sdk/client-rekognition'
 
 export const AVATAR_SIZE = 512

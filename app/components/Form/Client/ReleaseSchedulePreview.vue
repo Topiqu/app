@@ -47,7 +47,7 @@
 </template>
 
 <script setup lang="ts">
-import { releaseForecast, seededRandom, upcomingReleases, type ReleaseSchedule } from '~~/shared/utils/releaseSchedule'
+import type { ReleaseSchedule } from '~~/shared/utils/releaseSchedule'
 
 const props = defineProps<{
   rules: ReleaseSchedule

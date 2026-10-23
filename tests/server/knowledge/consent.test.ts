@@ -1,7 +1,31 @@
 import { createError } from 'h3'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { stubNitroImports } from '../../helpers/nitroImports'
 import { KNOWLEDGE_CONSENT_VERSION } from '../../../shared/utils/knowledge'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/images/publicFetch'), 'assertPublicHttpsUrl')
+  await stubNitroImports(
+    import('../../../server/utils/knowledge/extract'),
+    'extractKnowledgeFile',
+    'extractKnowledgeUrl',
+    'normalizeKnowledgeText',
+    'KnowledgeExtractError',
+  )
+  await stubNitroImports(import('../../../server/utils/knowledge/indexing'), 'indexKnowledgeSource')
+  await stubNitroImports(
+    import('../../../server/utils/knowledge/sources'),
+    'assertCitableUrl',
+    'hashKnowledge',
+    'kickKnowledgeIndex',
+    'knowledgeExtractFailure',
+    'knowledgeLimits',
+    'KNOWLEDGE_SOURCE_VIEW',
+    'limitKnowledgeRequests',
+    'requireKnowledgeAccess',
+  )
+}
 
 const part = (name: string, value: string) => ({ name, data: Buffer.from(value) })
 
@@ -27,9 +51,10 @@ const stubServer = (db: Record<string, unknown>) => {
 }
 
 describe('knowledge publish confirmation', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.resetModules()
     vi.unstubAllGlobals()
+    await stubImports()
   })
 
   const createNote = async (confirmed?: string) => {

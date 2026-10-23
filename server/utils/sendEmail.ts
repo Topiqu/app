@@ -4,8 +4,6 @@ import mjml2html from 'mjml'
 import { getCookie } from 'h3'
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses'
 
-import { escapeHtml } from './sanitize'
-
 interface EmailData {
   event?: H3Event
   to: string

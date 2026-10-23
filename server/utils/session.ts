@@ -1,10 +1,4 @@
-import type { SessionUser } from '~~/shared/types/auth'
-
 import { UAParser } from 'ua-parser-js'
-import { isPreferenceLanguage, isPreferenceTheme } from '~~/shared/utils/preferences'
-
-import { clientIp } from './ip'
-import { TENANT_SCOPES } from './tenantMembership'
 
 type RequestHeaders = Record<string, string | string[] | undefined>
 

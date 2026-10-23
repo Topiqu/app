@@ -1,7 +1,5 @@
 import { createHmac } from 'node:crypto'
 
-import { clientIp } from './ip'
-
 export type LoginFailure =
   'user_not_found' | 'password_missing' | 'password_mismatch' | 'email_unverified' | 'totp_invalid' | 'rate_limited'
 

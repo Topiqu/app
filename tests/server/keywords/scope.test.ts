@@ -1,7 +1,15 @@
 import { generateText } from 'ai'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { inScope } from '../../../server/utils/keywords/scope'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/ai/reasoning'), 'aiReasoning')
+}
+
+await stubImports()
+
+const { inScope } = await import('../../../server/utils/keywords/scope')
 
 vi.mock('ai', async (importOriginal) => ({
   ...(await importOriginal<typeof import('ai')>()),
@@ -44,3 +52,5 @@ describe('inScope', () => {
     expect(generateText).not.toHaveBeenCalled()
   })
 })
+
+beforeEach(stubImports)

@@ -1,5 +1,3 @@
-import { defineStore } from 'pinia'
-
 export const useThemeStore = defineStore('theme', () => {
   const { data: user } = useAuth()
   const colorMode = useColorMode()

@@ -1,5 +1,3 @@
-import { toHostname } from '~~/shared/utils/domain'
-
 const escapeHtml = (value: string) =>
   value.replace(/[&<>"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[char]!)
 

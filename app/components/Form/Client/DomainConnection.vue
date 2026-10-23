@@ -180,8 +180,6 @@
 </template>
 
 <script setup lang="ts">
-import { readDomainValidationRecords } from '~~/shared/utils/domainRecords'
-
 interface Connection {
   id: string
   host: string

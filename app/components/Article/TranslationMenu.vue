@@ -23,10 +23,6 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { Language } from '~~/shared/utils/language'
-import type { TranslationStatus } from '~~/shared/utils/articleTranslations'
-
-import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
-import { translationStatusDot } from '~~/shared/utils/articleTranslations'
 
 const {
   source,

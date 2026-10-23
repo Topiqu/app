@@ -1,10 +1,35 @@
 // @vitest-environment node
 import { randomUUID } from 'node:crypto'
 import { PolicyPlugin } from '@zenstackhq/plugin-policy'
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi, beforeEach } from 'vitest'
 
-import { createDatabaseClient } from '../../server/utils/database'
-import { withDomainLease } from '../../server/utils/domains/connections'
+import { stubNitroImports } from '../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../server/utils/images/publicFetch'), 'postPublicUrl', 'readLimitedBody')
+  await stubNitroImports(import('../../server/utils/domains/probe'), 'probeDomainRouting')
+  await stubNitroImports(
+    import('../../server/utils/domains/providers'),
+    'DomainProviderError',
+    'cloudflareDomain',
+    'checkCloudflareFallback',
+    'cloudflareValidationRecords',
+    'dokployDomainSchema',
+    'dokployRequest',
+    'domainProviderConfig',
+    'findDokployDomain',
+  )
+  await stubNitroImports(
+    import('../../server/utils/domains/certificates'),
+    'decryptDomainCertificate',
+    'verifyDomainCertificate',
+  )
+}
+
+await stubImports()
+
+const { createDatabaseClient } = await import('../../server/utils/database')
+const { withDomainLease } = await import('../../server/utils/domains/connections')
 
 const url = process.env.TEST_DATABASE_URL
 const enabled = Boolean(url && /test/i.test(new URL(url).pathname) && url !== process.env.DATABASE_URL)
@@ -107,3 +132,5 @@ describe.skipIf(!enabled)('PostgreSQL domain policies, claims and leases', () =>
     await expect(withDomainLease(a.connection.id, async () => 'released')).resolves.toBe('released')
   })
 })
+
+beforeEach(stubImports)

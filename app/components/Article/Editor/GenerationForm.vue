@@ -141,15 +141,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  ARTICLE_GENERATION_FORMATS,
-  ARTICLE_GENERATION_MODULES,
-  ARTICLE_GENERATION_DEFAULT_MODULES,
-  RESEARCH_DEPTHS,
-  type ArticleGenerationFormat,
-  type ArticleGenerationOptions,
-  type ArticleGenerationModule,
-} from '~~/shared/utils/articleGeneration'
+import type { ArticleGenerationOptions } from '~~/shared/utils/articleGeneration'
 
 defineProps<{ aiGenerating: boolean }>()
 defineEmits<{ generate: [] }>()

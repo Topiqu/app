@@ -1,9 +1,21 @@
 // @vitest-environment node
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { shopifyAccessToken } from '../../../server/utils/shopify/token'
-import { publishShopifyArticle } from '../../../server/utils/shopify/publication'
-import { ShopifyApiError, shopifyGraphql } from '../../../server/utils/shopify/api'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/shopify/config'), 'shopifyEligible')
+  await stubNitroImports(import('../../../server/utils/sanitize'), 'escapeHtml', 'sanitizeHtml')
+  await stubNitroImports(import('../../../server/utils/shopify/content'), 'shopifyHandle')
+  await stubNitroImports(import('../../../server/utils/shopify/token'), 'shopifyAccessToken')
+  await stubNitroImports(import('../../../server/utils/shopify/api'), 'ShopifyApiError', 'shopifyGraphql')
+}
+
+await stubImports()
+
+const { shopifyAccessToken } = await import('../../../server/utils/shopify/token')
+const { publishShopifyArticle } = await import('../../../server/utils/shopify/publication')
+const { ShopifyApiError, shopifyGraphql } = await import('../../../server/utils/shopify/api')
 
 vi.mock('../../../server/utils/shopify/api', async (original) => ({
   ...(await original<typeof import('../../../server/utils/shopify/api')>()),
@@ -223,3 +235,5 @@ describe('Shopify publication processing', () => {
     expect(row).toMatchObject({ status: 'SYNCED', blogId: 'gid://shopify/Blog/2', handle: 'original-abc' })
   })
 })
+
+beforeEach(stubImports)

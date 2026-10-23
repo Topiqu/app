@@ -125,8 +125,6 @@
 <script lang="ts" setup>
 import type { UserRole } from '~~/generated/zenstack/models'
 
-import { formatDate } from '~~/shared/utils'
-
 interface User {
   id: string
   username: string

@@ -1,5 +1,15 @@
 import { createError, getRouterParam } from 'h3'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi, beforeEach } from 'vitest'
+
+import { stubNitroImports } from '../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(
+    import('../../server/utils/articleViewerAccess'),
+    'hasArticleAdminAccess',
+    'publicArticleWhere',
+  )
+}
 
 afterEach(() => vi.unstubAllGlobals())
 
@@ -61,3 +71,5 @@ describe('public tag lookup', () => {
     expect(articles.count).toHaveBeenCalledWith({ where: query.where })
   })
 })
+
+beforeEach(stubImports)

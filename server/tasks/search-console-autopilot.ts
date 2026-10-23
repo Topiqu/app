@@ -1,9 +1,5 @@
 import { subDays, subHours } from 'date-fns'
 
-import { getSearchTrends } from '../utils/searchConsole/opportunities'
-import { selectSeoAutopilotCandidate } from '../utils/searchConsole/autopilot'
-import { generateContentRefresh, generateCtrOptimization } from '../utils/ai/seoAutopilot'
-
 const RUN_COOLDOWN_HOURS = 20
 const ACTION_COOLDOWN_DAYS = 30
 

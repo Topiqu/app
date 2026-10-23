@@ -21,8 +21,6 @@
 <script setup lang="ts">
 import type { SocialPlatform } from '~~/generated/zenstack/models'
 
-import { createAsyncDataDefault } from '~/utils/asyncDataDefaults'
-
 const props = defineProps<{ clientSiteId: string }>()
 
 interface ClientSite {

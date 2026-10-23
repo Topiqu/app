@@ -1,7 +1,5 @@
 import type { GenerationFrequency } from '~~/generated/zenstack/models'
 
-import { DEFAULT_RELEASE_SCHEDULE, nextRelease, type ReleaseSchedule } from '~~/shared/utils/releaseSchedule'
-
 /** Generation starts this long before its slot, so review and media checks finish before release. */
 export const GENERATION_LEAD_MS = 3 * 60 * 60 * 1000
 

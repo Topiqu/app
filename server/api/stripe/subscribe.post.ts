@@ -1,5 +1,3 @@
-import { rejectShopifyBilled } from '../../utils/shopify/billing'
-
 const PRICE_BY_PLAN: Record<'PRO' | 'PREMIUM', Record<'month' | 'year', string | undefined>> = {
   PRO: { month: process.env.STRIPE_PRICE_PRO, year: process.env.STRIPE_PRICE_PRO_ANNUAL },
   PREMIUM: { month: process.env.STRIPE_PRICE_PREMIUM, year: process.env.STRIPE_PRICE_PREMIUM_ANNUAL },

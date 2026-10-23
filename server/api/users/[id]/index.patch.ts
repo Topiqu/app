@@ -1,8 +1,6 @@
 import { z } from 'zod'
 import argon from 'argon2'
 import { generateSecret, generateURI } from 'otplib'
-import { LanguageSchema } from '~~/shared/siteSchemas'
-import { BIO_MAX_LENGTH } from '~~/shared/utils/profile'
 
 const REAUTH_WINDOW_MS = 10 * 60 * 1000
 

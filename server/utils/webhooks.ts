@@ -1,10 +1,7 @@
 import type { H3Event } from 'h3'
 import type { Language } from '~~/generated/zenstack/models'
 
-import { articlePath } from '~~/shared/utils/routes'
 import { createHmac, randomBytes } from 'node:crypto'
-import { postPublicUrl } from '~~/server/utils/images/publicFetch'
-import { webhookEventType, type WebhookEventCode } from '~~/shared/utils/webhooks'
 
 /** Minutes before each retry; the delivery fails for good after the last one. */
 export const WEBHOOK_RETRY_MINUTES = [1, 5, 30, 120, 720]

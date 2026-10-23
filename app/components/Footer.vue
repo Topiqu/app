@@ -44,8 +44,6 @@
 </template>
 
 <script setup lang="ts">
-import { resolveFooterSettings } from '~~/shared/utils/publicationFooter'
-
 const clientSite = await useLiveClientSite()
 const settings = computed(() => resolveFooterSettings(clientSite.value?.footerSettings, clientSite.value?.plan))
 

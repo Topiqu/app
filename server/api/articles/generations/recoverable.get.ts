@@ -1,5 +1,3 @@
-import { generationRecoveryMatchesArticle } from '~~/shared/utils/generationRecoveryScope'
-
 export default defineEventHandler(async (event) => {
   const { user } = await requireTenantScope(event, 'ARTICLE_WRITE')
   const articleId = getQuery(event).articleId

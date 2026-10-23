@@ -1,8 +1,4 @@
 import { load } from 'cheerio'
-import { toHostname } from '~~/shared/utils/domain'
-import { isFollowed, isOwnedHost } from '~~/shared/utils/backlinks'
-
-import { fetchPublicUrl, readLimitedBody } from '../images/publicFetch'
 
 const MAX_PAGE_BYTES = 3_000_000
 const CONTACT = /kontakt|contact|impressum|o-nas|about/i

@@ -15,9 +15,6 @@
 import type { AdProvider } from '~~/shared/utils/advertising'
 import type { ArticleBlock } from '~~/shared/utils/articleBlocks'
 
-import { canOptimizeImageUrl } from '~~/shared/utils/imageHosts'
-import { optimizeArticleImages } from '~~/shared/utils/articleImages'
-
 // Blocks come pre-built. Splitting here (in `onMounted`) left the SSR HTML with an empty body.
 const {
   blocks,

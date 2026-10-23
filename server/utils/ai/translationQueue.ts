@@ -1,11 +1,5 @@
 import type { Language } from '~~/generated/zenstack/models'
 
-import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
-
-import type { DatabaseTransaction } from '../database'
-
-import { nextTranslationVersion } from './translationRow'
-
 const ALL_LANGUAGES: readonly Language[] = LANGUAGE_OPTIONS
 
 export const resolveTargetLanguages = (

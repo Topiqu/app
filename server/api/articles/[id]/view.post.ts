@@ -1,6 +1,5 @@
 import { z } from 'zod'
 import { randomUUID } from 'node:crypto'
-import { aiReferrer } from '~~/shared/utils/aiVisibility'
 
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')

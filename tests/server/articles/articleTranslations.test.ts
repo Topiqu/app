@@ -1,6 +1,18 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi, beforeEach } from 'vitest'
 
-import { resolveTargetLanguages } from '../../../server/utils/ai/translationQueue'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(
+    import('../../../server/utils/ai/translationRow'),
+    'nextTranslationVersion',
+    'translationSelect',
+  )
+}
+
+await stubImports()
+
+const { resolveTargetLanguages } = await import('../../../server/utils/ai/translationQueue')
 
 describe('editor article translations', () => {
   afterEach(() => vi.unstubAllGlobals())
@@ -46,3 +58,5 @@ describe('editor article translations', () => {
     )
   })
 })
+
+beforeEach(stubImports)

@@ -1,5 +1,4 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
-import { isLanguage, type Language } from '~~/shared/utils/language'
 
 export interface OAuthStatePayload {
   nonce: string

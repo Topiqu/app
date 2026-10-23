@@ -1,11 +1,3 @@
-import type { ImageCredit } from '~~/shared/utils/imageCredit'
-
-import { creditSegments, creditSeparator } from '~~/shared/utils/imageCredit'
-
-import type { ArticleImage } from './types'
-
-import { escapeHtml } from '../sanitize'
-
 export interface CaptionLabels {
   /** Prefix for a real photo used illustratively. */
   illustration: string

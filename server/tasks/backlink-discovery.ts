@@ -1,7 +1,3 @@
-import { hasDataForSeo } from '~~/server/utils/keywords/dataforseo'
-import { BACKLINK_DAY_MS, BACKLINK_DISCOVERY_DAYS } from '~~/shared/utils/backlinks'
-import { BACKLINK_PLANS, discoverBacklinks } from '~~/server/utils/backlinks/discover'
-
 const SITES_PER_RUN = 20
 
 export default defineMonitoredTask({

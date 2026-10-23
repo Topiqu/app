@@ -1,5 +1,3 @@
-import { toDatabaseJson } from './databaseJson'
-
 export type ArticleGenerationStage =
   | 'configuration'
   | 'reservation'

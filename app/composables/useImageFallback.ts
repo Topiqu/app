@@ -1,5 +1,3 @@
-import type { MaybeRefOrGetter } from 'vue'
-
 export const useImageFallback = (
   source: MaybeRefOrGetter<string | null | undefined>,
   original?: MaybeRefOrGetter<string | null | undefined>,

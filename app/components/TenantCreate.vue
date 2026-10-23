@@ -349,14 +349,6 @@
 </template>
 
 <script setup lang="ts">
-import type { BillingInterval, PlanPrice, PlanPricing, SubscribablePlan } from '~~/shared/types/planPricing'
-
-import { ThemeSchema } from '~~/shared/siteSchemas'
-import { themeColors, type ThemeKey } from '~~/shared/utils/tenantTheme'
-import { isLanguage, locales, type Language } from '~~/shared/utils/language'
-
-import { createAsyncDataDefault } from '~/utils/asyncDataDefaults'
-
 type Availability = 'idle' | 'checking' | 'available' | 'unavailable'
 type DomainReason = 'empty' | 'tooShort' | 'invalid' | 'reserved' | 'taken'
 type SelectedPlan = 'BASIC' | SubscribablePlan

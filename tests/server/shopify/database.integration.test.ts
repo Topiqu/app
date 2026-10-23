@@ -1,12 +1,24 @@
 // @vitest-environment node
 import { randomUUID } from 'node:crypto'
 import { PolicyPlugin } from '@zenstackhq/plugin-policy'
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi, beforeEach } from 'vitest'
 
-import { shopifyGraphql } from '../../../server/utils/shopify/api'
-import { createDatabaseClient } from '../../../server/utils/database'
-import { encryptShopifyToken } from '../../../server/utils/shopify/security'
-import { publishShopifyArticle } from '../../../server/utils/shopify/publication'
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/shopify/config'), 'shopifyEligible')
+  await stubNitroImports(import('../../../server/utils/shopify/token'), 'shopifyAccessToken')
+  await stubNitroImports(import('../../../server/utils/sanitize'), 'escapeHtml', 'sanitizeHtml')
+  await stubNitroImports(import('../../../server/utils/shopify/content'), 'shopifyHandle')
+  await stubNitroImports(import('../../../server/utils/shopify/api'), 'ShopifyApiError', 'shopifyGraphql')
+}
+
+await stubImports()
+
+const { shopifyGraphql } = await import('../../../server/utils/shopify/api')
+const { createDatabaseClient } = await import('../../../server/utils/database')
+const { encryptShopifyToken } = await import('../../../server/utils/shopify/security')
+const { publishShopifyArticle } = await import('../../../server/utils/shopify/publication')
 
 vi.mock('../../../server/utils/shopify/api', async (original) => ({
   ...(await original<typeof import('../../../server/utils/shopify/api')>()),
@@ -138,3 +150,5 @@ describe.skipIf(!enabled)('Shopify PostgreSQL constraints, policies, and leases'
     })
   })
 })
+
+beforeEach(stubImports)

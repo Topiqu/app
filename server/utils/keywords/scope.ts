@@ -3,8 +3,6 @@ import type { Language } from '~~/generated/zenstack/models'
 import { z } from 'zod'
 import { generateText, Output } from 'ai'
 
-import { aiReasoning } from '../ai/reasoning'
-
 export type ScopeSite = {
   id: string
   language: Language

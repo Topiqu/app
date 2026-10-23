@@ -1,18 +1,5 @@
 import type { Language } from '~~/generated/zenstack/models'
 
-import { toHostname } from '~~/shared/utils/domain'
-import { keywordLocation } from '~~/shared/utils/keywordPlan'
-import { foldText, isOwnedHost } from '~~/shared/utils/backlinks'
-import { isReferenceDomain, normalizeCitationUrl } from '~~/shared/utils/aiVisibility'
-
-import type { SerpItem } from '../keywords/serp'
-import type { FoundBacklink, FoundOpportunity } from './mentions'
-
-import { fetchPage } from './page'
-import { mapLimit } from '../concurrency'
-import { dataForSeo } from '../keywords/dataforseo'
-import { supplierPages, type MatchSite } from './match'
-
 const MAX_BRANDS = 5
 const DEALER_QUERY: Record<Language, string> = {
   cs: 'prodejci',

@@ -1,6 +1,15 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, beforeEach } from 'vitest'
 
-import { exportShopifyContent, shopifyHandle, type ShopifyArticleContent } from '../../../server/utils/shopify/content'
+import type { ShopifyArticleContent } from '../../../server/utils/shopify/content'
+
+import { stubNitroImports } from '../../helpers/nitroImports'
+
+async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/sanitize'), 'escapeHtml', 'sanitizeHtml')
+}
+
+await stubImports()
+const { exportShopifyContent, shopifyHandle } = await import('../../../server/utils/shopify/content')
 
 const article = (): ShopifyArticleContent => ({
   id: 'article-1',
@@ -82,3 +91,5 @@ describe('Shopify article export', () => {
     expect(shopifyHandle('title OR malicious:*', 'one')).toMatch(/^[a-z0-9-]+$/)
   })
 })
+
+beforeEach(stubImports)

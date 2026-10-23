@@ -218,8 +218,6 @@
 </template>
 
 <script setup lang="ts">
-import type { DevView } from '~/composables/useDevView'
-
 const views = [
   { id: 'auto', icon: 'mdi:auto-fix' },
   { id: 'tenant', icon: 'mdi:office-building' },

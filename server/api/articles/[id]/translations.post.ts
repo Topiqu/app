@@ -1,8 +1,5 @@
 import { z } from 'zod'
 import { Language } from '~~/generated/zenstack/models'
-import { articleSlug } from '~~/shared/utils/articleSlug'
-
-import { translationSelect } from '../../../utils/ai/translationRow'
 
 const BodySchema = z.object({
   language: z.nativeEnum(Language),

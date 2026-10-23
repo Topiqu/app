@@ -1,11 +1,4 @@
 import { z } from 'zod'
-import {
-  DOCUMENT_EDIT_MAX_BLOCKS,
-  DOCUMENT_EDIT_MAX_LENGTH,
-  TEXT_EDIT_ACTIONS,
-  TEXT_EDIT_INSTRUCTION_MAX_LENGTH,
-  TEXT_EDIT_MAX_LENGTH,
-} from '~~/shared/utils/aiEdit'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)

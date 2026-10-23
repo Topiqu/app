@@ -1,8 +1,3 @@
-import type { StockImage } from './types'
-
-import { fetchJson } from './http'
-import { matchesStoreTitle, storeMediaSource, storeSearchTerm } from './stores'
-
 type StoreItem = { id: number; name: string; type: string }
 type StoreGame = {
   type: string

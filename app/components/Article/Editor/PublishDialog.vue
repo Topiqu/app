@@ -54,7 +54,7 @@
 </template>
 
 <script setup lang="ts">
-import type { PublishChoice, ShopifyPublication, ShopifyPublishMode } from '~~/shared/types/shopify'
+import type { PublishChoice, ShopifyPublication } from '~~/shared/types/shopify'
 
 const open = defineModel<boolean>('open', { default: false })
 const {

@@ -1,10 +1,5 @@
 import * as cheerio from 'cheerio'
 
-import type { ImageProvider, StockImage } from './types'
-
-import { matchesImageQuery } from './selection'
-import { fetchJson, imageApiHeaders } from './http'
-
 const SEARCH_URL = 'https://commons.wikimedia.org/w/api.php'
 
 /** Commons also serves SVG, TIFF, PDF and video from the same namespace; none of those belong in a body. */

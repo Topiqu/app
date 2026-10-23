@@ -1,7 +1,3 @@
-import { publicWidgets } from '~~/shared/utils/widgets'
-import { isManagedDomain } from '~~/shared/utils/domain'
-import { publicClientSiteSelect } from '~~/shared/utils/clientSiteFields'
-
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug')
 

@@ -1,7 +1,5 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
 
-import { verifyTotpToken } from './totp'
-
 const LOGIN_TTL_MS = 5 * 60 * 1000
 const SETUP_TTL_MS = 10 * 60 * 1000
 

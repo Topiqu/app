@@ -1,8 +1,3 @@
-import { articleExcerpt } from '~~/shared/utils/articleBlocks'
-import { articleCardSelect } from '~~/server/utils/articleCard'
-
-import { publicArticleWhere } from '../../../utils/articleViewerAccess'
-
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const user = await getSessionUser(event)

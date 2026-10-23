@@ -1,5 +1,3 @@
-import { SERIES_MIN_PARTS, seriesProgress } from '~~/shared/utils/seriesProgress'
-
 const LIMIT = 3
 
 export default defineEventHandler(async (event) => {
