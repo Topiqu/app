@@ -44,7 +44,7 @@
       />
 
       <TiptapAltModal v-model:open="altModal.show" :defaultAlt="altModal.defaultAlt" @submit="onAltSubmit" />
-      <MediaPicker v-model:open="mediaPickerOpen" mode="body" @select="onMediaSelect" />
+      <LazyMediaPicker v-if="mediaPickerOpen" v-model:open="mediaPickerOpen" mode="body" @select="onMediaSelect" />
       <MediaDetail :id="mediaDetail.id" v-model:open="mediaDetail.open" @updated="onMediaUpdated" />
     </template>
     <div v-else v-html="content || fallback || $t('articles.editor.noContent')" />

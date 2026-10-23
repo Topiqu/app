@@ -1,6 +1,5 @@
 import type { Ref } from 'vue'
 
-import { useDebounceFn } from '@vueuse/core'
 import StarterKit from '@tiptap/starter-kit'
 import { Link } from '@tiptap/extension-link'
 import { Indent } from '~~/extensions/indent'
@@ -35,24 +34,16 @@ export interface UseTiptapInstanceOptions {
   content: Ref<string | null>
   edit: Ref<boolean>
   limit: number
-  slashCommand: any
+  slashCommand: ReturnType<typeof useTiptapSlashCommand>['suggestion']
   onChange: (html: string) => void
   onDropFiles: (files: File[]) => void
   ariaLabel: string
 }
 
 export function useTiptapInstance(opts: UseTiptapInstanceOptions) {
-  // The last HTML this editor emitted upward. The parent writes it straight back into `content`,
-  // and recognising that echo saves a second full-document `getHTML()` per keystroke burst —
-  // the watcher below otherwise serialises the whole article just to compare it with itself.
+  // Save, language switching and navigation must see the latest edit immediately. Recognizing
+  // the parent's echo avoids serializing the full document a second time for that same update.
   let lastEmitted: string | null = null
-  let contentVersion = 0
-
-  const debouncedChange = useDebounceFn((html: string, version: number) => {
-    if (version !== contentVersion) return
-    lastEmitted = html
-    opts.onChange(html)
-  }, 200)
 
   const editor = useEditor({
     content: opts.content.value ?? '<p></p>',
@@ -108,7 +99,11 @@ export function useTiptapInstance(opts: UseTiptapInstanceOptions) {
         return true
       },
     },
-    onUpdate: ({ editor }) => debouncedChange(editor.getHTML(), contentVersion),
+    onUpdate: ({ editor }) => {
+      const html = editor.getHTML()
+      lastEmitted = html
+      opts.onChange(html)
+    },
   })
 
   watch(opts.content, (v) => {
@@ -116,12 +111,9 @@ export function useTiptapInstance(opts: UseTiptapInstanceOptions) {
     // draft) differs from what we emitted and still takes the full compare below. Loading a
     // translation must not emit an edit event: Tiptap may normalize its HTML while parsing it.
     if (v === lastEmitted) return
-    contentVersion++
     if (editor.value?.getHTML() !== v) editor.value?.commands.setContent(v ?? '<p></p>', { emitUpdate: false })
   })
   // `setEditable` emits `update` by default, which would write TipTap's normalized HTML back as an edit.
   watchEffect(() => editor.value?.setEditable(opts.edit.value, false))
-  onBeforeUnmount(() => editor.value?.destroy())
-
   return editor
 }
