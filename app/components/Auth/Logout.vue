@@ -5,9 +5,9 @@
     :aria-label="$t('common.auth.logout')"
     color="error"
     variant="ghost"
-    :label="props.showLabel ? $t('common.auth.logout') : undefined"
-    :square="!props.showLabel"
-    :ui="{ base: props.showLabel ? 'w-full justify-start' : 'self-center' }"
+    :label="showLabel ? $t('common.auth.logout') : undefined"
+    :square="!showLabel"
+    :ui="{ base: showLabel ? 'w-full justify-start' : 'self-center' }"
     :loading
     @click="logout"
   />
@@ -15,7 +15,7 @@
 
 <script setup lang="ts">
 const { signOut } = useAuth()
-const props = withDefaults(defineProps<{ showLabel?: boolean }>(), { showLabel: false })
+const { showLabel = false } = defineProps<{ showLabel?: boolean }>()
 
 const toast = useToast()
 

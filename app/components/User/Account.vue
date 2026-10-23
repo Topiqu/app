@@ -16,7 +16,7 @@
       :ui="{ label: 'hidden max-w-40 truncate sm:block', trailingIcon: 'hidden sm:block' }"
     >
       <template v-if="auth" #leading>
-        <UserPicture :url="displayAvatarUrl" :name="displayName" size="sm" />
+        <UserPicture :url="displayAvatarUrl" size="sm" aria-hidden="true" />
       </template>
     </UButton>
 
