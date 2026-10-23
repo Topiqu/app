@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import argon from 'argon2'
-import { authenticator } from 'otplib'
+import { generateSecret, generateURI } from 'otplib'
 import { LanguageSchema } from '~~/shared/siteSchemas'
 import { BIO_MAX_LENGTH } from '~~/shared/utils/profile'
 
@@ -56,8 +56,11 @@ export default defineEventHandler(async (event) => {
   if (totpAction === 'enable') {
     if (!self) throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
     if (oldPasswordDb?.totpSecret) throw createError({ statusCode: 409, message: t('common.errTypes.conflict')! })
-    const secret = authenticator.generateSecret()
-    return { otpauthUrl: authenticator.keyuri(user.email, 'Topiqu', secret), totpSetup: signTotpSetup(id, secret) }
+    const secret = generateSecret()
+    return {
+      otpauthUrl: generateURI({ label: user.email, issuer: 'Topiqu', secret }),
+      totpSetup: signTotpSetup(id, secret),
+    }
   }
 
   if (totpSetup) {
