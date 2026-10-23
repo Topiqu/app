@@ -41,10 +41,22 @@ import { generationSteps } from '~~/shared/utils/articleGeneration'
 
 const route = useRoute()
 const generation = useArticleGenerationStore()
-const now = useNow({ interval: 1_000 })
+const { now, pause, resume } = useNow({
+  controls: true,
+  scheduler: (callback) => useIntervalFn(callback, 1_000, { immediate: false }),
+})
 // The editor that owns the run shows it itself.
 const visible = computed(() => !!generation.run && route.path !== generation.editorPath)
 const running = computed(() => generation.running)
+watch(
+  () => visible.value && running.value,
+  (active) => {
+    if (!active) return pause()
+    now.value = new Date()
+    resume()
+  },
+  { immediate: true },
+)
 const statusIcon = computed(() =>
   running.value
     ? 'mdi:progress-clock'

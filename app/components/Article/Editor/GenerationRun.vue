@@ -187,9 +187,21 @@ const emit = defineEmits<{ stop: []; retry: []; dismiss: [] }>()
 const { t, te } = useI18n()
 const localePath = useLocalePath()
 const headingId = useId()
-const now = useNow({ interval: 1_000 })
+const { now, pause, resume } = useNow({
+  controls: true,
+  scheduler: (callback) => useIntervalFn(callback, 1_000, { immediate: false }),
+})
 
 const running = computed(() => run.status === 'running')
+watch(
+  running,
+  (active) => {
+    if (!active) return pause()
+    now.value = new Date()
+    resume()
+  },
+  { immediate: true },
+)
 const steps = computed(() => generationSteps(run, words))
 const progress = computed(() => {
   const settled = steps.value.filter((step) => step.state !== 'pending' && step.state !== 'running').length
