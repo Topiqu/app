@@ -1,7 +1,7 @@
 import sharp from 'sharp'
+import { AVATAR_MAX_UPLOAD_BYTES } from '~~/shared/utils/uploadLimits'
 import { DetectModerationLabelsCommand, RekognitionClient } from '@aws-sdk/client-rekognition'
 
-export const AVATAR_MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 export const AVATAR_SIZE = 512
 export const AVATAR_CONTENT_TYPE = 'image/webp'
 
@@ -36,12 +36,14 @@ export async function moderateAvatar(avatar: Uint8Array) {
   const config = useRuntimeConfig()
   const rekognition = new RekognitionClient({
     region: config.awsRegion,
+    maxAttempts: 2,
     credentials: { accessKeyId: config.awsAccessKeyId, secretAccessKey: config.awsSecretAccessKey },
   })
 
   try {
     const moderation = await rekognition.send(
       new DetectModerationLabelsCommand({ Image: { Bytes: avatar }, MinConfidence: 75 }),
+      { abortSignal: AbortSignal.timeout(8000) },
     )
     if (moderation.ModerationLabels?.length) {
       throw createError({
@@ -50,9 +52,11 @@ export async function moderateAvatar(avatar: Uint8Array) {
         data: { reasons: moderation.ModerationLabels.map((label) => label.Name).filter(Boolean) },
       })
     }
-  } catch (error: any) {
-    if (error?.statusCode === 422) throw error
-    console.error('Avatar moderation failed:', error)
+  } catch (error) {
+    if (error && typeof error === 'object' && 'statusCode' in error && error.statusCode === 422) throw error
+    await reportCaughtError('Avatar moderation unavailable', new Error('AVATAR_MODERATION_UNAVAILABLE')).catch(() => {})
+  } finally {
+    rekognition.destroy()
   }
 }
 

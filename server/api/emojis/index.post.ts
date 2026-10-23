@@ -1,7 +1,9 @@
+import sharp from 'sharp'
 import { randomUUID } from 'node:crypto'
 import { analyzeImage } from '~~/server/utils/imageAnalysis'
 import { deleteFromCdn, putToCdn } from '~~/server/utils/storage'
 import { EMOJI_CONTENT_TYPE, prepareEmojiImage } from '~~/server/utils/emojiImage'
+
 import { isValidEmojiShortcode, normalizeEmojiShortcode } from '#shared/utils/emoji'
 
 export default defineEventHandler(async (event) => {
@@ -26,8 +28,12 @@ export default defineEventHandler(async (event) => {
   })
   if (existing) throw createError({ statusCode: 409, message: t('emoji.duplicateShortcode')! })
 
-  const tags = await analyzeImage(file.data)
   const image = await prepareEmojiImage(file.data)
+  const moderationImage = await sharp(image, { animated: false, limitInputPixels: 20_000_000 })
+    .flatten({ background: 'white' })
+    .jpeg({ quality: 80 })
+    .toBuffer()
+  const { tags } = await analyzeImage(moderationImage)
   const key = `uploads/emoji-${randomUUID()}.webp`
   const imageUrl = await putToCdn(key, image, EMOJI_CONTENT_TYPE, {
     'rekognition-tags': tags.join(','),
@@ -40,10 +46,12 @@ export default defineEventHandler(async (event) => {
       select: { id: true, shortcode: true, imageUrl: true },
     })
     return { success: true, emoji }
-  } catch (error: any) {
-    await deleteFromCdn(key, 'uploads/').catch((cleanupError) =>
-      console.error('Emoji create rollback failed:', cleanupError),
-    )
+  } catch (error) {
+    await deleteFromCdn(key, 'uploads/').catch(async () => {
+      await reportCaughtError('Emoji create rollback failed', new Error('EMOJI_UPLOAD_CLEANUP_FAILED'), {
+        clientSiteId: user.clientSiteId,
+      }).catch(() => {})
+    })
     if (isUniqueViolation(error)) throw createError({ statusCode: 409, message: t('emoji.duplicateShortcode')! })
     throw error
   }

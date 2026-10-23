@@ -1,7 +1,6 @@
 import { randomUUID } from 'node:crypto'
+import { FONT_MAX_UPLOAD_BYTES } from '~~/shared/utils/uploadLimits'
 import { hasAdvancedBranding, hostedFontUrl } from '~~/shared/utils/publicationBranding'
-
-const MAX_FONT_BYTES = 2 * 1024 * 1024
 
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
@@ -25,7 +24,7 @@ export default defineEventHandler(async (event) => {
   if (
     !file ||
     !file.filename?.toLowerCase().endsWith('.woff2') ||
-    file.data.length > MAX_FONT_BYTES ||
+    file.data.length > FONT_MAX_UPLOAD_BYTES ||
     file.data.length < 48
   )
     throw createError({ statusCode: 400, statusMessage: 'Choose a WOFF2 file under 2 MB' })

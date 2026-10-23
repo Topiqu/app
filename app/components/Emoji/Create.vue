@@ -265,6 +265,8 @@
 </template>
 
 <script setup lang="ts">
+import { EMOJI_MAX_UPLOAD_BYTES } from '~~/shared/utils/uploadLimits'
+
 import { isValidEmojiShortcode, normalizeEmojiShortcode } from '#shared/utils/emoji'
 
 interface QueuedEmoji {
@@ -282,7 +284,6 @@ interface EmojiRecord {
   _count: { emojiReactions: number }
 }
 
-const MAX_SOURCE_BYTES = 5 * 1024 * 1024
 const editingId = shallowRef('')
 const editingShortcode = shallowRef('')
 const ACCEPTED_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/gif'])
@@ -367,7 +368,7 @@ const addFiles = (files: File[]) => {
       })
       continue
     }
-    if (file.size > MAX_SOURCE_BYTES) {
+    if (file.size > EMOJI_MAX_UPLOAD_BYTES) {
       toast.add({ color: 'error', title: $t('emoji.fileTooLarge', { name: file.name }) })
       continue
     }

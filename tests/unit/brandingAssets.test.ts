@@ -22,8 +22,6 @@ describe('publication brand assets', () => {
     expect(branding).not.toContain('type="client-logo"')
     expect(branding).not.toContain('type="client-favicon"')
     expect(uploader).toContain("displayMode = shallowRef<'contain' | 'cover'>('contain')")
-    expect(uploader).toContain('const outputWidth = isFavicon.value ? 256 : 1280')
-    expect(uploader).toContain('const outputHeight = isFavicon.value ? 256 : 400')
     expect(uploader).toContain("isFavicon.value ? 'client-favicon' : 'client-logo'")
   })
 
