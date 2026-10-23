@@ -48,22 +48,15 @@
 <script setup lang="ts">
 import type { ArticleRevisionSnapshot } from '~~/shared/utils/articleRevision'
 
+import { useArticleRevisions } from '~/composables/useArticleRevisions'
+
 const props = defineProps<{ articleId: string; currentVersion: number }>()
 const open = defineModel<boolean>('open', { default: false })
 const emit = defineEmits<{ restore: [snapshot: ArticleRevisionSnapshot] }>()
 const { t, locale } = useI18n()
 const toast = useToast()
 const loadingId = shallowRef<string | null>(null)
-const {
-  data: revisions,
-  status,
-  error,
-  refresh,
-} = await useFetch(`/api/articles/${props.articleId}/revisions` as '/api/articles/:id/revisions', {
-  key: `article-revisions-${props.articleId}`,
-  server: false,
-  getCachedData: () => undefined,
-})
+const { data: revisions, status, error, refresh } = await useArticleRevisions(props.articleId)
 const formatDate = (value: string) =>
   new Intl.DateTimeFormat(locale.value, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value))
 const load = async (id: string) => {
