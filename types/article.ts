@@ -14,6 +14,13 @@ export type ArticleBase = _Article & {
   followerCount: number
 }
 
+export type ArticleSeriesSelection = {
+  id: string
+  name: string
+  slug?: string
+  articles?: { id: string }[]
+}
+
 export type ArticleWithDetails = {
   id: string
   slug: string
@@ -49,7 +56,7 @@ export type ArticleWithDetails = {
   sources?: string[]
   user: { id: string; username: string; email?: string; avatarUrl: string | null } | null
   tags: { tag: { id: string; name: string; slug: string } }[]
-  articleSeries?: { id: string; name: string; slug?: string; articles?: unknown[] } | null
-  translations?: { language: string; status: string; slug: string | null }[]
+  articleSeries?: ArticleSeriesSelection | null
+  translations?: { language: string; status: string; slug: string | null; updatedAt?: string | Date | null }[]
   _count: { comments: number; reactions: number } | null
 }

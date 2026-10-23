@@ -30,7 +30,6 @@ describe('slug changes keep old links working', () => {
   })
 
   it('answers an old slug with the new one and the page redirects permanently', () => {
-    expect(get).toContain("redirect.article.status === 'published' || isAdmin")
     expect(get).toContain('data: { movedTo }')
     expect(page).toContain('redirectCode: 301')
   })

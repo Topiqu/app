@@ -1,5 +1,7 @@
 import type { Language } from '~~/generated/zenstack/models'
 
+import { canReadArticle } from '../../../utils/articleViewerAccess'
+
 /** Explicit because the row also carries `prompt` and the tenant's savings figures. */
 const PUBLIC_FIELDS = {
   id: true,
@@ -39,6 +41,7 @@ const ADMIN_FIELDS = { editVersion: true, prompt: true, savedAmount: true, saved
 /** `reactions` is scoped to the caller: unfiltered it shipped every liker's id to answer one bool. */
 const articleSelect = (isAdmin: boolean, viewer: { userId?: string; sessionId?: string | null }) => ({
   ...PUBLIC_FIELDS,
+  deletedAt: true,
   clientSite: { select: { commentsEnabled: true, commentGifsEnabled: true, domain: true, deletedAt: true } },
   ...(isAdmin ? ADMIN_FIELDS : {}),
   user: {
@@ -152,14 +155,28 @@ export default defineEventHandler(async (event) => {
             select,
           }))
     // 404, not 403: a distinct status would confirm that an unpublished slug exists.
-    if (!article || (article.status !== 'published' && !isAdmin)) {
+    if (!article || !canReadArticle(user, article)) {
       const redirect = article
         ? null
         : await prisma.articleSlugRedirect.findUnique({
             where: { slug_clientSiteId: { slug, clientSiteId } },
-            select: { article: { select: { slug: true, status: true } } },
+            select: {
+              article: {
+                select: {
+                  slug: true,
+                  status: true,
+                  clientSiteId: true,
+                  deletedAt: true,
+                  releaseAt: true,
+                  clientSite: { select: { deletedAt: true } },
+                },
+              },
+            },
           })
-      const movedTo = redirect && (redirect.article.status === 'published' || isAdmin) ? redirect.article.slug : null
+      const movedTo =
+        redirect && redirect.article.clientSiteId === clientSiteId && canReadArticle(user, redirect.article)
+          ? redirect.article.slug
+          : null
       // The page turns `movedTo` into a 301; an old link must keep working after a slug change.
       throw createError({
         statusCode: 404,
@@ -172,7 +189,8 @@ export default defineEventHandler(async (event) => {
     language = primaryLanguage
   }
 
-  if (article.clientSite.deletedAt) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
+  if (!canReadArticle(user, article))
+    throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
 
   // hreflang alternates: the source (primary language) plus every PUBLISHED translation.
   const publishedTranslations = await prisma.articleTranslation.findMany({
@@ -188,7 +206,12 @@ export default defineEventHandler(async (event) => {
 
   if (article.articleSeriesId && article.seriesOrder !== null) {
     const whereFilter: any = { articleSeriesId: article.articleSeriesId }
-    if (!isAdmin) whereFilter.status = 'published'
+    whereFilter.deletedAt = null
+    whereFilter.clientSiteId = clientSiteId
+    if (!isAdmin) {
+      whereFilter.status = 'published'
+      whereFilter.OR = [{ releaseAt: null }, { releaseAt: { lte: new Date() } }]
+    }
 
     const allSeriesArticles = await prisma.article.findMany({
       where: whereFilter,
@@ -221,7 +244,7 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  const { reactions, _count, clientSite, ...rest } = article
+  const { reactions, _count, clientSite, deletedAt: _deletedAt, ...rest } = article
 
   return {
     ...rest,

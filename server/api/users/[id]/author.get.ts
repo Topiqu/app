@@ -1,3 +1,5 @@
+import { publicArticleWhere } from '../../../utils/articleViewerAccess'
+
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const { id } = getRouterParams(event)
@@ -20,11 +22,9 @@ export default defineEventHandler(async (event) => {
     if (!userData) throw createError({ statusCode: 404, message: t('common.errors.userNotFound')! })
 
     const articleWhere = {
-      deletedAt: null,
-      clientSite: { deletedAt: null },
+      ...publicArticleWhere(),
       userId: userData.id,
       clientSiteId: userData.clientSiteId ?? undefined,
-      status: 'published' as const,
     }
     const [articleStats, totalArticleLikes] = await Promise.all([
       prisma.article.aggregate({ where: articleWhere, _count: { id: true }, _sum: { views: true } }),

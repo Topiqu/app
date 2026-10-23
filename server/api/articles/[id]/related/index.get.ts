@@ -1,6 +1,7 @@
 import type { Language } from '~~/generated/zenstack/models'
 
 import { articleCardSelect } from '~~/server/utils/articleCard'
+import { canReadArticle } from '~~/server/utils/articleViewerAccess'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
@@ -16,20 +17,38 @@ export default defineEventHandler(async (event) => {
 
   const clientSite = await prisma.clientSite.findUnique({
     where: { id: clientSiteId, deletedAt: null },
-    select: { language: true },
+    select: { language: true, deletedAt: true },
   })
   if (!clientSite) throw createError({ statusCode: 404, message: t('common.errors.blogNotFound')! })
 
   const primaryLanguage = clientSite.language
   const isAdmin = hasArticleAdminAccess(user, clientSiteId)
+  const now = new Date()
 
-  const current = await resolveArticleBySlug<{ id: string; language: Language; tags: { tagId: string }[] }>(
+  const current = await resolveArticleBySlug<{
+    id: string
+    clientSiteId: string
+    language: Language
+    status: string
+    deletedAt: Date | null
+    releaseAt: Date | null
+    tags: { tagId: string }[]
+  }>(
     prisma,
     { slug, clientSiteId, locale, isAdmin },
-    { id: true, language: true, tags: { select: { tagId: true } } },
+    {
+      id: true,
+      clientSiteId: true,
+      language: true,
+      status: true,
+      deletedAt: true,
+      releaseAt: true,
+      tags: { select: { tagId: true } },
+    },
   )
 
-  if (!current) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
+  if (!current || !canReadArticle(user, { ...current, clientSite }, now))
+    throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
 
   const tagIds = current.tags.map((tag) => tag.tagId)
 
@@ -39,7 +58,12 @@ export default defineEventHandler(async (event) => {
       clientSiteId,
       deletedAt: null,
       id: { not: current.id },
-      ...(isAdmin ? {} : { status: 'published' }),
+      ...(isAdmin
+        ? {}
+        : {
+            status: 'published',
+            OR: [{ releaseAt: null }, { releaseAt: { lte: now } }],
+          }),
     },
     select: {
       ...articleCardSelect(user?.id),

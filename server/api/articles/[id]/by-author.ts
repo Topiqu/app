@@ -1,6 +1,8 @@
 import { articleExcerpt } from '~~/shared/utils/articleBlocks'
 import { articleCardSelect } from '~~/server/utils/articleCard'
 
+import { publicArticleWhere } from '../../../utils/articleViewerAccess'
+
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const user = await getSessionUser(event)
@@ -39,18 +41,14 @@ export default defineEventHandler(async (event) => {
         user.id === author.id ? 'ARTICLE_WRITE' : 'ARTICLE_WRITE_OTHERS',
       ))
   const visibleWhere = {
-    deletedAt: null,
-    clientSite: { deletedAt: null },
+    ...(seesDrafts ? { deletedAt: null, clientSite: { deletedAt: null } } : publicArticleWhere()),
     userId: author.id,
-    status: seesDrafts ? undefined : ('published' as const),
   }
 
   const publicWhere = {
-    deletedAt: null,
-    clientSite: { deletedAt: null },
+    ...publicArticleWhere(),
     userId: author.id,
     clientSiteId: author.clientSiteId ?? undefined,
-    status: 'published' as const,
   }
   const [articles, total, counts, stats, totalArticleLikes] = await Promise.all([
     db.article.findMany({
