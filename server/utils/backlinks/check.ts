@@ -6,7 +6,8 @@ import {
   ownedHosts,
 } from '~~/shared/utils/backlinks'
 
-import { fetchPage, mapLimit } from './page'
+import { fetchPage } from './page'
+import { mapLimit } from '../concurrency'
 import { BACKLINK_PLANS, recordBacklink } from './discover'
 
 const BATCH = 100

@@ -8,7 +8,8 @@ import { isReferenceDomain, normalizeCitationUrl } from '~~/shared/utils/aiVisib
 import type { SerpItem } from '../keywords/serp'
 import type { FoundBacklink, FoundOpportunity } from './mentions'
 
-import { fetchPage, mapLimit } from './page'
+import { fetchPage } from './page'
+import { mapLimit } from '../concurrency'
 import { dataForSeo } from '../keywords/dataforseo'
 import { supplierPages, type MatchSite } from './match'
 

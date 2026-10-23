@@ -2,9 +2,10 @@ import { toHostname } from '~~/shared/utils/domain'
 import { isOwnedHost, mentionsTerm } from '~~/shared/utils/backlinks'
 import { isReferenceDomain, normalizeCitationUrl } from '~~/shared/utils/aiVisibility'
 
+import { mapLimit } from '../concurrency'
+import { fetchPage, type PageLink } from './page'
 import { dataForSeo } from '../keywords/dataforseo'
 import { mentionsBusiness, type MatchSite } from './match'
-import { fetchPage, mapLimit, type PageLink } from './page'
 
 const SEARCH_LIMIT = 50
 // DataForSEO spam score is 0–100; a link from a spammy page is worth less than no link.

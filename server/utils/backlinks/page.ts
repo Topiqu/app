@@ -84,10 +84,3 @@ export const fetchPage = async (url: string, owned: readonly string[]): Promise<
     return { status: 'failed' }
   }
 }
-
-export async function mapLimit<T, R>(items: readonly T[], limit: number, run: (item: T) => Promise<R>) {
-  const results: R[] = []
-  for (let index = 0; index < items.length; index += limit)
-    results.push(...(await Promise.all(items.slice(index, index + limit).map(run))))
-  return results
-}
