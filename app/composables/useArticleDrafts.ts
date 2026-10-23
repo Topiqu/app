@@ -1,10 +1,6 @@
-import type { ArticleWithDetails } from '~~/types/article'
 import type { ArticleDraft, Language } from '~~/generated/zenstack/models'
 
-import equal from 'fast-deep-equal'
-import { articleSlug } from '~~/shared/utils/articleSlug'
-
-export const useArticleDrafts = async (
+export const useArticleDrafts = (
   editedArticle: Ref<ArticleWithDetails>,
   idle: Ref<boolean>,
   options: {
@@ -18,6 +14,8 @@ export const useArticleDrafts = async (
   const { t } = useI18n()
   const toast = useToast()
   const { enabled } = options
+  let disposed = false
+  let documentVersion = 0
 
   const successMessage = shallowRef('')
   const draftsOpen = shallowRef(false)
@@ -30,14 +28,16 @@ export const useArticleDrafts = async (
     data: drafts,
     refresh,
     pending: loading,
-  } = await useLazyFetch<ArticleDraft[]>('/api/articles/draft', {
+  } = useLazyFetch<ArticleDraft[]>('/api/articles/draft', {
     default: () => [],
     server: false,
     immediate: enabled,
   })
 
   const writeDraft = async (force = false) => {
+    if (disposed) return false
     if (!force && (idle.value || options.paused?.value)) return false
+    const version = documentVersion
 
     if (
       !editedArticle.value.title &&
@@ -59,17 +59,12 @@ export const useArticleDrafts = async (
     const matchingDraft = drafts.value?.find(
       (draft) =>
         (!draftId.value || draft.id === draftId.value) &&
-        equal(
-          {
-            title: draft.title,
-            excerpt: draft.excerpt || '',
-            content: draft.content,
-            imageUrl: draft.imageUrl || null,
-            coverMediaId: draft.coverMediaId || null,
-            language: draft.language,
-          },
-          currentData,
-        ),
+        draft.title === currentData.title &&
+        (draft.excerpt || '') === currentData.excerpt &&
+        draft.content === currentData.content &&
+        (draft.imageUrl || null) === currentData.imageUrl &&
+        (draft.coverMediaId || null) === currentData.coverMediaId &&
+        draft.language === currentData.language,
     )
     if (matchingDraft) {
       draftId.value = matchingDraft.id
@@ -85,6 +80,7 @@ export const useArticleDrafts = async (
           ...currentData,
         },
       })
+      if (disposed || version !== documentVersion) return true
       draftId.value = draft.id
 
       lastSavedAt.value = new Date()
@@ -93,6 +89,7 @@ export const useArticleDrafts = async (
       clearSuccessLater()
       return true
     } catch {
+      if (disposed || version !== documentVersion) return false
       toast.add({
         color: 'error',
         title: t('common.messages.draftSaveFailed'),
@@ -101,12 +98,13 @@ export const useArticleDrafts = async (
       })
       return false
     } finally {
-      saving.value = false
+      if (!disposed) saving.value = false
     }
   }
   let pendingSave: Promise<boolean> | null = null
   const persistDraft = async (force = false) => {
-    if (pendingSave) await pendingSave
+    while (pendingSave) await pendingSave
+    if (disposed) return false
     const currentSave = writeDraft(force)
     pendingSave = currentSave
     try {
@@ -116,8 +114,13 @@ export const useArticleDrafts = async (
     }
   }
   const saveDraft = useDebounceFn(() => persistDraft(), 8000)
+  onScopeDispose(() => {
+    disposed = true
+    saveDraft.cancel()
+  })
 
   const loadDraft = (draft: ArticleDraft) => {
+    documentVersion++
     draftId.value = draft.id
     options.onDraftLoaded?.(draft)
     Object.assign(editedArticle.value, {
@@ -141,6 +144,7 @@ export const useArticleDrafts = async (
         () => editedArticle.value.excerpt,
         () => editedArticle.value.content,
         () => editedArticle.value.imageUrl,
+        () => editedArticle.value.coverMediaId,
         () => options.language.value,
       ],
       saveDraft,
@@ -154,7 +158,10 @@ export const useArticleDrafts = async (
     successMessage,
     lastSavedAt,
     saving,
-    saveDraftNow: () => persistDraft(true),
+    saveDraftNow: () => {
+      saveDraft.cancel()
+      return persistDraft(true)
+    },
     loadDraft,
     refreshDrafts: refresh,
   }
