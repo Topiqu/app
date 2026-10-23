@@ -17,14 +17,15 @@ export default defineNuxtPlugin((nuxtApp) => {
   const device = window.matchMedia('(max-width: 767px)').matches ? 'mobile' : 'desktop'
   let registered = false
   let sensitiveNavigation = false
-  watch(
+  let disposed = false
+  const stopRoute = watch(
     () => route.fullPath,
     (path) => {
       if (!vitalPage(path)) sensitiveNavigation = true
     },
     { flush: 'sync' },
   )
-  const allowed = () => consent.value && !sensitiveNavigation && vitalPage(route.fullPath) !== null
+  const allowed = () => !disposed && consent.value && !sensitiveNavigation && vitalPage(route.fullPath) !== null
   const stop = watch(
     consent,
     async (granted) => {
@@ -39,5 +40,9 @@ export default defineNuxtPlugin((nuxtApp) => {
     },
     { immediate: true },
   )
-  nuxtApp.vueApp.onUnmount(stop)
+  nuxtApp.vueApp.onUnmount(() => {
+    disposed = true
+    stop()
+    stopRoute()
+  })
 })

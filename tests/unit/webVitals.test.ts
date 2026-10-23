@@ -70,6 +70,16 @@ describe('privacy-safe real user measurements', () => {
     expect(send).toHaveBeenCalledOnce()
   })
 
+  it('drops soft-navigation observations from the document-only distribution', () => {
+    const send = vi.fn()
+    const report = createVitalReporter('article', 'mobile', () => true, send)
+    report({ name: 'LCP', id: 'soft-visit', value: 120, navigationType: 'soft-navigation' })
+    expect(send).not.toHaveBeenCalled()
+    report({ name: 'LCP', id: 'document-visit', value: 2400, navigationType: 'navigate' })
+    expect(send).toHaveBeenCalledOnce()
+    expect(send.mock.calls[0]?.[0].attributes).toMatchObject({ page_type: 'article', measurement: 'document' })
+  })
+
   it('removes SDK identity, URL and DOM enrichment before sending custom metrics', () => {
     const safe = scrubWebVitalMetric({
       name: 'web_vitals.inp',

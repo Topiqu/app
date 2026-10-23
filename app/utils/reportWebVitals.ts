@@ -6,7 +6,8 @@ export const reportWebVitals = (page: VitalPage, device: VitalDevice, allowed: (
   const report = createVitalReporter(page, device, allowed, (metric) => {
     metrics.distribution(metric.name, metric.value, { unit: metric.unit, attributes: metric.attributes })
   })
-  onLCP(report)
-  onINP(report)
-  onCLS(report)
+  // These budgets measure the initial document; SPA visits need separate attribution.
+  onLCP(report, { reportSoftNavs: false })
+  onINP(report, { reportSoftNavs: false })
+  onCLS(report, { reportSoftNavs: false })
 }

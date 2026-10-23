@@ -33,6 +33,7 @@ interface VitalObservation {
   name: string
   id: string
   value: number
+  navigationType?: string
 }
 
 export interface VitalDistribution {
@@ -52,6 +53,7 @@ export const createVitalReporter = (
   return (metric: VitalObservation) => {
     if (
       !allowed() ||
+      metric.navigationType === 'soft-navigation' ||
       !Object.hasOwn(webVitalTargets, metric.name) ||
       !Number.isFinite(metric.value) ||
       metric.value < 0

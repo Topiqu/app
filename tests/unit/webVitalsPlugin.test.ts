@@ -75,6 +75,18 @@ describe('sampled consented CWV registration', () => {
     fullPath.value = '/en/articles/another-story'
     expect(allowed()).toBe(false)
   })
+  it('stops reporting after the application unmounts even when consent remains granted', async () => {
+    consent.value = true
+    await start()
+    await vi.waitFor(() => expect(reportWebVitals).toHaveBeenCalledOnce())
+    const allowed = reportWebVitals.mock.calls[0]![2] as () => boolean
+    for (const stop of stops.splice(0)) stop()
+    expect(allowed()).toBe(false)
+    consent.value = false
+    consent.value = true
+    await nextTick()
+    expect(reportWebVitals).toHaveBeenCalledOnce()
+  })
   it('samples once per document and excludes browser tests and non-production traffic', async () => {
     consent.value = true
     vi.mocked(Math.random).mockReturnValue(0.9)
