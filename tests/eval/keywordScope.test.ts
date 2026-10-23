@@ -99,7 +99,7 @@ const MUST_DROP = ['GTA VI', 'Koenigsegg ukÃ¡zal limitovanou edici za 70 milionÅ
 
 const results: unknown[] = []
 
-describe.skipIf(!process.env.AI_EVAL)('keyword scope eval', () => {
+describe.skipIf(process.env.AI_EVAL !== '1')('keyword scope eval', () => {
   beforeAll(() => {
     process.loadEnvFile?.('.env')
     const openAi = createOpenAI({ apiKey: process.env.NUXT_OPEN_AI_API_KEY })
