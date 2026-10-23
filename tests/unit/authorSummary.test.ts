@@ -1,16 +1,16 @@
 import { createPinia } from 'pinia'
-import { PiniaColada, useQuery } from '@pinia/colada'
 import { defineComponent, h, ref, toValue } from 'vue'
 import { flushPromises, mount } from '@vue/test-utils'
 import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { PiniaColada, useQuery, useQueryCache } from '@pinia/colada'
 
 import { queryKeys } from '../../app/utils/queryKeys'
 import { useAuthorSummary } from '../../app/composables/useAuthorSummary'
 
 afterEach(() => vi.unstubAllGlobals())
 
-const request = vi.hoisted(() => vi.fn(async (url: string) => ({ username: url })))
+const request = vi.hoisted(() => vi.fn(async (url: string, _options?: { signal: AbortSignal }) => ({ username: url })))
 mockNuxtImport('useRequestFetch', () => () => request)
 
 describe('shared author queries', () => {
@@ -46,5 +46,62 @@ describe('shared author queries', () => {
     } finally {
       wrapper.unmount()
     }
+  })
+
+  it('refetches each cached original author after a card changes its author getter', async () => {
+    request.mockClear()
+    vi.stubGlobal('useQuery', useQuery)
+    vi.stubGlobal('queryKeys', queryKeys)
+    vi.stubGlobal('toValue', toValue)
+    const userId = ref('one')
+    const pinia = createPinia()
+    const wrapper = mount(
+      defineComponent({
+        setup() {
+          useAuthorSummary(() => userId.value)
+          return () => h('span')
+        },
+      }),
+      { global: { plugins: [pinia, PiniaColada] } },
+    )
+    try {
+      await flushPromises()
+      userId.value = 'two'
+      await flushPromises()
+      request.mockClear()
+      await useQueryCache(pinia).invalidateQueries({ key: ['authors'] }, 'all')
+      expect(request.mock.calls.map(([url]) => url).sort()).toEqual(['/api/users/one/author', '/api/users/two/author'])
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('aborts the combined deadline/request signal after the last card unmounts', async () => {
+    request.mockClear()
+    vi.stubGlobal('useQuery', useQuery)
+    vi.stubGlobal('queryKeys', queryKeys)
+    vi.stubGlobal('toValue', toValue)
+    let resolve!: (value: { username: string }) => void
+    request.mockReturnValueOnce(
+      new Promise((res) => {
+        resolve = res
+      }),
+    )
+    const wrapper = mount(
+      defineComponent({
+        setup() {
+          useAuthorSummary('pending-author')
+          return () => h('span')
+        },
+      }),
+      { global: { plugins: [createPinia(), PiniaColada] } },
+    )
+    await flushPromises()
+    const signal = request.mock.calls[0]?.[1]?.signal
+    expect(signal?.aborted).toBe(false)
+    wrapper.unmount()
+    expect(signal?.aborted).toBe(true)
+    resolve({ username: 'late author' })
+    await flushPromises()
   })
 })
