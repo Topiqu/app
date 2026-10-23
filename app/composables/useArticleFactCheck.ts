@@ -31,6 +31,12 @@ export const useArticleFactCheck = (input: MaybeRefOrGetter<ArticleFactCheckInpu
   const failure = shallowRef<unknown>(null)
   const errorKind = shallowRef<ArticleFactCheckErrorKind>('unknown')
   let analyzedSnapshot = ''
+  let disposed = false
+  let controller: AbortController | undefined
+  onScopeDispose(() => {
+    disposed = true
+    controller?.abort()
+  })
 
   const canRun = computed(() => htmlToText(toValue(input).content).length >= 20)
 
@@ -42,27 +48,35 @@ export const useArticleFactCheck = (input: MaybeRefOrGetter<ArticleFactCheckInpu
   )
 
   const run = async () => {
-    if (!canRun.value || state.value === 'running') return
-    const current = toValue(input)
+    if (disposed || !canRun.value || state.value === 'running') return
+    const value = toValue(input)
+    const current = { ...value, sources: [...value.sources] }
     const runSnapshot = snapshot(current)
+    controller = new AbortController()
     state.value = 'running'
     failure.value = null
     errorKind.value = 'unknown'
     try {
-      result.value = await $fetch<ArticleFactCheckResult, '/api/articles/fact-check'>('/api/articles/fact-check', {
+      const report = await $fetch<ArticleFactCheckResult, '/api/articles/fact-check'>('/api/articles/fact-check', {
         method: 'POST',
         body: current,
+        signal: controller.signal,
       })
+      if (disposed) return
+      result.value = report
       analyzedSnapshot = runSnapshot
       state.value = snapshot(toValue(input)) === runSnapshot ? 'complete' : 'stale'
     } catch (error) {
+      if (disposed) return
       failure.value = error
-      const { statusCode, data } = error as { statusCode?: number; data?: { data?: { code?: string } } }
+      const { statusCode, data } = (error ?? {}) as { statusCode?: number; data?: { data?: { code?: string } } }
       errorKind.value =
         data?.data?.code === 'AI_NOT_CONFIGURED'
           ? 'not-configured'
           : (statusCode && ERROR_KINDS[statusCode]) || 'unknown'
       state.value = 'error'
+    } finally {
+      controller = undefined
     }
   }
 
