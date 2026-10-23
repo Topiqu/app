@@ -57,18 +57,23 @@
 import type { PublishChoice, ShopifyPublication, ShopifyPublishMode } from '~~/shared/types/shopify'
 
 const open = defineModel<boolean>('open', { default: false })
-const props = withDefaults(
-  defineProps<{
-    topiquPublished: boolean
-    topiquEnabled?: boolean
-    scheduled: boolean
-    blog?: string | null
-    publication?: ShopifyPublication | null
-    label: string
-    loading?: boolean
-  }>(),
-  { topiquEnabled: true },
-)
+const {
+  topiquPublished,
+  topiquEnabled = true,
+  scheduled,
+  blog,
+  publication,
+  label,
+  loading,
+} = defineProps<{
+  topiquPublished: boolean
+  topiquEnabled?: boolean
+  scheduled: boolean
+  blog?: string | null
+  publication?: ShopifyPublication | null
+  label: string
+  loading?: boolean
+}>()
 const emit = defineEmits<{ confirm: [choice: PublishChoice] }>()
 const { t } = useI18n()
 
@@ -80,37 +85,37 @@ const remembered = useLocalStorage<{ shopify: boolean; mode: ShopifyPublishMode 
 const topiqu = shallowRef(true)
 const shopify = shallowRef(true)
 const mode = shallowRef<ShopifyPublishMode>('published')
-const inShopify = computed(() => Boolean(props.publication?.shopifyArticleId))
+const inShopify = computed(() => Boolean(publication?.shopifyArticleId))
 
 watch(
   open,
   (value) => {
     if (!value) return
-    topiqu.value = props.topiquEnabled !== false
+    topiqu.value = topiquEnabled !== false
     shopify.value = inShopify.value || remembered.value.shopify
-    if (props.scheduled) mode.value = 'draft'
-    else mode.value = inShopify.value ? (props.publication?.isPublished ? 'published' : 'draft') : remembered.value.mode
+    if (scheduled) mode.value = 'draft'
+    else mode.value = inShopify.value ? (publication?.isPublished ? 'published' : 'draft') : remembered.value.mode
   },
   { immediate: true },
 )
 
-const shopifyMode = computed<ShopifyPublishMode>(() => (props.scheduled ? 'draft' : mode.value))
+const shopifyMode = computed<ShopifyPublishMode>(() => (scheduled ? 'draft' : mode.value))
 const modes = computed(() => [
   { label: t('articles.editor.publishDialog.draft'), value: 'draft' },
-  { label: t('articles.editor.publishDialog.published'), value: 'published', disabled: props.scheduled },
+  { label: t('articles.editor.publishDialog.published'), value: 'published', disabled: scheduled },
 ])
 const warning = computed(() => {
   if (!shopify.value || !inShopify.value) return null
-  return shopifyMode.value === 'draft' && props.publication?.isPublished
+  return shopifyMode.value === 'draft' && publication?.isPublished
     ? t('common.shopify.unpublishDescription')
     : t('common.shopify.replaceDescription')
 })
-const topiquIncluded = computed(() => props.topiquEnabled !== false && (props.topiquPublished || topiqu.value))
-const confirmLabel = computed(() => (topiquIncluded.value ? props.label : t('articles.editor.publishDialog.sendOnly')))
+const topiquIncluded = computed(() => topiquEnabled !== false && (topiquPublished || topiqu.value))
+const confirmLabel = computed(() => (topiquIncluded.value ? label : t('articles.editor.publishDialog.sendOnly')))
 
 const submit = () => {
   if (!topiquIncluded.value && !shopify.value) return
-  if (!inShopify.value && !props.scheduled) remembered.value = { shopify: shopify.value, mode: mode.value }
+  if (!inShopify.value && !scheduled) remembered.value = { shopify: shopify.value, mode: mode.value }
   emit('confirm', { topiqu: topiquIncluded.value, shopify: shopify.value ? shopifyMode.value : null })
 }
 </script>

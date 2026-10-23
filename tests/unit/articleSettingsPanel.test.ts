@@ -42,7 +42,15 @@ const mountPanel = (props: Record<string, unknown> = {}) =>
       plugins: [
         createI18n({ legacy: false, locale: 'en', missingWarn: false, fallbackWarn: false, messages: { en: {} } }),
       ],
-      stubs: { UTabs },
+      stubs: {
+        UTabs,
+        AsyncComponentWrapper: {
+          name: 'MediaPicker',
+          props: ['open', 'mode'],
+          emits: ['select', 'update:open'],
+          template: '<div />',
+        },
+      },
     },
   })
 
@@ -52,6 +60,25 @@ const checksTab = (wrapper: ReturnType<typeof mountPanel>) =>
   )
 
 describe('article settings panel', () => {
+  it('creates the lazy media picker only when opened and forwards its first selection', async () => {
+    const wrapper = mountPanel()
+    expect(wrapper.findComponent({ name: 'MediaPicker' }).exists()).toBe(false)
+    const choose = wrapper
+      .findAllComponents({ name: 'UButton' })
+      .find((button) => button.props('icon') === 'mdi:image-multiple-outline')!
+    choose.vm.$emit('click')
+    await wrapper.vm.$nextTick()
+    const picker = wrapper.getComponent({ name: 'MediaPicker' })
+    expect(picker.props()).toMatchObject({ open: true, mode: 'cover' })
+    picker.vm.$emit('select', { id: 'media-1', url: '/image.webp', deliveryUrl: '/optimized.webp' }, '')
+    expect(wrapper.emitted('upload')?.at(-1)).toEqual([
+      { url: '/image.webp', optimizedUrl: '/optimized.webp', mediaAsset: { id: 'media-1' } },
+    ])
+    picker.vm.$emit('update:open', false)
+    await wrapper.vm.$nextTick()
+    expect(wrapper.findComponent({ name: 'MediaPicker' }).exists()).toBe(false)
+  })
+
   it('offers the plan upgrade instead of the generation form without an AI plan', () => {
     const locked = mountPanel({ aiAvailable: false })
     expect(locked.findComponent(AiUpsell).exists()).toBe(true)

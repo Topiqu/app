@@ -30,7 +30,12 @@
             <UButton color="neutral" variant="soft" icon="mdi:image-multiple-outline" @click="mediaPickerOpen = true">
               {{ $t('media.choose') }}
             </UButton>
-            <MediaPicker v-model:open="mediaPickerOpen" mode="cover" @select="selectCoverMedia" />
+            <LazyMediaPicker
+              v-if="mediaPickerOpen"
+              v-model:open="mediaPickerOpen"
+              mode="cover"
+              @select="selectCoverMedia"
+            />
           </section>
 
           <section ref="sourcesSection" class="flex flex-col gap-3">
@@ -147,10 +152,10 @@
 
 <script setup lang="ts">
 import type { TabsItem } from '@nuxt/ui'
-import type { ArticleWithDetails } from '~~/types/article'
 import type { MediaPickerSelection } from '~~/shared/types/mediaLibrary'
 import type { ArticleFactCheckResult } from '~~/shared/types/articleFactCheck'
 import type { ArticleGenerationOptions } from '~~/shared/utils/articleGeneration'
+import type { ArticleSeriesSelection, ArticleWithDetails } from '~~/types/article'
 import type { MediaRightsItem, MediaRightsReport } from '~~/shared/types/mediaRights'
 import type { ArticleOptimizationResult, OptimizationTarget } from '~~/shared/types/articleOptimization'
 
@@ -195,7 +200,7 @@ const emit = defineEmits<{
 }>()
 
 const tab = defineModel<SettingsTab>('tab', { required: true })
-const selectedSeries = defineModel<unknown>('selectedSeries')
+const selectedSeries = defineModel<ArticleSeriesSelection | null>('selectedSeries')
 const customPrompt = defineModel<string>('customPrompt', { required: true })
 const aiOptions = defineModel<ArticleGenerationOptions>('aiOptions', { required: true })
 const releaseAt = defineModel<string | null>('releaseAt', { required: true })

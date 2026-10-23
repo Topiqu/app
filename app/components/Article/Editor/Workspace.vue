@@ -339,41 +339,7 @@
           v-if="settingsExpanded"
           class="rounded-(--topiqu-surface-radius) border border-default bg-default px-5 pb-5"
         >
-          <ArticleEditorSettingsPanel
-            ref="desktopSettingsPanel"
-            v-model:tab="settingsTab"
-            v-model:selectedSeries="selectedSeries"
-            v-model:customPrompt="customPrompt"
-            v-model:aiOptions="aiOptions"
-            v-model:releaseAt="releaseAtInput"
-            v-model:sources="sourcesModel"
-            :article="article"
-            :imageUrl="editedArticle.imageUrl"
-            :articleTags="articleTags"
-            :aiAvailable="aiAvailable"
-            :aiGenerating="aiGenerating"
-            :optimizationState="aiGenerating ? 'analyzing' : optimizationState"
-            :optimizationResult="aiGenerating ? null : optimizationResult"
-            :factCheckState="factCheckState"
-            :factCheckResult="factCheckResult"
-            :factCheckCanRun="factCheckCanRun"
-            :factCheckErrorKind="factCheckErrorKind"
-            :mediaRightsState="mediaRightsState"
-            :mediaRightsResult="mediaRightsResult"
-            @upload="handleUpload"
-            @generate="generateAIContent"
-            @addTag="addTag"
-            @removeTag="removeTag"
-            @quickRelease="setReleaseQuick"
-            @retryOptimization="retryOptimization"
-            @navigateOptimization="navigateOptimization"
-            @runFactCheck="runFactCheck"
-            @navigateFactCheck="navigateFactCheck"
-            @navigateFactCheckSources="navigateFactCheckSources"
-            @navigateMedia="navigateMedia"
-            @attachMedia="attachMedia"
-            @refreshMediaRights="refreshMediaRights"
-          >
+          <ArticleEditorSettingsPanel ref="desktopSettingsPanel" v-bind="settingsPanelBindings">
             <template #actions>
               <UButton
                 icon="mdi:close"
@@ -459,41 +425,7 @@
 
     <USlideover v-model:open="sidebarOpen" :title="$t('articles.editor.settingsTitle')" class="xl:hidden">
       <template #body>
-        <ArticleEditorSettingsPanel
-          ref="mobileSettingsPanel"
-          v-model:tab="settingsTab"
-          v-model:selectedSeries="selectedSeries"
-          v-model:customPrompt="customPrompt"
-          v-model:aiOptions="aiOptions"
-          v-model:releaseAt="releaseAtInput"
-          v-model:sources="sourcesModel"
-          :article="article"
-          :imageUrl="editedArticle.imageUrl"
-          :articleTags="articleTags"
-          :aiAvailable="aiAvailable"
-          :aiGenerating="aiGenerating"
-          :optimizationState="aiGenerating ? 'analyzing' : optimizationState"
-          :optimizationResult="aiGenerating ? null : optimizationResult"
-          :factCheckState="factCheckState"
-          :factCheckResult="factCheckResult"
-          :factCheckCanRun="factCheckCanRun"
-          :factCheckErrorKind="factCheckErrorKind"
-          :mediaRightsState="mediaRightsState"
-          :mediaRightsResult="mediaRightsResult"
-          @upload="handleUpload"
-          @generate="generateAIContent"
-          @addTag="addTag"
-          @removeTag="removeTag"
-          @quickRelease="setReleaseQuick"
-          @retryOptimization="retryOptimization"
-          @navigateOptimization="navigateOptimization"
-          @runFactCheck="runFactCheck"
-          @navigateFactCheck="navigateFactCheck"
-          @navigateFactCheckSources="navigateFactCheckSources"
-          @navigateMedia="navigateMedia"
-          @attachMedia="attachMedia"
-          @refreshMediaRights="refreshMediaRights"
-        />
+        <ArticleEditorSettingsPanel ref="mobileSettingsPanel" v-bind="settingsPanelBindings" />
       </template>
     </USlideover>
 
@@ -572,11 +504,12 @@
 <script setup lang="ts">
 import type { HistoryState } from 'vue-router'
 import type { ComponentPublicInstance } from 'vue'
-import type { ArticleWithDetails } from '~~/types/article'
 import type { CoverCredit } from '~~/shared/utils/imageCredit'
 import type { OptimizationTarget } from '~~/shared/types/articleOptimization'
 import type { ArticleRevisionSnapshot } from '~~/shared/utils/articleRevision'
 import type { PublishChoice, ShopifyPublishMode } from '~~/shared/types/shopify'
+import type { ArticleGenerationOptions } from '~~/shared/utils/articleGeneration'
+import type { ArticleSeriesSelection, ArticleWithDetails } from '~~/types/article'
 import type { MediaRightsItem, MediaRightsReport, MediaRightsReview } from '~~/shared/types/mediaRights'
 
 import { hasAiPlan } from '~~/shared/utils/plans'
@@ -586,6 +519,8 @@ import { articleSlug } from '~~/shared/utils/articleSlug'
 import { setImageMediaId } from '~~/shared/utils/mediaRights'
 import { translationDraft } from '~~/shared/utils/articleTranslations'
 import { defaultArticleGenerationOptions } from '~~/shared/utils/articleGeneration'
+
+import type SettingsPanel from './SettingsPanel.vue'
 
 const editorFieldId = useId()
 const route = useRoute()
@@ -600,7 +535,8 @@ const { data: clientStatus } = await useClientSiteStatus()
 const clientSite = clientStatus
 const requestFetch = useRequestFetch()
 
-const isNew = route.params.id === 'new'
+const routeId = 'id' in route.params ? String(route.params.id ?? '') : ''
+const isNew = routeId === 'new'
 const sidebarOpen = shallowRef(false)
 const settingsExpanded = useLocalStorage('topiqu-editor-settings-expanded', true)
 const discardConfirmOpen = shallowRef(false)
@@ -615,53 +551,32 @@ const publishDialogOpen = shallowRef(false)
 const shopifyPanel = useTemplateRef('shopifyPanel')
 
 const article = shallowRef<ArticleWithDetails | undefined>(undefined)
-type RecoverableGeneration = {
-  id: string
-  recoverableSnapshot: {
-    title?: string
-    perex?: string
-    content?: string
-    sources?: string[]
-    articleImageUrl?: string
-    articleImageCredit?: unknown
-    articleCoverMediaId?: string
-    answer?: string | null
-    keyTakeaways?: string[]
-    faq?: unknown
-    tags?: string[]
-    format?: string
-    metrics?: { totalWords?: number; savedAmount?: number; savedTimeMinutes?: number }
-  }
-}
-const { data: recoverableGeneration, refresh: refreshRecoverableGeneration } =
-  await useLazyFetch<RecoverableGeneration | null>('/api/articles/generations/recoverable', {
-    key: `article-generation-recoverable-${String(route.params.id)}`,
-    query: computed(() => ({ articleId: isNew ? 'new' : article.value?.id })),
-    server: false,
-    immediate: isNew,
-    watch: false,
-    default: () => null,
-  })
 
-const init = (): ArticleWithDetails =>
-  ({
-    title: '',
-    excerpt: '',
-    content: '',
-    slug: '',
-    imageUrl: '',
-    imageCredit: null,
-    coverMediaId: null,
-    status: 'draft',
-    releaseAt: null,
-    sources: [],
-    answer: null,
-    keyTakeaways: [],
-    faq: [],
-    savedAmount: 0,
-    savedTimeMinutes: 0,
-    aiInvolvement: 'NONE',
-  }) as unknown as ArticleWithDetails
+const init = (): ArticleWithDetails => ({
+  id: '',
+  createdAt: '',
+  user: null,
+  tags: [],
+  views: 0,
+  readingTime: null,
+  _count: null,
+  title: '',
+  excerpt: '',
+  content: '',
+  slug: '',
+  imageUrl: '',
+  imageCredit: null,
+  coverMediaId: null,
+  status: 'draft',
+  releaseAt: null,
+  sources: [],
+  answer: null,
+  keyTakeaways: [],
+  faq: [],
+  savedAmount: 0,
+  savedTimeMinutes: 0,
+  aiInvolvement: 'NONE',
+})
 
 const editedArticle = ref(init())
 // The run lives in the store, so leaving the editor neither stops it nor needs this page kept alive.
@@ -684,7 +599,7 @@ const newLanguageDrafts = reactive<Record<Language, ReturnType<typeof translatio
   de: translationDraft(),
   fr: translationDraft(),
 })
-const selectedSeries = shallowRef<any>(null)
+const selectedSeries = shallowRef<ArticleSeriesSelection | null>(null)
 const articleTags = shallowRef<string[]>([])
 const optimizedImageUrl = shallowRef('')
 const customPrompt = shallowRef(typeof route.query.prompt === 'string' ? route.query.prompt.slice(0, 5000) : '')
@@ -693,7 +608,6 @@ const generationTarget = computed(() => (isNew ? 'new' : (article.value?.id ?? n
 const ownsGeneration = computed(() => !!generationTarget.value && generation.target === generationTarget.value)
 const aiRun = computed(() => (ownsGeneration.value ? generation.run : null))
 const aiGenerating = computed(() => aiRun.value?.status === 'running')
-const restoredGenerationSessionId = shallowRef<string | null>(null)
 const aiWordCount = computed(() => {
   const text = (editedArticle.value.content ?? '').replace(/<[^>]*>/g, ' ').trim()
   return text ? text.split(/\s+/).length : 0
@@ -716,22 +630,38 @@ const { drafts, loading, draftsOpen, successMessage, lastSavedAt, saving, loadDr
     },
   })
 
+const {
+  recoverableGeneration,
+  refreshRecoverableGeneration,
+  restoreGeneration,
+  dismissGeneration,
+  dismissGenerationSession,
+  markGenerationSessionsSaved,
+} = useArticleGenerationRecovery({
+  documentKey: routeId,
+  target: generationTarget,
+  editedArticle,
+  articleTags,
+  ownsGeneration,
+  generation,
+  onRestored: isNew ? saveDraftNow : undefined,
+})
+
 if (!isNew) {
   try {
     const data = await requestFetch<ArticleWithDetails, '/api/articles/:id'>(
-      `/api/articles/${route.params.id}` as '/api/articles/:id',
+      `/api/articles/${routeId}` as '/api/articles/:id',
       {
         query: { clientSiteId: clientSite.value?.id },
       },
     )
-    article.value = data as any
+    article.value = data
     editedArticle.value = {
-      ...article.value,
-      releaseAt: article.value?.releaseAt ? new Date(article.value?.releaseAt).toISOString().slice(0, 16) : null,
-    } as any
-    const articleData = article.value as any
-    selectedSeries.value = articleData?.articleSeries
-    articleTags.value = articleData?.tags?.map((t: any) => t.tag?.id || t.id) || []
+      ...data,
+      releaseAt: data.releaseAt ? new Date(data.releaseAt).toISOString().slice(0, 16) : null,
+    }
+    selectedSeries.value = data.articleSeries ?? null
+    articleTags.value = data.tags.map(({ tag }) => tag.id)
     sourceBaseline.value = serializeSourceState()
     await refreshRecoverableGeneration()
   } catch (e: any) {
@@ -935,19 +865,25 @@ const tiptapEditor = useTemplateRef<{ focusBlock: (index?: number) => boolean }>
 type SettingsPanelHandle = { focusOptimizationTarget: (target: OptimizationTarget) => Promise<HTMLElement | null> }
 const desktopSettingsPanel = useTemplateRef<SettingsPanelHandle>('desktopSettingsPanel')
 const mobileSettingsPanel = useTemplateRef<SettingsPanelHandle>('mobileSettingsPanel')
-let highlightTimer: ReturnType<typeof setTimeout> | undefined
+const highlightClasses = ['ring-2', 'ring-primary', 'ring-offset-2', 'ring-offset-default']
+let highlightedElement: HTMLElement | null = null
+const clearHighlight = () => {
+  highlightedElement?.classList.remove(...highlightClasses)
+  highlightedElement = null
+}
+const { start: clearHighlightLater } = useTimeoutFn(clearHighlight, 1500, { immediate: false })
+onScopeDispose(clearHighlight)
 const highlight = (element: HTMLElement | null) => {
+  clearHighlight()
   if (!element) return
-  element.classList.add('ring-2', 'ring-primary', 'ring-offset-2', 'ring-offset-default')
-  if (highlightTimer) clearTimeout(highlightTimer)
-  highlightTimer = setTimeout(
-    () => element.classList.remove('ring-2', 'ring-primary', 'ring-offset-2', 'ring-offset-default'),
-    1500,
-  )
+  highlightedElement = element
+  element.classList.add(...highlightClasses)
+  clearHighlightLater()
 }
 const navigateOptimization = async (target: OptimizationTarget) => {
   const wasMobile = sidebarOpen.value
-  if (wasMobile) {
+  const canvasTarget = target.kind === 'title' || target.kind === 'excerpt' || target.kind === 'content'
+  if (wasMobile && canvasTarget) {
     sidebarOpen.value = false
     await nextTick()
   }
@@ -958,6 +894,8 @@ const navigateOptimization = async (target: OptimizationTarget) => {
     element = contentTarget.value
     tiptapEditor.value?.focusBlock(target.blockIndex)
   } else {
+    settingsExpanded.value = true
+    await nextTick()
     const panel = wasMobile ? mobileSettingsPanel.value : desktopSettingsPanel.value
     element = (await panel?.focusOptimizationTarget(target)) ?? null
   }
@@ -1003,13 +941,13 @@ const previewing = shallowRef(false)
 
 const releaseAtInput = computed<string | null>({
   get: () => {
-    const value = editedArticle.value.releaseAt as unknown as string | Date | null
+    const value = editedArticle.value.releaseAt
     if (!value) return null
     if (typeof value === 'string') return value.slice(0, 16)
     return new Date(value.getTime() - value.getTimezoneOffset() * 60_000).toISOString().slice(0, 16)
   },
   set: (value) => {
-    editedArticle.value.releaseAt = value as any
+    editedArticle.value.releaseAt = value
   },
 })
 
@@ -1054,7 +992,7 @@ const setReleaseQuick = (kind: 'now' | 'inHour' | 'tomorrow' | 'clear') => {
   date.setSeconds(0, 0)
   editedArticle.value.releaseAt = new Date(date.getTime() - date.getTimezoneOffset() * 60_000)
     .toISOString()
-    .slice(0, 16) as any
+    .slice(0, 16)
 }
 
 // `Hero.vue` wants the part number, which only the selected series knows. An article not yet in
@@ -1062,7 +1000,7 @@ const setReleaseQuick = (kind: 'now' | 'inHour' | 'tomorrow' | 'clear') => {
 const previewSeries = computed(() => {
   const series = selectedSeries.value
   if (!series?.name) return null
-  const ids: string[] = (series.articles ?? []).map((article: { id: string }) => article.id)
+  const ids = (series.articles ?? []).map((article) => article.id)
   const index = ids.indexOf(editedArticle.value.id)
   if (index >= 0) return { name: series.name, current: index + 1, total: ids.length }
 
@@ -1087,55 +1025,6 @@ const handleUpload = (file: { url: string; optimizedUrl: string; mediaAsset?: { 
   editedArticle.value.imageCredit = null
   editedArticle.value.coverMediaId = file.mediaAsset?.id ?? null
   optimizedImageUrl.value = file.optimizedUrl
-}
-
-const resolveGenerationSession = async (id: string, action: 'restore' | 'dismiss') => {
-  await $fetch<unknown, '/api/articles/generations/:id'>(
-    `/api/articles/generations/${id}` as '/api/articles/generations/:id',
-    {
-      method: 'PATCH',
-      body: { action },
-    },
-  )
-  recoverableGeneration.value = null
-}
-const markGenerationSessionsSaved = async () => {
-  const active = ownsGeneration.value ? generation.sessionId : null
-  const ids = new Set([active, restoredGenerationSessionId.value].filter((id) => !!id))
-  await Promise.allSettled(Array.from(ids, (id) => resolveGenerationSession(id!, 'restore')))
-  restoredGenerationSessionId.value = null
-  if (ownsGeneration.value) generation.clear()
-}
-const restoreGeneration = async () => {
-  const recovery = recoverableGeneration.value
-  if (!recovery) return
-  const snapshot = recovery.recoverableSnapshot
-  Object.assign(editedArticle.value, {
-    title: snapshot.title ?? editedArticle.value.title,
-    excerpt: snapshot.perex ?? editedArticle.value.excerpt,
-    content: snapshot.content ?? editedArticle.value.content,
-    sources: snapshot.sources ?? editedArticle.value.sources,
-    imageUrl: snapshot.articleImageUrl === undefined ? editedArticle.value.imageUrl : snapshot.articleImageUrl,
-    imageCredit:
-      snapshot.articleImageCredit === undefined ? editedArticle.value.imageCredit : snapshot.articleImageCredit,
-    coverMediaId:
-      snapshot.articleCoverMediaId === undefined ? editedArticle.value.coverMediaId : snapshot.articleCoverMediaId,
-    answer: snapshot.answer === undefined ? editedArticle.value.answer : snapshot.answer,
-    keyTakeaways: snapshot.keyTakeaways ?? editedArticle.value.keyTakeaways,
-    faq: snapshot.faq === undefined ? editedArticle.value.faq : snapshot.faq,
-    format: snapshot.format ?? editedArticle.value.format,
-    aiInvolvement: 'FULL',
-    totalWords: snapshot.metrics?.totalWords ?? editedArticle.value.totalWords,
-    savedAmount: snapshot.metrics?.savedAmount ?? editedArticle.value.savedAmount,
-    savedTimeMinutes: snapshot.metrics?.savedTimeMinutes ?? editedArticle.value.savedTimeMinutes,
-  })
-  if (snapshot.tags) articleTags.value = snapshot.tags
-  restoredGenerationSessionId.value = recovery.id
-  recoverableGeneration.value = null
-  if (isNew) await saveDraftNow()
-}
-const dismissGeneration = async () => {
-  if (recoverableGeneration.value) await resolveGenerationSession(recoverableGeneration.value.id, 'dismiss')
 }
 
 const generationRun = useTemplateRef<ComponentPublicInstance>('generationRun')
@@ -1486,7 +1375,7 @@ const confirmDiscard = async () => {
   const destination = pendingDestination.value ?? localePath({ name: 'admin' })
   if (ownsGeneration.value && !generation.running) {
     // Discarded on purpose, so it must not come back as a recovery offer.
-    if (generation.sessionId) void resolveGenerationSession(generation.sessionId, 'dismiss').catch(() => undefined)
+    if (generation.sessionId) void dismissGenerationSession(generation.sessionId).catch(() => undefined)
     generation.clear()
   }
   allowNavigation.value = true
@@ -1506,5 +1395,53 @@ watch(
   },
   // The generated title may already be in place when the author returns to the editor.
   { immediate: true },
+)
+
+const settingsPanelEvents = {
+  'onUpdate:tab': (value: 'article' | 'ai' | 'checks') => (settingsTab.value = value),
+  'onUpdate:selectedSeries': (value: ArticleSeriesSelection | null | undefined) =>
+    (selectedSeries.value = value ?? null),
+  'onUpdate:customPrompt': (value: string) => (customPrompt.value = value),
+  'onUpdate:aiOptions': (value: ArticleGenerationOptions) => (aiOptions.value = value),
+  'onUpdate:releaseAt': (value: string | null) => (releaseAtInput.value = value),
+  'onUpdate:sources': (value: string[]) => (sourcesModel.value = value),
+  onUpload: handleUpload,
+  onGenerate: generateAIContent,
+  onAddTag: addTag,
+  onRemoveTag: removeTag,
+  onQuickRelease: setReleaseQuick,
+  onRetryOptimization: retryOptimization,
+  onNavigateOptimization: navigateOptimization,
+  onRunFactCheck: runFactCheck,
+  onNavigateFactCheck: navigateFactCheck,
+  onNavigateFactCheckSources: navigateFactCheckSources,
+  onNavigateMedia: navigateMedia,
+  onAttachMedia: attachMedia,
+  onRefreshMediaRights: refreshMediaRights,
+}
+const settingsPanelBindings = computed(
+  () =>
+    ({
+      ...settingsPanelEvents,
+      tab: settingsTab.value,
+      selectedSeries: selectedSeries.value,
+      customPrompt: customPrompt.value,
+      aiOptions: aiOptions.value,
+      releaseAt: releaseAtInput.value,
+      sources: sourcesModel.value,
+      article: article.value,
+      imageUrl: editedArticle.value.imageUrl,
+      articleTags: articleTags.value,
+      aiAvailable: aiAvailable.value,
+      aiGenerating: aiGenerating.value,
+      optimizationState: aiGenerating.value ? 'analyzing' : optimizationState.value,
+      optimizationResult: aiGenerating.value ? null : optimizationResult.value,
+      factCheckState: factCheckState.value,
+      factCheckResult: factCheckResult.value,
+      factCheckCanRun: factCheckCanRun.value,
+      factCheckErrorKind: factCheckErrorKind.value,
+      mediaRightsState: mediaRightsState.value,
+      mediaRightsResult: mediaRightsResult.value,
+    }) satisfies InstanceType<typeof SettingsPanel>['$props'],
 )
 </script>

@@ -44,6 +44,15 @@ describe('editor publish dialog', () => {
     expect(await confirm(await mount({ scheduled: true }))).toEqual({ topiqu: true, shopify: 'draft' })
   })
 
+  it('reacts to channel and schedule props changed before reopening', async () => {
+    const wrapper = await mount({ open: false })
+    await wrapper.setProps({ scheduled: true, topiquEnabled: false, open: true })
+    expect(await confirm(wrapper)).toEqual({ topiqu: false, shopify: 'draft' })
+    await wrapper.setProps({ open: false })
+    await wrapper.setProps({ scheduled: false, topiquEnabled: undefined, open: true })
+    expect(await confirm(wrapper)).toEqual({ topiqu: true, shopify: 'published' })
+  })
+
   it('sends only to Shopify when the tenant has disabled its website channel', async () => {
     const wrapper = await mount({ topiquEnabled: false })
     expect(wrapper.findAllComponents({ name: 'UCheckbox' })[0]!.props('disabled')).toBe(true)
