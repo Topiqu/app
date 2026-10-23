@@ -40,6 +40,7 @@ interface AuthTelemetry {
   exception?: { values?: Array<{ value?: string; type?: string; stacktrace?: unknown; mechanism?: unknown }> }
   spans?: unknown[]
   user?: unknown
+  sdkProcessingMetadata?: { dynamicSamplingContext?: { transaction?: string } }
 }
 
 const diagnosticCodes = (data?: Record<string, unknown>) =>
@@ -64,6 +65,7 @@ export const scrubAuthEvent = <T extends AuthTelemetry>(event: T): T => {
     event.exception,
     event.spans,
     event.breadcrumbs,
+    event.sdkProcessingMetadata?.dynamicSamplingContext?.transaction,
   ])
   for (const breadcrumb of event.breadcrumbs ?? []) scrubAuthTransferBreadcrumb(breadcrumb)
   if (!sensitive) return event
@@ -77,6 +79,8 @@ export const scrubAuthEvent = <T extends AuthTelemetry>(event: T): T => {
     }
   }
   if (event.transaction) event.transaction = stripQuery(event.transaction)
+  const samplingContext = event.sdkProcessingMetadata?.dynamicSamplingContext
+  if (samplingContext?.transaction) samplingContext.transaction = stripQuery(samplingContext.transaction)
   if (event.message)
     event.message = /^[A-Z][A-Z0-9_]{1,79}$/.test(event.message) ? event.message : 'Authentication flow failed'
   if (event.logentry) event.logentry = { message: 'Authentication flow failed' }
