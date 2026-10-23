@@ -37,11 +37,11 @@ describe('media library server boundaries', () => {
     expect(safety).toContain('articleMediaUsage.count')
   })
 
-  it('keeps storage deletion behind a delayed task and allowed prefixes', () => {
+  it('retains physical objects until reference writers can be fenced throughout deletion', () => {
     const task = source('server/tasks/media-gc.ts')
     expect(task).toContain('findMediaReferences')
-    expect(task).toContain("key.startsWith('uploads/')")
-    expect(task).toContain("key.startsWith('article-images/')")
-    expect(task).toContain('deleteFromCdn(key, prefix)')
+    expect(task).toContain('defineMonitoredTask')
+    expect(task).toContain('quarantined')
+    expect(task).not.toContain('deleteFromCdn')
   })
 })

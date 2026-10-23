@@ -193,25 +193,45 @@ export const mediaLibraryAsset = (asset: any, usageCount = 0) => ({
   usageCount,
 })
 
+/** A null tenant is reserved for the system deletion review; request paths always pass their tenant. */
 export const findMediaReferences = async (
-  clientSiteId: string,
-  asset: { id: string; url: string; deliveryUrl?: string | null },
+  clientSiteId: string | null,
+  asset: { id: string; url: string; deliveryUrl?: string | null; storageKey?: string | null },
 ) => {
+  const scope = clientSiteId ? { clientSiteId } : {}
+  const urls = [asset.url, asset.deliveryUrl].filter((url): url is string => !!url)
   const needles = [asset.id, asset.url, asset.deliveryUrl].filter(Boolean) as string[]
   const bodyOr = needles.flatMap((needle) => [
     { content: { contains: `data-media-id="${needle}"` } },
     { content: { contains: `data-media-id='${needle}'` } },
     ...(needle === asset.id ? [] : [{ content: { contains: needle } }]),
   ])
-  const [usage, covers, draftCovers, articleBodies, translationBodies, draftBodies] = await Promise.all([
-    prisma.articleMediaUsage.count({ where: { clientSiteId, mediaAssetId: asset.id, deletedAt: null } }),
-    prisma.article.count({ where: { clientSiteId, coverMediaId: asset.id, deletedAt: null } }),
-    prisma.articleDraft.count({ where: { clientSiteId, coverMediaId: asset.id, deletedAt: null } }),
-    bodyOr.length ? prisma.article.count({ where: { clientSiteId, deletedAt: null, OR: bodyOr } }) : 0,
-    bodyOr.length ? prisma.articleTranslation.count({ where: { clientSiteId, deletedAt: null, OR: bodyOr } }) : 0,
-    bodyOr.length ? prisma.articleDraft.count({ where: { clientSiteId, deletedAt: null, OR: bodyOr } }) : 0,
+  const [usage, covers, draftCovers, articleBodies, translationBodies, draftBodies, sharedObjects] = await Promise.all([
+    prisma.articleMediaUsage.count({ where: { ...scope, mediaAssetId: asset.id, deletedAt: null } }),
+    prisma.article.count({
+      where: { ...scope, deletedAt: null, OR: [{ coverMediaId: asset.id }, { imageUrl: { in: urls } }] },
+    }),
+    prisma.articleDraft.count({
+      where: { ...scope, deletedAt: null, OR: [{ coverMediaId: asset.id }, { imageUrl: { in: urls } }] },
+    }),
+    bodyOr.length ? prisma.article.count({ where: { ...scope, deletedAt: null, OR: bodyOr } }) : 0,
+    bodyOr.length ? prisma.articleTranslation.count({ where: { ...scope, deletedAt: null, OR: bodyOr } }) : 0,
+    bodyOr.length ? prisma.articleDraft.count({ where: { ...scope, deletedAt: null, OR: bodyOr } }) : 0,
+    clientSiteId
+      ? 0
+      : prisma.mediaAsset.count({
+          where: {
+            id: { not: asset.id },
+            purgedAt: null,
+            OR: [
+              { url: { in: urls } },
+              { deliveryUrl: { in: urls } },
+              ...(asset.storageKey ? [{ storageKey: asset.storageKey }] : []),
+            ],
+          },
+        }),
   ])
-  return usage + covers + draftCovers + articleBodies + translationBodies + draftBodies
+  return usage + covers + draftCovers + articleBodies + translationBodies + draftBodies + sharedObjects
 }
 
 type UsageDb = Pick<typeof prisma, 'mediaAsset' | 'articleMediaUsage'>
