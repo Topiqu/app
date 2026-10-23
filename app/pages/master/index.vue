@@ -4,7 +4,7 @@
   >
     <h1 class="sr-only">{{ $t('master.clientTable.title') }}</h1>
     <UButton
-      :to="localePath('/master/operations')"
+      :to="localePath({ name: 'master-operations' })"
       color="neutral"
       variant="soft"
       icon="mdi:heart-pulse"

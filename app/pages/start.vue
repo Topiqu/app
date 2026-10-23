@@ -23,9 +23,9 @@ definePageMeta({ shell: 'product', dashboardSidebar: false })
 
 const { data: auth, getSession } = useAuth()
 const localePath = useLocalePath()
-const pending = ref(true)
-const failed = ref(false)
-const createOpen = ref(false)
+const pending = shallowRef(true)
+const failed = shallowRef(false)
+const createOpen = shallowRef(false)
 const shopifyInstall = useCookie<string | null>(SHOPIFY_INSTALL_COOKIE)
 
 useSeoMeta({ robots: 'noindex, nofollow' })
