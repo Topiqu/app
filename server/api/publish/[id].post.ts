@@ -1,35 +1,17 @@
+import { requirePublicationDraft } from '../../utils/linkedin/access'
 import { publishDecisionAndExecute } from '../../utils/linkedin/publisher'
 
 export default defineEventHandler(async (event) => {
-  const { translate: t } = await useServerI18n(event)
-  const id = getRouterParam(event, 'id')
-  const user = await getSessionUser(event)
-
-  if (!id) throw createError({ statusCode: 400, message: t('common.errors.missing')! })
-  if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
-
-  const db = await getEnhancedPrisma(user)
-  const draft = await db.draftPost.findUnique({
-    where: { id },
-    select: {
-      task: {
-        select: { company: { select: { clientSiteId: true, clientSite: { select: { publishToLinkedIn: true } } } } },
-      },
-    },
-  })
-  if (!draft) throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
-
-  const siteId = draft.task.company.clientSiteId
-  const allowed = user.role === 'superadmin' || (user.role === 'admin' && user.clientSiteId === siteId)
-  if (!allowed) throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
-  if (user.role !== 'superadmin') await requireTenantScope(event, 'INTEGRATION_CONTROL', siteId)
+  const { user, clientSiteId, draft, translate: t } = await requirePublicationDraft(event)
   if (draft.task.company.clientSite.publishToLinkedIn === false)
     throw createError({ statusCode: 403, message: t('common.errors.publicationChannelDisabled')! })
+  if (!(await consumeRateLimit(`linkedin-publish:${clientSiteId}:${user.id}`, 5, 60)))
+    throw createError({ statusCode: 429, message: t('common.errors.tooManyRequests')! })
 
   try {
-    const result = await publishDecisionAndExecute(id)
+    const result = await publishDecisionAndExecute(draft.id)
     return { success: true, ...result }
-  } catch (err: any) {
-    throw createError({ statusCode: 500, message: err.message })
+  } catch {
+    throw createError({ statusCode: 503, message: t('articles.workflowDrafts.publishFailed')! })
   }
 })
