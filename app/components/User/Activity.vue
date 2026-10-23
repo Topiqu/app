@@ -151,6 +151,7 @@
 </template>
 
 <script setup lang="ts">
+import { createAsyncDataDefault } from '~/utils/asyncDataDefaults'
 import { compareBySort, matchesFilters } from '~/utils/activityFilters'
 
 import type { ActivityArticle } from './ActivityArticle.vue'
@@ -220,7 +221,7 @@ const sortItems = computed(() =>
 
 const { data, pending, error, refresh } = await useFetch('/api/users/activity', {
   query: { page, limit, sort: sortOption },
-  default: () => ({
+  default: createAsyncDataDefault({
     likedArticles: [] as ActivityArticle[],
     comments: [] as ActivityComment[],
     hasMore: { likedArticles: true, comments: true },

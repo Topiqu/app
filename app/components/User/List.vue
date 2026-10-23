@@ -91,6 +91,8 @@
 </template>
 
 <script setup lang="ts">
+import { useUserSearch } from '~/composables/useUserSearch'
+
 const open = defineModel<boolean>({ default: false })
 const confirm = useConfirm()
 const toast = useToast()
@@ -111,16 +113,7 @@ const loading = shallowRef<boolean>(false)
 const users = shallowRef<any[]>([])
 const total = shallowRef<number>(0)
 
-const {
-  data: usersData,
-  pending: fetching,
-  error,
-  refresh,
-} = useFetch(() => `/api/users?page=${page.value}&query=${searchQuery.value}`, {
-  default: () => ({ data: [], total: 0 }),
-  immediate: false,
-  watch: false,
-})
+const { data: usersData, pending: fetching, error, refresh } = useUserSearch(page, searchQuery)
 
 watch(
   open,

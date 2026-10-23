@@ -36,12 +36,14 @@
   </UModal>
 </template>
 
-<script lang="ts" setup>
+<script setup lang="ts">
+import { useFollowProfiles } from '~/composables/useFollowProfiles'
+
 const localePath = useLocalePath()
 
 const open = defineModel<boolean>({ default: false })
 
-const { type } = defineProps<{ type: 'followers' | 'followed' }>()
+const props = defineProps<{ type: 'followers' | 'followed' }>()
 
-const { data, pending, error } = await useFetch(() => `/api/follows/${type}`)
+const { data, pending, error } = await useFollowProfiles(toRef(props, 'type'))
 </script>
