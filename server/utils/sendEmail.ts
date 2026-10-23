@@ -12,6 +12,7 @@ interface EmailData {
   lang?: Language
   template: string
   data: Record<string, string>
+  abortSignal?: AbortSignal
 }
 
 const messageCache = new Map<Language, any>()
@@ -81,7 +82,7 @@ const getEmailTemplate = async (id: string): Promise<string> => {
   return templateCache.get(id) as string
 }
 
-export const sendEmail = async ({ event, to, template, data, lang: forcedLang }: EmailData) => {
+export const sendEmail = async ({ event, to, template, data, lang: forcedLang, abortSignal }: EmailData) => {
   const lang = forcedLang ?? (event ? (getCookie(event, 'i18n_lang') as Language | undefined) : undefined) ?? 'en'
 
   const messages = await getEmailLocaleMessages(lang)
@@ -129,12 +130,13 @@ export const sendEmail = async ({ event, to, template, data, lang: forcedLang }:
     })
 
     if (errors.length) {
-      console.warn('[MJML Validation Warnings]:', errors)
+      // Parser diagnostics include rendered content, which can contain verification secrets.
+      console.warn('[MJML Validation Warnings]:', { template, count: errors.length })
     }
 
     finalHtml = rawHtml
-  } catch (error) {
-    console.error('[MJML Compilation Error]:', { template, error })
+  } catch {
+    console.error('[MJML Compilation Error]:', { template })
     throw createError('MJML compilation failed due to a syntax or parser error.')
   }
 
@@ -191,7 +193,7 @@ export const sendEmail = async ({ event, to, template, data, lang: forcedLang }:
   })
 
   try {
-    await client.send(command)
+    await client.send(command, { abortSignal })
   } catch (error) {
     console.error('[SES Email Error]:', error)
     throw createError(`Failed to send email via SES: ${error}`)

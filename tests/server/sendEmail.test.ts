@@ -1,6 +1,7 @@
 // @vitest-environment node
 import type { SendEmailCommandInput } from '@aws-sdk/client-ses'
 
+import mjml2html from 'mjml'
 import { join } from 'node:path'
 import { readFile } from 'node:fs/promises'
 import { mockNuxtImport } from '@nuxt/test-utils/runtime'
@@ -8,7 +9,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { sendEmail } from '../../server/utils/sendEmail'
 
-const { sentCommands } = vi.hoisted(() => ({ sentCommands: [] as SendEmailCommandInput[] }))
+const { sentCommands, sentSignals } = vi.hoisted(() => ({
+  sentCommands: [] as SendEmailCommandInput[],
+  sentSignals: [] as (AbortSignal | undefined)[],
+}))
+
+vi.mock('mjml', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('mjml')>()
+  return { ...actual, default: vi.fn(actual.default) }
+})
 
 mockNuxtImport('useRuntimeConfig', () => () => ({
   awsRegion: 'eu-central-1',
@@ -23,8 +32,9 @@ vi.mock('@aws-sdk/client-ses', async (importOriginal) => {
   return {
     ...actual,
     SESClient: class {
-      async send(command: InstanceType<typeof actual.SendEmailCommand>) {
+      async send(command: InstanceType<typeof actual.SendEmailCommand>, options?: { abortSignal?: AbortSignal }) {
         sentCommands.push(command.input)
+        sentSignals.push(options?.abortSignal)
         return { MessageId: 'test' }
       }
     },
@@ -88,6 +98,7 @@ describe('transactional email rendering', () => {
   })
   beforeEach(() => {
     sentCommands.length = 0
+    sentSignals.length = 0
     vi.stubGlobal('useStorage', (base: string) => {
       const directory = join(process.cwd(), 'emails', base.endsWith('locales') ? 'locales' : 'templates')
       return {
@@ -100,6 +111,41 @@ describe('transactional email rendering', () => {
   afterEach(() => {
     vi.unstubAllGlobals()
     vi.restoreAllMocks()
+  })
+
+  it('forwards the caller timeout signal to the mail transport', async () => {
+    const controller = new AbortController()
+    await sendEmail({
+      to: 'reader@example.invalid',
+      lang: 'en',
+      template: 'verificationCode',
+      data,
+      abortSignal: controller.signal,
+    })
+    expect(sentSignals).toEqual([controller.signal])
+  })
+
+  it('keeps rendered verification secrets out of MJML validation diagnostics', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    vi.mocked(mjml2html).mockResolvedValueOnce({
+      html: '<html></html>',
+      json: { tagName: 'mjml', children: [] },
+      errors: [{ line: 1, tagName: 'mj-text', message: 'aabbccdd', formattedMessage: '<mj-text>aabbccdd</mj-text>' }],
+    })
+    await sendEmail({ to: 'reader@example.invalid', lang: 'en', template: 'verificationCode', data })
+    expect(warn).toHaveBeenCalledOnce()
+    expect(JSON.stringify(warn.mock.calls)).not.toContain('aabbccdd')
+    expect(warn).toHaveBeenCalledWith('[MJML Validation Warnings]:', { template: 'verificationCode', count: 1 })
+  })
+
+  it('keeps rendered verification secrets out of MJML compilation failures', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.mocked(mjml2html).mockRejectedValueOnce(new Error('Invalid rendered token aabbccdd'))
+    await expect(
+      sendEmail({ to: 'reader@example.invalid', lang: 'en', template: 'verificationCode', data }),
+    ).rejects.toThrow('MJML compilation failed')
+    expect(log).toHaveBeenCalledOnce()
+    expect(log.mock.calls[0]![1]).toEqual({ template: 'verificationCode' })
   })
 
   it.each(cases)('renders $template in $locale with HTML and plain text', async ({ locale, template }) => {
