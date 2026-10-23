@@ -1,6 +1,6 @@
 import type { MaybeRefOrGetter } from 'vue'
 
-const MAX_AVATAR_BYTES = 10 * 1024 * 1024
+import { AVATAR_MAX_UPLOAD_BYTES } from '~~/shared/utils/uploadLimits'
 type Translate = (key: string) => string
 export type ImageFrameFit = 'cover' | 'contain'
 
@@ -16,18 +16,18 @@ export const imageFrameScale = (
 }
 
 interface CropperOptions {
-  viewportWidth?: number
-  viewportHeight?: number
-  outputWidth?: number
-  outputHeight?: number
+  viewportWidth?: MaybeRefOrGetter<number>
+  viewportHeight?: MaybeRefOrGetter<number>
+  outputWidth?: MaybeRefOrGetter<number>
+  outputHeight?: MaybeRefOrGetter<number>
   fit?: MaybeRefOrGetter<ImageFrameFit>
 }
 
 export function useAvatarCropper(t: Translate, onPreview: (url: string | null) => void, options: CropperOptions = {}) {
-  const viewportWidth = options.viewportWidth ?? 288
-  const viewportHeight = options.viewportHeight ?? 288
-  const outputWidth = options.outputWidth ?? 1024
-  const outputHeight = options.outputHeight ?? 1024
+  const viewportWidth = () => toValue(options.viewportWidth) ?? 288
+  const viewportHeight = () => toValue(options.viewportHeight) ?? 288
+  const outputWidth = () => toValue(options.outputWidth) ?? 1024
+  const outputHeight = () => toValue(options.outputHeight) ?? 1024
   const fit = () => toValue(options.fit) ?? 'cover'
   const selectedFile = shallowRef<File | null>(null)
   const draftUrl = useObjectUrl(selectedFile)
@@ -52,7 +52,7 @@ export function useAvatarCropper(t: Translate, onPreview: (url: string | null) =
     const image = sourceImage.value
     if (!image) return {}
     const { width, height } = rotatedDimensions(image)
-    const scale = imageFrameScale(width, height, viewportWidth, viewportHeight, fit()) * zoom.value
+    const scale = imageFrameScale(width, height, viewportWidth(), viewportHeight(), fit()) * zoom.value
     return {
       left: `calc(50% + ${offset.x}px)`,
       top: `calc(50% + ${offset.y}px)`,
@@ -89,9 +89,9 @@ export function useAvatarCropper(t: Translate, onPreview: (url: string | null) =
     const image = sourceImage.value
     if (!image) return
     const { width, height } = rotatedDimensions(image)
-    const scale = imageFrameScale(width, height, viewportWidth, viewportHeight, fit()) * zoom.value
-    const maxX = Math.abs(width * scale - viewportWidth) / 2
-    const maxY = Math.abs(height * scale - viewportHeight) / 2
+    const scale = imageFrameScale(width, height, viewportWidth(), viewportHeight(), fit()) * zoom.value
+    const maxX = Math.abs(width * scale - viewportWidth()) / 2
+    const maxY = Math.abs(height * scale - viewportHeight()) / 2
     offset.x = Math.max(-maxX, Math.min(maxX, offset.x))
     offset.y = Math.max(-maxY, Math.min(maxY, offset.y))
   }
@@ -113,47 +113,64 @@ export function useAvatarCropper(t: Translate, onPreview: (url: string | null) =
 
   function acceptFile(file: File) {
     errorMessage.value = ''
-    if (!file.type.startsWith('image/') || file.size > MAX_AVATAR_BYTES) {
-      errorMessage.value = file.size > MAX_AVATAR_BYTES ? t('common.avatar.tooLarge') : t('common.avatar.invalidFile')
+    if (!file.type.startsWith('image/') || file.size > AVATAR_MAX_UPLOAD_BYTES) {
+      errorMessage.value =
+        file.size > AVATAR_MAX_UPLOAD_BYTES ? t('common.avatar.tooLarge') : t('common.avatar.invalidFile')
       resetDialog()
       return
     }
+    sourceImage.value = null
+    onPreview(null)
     selectedFile.value = file
     resetCrop()
   }
 
   onChange((files) => files?.[0] && acceptFile(files[0]))
 
-  watch(draftUrl, (url) => {
+  watch(draftUrl, (url, _previous, onCleanup) => {
+    sourceImage.value = null
     if (!url) return onPreview(null)
     const image = new Image()
+    let active = true
+    const clearListeners = () => {
+      image.onload = null
+      image.onerror = null
+    }
+    onCleanup(() => {
+      active = false
+      clearListeners()
+    })
     image.onload = () => {
+      if (!active || draftUrl.value !== url) return
+      clearListeners()
       sourceImage.value = image
       onPreview(url)
     }
     image.onerror = () => {
+      if (!active || draftUrl.value !== url) return
+      clearListeners()
       errorMessage.value = t('common.avatar.invalidFile')
       selectedFile.value = null
     }
     image.src = url
   })
 
-  watch([zoom, rotation, fit], clampOffset)
+  watch([zoom, rotation, fit, viewportWidth, viewportHeight], clampOffset)
 
   async function render() {
     const image = sourceImage.value
     if (!image) throw new Error(t('common.avatar.invalidFile'))
     const canvas = document.createElement('canvas')
-    canvas.width = outputWidth
-    canvas.height = outputHeight
+    canvas.width = outputWidth()
+    canvas.height = outputHeight()
     const context = canvas.getContext('2d')
     if (!context) throw new Error(t('common.avatar.processingError'))
 
     const { width, height } = rotatedDimensions(image)
-    const scale = imageFrameScale(width, height, outputWidth, outputHeight, fit()) * zoom.value
+    const scale = imageFrameScale(width, height, outputWidth(), outputHeight(), fit()) * zoom.value
     context.translate(
-      outputWidth / 2 + offset.x * (outputWidth / viewportWidth),
-      outputHeight / 2 + offset.y * (outputHeight / viewportHeight),
+      outputWidth() / 2 + offset.x * (outputWidth() / viewportWidth()),
+      outputHeight() / 2 + offset.y * (outputHeight() / viewportHeight()),
     )
     context.rotate((rotation.value * Math.PI) / 180)
     context.scale(scale, scale)
