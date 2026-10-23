@@ -25,6 +25,9 @@
 import type { Language } from '~~/shared/utils/language'
 import type { ArticleCardData } from '~~/shared/types/article'
 
+import { useArticleFeed } from '~/composables/useArticleFeed'
+import { createAsyncDataDefault } from '~/utils/asyncDataDefaults'
+
 definePageMeta({ shell: 'publication' })
 
 const route = useRoute()
@@ -49,18 +52,24 @@ const query = computed(() => ({
   sort: sort.value,
   site: clientSite.name,
 }))
+const requestFetch = useRequestFetch()
 
 const {
   data: tag,
   pending,
   refresh,
   error,
-} = await useFetch(`/api/tags/slug/${encodeURIComponent(tagSlug.value)}`, {
-  key: `tag-${tagSlug.value}`,
-  query,
-  default: () => ({ id: '', name: '', slug: '', articles: [], hasMore: false, total: 0 }),
-  watch: false,
-})
+} = await useArticleFeed(
+  `tag-${tagSlug.value}`,
+  (signal) =>
+    requestFetch(`/api/tags/slug/${encodeURIComponent(tagSlug.value)}`, {
+      query: query.value,
+      signal,
+    }),
+  {
+    default: createAsyncDataDefault({ id: '', name: '', slug: '', articles: [], hasMore: false, total: 0 }),
+  },
+)
 
 if (error.value || (!pending.value && !tag.value?.id)) {
   throw createError({

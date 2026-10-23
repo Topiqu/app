@@ -27,12 +27,14 @@
           <UButton
             :color="isFollowing ? 'primary' : 'neutral'"
             :variant="isFollowing ? 'solid' : 'soft'"
-            :icon="isFollowing ? 'mdi:account-check' : 'mdi:account-plus'"
+            :icon="followError ? 'mdi:refresh' : isFollowing ? 'mdi:account-check' : 'mdi:account-plus'"
             :loading="followPending"
             :disabled="followPending"
             @click="$emit('follow')"
           >
-            {{ isFollowing ? $t('profile.unfollow') : $t('profile.follow') }}
+            {{
+              followError ? $t('common.messages.retry') : isFollowing ? $t('profile.unfollow') : $t('profile.follow')
+            }}
           </UButton>
         </div>
       </div>
@@ -70,6 +72,7 @@ defineProps<{
   isFollowing: boolean
   showFollowButton: boolean
   followPending?: boolean
+  followError?: boolean
   excerpt?: string | null
   imageUrl?: string | null
   imageCredit?: CoverCredit | null

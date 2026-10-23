@@ -24,6 +24,7 @@
           :isFollowing="follow?.following ?? false"
           :showFollowButton="follow?.visible ?? false"
           :followPending="follow?.pending"
+          :followError="follow?.error"
           :excerpt="article.excerpt"
           :imageUrl="article.imageUrl"
           :imageCredit="article.imageCredit"
@@ -169,7 +170,7 @@ const { article, discloseAi = false } = defineProps<{
   aiDisclosure?: string | null
   discloseAi?: boolean
   ad?: AdProvider
-  follow?: { count: number; following: boolean; visible: boolean; pending: boolean }
+  follow?: { count: number; following: boolean; visible: boolean; pending: boolean; error?: boolean }
 }>()
 
 const emit = defineEmits<{ follow: []; share: [platform: SharePlatform] }>()

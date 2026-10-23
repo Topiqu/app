@@ -9,7 +9,8 @@
         count: data.followerCount || 0,
         following: isFollowing,
         visible: !!session?.user && session.user.id !== data.user.id,
-        pending: followPending,
+        pending: followPending || followStatusPending,
+        error: !!followStatusError,
       }"
       @follow="toggleFollow"
       @share="share"
@@ -151,7 +152,6 @@
 </template>
 
 <script setup lang="ts">
-import type { User } from '~~/generated/zenstack/models'
 import type { Language } from '~~/shared/utils/language'
 import type { CoverCredit } from '~~/shared/utils/imageCredit'
 
@@ -161,6 +161,9 @@ import { canManageArticle } from '~~/shared/utils/articleEditor'
 import { localeRedirectSlug } from '~~/shared/utils/articleLocale'
 
 import type { GamSizeMapping } from '~/composables/useGam'
+
+import { useArticleFeed } from '~/composables/useArticleFeed'
+import { emptyAsyncDataList } from '~/utils/asyncDataDefaults'
 
 definePageMeta({ shell: 'publication' })
 
@@ -231,22 +234,33 @@ if (redirectSlug) {
   )
 }
 
-const { data: follows, refresh: refreshFollows } = await useLazyFetch<User[]>('/api/follows/followed', {
-  immediate: Boolean(session.value?.user),
-  default: () => [],
-})
+const {
+  isFollowing: followedStatus,
+  known: followStatusKnown,
+  pending: followStatusPending,
+  error: followStatusError,
+  refresh: refreshFollows,
+} = useFollowStatus(() => data.value?.user.id)
 
-const { data: relatedArticles, pending } = await useFetch(() => `/api/articles/${slug.value}/related`, {
-  lazy: true,
-  default: () => [],
-  // Without the article there is no clientSiteId, and the request can only 400.
-  immediate: Boolean(data.value),
-  query: computed(() => ({
-    limit: 3,
-    clientSiteId: data.value?.clientSiteId,
-    locale: data.value?.language,
-  })),
-})
+const requestFetch = useRequestFetch()
+const { data: relatedArticles, pending } = await useArticleFeed(
+  computed(() => `article-related:${slug.value}:${data.value?.clientSiteId ?? ''}:${data.value?.language ?? ''}`),
+  (signal) =>
+    requestFetch(`/api/articles/${slug.value}/related`, {
+      signal,
+      query: {
+        limit: 3,
+        clientSiteId: data.value?.clientSiteId,
+        locale: data.value?.language,
+      },
+    }),
+  {
+    lazy: true,
+    default: emptyAsyncDataList,
+    // Without the article there is no clientSiteId, and the request can only 400.
+    immediate: Boolean(data.value),
+  },
+)
 
 const primaryLocale = computed(() => data.value?.primaryLanguage ?? clientSite?.language ?? 'en')
 
@@ -283,61 +297,81 @@ const { trackView } = useArticleTracking(computed(() => data.value?.id))
 
 const { share, copyLink, toggleComments, debouncedSetStatus } = useArticleActions(data, refresh)
 
-const isFollowing = shallowRef(follows.value?.some((f) => f.id === data.value?.userId) || false)
-watch(follows, (users) => {
-  isFollowing.value = users?.some((user) => user.id === data.value?.userId) || false
+const isFollowing = shallowRef(followedStatus.value)
+watch([followStatusKnown, followedStatus], ([known, following]) => {
+  if (known) isFollowing.value = following
 })
 const followPending = shallowRef(false)
+let followSequence = 0
+watch(
+  [() => session.value?.user.id, () => data.value?.id, () => data.value?.user.id],
+  () => {
+    followSequence++
+    followPending.value = false
+    isFollowing.value = followStatusKnown.value && followedStatus.value
+  },
+  { flush: 'sync' },
+)
+onScopeDispose(() => followSequence++)
 const optimisticStatus = useOptimisticStatus()
 const toggleFollow = async () => {
   if (!session.value?.user || !data.value?.user.id)
     return toast.add({ color: 'error', title: $t('common.auth.loginPrompt') })
-  if (followPending.value) return
+  if (followPending.value || session.value.user.id === data.value.user.id) return
+  if (!followStatusKnown.value) {
+    await refreshFollows()
+    return
+  }
 
+  const viewerId = session.value.user.id
+  const articleId = data.value.id
+  const authorId = data.value.user.id
+  const authorName = data.value.user.username
+  const sequence = ++followSequence
+  const current = () =>
+    sequence === followSequence &&
+    session.value?.user.id === viewerId &&
+    data.value?.id === articleId &&
+    data.value.user.id === authorId
   const previousFollowing = isFollowing.value
   const previousCount = data.value.followerCount ?? 0
   const nextFollowing = !previousFollowing
   followPending.value = true
   isFollowing.value = nextFollowing
   data.value.followerCount = Math.max(0, previousCount + (nextFollowing ? 1 : -1))
-  optimisticStatus.saving()
+  const statusSequence = optimisticStatus.saving()
 
   try {
-    if (previousFollowing) {
-      const response = await $fetch<{ success: true; followerCount: number }, '/api/follows/:id'>(
-        `/api/follows/${data.value.user.id}` as '/api/follows/:id',
-        {
+    const response = previousFollowing
+      ? await $fetch<{ followerCount: number }, '/api/follows/:id'>(`/api/follows/${authorId}` as '/api/follows/:id', {
           method: 'DELETE',
-        },
-      )
-      if (data.value) data.value.followerCount = response.followerCount ?? 0
-      toast.add({
-        color: 'success',
-        title: $t('common.messages.successGeneral'),
-      })
-    } else {
-      const response = await $fetch<{ followerCount: number }, '/api/follows'>(`/api/follows/` as '/api/follows', {
-        method: 'POST',
-        body: { followedId: data.value.user.id },
-      })
-      if (data.value) data.value.followerCount = response.followerCount ?? 0
-      toast.add({
-        color: 'success',
-        title: $t('profile.messages.followSuccess', [data.value.user.username]),
-      })
-    }
-    optimisticStatus.saved()
+        })
+      : await $fetch<{ followerCount: number }, '/api/follows'>('/api/follows', {
+          method: 'POST',
+          body: { followedId: authorId },
+        })
+    optimisticStatus.saved(statusSequence)
+    if (!current()) return
+    if (data.value) data.value.followerCount = response.followerCount ?? 0
+    toast.add({
+      color: 'success',
+      title: previousFollowing
+        ? $t('common.messages.successGeneral')
+        : $t('profile.messages.followSuccess', [authorName]),
+    })
     await refreshFollows()
   } catch (e: unknown) {
     const err = e as { data?: { statusCode?: number; message?: string } }
     if (err.data?.statusCode === 409 && !previousFollowing) {
+      optimisticStatus.saved(statusSequence)
+      if (!current()) return
       isFollowing.value = true
       await refreshFollows()
-      optimisticStatus.saved()
     } else {
+      optimisticStatus.reverted(statusSequence)
+      if (!current()) return
       isFollowing.value = previousFollowing
       if (data.value) data.value.followerCount = previousCount
-      optimisticStatus.reverted()
       toast.add({
         color: 'error',
         title:
@@ -346,7 +380,7 @@ const toggleFollow = async () => {
       })
     }
   } finally {
-    followPending.value = false
+    if (current()) followPending.value = false
   }
 }
 

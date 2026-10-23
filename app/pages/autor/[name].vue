@@ -11,10 +11,17 @@
               v-if="auth?.user?.id !== author.id"
               color="neutral"
               :variant="isFollowing ? 'soft' : 'solid'"
-              :icon="isFollowing ? 'mdi:account-check' : 'mdi:account-plus'"
-              :loading="followPending"
+              :icon="followStatusError ? 'mdi:refresh' : isFollowing ? 'mdi:account-check' : 'mdi:account-plus'"
+              :loading="followPending || followStatusPending"
+              :disabled="followPending || followStatusPending"
               @click="toggleFollow"
-              >{{ isFollowing ? $t('profile.unfollow') : $t('profile.follow') }}</UButton
+              >{{
+                followStatusError
+                  ? $t('common.messages.retry')
+                  : isFollowing
+                    ? $t('profile.unfollow')
+                    : $t('profile.follow')
+              }}</UButton
             >
           </div>
           <p v-if="author.bio" class="max-w-2xl text-sm leading-6 text-muted">{{ author.bio }}</p>
@@ -63,6 +70,9 @@ import type { ArticleCardData, PublicAuthorSummary } from '~~/shared/types/artic
 
 import { formatDate } from '~~/shared/utils'
 
+import { useArticleFeed } from '~/composables/useArticleFeed'
+import { createAsyncDataDefault } from '~/utils/asyncDataDefaults'
+
 type AuthorArticlesResponse = PublicAuthorSummary & {
   articles: Array<{ articleId: string; article: ArticleCardData }>
   hasMore: boolean
@@ -93,34 +103,40 @@ const query = computed(() => ({
 
 const clientSite = await useClientSite()
 const authorApiPath = `/api/articles/${encodeURIComponent(username.value)}/by-author`
+const requestFetch = useRequestFetch()
 
 const {
   data: author,
   pending,
   refresh,
   error,
-} = await useFetch<AuthorArticlesResponse>(authorApiPath, {
-  key: `author-${username.value}`,
-  query,
-  default: () => ({
-    id: '',
-    username: '',
-    articles: [],
-    hasMore: false,
-    total: 0,
-    bio: '',
-    avatarUrl: '',
-    joinedAt: '',
-    roleLabel: '',
-    articleCount: 0,
-    followerCount: 0,
-    followingCount: 0,
-    commentCount: 0,
-    totalArticleViews: 0,
-    totalArticleLikes: 0,
-  }),
-  watch: false,
-})
+} = await useArticleFeed(
+  `author-${username.value}`,
+  (signal) =>
+    requestFetch<AuthorArticlesResponse>(authorApiPath, {
+      query: query.value,
+      signal,
+    }),
+  {
+    default: createAsyncDataDefault({
+      id: '',
+      username: '',
+      articles: [],
+      hasMore: false,
+      total: 0,
+      bio: '',
+      avatarUrl: '',
+      joinedAt: '',
+      roleLabel: '',
+      articleCount: 0,
+      followerCount: 0,
+      followingCount: 0,
+      commentCount: 0,
+      totalArticleViews: 0,
+      totalArticleLikes: 0,
+    }),
+  },
+)
 
 if (error.value || (!pending.value && !author.value?.id)) {
   throw createError({ statusCode: 404, message: 'Author not found', fatal: true })
@@ -128,32 +144,53 @@ if (error.value || (!pending.value && !author.value?.id)) {
 
 const authorName = computed(() => author.value.username || '')
 const articles = computed(() => author.value.articles.map(({ article }) => article))
-const { data: following, refresh: refreshFollowing } = await useFetch<Array<{ id: string }>>('/api/follows/followed', {
-  immediate: Boolean(auth.value?.user),
-  default: () => [],
-})
-const isFollowing = computed(() => following.value.some((user) => user.id === author.value.id))
+const {
+  isFollowing,
+  known: followStatusKnown,
+  pending: followStatusPending,
+  error: followStatusError,
+  refresh: refreshFollowing,
+} = useFollowStatus(() => author.value.id)
 const followPending = shallowRef(false)
+let followSequence = 0
+watch(
+  [() => auth.value?.user.id, () => author.value.id],
+  () => {
+    followSequence++
+    followPending.value = false
+  },
+  { flush: 'sync' },
+)
+onScopeDispose(() => followSequence++)
 const toggleFollow = async () => {
   if (!auth.value?.user) return navigateTo(localePath({ name: 'autorizace' }))
   if (followPending.value || auth.value.user.id === author.value.id) return
+  if (!followStatusKnown.value) {
+    await refreshFollowing()
+    return
+  }
+  const viewerId = auth.value.user.id
+  const authorId = author.value.id
+  const sequence = ++followSequence
+  const current = () => sequence === followSequence && auth.value?.user.id === viewerId && author.value.id === authorId
   followPending.value = true
   try {
     const result = isFollowing.value
-      ? await $fetch<{ followerCount: number }, '/api/follows/:id'>(
-          `/api/follows/${author.value.id}` as '/api/follows/:id',
-          { method: 'DELETE' },
-        )
+      ? await $fetch<{ followerCount: number }, '/api/follows/:id'>(`/api/follows/${authorId}` as '/api/follows/:id', {
+          method: 'DELETE',
+        })
       : await $fetch<{ followerCount: number }, '/api/follows'>('/api/follows', {
           method: 'POST',
-          body: { followedId: author.value.id },
+          body: { followedId: authorId },
         })
+    if (!current()) return
     author.value.followerCount = result.followerCount
     await refreshFollowing()
   } catch (error) {
+    if (!current()) return
     toast.add({ color: 'error', title: fetchErrorMessage(error, $t('profile.messages.followFailed')) })
   } finally {
-    followPending.value = false
+    if (current()) followPending.value = false
   }
 }
 
