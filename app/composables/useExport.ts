@@ -8,10 +8,13 @@ export function useExport() {
     const link = document.createElement('a')
     link.href = url
     link.download = filename
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
+    try {
+      document.body.appendChild(link)
+      link.click()
+    } finally {
+      link.remove()
+      URL.revokeObjectURL(url)
+    }
   }
 
   const getFilename = (data: ArticleWithDetails[], ext: string) => {
@@ -53,10 +56,11 @@ export function useExport() {
 
     const headers = ['Title', 'Slug', 'Status', 'Date', 'ImageUrl', 'Content Preview']
 
-    const escapeCsv = (val: any) => {
+    const escapeCsv = (val: string | null | undefined) => {
       if (val === null || val === undefined) return ''
-      const str = String(val)
-      if (str.includes('"') || str.includes(',') || str.includes('\n')) {
+      // Spreadsheet applications can evaluate quoted formulas, including after leading whitespace.
+      const str = /^[\s\p{Cc}]*[=+\-@＝＋－＠]|^[\s\p{Cc}]*[\t\r\n]/u.test(val) ? `'${val}` : val
+      if (/[",\r\n]/.test(str)) {
         return `"${str.replace(/"/g, '""')}"`
       }
       return str
