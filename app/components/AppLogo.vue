@@ -12,5 +12,5 @@
 </template>
 
 <script setup lang="ts">
-withDefaults(defineProps<{ alt?: string }>(), { alt: 'Topiqu' })
+const { alt = 'Topiqu' } = defineProps<{ alt?: string }>()
 </script>

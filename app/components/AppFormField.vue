@@ -63,31 +63,49 @@
 </template>
 
 <script setup lang="ts">
-const props = withDefaults(
-  defineProps<{
-    modelValue?: string | number | boolean | null
-    id?: string
-    label?: string
-    description?: string
-    error?: string | boolean
-    hint?: string
-    name?: string
-    type?: string
-    placeholder?: string
-    maxLength?: number
-    rows?: number
-    min?: string | number
-    max?: string | number
-    step?: string | number
-    icon?: string
-    iconPosition?: 'leading' | 'trailing'
-    autocomplete?: string
-    disabled?: boolean
-    readonly?: boolean
-    required?: boolean
-  }>(),
-  { type: 'text', iconPosition: 'leading' },
-)
+const {
+  modelValue,
+  id,
+  label,
+  description,
+  error,
+  hint,
+  name,
+  type = 'text',
+  placeholder,
+  maxLength,
+  rows,
+  min,
+  max,
+  step,
+  icon,
+  iconPosition = 'leading',
+  autocomplete,
+  disabled,
+  readonly,
+  required,
+} = defineProps<{
+  modelValue?: string | number | boolean | null
+  id?: string
+  label?: string
+  description?: string
+  error?: string | boolean
+  hint?: string
+  name?: string
+  type?: string
+  placeholder?: string
+  maxLength?: number
+  rows?: number
+  min?: string | number
+  max?: string | number
+  step?: string | number
+  icon?: string
+  iconPosition?: 'leading' | 'trailing'
+  autocomplete?: string
+  disabled?: boolean
+  readonly?: boolean
+  required?: boolean
+}>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: string | number | boolean]
@@ -95,9 +113,9 @@ const emit = defineEmits<{
   keydown: [event: KeyboardEvent]
 }>()
 
-const stringValue = computed(() => String(props.modelValue ?? ''))
+const stringValue = computed(() => String(modelValue ?? ''))
 const emitValue = (value: string | number | boolean | undefined) => {
-  if (props.type === 'number') emit('update:modelValue', Number(value ?? 0))
+  if (type === 'number') emit('update:modelValue', Number(value ?? 0))
   else emit('update:modelValue', value ?? '')
 }
 </script>

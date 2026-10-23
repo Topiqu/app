@@ -61,7 +61,7 @@
 <script setup lang="ts">
 import type { ConfirmOptions } from '~/composables/useConfirm'
 
-const props = withDefaults(defineProps<ConfirmOptions>(), { confirmText: 'OK', variant: 'default' })
+const { title, message, icon, confirmText = 'OK', cancelText, variant = 'default' } = defineProps<ConfirmOptions>()
 const emit = defineEmits<{ close: [confirmed: boolean]; confirm: []; cancel: [] }>()
 const open = defineModel<boolean>('open', { default: false })
 const finish = (confirmed: boolean) => {
@@ -74,15 +74,13 @@ const onOpenChange = (isOpen: boolean) => {
   if (isOpen) open.value = true
   else finish(false)
 }
-const confirmColor = computed(() =>
-  props.variant === 'danger' ? 'error' : props.variant === 'success' ? 'success' : 'primary',
-)
+const confirmColor = computed(() => (variant === 'danger' ? 'error' : variant === 'success' ? 'success' : 'primary'))
 const resolvedIcon = computed(
   () =>
-    props.icon ||
-    (props.variant === 'danger'
+    icon ||
+    (variant === 'danger'
       ? 'mdi:alert-outline'
-      : props.variant === 'success'
+      : variant === 'success'
         ? 'mdi:check-circle-outline'
         : 'mdi:help-circle-outline'),
 )
