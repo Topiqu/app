@@ -13,6 +13,7 @@ import {
 import { aiReasoning } from './reasoning'
 import { researchTopic } from './researchEvidence'
 import { editorialPolicy } from './editorialPolicy'
+import { readCommunityInsight } from '../community'
 import { AUTHOR_ACCOUNT_RULE } from './articleQuality'
 import { retrieveKnowledge } from '../knowledge/retrieve'
 import { auditArticleStep, type ArticleGenerationAudit } from '../articleGenerationAudit'
@@ -277,8 +278,9 @@ export const buildArticleConfig = async (
       ? `\nYou have no live search results for this article. "sources" may contain only citable first-party URLs; otherwise return it empty. Do not state specific statistics, percentages, study results or named-organisation findings that the first-party knowledge does not ground.`
       : `\nYou have no live search results for this article. Return an empty "sources" array rather than inventing URLs. Do not state specific statistics, percentages, study results or named-organisation findings you cannot ground — write about the topic without inventing figures.`
 
-  const communityPrompt = communityInsight
-    ? `\nCommunity Insights to consider:\n- Audience mood summary: ${(communityInsight as any).summary}\n- Frequently discussed points: ${((communityInsight as any).topPoints || []).join(', ')}\nEnsure the article subtly addresses or acknowledges these current community feelings and discussion points where relevant.`
+  const insight = readCommunityInsight(communityInsight)
+  const communityPrompt = insight
+    ? `\nCommunity Insights to consider:\n- Audience mood summary: ${insight.summary}\n- Frequently discussed points: ${insight.topPoints.join(', ')}\nEnsure the article subtly addresses or acknowledges these current community feelings and discussion points where relevant.`
     : ''
 
   // No format is the manual editor flow, where the author's prompt is the brief — it keeps the

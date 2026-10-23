@@ -87,6 +87,7 @@ export const finalizeArticle = async (
     audit,
   } = callbacks
   const generateImageOptions = {
+    clientSiteId,
     outputDir: 'article-images',
     filenamePrefix: 'article',
   }
@@ -98,14 +99,14 @@ export const finalizeArticle = async (
   const tryGenerateImage = async (prompt: string, opts?: { filenameSuffix?: string }) => {
     if (!allowGeneratedImages) return null
     try {
-      const { url, width, height } = await auditArticleStep(
+      const { url, width, height, storageKey, mimeType, sizeBytes, contentHash } = await auditArticleStep(
         audit,
         'image_generation',
         () => generateImage(prompt, { ...generateImageOptions, ...opts, abortSignal }),
         () => ({}),
         { slot: opts?.filenameSuffix ?? 'cover' },
       )
-      return { url, width, height }
+      return { url, width, height, storageKey, mimeType, sizeBytes, contentHash }
     } catch (error) {
       await reportCaughtError('Article image generation failed', error, { prompt })
       return null

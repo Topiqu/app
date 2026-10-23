@@ -172,6 +172,56 @@ describe('article media finalization', () => {
     expect(result.articleImageCredit?.kind).toBe('ai')
   })
 
+  it('preserves tenant ownership and generated file metadata when registering cover and inline media', async () => {
+    vi.mocked(findStockImage).mockResolvedValue(null)
+    let sequence = 0
+    vi.mocked(generateImage).mockImplementation(async (_prompt, opts) => {
+      const id = ++sequence
+      const storageKey = `article-images/${opts?.clientSiteId}/generated-${id}.webp`
+      return {
+        url: `https://cdn.example.invalid/${storageKey}`,
+        storageKey,
+        mimeType: 'image/webp',
+        contentHash: `hash-${id}`,
+        sizeBytes: 100 + id,
+        width: 1200,
+        height: 800,
+      } as never
+    })
+    const register = vi.fn(async (input: Parameters<typeof registerMediaAsset>[0]) => ({ ...input, id: input.url }))
+    vi.stubGlobal('registerMediaAsset', register)
+    const object = {
+      ...draft(),
+      coverImage: aiCover(),
+      content: '<p>Article</p>[[IMAGE1]]',
+      images: [{ type: 'generate' as const, query: 'editorial landscape', caption: 'Landscape' }],
+    }
+
+    const results = await Promise.all(
+      ['tenant-a', 'tenant-b'].map((clientSiteId) =>
+        finalizeArticle(object, 'en', { clientSiteId, allowGeneratedImages: true }),
+      ),
+    )
+
+    expect(register).toHaveBeenCalledTimes(4)
+    for (const [input] of register.mock.calls) {
+      expect(input.storageKey).toMatch(new RegExp(`^article-images/${input.clientSiteId}/generated-`))
+      expect(input).toMatchObject({
+        origin: 'TOPIQU_AI',
+        mimeType: 'image/webp',
+        contentHash: expect.stringMatching(/^hash-/),
+        sizeBytes: expect.any(Number),
+        width: 1200,
+        height: 800,
+      })
+      expect(input.url).toBe(`https://cdn.example.invalid/${input.storageKey}`)
+    }
+    for (const [index, clientSiteId] of ['tenant-a', 'tenant-b'].entries()) {
+      expect(results[index]?.articleImageUrl).toContain(`/article-images/${clientSiteId}/`)
+      expect(results[index]?.content).toContain(`/article-images/${clientSiteId}/`)
+    }
+  })
+
   it('describes a generated body image with its instruction, never a searched one', async () => {
     vi.mocked(findStockImage)
       .mockResolvedValueOnce(hit('cover'))
