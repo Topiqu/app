@@ -27,17 +27,19 @@ describe('article image relevance and uniqueness', () => {
     expect(matchesImageQuery('Ciri in The Witcher 4', 'The Witcher 4 Ciri screenshot')).toBe(true)
   })
 
-  it('filters relevance before preferring landscape images', () => {
+  it('filters relevance before preferring landscape images', async () => {
     expect(
-      pickOpenverseImage(
-        [
-          { title: 'Forest', url: 'https://images.test/forest', width: 1600, height: 900 },
-          { title: 'The Witcher 4 Ciri', url: 'https://images.test/ciri', width: 900, height: 1600 },
-        ],
-        'Witcher 4 Ciri',
+      (
+        await pickOpenverseImage(
+          [
+            { title: 'Forest', url: 'https://images.test/forest', width: 1600, height: 900 },
+            { title: 'The Witcher 4 Ciri', url: 'https://images.test/ciri', width: 900, height: 1600 },
+          ],
+          'Witcher 4 Ciri',
+        )
       )?.url,
     ).toBe('https://images.test/ciri')
-    expect(pickOpenverseImage([{ title: 'Witcher 3', url: 'https://images.test/old' }], 'Witcher 4')).toBeNull()
+    expect(await pickOpenverseImage([{ title: 'Witcher 3', url: 'https://images.test/old' }], 'Witcher 4')).toBeNull()
   })
 
   it('rejects cover reuse, resized copies, and different URLs with the same source page', () => {

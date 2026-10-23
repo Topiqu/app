@@ -13,6 +13,7 @@ export type ArticleGenerationStage =
   | 'revision'
   | 'media'
   | 'image_generation'
+  | 'image_check'
   | 'linking'
   | 'series'
   | 'persistence'

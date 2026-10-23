@@ -1,6 +1,6 @@
 import type { ImageKind } from '~~/shared/utils/imageCredit'
 
-import type { ImageIntent, ImageProvider, StockImage } from './types'
+import type { ImageAccept, ImageIntent, ImageProvider, StockImage } from './types'
 
 import { openverse } from './openverse'
 import { wikimedia } from './wikimedia'
@@ -14,7 +14,7 @@ export const imageChains: Record<'photo' | 'stock', ImageProvider[]> = {
   stock: [openverse],
 }
 
-const firstHit = async (providers: ImageProvider[], query: string, accept?: (image: StockImage) => boolean) => {
+const firstHit = async (providers: ImageProvider[], query: string, accept?: ImageAccept) => {
   for (const provider of providers) {
     const image = await provider.search(query.trim(), accept)
     if (image) return image
@@ -28,7 +28,7 @@ export const findStockImage = async (
   intent: ImageIntent,
   query: string,
   chains = imageChains,
-  accept?: (image: StockImage) => boolean,
+  accept?: ImageAccept,
 ): Promise<{ image: StockImage; kind: ImageKind } | null> => {
   if (intent === 'photo' || intent === 'generate') {
     const documentary = await firstHit(chains.photo, query, accept)
