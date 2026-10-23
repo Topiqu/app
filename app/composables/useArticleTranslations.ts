@@ -2,9 +2,11 @@ import {
   isTranslationDirty,
   resolveActiveLanguage,
   translationDraft,
+  translationVersion,
   translationHasBody,
   countAwaitingReview,
   type ArticleTranslationRow,
+  type TranslationDraft,
 } from '~~/shared/utils/articleTranslations'
 
 export interface ArticleTranslationsPayload {
@@ -66,89 +68,177 @@ export const useArticleTranslations = (articleId?: string, initialLang = '') => 
   })
 
   const draft = ref(translationDraft())
-  const pristine = ref(translationDraft())
-
-  watch(
-    active,
-    (row) => {
-      draft.value = translationDraft(row)
-      pristine.value = translationDraft(row)
-    },
-    { immediate: true },
-  )
-
-  const hasBody = computed(() => translationHasBody(active.value))
+  const pristine = shallowRef(translationDraft())
   const isDirty = computed(() => isTranslationDirty(draft.value, pristine.value))
-
-  const pending = shallowRef<'save' | 'publish' | 'translate' | 'discard' | null>(null)
+  const hasBody = computed(
+    () => translationHasBody(active.value) || (isDirty.value && !!draft.value.title && !!draft.value.content),
+  )
+  type PendingAction = 'save' | 'publish' | 'translate' | 'discard'
+  const pendingLanguages = shallowReactive(new Map<string, PendingAction>())
+  const pending = computed(() => pendingLanguages.get(activeLang.value) ?? null)
   const conflict = shallowRef(false)
+  let disposed = false
+  let viewVersion = 0
+  let identity: { language: string; id: string | null; expectedUpdatedAt: string | null } | undefined
 
-  const run = async (kind: NonNullable<typeof pending.value>, fn: () => Promise<unknown>, successKey: string) => {
-    if (pending.value) return
-    pending.value = kind
-    const language = activeLang.value
-    try {
-      await fn()
-      conflict.value = false
-      await refresh()
-      await invalidateArticleLists()
-      toast.add({
-        color: 'success',
-        title: t(successKey),
-        description: language ? t(`languages.${language}`) : undefined,
-      })
-    } catch (e: any) {
-      const code = e?.data?.data?.code ?? e?.data?.code
-      if (code === 'ARTICLE_EDIT_CONFLICT' || code === 'ARTICLE_VERSION_REQUIRED') {
+  const seed = (language: string, row?: ArticleTranslationRow) => {
+    draft.value = translationDraft(row)
+    pristine.value = translationDraft(row)
+    identity = { language, id: row?.id ?? null, expectedUpdatedAt: translationVersion(row) }
+    conflict.value = false
+  }
+  watch(
+    [activeLang, active],
+    ([language, row]) => {
+      if (identity?.language !== language) {
+        viewVersion++
+        seed(language, row)
+      } else if (!isDirty.value) seed(language, row)
+      else if (identity.id !== (row?.id ?? null) || identity.expectedUpdatedAt !== translationVersion(row))
         conflict.value = true
+    },
+    { immediate: true, flush: 'sync' },
+  )
+  onScopeDispose(() => {
+    disposed = true
+    viewVersion++
+    pendingLanguages.clear()
+  })
+
+  const patchTranslation = (translation: Partial<ArticleTranslationRow> & { id: string }) => {
+    data.value = {
+      ...data.value,
+      translations: data.value.translations.map((row) =>
+        row.id === translation.id ? { ...row, ...translation } : row,
+      ),
+    }
+  }
+  const run = async <T>(
+    kind: PendingAction,
+    fn: () => Promise<T>,
+    committed: (result: T, current: boolean) => void,
+    successKey: string,
+  ) => {
+    const language = activeLang.value
+    if (disposed || !articleId || !language || pendingLanguages.has(language)) return
+    const version = viewVersion
+    const current = () => !disposed && viewVersion === version && activeLang.value === language
+    pendingLanguages.set(language, kind)
+    try {
+      let result: T
+      try {
+        result = await fn()
+      } catch (error: unknown) {
+        if (!current()) return
+        const failure = error as { data?: { code?: string; data?: { code?: string } } } | null
+        const code = failure?.data?.data?.code ?? failure?.data?.code
+        if (code === 'ARTICLE_EDIT_CONFLICT' || code === 'ARTICLE_VERSION_REQUIRED') conflict.value = true
+        else toast.add({ color: 'error', title: fetchErrorMessage(error, t('common.messages.saveFailed')) })
         return
       }
-      toast.add({ color: 'error', title: fetchErrorMessage(e, t('common.messages.saveFailed')) })
+      if (!disposed) committed(result, current())
+      const refreshed = await Promise.allSettled([
+        Promise.resolve().then(invalidateArticleLists),
+        ...(current() ? [Promise.resolve().then(() => refresh())] : []),
+      ])
+      if (refreshed.some((result) => result.status === 'rejected'))
+        console.warn('[ArticleTranslations] Could not refresh saved translation data.')
+      if (current()) toast.add({ color: 'success', title: t(successKey), description: t(`languages.${language}`) })
     } finally {
-      pending.value = null
+      if (!disposed) pendingLanguages.delete(language)
     }
   }
 
-  const save = (status?: 'PUBLISHED') =>
-    run(
-      status ? 'publish' : 'save',
+  const save = (nextStatus?: 'PUBLISHED') => {
+    const token = identity && { ...identity }
+    const submitted = { ...draft.value }
+    if (!token?.id || token.language !== activeLang.value) return Promise.resolve()
+    return run(
+      nextStatus ? 'publish' : 'save',
       () =>
-        $fetch<unknown, '/api/translations/:id'>(`/api/translations/${active.value!.id}` as '/api/translations/:id', {
-          method: 'PATCH',
-          body: {
-            expectedUpdatedAt: active.value?.updatedAt ? new Date(active.value.updatedAt).toISOString() : undefined,
-            title: draft.value.title,
-            excerpt: draft.value.excerpt || null,
-            content: draft.value.content,
-            ...(status ? { status } : {}),
+        $fetch<{ translation: Partial<ArticleTranslationRow> & { id: string } }, '/api/translations/:id'>(
+          `/api/translations/${token.id}` as '/api/translations/:id',
+          {
+            method: 'PATCH',
+            body: {
+              expectedUpdatedAt: token.expectedUpdatedAt,
+              title: submitted.title,
+              excerpt: submitted.excerpt || null,
+              content: submitted.content,
+              ...(nextStatus ? { status: nextStatus } : {}),
+            },
           },
-        }),
-      status ? 'articles.translations.messages.published' : 'common.messages.saveSuccess',
+        ),
+      ({ translation }, current) => {
+        const persisted: TranslationDraft = {
+          title: translation.title ?? submitted.title,
+          excerpt: translation.excerpt ?? '',
+          content: translation.content ?? submitted.content,
+        }
+        const unchanged = !isTranslationDirty(draft.value, submitted)
+        patchTranslation(translation)
+        if (!current) return
+        if (unchanged) draft.value = { ...persisted }
+        pristine.value = persisted
+        identity = { ...token, expectedUpdatedAt: translationVersion(translation) }
+        conflict.value = false
+      },
+      nextStatus ? 'articles.translations.messages.published' : 'common.messages.saveSuccess',
     )
+  }
 
-  const translateNow = () =>
-    run(
+  const translateNow = () => {
+    const token = identity && { ...identity }
+    const language = activeLang.value
+    const submitted = { ...draft.value }
+    if (!token || token.language !== language || isDirty.value) return Promise.resolve()
+    return run(
       'translate',
       () =>
-        $fetch<unknown, '/api/articles/:id/translate'>(
+        $fetch<{ translation: ArticleTranslationRow }, '/api/articles/:id/translate'>(
           `/api/articles/${articleId}/translate` as '/api/articles/:id/translate',
           {
             method: 'POST',
-            body: { language: activeLang.value },
+            body: { language, replace: !!token.id, expectedUpdatedAt: token.expectedUpdatedAt },
           },
         ),
+      ({ translation }, current) => {
+        const unchanged = !isTranslationDirty(draft.value, submitted)
+        data.value = {
+          ...data.value,
+          translations: [...data.value.translations.filter((row) => row.id !== translation.id), translation],
+        }
+        if (!current) return
+        if (unchanged) draft.value = translationDraft(translation)
+        pristine.value = translationDraft(translation)
+        identity = { language, id: translation.id, expectedUpdatedAt: translationVersion(translation) }
+        conflict.value = false
+      },
       'articles.translations.messages.translated',
     )
+  }
 
-  const discard = () =>
-    run(
+  const discard = () => {
+    const token = identity && { ...identity }
+    const submitted = { ...draft.value }
+    if (!token?.id || token.language !== activeLang.value) return Promise.resolve()
+    return run(
       'discard',
       () =>
-        $fetch<unknown, '/api/translations/:id'>(`/api/translations/${active.value!.id}` as '/api/translations/:id', {
+        $fetch<unknown, '/api/translations/:id'>(`/api/translations/${token.id}` as '/api/translations/:id', {
           method: 'DELETE',
+          body: { expectedUpdatedAt: token.expectedUpdatedAt },
         }),
+      (_result, current) => {
+        const unchanged = !isTranslationDirty(draft.value, submitted)
+        data.value = { ...data.value, translations: data.value.translations.filter((row) => row.id !== token.id) }
+        if (!current) return
+        if (unchanged) seed(token.language)
+        else conflict.value = true
+      },
       'articles.translations.messages.discarded',
     )
+  }
 
   return {
     targetLanguages,

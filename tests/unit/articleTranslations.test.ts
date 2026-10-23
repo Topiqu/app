@@ -5,6 +5,7 @@ import {
   resolveActiveLanguage,
   translationDraft,
   translationHasBody,
+  translationVersion,
   type ArticleTranslationRow,
 } from '~~/shared/utils/articleTranslations'
 
@@ -23,6 +24,19 @@ const row = (overrides: Partial<ArticleTranslationRow> = {}): ArticleTranslation
   error: null,
   translatedAt: null,
   ...overrides,
+})
+
+describe('translation edit version', () => {
+  it('normalizes both serialized and Date timestamps to the same request token', () => {
+    expect(translationVersion({ updatedAt: '2026-10-22T11:00:00+02:00' })).toBe('2026-10-22T09:00:00.000Z')
+    expect(translationVersion({ updatedAt: new Date('2026-10-22T09:00:00Z') })).toBe('2026-10-22T09:00:00.000Z')
+  })
+
+  it('retains legacy nullable versions and tolerates an invalid timestamp without throwing', () => {
+    for (const value of [undefined, null, {}, { updatedAt: null }, { updatedAt: '' }, { updatedAt: 'invalid' }]) {
+      expect(translationVersion(value)).toBeNull()
+    }
+  })
 })
 
 describe('translation body', () => {
