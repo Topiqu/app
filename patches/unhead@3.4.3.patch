@@ -1,0 +1,16 @@
+diff --git a/dist/shared/unhead.DD4N5B4k.mjs b/dist/shared/unhead.DD4N5B4k.mjs
+index 5817cf604e055b85721338ec19547454a77d9907..cb63c8bd9ca845565a1d23221b7723402668614d 100644
+--- a/dist/shared/unhead.DD4N5B4k.mjs
++++ b/dist/shared/unhead.DD4N5B4k.mjs
+@@ -205,8 +205,10 @@ function _renderDOMHead(head, options = {}) {
+       dom.body.insertBefore(frag.bodyOpen, dom.body.firstChild);
+     if (frag.bodyClose)
+       dom.body.appendChild(frag.bodyClose);
+-    for (const k in previous)
++    for (const k in previous) {
+       previous[k]();
++      delete previous[k];
++    }
+     head._dom = renderState;
+     didRender = true;
+     callHook(head, "dom:rendered", { renders: tags });
