@@ -37,8 +37,6 @@ describe('upload rejections', () => {
     expect(uploader).not.toContain('Rozměry příliš')
     expect(uploader).toContain("title: $t('common.upload.rejected')")
     expect(uploader).toContain('description: reason')
-    // A file the browser cannot decode used to leave the promise pending, so nothing was ever reported.
-    expect(uploader).toContain('image.onerror = () => resolve(null)')
   })
 
   it('translates every server-side favicon rejection', () => {

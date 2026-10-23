@@ -1,8 +1,8 @@
 import sharp from 'sharp'
 import { randomUUID } from 'node:crypto'
 import { analyzeImage } from '~~/server/utils/imageAnalysis'
-
-const MAX_UPLOAD_BYTES = 15 * 1024 * 1024
+import { IMAGE_MAX_UPLOAD_BYTES } from '~~/shared/utils/uploadLimits'
+import { canReuseUpload, recordUploadModeration } from '~~/server/utils/uploadModeration'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
@@ -19,12 +19,12 @@ export default defineEventHandler(async (event) => {
   if (!file?.type?.startsWith('image/')) {
     throw createError({ statusCode: 400, message: t('common.upload.notImage')! })
   }
-  if (file.data.length > MAX_UPLOAD_BYTES) {
+  if (file.data.length > IMAGE_MAX_UPLOAD_BYTES) {
     throw createError({
       statusCode: 413,
       message: t('common.upload.tooLarge', {
         actual: `${(file.data.length / 1e6).toFixed(1)} MB`,
-        limit: `${MAX_UPLOAD_BYTES / 1e6} MB`,
+        limit: `${IMAGE_MAX_UPLOAD_BYTES / 1e6} MB`,
       })!,
     })
   }
@@ -39,6 +39,25 @@ export default defineEventHandler(async (event) => {
   }
   if (!(await consumeRateLimit(`upload:${user.id}`, 30, 60)))
     throw createError({ statusCode: 429, message: t('common.errors.tooManyRequests')! })
+  const contentHash = hashMedia(file.data)
+  const db = uploadType === 'article-image' && user.clientSiteId ? await getEnhancedPrisma(user) : null
+  const existing = db
+    ? await db.mediaAsset.findFirst({
+        where: { clientSiteId: user.clientSiteId, contentHash, purgedAt: null, deletedAt: null },
+        orderBy: { createdAt: 'asc' },
+      })
+    : null
+  if (existing && canReuseUpload(existing, user.clientSiteId!, contentHash, useRuntimeConfig().public.cdnUrl)) {
+    return {
+      success: true,
+      url: existing.url,
+      optimizedUrl: existing.deliveryUrl || existing.url,
+      filename: existing.originalFilename || file.filename,
+      tags: existing.machineTags,
+      mediaAsset: existing,
+      reused: true,
+    }
+  }
   const metadata = await sharp(file.data, { limitInputPixels: 40_000_000 })
     .metadata()
     .catch(() => null)
@@ -69,24 +88,20 @@ export default defineEventHandler(async (event) => {
     .toBuffer()
     .catch(() => null)
   if (!normalized) throw createError({ statusCode: 400, message: t('common.upload.unreadable')! })
-  if (normalized.length > MAX_UPLOAD_BYTES)
+  if (normalized.length > IMAGE_MAX_UPLOAD_BYTES)
     throw createError({ statusCode: 413, message: t('common.errors.invalidRequest')! })
   const moderationImage = await sharp(file.data, { limitInputPixels: 40_000_000 })
     .rotate()
     .resize({ width: 2048, height: 2048, fit: 'inside', withoutEnlargement: true })
     .jpeg({ quality: 80 })
     .toBuffer()
-  const tags = await analyzeImage(moderationImage)
+  const analysis = await analyzeImage(moderationImage)
+  const { tags } = analysis
   const detectedTagsString = tags.join(',')
 
-  const contentHash = hashMedia(file.data)
   if (uploadType === 'article-image' && user.clientSiteId) {
-    const existing = await prisma.mediaAsset.findFirst({
-      where: { clientSiteId: user.clientSiteId, contentHash, purgedAt: null },
-      orderBy: { createdAt: 'asc' },
-    })
     if (existing) {
-      const mediaAsset = await registerMediaAsset({
+      let mediaAsset = await registerMediaAsset({
         clientSiteId: user.clientSiteId,
         createdById: user.id,
         url: existing.url,
@@ -98,6 +113,7 @@ export default defineEventHandler(async (event) => {
         sizeBytes: existing.sizeBytes,
         machineTags: tags,
       })
+      mediaAsset = await recordUploadModeration(mediaAsset, user.clientSiteId, contentHash, analysis)
       return {
         success: true,
         url: mediaAsset.url,
@@ -111,10 +127,11 @@ export default defineEventHandler(async (event) => {
   }
 
   const filename = `${user.clientSiteId || user.id}/${randomUUID()}.${favicon ? 'png' : 'webp'}`
+  const storageKey = `uploads/${filename}`
   const contentType = favicon ? 'image/png' : 'image/webp'
 
   try {
-    const url = await putToCdn(`uploads/${filename}`, normalized, contentType, {
+    const url = await putToCdn(storageKey, normalized, contentType, {
       'rekognition-tags': detectedTagsString,
       'original-name': file.filename ? encodeURIComponent(file.filename) : 'unknown',
     })
@@ -133,7 +150,7 @@ export default defineEventHandler(async (event) => {
         createdById: user.id,
         url,
         deliveryUrl: url,
-        storageKey: `uploads/${filename}`,
+        storageKey,
         name: file.filename?.replace(/\.[^/.]+$/, '') ?? null,
         originalFilename: file.filename,
         mimeType: contentType,
@@ -150,18 +167,31 @@ export default defineEventHandler(async (event) => {
           hasXmp: Boolean(metadata?.xmp),
         },
       })
+      mediaAsset = await recordUploadModeration(mediaAsset, user.clientSiteId, contentHash, analysis)
+      if (mediaAsset.storageKey !== storageKey && mediaAsset.url !== url && mediaAsset.deliveryUrl !== url) {
+        // A concurrent identical upload may already own the canonical media row.
+        await deleteFromCdn(storageKey, `uploads/${user.clientSiteId}/`).catch(async () => {
+          await reportCaughtError('Superseded upload cleanup failed', new Error('UPLOAD_CLEANUP_FAILED'), {
+            clientSiteId: user.clientSiteId,
+          }).catch(() => {})
+        })
+      }
     }
 
+    const reused = Boolean(mediaAsset && mediaAsset.url !== url)
     return {
       success: true,
-      url,
-      optimizedUrl: url,
-      filename,
-      tags: detectedTagsString.split(',').filter(Boolean),
+      url: mediaAsset?.url || url,
+      optimizedUrl: mediaAsset?.deliveryUrl || mediaAsset?.url || url,
+      filename: reused ? mediaAsset?.originalFilename || file.filename : filename,
+      tags: mediaAsset?.machineTags || tags,
       mediaAsset,
+      ...(reused ? { reused: true } : {}),
     }
-  } catch (error) {
-    console.error('S3 Upload Error:', error)
+  } catch {
+    await reportCaughtError('Upload failed', new Error('UPLOAD_FAILED'), {
+      clientSiteId: user.clientSiteId,
+    }).catch(() => {})
     throw createError({ statusCode: 500, statusMessage: 'Upload failed' })
   }
 })
