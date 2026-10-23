@@ -4,7 +4,6 @@ import type { BetterAuthPlugin, GenericEndpointContext } from '@better-auth/core
 
 import { z } from 'zod'
 import argon from 'argon2'
-import { authenticator } from 'otplib'
 import { betterAuth } from 'better-auth'
 import { createHmac } from 'node:crypto'
 import { customSession } from 'better-auth/plugins'
@@ -125,7 +124,7 @@ const credentials = {
 
         if (user.totpSecret) {
           const code = (ctx.body.totp ?? '').replace(/\s/g, '')
-          if (!code || !authenticator.verify({ token: code, secret: user.totpSecret })) {
+          if (!code || !verifyTotpToken(user.totpSecret, code)) {
             await logLoginFailure(req, email, 'totp_invalid', 'authorize')
             throw reject('UNAUTHORIZED', 'invalid_credentials')
           }
