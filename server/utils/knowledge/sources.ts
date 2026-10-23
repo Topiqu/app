@@ -100,8 +100,8 @@ export const refetchKnowledgeUrl = async (source: { id: string; sourceUrl: strin
   const extracted = await extractKnowledgeUrl(source.sourceUrl)
   const contentHash = hashKnowledge(extracted.content)
   const changed = contentHash !== source.contentHash
-  await prisma.knowledgeSource.update({
-    where: { id: source.id },
+  const updated = await prisma.knowledgeSource.updateMany({
+    where: { id: source.id, sourceUrl: source.sourceUrl, contentHash: source.contentHash, deletedAt: null },
     data: {
       fetchedAt: new Date(),
       error: null,
@@ -113,9 +113,10 @@ export const refetchKnowledgeUrl = async (source: { id: string; sourceUrl: strin
             version: { increment: 1 },
             status: 'PENDING' as const,
             attempts: 0,
+            indexingToken: null,
           }
         : {}),
     },
   })
-  return changed
+  return changed && updated.count === 1
 }

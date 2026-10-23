@@ -3,9 +3,9 @@ import { randomUUID } from 'node:crypto'
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createDatabaseClient } from '../../../server/utils/database'
-import { hashKnowledge } from '../../../server/utils/knowledge/sources'
 import { extractKnowledgeUrl } from '../../../server/utils/knowledge/extract'
 import { refreshKnowledgeSources } from '../../../server/utils/knowledge/refresh'
+import { hashKnowledge, refetchKnowledgeUrl } from '../../../server/utils/knowledge/sources'
 
 vi.mock('../../../server/utils/knowledge/extract', async (original) => ({
   ...(await original<typeof import('../../../server/utils/knowledge/extract')>()),
@@ -15,12 +15,25 @@ vi.mock('../../../server/utils/knowledge/extract', async (original) => ({
 const url = process.env.TEST_DATABASE_URL
 const enabled = !!url && /test/i.test(new URL(url).pathname) && url !== process.env.DATABASE_URL
 const db = enabled ? createDatabaseClient(url) : null
+const sites: string[] = []
 const now = new Date('2026-09-24T03:45:00Z')
 
 const urlSource = async (fetchedAt: Date, content = 'Pricing page: Pro costs 49 USD per month.') => {
   const clientSiteId = randomUUID()
+  sites.push(clientSiteId)
+  const feature = await db!.feature.upsert({
+    where: { code: 'AI' },
+    create: { code: 'AI', name: 'AI', priceMonthly: 0 },
+    update: {},
+  })
   await db!.clientSite.create({
-    data: { id: clientSiteId, name: `refresh-${clientSiteId}`, domain: `${clientSiteId}.test` },
+    data: {
+      id: clientSiteId,
+      name: `refresh-${clientSiteId}`,
+      domain: `${clientSiteId}.test`,
+      plan: 'PRO',
+      features: { create: { featureId: feature.id, isActive: true, billingLockedUntil: new Date() } },
+    },
   })
   return db!.knowledgeSource.create({
     data: {
@@ -40,13 +53,12 @@ const urlSource = async (fetchedAt: Date, content = 'Pricing page: Pro costs 49 
 describe.skipIf(!enabled)('knowledge refresh on PostgreSQL', () => {
   beforeAll(() => {
     vi.stubGlobal('prisma', db)
-    // Every test tenant counts as AI-enabled; the feature filter itself is covered elsewhere.
-    vi.stubGlobal('activeFeatureFilter', () => ({}))
     vi.stubGlobal('logAction', vi.fn())
     vi.stubGlobal('reportCaughtError', vi.fn())
     vi.stubGlobal('indexKnowledgeSource', vi.fn())
   })
   afterAll(async () => {
+    await db?.clientSite.deleteMany({ where: { id: { in: sites } } })
     await db?.$disconnect()
     vi.unstubAllGlobals()
   })
@@ -101,6 +113,37 @@ describe.skipIf(!enabled)('knowledge refresh on PostgreSQL', () => {
     await refreshKnowledgeSources(now)
     expect(await db!.knowledgeSource.findUniqueOrThrow({ where: { id: source.id } })).toMatchObject({
       status: 'PENDING',
+    })
+  })
+
+  it('does not let an older URL refresh overwrite a newer extracted version', async () => {
+    const source = await urlSource(new Date('2026-09-01'))
+    let complete!: (value: Awaited<ReturnType<typeof extractKnowledgeUrl>>) => void
+    let notifyStarted!: () => void
+    const started = new Promise<void>((resolve) => {
+      notifyStarted = resolve
+    })
+    const waiting = new Promise<Awaited<ReturnType<typeof extractKnowledgeUrl>>>((resolve) => {
+      complete = resolve
+    })
+    vi.mocked(extractKnowledgeUrl).mockImplementationOnce(() => {
+      notifyStarted()
+      return waiting
+    })
+    const input = { ...source, sourceUrl: source.sourceUrl! }
+    const old = refetchKnowledgeUrl(input)
+    await started
+    vi.mocked(extractKnowledgeUrl).mockResolvedValueOnce({
+      title: null,
+      content: 'Current page revision',
+      mimeType: 'text/html',
+    })
+    expect(await refetchKnowledgeUrl(input)).toBe(true)
+    complete({ title: null, content: 'Obsolete page revision', mimeType: 'text/html' })
+    expect(await old).toBe(false)
+    expect(await db!.knowledgeSource.findUniqueOrThrow({ where: { id: source.id } })).toMatchObject({
+      version: 2,
+      content: 'Current page revision',
     })
   })
 })

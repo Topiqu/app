@@ -6,7 +6,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 import { createDatabaseClient } from '../../../server/utils/database'
 import { fetchPublicUrl } from '../../../server/utils/images/publicFetch'
 import { retrieveKnowledge } from '../../../server/utils/knowledge/retrieve'
-import { indexKnowledgeSource } from '../../../server/utils/knowledge/indexing'
+import { drainKnowledgeQueue, indexKnowledgeSource } from '../../../server/utils/knowledge/indexing'
 
 vi.mock('ai', async (importOriginal) => ({
   ...(await importOriginal<typeof import('ai')>()),
@@ -22,6 +22,7 @@ vi.mock('../../../server/utils/images/publicFetch', async (original) => ({
 const url = process.env.TEST_DATABASE_URL
 const enabled = !!url && /test/i.test(new URL(url).pathname) && url !== process.env.DATABASE_URL
 const db = enabled ? createDatabaseClient(url) : null
+const sites: string[] = []
 
 const axis = (index: number) => Array.from({ length: 1536 }, (_, position) => (position === index ? 1 : 0))
 
@@ -40,6 +41,7 @@ const serve = (xml: string) => vi.mocked(fetchPublicUrl).mockImplementation(asyn
 
 const feedSource = async (language: 'cs' | 'en' = 'cs') => {
   const clientSiteId = randomUUID()
+  sites.push(clientSiteId)
   await db!.clientSite.create({
     data: { id: clientSiteId, name: `feed-${clientSiteId}`, domain: `${clientSiteId}.test`, plan: 'PRO' },
   })
@@ -73,13 +75,16 @@ describe.skipIf(!enabled)('knowledge product feeds on PostgreSQL', () => {
     vi.stubGlobal('aiEmbeddingModel', () => 'test-embedding')
     vi.stubGlobal('logAction', vi.fn())
     vi.stubGlobal('reportCaughtError', vi.fn())
+    vi.stubGlobal('recordAiUsage', vi.fn())
   })
   afterAll(async () => {
+    await db?.clientSite.deleteMany({ where: { id: { in: sites } } })
     await db?.$disconnect()
     vi.unstubAllGlobals()
   })
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.mocked(embedMany).mockReset()
     vi.mocked(embedMany).mockImplementation((async ({ values }: { values: string[] }) => ({
       embeddings: values.map(() => axis(0)),
       usage: { tokens: values.length },
@@ -177,6 +182,119 @@ describe.skipIf(!enabled)('knowledge product feeds on PostgreSQL', () => {
       error: 'notFeed',
     })
     expect(await db!.knowledgeProduct.count({ where: { sourceId: id } })).toBe(1)
+  })
+
+  it('stages a replacement within quota, preserves the last good catalog, and resumes completed batches', async () => {
+    const { id } = await feedSource()
+    const catalog = (prefix: string) =>
+      feed(
+        Array.from({ length: 300 }, (_, index) => ({
+          id: `${prefix}-${index}`,
+          name: `${prefix} ${index}`,
+          price: '10',
+        })),
+      )
+    serve(catalog('old'))
+    expect(await sync(id)).toBe(true)
+    const before = await db!.knowledgeSource.findUniqueOrThrow({ where: { id } })
+    vi.mocked(embedMany).mockClear()
+    vi.mocked(embedMany)
+      .mockImplementationOnce((async ({ values }: { values: string[] }) => ({
+        embeddings: values.map(() => axis(0)),
+        usage: { tokens: values.length },
+      })) as never)
+      .mockRejectedValueOnce(new Error('Temporary provider outage'))
+    serve(catalog('new'))
+    expect(await sync(id)).toBe(false)
+    expect(await db!.knowledgeProduct.count({ where: { sourceId: id } })).toBe(300)
+    expect(await db!.knowledgeProduct.count({ where: { sourceId: id, externalId: { startsWith: 'old-' } } })).toBe(300)
+    expect(await db!.knowledgeSource.findUniqueOrThrow({ where: { id } })).toMatchObject({
+      status: 'PENDING',
+      chunkCount: 300,
+      contentHash: before.contentHash,
+      embeddingModel: before.embeddingModel,
+    })
+    const [staged] = await db!.$queryRaw<{ total: number; ready: number }[]>`
+      SELECT count(*)::int AS total, count("embedding")::int AS ready FROM "KnowledgeProductStage" WHERE "sourceId" = ${id}`
+    expect(staged).toEqual({ total: 300, ready: 256 })
+    vi.mocked(embedMany).mockClear()
+    // The queue can retry without the hourly refresh resetting the attempt count.
+    expect(await indexKnowledgeSource(id)).toBe(true)
+    expect(embeddedTexts()).toHaveLength(44)
+    expect(await db!.knowledgeProduct.count({ where: { sourceId: id } })).toBe(300)
+    expect(await db!.knowledgeProduct.count({ where: { sourceId: id, externalId: { startsWith: 'new-' } } })).toBe(300)
+    expect(await db!.$queryRaw`SELECT 1 FROM "KnowledgeProductStage" WHERE "sourceId" = ${id}`).toEqual([])
+  })
+
+  it('keeps old product facts and chunks together until changed text finishes embedding', async () => {
+    const { id } = await feedSource()
+    serve(feed([{ id: 'knife', name: 'Original knife', price: '1299' }]))
+    expect(await sync(id)).toBe(true)
+    const product = await db!.knowledgeProduct.findFirstOrThrow({ where: { sourceId: id } })
+    const chunks = await db!.$queryRaw<{ id: string; content: string }[]>`
+      SELECT "id", "content" FROM "KnowledgeChunk" WHERE "sourceId" = ${id}`
+    serve(feed([{ id: 'knife', name: 'Replacement knife', price: '999', description: 'A different knife.' }]))
+    vi.mocked(embedMany).mockRejectedValueOnce(new Error('Temporary provider outage'))
+    expect(await sync(id)).toBe(false)
+    const preserved = await db!.knowledgeProduct.findFirstOrThrow({ where: { sourceId: id } })
+    expect(preserved).toMatchObject({ name: 'Original knife', textHash: product.textHash })
+    expect(String(preserved.price)).toBe(String(product.price))
+    expect(await db!.$queryRaw`SELECT "id", "content" FROM "KnowledgeChunk" WHERE "sourceId" = ${id}`).toEqual(chunks)
+    expect(await indexKnowledgeSource(id)).toBe(true)
+    const replacement = await db!.knowledgeProduct.findFirstOrThrow({ where: { sourceId: id } })
+    expect(replacement.name).toBe('Replacement knife')
+    expect(String(replacement.price)).toBe('999')
+  })
+
+  it('releases a terminal failed snapshot reservation while keeping the previous live catalog', async () => {
+    const { id } = await feedSource()
+    serve(feed([{ id: 'old', name: 'Old catalog product', price: '10' }]))
+    expect(await sync(id)).toBe(true)
+    serve(feed(Array.from({ length: 300 }, (_, index) => ({ id: `new-${index}`, name: `New ${index}`, price: '10' }))))
+    vi.mocked(embedMany)
+      .mockImplementationOnce((async ({ values }: { values: string[] }) => ({
+        embeddings: values.map(() => axis(0)),
+        usage: { tokens: values.length },
+      })) as never)
+      .mockRejectedValue(new Error('Temporary provider outage'))
+    expect(await sync(id)).toBe(false)
+    expect(await indexKnowledgeSource(id)).toBe(false)
+    expect(await indexKnowledgeSource(id)).toBe(false)
+    expect(await db!.knowledgeSource.findUniqueOrThrow({ where: { id } })).toMatchObject({
+      status: 'INDEXED',
+      attempts: 3,
+      chunkCount: 1,
+    })
+    expect(await db!.knowledgeProduct.findMany({ where: { sourceId: id }, select: { externalId: true } })).toEqual([
+      { externalId: 'old' },
+    ])
+    expect(await db!.$queryRaw`SELECT 1 FROM "KnowledgeProductStage" WHERE "sourceId" = ${id}`).toEqual([])
+  })
+
+  it('releases an exhausted abandoned snapshot without removing the last good catalog', async () => {
+    const { id } = await feedSource()
+    serve(feed([{ id: 'old', name: 'Old catalog product', price: '10' }]))
+    expect(await sync(id)).toBe(true)
+    serve(feed(Array.from({ length: 300 }, (_, index) => ({ id: `new-${index}`, name: `New ${index}`, price: '10' }))))
+    vi.mocked(embedMany)
+      .mockImplementationOnce((async ({ values }: { values: string[] }) => ({
+        embeddings: values.map(() => axis(0)),
+        usage: { tokens: values.length },
+      })) as never)
+      .mockRejectedValueOnce(new Error('Temporary provider outage'))
+    expect(await sync(id)).toBe(false)
+    await db!.$executeRaw`
+      UPDATE "KnowledgeSource" SET "status" = 'PROCESSING', "attempts" = 3,
+        "indexingToken" = ${randomUUID()}, "updatedAt" = now() - interval '11 minutes' WHERE "id" = ${id}`
+    expect(await drainKnowledgeQueue(0)).toMatchObject({ queued: 0, indexed: 0, abandoned: 1 })
+    expect(await db!.knowledgeSource.findUniqueOrThrow({ where: { id } })).toMatchObject({
+      status: 'INDEXED',
+      chunkCount: 1,
+    })
+    expect(await db!.knowledgeProduct.findMany({ where: { sourceId: id }, select: { externalId: true } })).toEqual([
+      { externalId: 'old' },
+    ])
+    expect(await db!.$queryRaw`SELECT 1 FROM "KnowledgeProductStage" WHERE "sourceId" = ${id}`).toEqual([])
   })
 
   it('fails a link that is not a feed at once, but retries a network error', async () => {

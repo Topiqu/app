@@ -80,7 +80,12 @@ export const catalogVariants = (product: CatalogProduct, currency: string, store
 }
 
 /** All nested pages are fetched before applying the snapshot; a partial API response never deletes products. */
-export const fetchShopifyCatalog = async (connectionId: string, clientSiteId: string, limit: number) => {
+export const fetchShopifyCatalog = async (
+  connectionId: string,
+  clientSiteId: string,
+  limit: number,
+  onProgress?: () => Promise<void>,
+) => {
   const connection = await prisma.shopifyConnection.findFirst({
     where: { id: connectionId, clientSiteId, status: 'CONNECTED' },
     select: { id: true, shop: true, storefrontUrl: true, grantedScopes: true, catalogRevision: true },
@@ -130,10 +135,7 @@ export const fetchShopifyCatalog = async (connectionId: string, clientSiteId: st
       if (entries.length) count += 1
     }
     // Fetching a large store can outlast a stale worker lease, so heartbeat before embedding starts too.
-    await prisma.knowledgeSource.updateMany({
-      where: { shopifyConnectionId: connection.id, clientSiteId, status: 'PROCESSING' },
-      data: { updatedAt: new Date() },
-    })
+    await onProgress?.()
     if (!result.products.pageInfo.hasNextPage || count > limit) break
     const cursor = result.products.pageInfo.endCursor
     if (!cursor || cursor === after) throw new ShopifyApiError('RETRY', 'Shopify returned an incomplete catalog page')

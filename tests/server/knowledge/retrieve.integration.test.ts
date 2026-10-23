@@ -18,12 +18,27 @@ vi.mock('ai', async (importOriginal) => ({
 const url = process.env.TEST_DATABASE_URL
 const enabled = !!url && /test/i.test(new URL(url).pathname) && url !== process.env.DATABASE_URL
 const db = enabled ? createDatabaseClient(url) : null
+const sites: string[] = []
 
 const axis = (index: number) => Array.from({ length: 1536 }, (_, position) => (position === index ? 1 : 0))
 
 const tenant = async () => {
   const id = randomUUID()
-  await db!.clientSite.create({ data: { id, name: `knowledge-${id}`, domain: `${id}.test` } })
+  sites.push(id)
+  const feature = await db!.feature.upsert({
+    where: { code: 'AI' },
+    create: { code: 'AI', name: 'AI', priceMonthly: 0 },
+    update: {},
+  })
+  await db!.clientSite.create({
+    data: {
+      id,
+      name: `knowledge-${id}`,
+      domain: `${id}.test`,
+      plan: 'PRO',
+      features: { create: { featureId: feature.id, isActive: true, billingLockedUntil: new Date() } },
+    },
+  })
   return id
 }
 
@@ -79,8 +94,10 @@ describe.skipIf(!enabled)('knowledge retrieval on PostgreSQL', () => {
     vi.stubGlobal('aiEmbeddingModel', () => 'test-embedding')
     vi.stubGlobal('logAction', vi.fn())
     vi.stubGlobal('reportCaughtError', vi.fn())
+    vi.stubGlobal('recordAiUsage', vi.fn())
   })
   afterAll(async () => {
+    await db?.clientSite.deleteMany({ where: { id: { in: sites } } })
     await db?.$disconnect()
     vi.unstubAllGlobals()
   })

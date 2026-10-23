@@ -1,6 +1,7 @@
 import { KNOWLEDGE_FEED_REFRESH_HOURS, KNOWLEDGE_REFRESH_DAYS } from '~~/shared/utils/knowledge'
 
 import { refetchKnowledgeUrl } from './sources'
+import { knowledgeSiteWhere } from './eligibility'
 import { aiEmbeddingModelId } from '../ai/modelRegistry'
 
 const BATCH_SIZE = 50
@@ -20,7 +21,7 @@ export const refreshKnowledgeSources = async (now = new Date()) => {
       status: { in: ['INDEXED', 'FAILED'] },
       sourceUrl: { not: null },
       OR: [{ fetchedAt: null }, { fetchedAt: { lt: before } }],
-      clientSite: activeFeatureFilter('AI'),
+      clientSite: knowledgeSiteWhere(),
     },
     orderBy: { fetchedAt: { sort: 'asc', nulls: 'first' } },
     take: BATCH_SIZE,
@@ -55,13 +56,18 @@ export const refreshKnowledgeSources = async (now = new Date()) => {
           ],
         },
       ],
-      clientSite: activeFeatureFilter('AI'),
+      clientSite: knowledgeSiteWhere(),
     },
     data: { status: 'PENDING', attempts: 0 },
   })
 
   const reembed = await prisma.knowledgeSource.updateMany({
-    where: { status: 'INDEXED', deletedAt: null, embeddingModel: { not: aiEmbeddingModelId('knowledge') } },
+    where: {
+      status: 'INDEXED',
+      deletedAt: null,
+      embeddingModel: { not: aiEmbeddingModelId('knowledge') },
+      clientSite: knowledgeSiteWhere(),
+    },
     data: { status: 'PENDING', attempts: 0 },
   })
   if (changed || failed)

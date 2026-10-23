@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
   const current = id
     ? await db.knowledgeSource.findFirst({
         where: { id, clientSiteId, deletedAt: null },
-        select: { id: true, kind: true, contentHash: true, publicUrl: true },
+        select: { id: true, kind: true, title: true, contentHash: true, publicUrl: true },
       })
     : null
   if (!current) throw createError({ statusCode: 404, statusMessage: 'Knowledge source not found' })
@@ -37,6 +37,8 @@ export default defineEventHandler(async (event) => {
 
   const content = body.text === undefined ? undefined : normalizeKnowledgeText(body.text)
   const contentChanged = content !== undefined && hashKnowledge(content) !== current.contentHash
+  const titleChanged = body.title !== undefined && body.title !== current.title
+  const reindex = contentChanged || (titleChanged && !['FEED', 'SHOPIFY'].includes(current.kind))
   // New text is new content: it needs the same confirmation as adding a source.
   if (contentChanged && !body.confirmed)
     throw createError({ statusCode: 400, statusMessage: 'Confirmation required', data: { code: 'KNOWLEDGE_CONSENT' } })
@@ -51,10 +53,15 @@ export default defineEventHandler(async (event) => {
         ? {
             content,
             contentHash: hashKnowledge(content!),
+          }
+        : {}),
+      ...(reindex
+        ? {
             version: { increment: 1 },
             status: 'PENDING' as const,
             attempts: 0,
             error: null,
+            indexingToken: null,
           }
         : {}),
     },
@@ -76,6 +83,6 @@ export default defineEventHandler(async (event) => {
       publicUrl: source.publicUrl,
     },
   })
-  if (contentChanged) kickKnowledgeIndex(current.id)
+  if (reindex) kickKnowledgeIndex(current.id)
   return { source }
 })

@@ -126,7 +126,8 @@ describe('Shopify catalog ingestion', () => {
         },
       })
       .mockResolvedValueOnce(result([product('2')]))
-    const snapshot = await fetchShopifyCatalog('connection', 'tenant', 500)
+    const onProgress = vi.fn().mockResolvedValue(undefined)
+    const snapshot = await fetchShopifyCatalog('connection', 'tenant', 500, onProgress)
     expect(snapshot.products).toHaveLength(2)
     expect(snapshot.products[0]!.price).toBe('90.00')
     expect(snapshot.report.collections).toEqual(
@@ -140,11 +141,7 @@ describe('Shopify catalog ingestion', () => {
       expect.objectContaining({ where: { id: 'connection', clientSiteId: 'tenant', status: 'CONNECTED' } }),
     )
     expect(vi.mocked(shopifyGraphql).mock.calls[3]![3]).toEqual({ after: 'product-cursor' })
-    expect(sourceUpdate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { shopifyConnectionId: 'connection', clientSiteId: 'tenant', status: 'PROCESSING' },
-      }),
-    )
+    expect(onProgress).toHaveBeenCalledTimes(2)
   })
 
   it('fails an incomplete snapshot and accepts a genuinely empty published catalog', async () => {
@@ -161,6 +158,13 @@ describe('Shopify catalog ingestion', () => {
     })
     expect(shopifyAccessToken).not.toHaveBeenCalled()
     expect(shopifyGraphql).not.toHaveBeenCalled()
+  })
+
+  it('stops pagination when the owning worker loses its indexing claim', async () => {
+    vi.mocked(shopifyGraphql).mockResolvedValueOnce(result([product()], true, 'next-page'))
+    const onProgress = vi.fn().mockRejectedValue(new Error('Indexing claim lost'))
+    await expect(fetchShopifyCatalog('connection', 'tenant', 500, onProgress)).rejects.toThrow('Indexing claim lost')
+    expect(shopifyGraphql).toHaveBeenCalledOnce()
   })
 
   it('caps products to the quota and reports that the catalog is incomplete', async () => {

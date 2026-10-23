@@ -62,11 +62,13 @@ describe('knowledge publish confirmation', () => {
     )
   })
 
-  const editNote = async (body: Record<string, unknown>) => {
+  const editNote = async (body: Record<string, unknown>, kind = 'NOTE') => {
     const update = vi.fn().mockResolvedValue({ id: 'source-1', publicUrl: null })
     const log = stubServer({
       knowledgeSource: {
-        findFirst: vi.fn().mockResolvedValue({ id: 'source-1', kind: 'NOTE', contentHash: 'old', publicUrl: null }),
+        findFirst: vi
+          .fn()
+          .mockResolvedValue({ id: 'source-1', kind, title: 'Pricing', contentHash: 'old', publicUrl: null }),
         update,
       },
     })
@@ -90,5 +92,26 @@ describe('knowledge publish confirmation', () => {
     const renamed = await editNote({ title: 'Pricing 2026' })
     await renamed.run()
     expect(renamed.log.mock.calls[0]![0].metadata).not.toHaveProperty('consent')
+  })
+
+  it('requeues a renamed document because its title is part of the embedded text', async () => {
+    const renamed = await editNote({ title: 'Pricing 2026' })
+    await renamed.run()
+    expect(renamed.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ version: { increment: 1 }, status: 'PENDING', indexingToken: null }),
+      }),
+    )
+  })
+
+  it('does not re-embed an unchanged title or a feed display-name change', async () => {
+    for (const [title, kind] of [
+      ['Pricing', 'NOTE'],
+      ['Shop 2026', 'FEED'],
+    ] as const) {
+      const edit = await editNote({ title }, kind)
+      await edit.run()
+      expect(edit.update.mock.calls[0]![0].data).not.toHaveProperty('version')
+    }
   })
 })
