@@ -14,7 +14,7 @@ const runtimeFailures = new WeakMap<Page, RuntimeFailures>()
 
 export const preparePage = async (
   page: Page,
-  options: { expectedErrorPage?: boolean; allowCancelledRequests?: boolean } = {},
+  options: { expectedErrorPage?: boolean; allowCancelledRequests?: boolean; fixedTime?: boolean } = {},
 ) => {
   const failures: RuntimeFailures = {
     console: [],
@@ -109,7 +109,7 @@ export const preparePage = async (
       failures.responses.push(`${response.status()} ${response.url()}`)
     }
   })
-  await page.clock.setFixedTime(new Date('2026-08-13T12:00:00Z'))
+  if (options.fixedTime !== false) await page.clock.setFixedTime(new Date('2026-08-13T12:00:00Z'))
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.addStyleTag({ content: 'nuxt-devtools-frame, #nuxt-devtools-container { display: none !important; }' })
 }
@@ -118,7 +118,6 @@ export const waitForPageReady = async (page: Page) => {
   await page.locator('html[data-topiqu-hydrated="true"]').waitFor()
   await page.evaluate(() => document.fonts.ready)
   await page.evaluate(async () => {
-    for (const image of document.querySelectorAll<HTMLImageElement>('img[loading="lazy"]')) image.loading = 'eager'
     // Signed-in publications scroll inside the dashboard. Visit that viewport so
     // visible hydration and lazy-media fallbacks actually run before checking them.
     const dashboard = document.querySelector<HTMLElement>('.topiqu-dashboard-scroll')
@@ -131,10 +130,23 @@ export const waitForPageReady = async (page: Page) => {
     }
     scrollTo(0)
   })
+  const loadingMedia = page.locator('[data-media-state="loading"]:visible')
   try {
-    await expect.poll(() => page.locator('[data-media-state="loading"]').count(), { timeout: 10_000 }).toBe(0)
+    await expect
+      .poll(
+        async () => {
+          // Hidden responsive variants should stay lazy. SPA data can mount
+          // rendered images after scrolling, so activate late arrivals as well.
+          await page.locator('img[loading="lazy"]:visible').evaluateAll((images) => {
+            for (const image of images) (image as HTMLImageElement).loading = 'eager'
+          })
+          return loadingMedia.count()
+        },
+        { timeout: 10_000 },
+      )
+      .toBe(0)
   } catch (error) {
-    const pendingMedia = await page.locator('[data-media-state="loading"]').evaluateAll((nodes) =>
+    const pendingMedia = await loadingMedia.evaluateAll((nodes) =>
       nodes.map((node) => {
         const image = node.querySelector('img')
         return { src: image?.currentSrc || image?.src, complete: image?.complete, naturalWidth: image?.naturalWidth }

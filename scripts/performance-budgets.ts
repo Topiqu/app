@@ -43,7 +43,7 @@ export const readStyleManifest = async (filename: string): Promise<unknown> => {
           build.onLoad({ filter: /\.mjs$/ }, (args) => {
             const source = readFileSync(args.path, 'utf8')
               .replace(
-                /(^|;)import \{ [\w$]+ as (buildAssetsURL|publicAssetsURL) \} from ['"]\.\.\/\.\.\/index\.mjs['"];?$/gm,
+                /(^|;)import \{ [\w$]+ as (buildAssetsURL|publicAssetsURL) \} from ['"](?:\.\.\/\.\.\/index|\.\.\/nitro\/nitro)\.mjs['"];?$/gm,
                 (_, prefix: string, name: string) =>
                   `${prefix}const ${name} = ${assetUrl(name === 'buildAssetsURL' ? '/_nuxt/' : '/')};`,
               )

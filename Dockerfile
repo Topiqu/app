@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # base (https://hub.docker.com/r/oven/bun/tags)
-FROM oven/bun:1.4.3-slim AS base
+FROM oven/bun:1.4.4-slim AS base
 
 WORKDIR /usr/src/app
 
@@ -22,16 +22,22 @@ RUN --mount=type=cache,id=topiqu-app-bun-${TARGETARCH},target=/root/.bun/install
     BUN_INSTALL_CACHE_DIR=/root/.bun/install/cache \
     bun --bun install --shamefully-hoist --frozen-lockfile
 
+# Nuxt compiler only; installation, generation and the released server use Bun.
+FROM node:24.21.0-bookworm-slim AS compiler-node
+
 # pre-release
 FROM base AS prerelease
 
 COPY --from=install /temp/node_modules node_modules
 COPY . .
+COPY --from=compiler-node /usr/local/bin/node /opt/topiqu-node/bin/node
 
 ENV NODE_ENV=production
 ENV NITRO_PRESET=bun
 ENV NUXT_TELEMETRY_DISABLED=1
-RUN bun --bun run build && bun scripts/prepare-migrations.ts
+ENV PATH=/opt/topiqu-node/bin:${PATH}
+# Match CI's Nuxt compiler and bound its heap without changing Bun runtime defaults.
+RUN NODE_OPTIONS=--max-old-space-size=4096 bun run build && bun scripts/prepare-migrations.ts
 
 # release
 FROM base AS release

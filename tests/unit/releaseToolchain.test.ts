@@ -1,3 +1,6 @@
+// @vitest-environment node
+import type { Nitro } from 'nitropack'
+
 import { join } from 'node:path'
 import { scanExports } from 'unimport'
 import { runInNewContext } from 'node:vm'
@@ -8,8 +11,47 @@ const root = process.cwd()
 const read = (path: string) => readFileSync(join(root, path), 'utf8')
 
 describe('release toolchain', () => {
+  it('adapts only Nuxt Image legacy IPX routes to the Fetch response boundary', async () => {
+    vi.stubGlobal('defineNuxtConfig', (config: unknown) => config)
+    try {
+      const { default: config } = await import('../../nuxt.config')
+      const handlers = [
+        {
+          route: '/_ipx/**',
+          handler: join(root, 'node_modules/@nuxt/image/dist/runtime/server/routes/_ipx.legacy'),
+        },
+        {
+          route: '/_ipx/**',
+          handler: join(root, 'node_modules/@nuxt/image/dist/runtime/server/routes/_ipx.legacy.js'),
+        },
+        {
+          route: '/_ipx/**',
+          handler: String.raw`C:\app\node_modules\@nuxt\image\dist\runtime\server\routes\_ipx.legacy.js`,
+        },
+        {
+          route: '/_ipx/**',
+          handler: String.raw`C:\app\node_modules\@nuxt\image\dist\runtime\server\routes\_ipx.legacy`,
+        },
+        { route: '/custom-ipx/**', handler: '/application/custom-ipx.js' },
+        { route: '/auth/**', handler: '/application/auth.js' },
+      ]
+      await config.nitro!.hooks!['build:before']!({ options: { handlers } } as unknown as Nitro)
+      const expected = join(root, 'server/runtime/ipx.ts')
+      expect(handlers.map(({ handler }) => handler)).toEqual([
+        expected,
+        expected,
+        expected,
+        expected,
+        '/application/custom-ipx.js',
+        '/application/auth.js',
+      ])
+    } finally {
+      vi.unstubAllGlobals()
+    }
+  })
+
   it('does not register generic type parameters as Nitro runtime auto-imports', async () => {
-    const exports = await scanExports(join(root, 'server/utils/backlinks/page.ts'))
+    const exports = await scanExports(join(root, 'server/utils/concurrency.ts'))
     expect(exports.map((entry) => entry.name)).toContain('mapLimit')
     expect(exports.map((entry) => entry.name)).not.toContain('R')
     expect(exports.map((entry) => entry.name)).not.toContain('T')
@@ -49,7 +91,7 @@ describe('release toolchain', () => {
     expect(read('nuxt.config.ts')).toContain('runtimeCaching: []')
     expect(read('public/sw-cache-cleanup.js')).toContain("caches.delete('api-cache')")
   })
-  it('pins one Bun version across local, CI and Docker builds', () => {
+  it('pins Bun and the Nuxt compiler across local, CI and Docker builds', () => {
     const packageJson = JSON.parse(read('package.json')) as { packageManager?: string; engines?: { bun?: string } }
     const toolVersion = packageJson.packageManager?.match(/^bun@(\d+\.\d+\.\d+)$/)?.[1]
 
@@ -57,6 +99,7 @@ describe('release toolchain', () => {
     expect(packageJson.packageManager).toBe(`bun@${toolVersion}`)
     expect(packageJson.engines?.bun).toBe(`>=${toolVersion}`)
     expect(read('Dockerfile')).toContain(`FROM oven/bun:${toolVersion}-slim AS base`)
+    expect(read('Dockerfile')).toContain(`FROM node:${read('.node-version').trim()}-bookworm-slim AS compiler-node`)
     const ciVersions = [...read('.github/workflows/ci.yml').matchAll(/bun-version:\s*([^\s]+)/g)].map(
       (match) => match[1],
     )

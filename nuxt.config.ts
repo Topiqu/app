@@ -1,9 +1,9 @@
-import { createRequire } from 'node:module'
-import { defineNuxtModule } from 'nuxt/kit'
+import { fileURLToPath } from 'node:url'
 
 import { IMAGE_HOSTS } from './shared/utils/imageHosts'
 import { LOCALIZED_SEGMENTS } from './shared/utils/routes'
 import { AI_GROUNDING_TOKENS, ANSWER_ENGINE_BOTS } from './shared/utils/crawlers'
+import { MULTIPART_BODY_MAX_BYTES, REQUEST_BODY_MAX_BYTES } from './shared/utils/requestLimits'
 
 const APP_ENV = process.env.APP_ENV || process.env.VERCEL_ENV || process.env.NODE_ENV || 'development'
 const IS_PROD = APP_ENV === 'production'
@@ -17,35 +17,6 @@ const SITE_URL = (() => {
     return 'https://topiqu.com'
   }
 })()
-
-// Nuxt 4.4 ships its Volar plugins with its private Vue Router 5 dependency,
-// while the application intentionally keeps Vue Router 4 as its public runtime API.
-const requireFromNuxt = createRequire(createRequire(import.meta.url).resolve('nuxt/package.json'))
-const routerVolarPlugins = {
-  'vue-router/volar/sfc-route-blocks': requireFromNuxt.resolve('vue-router/volar/sfc-route-blocks'),
-  'vue-router/volar/sfc-typed-router': requireFromNuxt.resolve('vue-router/volar/sfc-typed-router'),
-}
-const routerVolarBridge = defineNuxtModule({
-  meta: { name: 'topiqu-router-volar-bridge' },
-  setup(_options, nuxt) {
-    nuxt.hook('modules:done', () => {
-      nuxt.hook('prepare:types', ({ tsConfig }) => {
-        const plugins = tsConfig.vueCompilerOptions?.plugins
-        if (!plugins) return
-
-        tsConfig.vueCompilerOptions!.plugins = plugins.map((plugin) => {
-          if (typeof plugin === 'string') return routerVolarPlugins[plugin as keyof typeof routerVolarPlugins] ?? plugin
-          if (plugin && typeof plugin === 'object' && 'name' in plugin) {
-            const name = String(plugin.name)
-            const resolved = routerVolarPlugins[name as keyof typeof routerVolarPlugins]
-            return resolved ? { ...plugin, name: resolved } : plugin
-          }
-          return plugin
-        })
-      })
-    })
-  },
-})
 
 const CONSENT_DEFAULT = {
   ad_storage: 'denied',
@@ -148,6 +119,39 @@ export default defineNuxtConfig({
   },
 
   nitro: {
+    hooks: {
+      'build:before': (nitro) => {
+        const ogFetch = nitro.options.alias?.['#og-image/bindings/fetch']
+        if (
+          typeof ogFetch === 'string' &&
+          /\/nuxt-og-image\/dist\/runtime\/server\/og-image\/bindings\/fetch\/node(?:\.js)?$/.test(
+            ogFetch.replace(/\\/g, '/'),
+          )
+        ) {
+          // Retain the installed DNS-pinned transport; the adapter only bounds response bytes.
+          nitro.options.alias['#topiqu-og-fetch-upstream'] = ogFetch
+          nitro.options.alias['#og-image/bindings/fetch'] = fileURLToPath(
+            new URL('./server/runtime/ogFetch.ts', import.meta.url),
+          )
+        }
+        // Keep Nuxt Image's generated storage/security config, adapting only its Nitro 2 bridge.
+        // Image registers an extensionless path; Nitro resolves the .js file later during bundling.
+        for (const handler of nitro.options.handlers)
+          if (
+            /\/@nuxt\/image\/dist\/runtime\/server\/routes\/_ipx\.legacy(?:\.js)?$/.test(
+              handler.handler.replace(/\\/g, '/'),
+            )
+          )
+            handler.handler = fileURLToPath(new URL('./server/runtime/ipx.ts', import.meta.url))
+      },
+      'rollup:before': (nitro, config) => {
+        if (nitro.options.preset !== 'bun') return
+        // Nitro 2's Bun entry has no signal cleanup. Keep development/prerender entries intact.
+        const entry = fileURLToPath(new URL('./server/runtime/bun.ts', import.meta.url))
+        nitro.options.entry = entry
+        config.input = entry
+      },
+    },
     // Serve compressed assets at the origin without expensive build-time Brotli work.
     compressPublicAssets: { gzip: true, brotli: false },
     experimental: {
@@ -160,7 +164,7 @@ export default defineNuxtConfig({
             '* * * * *': ['webhook-deliver'],
             '*/15 * * * *': ['generate-article'],
             '*/30 * * * *': ['sentiment-analysis'],
-            '0 3 * * *': ['community-insights'],
+            '0 * * * *': ['community-insights'],
             '0 2 * * *': ['search-console-sync'],
             '30 2 * * *': ['search-console-autopilot'],
             '*/5 * * * *': [
@@ -185,7 +189,9 @@ export default defineNuxtConfig({
         : undefined,
     preset: 'bun',
     imports: {
-      dirs: ['server/utils'],
+      // The regex parser misses runtime values inside TypeScript assertions.
+      parser: 'oxc',
+      dirs: ['server/utils', 'types', 'shared'],
     },
     externals: {
       inline: [
@@ -208,7 +214,7 @@ export default defineNuxtConfig({
   },
 
   imports: {
-    dirs: ['utils', 'server/shared/consts'],
+    dirs: ['utils', 'server/shared/consts', '~~/types', '~~/shared'],
   },
   vite: {
     // Client only: Nitro re-bundles the SSR output, and Oxc's mangled names there collided with an
@@ -241,13 +247,11 @@ export default defineNuxtConfig({
     '@pinia/colada-nuxt',
     '@vueuse/nuxt',
     '@vite-pwa/nuxt',
-    '@unlok-co/nuxt-stripe',
     'pinia-plugin-persistedstate/nuxt',
     'nuxt-security',
     'nuxt-qrcode',
     'nuxt-gtag',
     '@sentry/nuxt/module',
-    routerVolarBridge,
   ],
 
   gtag: {
@@ -257,18 +261,12 @@ export default defineNuxtConfig({
   },
 
   sentry: {
-    // Without this the server SDK never initializes and only browser errors reach Better Stack.
-    // The documented alternative is `--import ./server/sentry.server.config.mjs` at startup, which
-    // is a Node flag — the container entrypoint is `bun --bun server/index.mjs`. Costs us
-    // db/native-module tracing spans (http traces and errors still arrive); do not add `--import`
-    // alongside it or the SDK initializes twice.
-    autoInjectServerSentry: 'top-level-import',
-    sourceMapsUploadOptions: {
-      url: process.env.SENTRY_URL,
-      org: process.env.SENTRY_ORG,
-      project: process.env.SENTRY_PROJECT,
-      authToken: process.env.SENTRY_AUTH_TOKEN,
-    },
+    // SDK 11 bundles the server initializer into Nitro; a second runtime preload initializes twice.
+    telemetry: false,
+    sentryUrl: process.env.SENTRY_URL,
+    org: process.env.SENTRY_ORG,
+    project: process.env.SENTRY_PROJECT,
+    authToken: process.env.SENTRY_AUTH_TOKEN,
   },
 
   sitemap: {
@@ -385,11 +383,6 @@ export default defineNuxtConfig({
     cookieAttrs: { path: '/', sameSite: 'lax', secure: USE_PRODUCTION_SECURITY, maxAge: 31_536_000 },
   },
 
-  stripe: {
-    client: { key: process.env.STRIPE_PK, options: { locale: 'cs' } },
-    server: { key: process.env.STRIPE_SK },
-  },
-
   qrcode: {
     options: {
       variant: 'pixelated',
@@ -400,6 +393,11 @@ export default defineNuxtConfig({
   },
 
   security: {
+    requestSizeLimiter: {
+      // This middleware rejects >= its threshold; the native byte caps are inclusive.
+      maxRequestSizeInBytes: REQUEST_BODY_MAX_BYTES + 1,
+      maxUploadFileRequestInBytes: MULTIPART_BODY_MAX_BYTES + 1,
+    },
     // Vite 8 uses the Oxc minifier above; the module still injects esbuild.drop.
     removeLoggers: false,
     // Sentry injects per-build debug IDs after Vite has named hashed chunks. SRI can therefore
