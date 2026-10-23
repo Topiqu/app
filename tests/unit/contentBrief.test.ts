@@ -56,7 +56,7 @@ describe('content brief controls', () => {
     }
     expect(wrapper.findAll('label[for]')).toHaveLength(4)
     const select = wrapper.get('[role="combobox"]')
-    expect(select.attributes('aria-label')).toBeUndefined()
+    expect(select.attributes('aria-label')).toBe('common.preferences.language.label')
     expect(select.text()).toContain('languages.cs')
   })
 })

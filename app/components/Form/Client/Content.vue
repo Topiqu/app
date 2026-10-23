@@ -64,6 +64,7 @@
             :id="languageId"
             v-model="language"
             :items="languageItems"
+            :aria-label="$t('common.preferences.language.label')"
             :aria-describedby="languageHelpId"
             class="w-full shrink-0 sm:w-48"
           />
