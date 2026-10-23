@@ -4,6 +4,17 @@
     tabindex="-1"
     class="relative w-full min-w-0 scroll-mt-24 rounded-(--topiqu-surface-radius) border border-default bg-default p-4 sm:p-5"
   >
+    <div v-if="comment.contextParentId" class="mb-4 pr-20">
+      <UButton
+        color="neutral"
+        variant="soft"
+        class="max-w-full whitespace-normal text-left"
+        :loading="pendingContexts.has(comment.id)"
+        :disabled="pendingContexts.has(comment.id)"
+        @click="emit('loadContext', comment)"
+        >{{ $t('articles.comments.loadEarlierContext') }}</UButton
+      >
+    </div>
     <div class="absolute right-3 top-3 z-10 flex gap-1">
       <UButton
         v-if="perms.report"
@@ -162,23 +173,16 @@
       </div>
     </div>
 
-    <div v-if="comment.replies?.length" class="mt-4 sm:mt-6 space-y-4">
-      <Comment
-        v-for="reply in comment.replies"
-        :key="reply.id"
-        :comment="reply"
-        :isReplying
-        :publication
-        :allowReplies
-        :allowGifs
-        :depth="Math.min(depth + 1, 12)"
-        @reply="emit('reply', $event)"
-        @delete="(c, r) => emit('delete', c, r)"
-        @like="emit('like', $event)"
-        @dislike="emit('dislike', $event)"
-        @refresh="emit('refresh')"
-      />
-    </div>
+    <UButton
+      v-if="comment.repliesHasMore"
+      color="neutral"
+      variant="soft"
+      class="mt-4"
+      :loading="pendingReplies.has(comment.id)"
+      :disabled="pendingReplies.has(comment.id)"
+      @click="emit('loadReplies', comment)"
+      >{{ $t('articles.comments.loadMoreReplies') }}</UButton
+    >
 
     <UModal
       v-if="showDeleteModal"
@@ -245,21 +249,27 @@ import type { CommentWithReplies } from '~~/types/comment'
 
 import { formatDate } from '~~/shared/utils'
 
-const props = withDefaults(
-  defineProps<{
-    comment: CommentWithReplies
-    isReplying: boolean
-    depth: number
-    publication: { name: string; logoUrl?: string | null } | null
-    allowReplies?: boolean
-    allowGifs?: boolean
-  }>(),
-  { allowReplies: true, allowGifs: true },
-)
+const {
+  comment,
+  isReplying,
+  publication,
+  allowReplies = true,
+  allowGifs = true,
+  pendingReplies = new Set<string>(),
+  pendingContexts = new Set<string>(),
+} = defineProps<{
+  comment: CommentWithReplies
+  isReplying: boolean
+  depth: number
+  publication: { name: string; logoUrl?: string | null } | null
+  allowReplies?: boolean
+  allowGifs?: boolean
+  pendingReplies?: ReadonlySet<string>
+  pendingContexts?: ReadonlySet<string>
+}>()
 const emit = defineEmits<{
-  (e: 'reply' | 'like' | 'dislike', c: CommentWithReplies): void
+  (e: 'reply' | 'like' | 'dislike' | 'loadReplies' | 'loadContext' | 'refresh', c: CommentWithReplies): void
   (e: 'delete', c: CommentWithReplies, reason: string | null): void
-  (e: 'refresh'): void
 }>()
 
 const toast = useToast()
@@ -272,23 +282,23 @@ const deleteReason = shallowRef('')
 const banReason = shallowRef('')
 const banExpiresAt = shallowRef<string | null>(null)
 
-const commentRef = computed(() => props.comment)
-const isReplyingRef = computed(() => props.isReplying)
+const commentRef = computed(() => comment)
+const isReplyingRef = computed(() => isReplying)
 const perms = useCommentPermissions(commentRef, isReplyingRef)
 
 const displayContent = computed(() =>
-  props.comment.deletedAt
+  comment.deletedAt
     ? $t('articles.comments.deletedComment')
     : perms.isBanned
       ? $t('articles.comments.bannedUserComment')
-      : props.comment.content,
+      : comment.content,
 )
 
 const userCardProps = computed(() => {
-  const u = props.comment.user
+  const u = comment.user
   if (!u || u.isBanned) return null
   return {
-    id: props.comment.userId,
+    id: comment.userId,
     username: u.username,
     avatarUrl: u.avatarUrl,
     bio: u.bio,
@@ -317,7 +327,7 @@ const report = async () => {
   try {
     await $fetch<unknown, '/api/notifications'>('/api/notifications', {
       method: 'POST',
-      body: { commentId: props.comment.id },
+      body: { commentId: comment.id },
     })
     toast.add({ color: 'success', title: $t('common.messages.reportSuccess') })
   } catch {
@@ -326,7 +336,7 @@ const report = async () => {
 }
 
 const confirmDelete = () => {
-  emit('delete', props.comment, deleteReason.value)
+  emit('delete', comment, deleteReason.value)
   showDeleteModal.value = false
   deleteReason.value = ''
 }
@@ -334,7 +344,7 @@ const confirmDelete = () => {
 const banUser = async () => {
   if (!banReason.value.trim()) return
   try {
-    await $fetch<unknown, '/api/bans/:id'>(`/api/bans/${props.comment.id}` as '/api/bans/:id', {
+    await $fetch<unknown, '/api/bans/:id'>(`/api/bans/${comment.id}` as '/api/bans/:id', {
       method: 'POST',
       body: {
         reason: banReason.value,
@@ -355,12 +365,12 @@ const banUser = async () => {
 
 const unbanUser = async () => {
   try {
-    await $fetch<unknown, '/api/bans/:id'>(`/api/bans/${props.comment.id}` as '/api/bans/:id', { method: 'DELETE' })
+    await $fetch<unknown, '/api/bans/:id'>(`/api/bans/${comment.id}` as '/api/bans/:id', { method: 'DELETE' })
     toast.add({
       color: 'success',
       title: $t('articles.comments.unbanSuccess'),
     })
-    emit('refresh')
+    emit('refresh', comment)
   } catch (e: any) {
     toast.add({
       color: 'error',

@@ -84,40 +84,57 @@
         {{ $t('common.auth.login') }}
       </UButton>
     </div>
-    <UProgress v-if="loading && !comments.length" class="mb-10" />
+    <div v-if="loading && !comments.length" class="mb-10 space-y-4" aria-busy="true">
+      <USkeleton v-for="index in 2" :key="index" class="h-40 w-full" />
+    </div>
     <UAlert
-      v-else-if="error"
+      v-if="error"
       color="error"
       icon="mdi:alert-circle"
       :title="$t('articles.comments.errorLoadingComments', { 0: error.message })"
-    />
-    <div v-else-if="comments.length" class="w-full max-w-full space-y-6">
-      <Comment
-        v-for="comment in comments"
-        :key="comment.id"
-        :comment="comment"
-        :depth="1"
-        :isReplying="!!replyingTo"
-        :publication
-        :allowReplies="allowComments"
-        :allowGifs
-        :class="optimisticCommentIds.has(comment.id) ? 'opacity-60' : ''"
-        :aria-busy="optimisticCommentIds.has(comment.id) || deletingCommentIds.has(comment.id)"
-        @reply="handleReply"
-        @delete="handleDelete"
-        @like="handleLike"
-        @dislike="handleDislike"
-        @refresh="refresh"
-      />
+    >
+      <template #actions>
+        <UButton color="error" variant="soft" @click="refresh">{{ $t('common.messages.retry') }}</UButton>
+      </template>
+    </UAlert>
+    <div v-if="comments.length" class="w-full max-w-full space-y-6">
+      <div v-for="thread in visibleThreads" :key="thread[0]?.comment.id" class="space-y-4">
+        <div v-for="{ comment, depth } in thread" :key="comment.id" :class="depth > 1 ? 'sm:pl-4' : ''">
+          <Comment
+            :comment="comment"
+            :depth="Math.min(depth, 12)"
+            :isReplying="!!replyingTo"
+            :publication
+            :allowReplies="allowComments"
+            :allowGifs
+            :pendingReplies
+            :pendingContexts
+            :class="optimisticCommentIds.has(comment.id) ? 'opacity-60' : ''"
+            :aria-busy="optimisticCommentIds.has(comment.id) || deletingCommentIds.has(comment.id)"
+            @reply="handleReply"
+            @delete="handleDelete"
+            @like="handleLike"
+            @dislike="handleDislike"
+            @refresh="refreshComment"
+            @loadReplies="loadReplies"
+            @loadContext="loadContext"
+          />
+        </div>
+      </div>
       <div v-if="hasMore" ref="sentinel" class="h-px" aria-hidden="true" />
+      <UButton v-if="hasMore" color="neutral" variant="soft" :loading="loading" :disabled="loading" @click="loadMore">
+        {{ $t('articles.comments.loadMoreComments') }}
+      </UButton>
       <UProgress v-if="loading" />
     </div>
-    <UEmpty v-else icon="mdi:comment-off-outline" :title="$t('articles.comments.noComments')" />
+    <UEmpty v-else-if="!loading && !error" icon="mdi:comment-off-outline" :title="$t('articles.comments.noComments')" />
   </section>
 </template>
 
 <script lang="ts" setup>
 import type { CommentWithReplies } from '~~/types/comment'
+
+import { flattenCommentThreads } from '~~/shared/utils/commentThreads'
 
 interface GiphyGif {
   id: string
@@ -147,6 +164,13 @@ const commentState = computed(() => ({ comment: newComment.value }))
 const optimisticCommentIds = ref(new Set<string>())
 const deletingCommentIds = ref(new Set<string>())
 const optimisticStatus = useOptimisticStatus()
+const { invalidateArticleDetail } = useCacheInvalidation()
+let disposed = false
+let articleVersion = 0
+onScopeDispose(() => {
+  disposed = true
+  articleVersion++
+})
 const sort = shallowRef('createdAt:desc'),
   sortItems = [
     {
@@ -165,43 +189,40 @@ const sort = shallowRef('createdAt:desc'),
       icon: 'mdi:heart',
     },
   ]
-const page = shallowRef(1),
-  limit = 2,
-  max = 100,
-  hasMore = shallowRef(true),
-  loading = shallowRef(false),
-  comments = shallowRef<CommentWithReplies[]>([]),
-  maxLength = 1000,
+const maxLength = 1000,
   characterCount = computed(() => newComment.value.length),
   commCount = shallowRef(props.commCount)
+watch(
+  () => props.articleId,
+  () => {
+    articleVersion++
+    commCount.value = props.commCount
+    newComment.value = ''
+    selectedGifUrl.value = null
+    replyingTo.value = null
+    isSubmitting.value = false
+    optimisticCommentIds.value.clear()
+    deletingCommentIds.value.clear()
+  },
+  { flush: 'sync' },
+)
 const {
-  data: commentsData,
+  ready,
+  comments,
+  index: commentIndex,
   error,
   refresh,
-} = await useFetch<{ comments: CommentWithReplies[]; hasMore: boolean }>(`/api/comments/${props.articleId}`, {
-  query: { page, limit, sort },
-  default: () => ({ comments: [], hasMore: true }),
-  watch: false,
-})
-
-// The server orders every page, so a sort switch restarts from the first page instead of reordering what is loaded.
-watch(sort, () => {
-  page.value = 1
-  refresh()
-})
-
-watch(
-  commentsData,
-  (v) => {
-    if (!v) return
-    comments.value =
-      page.value === 1
-        ? v.comments
-        : [...comments.value, ...v.comments.filter((comment) => !comments.value.some((item) => item.id === comment.id))]
-    hasMore.value = v.hasMore && comments.value.length < max
-  },
-  { immediate: true },
-)
+  loading,
+  hasMore,
+  loadMore,
+  loadReplies,
+  loadContext,
+  refreshComment,
+  pendingReplies,
+  pendingContexts,
+} = useCommentThreads(toRef(props, 'articleId'), sort)
+const visibleThreads = computed(() => comments.value.map((root) => flattenCommentThreads([root])))
+await ready
 useCommentAnchor(toRef(props, 'articleId'), comments)
 watch(
   error,
@@ -214,46 +235,49 @@ watch(
       }),
     }),
 )
-useInfiniteScroll(
-  sentinel,
-  async () => {
-    if (!hasMore.value || loading.value) return
-    page.value++
-    await refresh()
-  },
-  { distance: 100, interval: 300 },
-)
+useInfiniteScroll(sentinel, loadMore, {
+  distance: 100,
+  interval: 300,
+  canLoadMore: () => hasMore.value && !loading.value && !error.value,
+})
 const handleGifSelect = (g: GiphyGif) => (selectedGifUrl.value = g.images.original.url)
 
-const insertReply = (list: CommentWithReplies[], parentId: string, comment: CommentWithReplies): boolean => {
-  for (const item of list) {
-    if (item.id === parentId) {
-      item.replies.push(comment)
-      return true
-    }
-    if (insertReply(item.replies, parentId, comment)) return true
-  }
-  return false
+const insertReply = (parentId: string, comment: CommentWithReplies): boolean => {
+  const parent = commentIndex.value.get(parentId)
+  if (!parent) return false
+  parent.replies.push(comment)
+  return true
 }
 
-const removeComment = (list: CommentWithReplies[], id: string): CommentWithReplies[] =>
-  list
-    .filter((comment) => comment.id !== id)
-    .map((comment) => ({ ...comment, replies: removeComment(comment.replies, id) }))
+const removeComment = (id: string) => {
+  const comment = commentIndex.value.get(id)
+  const parent = comment?.parentId && commentIndex.value.get(comment.parentId)
+  if (parent) {
+    parent.replies = parent.replies.filter((child) => child.id !== id)
+    triggerRef(comments)
+  } else comments.value = comments.value.filter((comment) => comment.id !== id)
+}
 
-const replaceComment = (list: CommentWithReplies[], id: string, patch: Partial<CommentWithReplies>): boolean => {
-  for (const item of list) {
-    if (item.id === id) {
-      Object.assign(item, patch)
-      return true
-    }
-    if (replaceComment(item.replies, id, patch)) return true
+const replaceComment = (id: string, patch: Partial<CommentWithReplies>) => {
+  const comment = commentIndex.value.get(id)
+  if (comment) {
+    Object.assign(comment, patch)
+    triggerRef(comments)
   }
-  return false
+}
+
+const refreshAfterMutation = async (articleId: string, current: boolean) => {
+  const results = await Promise.allSettled([
+    Promise.resolve().then(() => invalidateArticleDetail(articleId)),
+    ...(current ? [Promise.resolve().then(refresh)] : []),
+  ])
+  if (results.some((result) => result.status === 'rejected'))
+    console.warn('[CommentSection] Could not refresh saved comment data.')
 }
 
 const submitComment = async () => {
   if (
+    disposed ||
     !props.allowComments ||
     !newComment.value.trim() ||
     isSubmitting.value ||
@@ -261,11 +285,14 @@ const submitComment = async () => {
   )
     return
   const draft = {
+    articleId: props.articleId,
     content: newComment.value,
     gifUrl: props.allowGifs ? selectedGifUrl.value : null,
     parent: replyingTo.value,
   }
-  const currentUser = session.value?.user as any
+  const version = articleVersion
+  const current = () => !disposed && articleVersion === version
+  const currentUser = session.value?.user
   const optimisticId = `optimistic-${crypto.randomUUID?.() ?? Date.now()}`
   const optimisticComment: CommentWithReplies = {
     id: optimisticId,
@@ -275,10 +302,10 @@ const submitComment = async () => {
     userId: currentUser?.id ?? '',
     parentId: draft.parent?.id ?? null,
     deletedAt: null,
-    articleId: props.articleId,
+    articleId: draft.articleId,
     user: {
-      username: currentUser?.username ?? currentUser?.name ?? '',
-      avatarUrl: currentUser?.avatarUrl,
+      username: currentUser?.name ?? '',
+      avatarUrl: currentUser?.avatarUrl ?? undefined,
       isBanned: false,
     },
     article: { clientSiteId: currentUser?.clientSiteId ?? '' },
@@ -293,14 +320,15 @@ const submitComment = async () => {
 
   isSubmitting.value = true
   optimisticCommentIds.value = new Set([...optimisticCommentIds.value, optimisticId])
-  if (!draft.parent || !insertReply(comments.value, draft.parent.id, optimisticComment))
+  if (!draft.parent || !insertReply(draft.parent.id, optimisticComment))
     comments.value = [optimisticComment, ...comments.value]
   else triggerRef(comments)
   commCount.value += 1
   newComment.value = ''
   selectedGifUrl.value = null
   replyingTo.value = null
-  optimisticStatus.saving()
+  const sequence = optimisticStatus.saving()
+  let committed = false
 
   try {
     const created = await $fetch<
@@ -315,14 +343,19 @@ const submitComment = async () => {
     >('/api/comments', {
       method: 'POST',
       body: {
-        articleId: props.articleId,
+        articleId: draft.articleId,
         content: draft.content,
         gifUrl: draft.gifUrl,
         parentId: draft.parent?.id,
-        userId: session?.value?.user?.id,
       },
     })
-    replaceComment(comments.value, optimisticId, {
+    committed = true
+    optimisticStatus.saved(sequence)
+    if (!current()) {
+      await refreshAfterMutation(draft.articleId, false)
+      return
+    }
+    replaceComment(optimisticId, {
       id: created.id,
       content: created.content,
       gifUrl: created.gifUrl,
@@ -334,25 +367,32 @@ const submitComment = async () => {
       color: 'success',
       title: draft.parent ? $t('articles.comments.replySubmitted') : $t('articles.comments.commentAdded'),
     })
-    optimisticStatus.saved()
-    page.value = 1
-    await refresh()
-  } catch (e: any) {
-    comments.value = removeComment(comments.value, optimisticId)
+    await refreshAfterMutation(draft.articleId, true)
+  } catch (e: unknown) {
+    if (committed) {
+      console.warn('[CommentSection] Could not refresh saved comment data.')
+      return
+    }
+    optimisticStatus.reverted(sequence)
+    if (!current()) return
+    removeComment(optimisticId)
     commCount.value = Math.max(0, commCount.value - 1)
-    newComment.value = draft.content
-    selectedGifUrl.value = draft.gifUrl
-    replyingTo.value = draft.parent
-    optimisticStatus.reverted()
+    if (!newComment.value && !replyingTo.value) {
+      newComment.value = draft.content
+      selectedGifUrl.value = draft.gifUrl
+      replyingTo.value = draft.parent
+    }
     toast.add({
       color: 'error',
       title: fetchErrorMessage(e, $t('common.messages.operationFailed')),
     })
   } finally {
-    const nextOptimistic = new Set(optimisticCommentIds.value)
-    nextOptimistic.delete(optimisticId)
-    optimisticCommentIds.value = nextOptimistic
-    isSubmitting.value = false
+    if (current()) {
+      const nextOptimistic = new Set(optimisticCommentIds.value)
+      nextOptimistic.delete(optimisticId)
+      optimisticCommentIds.value = nextOptimistic
+      isSubmitting.value = false
+    }
   }
 }
 
@@ -361,20 +401,11 @@ const handleReply = (c: CommentWithReplies) =>
   c.deletedAt ||
   ((replyingTo.value = c), nextTick(() => commentForm.value?.scrollIntoView({ behavior: 'smooth', block: 'center' })))
 
-const markAsDeleted = (list: CommentWithReplies[], id: string): boolean => {
-  for (const comment of list) {
-    if (comment.id === id) {
-      comment.deletedAt = new Date()
-      return true
-    }
-    if (comment.replies.length > 0) {
-      if (markAsDeleted(comment.replies, id)) return true
-    }
-  }
-  return false
-}
-
 const handleDelete = async (c: CommentWithReplies, r: string | null) => {
+  if (disposed || deletingCommentIds.value.has(c.id)) return
+  const version = articleVersion
+  const articleId = props.articleId
+  const current = () => !disposed && version === articleVersion
   if (
     !(await confirm({
       title: $t('common.messages.deleteConfirmTitle'),
@@ -385,32 +416,37 @@ const handleDelete = async (c: CommentWithReplies, r: string | null) => {
     }))
   )
     return
+  if (!current() || deletingCommentIds.value.has(c.id)) return
 
   const previousDeletedAt = c.deletedAt
-  markAsDeleted(comments.value, c.id)
+  replaceComment(c.id, { deletedAt: new Date() })
   triggerRef(comments)
   deletingCommentIds.value = new Set([...deletingCommentIds.value, c.id])
-  optimisticStatus.saving()
+  const sequence = optimisticStatus.saving()
 
   try {
     await $fetch<unknown, '/api/comments/:id'>(`/api/comments/${c.id}` as '/api/comments/:id', {
       method: 'DELETE',
       body: { reason: r },
     })
-    optimisticStatus.saved()
+    optimisticStatus.saved(sequence)
+    await refreshAfterMutation(articleId, false)
+    if (!current()) return
     toast.add({ color: 'success', title: $t('common.messages.deleteSuccess') })
     await nextTick()
     document.getElementById(`comment-${c.id}`)?.focus?.()
-  } catch (e) {
+  } catch {
+    optimisticStatus.reverted(sequence)
+    if (!current()) return
     c.deletedAt = previousDeletedAt
     triggerRef(comments)
-    optimisticStatus.reverted()
-    console.error(e)
     toast.add({ color: 'error', title: $t('common.messages.deleteFailed') })
   } finally {
-    const nextDeleting = new Set(deletingCommentIds.value)
-    nextDeleting.delete(c.id)
-    deletingCommentIds.value = nextDeleting
+    if (current()) {
+      const nextDeleting = new Set(deletingCommentIds.value)
+      nextDeleting.delete(c.id)
+      deletingCommentIds.value = nextDeleting
+    }
   }
 }
 const handleLike = (c: CommentWithReplies) => !c.deletedAt
