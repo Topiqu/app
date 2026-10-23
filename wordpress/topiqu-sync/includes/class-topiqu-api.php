@@ -31,6 +31,7 @@ final class Topiqu_API {
         $response = wp_safe_remote_get($this->base_url . $path, array(
             'timeout' => 20,
             'redirection' => 0,
+            'limit_response_size' => 16 * 1024 * 1024,
             'headers' => array(
                 'Accept' => 'application/json',
                 'User-Agent' => 'Topiqu-Sync/' . TOPIQU_SYNC_VERSION,

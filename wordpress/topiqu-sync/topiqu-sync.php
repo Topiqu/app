@@ -19,6 +19,8 @@ define('TOPIQU_SYNC_FILE', __FILE__);
 define('TOPIQU_SYNC_DIR', plugin_dir_path(__FILE__));
 
 require_once TOPIQU_SYNC_DIR . 'includes/class-topiqu-api.php';
+require_once TOPIQU_SYNC_DIR . 'includes/class-topiqu-source.php';
+require_once TOPIQU_SYNC_DIR . 'includes/class-topiqu-lock.php';
 require_once TOPIQU_SYNC_DIR . 'includes/class-topiqu-sync.php';
 require_once TOPIQU_SYNC_DIR . 'includes/class-topiqu-admin.php';
 require_once TOPIQU_SYNC_DIR . 'includes/class-topiqu-plugin.php';

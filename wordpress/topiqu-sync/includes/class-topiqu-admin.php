@@ -8,6 +8,8 @@ final class Topiqu_Admin {
         add_action('admin_init', array($this, 'register_settings'));
         add_action('admin_post_topiqu_test_connection', array($this, 'test_connection'));
         add_action('admin_post_topiqu_sync_now', array($this, 'sync_now'));
+        add_action('admin_post_topiqu_confirm_source', array($this, 'confirm_source'));
+        add_action('admin_post_topiqu_recover_lock', array($this, 'recover_lock'));
         add_action('update_option_topiqu_sync_settings', array($this, 'reschedule'), 10, 2);
         add_filter('plugin_action_links_' . plugin_basename(TOPIQU_SYNC_FILE), array($this, 'action_links'));
     }
@@ -34,6 +36,10 @@ final class Topiqu_Admin {
             add_settings_error('topiqu_sync', 'topiqu_https', __('Topiqu URL must use HTTPS.', 'topiqu-sync'));
             return $old;
         }
+        if ($api_url !== ($old['api_url'] ?? '') && !empty($old['api_key']) && '' === $api_key) {
+            add_settings_error('topiqu_sync', 'topiqu_new_url_key', __('Enter an API key when changing the Topiqu URL. The saved key is never forwarded to a different URL.', 'topiqu-sync'));
+            return $old;
+        }
         return array(
             'api_url' => $api_url,
             'api_key' => '' !== $api_key ? $api_key : (string) ($old['api_key'] ?? ''),
@@ -56,13 +62,15 @@ final class Topiqu_Admin {
 
     public function test_connection(): void {
         $this->guard('topiqu_test_connection');
-        $response = (new Topiqu_API(get_option('topiqu_sync_settings', array())))->site();
-        if (is_wp_error($response)) {
-            $this->redirect('error', $response->get_error_message());
+        $settings = get_option('topiqu_sync_settings', array());
+        $site = Topiqu_Source::inspect(new Topiqu_API($settings), $settings);
+        if (is_wp_error($site)) {
+            $this->redirect('error', $site->get_error_message());
         }
-        $site = $response['data'];
         /* translators: 1: Topiqu site name, 2: number of published articles. */
         $message = sprintf(__('Connected to %1$s — %2$d published articles.', 'topiqu-sync'), (string) ($site['name'] ?? 'Topiqu'), (int) ($site['articleCount'] ?? 0));
+        /* translators: %s: verified publication ID. */
+        $message .= ' ' . sprintf(__('Publication ID: %s', 'topiqu-sync'), $site['id']);
         $this->redirect('success', $message);
     }
 
@@ -78,6 +86,28 @@ final class Topiqu_Admin {
             $result['created'], $result['updated'], $result['skipped'], $result['drafted'], count($result['errors'])
         );
         $this->redirect(empty($result['errors']) ? 'success' : 'warning', $message);
+    }
+
+    public function confirm_source(): void {
+        $this->guard('topiqu_confirm_source');
+        $result = Topiqu_Source::confirm(
+            get_option('topiqu_sync_settings', array()),
+            isset($_POST['confirm_source']) && '1' === $_POST['confirm_source'],
+            isset($_POST['adopt_legacy']) && '1' === $_POST['adopt_legacy']
+        );
+        if (is_wp_error($result)) $this->redirect('error', $result->get_error_message());
+        /* translators: 1: verified source name, 2: adopted legacy posts, 3: preserved conflicting posts. */
+        $message = sprintf(__('Source confirmed: %1$s. Associated %2$d legacy posts; preserved %3$d conflicting posts.', 'topiqu-sync'), $result['source']['name'], $result['adopted'], $result['conflicts']);
+        if (!empty($result['source']['legacy_pending'])) $message .= ' ' . __('More legacy posts remain. Repeat the confirmed adoption before synchronizing.', 'topiqu-sync');
+        $this->redirect(!empty($result['source']['legacy_pending']) || $result['conflicts'] ? 'warning' : 'success', $message);
+    }
+
+    public function recover_lock(): void {
+        $this->guard('topiqu_recover_lock');
+        $owner = isset($_POST['lock_owner']) && is_string($_POST['lock_owner']) ? sanitize_text_field(wp_unslash($_POST['lock_owner'])) : '';
+        $result = Topiqu_Lock::recover($owner, isset($_POST['confirm_inactive']) && '1' === $_POST['confirm_inactive']);
+        if (is_wp_error($result)) $this->redirect('error', $result->get_error_message());
+        $this->redirect('success', __('The abandoned synchronization lock was recovered. A new synchronization can now start.', 'topiqu-sync'));
     }
 
     private function guard(string $action): void {
@@ -103,6 +133,10 @@ final class Topiqu_Admin {
             'update_mode' => 'safe', 'missing_action' => 'draft', 'download_images' => 1,
         ));
         $last = get_option('topiqu_sync_last_run', array());
+        $source = get_option(Topiqu_Source::OPTION, array());
+        $legacy = Topiqu_Source::legacy_ids();
+        $lock = Topiqu_Lock::status();
+        $recent_lock = !empty($lock['heartbeat_at']) && time() - (int) $lock['heartbeat_at'] < Topiqu_Lock::STALE_AFTER;
         ?>
         <div class="wrap">
             <h1><?php esc_html_e('Topiqu Sync', 'topiqu-sync'); ?></h1>
@@ -127,6 +161,32 @@ final class Topiqu_Admin {
                 </table>
                 <?php submit_button(); ?>
             </form>
+            <hr>
+            <h2><?php esc_html_e('Publication identity', 'topiqu-sync'); ?></h2>
+            <p><?php esc_html_e('Confirm the publication returned by the configured API before importing. Changing the source preserves all posts imported from earlier publications.', 'topiqu-sync'); ?></p>
+            <?php if (!empty($source['id'])) : ?><p><?php echo esc_html($source['name'] . ' — ' . $source['id']); ?></p><?php endif; ?>
+            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                <input type="hidden" name="action" value="topiqu_confirm_source">
+                <?php wp_nonce_field('topiqu_confirm_source'); ?>
+                <p><label><input type="checkbox" name="confirm_source" value="1" required> <?php esc_html_e('I checked the connection and confirm the configured publication as the synchronization source.', 'topiqu-sync'); ?></label></p>
+                <?php if (!is_wp_error($legacy) && $legacy) : ?>
+                    <p><?php esc_html_e('Unassociated legacy imports exist. They remain untouched unless you explicitly associate them. Starting a new source can import separate posts with the same article IDs.', 'topiqu-sync'); ?></p>
+                    <p><label><input type="checkbox" name="adopt_legacy" value="1"> <?php esc_html_e('I verified that the unassociated imports belong to this publication. Associate up to 500 now; preserve ID conflicts.', 'topiqu-sync'); ?></label></p>
+                <?php endif; ?>
+                <?php submit_button(__('Confirm source', 'topiqu-sync'), 'secondary'); ?>
+            </form>
+            <?php if ($lock) : ?>
+                <h2><?php esc_html_e('Synchronization recovery', 'topiqu-sync'); ?></h2>
+                <p><?php esc_html_e('A recent heartbeat blocks recovery. Stale locks never expire automatically: a slow worker may still be active. Stop or verify termination of the worker before recovering its lock.', 'topiqu-sync'); ?></p>
+                <p><?php echo esc_html(!empty($lock['heartbeat_at']) ? gmdate('Y-m-d H:i:s', (int) $lock['heartbeat_at']) . ' UTC' : __('Legacy lock: heartbeat unavailable.', 'topiqu-sync')); ?></p>
+                <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                    <input type="hidden" name="action" value="topiqu_recover_lock">
+                    <input type="hidden" name="lock_owner" value="<?php echo esc_attr((string) ($lock['owner'] ?? '')); ?>">
+                    <?php wp_nonce_field('topiqu_recover_lock'); ?>
+                    <p><label><input type="checkbox" name="confirm_inactive" value="1" required> <?php esc_html_e('I verified that no synchronization worker is still running.', 'topiqu-sync'); ?></label></p>
+                    <button class="button button-secondary" type="submit" <?php disabled($recent_lock); ?>><?php esc_html_e('Recover abandoned lock', 'topiqu-sync'); ?></button>
+                </form>
+            <?php endif; ?>
             <hr>
             <h2><?php esc_html_e('Connection and manual synchronization', 'topiqu-sync'); ?></h2>
             <p>
