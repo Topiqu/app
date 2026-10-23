@@ -5,6 +5,17 @@ import { describe, expect, it } from 'vitest'
 import { toBillingInvoice } from '../../../server/utils/stripeInvoices'
 
 describe('toBillingInvoice', () => {
+  it('maps a future provider status to the existing unknown-status UI state', () => {
+    const invoice = {
+      id: 'in_future',
+      status: 'future_provider_status',
+      created: 1_754_582_400,
+      total: 4900,
+      currency: 'usd',
+    } as Stripe.Invoice
+    expect(toBillingInvoice(invoice).status).toBeNull()
+  })
+
   it('returns only the customer-facing invoice fields', () => {
     const invoice = {
       id: 'in_123',
