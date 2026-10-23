@@ -25,7 +25,13 @@ const setup = async (target?: string) => {
   ]
   const db = {
     article: {
-      findUnique: vi.fn().mockResolvedValue({ clientSiteId: 'site-1', clientSite: { commentGifsEnabled: true } }),
+      findUnique: vi.fn().mockResolvedValue({
+        clientSiteId: 'site-1',
+        status: 'published',
+        deletedAt: null,
+        releaseAt: null,
+        clientSite: { deletedAt: null, commentGifsEnabled: true },
+      }),
     },
     comment: {
       findFirst: vi.fn(async ({ where }) => saved.find((c) => c.id === where.id && c.articleId === where.articleId)),
@@ -36,10 +42,15 @@ const setup = async (target?: string) => {
             (!where.id || where.id.in.includes(c.id)) &&
             (where.parentId === null ? c.parentId === null : !where.parentId || where.parentId.in.includes(c.parentId)),
         )
-        return take === undefined ? matching : matching.slice(skip, skip + take)
+        return (take === undefined ? matching : matching.slice(skip ?? 0, (skip ?? 0) + take)).map((comment) => ({
+          ...comment,
+          _count: { replies: saved.filter((child) => child.parentId === comment.id).length },
+        }))
       }),
       count: vi.fn().mockResolvedValue(3),
     },
+    commentReaction: { groupBy: vi.fn().mockResolvedValue([]) },
+    emojiReaction: { groupBy: vi.fn().mockResolvedValue([]) },
   }
   vi.stubGlobal('defineEventHandler', (handler: unknown) => handler)
   vi.stubGlobal('useServerI18n', async () => ({ translate: (key: string) => key }))

@@ -43,7 +43,8 @@ describe('POST /api/comments reply', () => {
     vi.stubGlobal('commentAudience', async () => [])
     vi.stubGlobal('unsubscribeUrl', () => 'https://example.com/unsubscribe')
     vi.stubGlobal('sendEmail', sendEmail)
-    vi.stubGlobal('prisma', {
+    vi.stubGlobal('reportCaughtError', vi.fn().mockResolvedValue(undefined))
+    const db = {
       article: {
         findUnique: vi.fn().mockResolvedValue({
           id: body.articleId,
@@ -53,16 +54,22 @@ describe('POST /api/comments reply', () => {
           slug: 'article',
           language: 'cs',
           title: 'Article',
+          status: 'published',
+          releaseAt: null,
+          deletedAt: null,
           clientSite: {
             domain: 'example.com',
             commentsEnabled: options.commentsEnabled ?? true,
             commentGifsEnabled: options.commentGifsEnabled ?? true,
+            deletedAt: null,
           },
         }),
       },
       userBan: { findFirst: vi.fn().mockResolvedValue(null) },
       comment: { findFirst, create },
-    })
+    }
+    vi.stubGlobal('prisma', db)
+    vi.stubGlobal('getEnhancedPrisma', async () => db)
     const handler = (await import('../../../server/api/comments/index.post')).default
     return { run: () => handler({} as never), create, findFirst, sendEmail }
   }
@@ -105,7 +112,7 @@ describe('POST /api/comments reply', () => {
       await expect(run()).resolves.toMatchObject({ id: 'reply-1' })
       expect(create).toHaveBeenCalledOnce()
       expect(findFirst).toHaveBeenCalledWith(
-        expect.objectContaining({ where: { id: 'parent-1', articleId: 'article-1' } }),
+        expect.objectContaining({ where: { id: 'parent-1', articleId: 'article-1', deletedAt: null } }),
       )
       expect(sendEmail).toHaveBeenCalledOnce()
       expect(create.mock.invocationCallOrder[0]).toBeLessThan(sendEmail.mock.invocationCallOrder[0]!)
@@ -114,7 +121,10 @@ describe('POST /api/comments reply', () => {
       expect(email.data.parentContent).toBe(`${'a'.repeat(49)}👇🏿...`)
       expect(email.data.commentUrl).toContain('#comment-reply-1')
       expect(() => encodeURIComponent(email.data.parentContent)).not.toThrow()
-      expect(logged).toHaveBeenCalledOnce()
+      expect(reportCaughtError).toHaveBeenCalledWith('Comment email delivery failed', expect.any(URIError), {
+        commentId: 'reply-1',
+        clientSiteId: 'site-1',
+      })
     } finally {
       logged.mockRestore()
     }

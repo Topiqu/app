@@ -22,17 +22,27 @@ describe('comment GIF visibility', () => {
       article: {
         findUnique: vi.fn().mockResolvedValue({
           clientSiteId: 'site-1',
-          clientSite: { commentGifsEnabled },
+          status: 'published',
+          deletedAt: null,
+          releaseAt: null,
+          clientSite: { commentGifsEnabled, deletedAt: null },
         }),
       },
       comment: {
         findMany: vi.fn(async ({ where }) =>
-          saved.filter((comment) =>
-            where.parentId === null ? comment.parentId === null : where.parentId.in.includes(comment.parentId),
-          ),
+          saved
+            .filter((comment) =>
+              where.parentId === null ? comment.parentId === null : where.parentId.in.includes(comment.parentId),
+            )
+            .map((comment) => ({
+              ...comment,
+              _count: { replies: saved.filter((child) => child.parentId === comment.id).length },
+            })),
         ),
         count: vi.fn().mockResolvedValue(1),
       },
+      commentReaction: { groupBy: vi.fn().mockResolvedValue([]) },
+      emojiReaction: { groupBy: vi.fn().mockResolvedValue([]) },
     }
     vi.stubGlobal('defineEventHandler', (handler: unknown) => handler)
     vi.stubGlobal('useServerI18n', async () => ({ translate: (key: string) => key }))

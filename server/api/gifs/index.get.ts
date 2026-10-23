@@ -9,9 +9,10 @@ export default defineCachedEventHandler(
     if (action === 'list-categories') {
       const url = `${API_BASE}/categories?api_key=${process.env.GIPHY_API_KEY}`
       try {
-        const res = await $fetch<unknown, string>(url)
+        const res = await $fetch<unknown, string>(url, { signal: AbortSignal.timeout(8000), retry: 0 })
         return res
       } catch {
+        await reportCaughtError('Giphy categories unavailable', new Error('GIPHY_REQUEST_FAILED')).catch(() => {})
         throw createError({ statusCode: 500, message: t('common.errors.giphyCategoriesFailed')! })
       }
     }
@@ -23,9 +24,10 @@ export default defineCachedEventHandler(
     const url = `${API_BASE}/${endpoint}?api_key=${process.env.GIPHY_API_KEY}&limit=${take}&offset=${skip}${query ? `&q=${encodeURIComponent(query)}` : ''}`
 
     try {
-      const res = await $fetch<unknown, string>(url)
+      const res = await $fetch<unknown, string>(url, { signal: AbortSignal.timeout(8000), retry: 0 })
       return res
     } catch {
+      await reportCaughtError('Giphy search unavailable', new Error('GIPHY_REQUEST_FAILED')).catch(() => {})
       throw createError({ statusCode: 500, message: t('common.errors.giphyFetchFailed')! })
     }
   },

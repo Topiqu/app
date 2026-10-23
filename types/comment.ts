@@ -24,9 +24,20 @@ export interface CommentWithReplies {
   likes: number
   dislikes: number
   replies: CommentWithReplies[]
+  /** Direct replies are paged independently; descendants are never silently discarded. */
+  repliesHasMore?: boolean
+  repliesCursor?: string | null
+  /** A deep permalink can load its earlier ancestors in another bounded request. */
+  contextParentId?: string
   userReaction: { type: string } | null
   emojiReactions: { emojiId: string; count: number; emoji: { imageUrl: string; shortcode: string } }[]
   depth: number
   /** Likes from members of the publication's team. */
   publicationLikes: number
+}
+
+export interface CommentPage {
+  comments: CommentWithReplies[]
+  hasMore: boolean
+  parent?: { id: string; cursor: string | null; hasMore: boolean }
 }
