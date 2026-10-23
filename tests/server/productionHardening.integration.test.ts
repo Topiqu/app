@@ -4,11 +4,18 @@ import { createError } from 'h3'
 import { randomUUID } from 'node:crypto'
 import { afterAll, afterEach, describe, expect, it, vi } from 'vitest'
 
+import { invalidateFeed } from '../../server/utils/cache'
+import { backfillPolls } from '../../scripts/backfill-polls'
 import { appMutationPlugin } from '../../server/utils/prisma'
 import { createDatabaseClient } from '../../server/utils/database'
 import { articleCardSelect } from '../../server/utils/articleCard'
 import { requireTenantMember } from '../../server/utils/tenantMembership'
 import { passwordResetHash, passwordResetIdentifier } from '../../server/utils/passwordReset'
+
+vi.mock('../../server/utils/cache', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../server/utils/cache')>()),
+  invalidateFeed: vi.fn(async () => 'invalidated' as const),
+}))
 
 const url = process.env.TEST_DATABASE_URL
 const enabled = !!url && /test/i.test(new URL(url).pathname) && url !== process.env.DATABASE_URL
@@ -37,6 +44,111 @@ const setup = () => {
 }
 
 describe.skipIf(!enabled)('production security boundaries on PostgreSQL', () => {
+  const pollFixture = async () => {
+    const siteId = randomUUID()
+    const userId = randomUUID()
+    sites.push(siteId)
+    users.push(userId)
+    await db!.clientSite.create({ data: { id: siteId, name: `polls-${siteId}`, domain: `${siteId}.test` } })
+    await db!.user.create({ data: { id: userId, username: `polls-${userId}`, email: `${userId}@example.invalid` } })
+    const content = `<div data-type='poll' data-question='Máte zájem?' data-options='[{"label":"Ano"},{"label":"Ne"}]'></div>`
+    const article = await db!.article.create({
+      data: { clientSiteId: siteId, userId, language: 'cs', slug: randomUUID(), title: 'Legacy poll', content },
+    })
+    return { siteId, article }
+  }
+
+  it('keeps poll backfills dry by default and applies a tenant-scoped repair idempotently', async () => {
+    const f = await pollFixture()
+    vi.mocked(invalidateFeed).mockClear()
+    await expect(backfillPolls(db!, { clientSiteId: f.siteId })).resolves.toMatchObject({
+      scanned: 1,
+      needed: 1,
+      updated: 0,
+    })
+    expect(await db!.poll.count({ where: { articleId: f.article.id } })).toBe(0)
+    expect(invalidateFeed).not.toHaveBeenCalled()
+    vi.mocked(invalidateFeed).mockImplementationOnce(async (siteId) => {
+      expect(siteId).toBe(f.siteId)
+      expect((await db!.article.findUniqueOrThrow({ where: { id: f.article.id } })).content).toContain('data-poll-id=')
+      return 'invalidated'
+    })
+    await expect(backfillPolls(db!, { apply: true, clientSiteId: f.siteId })).resolves.toMatchObject({
+      needed: 1,
+      updated: 1,
+    })
+    const saved = await db!.article.findUniqueOrThrow({ where: { id: f.article.id } })
+    expect(saved.content).toContain('data-poll-id=')
+    expect(await db!.poll.count({ where: { articleId: f.article.id } })).toBe(1)
+    await expect(backfillPolls(db!, { apply: true, clientSiteId: f.siteId })).resolves.toMatchObject({
+      needed: 0,
+      updated: 0,
+    })
+    expect((await db!.article.findUniqueOrThrow({ where: { id: f.article.id } })).content).toBe(saved.content)
+    expect(invalidateFeed).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not overwrite an author edit or create orphan polls during maintenance', async () => {
+    const f = await pollFixture()
+    vi.mocked(invalidateFeed).mockClear()
+    const transaction = db!.$transaction.bind(db)
+    const concurrent = {
+      article: db!.article,
+      $transaction: async (run: Parameters<typeof db.$transaction>[0]) => {
+        await db!.article.update({ where: { id: f.article.id }, data: { content: '<p>New author text.</p>' } })
+        return transaction(run)
+      },
+    } as unknown as ReturnType<typeof createDatabaseClient>
+    await expect(backfillPolls(concurrent, { apply: true, clientSiteId: f.siteId })).resolves.toMatchObject({
+      needed: 1,
+      updated: 0,
+      conflicted: 1,
+    })
+    expect((await db!.article.findUniqueOrThrow({ where: { id: f.article.id } })).content).toBe(
+      '<p>New author text.</p>',
+    )
+    expect(await db!.poll.count({ where: { articleId: f.article.id } })).toBe(0)
+    expect(invalidateFeed).not.toHaveBeenCalled()
+  })
+
+  it('uses readable HTML metrics on creation and updates while preserving explicit caller values', async () => {
+    const siteId = randomUUID()
+    const userId = randomUUID()
+    sites.push(siteId)
+    users.push(userId)
+    await db!.clientSite.create({ data: { id: siteId, name: `metrics-${siteId}`, domain: `${siteId}.test` } })
+    await db!.user.create({ data: { id: userId, username: `metrics-${userId}`, email: `${userId}@example.invalid` } })
+    const article = await db!.article.create({
+      data: {
+        clientSiteId: siteId,
+        userId,
+        language: 'en',
+        slug: randomUUID(),
+        title: 'Metrics fixture',
+        content: '<p>One</p><p>Two</p>',
+      },
+    })
+    expect(article).toMatchObject({ totalWords: 2, readingTime: 1 })
+    const edited = await db!.article.update({
+      where: { id: article.id },
+      data: { content: '<p>One<br>Two<br>Three</p>' },
+    })
+    expect(edited).toMatchObject({ totalWords: 3, readingTime: 1 })
+    const explicit = await db!.article.create({
+      data: {
+        clientSiteId: siteId,
+        userId,
+        language: 'en',
+        slug: randomUUID(),
+        title: 'Explicit metrics',
+        content: '<p>One two three.</p>',
+        totalWords: 42,
+        readingTime: 7,
+      },
+    })
+    expect(explicit).toMatchObject({ totalWords: 42, readingTime: 7 })
+  })
+
   async function resetFixture() {
     setup()
     vi.stubEnv('AUTH_SECRET', 'local-integration-secret')

@@ -22,16 +22,17 @@ describe('background work recovery', () => {
     vi.stubGlobal('prisma', {
       articleTranslation: {
         updateMany,
-        findMany: async () => [{ id: 'translation' }],
+        findMany: async () => [{ id: 'translation', updatedAt: new Date(0) }],
         findUnique: async () => ({
           id: 'translation',
           language: 'en',
           clientSiteId: 'site',
-          article: { id: 'article', title: 'Source' },
+          article: { id: 'article', title: 'Source', editVersion: 1 },
           clientSite: { translationMode: 'AUTO', publishToWeb: true },
         }),
       },
-      $transaction: (run: (tx: unknown) => unknown) => run({ articleTranslation: { updateMany: finalUpdate } }),
+      $transaction: (run: (tx: unknown) => unknown) =>
+        run({ $queryRaw: async () => [{ editVersion: 1 }], articleTranslation: { updateMany: finalUpdate } }),
     })
     vi.stubGlobal('generateTranslation', async () => ({
       slug: 'translated',
@@ -39,12 +40,12 @@ describe('background work recovery', () => {
       content: '<p>Content</p>',
       usage: { totalTokens: 10 },
     }))
-    vi.stubGlobal('recordAiUsage', vi.fn())
+    vi.stubGlobal('recordAiUsage', vi.fn().mockResolvedValue(undefined))
     vi.stubGlobal('dedupeTranslationSlug', async () => 'translated')
     vi.stubGlobal('sanitizeHtml', (html: string) => html)
     vi.stubGlobal('aiModelId', () => 'test-model')
     vi.stubGlobal('toDatabaseJson', (value: unknown) => value)
-    const audit = vi.fn()
+    const audit = vi.fn().mockResolvedValue(undefined)
     vi.stubGlobal('logAction', audit)
     const { default: task } = await import('../../server/tasks/translate-pending')
     await task.run({} as never)

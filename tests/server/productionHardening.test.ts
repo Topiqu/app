@@ -6,7 +6,10 @@ import { requireCron } from '../../server/utils/requireCron'
 import { articleCardSelect } from '../../server/utils/articleCard'
 import { passwordResetHash } from '../../server/utils/passwordReset'
 
-vi.mock('../../server/utils/imageAnalysis', () => ({ analyzeImage: vi.fn().mockResolvedValue([]) }))
+vi.mock('../../server/utils/imageAnalysis', () => ({
+  analyzeImage: vi.fn().mockResolvedValue({ tags: [], moderation: 'clear' }),
+  IMAGE_MODERATION_POLICY_VERSION: 1,
+}))
 
 afterEach(() => {
   vi.unstubAllGlobals()
