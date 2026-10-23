@@ -138,7 +138,7 @@ const props = defineProps<{
 const route = useRoute()
 const localePath = useLocalePath()
 const showFullList = shallowRef(false)
-const currentSlug = computed(() => String(route.params.slug || ''))
+const currentSlug = computed(() => ('slug' in route.params ? String(route.params.slug ?? '') : ''))
 
 const series = computed(() => props.series)
 </script>

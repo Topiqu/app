@@ -54,6 +54,8 @@ import {
   type AnnouncementTextRun,
 } from '~~/shared/utils/widgets'
 
+import { emptyAsyncDataList } from '~/utils/asyncDataDefaults'
+
 const { announcement, preview = false } = defineProps<{
   announcement: Pick<AnnouncementConfig, 'text' | 'link' | 'tone' | 'dismissible'> & {
     id: string
@@ -79,7 +81,7 @@ const TONES = {
 const dismissed = useCookie<string[]>('topiqu_bar', {
   maxAge: 60 * 60 * 24 * 365,
   sameSite: 'lax',
-  default: () => [],
+  default: emptyAsyncDataList,
 })
 const key = computed(() => announcementKey(announcement.id, announcement))
 const visible = computed(() => preview || !dismissed.value.includes(key.value))

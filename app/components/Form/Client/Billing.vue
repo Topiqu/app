@@ -375,6 +375,7 @@ import { getUpgradeTarget } from '~~/shared/utils/plans'
 import type { ClientSite } from '~/utils/buildClientSettingsForm'
 
 import { buildArticlePackViews } from '~/utils/articlePackPresentation'
+import { createAsyncDataDefault, emptyAsyncDataList } from '~/utils/asyncDataDefaults'
 
 const { client, rate } = defineProps<{
   client: ClientSite | null
@@ -385,8 +386,8 @@ const toast = useToast()
 const { locale, tm, rt, t } = useI18n()
 const { formatTime } = useTime()
 const articlePacks = computed(() => buildArticlePackViews(t, locale.value))
-const pendingAction = ref<string | null>(null)
-const checkoutInterval = ref<'month' | 'year'>(client?.billingPlan === 'ANNUAL' ? 'year' : 'month')
+const pendingAction = shallowRef<string | null>(null)
+const checkoutInterval = shallowRef<'month' | 'year'>(client?.billingPlan === 'ANNUAL' ? 'year' : 'month')
 
 const hasSubscription = computed(() => !!client?.stripeCustomerId)
 
@@ -397,7 +398,7 @@ const {
   refresh: refreshInvoices,
 } = await useLazyFetch<BillingInvoice[]>('/api/stripe/invoices', {
   immediate: hasSubscription.value,
-  default: () => [],
+  default: emptyAsyncDataList,
 })
 
 // Shopify App Pricing owns plan changes and has no one-time purchases, so Stripe offers stay hidden.
@@ -409,7 +410,7 @@ const upgradeTarget = computed(() =>
 )
 const { data: planPricing } = await useLazyFetch<PlanPricing>('/api/stripe/plans', {
   immediate: Boolean(upgradeTarget.value),
-  default: () => ({
+  default: createAsyncDataDefault({
     PRO: { month: null, year: null },
     PREMIUM: { month: null, year: null },
   }),

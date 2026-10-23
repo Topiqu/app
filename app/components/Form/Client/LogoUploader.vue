@@ -183,17 +183,17 @@
 <script setup lang="ts">
 type BrandAssetType = 'logo' | 'favicon'
 
-const props = withDefaults(defineProps<{ imageUrl: string; assetType?: BrandAssetType }>(), { assetType: 'logo' })
+const { imageUrl, assetType = 'logo' } = defineProps<{ imageUrl: string; assetType?: BrandAssetType }>()
 const emit = defineEmits<{
   upload: [payload: { url: string; optimizedUrl: string }]
 }>()
 
-const isFavicon = computed(() => props.assetType === 'favicon')
-const viewportWidth = isFavicon.value ? 288 : 336
-const viewportHeight = isFavicon.value ? 288 : 105
-const outputWidth = isFavicon.value ? 256 : 1280
-const outputHeight = isFavicon.value ? 256 : 400
-const outputAspectRatio = isFavicon.value ? '1 / 1' : '16 / 5'
+const isFavicon = computed(() => assetType === 'favicon')
+const viewportWidth = computed(() => (isFavicon.value ? 288 : 336))
+const viewportHeight = computed(() => (isFavicon.value ? 288 : 105))
+const outputWidth = computed(() => (isFavicon.value ? 256 : 1280))
+const outputHeight = computed(() => (isFavicon.value ? 256 : 400))
+const outputAspectRatio = computed(() => (isFavicon.value ? '1 / 1' : '16 / 5'))
 const displayMode = shallowRef<'contain' | 'cover'>('contain')
 const renderFit = computed(() => displayMode.value)
 
@@ -218,6 +218,8 @@ const saveLabel = computed(() =>
 const open = shallowRef(false)
 const busy = shallowRef(false)
 const pickedFile = shallowRef<File | null>(null)
+let uploadVersion = 0
+let uploadController: AbortController | undefined
 const {
   acceptFile,
   chooseFile,
@@ -256,6 +258,22 @@ watch(pickedFile, (file) => {
   pickedFile.value = null
 })
 watch(displayMode, () => resetCrop())
+const cancelUpload = () => {
+  uploadVersion++
+  uploadController?.abort()
+  uploadController = undefined
+  busy.value = false
+}
+watch(
+  () => assetType,
+  () => {
+    cancelUpload()
+    open.value = false
+    reset()
+  },
+  { flush: 'sync' },
+)
+onScopeDispose(cancelUpload)
 
 function openEditor() {
   open.value = true
@@ -275,24 +293,39 @@ watch(open, (isOpen) => {
 })
 
 async function saveAsset() {
+  if (busy.value) return
+  const version = ++uploadVersion
+  const type = isFavicon.value ? 'client-favicon' : 'client-logo'
+  const filename = isFavicon.value ? 'favicon.webp' : 'logo.webp'
+  const width = outputWidth.value
+  const height = outputHeight.value
+  uploadController = new AbortController()
   busy.value = true
   errorMessage.value = ''
   try {
     const form = new FormData()
-    form.append('file', await render(), isFavicon.value ? 'favicon.webp' : 'logo.webp')
-    form.append('type', isFavicon.value ? 'client-favicon' : 'client-logo')
-    form.append('maxWidth', String(outputWidth))
-    form.append('maxHeight', String(outputHeight))
+    const blob = await render()
+    if (version !== uploadVersion) return
+    form.append('file', blob, filename)
+    form.append('type', type)
+    form.append('maxWidth', String(width))
+    form.append('maxHeight', String(height))
     const result = await $fetch<{ url: string; optimizedUrl: string }, '/api/upload'>('/api/upload', {
       method: 'POST',
       body: form,
+      signal: uploadController.signal,
     })
+    if (version !== uploadVersion) return
     emit('upload', { url: result.url, optimizedUrl: result.optimizedUrl })
     open.value = false
   } catch (error: any) {
-    errorMessage.value = fetchErrorMessage(error, error?.message || $t('common.avatar.uploadError'))
+    if (version === uploadVersion)
+      errorMessage.value = fetchErrorMessage(error, error?.message || $t('common.avatar.uploadError'))
   } finally {
-    busy.value = false
+    if (version === uploadVersion) {
+      busy.value = false
+      uploadController = undefined
+    }
   }
 }
 

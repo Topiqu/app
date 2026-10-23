@@ -9,12 +9,7 @@
 
     <template #body>
       <ClientPreferencesGuideExamples />
-      <ClientPreferencesGuidePreview
-        :focus="props.focus"
-        :audience="props.audience"
-        :language="props.language"
-        :keywords="props.keywords"
-      />
+      <ClientPreferencesGuidePreview :focus="focus" :audience="audience" :language="language" :keywords="keywords" />
     </template>
 
     <template #footer="{ close }">
@@ -24,15 +19,17 @@
 </template>
 
 <script setup lang="ts">
-const props = withDefaults(
-  defineProps<{
-    focus?: string
-    audience?: string
-    language?: string
-    keywords?: string[]
-  }>(),
-  { focus: '', audience: '', language: 'en', keywords: () => [] },
-)
+const {
+  focus = '',
+  audience = '',
+  language = 'en',
+  keywords = [],
+} = defineProps<{
+  focus?: string
+  audience?: string
+  language?: string
+  keywords?: string[]
+}>()
 
 const open = defineModel<boolean>({ default: false })
 const openDialog = () => (open.value = true)

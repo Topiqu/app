@@ -52,8 +52,8 @@ const props = defineProps<{
 }>()
 // Vote counts keyed by optionId.
 const voteCounts = reactive<Record<string, number>>({})
-const hasVoted = ref<boolean>(false)
-const selectedOption = ref<string | null>(null)
+const hasVoted = shallowRef(false)
+const selectedOption = shallowRef<string | null>(null)
 const toast = useToast()
 const voting = shallowRef(false)
 const optimisticStatus = useOptimisticStatus()

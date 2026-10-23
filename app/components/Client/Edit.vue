@@ -110,7 +110,7 @@ const normalizeKeywords = (val: unknown): string[] => {
   return Array.isArray(val) ? val : []
 }
 
-const keywordsInput = ref(normalizeKeywords(props.client.keywords).join(', '))
+const keywordsInput = shallowRef(normalizeKeywords(props.client.keywords).join(', '))
 
 const editedClient = ref({
   id: props.client.id,

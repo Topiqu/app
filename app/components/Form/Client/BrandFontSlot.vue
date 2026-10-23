@@ -68,6 +68,8 @@
 </template>
 
 <script setup lang="ts">
+import { FONT_MAX_UPLOAD_BYTES } from '~~/shared/utils/uploadLimits'
+
 const props = defineProps<{
   fontRole: 'heading' | 'body'
   clientId: string
@@ -91,7 +93,7 @@ const upload = async (file: File | null | undefined) => {
   pickedFile.value = null
   if (!file || !props.clientId) return
   error.value = ''
-  if (!file.name.toLowerCase().endsWith('.woff2') || file.size > 2 * 1024 * 1024) {
+  if (!file.name.toLowerCase().endsWith('.woff2') || file.size > FONT_MAX_UPLOAD_BYTES) {
     error.value = $t('common.preferences.branding.fontFormatError')
     return
   }

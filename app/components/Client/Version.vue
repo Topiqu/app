@@ -3,14 +3,8 @@
     data-client-version-bar
     class="bottom-action-bar fixed right-3 bottom-3 z-overlay flex max-w-[calc(100vw-1.5rem)] items-center gap-1 rounded-[calc(var(--ui-radius)+0.25rem)] bg-elevated p-1 shadow-lg ring ring-default"
   >
-    <UButton
-      class="min-w-0"
-      color="neutral"
-      variant="soft"
-      trailingIcon="mdi:chevron-up"
-      :aria-label="$t('common.wallet.title')"
-      @click="show = true"
-    >
+    <UButton class="min-w-0" color="neutral" variant="soft" trailingIcon="mdi:chevron-up" @click="show = true">
+      <span class="sr-only">{{ $t('common.wallet.title') }}</span>
       <span class="hidden shrink-0 sm:inline">Topiqu {{ config.public.appVersion }}</span>
       <UBadge class="min-w-0 shrink truncate" :color="planBadgeColor" variant="soft">{{
         site?.plan ?? $t('articles.userMenu.noClientAssigned')
@@ -231,7 +225,7 @@ const articlePacks = computed(() => buildArticlePackViews(t, locale.value))
 const show = shallowRef(false)
 const checkoutPack = shallowRef<string | null>(null)
 const consentSettingsOpen = useConsentSettingsOpen()
-const creditCursor = ref<string | null>(null)
+const creditCursor = shallowRef<string | null>(null)
 const ledger = ref<{ id: string; kind: string; amount: number; reason: string; createdAt: string }[]>([])
 const visibleLedger = computed(() => ledger.value.filter((entry) => entry.amount !== 0))
 const ledgerReason = (entry: { reason: string }) => {

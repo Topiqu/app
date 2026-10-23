@@ -17,14 +17,15 @@
 
 <script setup lang="ts">
 // Mount only where the slot has width: AdSense throws on a zero-width (e.g. `display: none`) container.
-withDefaults(
-  defineProps<{
-    adSlot: string
-    format?: 'auto' | 'horizontal' | 'rectangle' | 'vertical'
-    fullWidthResponsive?: boolean
-  }>(),
-  { format: 'auto', fullWidthResponsive: true },
-)
+const {
+  adSlot,
+  format = 'auto',
+  fullWidthResponsive = true,
+} = defineProps<{
+  adSlot: string
+  format?: 'auto' | 'horizontal' | 'rectangle' | 'vertical'
+  fullWidthResponsive?: boolean
+}>()
 
 const publisherId = String(useRuntimeConfig().public.adsensePublisherId || '').trim()
 const status = useAdSenseStatus()

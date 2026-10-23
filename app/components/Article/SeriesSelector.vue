@@ -127,16 +127,19 @@
 
 <script setup lang="ts">
 import type { InternalApi } from 'nitropack'
+import type { ArticleSeriesSelection } from '~~/types/article'
 
 import slugify from 'slugify'
 
-const modelValue = defineModel<any>({ default: null })
+import { emptyAsyncDataList } from '~/utils/asyncDataDefaults'
+
+const modelValue = defineModel<ArticleSeriesSelection | null>({ default: null })
 
 defineProps<{ compact?: boolean }>()
 
-const { data: series, refresh } = await useLazyFetch<any[]>('/api/series', {
+const { data: series, refresh } = await useLazyFetch('/api/series', {
   server: false,
-  default: () => [],
+  default: emptyAsyncDataList,
 })
 
 const createModal = shallowRef(false)

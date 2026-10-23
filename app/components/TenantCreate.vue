@@ -355,6 +355,8 @@ import { ThemeSchema } from '~~/shared/siteSchemas'
 import { themeColors, type ThemeKey } from '~~/shared/utils/tenantTheme'
 import { isLanguage, locales, type Language } from '~~/shared/utils/language'
 
+import { createAsyncDataDefault } from '~/utils/asyncDataDefaults'
+
 type Availability = 'idle' | 'checking' | 'available' | 'unavailable'
 type DomainReason = 'empty' | 'tooShort' | 'invalid' | 'reserved' | 'taken'
 type SelectedPlan = 'BASIC' | SubscribablePlan
@@ -421,7 +423,7 @@ const selectedDomain = computed(() => (usesCustomDomain.value ? form.customDomai
 
 const { data: planPricing, refresh: refreshPlanPricing } = await useLazyFetch<PlanPricing>('/api/stripe/plans', {
   immediate: false,
-  default: () => ({ PRO: { month: null, year: null }, PREMIUM: { month: null, year: null } }),
+  default: createAsyncDataDefault({ PRO: { month: null, year: null }, PREMIUM: { month: null, year: null } }),
 })
 
 const formatMinorAmount = (price: PlanPrice | null) => {

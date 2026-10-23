@@ -137,13 +137,15 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
 
+import { emptyAsyncDataList } from '~/utils/asyncDataDefaults'
+
 const { t } = useI18n()
 const props = defineProps<{ clientId: string }>()
 const open = defineModel<boolean>({ default: false })
 const confirm = useConfirm()
 const toast = useToast()
 const { data: users, refresh } = await useFetch(`/api/users/${props.clientId}/by-clientside`, {
-  default: () => [],
+  default: emptyAsyncDataList,
 })
 type ClientUser = (typeof users.value)[number]
 const search = shallowRef('')

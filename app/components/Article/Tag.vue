@@ -72,7 +72,7 @@
 </template>
 
 <script setup lang="ts">
-import slugify from 'slugify'
+import { tagSlug } from '~~/shared/utils/tagSlug'
 
 const toast = useToast()
 const open = defineModel<boolean>({ default: false })
@@ -123,7 +123,7 @@ const displayAvailableTags = computed(() => {
 
 const invalidateTags = () => invalidateArticleDetail(props.articleId)
 
-const updateSlug = () => (newTag.slug = slugify(newTag.name, { lower: true, strict: true, trim: true }))
+const updateSlug = () => (newTag.slug = tagSlug(newTag.name))
 
 const addTag = async (tagId: string) => {
   const tag = displayAvailableTags.value.find((item) => item.id === tagId)

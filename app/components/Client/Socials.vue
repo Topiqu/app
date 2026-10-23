@@ -21,6 +21,8 @@
 <script setup lang="ts">
 import type { SocialPlatform } from '~~/generated/zenstack/models'
 
+import { createAsyncDataDefault } from '~/utils/asyncDataDefaults'
+
 const props = defineProps<{ clientSiteId: string }>()
 
 interface ClientSite {
@@ -29,7 +31,7 @@ interface ClientSite {
 
 const { data: client, pending } = await useFetch<ClientSite>(() => `/api/clients/${props.clientSiteId}/public`, {
   key: `socials-${props.clientSiteId}`,
-  default: () => ({ socials: [] }),
+  default: createAsyncDataDefault({ socials: [] }),
 })
 
 const platformIcons: Record<SocialPlatform, string> = {

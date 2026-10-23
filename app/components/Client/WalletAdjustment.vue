@@ -40,12 +40,12 @@ const { data: walletResponse, refresh: refreshWallet } = await useFetch(
 )
 const { t } = useI18n()
 const toast = useToast()
-const kind = ref<'CREDIT' | 'BONUS' | 'DEBIT' | 'REFUND'>('CREDIT')
-const amount = ref(1)
-const reason = ref('')
-const operationId = ref('')
-const pending = ref(false)
-const key = ref('')
+const kind = shallowRef<'CREDIT' | 'BONUS' | 'DEBIT' | 'REFUND'>('CREDIT')
+const amount = shallowRef(1)
+const reason = shallowRef('')
+const operationId = shallowRef('')
+const pending = shallowRef(false)
+const key = shallowRef('')
 const kinds = computed(() =>
   ['CREDIT', 'BONUS', 'DEBIT', 'REFUND'].map((value) => ({ value, label: t(`common.wallet.kinds.${value}`) })),
 )

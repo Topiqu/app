@@ -32,7 +32,7 @@
         </div>
       </UFormField>
     </div>
-    <MediaPicker v-model:open="pickerOpen" @select="select" />
+    <LazyMediaPicker v-if="pickerOpen" v-model:open="pickerOpen" @select="select" />
   </div>
 </template>
 
