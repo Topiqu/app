@@ -15,7 +15,13 @@ mockNuxtImport('$fetch', () => mocks.fetch)
 mockNuxtImport('useI18n', () => () => ({ t: (key: string) => key }))
 
 const comment = (id: string, replies: CommentWithReplies[] = []) =>
-  ({ id, content: `Comment ${id}`, replies }) as CommentWithReplies
+  ({
+    id,
+    parentId: null,
+    createdAt: new Date(0),
+    content: `Comment ${id}`,
+    replies: replies.map((reply) => ({ ...reply, parentId: id })),
+  }) as CommentWithReplies
 const renderComment = (c: CommentWithReplies): ReturnType<typeof h> =>
   h('article', { id: `comment-${c.id}`, tabindex: -1 }, [c.content, ...c.replies.map(renderComment)])
 const harness = (initial: CommentWithReplies[]) =>
@@ -69,6 +75,17 @@ describe('comment permalink navigation', () => {
     await flushPromises()
     expect(document.activeElement?.id).toBe('comment-reply')
     expect(mocks.fetch).not.toHaveBeenCalled()
+  })
+
+  it('merges a missing reply into an existing root without losing its already loaded replies', async () => {
+    route.hash = '#comment-hidden-reply'
+    mocks.fetch.mockResolvedValueOnce({ comments: [comment('root', [comment('hidden-reply')])] })
+    const wrapper = mountComments([comment('root', [comment('loaded-reply')])])
+    await flushPromises()
+    expect(wrapper.text()).toContain('Comment loaded-reply')
+    expect(wrapper.text()).toContain('Comment hidden-reply')
+    expect(wrapper.findAll('#comment-root')).toHaveLength(1)
+    expect(document.activeElement?.id).toBe('comment-hidden-reply')
   })
 
   it('ignores an old request when the reader navigates to another comment', async () => {

@@ -1,5 +1,7 @@
 import type { CommentWithReplies } from '~~/types/comment'
 
+import { mergeCommentThreads } from '~~/shared/utils/commentThreads'
+
 export function useCommentAnchor(articleId: Ref<string>, comments: ShallowRef<CommentWithReplies[]>) {
   const route = useRoute()
   const toast = useToast()
@@ -7,8 +9,8 @@ export function useCommentAnchor(articleId: Ref<string>, comments: ShallowRef<Co
 
   onMounted(() => {
     watch(
-      () => route.hash,
-      async (hash, _previous, onCleanup) => {
+      [() => route.hash, articleId],
+      async ([hash], _previous, onCleanup) => {
         if (!hash.startsWith('#comment-')) return
         const id = hash.slice('#comment-'.length)
         if (!id) return
@@ -26,10 +28,7 @@ export function useCommentAnchor(articleId: Ref<string>, comments: ShallowRef<Co
               },
             )
             if (controller.signal.aborted) return
-            comments.value = [
-              ...result.comments.filter((comment) => !comments.value.some((item) => item.id === comment.id)),
-              ...comments.value,
-            ]
+            comments.value = mergeCommentThreads(comments.value, result.comments, true)
           }
 
           await nextTick()
