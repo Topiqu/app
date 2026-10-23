@@ -1,3 +1,5 @@
+import type { GenerationSnapshot } from '~~/shared/types/articleGeneration'
+
 import { defineStore } from 'pinia'
 import {
   finishGenerationRun,
@@ -39,21 +41,7 @@ const RESUME_POLL_MS = 3_000
 const RESUME_LIMIT_MS = 15 * 60_000
 
 /** The server's copy of the finished article, from the stream's `final` or the session snapshot. */
-type FinalArticle = {
-  title?: string
-  perex?: string
-  content?: string
-  sources?: string[]
-  articleImageUrl?: string | null
-  articleImageCredit?: unknown
-  articleCoverMediaId?: string | null
-  answer?: string | null
-  keyTakeaways?: string[]
-  faq?: unknown
-  tags?: unknown
-  format?: string
-  metrics?: { totalWords?: number; savedAmount?: number; savedTimeMinutes?: number }
-}
+type FinalArticle = Omit<GenerationSnapshot, 'tags'> & { tags?: unknown }
 
 type ResumedSession = {
   status: string
