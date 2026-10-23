@@ -45,10 +45,13 @@ export default defineEventHandler(async (event) => {
       })
 
       await publishDecisionAndExecute(draft.id)
-    } catch (err) {
-      console.error(`Failed to generate draft for task ${task.id}`, err)
-      await prisma.contentTask.update({
-        where: { id: task.id },
+    } catch {
+      await reportCaughtError('LinkedIn task failed', new Error('LINKEDIN_TASK_FAILED'), { taskId: task.id }).catch(
+        () => {},
+      )
+      // A publication failure must not undo already completed paid generation.
+      await prisma.contentTask.updateMany({
+        where: { id: task.id, status: 'GENERATING' },
         data: { status: 'FAILED' },
       })
     }

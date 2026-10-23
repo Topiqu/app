@@ -2,17 +2,19 @@ import { generateText } from 'ai'
 
 import { aiModel } from '../ai/models'
 import { aiReasoning } from '../ai/reasoning'
+import { readCommunityInsight } from '../community'
 
 export async function generateContentForTask(
   topic: string,
   voice: { tone: string | null; audience: string | null },
-  communityInsight?: any,
+  communityInsight?: unknown,
 ) {
   const tone = voice.tone || 'professional'
   const audience = voice.audience || 'LinkedIn professionals'
 
-  const communityPrompt = communityInsight
-    ? `\n    Community Insights to consider:\n    - Audience mood summary: ${communityInsight.summary}\n    - Frequently discussed points: ${(communityInsight.topPoints || []).join(', ')}\n    Ensure the post subtly addresses or acknowledges these current community feelings and discussion points where relevant.`
+  const insight = readCommunityInsight(communityInsight)
+  const communityPrompt = insight
+    ? `\n    Community Insights to consider:\n    - Audience mood summary: ${insight.summary}\n    - Frequently discussed points: ${insight.topPoints.join(', ')}\n    Ensure the post subtly addresses or acknowledges these current community feelings and discussion points where relevant.`
     : ''
 
   const prompt = `
