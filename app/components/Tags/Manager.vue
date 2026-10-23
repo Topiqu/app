@@ -73,7 +73,9 @@
 import type { InternalApi } from 'nitropack'
 import type { ArticleWithDetails } from '~~/types/article'
 
-import slugify from 'slugify'
+import { tagSlug } from '~~/shared/utils/tagSlug'
+
+import { useTagQueries } from '~/composables/useTagQueries'
 
 const props = defineProps<{
   article?: ArticleWithDetails
@@ -86,29 +88,13 @@ const emit = defineEmits<{
   'create:tag': [tagId: string]
 }>()
 
-type TagOption = { id: string; name: string }
-type ArticleTagRow = { tagId: string; tag: { id: string; name: string } }
-
 const { t } = useI18n()
 const toast = useToast()
-const requestFetch = useRequestFetch()
 const { invalidateTags } = useCacheInvalidation()
-
-const { data: allTags } = useQuery({
-  key: () => queryKeys.tags.list,
-  query: () => requestFetch<TagOption[]>('/api/tags'),
-  placeholderData: () => [],
-})
-
-const { data: articleTags } = useQuery({
-  key: () => queryKeys.articles.tags(props.article?.id ?? ''),
-  query: () =>
-    requestFetch<ArticleTagRow[], '/api/articles/:id/tags'>(
-      `/api/articles/${props.article!.id}/tags` as '/api/articles/:id/tags',
-    ),
-  enabled: () => !!props.article?.id && props.initialTags === undefined,
-  placeholderData: () => [],
-})
+const {
+  allTags: { data: allTags },
+  articleTags: { data: articleTags },
+} = useTagQueries(toRef(props, 'article'), toRef(props, 'initialTags'))
 
 const tagOptions = computed(() => allTags.value ?? [])
 const selectedTagId = shallowRef('')
@@ -173,7 +159,7 @@ const createNew = async () => {
   try {
     const { id, name: createdName } = await $fetch<InternalApi['/api/tags']['post'], '/api/tags'>('/api/tags', {
       method: 'POST',
-      body: { name, slug: slugify(name, { lower: true, strict: true, trim: true }) },
+      body: { name, slug: tagSlug(name) },
     })
     tagBuffer.push({ id, name: createdName })
     emit('create:tag', id)

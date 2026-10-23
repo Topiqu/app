@@ -116,7 +116,9 @@
 </template>
 
 <script setup lang="ts">
-import slugify from 'slugify'
+import { tagSlug } from '~~/shared/utils/tagSlug'
+
+import { emptyAsyncDataList } from '~/utils/asyncDataDefaults'
 
 type TagItem = { id: string; name: string }
 
@@ -129,7 +131,7 @@ const {
   status,
   error,
 } = useFetch<TagItem[]>('/api/tags', {
-  default: () => [],
+  default: emptyAsyncDataList,
   immediate: false,
   // Optimistic edits push, splice and rename in place; a shallow ref would not re-render them.
   deep: true,
@@ -158,7 +160,6 @@ watch(
   { immediate: true },
 )
 
-const toSlug = (name: string) => slugify(name, { lower: true, strict: true, trim: true })
 const sameName = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase()
 
 const filteredTags = computed(() =>
@@ -185,7 +186,7 @@ const onEscapeKeyDown = (event: KeyboardEvent) => {
 const createTag = async () => {
   const name = query.value.trim()
   if (!name || exactMatch.value || creating.value) return
-  const draft = { name, slug: toSlug(name) }
+  const draft = { name, slug: tagSlug(name) }
   const optimisticId = `optimistic-${crypto.randomUUID?.() ?? Date.now()}`
   creating.value = true
   tags.value.push({ id: optimisticId, name })
@@ -295,7 +296,7 @@ const saveEdit = async (tag: TagItem, refocus = true) => {
       `/api/tags/${tag.id}` as '/api/tags/:id',
       {
         method: 'PATCH',
-        body: { name, slug: toSlug(name) },
+        body: { name, slug: tagSlug(name) },
       },
     )
     target.name = response.tag.name
