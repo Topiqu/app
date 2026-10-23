@@ -2,6 +2,15 @@
 
 Datum: 20. 10. 2026. Základ: `dev`, HEAD `c27ac849`, včetně existujících necommitnutých změn.
 
+**Historický záznam, upřesněno 22. 10. 2026:** výsledky a předpoklady níže platí pro uvedené
+revize, verze a testovací prostředí z 20.–21. října. Nejsou potvrzením pozdějších úprav ani
+aktuálního produkčního provozu. Dnešní Docker entrypoint (`scripts/docker-entrypoint.sh`)
+aplikuje migrace před spuštěním Nitro; samotný build databázi nemění. Starší popis migrace
+jako odděleného release kroku je tím nahrazen pro kontejnerové nasazení. Aktuální postup
+je v [README](./README.md#production-build) a [provozním runbooku](./docs/operations/production-workflows.md);
+novější ověření a zbývající podmínky eviduje [optimalizační plán](./docs/plans/2026-10-22-optimization-and-production-readiness.md).
+Provozní dostupnost cache ani dnešní stav upstream advisories nelze odvodit z tohoto záznamu.
+
 ## Stav po opravách 20. 10. 2026
 
 Níže uvedených 16 nálezů popisuje původní stav před opravami. Jejich implementace byla opravena v pracovním stromu; původní skóre 62/100 není hodnocením nynějšího kódu. Nové skóre nenahrazuje ověření reálné infrastruktury a nezávislý bezpečnostní test.
