@@ -6,12 +6,12 @@ const openAiClientSingleton = () => {
   return createOpenAI({ apiKey })
 }
 
-declare const globalThis: {
-  openAiGlobal: ReturnType<typeof openAiClientSingleton>
-} & typeof global
+const appGlobal = globalThis as typeof globalThis & {
+  openAiGlobal?: ReturnType<typeof openAiClientSingleton>
+}
 
-const openAi = globalThis.openAiGlobal ?? openAiClientSingleton()
+const openAi = appGlobal.openAiGlobal ?? openAiClientSingleton()
 
-globalThis.openAiGlobal = openAi
+appGlobal.openAiGlobal = openAi
 
 export default openAi

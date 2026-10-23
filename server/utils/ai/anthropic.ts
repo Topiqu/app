@@ -7,12 +7,12 @@ const anthropicClientSingleton = () => {
   return createAnthropic({ apiKey })
 }
 
-declare const globalThis: {
-  anthropicGlobal: ReturnType<typeof anthropicClientSingleton>
-} & typeof global
+const appGlobal = globalThis as typeof globalThis & {
+  anthropicGlobal?: ReturnType<typeof anthropicClientSingleton>
+}
 
-const anthropic = globalThis.anthropicGlobal ?? anthropicClientSingleton()
+const anthropic = appGlobal.anthropicGlobal ?? anthropicClientSingleton()
 
-globalThis.anthropicGlobal = anthropic
+appGlobal.anthropicGlobal = anthropic
 
 export default anthropic

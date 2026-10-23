@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import { generateImage as generateImg } from 'ai'
 
 import { IMMUTABLE_IMAGE_CACHE_CONTROL, optimizeGeneratedImage } from '../images/optimize'
@@ -21,13 +22,16 @@ export const articleImagePrompt = (subject: string) => {
 export const generateImage = async (
   prompt: string,
   opts: {
+    clientSiteId?: string
     outputDir?: string
     filenamePrefix?: string
     filenameSuffix?: string
     abortSignal?: AbortSignal
   } = {},
 ) => {
-  const { outputDir = 'article-images', filenamePrefix = 'article', filenameSuffix, abortSignal } = opts
+  const { clientSiteId, outputDir = 'article-images', filenamePrefix = 'article', filenameSuffix, abortSignal } = opts
+  if (clientSiteId !== undefined && !/^[A-Za-z0-9_-]+$/.test(clientSiteId))
+    throw new Error('Invalid generated image tenant namespace')
 
   const imageSignal = abortSignal
     ? AbortSignal.any([abortSignal, AbortSignal.timeout(45_000)])
@@ -43,11 +47,11 @@ export const generateImage = async (
   const optimized = await optimizeGeneratedImage(output.image.uint8Array)
   const filename =
     (filenamePrefix ? filenamePrefix + '-' : '') +
-    `${Date.now()}` +
+    `${Date.now()}-${randomUUID()}` +
     (filenameSuffix ? '-' + filenameSuffix : ``) +
     `.${optimized.extension}`
 
-  const storageKey = `${outputDir}/${filename}`
+  const storageKey = `${outputDir}/${clientSiteId ? `${clientSiteId}/` : ''}${filename}`
   const url = await putToCdn(storageKey, optimized.data, optimized.contentType, undefined, {
     cacheControl: IMMUTABLE_IMAGE_CACHE_CONTROL,
   })
