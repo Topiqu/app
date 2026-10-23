@@ -1,0 +1,4 @@
+export const AVATAR_MAX_UPLOAD_BYTES = 10 * 1024 * 1024
+export const EMOJI_MAX_UPLOAD_BYTES = 5 * 1024 * 1024
+export const FONT_MAX_UPLOAD_BYTES = 2 * 1024 * 1024
+export const IMAGE_MAX_UPLOAD_BYTES = 15 * 1024 * 1024
