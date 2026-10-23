@@ -131,6 +131,8 @@ model Article with Base, Ownable {
     structureVariant String?           @length(0, 32)
     /// The news story a scheduled article was built around; also caps how often the feed follows the news.
     newsUrl          String?           @length(0, 2048)
+    /// Subject area a scheduled article belongs to; caps how often the feed repeats one. NULL for manual work.
+    theme            String?           @length(0, 80)
     prompt           String?           @length(0, 5000)
     @@allow('read', status == 'published' || (auth().role == 'admin' && clientSiteId == auth().clientSiteId))
     // Personal activity spans sites: authors and current owners retain read access after switching sites.

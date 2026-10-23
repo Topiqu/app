@@ -51,6 +51,12 @@ const topicDraftSchema = z.object({
     .string()
     .max(200)
     .describe('The keyword of the KEYWORD PLAN entry this topic serves, copied exactly. Empty string when none fits.'),
+  theme: z
+    .string()
+    .max(80)
+    .describe(
+      "Subject area of the topic in one to three words, in the client's language. Reuse a KNOWN THEMES label when it fits.",
+    ),
   newsItem: z
     .number()
     .int()
@@ -87,6 +93,9 @@ export type TopicInput = {
   searchSignals?: string[]
   plan?: string[]
   news?: string[]
+  /** Newest first; NULL where an older article has none. */
+  recentThemes?: (string | null)[]
+  themes?: string[]
 }
 
 export const buildTopicPrompt = (input: TopicInput) =>
@@ -136,10 +145,16 @@ ${input.plan?.length ? input.plan.map((entry) => `- ${entry}`).join('\n') : '- n
 Topics with measured search demand. When one suits the audience and is not already covered, prefer it,
 make the article answer that search, and copy its keyword exactly into planKeyword. An entry pinned by
 the editor is a request: use it unless it duplicates covered ground. Otherwise leave planKeyword empty.
-Entries come in priority order. A pillar is the subject an entry belongs to; continuing the pillar of
-recent articles builds authority faster than scattering.
+Entries come in priority order, already balanced against the themes of recent articles.
 Serve the supplied unanswered reader need, not just its keyword. Evidence marked metrics has no live SERP
 confirmation: never turn missing evidence into a claim of easy rankings or guaranteed traffic.
+
+## THEMES
+Recent articles, most recent first: ${input.recentThemes?.length ? input.recentThemes.map((theme) => theme || 'unknown').join(', ') : 'nothing yet'}
+KNOWN THEMES: ${input.themes?.length ? input.themes.join(', ') : 'none'}
+A feed that keeps returning to one subject reads like a single-topic site, however good each piece is.
+Do not pick a topic whose theme already appears twice among the five most recent articles unless the
+editor pinned it. This applies to news-led topics too.
 
 ## FRESH IN THE NICHE (last 72 hours)
 ${input.news?.length ? input.news.join('\n') : '- none'}

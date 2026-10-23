@@ -4,6 +4,8 @@ vi.mock('../../../server/utils/keywords/plan', () => ({
   keywordPlanFor: async () => [],
   planSignal: vi.fn(),
   sameKeyword: vi.fn(),
+  themeKey: (value?: string | null) => value?.trim().toLocaleLowerCase() || null,
+  themeOf: () => null,
 }))
 vi.mock('../../../server/utils/keywords/dataforseo', () => ({ hasDataForSeo: () => false }))
 

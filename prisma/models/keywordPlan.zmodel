@@ -32,6 +32,8 @@ model KeywordCluster with Base {
     opportunity  Json?
     /// The seed the topic came from; topics sharing it form a pillar the plan covers in depth.
     pillar       String?              @length(0, 200)
+    /// Subject area across seeds ("dotace"), assigned by the plan assessment; the scheduler caps it per window.
+    theme        String?              @length(0, 80)
     status       KeywordClusterStatus @default(OPEN)
     articleId    String?
     article      Article?             @relation(fields: [articleId], references: [id], onDelete: SetNull)

@@ -198,30 +198,58 @@ describe('difficultyCeiling', () => {
 })
 
 describe('pickCandidates', () => {
-  const topic = (keyword: string, pillar: string | null) => ({ keyword, pillar })
-  const open = [topic('a1', 'a'), topic('b1', 'b'), topic('b2', 'b'), topic('a2', 'a'), topic('c1', 'c')]
-
-  it('continues the pillar of the last article with two topics and adds the best other one', () => {
-    expect(pickCandidates([], open, ['a']).map((c) => c.keyword)).toEqual(['a1', 'a2', 'b1'])
+  const topic = (keyword: string, theme: string | null, score: number, peakMonth: number | null = null) => ({
+    keyword,
+    theme,
+    pillar: null,
+    score,
+    peakMonth,
   })
-
-  it('rests a pillar after three topics in a row', () => {
-    expect(pickCandidates([], open, ['a', 'a', 'a']).map((c) => c.keyword)).toEqual(['b1', 'b2', 'c1'])
-  })
-
-  it('keeps pinned topics first', () => {
-    expect(pickCandidates([topic('p', 'c')], open, ['a']).map((c) => c.keyword)).toEqual(['p', 'a1', 'a2'])
-  })
+  const open = [
+    topic('d1', 'dotace', 10),
+    topic('d2', 'dotace', 9),
+    topic('p1', 'povolení', 6),
+    topic('k1', 'komín', 5),
+  ]
+  const keywords = (rows: { keyword: string }[]) => rows.map((row) => row.keyword)
 
   it('ranks by score alone without history', () => {
-    expect(pickCandidates([], open, []).map((c) => c.keyword)).toEqual(['a1', 'b1', 'b2'])
+    expect(keywords(pickCandidates([], open, []))).toEqual(['d1', 'd2', 'p1'])
   })
 
-  it('still offers topics when the blog has only one pillar', () => {
-    expect(pickCandidates([], [topic('a1', 'a'), topic('a2', 'a')], ['a', 'a', 'a']).map((c) => c.keyword)).toEqual([
-      'a1',
-      'a2',
+  it('divides the score by each recent article of the same theme', () => {
+    // 10 / 1.6 = 6.25 still beats 6; 9 / 1.6 = 5.6 falls behind the other themes.
+    expect(keywords(pickCandidates([], open, ['dotace', 'komín']))).toEqual(['d1', 'p1', 'd2'])
+  })
+
+  it('rests a theme that already fills two of the last five articles', () => {
+    expect(keywords(pickCandidates([], open, ['dotace', 'x', 'dotace', 'y', 'z']))).toEqual(['p1', 'k1'])
+  })
+
+  it('looks only at the last five articles', () => {
+    expect(keywords(pickCandidates([], open, ['x', 'y', 'z', 'w', 'dotace', 'dotace']))).toEqual(['d1', 'p1', 'd2'])
+  })
+
+  it('lets a topic within three months of its seasonal peak through the cap', () => {
+    const seasonal = [topic('d1', 'dotace', 10, 12), ...open.slice(1)]
+    expect(keywords(pickCandidates([], seasonal, ['dotace', 'dotace'], 10))).toEqual(['d1', 'p1', 'k1'])
+  })
+
+  it('keeps pinned topics first, whatever their theme', () => {
+    expect(keywords(pickCandidates([topic('pin', 'dotace', 1)], open, ['dotace', 'dotace']))).toEqual([
+      'pin',
+      'p1',
+      'k1',
     ])
+  })
+
+  it('falls back to the pillar for topics planned before themes existed', () => {
+    const legacy = [{ ...topic('a1', null, 10), pillar: 'Espresso' }, topic('b1', 'mlýnky', 5)]
+    expect(keywords(pickCandidates([], legacy, ['espresso', 'espresso']))).toEqual(['b1'])
+  })
+
+  it('still offers topics when the blog has only one theme', () => {
+    expect(keywords(pickCandidates([], open.slice(0, 2), ['dotace', 'dotace']))).toEqual(['d1', 'd2'])
   })
 })
 
@@ -460,6 +488,116 @@ describe('keywordPlanFor', () => {
       },
     ])
     await expect(keywordPlanFor({ ...site, keywordPlanAttemptedAt: new Date() })).resolves.toEqual([])
+  })
+
+  describe('coverage recheck', () => {
+    const checkedAt = '2026-10-01T00:00:00.000Z'
+    const opportunity = {
+      reason: 'Dosud nepokryté.',
+      angle: 'Čtenářská otázka',
+      articleFit: 'possible',
+      evidence: 'metrics',
+      organic: [],
+      profile: planProfile(site),
+      checkedAt,
+    }
+    const row = (id: string, score: number) => ({
+      id,
+      keyword: id,
+      status: 'OPEN',
+      score,
+      theme: null,
+      pillar: null,
+      peakMonth: null,
+      volume: 10,
+      difficulty: null,
+      intent: 'informational',
+      questions: [],
+      aiOverview: false,
+      opportunity,
+    })
+    const fresh = { ...site, keywordPlanRefreshedAt: new Date(), keywordPlanAttemptedAt: new Date() }
+    const now = new Date('2026-10-20T00:00:00Z')
+    const written = {
+      id: 'art-1',
+      title: 'Dotace na střechu 2026',
+      excerpt: 'Kolik dá NZÚ na střechu',
+      status: 'published',
+      createdAt: new Date('2026-10-10T00:00:00Z'),
+    }
+
+    beforeEach(() => {
+      Object.assign(db.keywordCluster, { updateMany: vi.fn() })
+      vi.stubGlobal('prisma', {
+        ...db,
+        contentAction: { count: vi.fn().mockResolvedValue(0), create: vi.fn() },
+        $transaction: (run: (tx: typeof db) => unknown) => run(db),
+      })
+      db.keywordCluster.findMany
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([row('o1', 3), row('o2', 2), row('o3', 1)])
+    })
+
+    const assessment = (covered: Record<number, { article: number; extends?: boolean }>) =>
+      vi.mocked(generateText).mockImplementation((async ({ prompt }: { prompt: string }) => {
+        const candidates = JSON.parse(String(prompt).split('## CANDIDATES\n')[1]!) as unknown[]
+        return {
+          output: {
+            decisions: candidates.map((_, index) => ({
+              item: index + 1,
+              write: !covered[index + 1],
+              coveredBy: covered[index + 1]?.article ?? 0,
+              duplicateOf: 0,
+              extendsArticle: covered[index + 1]?.extends ?? false,
+              articleFit: 'strong',
+              specificity: 'focused',
+              intent: 'informational',
+              theme: 'dotace',
+              angle: 'Co článek nepokrývá',
+              reason: 'Nová otázka.',
+            })),
+          },
+          usage: {},
+        }
+      }) as never)
+
+    it('skips an open topic a newer article covers and offers the next one', async () => {
+      db.article.findMany.mockResolvedValueOnce([]).mockResolvedValueOnce([written])
+      assessment({ 1: { article: 1, extends: true } })
+
+      const plan = await keywordPlanFor(fresh, now)
+
+      expect(plan.map((cluster) => cluster.keyword)).toEqual(['o2', 'o3'])
+      expect(db.keywordCluster.updateMany).toHaveBeenCalledWith({
+        where: { id: 'o1', status: 'OPEN' },
+        data: { status: 'SKIPPED', articleId: 'art-1' },
+      })
+      // The survivors were judged against the new article, so the next run does not ask again.
+      expect(db.keywordCluster.update.mock.calls.map(([call]) => call.data.opportunity.checkedAt)).toEqual([
+        now.toISOString(),
+        now.toISOString(),
+      ])
+      expect(prisma.contentAction.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ articleId: 'art-1', type: 'EXPAND', keyword: 'o1' }),
+        }),
+      )
+    })
+
+    it('does not call the model when nothing was written since the last check', async () => {
+      db.article.findMany.mockResolvedValue([])
+      await expect(keywordPlanFor(fresh, now)).resolves.toHaveLength(3)
+      expect(generateText).not.toHaveBeenCalled()
+    })
+
+    it('offers the topics unchanged when the check fails', async () => {
+      vi.spyOn(console, 'error').mockImplementation(() => {})
+      db.article.findMany.mockResolvedValueOnce([]).mockResolvedValueOnce([written])
+      vi.mocked(generateText).mockRejectedValue(new Error('model down'))
+      const plan = await keywordPlanFor(fresh, now)
+      expect(plan.map((cluster) => cluster.keyword)).toEqual(['o1', 'o2', 'o3'])
+      expect(db.keywordCluster.updateMany).not.toHaveBeenCalled()
+    })
   })
 })
 

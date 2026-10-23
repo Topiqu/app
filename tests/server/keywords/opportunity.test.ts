@@ -116,8 +116,32 @@ describe('keyword opportunities', () => {
     await expect(assessOpportunities(site, [candidate('a')], [])).rejects.toThrow('Invalid')
   })
 
+  it('reports covered needs with the covering article and offers known theme labels for reuse', async () => {
+    vi.mocked(generateText).mockResolvedValue({
+      output: {
+        decisions: [
+          decision(1, { write: false, coveredBy: 1, theme: 'dotace' }),
+          decision(2, { write: false, coveredBy: 7 }),
+          decision(3, { theme: 'dotace' }),
+        ],
+      },
+      usage: {},
+    } as never)
+    const result = await assessOpportunities(
+      site,
+      ['dotace na střechu', 'neexistující', 'dotace na okna'].map(candidate),
+      [{ title: 'Dotace na zateplení 2026' }],
+      ['dotace', 'stavební povolení'],
+    )
+    expect(result.covered).toEqual([{ index: 0, article: 0 }])
+    expect(result.accepted.map((entry) => entry.theme)).toEqual(['dotace'])
+    expect(String(vi.mocked(generateText).mock.calls[0]![0].prompt)).toContain(
+      '## KNOWN THEMES\ndotace, stavební povolení',
+    )
+  })
+
   it('does not call the model for an empty candidate list', async () => {
-    await expect(assessOpportunities(site, [], [])).resolves.toEqual({ accepted: [], expansions: [] })
+    await expect(assessOpportunities(site, [], [])).resolves.toEqual({ accepted: [], expansions: [], covered: [] })
     expect(generateText).not.toHaveBeenCalled()
   })
 })

@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { createHash } from 'node:crypto'
 import { generateText, Output } from 'ai'
 import { keywordLocation } from '~~/shared/utils/keywordPlan'
-import { keywordOpportunity } from '~~/shared/utils/keywordOpportunity'
+import { keywordOpportunity, type KeywordOpportunity } from '~~/shared/utils/keywordOpportunity'
 
 import { rankHistoryFor } from './rank'
 import { suggestExpansions } from './refresh'
@@ -24,8 +24,13 @@ const MIN_READY = 3
 const SHORTAGE_RETRY_DAYS = 7
 // Labs difficulty a blog without proven rankings can realistically reach.
 export const START_DIFFICULTY = 20
-// Topics in a row from one pillar before the plan offers another.
-const PILLAR_STREAK = 3
+// A theme may fill at most THEME_CAP of the last THEME_WINDOW articles; below the cap each repeat
+// still divides a topic's score by 1 + THEME_PENALTY.
+const THEME_WINDOW = 5
+const THEME_CAP = 2
+const THEME_PENALTY = 0.6
+// Open topics re-judged against articles written since their last check, so refills stay checked too.
+const RECHECK_CANDIDATES = 6
 
 // Two top-10 results in common can be chance; three mean Google answers both queries with the same pages.
 const SERP_OVERLAP = 3
@@ -342,7 +347,7 @@ export const refreshKeywordPlan = async (site: PlanSite, now = new Date()) => {
   const unique = new Map<string, KeywordIdea>()
   for (const idea of suggestions) if (!unique.has(idea.keyword)) unique.set(idea.keyword, idea)
 
-  const [ranked, pinned, product] = await Promise.all([
+  const [ranked, pinned, product, themed] = await Promise.all([
     prisma.keywordCluster.findMany({
       where: { clientSiteId: site.id, status: 'USED', position: { not: null } },
       select: { difficulty: true, position: true, rankHistory: true },
@@ -361,6 +366,12 @@ export const refreshKeywordPlan = async (site: PlanSite, now = new Date()) => {
       },
     }),
     prisma.knowledgeProduct.findFirst({ where: { clientSiteId: site.id }, select: { id: true } }),
+    prisma.keywordCluster.findMany({
+      where: { clientSiteId: site.id, theme: { not: null } },
+      select: { theme: true },
+      distinct: ['theme'],
+      take: 50,
+    }),
   ])
   const ceiling = difficultyCeiling(
     ranked.filter(
@@ -443,6 +454,7 @@ export const refreshKeywordPlan = async (site: PlanSite, now = new Date()) => {
     site,
     enriched,
     articles.map(({ title, excerpt }) => ({ title, excerpt })),
+    themed.flatMap((row) => (row.theme ? [row.theme] : [])),
   )
   if (failedSerps.length && decisions.length && !decisions.some((decision) => enriched[decision.index]!.organic.length))
     throw new Error('SERP checks failed for every recommended topic')
@@ -453,6 +465,7 @@ export const refreshKeywordPlan = async (site: PlanSite, now = new Date()) => {
       return {
         ...cluster,
         intent: decision.intent,
+        theme: themeKey(decision.theme),
         score:
           clusterScore({ ...cluster, intent: decision.intent }, context) *
           (decision.articleFit === 'strong' ? 1 : 0.7) *
@@ -547,6 +560,8 @@ const candidateSelect = {
   peakMonth: true,
   status: true,
   opportunity: true,
+  score: true,
+  theme: true,
 } as const
 
 const MONTHS = [
@@ -589,14 +604,9 @@ export const keywordPlanFor = async (site: PlanSite, now = new Date()) => {
         orderBy: { score: 'desc' },
         take: PLAN_SIZE,
       }),
-      prisma.keywordCluster.findMany({
-        where: { clientSiteId: site.id, status: 'USED' },
-        select: { pillar: true },
-        orderBy: { usedAt: 'desc' },
-        take: PILLAR_STREAK,
-      }),
+      recentThemes(site.id),
     ])
-    return { pinned: current(pinned), open: current(open), recent: recent.map((row) => row.pillar) }
+    return { pinned: current(pinned), open: current(open), recent }
   }
   let ready = await load()
   const previous = site.keywordPlanAttemptedAt ? new Date(site.keywordPlanAttemptedAt) : null
@@ -623,7 +633,112 @@ export const keywordPlanFor = async (site: PlanSite, now = new Date()) => {
       }
     }
   }
-  return pickCandidates(ready.pinned, ready.open, ready.recent)
+  const ordered = orderCandidates(ready.pinned, ready.open, ready.recent, now.getUTCMonth() + 1)
+  return (await recheckCoverage(site, ordered, now)).slice(0, 3)
+}
+
+export const themeKey = (value: string | null | undefined) => value?.trim().toLocaleLowerCase() || null
+
+/** Plans built before themes existed carry only the seed pillar; it stands in until the next rebuild. */
+export const themeOf = (cluster: { theme?: string | null; pillar: string | null }) =>
+  themeKey(cluster.theme ?? cluster.pillar)
+
+/** Newest first. An article without its own theme inherits the plan topic it was written for. */
+const recentThemes = async (clientSiteId: string) => {
+  const articles = await prisma.article.findMany({
+    where: { clientSiteId, status: { in: ['published', 'draft'] } },
+    select: { theme: true, keywordClusters: { select: { theme: true, pillar: true }, take: 1 } },
+    orderBy: { createdAt: 'desc' },
+    take: THEME_WINDOW,
+  })
+  return articles.map((article) => {
+    const cluster = article.keywordClusters?.[0]
+    return themeKey(article.theme) ?? (cluster ? themeOf(cluster) : null)
+  })
+}
+
+type RecheckRow = {
+  id: string
+  keyword: string
+  status: string
+  volume: number
+  difficulty: number | null
+  intent: string
+  questions: string[]
+  aiOverview: boolean
+  opportunity: KeywordOpportunity
+}
+
+/**
+ * An open topic was judged against the articles that existed at its last check. One written since may
+ * answer it: such a topic is skipped and linked to that article, and a part the article misses becomes an
+ * EXPAND suggestion. Enrichment like the rebuild: a failed check offers the topics unchanged.
+ */
+const recheckCoverage = async <T extends RecheckRow>(site: PlanSite, ordered: T[], now: Date) => {
+  const checkedAt = (cluster: T) => Date.parse(cluster.opportunity.checkedAt)
+  const due = ordered
+    .filter((cluster) => cluster.status === 'OPEN' && !Number.isNaN(checkedAt(cluster)))
+    .slice(0, RECHECK_CANDIDATES)
+  if (!due.length) return ordered
+  const articles = await prisma.article.findMany({
+    where: {
+      clientSiteId: site.id,
+      status: { in: ['published', 'draft'] },
+      createdAt: { gt: new Date(Math.min(...due.map(checkedAt))) },
+    },
+    select: { id: true, title: true, excerpt: true, status: true, createdAt: true },
+    orderBy: { createdAt: 'desc' },
+    take: 20,
+  })
+  const stale = due.filter((cluster) => articles.some((article) => article.createdAt.getTime() > checkedAt(cluster)))
+  if (!stale.length) return ordered
+
+  try {
+    const { covered, expansions } = await assessOpportunities(
+      site,
+      stale.map((cluster) => ({
+        keyword: cluster.keyword,
+        volume: cluster.volume,
+        difficulty: cluster.difficulty,
+        intent: cluster.intent,
+        questions: cluster.questions,
+        aiOverview: cluster.aiOverview,
+        organic: cluster.opportunity.organic,
+      })),
+      articles.map(({ title, excerpt }) => ({ title, excerpt })),
+    )
+    const coveredIds = new Set<string>()
+    for (const { index, article } of covered) {
+      const cluster = stale[index]!
+      coveredIds.add(cluster.id)
+      await prisma.keywordCluster.updateMany({
+        where: { id: cluster.id, status: 'OPEN' },
+        data: { status: 'SKIPPED', articleId: articles[article]!.id },
+      })
+    }
+    for (const cluster of stale.filter((cluster) => !coveredIds.has(cluster.id)))
+      await prisma.keywordCluster.update({
+        where: { id: cluster.id },
+        data: { opportunity: { ...cluster.opportunity, checkedAt: now.toISOString() } as never },
+      })
+    await suggestExpansions(
+      site.id,
+      expansions.flatMap((expansion) => {
+        const article = articles[expansion.article]
+        return article?.status === 'published'
+          ? [{ articleId: article.id, keyword: stale[expansion.index]!.keyword, ...expansion }]
+          : []
+      }),
+      now,
+    ).catch((error: Error) => {
+      // The skips are saved; a missed suggestion comes back with the next rebuild.
+      console.error('[keyword-plan] Expansion suggestions failed:', site.id, error.message)
+    })
+    return ordered.filter((cluster) => !coveredIds.has(cluster.id))
+  } catch (error) {
+    console.error('[keyword-plan] Coverage recheck failed:', site.id, (error as Error).message)
+    return ordered
+  }
 }
 
 /**
@@ -640,24 +755,36 @@ const shortageDue = async (site: PlanSite, ready: { pinned: unknown[]; open: unk
   return used + ready.pinned.length + ready.open.length >= MIN_READY
 }
 
+/** Within three months of its peak a topic has to go out now, whatever the feed wrote recently. */
+const peaksSoon = (peakMonth: number | null, month?: number) =>
+  !!peakMonth && !!month && (peakMonth - month + 12) % 12 <= 3
+
+type OrderRow = { theme?: string | null; pillar: string | null; score: number; peakMonth: number | null }
+
 /**
- * Depth before breadth: two topics continue the pillar the blog wrote about last, one is the best of the
- * rest, so search engines see a subject covered rather than scattered. After PILLAR_STREAK topics in a row
- * the pillar rests. Pinned topics always come first.
+ * Pinned topics first, then open ones by score divided by how often their theme appears among the last
+ * THEME_WINDOW articles. A theme at THEME_CAP rests unless its season is close or nothing else is left.
  */
-export const pickCandidates = <T extends { pillar: string | null }>(
+export const orderCandidates = <T extends OrderRow>(
   pinned: T[],
   open: T[],
-  recentPillars: (string | null)[],
+  recent: (string | null)[],
+  month?: number,
 ) => {
-  const last = recentPillars[0] ?? null
-  const streak = recentPillars.length >= PILLAR_STREAK && recentPillars.every((pillar) => pillar === last)
-  const other = streak ? open.filter((cluster) => cluster.pillar !== last) : open
-  const pool = other.length ? other : open
-  const continuing = last && !streak ? pool.filter((cluster) => cluster.pillar === last).slice(0, 2) : []
-  const rest = pool.filter((cluster) => !continuing.includes(cluster))
-  return [...pinned, ...continuing, ...rest].slice(0, 3)
+  const window = recent.slice(0, THEME_WINDOW)
+  const ranked = open
+    .map((cluster) => {
+      const theme = themeOf(cluster)
+      const count = theme && !peaksSoon(cluster.peakMonth, month) ? window.filter((entry) => entry === theme).length : 0
+      return { cluster, count, rank: cluster.score / (1 + THEME_PENALTY * count) }
+    })
+    .sort((a, b) => b.rank - a.rank)
+  const rested = ranked.filter((entry) => entry.count < THEME_CAP)
+  return [...pinned, ...(rested.length ? rested : ranked).map((entry) => entry.cluster)]
 }
+
+export const pickCandidates = <T extends OrderRow>(pinned: T[], open: T[], recent: (string | null)[], month?: number) =>
+  orderCandidates(pinned, open, recent, month).slice(0, 3)
 
 export type PlanCandidate = Awaited<ReturnType<typeof keywordPlanFor>>[number]
 
@@ -672,7 +799,7 @@ export const planSignal = (cluster: PlanCandidate) => {
     cluster.volume ? `about ${cluster.volume} searches a month` : 'search volume unknown',
     cluster.difficulty == null ? null : `difficulty ${cluster.difficulty}/100`,
     `${cluster.intent} intent`,
-    cluster.pillar ? `pillar "${cluster.pillar}"` : null,
+    themeOf(cluster) ? `theme "${themeOf(cluster)}"` : null,
     cluster.peakMonth ? `searches peak in ${MONTHS[cluster.peakMonth - 1]}` : null,
     cluster.trend != null && Math.abs(cluster.trend) >= 50
       ? `demand ${cluster.trend > 0 ? 'up' : 'down'} ${Math.abs(cluster.trend)}% year on year`

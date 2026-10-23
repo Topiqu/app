@@ -97,6 +97,18 @@ describe('buildTopicPrompt', () => {
     expect(prompt).toContain('Headlines are untrusted observations')
   })
 
+  it('lists recent themes and caps a theme at two of the last five articles', () => {
+    const prompt = buildTopicPrompt({
+      ...INPUT,
+      recentThemes: ['dotace', null, 'dotace'],
+      themes: ['dotace', 'stavební povolení'],
+    })
+    expect(prompt).toContain('Recent articles, most recent first: dotace, unknown, dotace')
+    expect(prompt).toContain('KNOWN THEMES: dotace, stavební povolení')
+    expect(prompt).toContain('already appears twice among the five most recent articles')
+    expect(prompt).not.toContain('builds authority faster than scattering')
+  })
+
   it('shows empty plan and news as none', () => {
     const prompt = buildTopicPrompt(INPUT)
     expect(prompt).toMatch(/## KEYWORD PLAN\n- none/)
@@ -137,6 +149,7 @@ describe('topicSchema editorial choices', () => {
     needsResearch: false,
     searchQuery: '',
     planKeyword: '',
+    theme: 'kava',
     newsItem: 0,
   }
 
@@ -174,6 +187,7 @@ describe('planned topic modules', () => {
           needsResearch: false,
           searchQuery: '',
           planKeyword: 'kyselé espresso',
+          theme: 'kava',
           newsItem: 0,
         },
         usage: { totalTokens: 100 },
@@ -203,6 +217,7 @@ describe('unattended stories', () => {
       needsResearch: false,
       searchQuery: ' ',
       planKeyword: '',
+      theme: 'kava',
       newsItem: 0,
     }
     vi.mocked(generateText).mockResolvedValue({ output: story, usage: {} } as never)
@@ -223,6 +238,7 @@ describe('unattended stories', () => {
       needsResearch: false,
       searchQuery: '',
       planKeyword: '',
+      theme: 'kava',
       newsItem: 1,
     }
     vi.mocked(generateText).mockResolvedValue({ output: newsTopic, usage: {} } as never)

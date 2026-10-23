@@ -10,7 +10,14 @@ import { isExistingArticleOpportunity } from '~~/server/utils/searchConsole/auto
 import { ARTICLE_QUALITY_EFFORT, articleQualityOf } from '~~/shared/utils/articleQuality'
 import { ARTICLE_CREDIT_POLICY_VERSION, articleCreditCost } from '~~/shared/utils/articleCredits'
 import { auditArticleStep, createArticleGenerationAudit } from '~~/server/utils/articleGenerationAudit'
-import { keywordPlanFor, planSignal, sameKeyword, type PlanCandidate } from '~~/server/utils/keywords/plan'
+import {
+  keywordPlanFor,
+  planSignal,
+  sameKeyword,
+  themeKey,
+  themeOf,
+  type PlanCandidate,
+} from '~~/server/utils/keywords/plan'
 import {
   getSearchOpportunities,
   getSearchTrends,
@@ -241,6 +248,14 @@ export const processClient = async (client: any, slot: Date) => {
         searchSignals,
         plan: planCandidates.map(planSignal),
         news: news?.items.map(newsSignal),
+        recentThemes: client.articles.slice(0, 5).map((a: any) => themeKey(a.theme)),
+        themes: [
+          ...new Set(
+            [...planCandidates.map(themeOf), ...client.articles.map((a: any) => themeKey(a.theme))].filter(
+              (theme): theme is string => !!theme,
+            ),
+          ),
+        ],
       }
 
       // Topic first, then the article. The writer used to receive the whole selection template as its
@@ -497,6 +512,8 @@ Respond ONLY in valid JSON (schema required).
                 format: cronFormat,
                 structureVariant: topic?.variant ?? null,
                 newsUrl: newsPick?.url ?? null,
+                // The plan's label wins: the cap counts plan topics and articles under one name.
+                theme: planCluster ? themeOf(planCluster) : themeKey(topic?.theme),
                 clientSiteId,
                 status,
                 releaseAt,
@@ -809,6 +826,7 @@ export default defineMonitoredTask({
             format: true,
             structureVariant: true,
             newsUrl: true,
+            theme: true,
             answer: true,
             keyTakeaways: true,
             faq: true,
