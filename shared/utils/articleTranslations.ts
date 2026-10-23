@@ -16,7 +16,7 @@ export interface ArticleTranslationRow {
   source: TranslationSource
   error: string | null
   translatedAt: string | Date | null
-  updatedAt?: string | Date
+  updatedAt?: string | Date | null
 }
 
 export interface TranslationDraft {
@@ -30,6 +30,13 @@ export const translationDraft = (row?: ArticleTranslationRow | null): Translatio
   excerpt: row?.excerpt ?? '',
   content: row?.content ?? '',
 })
+
+/** The edit token belongs to the row that seeded a draft, including legacy nullable tokens. */
+export const translationVersion = (row?: Pick<ArticleTranslationRow, 'updatedAt'> | null): string | null => {
+  if (!row?.updatedAt) return null
+  const value = new Date(row.updatedAt)
+  return Number.isFinite(value.getTime()) ? value.toISOString() : null
+}
 
 /** A queued/in-flight/failed translation has a row but no text — nothing to edit or save. */
 export const translationHasBody = (row?: ArticleTranslationRow | null) => Boolean(row?.title && row?.content)

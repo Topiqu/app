@@ -1,8 +1,10 @@
 import { z } from 'zod'
 import { articleSlug } from '~~/shared/utils/articleSlug'
 
+import { nextTranslationVersion, translationSelect } from '../../../utils/ai/translationRow'
+
 const BodySchema = z.object({
-  expectedUpdatedAt: z.iso.datetime().optional(),
+  expectedUpdatedAt: z.iso.datetime().nullable().optional(),
   title: z.string().min(1).max(255).optional(),
   excerpt: z.string().max(500).nullable().optional(),
   content: z.string().min(1).max(50000).optional(),
@@ -17,7 +19,7 @@ export default defineEventHandler(async (event) => {
   const { user, db } = await requireDb(event, { minRole: 'admin', clientSite: true })
 
   const body = await readValidatedBody(event, BodySchema.parse)
-  if (!body.expectedUpdatedAt)
+  if (body.expectedUpdatedAt === undefined)
     throw createError({
       statusCode: 428,
       message: t('articles.editor.history.versionRequired')!,
@@ -38,7 +40,8 @@ export default defineEventHandler(async (event) => {
     },
   })
   if (translation) await requireArticleAccess(event, translation.articleId)
-  if (body.status === 'PUBLISHED') await requireTenantScope(event, 'ARTICLE_PUBLISH')
+  if (body.status === 'PUBLISHED' || translation?.status === 'PUBLISHED')
+    await requireTenantScope(event, 'ARTICLE_PUBLISH')
   if (!translation)
     throw createError({ statusCode: 404, message: t('common.errors.notFound') ?? 'Translation not found' })
 
@@ -63,10 +66,15 @@ export default defineEventHandler(async (event) => {
 
   const updated = await db.$transaction(async (tx) => {
     const changed = await tx.articleTranslation.updateMany({
-      where: { id: translation.id, clientSiteId: user.clientSiteId!, updatedAt: new Date(body.expectedUpdatedAt!) },
+      where: {
+        id: translation.id,
+        clientSiteId: user.clientSiteId!,
+        status: translation.status,
+        updatedAt: body.expectedUpdatedAt === null ? null : new Date(body.expectedUpdatedAt!),
+      },
       data: {
         // updateMany does not advance @updatedAt in this ORM; CAS needs a fresh, monotonic token.
-        updatedAt: new Date(Math.max(Date.now(), new Date(body.expectedUpdatedAt!).getTime() + 1)),
+        updatedAt: nextTranslationVersion(body.expectedUpdatedAt === null ? null : new Date(body.expectedUpdatedAt!)),
         ...(body.title !== undefined ? { title: body.title } : {}),
         ...(body.excerpt !== undefined ? { excerpt: body.excerpt } : {}),
         ...(body.content !== undefined ? { content: sanitizeHtml(body.content) } : {}),
@@ -86,19 +94,11 @@ export default defineEventHandler(async (event) => {
       })
     return tx.articleTranslation.findUniqueOrThrow({
       where: { id: translation.id },
-      select: {
-        id: true,
-        language: true,
-        slug: true,
-        title: true,
-        excerpt: true,
-        content: true,
-        status: true,
-        source: true,
-        updatedAt: true,
-      },
+      select: translationSelect,
     })
   })
+
+  await invalidateFeed(user.clientSiteId!)
 
   await syncArticleMediaUsages(prisma, {
     clientSiteId: user.clientSiteId!,
@@ -108,15 +108,28 @@ export default defineEventHandler(async (event) => {
     content: updated.content,
   })
 
-  await logAction({
-    action: body.status === 'PUBLISHED' ? 'TRANSLATION_PUBLISHED' : 'TRANSLATION_UPDATED',
-    userId: user.id,
-    clientSiteId: user.clientSiteId!,
-    ip: getIp(event),
-    metadata: { translationId: updated.id, articleId: translation.articleId, language: updated.language },
-  })
+  try {
+    await logAction({
+      action: body.status === 'PUBLISHED' ? 'TRANSLATION_PUBLISHED' : 'TRANSLATION_UPDATED',
+      userId: user.id,
+      clientSiteId: user.clientSiteId!,
+      ip: getIp(event),
+      metadata: { translationId: updated.id, articleId: translation.articleId, language: updated.language },
+    })
+  } catch (error) {
+    await reportCaughtError('Translation audit failed after persistence', error, {
+      translationId: updated.id,
+      clientSiteId: user.clientSiteId!,
+    })
+  }
 
-  if (updated.status === 'PUBLISHED') void announceArticle(translation.articleId, user.clientSiteId!)
+  if (updated.status === 'PUBLISHED')
+    await announceArticle(translation.articleId, user.clientSiteId!).catch((error: unknown) =>
+      reportCaughtError('Translation announcement failed after persistence', error, {
+        translationId: updated.id,
+        clientSiteId: user.clientSiteId!,
+      }),
+    )
 
   return { translation: updated }
 })

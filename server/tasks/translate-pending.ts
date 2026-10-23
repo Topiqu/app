@@ -1,5 +1,7 @@
 import type { ClientPlan } from '~~/generated/zenstack/models'
 
+import { nextTranslationVersion } from '../utils/ai/translationRow'
+
 const TRANSLATION_PLANS: ClientPlan[] = ['PRO', 'PREMIUM', 'CUSTOM']
 const BATCH_SIZE = 10
 
@@ -13,7 +15,7 @@ export default defineMonitoredTask({
     const now = new Date()
     await prisma.articleTranslation.updateMany({
       where: { status: 'TRANSLATING', updatedAt: { lt: new Date(now.getTime() - 30 * 60_000) } },
-      data: { status: 'PENDING', error: null },
+      data: { status: 'PENDING', error: null, updatedAt: now },
     })
 
     const candidates = await prisma.articleTranslation.findMany({
@@ -30,7 +32,7 @@ export default defineMonitoredTask({
       },
       take: BATCH_SIZE,
       orderBy: { createdAt: 'asc' },
-      select: { id: true },
+      select: { id: true, updatedAt: true },
     })
 
     if (!candidates.length) {
@@ -51,17 +53,20 @@ export default defineMonitoredTask({
 
     let processed = 0
     let failed = 0
-    const skipped = 0
+    let skipped = 0
 
-    for (const { id } of candidates) {
-      const claimedAt = new Date()
+    for (const { id, updatedAt } of candidates) {
+      const claimedAt = nextTranslationVersion(updatedAt)
       // Atomic per-row claim: only the run that flips it out of a claimable state owns it,
       // so concurrent cron runs / manual triggers can never double-translate the same row.
       const claim = await prisma.articleTranslation.updateMany({
-        where: { id, status: { in: ['PENDING', 'STALE'] } },
+        where: { id, updatedAt, status: { in: ['PENDING', 'STALE'] } },
         data: { status: 'TRANSLATING', updatedAt: claimedAt },
       })
-      if (claim.count !== 1) continue
+      if (claim.count !== 1) {
+        skipped++
+        continue
+      }
 
       const row = await prisma.articleTranslation.findUnique({
         where: { id },
@@ -72,6 +77,7 @@ export default defineMonitoredTask({
           article: {
             select: {
               id: true,
+              editVersion: true,
               title: true,
               excerpt: true,
               content: true,
@@ -87,7 +93,11 @@ export default defineMonitoredTask({
       if (!row || !row.article || !row.clientSite) {
         await prisma.articleTranslation.updateMany({
           where: { id, status: 'TRANSLATING', updatedAt: claimedAt },
-          data: { status: 'FAILED', error: 'Source article or tenant missing' },
+          data: {
+            status: 'FAILED',
+            error: 'Source article or tenant missing',
+            updatedAt: nextTranslationVersion(claimedAt),
+          },
         })
         failed++
         continue
@@ -102,13 +112,27 @@ export default defineMonitoredTask({
           targetLang: row.language,
           usage,
           auto: true,
-        })
+        }).catch((error: unknown) =>
+          reportCaughtError('Translation usage recording failed', error, {
+            clientSiteId: row.clientSiteId,
+            articleId: row.article.id,
+            translationId: id,
+          }),
+        )
 
         const slug = await dedupeTranslationSlug(prisma, baseSlug, row.clientSiteId, row.language, row.article.id)
         const finalStatus =
           row.clientSite.translationMode === 'AUTO' && row.clientSite.publishToWeb ? 'PUBLISHED' : 'READY'
 
         const updatedTranslation = await prisma.$transaction(async (tx) => {
+          // Share the source row lock with article edits until the translation is committed.
+          const source = await tx.$queryRaw<{ editVersion: number }[]>`
+            SELECT "editVersion" FROM "Article"
+            WHERE "id" = ${row.article.id} AND "clientSiteId" = ${row.clientSiteId}
+              AND "status" = 'published' AND "deletedAt" IS NULL
+            FOR SHARE
+          `
+          if (source[0]?.editVersion !== row.article.editVersion) return false
           const saved = await tx.articleTranslation.updateMany({
             where: {
               id,
@@ -137,50 +161,72 @@ export default defineMonitoredTask({
               usage: toDatabaseJson(usage),
               error: null,
               translatedAt: new Date(),
+              updatedAt: nextTranslationVersion(claimedAt),
             },
           })
           if (!saved.count) return false
-          await syncArticleMediaUsages(tx, {
-            clientSiteId: row.clientSiteId,
-            articleId: row.article.id,
-            articleTranslationId: id,
-            language: row.language,
-            content: sanitizeHtml(translated.content),
-          })
           return true
         })
-        if (!updatedTranslation) continue
+        if (!updatedTranslation) {
+          await prisma.articleTranslation.updateMany({
+            where: { id, status: 'TRANSLATING', updatedAt: claimedAt },
+            data: { status: 'STALE', error: null, updatedAt: nextTranslationVersion(claimedAt) },
+          })
+          skipped++
+          continue
+        }
 
         if (finalStatus === 'PUBLISHED') await invalidateFeed(row.clientSiteId)
 
-        await logAction({
-          action: 'TRANSLATE_ARTICLE',
+        await syncArticleMediaUsages(prisma, {
           clientSiteId: row.clientSiteId,
-          metadata: {
-            articleId: row.article.id,
-            translationId: row.id,
-            targetLang: row.language,
-            status: finalStatus,
-            usage,
-          },
+          articleId: row.article.id,
+          articleTranslationId: id,
+          language: row.language,
+          content: sanitizeHtml(translated.content),
         })
-        if (finalStatus === 'PUBLISHED') {
-          await announceArticle(row.article.id, row.clientSiteId)
-        }
+
         processed++
-      } catch (e: any) {
+        try {
+          await logAction({
+            action: 'TRANSLATE_ARTICLE',
+            clientSiteId: row.clientSiteId,
+            metadata: {
+              articleId: row.article.id,
+              translationId: row.id,
+              targetLang: row.language,
+              status: finalStatus,
+              usage,
+            },
+          })
+          if (finalStatus === 'PUBLISHED') await announceArticle(row.article.id, row.clientSiteId)
+        } catch (error) {
+          await reportCaughtError('Translation notification or audit failed after persistence', error, {
+            clientSiteId: row.clientSiteId,
+            articleId: row.article.id,
+            translationId: id,
+          })
+        }
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message.slice(0, 1000) : 'Translation failed'
         await prisma.articleTranslation.updateMany({
           where: { id, status: 'TRANSLATING', updatedAt: claimedAt },
           data: {
             status: 'FAILED',
-            error: (e?.message || 'unknown').slice(0, 1000),
+            error: message,
+            updatedAt: nextTranslationVersion(claimedAt),
           },
         })
         await logAction({
           action: 'TRANSLATE_FAILED',
           clientSiteId: row.clientSiteId,
-          metadata: { articleId: row.article.id, translationId: row.id, error: e?.message },
-        })
+          metadata: { articleId: row.article.id, translationId: row.id, error: message },
+        }).catch((auditError: unknown) =>
+          reportCaughtError('Translation failure audit unavailable', auditError, {
+            clientSiteId: row.clientSiteId,
+            translationId: id,
+          }),
+        )
         failed++
       }
     }

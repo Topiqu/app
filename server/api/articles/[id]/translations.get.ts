@@ -1,3 +1,5 @@
+import { translationSelect } from '../../../utils/ai/translationRow'
+
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const id = getRouterParam(event, 'id')
@@ -23,23 +25,7 @@ export default defineEventHandler(async (event) => {
   const translations = await db.articleTranslation.findMany({
     where: { articleId: id, clientSiteId: user.clientSiteId! },
     orderBy: { language: 'asc' },
-    select: {
-      id: true,
-      language: true,
-      slug: true,
-      title: true,
-      excerpt: true,
-      content: true,
-      answer: true,
-      keyTakeaways: true,
-      faq: true,
-      status: true,
-      source: true,
-      model: true,
-      error: true,
-      translatedAt: true,
-      updatedAt: true,
-    },
+    select: translationSelect,
   })
 
   return { translations, targetLanguages, translationMode: clientSite.translationMode }

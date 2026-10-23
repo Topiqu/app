@@ -1,6 +1,10 @@
-import type { Language, TranslationMode } from '~~/generated/zenstack/models'
+import type { Language } from '~~/generated/zenstack/models'
 
 import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'
+
+import type { DatabaseTransaction } from '../database'
+
+import { nextTranslationVersion } from './translationRow'
 
 const ALL_LANGUAGES: readonly Language[] = LANGUAGE_OPTIONS
 
@@ -16,24 +20,9 @@ export const resolveTargetLanguages = (
 }
 
 type QueueDb = {
-  article?: {
-    findUnique: (args: any) => Promise<{ language: Language } | null>
-  }
-  clientSite: {
-    findUnique: (args: any) => Promise<{
-      language: Language
-      translationMode: TranslationMode
-      translationLanguages: Language[]
-      // Optional so a concrete Prisma client (whose row type has no `features`) still fits
-      // the structural contract; the select always asks for it, and a missing value fails closed.
-      features?: { id: string }[]
-    } | null>
-  }
-  articleTranslation: {
-    findMany: (args: any) => Promise<{ language: Language }[]>
-    createMany: (args: any) => Promise<unknown>
-    updateMany: (args: any) => Promise<unknown>
-  }
+  article?: Pick<DatabaseTransaction['article'], 'findUnique'>
+  clientSite: Pick<DatabaseTransaction['clientSite'], 'findUnique'>
+  articleTranslation: Pick<DatabaseTransaction['articleTranslation'], 'findMany' | 'createMany' | 'updateMany'>
 }
 
 /**
@@ -67,7 +56,10 @@ export const syncArticleTranslationQueue = async (
   const targets = resolveTargetLanguages(clientSite, article?.language ?? clientSite.language)
   if (!targets.length) return
 
-  const existing = await db.articleTranslation.findMany({ where: { articleId }, select: { language: true } })
+  const existing = await db.articleTranslation.findMany({
+    where: { articleId, clientSiteId },
+    select: { id: true, language: true, status: true, updatedAt: true },
+  })
   const existingLangs = new Set(existing.map((row) => row.language))
   const missing = targets.filter((language) => !existingLangs.has(language))
 
@@ -85,9 +77,12 @@ export const syncArticleTranslationQueue = async (
   }
 
   if (opts.contentChanged) {
-    await db.articleTranslation.updateMany({
-      where: { articleId, language: { in: targets }, status: { in: ['READY', 'PUBLISHED'] } },
-      data: { status: 'STALE' },
-    })
+    for (const row of existing) {
+      if (!targets.includes(row.language) || !['READY', 'PUBLISHED', 'TRANSLATING'].includes(row.status)) continue
+      await db.articleTranslation.updateMany({
+        where: { id: row.id, articleId, clientSiteId, status: row.status, updatedAt: row.updatedAt },
+        data: { status: 'STALE', updatedAt: nextTranslationVersion(row.updatedAt) },
+      })
+    }
   }
 }

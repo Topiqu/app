@@ -11,7 +11,7 @@ const makeDb = (
     translationLanguages: string[]
     features?: { id: string }[]
   } | null,
-  existing: Array<{ language: string }> = [],
+  existing: Array<{ language: string; id?: string; status?: string; updatedAt?: Date }> = [],
 ) => ({
   clientSite: { findUnique: vi.fn(async () => clientSite && { features: [{ id: 'f1' }], ...clientSite }) },
   articleTranslation: {
@@ -77,11 +77,26 @@ describe('syncArticleTranslationQueue', () => {
   })
 
   it('marks existing translations STALE only when content changed', async () => {
-    const db = makeDb({ language: 'cs', translationMode: 'HYBRID', translationLanguages: [] }, [{ language: 'en' }])
+    const observed = new Date('2090-01-01T00:00:00Z')
+    const db = makeDb({ language: 'cs', translationMode: 'HYBRID', translationLanguages: [] }, [
+      { id: 'translation-1', language: 'en', status: 'PUBLISHED', updatedAt: observed },
+    ])
     await syncArticleTranslationQueue(db as any, 'a1', 'cs1', { contentChanged: true })
     expect(db.articleTranslation.updateMany).toHaveBeenCalledWith({
-      where: { articleId: 'a1', language: { in: ['en', 'de', 'fr'] }, status: { in: ['READY', 'PUBLISHED'] } },
-      data: { status: 'STALE' },
+      where: { id: 'translation-1', articleId: 'a1', clientSiteId: 'cs1', status: 'PUBLISHED', updatedAt: observed },
+      data: { status: 'STALE', updatedAt: new Date(observed.getTime() + 1) },
+    })
+  })
+
+  it('invalidates a running worker claim when the article content changes', async () => {
+    const observed = new Date('2090-01-01T00:00:00Z')
+    const db = makeDb({ language: 'cs', translationMode: 'AUTO', translationLanguages: ['en'] }, [
+      { id: 'translation-1', language: 'en', status: 'TRANSLATING', updatedAt: observed },
+    ])
+    await syncArticleTranslationQueue(db as any, 'a1', 'cs1', { contentChanged: true })
+    expect(db.articleTranslation.updateMany).toHaveBeenCalledWith({
+      where: { id: 'translation-1', articleId: 'a1', clientSiteId: 'cs1', status: 'TRANSLATING', updatedAt: observed },
+      data: { status: 'STALE', updatedAt: new Date(observed.getTime() + 1) },
     })
   })
 

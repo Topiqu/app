@@ -2,6 +2,8 @@ import { z } from 'zod'
 import { Language } from '~~/generated/zenstack/models'
 import { articleSlug } from '~~/shared/utils/articleSlug'
 
+import { translationSelect } from '../../../utils/ai/translationRow'
+
 const BodySchema = z.object({
   language: z.nativeEnum(Language),
   title: z.string().min(1).max(255),
@@ -30,31 +32,31 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
   const slug = await dedupeTranslationSlug(db, articleSlug(body.title), user.clientSiteId!, body.language, articleId)
-  const translation = await db.articleTranslation.upsert({
-    where: { articleId_language: { articleId, language: body.language } },
-    create: {
-      articleId,
-      clientSiteId: user.clientSiteId!,
-      language: body.language,
-      slug,
-      title: body.title,
-      excerpt: body.excerpt || null,
-      content: sanitizeHtml(body.content),
-      status: 'READY',
-      source: 'HUMAN',
-      translatedAt: new Date(),
-    },
-    update: {
-      slug,
-      title: body.title,
-      excerpt: body.excerpt || null,
-      content: sanitizeHtml(body.content),
-      status: 'READY',
-      source: 'HUMAN',
-      error: null,
-      translatedAt: new Date(),
-    },
-  })
+  const translation = await db.articleTranslation
+    .create({
+      data: {
+        articleId,
+        clientSiteId: user.clientSiteId!,
+        language: body.language,
+        slug,
+        title: body.title,
+        excerpt: body.excerpt || null,
+        content: sanitizeHtml(body.content),
+        status: 'READY',
+        source: 'HUMAN',
+        translatedAt: new Date(),
+      },
+      select: translationSelect,
+    })
+    .catch((error: unknown) => {
+      if (isUniqueViolation(error))
+        throw createError({
+          statusCode: 409,
+          message: t('articles.editor.history.conflict')!,
+          data: { code: 'ARTICLE_EDIT_CONFLICT' },
+        })
+      throw error
+    })
 
   await syncArticleMediaUsages(prisma, {
     clientSiteId: user.clientSiteId!,

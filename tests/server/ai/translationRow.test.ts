@@ -21,9 +21,4 @@ describe('ArticleTranslation write sites', () => {
       }
     })
   }
-
-  // The endpoint upserts, so a re-translation of an existing row goes through `update`.
-  it('the endpoint persists them on both upsert branches', () => {
-    expect(endpoint.match(/answer:\s*translated\.answer/g)).toHaveLength(2)
-  })
 })

@@ -12,10 +12,12 @@ const media = vi.fn()
 const audit = vi.fn()
 const transaction = vi.fn()
 let payload: Record<string, unknown>
+let existingStatus = 'READY'
 
 beforeEach(() => {
   vi.clearAllMocks()
   payload = { title: 'Changed translation', expectedUpdatedAt: observed }
+  existingStatus = 'READY'
   update.mockResolvedValue({ count: 1 })
   current.mockResolvedValue({
     id: 'translation-a',
@@ -40,16 +42,16 @@ beforeEach(() => {
     user: { id: 'editor', clientSiteId: 'tenant-a' },
     db: {
       articleTranslation: {
-        findFirst: vi.fn().mockResolvedValue({
+        findFirst: vi.fn(async () => ({
           id: 'translation-a',
           articleId: 'article-a',
           language: 'en',
           slug: 'english-title',
           title: 'Old title',
           content: '<p>Body</p>',
-          status: 'READY',
+          status: existingStatus,
           clientSite: { publishToWeb: true },
-        }),
+        })),
       },
       $transaction: transaction,
     },
@@ -63,11 +65,20 @@ beforeEach(() => {
   vi.stubGlobal('logAction', audit)
   vi.stubGlobal('getIp', () => '127.0.0.1')
   vi.stubGlobal('announceArticle', vi.fn())
+  vi.stubGlobal('invalidateFeed', vi.fn())
+  vi.stubGlobal('reportCaughtError', vi.fn())
 })
 afterEach(() => vi.unstubAllGlobals())
 
 describe('translation optimistic updates', () => {
   const run = async () => (await import('../../../server/api/translations/[id]/index.patch')).default({} as never)
+
+  it('requires publication scope to edit content that is already public', async () => {
+    existingStatus = 'PUBLISHED'
+    scope.mockRejectedValue(createError({ statusCode: 403 }))
+    await expect(run()).rejects.toMatchObject({ statusCode: 403 })
+    expect(update).not.toHaveBeenCalled()
+  })
 
   it('requires the observed timestamp before any mutation or media effect', async () => {
     delete payload.expectedUpdatedAt
@@ -100,7 +111,7 @@ describe('translation optimistic updates', () => {
     const result = await run()
     expect(access).toHaveBeenCalledWith({}, 'article-a')
     expect(update).toHaveBeenCalledWith({
-      where: { id: 'translation-a', clientSiteId: 'tenant-a', updatedAt: new Date(observed) },
+      where: { id: 'translation-a', clientSiteId: 'tenant-a', status: 'READY', updatedAt: new Date(observed) },
       data: {
         title: 'Changed translation',
         content: '<p>Safe text</p>',
