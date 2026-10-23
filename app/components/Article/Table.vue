@@ -317,10 +317,14 @@ import type { ArticleWithDetails } from '~~/types/article'
 import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
 import type { ArticleStatus } from '~~/generated/zenstack/models'
 
+import { useQueryCache } from '@pinia/colada'
+import { translationVersion } from '~~/shared/utils/articleTranslations'
+
 const router = useRouter()
 const route = useRoute()
 const toast = useToast()
 const { invalidateArticleLists, invalidateArticlesAndStats } = useCacheInvalidation()
+const queryCache = useQueryCache()
 const confirm = useConfirm()
 const tagsOpen = useState('dashboard-tags-open', () => false)
 const localePath = useLocalePath()
@@ -336,28 +340,37 @@ const articleUrl = (slug: string, language?: Language) =>
 const { formatTime } = useTime()
 const requestFetch = useRequestFetch()
 const translatingArticleId = shallowRef<string | null>(null)
+let disposed = false
 const listOrigin = useTemplateRef<HTMLElement>('listOrigin')
 
 const translateArticle = async (article: ArticleWithDetails, language: Language) => {
-  if (translatingArticleId.value) return
-  translatingArticleId.value = article.id
+  if (disposed || translatingArticleId.value) return
+  const id = article.id
+  const translation = article.translations?.find((row) => row.language === language)
+  const body = { language, replace: !!translation, expectedUpdatedAt: translationVersion(translation) }
+  translatingArticleId.value = id
   try {
     await $fetch<unknown, '/api/articles/:id/translate'>(
-      `/api/articles/${article.id}/translate` as '/api/articles/:id/translate',
+      `/api/articles/${id}/translate` as '/api/articles/:id/translate',
       {
         method: 'POST',
-        body: { language },
+        body,
       },
     )
+  } catch (error: unknown) {
+    if (!disposed) toast.add({ color: 'error', title: fetchErrorMessage(error, $t('common.messages.operationFailed')) })
+    if (!disposed) translatingArticleId.value = null
+    return
+  }
+  try {
     await invalidateArticleLists()
-    toast.add({ color: 'success', title: $t('articles.translations.messages.translated') })
-  } catch (e: any) {
-    toast.add({
-      color: 'error',
-      title: fetchErrorMessage(e, $t('common.messages.operationFailed')),
-    })
+  } catch {
+    console.warn('[ArticleTable] Could not refresh translated article data.')
   } finally {
-    translatingArticleId.value = null
+    if (!disposed) {
+      translatingArticleId.value = null
+      toast.add({ color: 'success', title: $t('articles.translations.messages.translated') })
+    }
   }
 }
 
@@ -366,7 +379,7 @@ const openEditor = (slug: string) => router.push(localePath({ name: 'admin-edito
 
 const page = shallowRef(Number(route.query.page) || 1)
 const limit = 20
-const globalFilter = ref((route.query.query as string) || '')
+const globalFilter = shallowRef((route.query.query as string) || '')
 const statusFilter = shallowRef((route.query.status as string) || 'all')
 const dateFrom = shallowRef((route.query.dateFrom as string) || '')
 const dateTo = shallowRef((route.query.dateTo as string) || '')
@@ -416,8 +429,8 @@ const {
   placeholderData: (previous) => previous,
 })
 
-const optimisticStatuses = ref<Record<string, ArticleStatus>>({})
-const pendingStatusIds = ref(new Set<string>())
+const optimisticStatuses = shallowRef<Record<string, ArticleStatus>>({})
+const pendingStatusIds = shallowRef(new Set<string>())
 const optimisticStatus = useOptimisticStatus()
 const rows = computed(() =>
   (articles.value?.data ?? []).map((article) =>
@@ -524,6 +537,10 @@ const syncUrl = () => {
   })
 }
 const syncTextUrl = useDebounceFn(syncUrl, 400)
+onScopeDispose(() => {
+  disposed = true
+  syncTextUrl.cancel()
+})
 watch(globalFilter, syncTextUrl)
 watch([statusFilter, dateFrom, dateTo, sortField, sortOrder], syncUrl)
 
@@ -537,41 +554,59 @@ const clearFilters = () => {
 }
 
 const setStatus = async ({ id, status }: { id: string; status: ArticleStatus }) => {
-  if (pendingStatusIds.value.has(id)) return
+  if (disposed || pendingStatusIds.value.has(id)) return
   const previous = rows.value.find((article) => article.id === id)?.status
+  if (!previous || previous === status || !['draft', 'published', 'archived'].includes(status)) return
   optimisticStatuses.value = { ...optimisticStatuses.value, [id]: status }
   pendingStatusIds.value = new Set([...pendingStatusIds.value, id])
-  optimisticStatus.saving()
+  const sequence = optimisticStatus.saving()
+  const queryKey = ['articles', 'list', listQuery.value] as const
+  let committed = false
 
   try {
     await $fetch<unknown, '/api/articles/:id'>(`/api/articles/${id}` as `/api/articles/:id`, {
       method: 'PATCH',
       body: { status },
     })
-    toast.add({
-      color: 'success',
-      title: $t('articles.status.changeSuccess', [$t(`articles.status.${status}`)]),
-      description: rows.value.find((article) => article.id === id)?.title,
-    })
+    committed = true
+    const cached = queryCache.getQueryData<{ data: ArticleWithDetails[]; total: number }>(queryKey)
+    if (cached)
+      queryCache.setQueryData(queryKey, {
+        ...cached,
+        data: cached.data.map((article) => (article.id === id ? { ...article, status } : article)),
+      })
+    if (!disposed)
+      toast.add({
+        color: 'success',
+        title: $t('articles.status.changeSuccess', [$t(`articles.status.${status}`)]),
+        description: rows.value.find((article) => article.id === id)?.title,
+      })
     await invalidateArticleLists()
-    optimisticStatus.saved()
-  } catch (error: any) {
-    if (previous) optimisticStatuses.value = { ...optimisticStatuses.value, [id]: previous }
-    optimisticStatus.reverted()
-    toast.add({
-      color: 'error',
-      title: fetchErrorMessage(error, $t('articles.messages.statusChangeFailed')),
-    })
+    optimisticStatus.saved(sequence)
+  } catch (error: unknown) {
+    if (committed) {
+      optimisticStatus.saved(sequence)
+      console.warn('[ArticleTable] Could not refresh saved article data.')
+    } else if (!disposed) {
+      optimisticStatuses.value = { ...optimisticStatuses.value, [id]: previous }
+      optimisticStatus.reverted(sequence)
+      toast.add({
+        color: 'error',
+        title: fetchErrorMessage(error, $t('articles.messages.statusChangeFailed')),
+      })
+    } else optimisticStatus.reverted(sequence)
   } finally {
-    const { [id]: _finished, ...rest } = optimisticStatuses.value
-    optimisticStatuses.value = rest
-    const nextPending = new Set(pendingStatusIds.value)
-    nextPending.delete(id)
-    pendingStatusIds.value = nextPending
+    if (!disposed) {
+      const { [id]: _finished, ...rest } = optimisticStatuses.value
+      optimisticStatuses.value = rest
+      const nextPending = new Set(pendingStatusIds.value)
+      nextPending.delete(id)
+      pendingStatusIds.value = nextPending
+    }
   }
 }
 
-const debouncedSetStatus = useDebounceFn((id: string, status: ArticleStatus) => void setStatus({ id, status }), 100)
+const debouncedSetStatus = (id: string, status: ArticleStatus) => void setStatus({ id, status })
 const { mutate: deleteArticle, isLoading: isDeleting } = useMutation({
   mutation: async (id: string) =>
     $fetch<unknown, '/api/articles/:id'>(`/api/articles/${id}` as '/api/articles/:id', { method: 'DELETE' }),
@@ -580,7 +615,7 @@ const { mutate: deleteArticle, isLoading: isDeleting } = useMutation({
       color: 'success',
       title: $t('articles.messages.deleteSuccess'),
     }),
-  onError: (error: any) =>
+  onError: (error: unknown) =>
     toast.add({
       color: 'error',
       title: fetchErrorMessage(error, $t('articles.messages.deleteFailed')),
