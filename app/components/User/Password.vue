@@ -35,10 +35,15 @@
 </template>
 
 <script setup lang="ts">
-import { zxcvbn } from '@zxcvbn-ts/core'
+import { ZxcvbnFactory } from '@zxcvbn-ts/core'
 import { signInSchema } from '~~/shared/utils/auth'
 
-const props = defineProps<{
+const {
+  isValid = true,
+  isConfirm = false,
+  minLength: minimumLength,
+  maxLength: maximumLength,
+} = defineProps<{
   isValid?: boolean
   isConfirm?: boolean
   minLength?: number
@@ -47,8 +52,9 @@ const props = defineProps<{
 
 const password = defineModel<string>({ default: '', required: true })
 const showPassword = shallowRef(false)
+const passwordStrength = new ZxcvbnFactory()
 const passwordAnalysis = computed(() =>
-  props.isConfirm ? { score: 0, feedback: { suggestions: [] } } : zxcvbn(password.value || ''),
+  isConfirm ? { score: 0, feedback: { suggestions: [] } } : passwordStrength.check(password.value || ''),
 )
 
 const getFallbackMinLength = (): number => {
@@ -64,20 +70,19 @@ const getFallbackMaxLength = (): number => {
 }
 
 const isValidReal = computed(() => {
-  if (props.isConfirm) return props.isValid ?? true
-  const externalValid = props.isValid ?? true
+  if (isConfirm) return isValid
   const scoreValid = passwordAnalysis.value.score >= 3
-  const minLength = props.minLength ?? getFallbackMinLength()
-  const maxLength = props.maxLength ?? getFallbackMaxLength()
+  const minLength = minimumLength ?? getFallbackMinLength()
+  const maxLength = maximumLength ?? getFallbackMaxLength()
   const lengthValid = password.value.length >= minLength && password.value.length <= maxLength
-  return externalValid && scoreValid && lengthValid
+  return isValid && scoreValid && lengthValid
 })
 
 const suggestions = computed(() => {
-  if (props.isConfirm) return []
+  if (isConfirm) return []
   const rawSuggestions = passwordAnalysis.value.feedback.suggestions || []
-  const minLength = props.minLength ?? getFallbackMinLength()
-  const maxLength = props.maxLength ?? getFallbackMaxLength()
+  const minLength = minimumLength ?? getFallbackMinLength()
+  const maxLength = maximumLength ?? getFallbackMaxLength()
   if (password.value.length < minLength) {
     return [$t('common.passwordSuggestions.tooShort', { minLength }), ...rawSuggestions.map(translateSuggestion)]
   }
@@ -88,7 +93,7 @@ const suggestions = computed(() => {
 })
 
 const strengthLabel = computed(() => {
-  if (props.isConfirm) return ''
+  if (isConfirm) return ''
   const sc = passwordAnalysis.value.score
   if (sc <= 1) return $t('common.passwordSuggestions.weak')
   if (sc === 2) return $t('common.passwordSuggestions.medium')
@@ -98,7 +103,7 @@ const strengthLabel = computed(() => {
 })
 
 const strengthColor = computed<'error' | 'warning' | 'success' | 'neutral'>(() => {
-  if (props.isConfirm) return 'neutral'
+  if (isConfirm) return 'neutral'
   const sc = passwordAnalysis.value.score
   if (sc <= 1) return 'error'
   if (sc === 2) return 'warning'
