@@ -8,11 +8,20 @@ import * as Sentry from '@sentry/nuxt'
  * invisible in production unless it is reported here.
  */
 export const reportCaughtError = async (message: string, error: unknown, context?: Record<string, unknown>) => {
-  Sentry.captureException(error, { extra: { message, ...context } })
+  try {
+    Sentry.captureException(error, { extra: { message, ...context } })
+  } catch {
+    // The independent logger still records the original failure below.
+  }
 
-  await logger.error(message, {
-    ...context,
-    error: error instanceof Error ? error.message : String(error),
-    stack: error instanceof Error ? error.stack : undefined,
-  })
+  try {
+    await logger.error(message, {
+      ...context,
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    })
+  } catch {
+    // Reporting must not fail an operation whose original error was already handled.
+    console.error('[error reporting] Logger unavailable', { message })
+  }
 }
