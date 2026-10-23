@@ -1,3 +1,5 @@
+import type { GenerationSnapshot } from '~~/shared/types/articleGeneration'
+
 import { z } from 'zod'
 import { randomUUID } from 'node:crypto'
 import { LANGUAGE_OPTIONS } from '~~/shared/siteSchemas'

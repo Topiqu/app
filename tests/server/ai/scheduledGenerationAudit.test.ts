@@ -1,3 +1,5 @@
+import type { JsonValue } from '@zenstackhq/orm'
+
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('../../../server/utils/keywords/plan', () => ({
@@ -10,7 +12,10 @@ vi.mock('../../../server/utils/keywords/dataforseo', () => ({ hasDataForSeo: () 
 beforeEach(() => vi.resetModules())
 afterEach(() => vi.unstubAllGlobals())
 
-const setup = async (failure?: 'reservation' | 'generation' | 'persistence' | 'publication' | 'settlement') => {
+const setup = async (
+  failure?: 'reservation' | 'generation' | 'persistence' | 'publication' | 'settlement',
+  communityInsight: JsonValue = null,
+) => {
   const log = vi.fn().mockResolvedValue({})
   const client = {
     id: 'tenant-1',
@@ -21,6 +26,7 @@ const setup = async (failure?: 'reservation' | 'generation' | 'persistence' | 'p
     autoRelease: failure === 'publication',
     publishToWeb: true,
     aiSeriesEnabled: false,
+    communityInsight,
   }
   const generated = {
     title: 'Generated article',
@@ -63,10 +69,13 @@ const setup = async (failure?: 'reservation' | 'generation' | 'persistence' | 'p
     clientSite: { update: async () => ({}) },
     $transaction: transaction,
   })
-  vi.stubGlobal('pickArticleTopic', async () => ({
-    topic: { topic: 'A topic', angle: 'Practical advice', format: 'guide', needsResearch: false },
-    usage: { totalTokens: 3 },
-  }))
+  vi.stubGlobal(
+    'pickArticleTopic',
+    vi.fn(async () => ({
+      topic: { topic: 'A topic', angle: 'Practical advice', format: 'guide', needsResearch: false },
+      usage: { totalTokens: 3 },
+    })),
+  )
   vi.stubGlobal('selectedModulesFor', () => [])
   vi.stubGlobal('researchRequest', () => false)
   vi.stubGlobal(
@@ -96,6 +105,27 @@ const setup = async (failure?: 'reservation' | 'generation' | 'persistence' | 'p
 }
 
 describe('scheduled generation audit', () => {
+  it('uses the last validated community suggestion retained by a failed historical insight refresh', async () => {
+    const insight = {
+      summary: 'Readers ask practical questions.',
+      avgScore: 0,
+      topEmotion: null,
+      toxicity: 0,
+      helpfulness: 0,
+      sarcasm: 0,
+      suggestion: 'Explain the setup for beginners.',
+    }
+    const { run } = await setup(undefined, { error: true, message: 'Previous refresh failed', previous: insight })
+    await expect(run()).resolves.toMatchObject({ status: 'draft' })
+    expect(pickArticleTopic).toHaveBeenCalledWith(expect.objectContaining({ suggestion: insight.suggestion }))
+  })
+
+  it('excludes malformed stored community JSON from the topic prompt', async () => {
+    const { run } = await setup(undefined, { suggestion: { privateError: 'This is not a suggestion.' } })
+    await expect(run()).resolves.toMatchObject({ status: 'draft' })
+    expect(pickArticleTopic).toHaveBeenCalledWith(expect.objectContaining({ suggestion: undefined }))
+  })
+
   it('correlates reservation, topic, persistence, delivery and settlement with one attempt', async () => {
     const { run, log, reservation } = await setup()
     await expect(run()).resolves.toMatchObject({ status: 'draft', articleId: 'article-1' })

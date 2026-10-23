@@ -76,7 +76,7 @@ const cases: Case[] = [
 
 const results: unknown[] = []
 
-describe.skipIf(!process.env.AI_EVAL)('article voice eval', () => {
+describe.skipIf(process.env.AI_EVAL !== '1')('article voice eval', () => {
   beforeAll(() => {
     process.loadEnvFile?.('.env')
     const openAi = createOpenAI({ apiKey: process.env.NUXT_OPEN_AI_API_KEY })

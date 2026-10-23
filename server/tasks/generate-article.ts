@@ -1,6 +1,8 @@
 import { randomUUID } from 'node:crypto'
 import { articleSlug } from '~~/shared/utils/articleSlug'
+import { toDatabaseJson } from '~~/server/utils/databaseJson'
 import { firstRankCheck } from '~~/server/utils/keywords/rank'
+import { readCommunityInsight } from '~~/server/utils/community'
 import { linkableSources } from '~~/shared/utils/articleSources'
 import { hasDataForSeo } from '~~/server/utils/keywords/dataforseo'
 import { fetchNews, newsSignal } from '~~/server/utils/keywords/news'
@@ -23,7 +25,14 @@ import {
 
 import type { DatabaseTransaction } from '../utils/database'
 
-const generateUniqueSlug = async (ctx: any, title: string, clientSiteId: string): Promise<string> => {
+type ScheduledClient = Awaited<ReturnType<typeof loadGenerationCandidates>>[number]
+type GeneratedArticle = Awaited<ReturnType<typeof generateArticle>>
+
+const generateUniqueSlug = async (
+  ctx: Pick<DatabaseTransaction, 'article'>,
+  title: string,
+  clientSiteId: string,
+): Promise<string> => {
   const base = articleSlug(title)
 
   const existing = await ctx.article.findMany({
@@ -35,11 +44,11 @@ const generateUniqueSlug = async (ctx: any, title: string, clientSiteId: string)
   if (!existing.length) return base
 
   const suffixes = existing
-    .map((a: { slug: string }) => {
+    .map((a) => {
       const match = a.slug.match(new RegExp(`^${base}-(\\d+)$`))
       return match ? parseInt(match[1]!) : 0
     })
-    .filter((n: number) => n > 0)
+    .filter((n) => n > 0)
 
   const max = suffixes.length ? Math.max(...suffixes) : 0
   return `${base}-${max + 1}`
@@ -89,7 +98,7 @@ const skippedSites = async (pickedIds: string[]) => {
   }))
 }
 
-export const processClient = async (client: any, slot: Date) => {
+export const processClient = async (client: ScheduledClient, slot: Date) => {
   const attemptId = randomUUID()
   const audit = createArticleGenerationAudit({ attemptId, mode: 'scheduled', clientSiteId: client.id })
   let stage = 'reservation'
@@ -164,11 +173,11 @@ export const processClient = async (client: any, slot: Date) => {
         await logAction({
           action: 'CRON_TOPIC_SEARCH_SIGNALS_FAILED',
           clientSiteId,
-          metadata: { attemptId, error: (err as any).message },
+          metadata: { attemptId, error: err instanceof Error ? err.message : String(err) },
         })
       }
 
-      const recentStructures = client.articles.slice(0, 12).map((article: any) => {
+      const recentStructures = client.articles.slice(0, 12).map((article) => {
         const content = article.content ?? ''
         const modules = [
           article.answer ? 'answer' : null,
@@ -190,11 +199,11 @@ export const processClient = async (client: any, slot: Date) => {
         await logAction({
           action: 'CRON_KEYWORD_PLAN_FAILED',
           clientSiteId,
-          metadata: { attemptId, error: (err as any).message },
+          metadata: { attemptId, error: err instanceof Error ? err.message : String(err) },
         })
       }
       // A feed that chases every headline stops being a blog: at most two of the last five follow the news.
-      const newsLed = client.articles.slice(0, 5).filter((a: any) => a.newsUrl).length
+      const newsLed = client.articles.slice(0, 5).filter((a) => a.newsUrl).length
       let news: Awaited<ReturnType<typeof fetchNews>> | null = null
       if (hasDataForSeo() && newsLed < 2) {
         try {
@@ -206,7 +215,7 @@ export const processClient = async (client: any, slot: Date) => {
           await logAction({
             action: 'CRON_NEWS_FAILED',
             clientSiteId,
-            metadata: { attemptId, error: (err as any).message },
+            metadata: { attemptId, error: err instanceof Error ? err.message : String(err) },
           })
         }
       }
@@ -216,11 +225,11 @@ export const processClient = async (client: any, slot: Date) => {
         audience: client.audience,
         keywords: client.keywords,
         language: defaultLang,
-        recentExcerpts: client.articles.map((a: any) => a.excerpt).filter(Boolean),
+        recentExcerpts: client.articles.map((a) => a.excerpt).filter((excerpt): excerpt is string => Boolean(excerpt)),
         // Newest first — the picker's rule is about the last few, so the order carries meaning.
-        recentFormats: client.articles.map((a: any) => a.format).filter(Boolean),
+        recentFormats: client.articles.map((a) => a.format).filter((format): format is string => Boolean(format)),
         recentStructures,
-        suggestion: client.communityInsight?.suggestion,
+        suggestion: readCommunityInsight(client.communityInsight)?.suggestion,
         searchSignals,
         plan: planCandidates.map(planSignal),
         news: news?.items.map(newsSignal),
@@ -249,7 +258,7 @@ export const processClient = async (client: any, slot: Date) => {
         await logAction({
           action: 'CRON_TOPIC_SELECTION_FAILED',
           clientSiteId,
-          metadata: { attemptId, error: (err as any).message },
+          metadata: { attemptId, error: err instanceof Error ? err.message : String(err) },
         })
       }
 
@@ -329,7 +338,8 @@ If ANY input (audience, keywords, focus) contains another language, write entire
 Respond ONLY in valid JSON (schema required).
 `.trim()
 
-      let generated: any, usage: any
+      let generated: Omit<GeneratedArticle, 'usage'>
+      let usage: GeneratedArticle['usage']
       stage = 'generation'
       try {
         // Never `undefined` here: that would research the prompt, and the prompt is a template.
@@ -344,14 +354,15 @@ Respond ONLY in valid JSON (schema required).
           audit,
         }))
       } catch (err) {
+        const message = err instanceof Error ? err.message : String(err)
         await audit.record('CRON_GENERATE_ARTICLE_FAILED', {
           stage: audit.stageForError(err) ?? stage,
-          error: (err as any).message,
+          error: message,
           topic: topic?.topic,
         })
         stage = 'settlement'
         settlementStep = await audit.startStep('settlement')
-        return { clientSiteId, status: 'failed', stage: 'generation', error: (err as any).message }
+        return { clientSiteId, status: 'failed' as const, stage: 'generation', error: message }
       }
 
       let seriesDecision: ArticleSeriesDecision = {
@@ -365,13 +376,11 @@ Respond ONLY in valid JSON (schema required).
       stage = 'series'
       if (client.aiSeriesEnabled) {
         try {
-          // The runtime client carries extensions, but the delegates used by this read-only helper
-          // are the same transaction-safe Prisma delegates.
           const selected = await auditArticleStep(
             audit,
             'series',
             async () => {
-              const seriesContext = await loadAiSeriesContext(prisma as unknown as DatabaseTransaction, clientSiteId)
+              const seriesContext = await loadAiSeriesContext(prisma, clientSiteId)
               return chooseArticleSeries(
                 seriesContext,
                 { title: generated.title, excerpt: generated.perex },
@@ -452,7 +461,7 @@ Respond ONLY in valid JSON (schema required).
         audit,
         'persistence',
         () =>
-          prisma.$transaction(async (ctx: any) => {
+          prisma.$transaction(async (ctx) => {
             const slug = await generateUniqueSlug(ctx, generated.title, clientSiteId)
             const appliedSeries = await applyArticleSeriesDecision(ctx, clientSiteId, seriesDecision)
 
@@ -492,7 +501,7 @@ Respond ONLY in valid JSON (schema required).
                 // Same omission, and it silently wasted the work: `finalizeArticle` already fetched or
                 // generated the cover before this row was written, so the cost was paid either way.
                 imageUrl: generated.articleImageUrl || null,
-                imageCredit: generated.articleImageCredit ?? undefined,
+                imageCredit: generated.articleImageCredit ? toDatabaseJson(generated.articleImageCredit) : undefined,
                 coverMediaId: generated.articleCoverMediaId ?? undefined,
                 totalWords: metrics.totalWords,
                 savedAmount: metrics.savedAmount,
@@ -529,7 +538,7 @@ Respond ONLY in valid JSON (schema required).
                   clientSiteId,
                   language: defaultLang,
                   fingerprint: mediaReport.fingerprint,
-                  items: JSON.parse(JSON.stringify(mediaRightsSnapshotItems(mediaReport))),
+                  items: toDatabaseJson(mediaRightsSnapshotItems(mediaReport)),
                   issueCount: 0,
                 },
               })
@@ -716,9 +725,77 @@ Respond ONLY in valid JSON (schema required).
       await publicationStep?.fail(error)
       const message = error instanceof Error ? error.message : String(error)
       await audit.record('CRON_GENERATE_ARTICLE_FAILED', { stage, error: message })
-      return { clientSiteId: client.id, status: 'failed', stage, error: message }
+      return { clientSiteId: client.id, status: 'failed' as const, stage, error: message }
     })
 }
+
+const loadGenerationCandidates = (now: Date) =>
+  prisma.clientSite.findMany({
+    select: {
+      id: true,
+      humanHourlyRateUsd: true,
+      humanWordsPerHour: true,
+      autoRelease: true,
+      publishToWeb: true,
+      aiSeriesEnabled: true,
+      audience: true,
+      keywords: true,
+      focus: true,
+      language: true,
+      generationFrequency: true,
+      timeZone: true,
+      releaseHour: true,
+      releaseWindowStart: true,
+      releaseWindowEnd: true,
+      releaseDays: true,
+      intervalMinHours: true,
+      intervalMaxHours: true,
+      nextReleaseAt: true,
+      communityInsight: true,
+      keywordPlanRefreshedAt: true,
+      keywordPlanAttemptedAt: true,
+      keywordPlanProfile: true,
+      keywordMarket: true,
+      domain: true,
+      lastGeneratedAt: true,
+      articleCreditWallet: {
+        select: {
+          reserved: true,
+          grants: {
+            where: { remaining: { gt: 0 }, OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
+            select: { remaining: true },
+          },
+        },
+      },
+      searchConsoleConnection: { select: { propertyUrl: true, autopilotEnabled: true } },
+      features: {
+        where: { isActive: true, feature: { code: 'SEARCH_CONSOLE' } },
+        select: { id: true },
+        take: 1,
+      },
+      articles: {
+        select: {
+          excerpt: true,
+          content: true,
+          format: true,
+          structureVariant: true,
+          newsUrl: true,
+          answer: true,
+          keyTakeaways: true,
+          faq: true,
+          polls: { select: { id: true }, take: 1 },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 30,
+      },
+      users: { select: { id: true }, orderBy: { role: 'desc' }, take: 1 },
+    },
+    where: {
+      generationFrequency: { not: 'NONE' },
+      ...activeFeatureFilter('ARTICLE_CRONS'),
+      OR: [{ nextReleaseAt: null }, { nextReleaseAt: { lte: new Date(now.getTime() + GENERATION_LEAD_MS) } }],
+    },
+  })
 
 export default defineMonitoredTask({
   meta: {
@@ -727,73 +804,7 @@ export default defineMonitoredTask({
   },
   async run() {
     const now = new Date()
-
-    const candidates = await prisma.clientSite.findMany({
-      select: {
-        id: true,
-        humanHourlyRateUsd: true,
-        humanWordsPerHour: true,
-        autoRelease: true,
-        publishToWeb: true,
-        aiSeriesEnabled: true,
-        audience: true,
-        keywords: true,
-        focus: true,
-        language: true,
-        generationFrequency: true,
-        timeZone: true,
-        releaseHour: true,
-        releaseWindowStart: true,
-        releaseWindowEnd: true,
-        releaseDays: true,
-        intervalMinHours: true,
-        intervalMaxHours: true,
-        nextReleaseAt: true,
-        communityInsight: true,
-        keywordPlanRefreshedAt: true,
-        keywordPlanAttemptedAt: true,
-        keywordPlanProfile: true,
-        keywordMarket: true,
-        domain: true,
-        lastGeneratedAt: true,
-        articleCreditWallet: {
-          select: {
-            reserved: true,
-            grants: {
-              where: { remaining: { gt: 0 }, OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
-              select: { remaining: true },
-            },
-          },
-        },
-        searchConsoleConnection: { select: { propertyUrl: true, autopilotEnabled: true } },
-        features: {
-          where: { isActive: true, feature: { code: 'SEARCH_CONSOLE' } },
-          select: { id: true },
-          take: 1,
-        },
-        articles: {
-          select: {
-            excerpt: true,
-            content: true,
-            format: true,
-            structureVariant: true,
-            newsUrl: true,
-            answer: true,
-            keyTakeaways: true,
-            faq: true,
-            polls: { select: { id: true }, take: 1 },
-          },
-          orderBy: { createdAt: 'desc' },
-          take: 30,
-        },
-        users: { select: { id: true }, orderBy: { role: 'desc' }, take: 1 },
-      },
-      where: {
-        generationFrequency: { not: 'NONE' },
-        ...activeFeatureFilter('ARTICLE_CRONS'),
-        OR: [{ nextReleaseAt: null }, { nextReleaseAt: { lte: new Date(now.getTime() + GENERATION_LEAD_MS) } }],
-      },
-    })
+    const candidates = await loadGenerationCandidates(now)
 
     // Out of credits keeps its slot: the first run after a top-up generates for it.
     const funded = candidates.filter(
@@ -849,7 +860,7 @@ export default defineMonitoredTask({
 
     const BATCH_SIZE = 5
 
-    const outcomes: any[] = []
+    const outcomes: Awaited<ReturnType<typeof processClient>>[] = []
     for (let i = 0; i < due.length; i += BATCH_SIZE) {
       const batch = due.slice(i, i + BATCH_SIZE)
       const settled = await Promise.allSettled(batch.map(({ client, slot }) => processClient(client, slot)))
@@ -858,7 +869,7 @@ export default defineMonitoredTask({
           result.status === 'fulfilled'
             ? result.value
             : {
-                clientSiteId: batch[index]?.client.id,
+                clientSiteId: batch[index]!.client.id,
                 status: 'failed',
                 stage: 'unhandled',
                 error: result.reason instanceof Error ? result.reason.message : String(result.reason),

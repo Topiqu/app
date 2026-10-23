@@ -1,24 +1,9 @@
 import type { JsonValue } from '@zenstackhq/orm'
+import type { GenerationSnapshot } from '~~/shared/types/articleGeneration'
 
 import { generatedWordsFromSnapshot } from '~~/shared/utils/valueMetrics'
 
 import { toDatabaseJson } from './databaseJson'
-
-export type GenerationSnapshot = {
-  title?: string
-  perex?: string
-  content?: string
-  sources?: string[]
-  articleImageUrl?: string | null
-  articleImageCredit?: unknown
-  articleCoverMediaId?: string | null
-  answer?: string | null
-  keyTakeaways?: string[]
-  faq?: unknown
-  tags?: string[]
-  format?: string
-  metrics?: { totalWords?: number; savedAmount?: number; savedTimeMinutes?: number }
-}
 
 // Safety contract for future maintainers/AI: billing and recovery are inseparable. An interrupted
 // run may consume an article credit only after a useful snapshot is durably stored for its author.
