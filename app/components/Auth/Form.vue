@@ -124,10 +124,21 @@
             <span class="font-medium">{{ form.email }}</span>
           </p>
           <UFormField :label="$t('common.auth.verificationCode')" name="code">
-            <UPinInput v-model="verificationDigits" :length="8" otp />
+            <UPinInput v-model="verificationDigits" :length="EMAIL_VERIFICATION_CODE_LENGTH" type="text" otp />
           </UFormField>
-          <UButton type="submit" :loading="submitting" :disabled="submitting" block>
+          <UButton type="submit" :loading="submitting" :disabled="submitting || resendingVerification" block>
             {{ $t('common.auth.verify') }}
+          </UButton>
+          <UButton
+            type="button"
+            variant="outline"
+            color="neutral"
+            :loading="resendingVerification"
+            :disabled="submitting || resendingVerification || verificationCooldown"
+            block
+            @click="resendVerification"
+          >
+            {{ $t('common.auth.resendCode') }}
           </UButton>
         </div>
       </UForm>
@@ -153,8 +164,13 @@
 import type { InternalApi } from 'nitropack'
 
 import { z } from 'zod'
-import { signInSchema } from '~~/shared/utils/auth'
 import { isManagedDomain } from '~~/shared/utils/domain'
+import {
+  EMAIL_VERIFICATION_CODE_LENGTH,
+  EMAIL_VERIFICATION_COOLDOWN_MS,
+  emailVerificationCodeSchema,
+  signInSchema,
+} from '~~/shared/utils/auth'
 
 const props = defineProps<{
   mode?: 'login' | 'register' | 'forgot' | 'reset'
@@ -195,6 +211,14 @@ const authTab = computed({
 const verifyMode = shallowRef<boolean>(false)
 const showPassword = shallowRef(false)
 const submitting = shallowRef(false)
+const resendingVerification = shallowRef(false)
+const { isPending: verificationCooldown, start: startVerificationCooldown } = useTimeoutFn(
+  () => {},
+  EMAIL_VERIFICATION_COOLDOWN_MS,
+  { immediate: false },
+)
+let verificationController: AbortController | undefined
+onScopeDispose(() => verificationController?.abort())
 const authSchema = computed(() =>
   internalMode.value === 'register'
     ? signInSchema
@@ -202,7 +226,7 @@ const authSchema = computed(() =>
         .refine((value) => value.password === value.passwordConfirm, { path: ['passwordConfirm'] })
     : signInSchema.pick({ email: true, password: true }),
 )
-const verificationSchema = z.object({ code: z.string().length(8) })
+const verificationSchema = z.object({ code: emailVerificationCodeSchema })
 const totpSchema = z.object({ totpCode: z.string().length(6) })
 const verificationDigits = computed<string[]>({
   get: () => form.value.code.split(''),
@@ -218,17 +242,21 @@ const credentialErrors: Record<string, string> = {
   rate_limited: 'common.errors.tooManyRequests',
 }
 
-const signInWithCredentials = async (credentials: { email: string; password: string; totp?: string }) => {
+const signInWithCredentials = async (
+  credentials: { email: string; password: string; totp?: string },
+  signal?: AbortSignal,
+) => {
   try {
     await $fetch<unknown, '/api/auth/**:all'>('/api/auth/sign-in/credentials' as '/api/auth/**:all', {
       method: 'POST',
       body: credentials,
+      signal,
     })
   } catch (e: any) {
     const key = credentialErrors[e?.data?.code] ?? 'common.errors.invalidCredentials'
     throw createError({ statusCode: e?.statusCode || 401, message: $t(key) })
   }
-  await getSession()
+  if (!signal?.aborted) await getSession()
 }
 
 const isPasswordFormValid = computed(() => {
@@ -263,7 +291,8 @@ const submit = async () => {
       })
       if (!res) return toast.add({ color: 'error', title: $t('common.auth.registerFailed') })
       verifyMode.value = true
-      toast.add({ color: 'success', title: $t('common.auth.verificationCodeSent'), description: form.value.email })
+      startVerificationCooldown()
+      toast.add({ color: 'success', title: $t('common.auth.verificationRequested'), description: form.value.email })
     } else {
       const totpData = await $fetch<InternalApi['/api/users/totp']['post'], '/api/users/totp'>('/api/users/totp', {
         method: 'POST',
@@ -287,30 +316,65 @@ const submit = async () => {
       }
     }
   } catch (e: any) {
+    if (e?.data?.data?.code === 'email_not_verified') verifyMode.value = true
     toast.add({ color: 'error', title: fetchErrorMessage(e, $t('common.messages.operationFailed')) })
   } finally {
     submitting.value = false
   }
 }
 
+const resendVerification = async () => {
+  if (submitting.value || resendingVerification.value || verificationCooldown.value) return
+  const requestedEmail = form.value.email
+  const controller = new AbortController()
+  verificationController = controller
+  resendingVerification.value = true
+  try {
+    const response = await $fetch('/api/auth/resend-verification', {
+      method: 'POST',
+      body: { email: requestedEmail },
+      signal: controller.signal,
+    })
+    if (controller.signal.aborted || form.value.email !== requestedEmail) return
+    startVerificationCooldown()
+    toast.add({ color: 'success', title: response.message })
+  } catch (error) {
+    if (!controller.signal.aborted && form.value.email === requestedEmail)
+      toast.add({ color: 'error', title: fetchErrorMessage(error, $t('common.auth.sendCodeFailed')) })
+  } finally {
+    if (verificationController === controller) {
+      verificationController = undefined
+      resendingVerification.value = false
+    }
+  }
+}
+
 const verify = async () => {
-  if (!form.value.code || submitting.value) return
+  if (!form.value.code || submitting.value || resendingVerification.value) return
+  const requestedEmail = form.value.email
+  const password = form.value.password
+  const controller = new AbortController()
+  verificationController = controller
   submitting.value = true
   try {
     await $fetch<unknown, '/api/auth/verify'>('/api/auth/verify', {
       method: 'POST',
-      body: { email: form.value.email, code: form.value.code },
+      body: { email: requestedEmail, code: form.value.code },
+      signal: controller.signal,
     })
-    await signInWithCredentials({
-      email: form.value.email,
-      password: form.value.password,
-    })
+    if (controller.signal.aborted || form.value.email !== requestedEmail) return
+    await signInWithCredentials({ email: requestedEmail, password }, controller.signal)
+    if (controller.signal.aborted || form.value.email !== requestedEmail) return
     toast.add({ color: 'success', title: $t('common.auth.verifySuccess') })
     afterSignIn()
-  } catch (e: any) {
-    toast.add({ color: 'error', title: e.message || $t('common.auth.verifyFailed') })
+  } catch (error) {
+    if (!controller.signal.aborted && form.value.email === requestedEmail)
+      toast.add({ color: 'error', title: fetchErrorMessage(error, $t('common.auth.verifyFailed')) })
   } finally {
-    submitting.value = false
+    if (verificationController === controller) {
+      verificationController = undefined
+      submitting.value = false
+    }
   }
 }
 
