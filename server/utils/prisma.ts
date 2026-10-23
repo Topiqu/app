@@ -1,16 +1,9 @@
 import argon from 'argon2'
 import { definePlugin } from '@zenstackhq/orm'
 
+import { articleTextMetrics } from './metrics'
 import { createDatabaseClient } from './database'
 import { schema } from '../../generated/zenstack/schema'
-
-const calculateBasicMetrics = (content: string) => {
-  const words = content.trim().split(/\s+/).filter(Boolean).length
-  return {
-    totalWords: words,
-    readingTime: Math.ceil(words / 200),
-  }
-}
 
 export const appMutationPlugin = definePlugin(schema, {
   id: 'app-mutations',
@@ -27,11 +20,11 @@ export const appMutationPlugin = definePlugin(schema, {
           : contentData
 
       if (typeof content === 'string') {
-        const metrics = calculateBasicMetrics(content)
-        if (operation === 'create' || typeof articleData.totalWords === 'undefined') {
+        const metrics = articleTextMetrics(content)
+        if (typeof articleData.totalWords === 'undefined') {
           articleData.totalWords = metrics.totalWords
         }
-        if (operation === 'create' || typeof articleData.readingTime === 'undefined') {
+        if (typeof articleData.readingTime === 'undefined') {
           articleData.readingTime = metrics.readingTime
         }
       }
@@ -67,11 +60,11 @@ export const appMutationPlugin = definePlugin(schema, {
 
 const prismaClientSingleton = () => createDatabaseClient().$use(appMutationPlugin)
 
-declare const globalThis: {
-  prismaGlobal: ReturnType<typeof prismaClientSingleton>
-} & typeof global
+const appGlobal = globalThis as typeof globalThis & {
+  prismaGlobal?: ReturnType<typeof prismaClientSingleton>
+}
 
-const prisma = globalThis.prismaGlobal ?? prismaClientSingleton()
-if (process.env.NODE_ENV !== 'production') globalThis.prismaGlobal = prisma
+const prisma = appGlobal.prismaGlobal ?? prismaClientSingleton()
+if (process.env.NODE_ENV !== 'production') appGlobal.prismaGlobal = prisma
 
 export default prisma
