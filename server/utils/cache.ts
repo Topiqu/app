@@ -7,8 +7,15 @@ import { Redis } from 'ioredis'
 
 let client: Redis | null | undefined
 let down = false
+let configured = false
+let closed = false
+let closing: Promise<void> | undefined
+let readiness: Promise<boolean> | undefined
+let cancelReadiness: (() => void) | undefined
+const REDIS_TIMEOUT_MS = 1000
 
 function getClient(): Redis | null {
+  if (closed) return null
   if (client !== undefined) return client
 
   const url = process.env.REDIS_URL
@@ -18,21 +25,33 @@ function getClient(): Redis | null {
     return client
   }
 
-  client = new Redis(url, {
-    // Never queue: with the offline queue on, a downed Valkey makes commands
-    // wait through reconnect attempts and costs seconds per request.
-    enableOfflineQueue: false,
-    maxRetriesPerRequest: 1,
-    connectTimeout: 1000,
-    retryStrategy: (times) => Math.min(times * 200, 5000),
-  })
+  configured = true
+  try {
+    client = new Redis(url, {
+      // Keep the deployed RESP2 wire contract when upgrading the Redis client.
+      protocol: 2,
+      // Never queue: with the offline queue on, a downed Valkey makes commands
+      // wait through reconnect attempts and costs seconds per request.
+      enableOfflineQueue: false,
+      autoResendUnfulfilledCommands: false,
+      maxRetriesPerRequest: 1,
+      connectTimeout: REDIS_TIMEOUT_MS,
+      commandTimeout: REDIS_TIMEOUT_MS,
+      socketTimeout: REDIS_TIMEOUT_MS,
+      retryStrategy: (times) => Math.min(times * 200, 5000),
+    })
+  } catch {
+    client = null
+    console.warn('[cache] redis initialization failed')
+    return null
+  }
 
   // ioredis throws when 'error' has no listener; the flag stops a downed Valkey
   // from logging once per reconnect attempt.
-  client.on('error', (e) => {
+  client.on('error', () => {
     if (down) return
     down = true
-    console.warn('[cache] redis unavailable —', e.message)
+    console.warn('[cache] redis unavailable')
   })
   client.on('ready', () => {
     down = false
@@ -53,17 +72,75 @@ function activeClient(): Redis | null {
   return redis && redis.status === 'ready' ? redis : null
 }
 
+function readyForInvalidation(redis: Redis): Promise<boolean> {
+  if (closed || redis.status === 'end') return Promise.resolve(false)
+  if (redis.status === 'ready') return Promise.resolve(true)
+  if (readiness) return readiness
+
+  // Reads can bypass a connecting cache, but writes must not silently skip the
+  // generation shared by other replicas. Concurrent writes share one short wait.
+  readiness = new Promise<boolean>((resolve) => {
+    const settle = (ready: boolean) => {
+      clearTimeout(timeout)
+      redis.removeListener('ready', onReady)
+      redis.removeListener('error', onUnavailable)
+      redis.removeListener('end', onUnavailable)
+      cancelReadiness = undefined
+      resolve(ready && !closed)
+    }
+    const onReady = () => settle(true)
+    const onUnavailable = () => settle(false)
+    const timeout = setTimeout(onUnavailable, REDIS_TIMEOUT_MS)
+    cancelReadiness = onUnavailable
+    redis.once('ready', onReady)
+    redis.once('error', onUnavailable)
+    redis.once('end', onUnavailable)
+  }).finally(() => {
+    readiness = undefined
+  })
+  return readiness
+}
+
+/** Stop retries and sockets on Nitro shutdown or after a maintenance script. */
+export function closeCache(): Promise<void> {
+  if (closing) return closing
+  closed = true
+  cancelReadiness?.()
+  const redis = client
+  closing = (async () => {
+    if (!redis) return
+    let timeout: ReturnType<typeof setTimeout> | undefined
+    try {
+      if (redis.status === 'ready') {
+        await Promise.race([
+          redis.quit(),
+          new Promise<void>((resolve) => {
+            timeout = setTimeout(resolve, REDIS_TIMEOUT_MS)
+          }),
+        ])
+      }
+    } catch {
+      console.warn('[cache] graceful shutdown failed; disconnecting')
+    } finally {
+      if (timeout) clearTimeout(timeout)
+      redis.disconnect()
+    }
+  })()
+  return closing
+}
+
 /** A live probe, without exposing connection strings or waiting through reconnects. */
 export async function cacheAvailability(): Promise<'ready' | 'unavailable' | 'unconfigured'> {
+  if (closed) return 'unavailable'
   const redis = getClient()
-  if (!redis) return 'unconfigured'
+  if (!redis) return configured ? 'unavailable' : 'unconfigured'
   if (redis.status !== 'ready') return 'unavailable'
   let timeout: ReturnType<typeof setTimeout> | undefined
   try {
     return (await Promise.race([
       redis.ping(),
       new Promise<null>((resolve) => {
-        timeout = setTimeout(() => resolve(null), 1000)
+        timeout = setTimeout(() => resolve(null), REDIS_TIMEOUT_MS)
       }),
     ])) === 'PONG'
       ? 'ready'
@@ -75,8 +152,10 @@ export async function cacheAvailability(): Promise<'ready' | 'unavailable' | 'un
   }
 }
 
-const logErr = (op: string, key: string, e: unknown) =>
-  console.warn(`[cache] ${op} failed for "${key}"`, (e as Error)?.message)
+const logErr = (op: string, key: string) => console.warn(`[cache] ${op} failed for "${key}"`)
+
+const inFlight = new Map<string, Promise<unknown>>()
+const MAX_IN_FLIGHT = 512
 
 /**
  * Cache-aside: return the cached value or compute it via `fn`, store, and return.
@@ -84,6 +163,19 @@ const logErr = (op: string, key: string, e: unknown) =>
  * or holding an unparseable value, so a cache outage never breaks a request.
  */
 export async function cached<T>(key: string, ttlSeconds: number, fn: () => Promise<T>): Promise<T> {
+  const pending = inFlight.get(key)
+  if (pending) return pending as Promise<T>
+  const result = loadCached(key, ttlSeconds, fn)
+  if (inFlight.size >= MAX_IN_FLIGHT) return result
+  inFlight.set(key, result)
+  try {
+    return await result
+  } finally {
+    inFlight.delete(key)
+  }
+}
+
+async function loadCached<T>(key: string, ttlSeconds: number, fn: () => Promise<T>): Promise<T> {
   const redis = activeClient()
   if (!redis) return fn()
 
@@ -92,28 +184,34 @@ export async function cached<T>(key: string, ttlSeconds: number, fn: () => Promi
     // ioredis stores strings, so this module owns the JSON boundary — which is
     // why a Date in the payload comes back as an ISO string on a hit.
     if (raw !== null) return JSON.parse(raw) as T
-  } catch (e) {
-    logErr('get', key, e)
+  } catch {
+    logErr('get', key)
     return fn()
   }
 
   const fresh = await fn()
+  if (closed) return fresh
   try {
     await redis.set(key, JSON.stringify(fresh), 'EX', ttlSeconds)
-  } catch (e) {
-    logErr('set', key, e)
+  } catch {
+    logErr('set', key)
   }
   return fresh
 }
 
-/** Drop keys whose value a write just made wrong; a no-op without Redis, where nothing was cached. */
+/** Drop changed keys, waiting briefly for startup/reconnection rather than losing the first write. */
 export async function uncache(...keys: string[]): Promise<void> {
-  const redis = activeClient()
-  if (!redis || !keys.length) return
+  if (!keys.length) return
+  const redis = getClient()
+  if (!redis) return
+  if (!(await readyForInvalidation(redis)) || closed || redis.status !== 'ready') {
+    logErr('del-unavailable', keys.join(','))
+    return
+  }
   try {
     await redis.del(...keys)
-  } catch (e) {
-    logErr('del', keys.join(','), e)
+  } catch {
+    logErr('del', keys.join(','))
   }
 }
 
@@ -122,13 +220,19 @@ export async function uncache(...keys: string[]): Promise<void> {
  * every key built under the current gen at once — no SCAN, no pattern delete.
  * Old keys are never read again and expire on their own TTL.
  */
-export async function bumpGen(ns: string): Promise<void> {
-  const redis = activeClient()
-  if (!redis) return
+export async function bumpGen(ns: string): Promise<'invalidated' | 'unavailable' | 'unconfigured'> {
+  const redis = getClient()
+  if (!redis) return closed || configured ? 'unavailable' : 'unconfigured'
+  if (!(await readyForInvalidation(redis)) || closed || redis.status !== 'ready') {
+    logErr('incr-unavailable', ns)
+    return 'unavailable'
+  }
   try {
     await redis.incr(`gen:${ns}`)
-  } catch (e) {
-    logErr('incr', ns, e)
+    return 'invalidated'
+  } catch {
+    logErr('incr', ns)
+    return 'unavailable'
   }
 }
 
@@ -141,8 +245,8 @@ export async function getGen(ns: string): Promise<number> {
     // ioredis answers with a string; without the coercion the key would carry
     // `v5` from a number on a miss and `v"5"` from a string on a hit.
     return raw === null ? 0 : Number(raw) || 0
-  } catch (e) {
-    logErr('get-gen', ns, e)
+  } catch {
+    logErr('get-gen', ns)
     return 0
   }
 }
@@ -162,7 +266,7 @@ export const invalidateFeed = (clientSiteId: string) => bumpGen(feedNs(clientSit
 /** Public author summaries tolerate five-minute-old counters, but profile edits expire immediately. */
 export async function cachedAuthor<T>(userId: string, load: () => Promise<T>): Promise<T> {
   const generation = await getGen(`author:${userId}`)
-  return cached(`author:${userId}:v${generation}`, 300, load)
+  return cached(`author:2:${userId}:v${generation}`, 300, load)
 }
 
 export const invalidateAuthor = (userId: string) => bumpGen(`author:${userId}`)
@@ -185,8 +289,8 @@ export async function consumeRateLimit(key: string, limit: number, windowSeconds
         ),
       )
       return count <= limit
-    } catch (e) {
-      logErr('rate-limit', key, e)
+    } catch {
+      logErr('rate-limit', key)
     }
   }
 
@@ -204,4 +308,10 @@ export async function consumeRateLimit(key: string, limit: number, windowSeconds
   }
   current.count++
   return current.count <= limit
+}
+
+/** Release a failed, operation-specific claim; never clear a caller's abuse budget. */
+export async function clearRateLimit(key: string): Promise<void> {
+  fallbackLimits.delete(key)
+  await uncache(`rate:${key}`)
 }
