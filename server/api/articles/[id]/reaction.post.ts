@@ -17,6 +17,18 @@ export default defineEventHandler(async (event) => {
   const sessionId = user ? null : issueAnonSession(event)
   const db = await getEnhancedPrisma(user)
 
+  const article = await db.article.findUnique({
+    where: {
+      id,
+      status: 'published',
+      deletedAt: null,
+      clientSite: { deletedAt: null },
+      OR: [{ releaseAt: null }, { releaseAt: { lte: new Date() } }],
+    },
+    select: { userId: true },
+  })
+  if (!article) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
+
   const where = user?.id
     ? { articleId: id, userId: user.id, sessionId: null }
     : { articleId: id, userId: null, sessionId }
@@ -24,7 +36,9 @@ export default defineEventHandler(async (event) => {
   const exists = await db.articleReaction.findFirst({ where })
 
   if (exists) {
-    await db.articleReaction.deleteMany({ where })
+    // An anonymous reader can retract only the identity from the server-issued cookie.
+    const writable = user ? db : prisma
+    await writable.articleReaction.deleteMany({ where })
     const count = await db.articleReaction.count({ where: { articleId: id } })
     return { liked: false, likes: count }
   }
@@ -42,32 +56,33 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  const article = await db.article.findUnique({
-    where: { id, status: 'published', deletedAt: null, clientSite: { deletedAt: null } },
-    select: { userId: true },
-  })
-
-  if (!article) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
-
-  await db.articleReaction.create({
-    data: {
-      articleId: id,
-      userId: user?.id || null,
-      sessionId,
-    },
-  })
-
-  if (article.userId && article.userId !== user?.id) {
-    await prisma.notification.create({
+  try {
+    await db.articleReaction.create({
       data: {
-        message: user?.name
-          ? t('common.notifications.userLikedArticle', [user.name])!
-          : t('common.notifications.anonymousLikedArticle')!,
-        userId: article.userId,
         articleId: id,
-        type: 'LIKE',
+        userId: user?.id || null,
+        sessionId,
       },
     })
+  } catch (error) {
+    if (!isUniqueViolation(error)) throw error
+    // Both requests observed no like; the winner already committed the requested state.
+    return { liked: true, likes: await db.articleReaction.count({ where: { articleId: id } }) }
+  }
+
+  if (article.userId && article.userId !== user?.id) {
+    await prisma.notification
+      .create({
+        data: {
+          message: user?.name
+            ? t('common.notifications.userLikedArticle', [user.name])!
+            : t('common.notifications.anonymousLikedArticle')!,
+          userId: article.userId,
+          articleId: id,
+          type: 'LIKE',
+        },
+      })
+      .catch((error) => reportCaughtError('Article reaction notification failed', error, { articleId: id }))
   }
 
   const count = await db.articleReaction.count({ where: { articleId: id } })
