@@ -30,6 +30,7 @@ export const TENANT_EDITABLE_CLIENT_SITE_FIELDS = [
   'footerSettings',
   'autoRelease',
   'aiSeriesEnabled',
+  'articleQuality',
   'gtagId',
   'allowGtag',
   'gamNetworkCode',
@@ -95,6 +96,7 @@ export const CLIENT_SITE_SECRET_FIELDS = [
   'aiToneOfVoice',
   'aiControversyLevel',
   'humanHourlyRateUsd',
+  'articleQuality',
   'humanWordsPerHour',
 ] as const
 

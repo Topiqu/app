@@ -4,7 +4,10 @@
     "greeting": "Bonjour,",
     "intro": "<b>{userName}</b> a commenté votre article « <i>{articleTitle}</i> » : « <i>{commentContent}</i> »",
     "button": "Voir le commentaire",
-    "unsubscribe": { "text": "Vous ne souhaitez plus recevoir de notifications ?", "link": "Se désabonner" }
+    "unsubscribe": {
+      "text": "Vous ne souhaitez plus recevoir de notifications ?",
+      "link": "Se désabonner"
+    }
   },
   "commentReply": {
     "subject": "Nouvelle réponse à votre commentaire",
@@ -12,14 +15,20 @@
     "intro": "<b>{userName}</b> a répondu : « <i>{commentContent}</i> »",
     "parent": "Votre commentaire : « <i>{parentContent}</i> »",
     "button": "Voir la réponse",
-    "unsubscribe": { "text": "Vous ne souhaitez plus recevoir de notifications ?", "link": "Se désabonner" }
+    "unsubscribe": {
+      "text": "Vous ne souhaitez plus recevoir de notifications ?",
+      "link": "Se désabonner"
+    }
   },
   "deleteComment": {
     "subject": "Votre commentaire a été supprimé",
     "greeting": "Bonjour {userName},",
     "intro": "Votre commentaire « <i>{commentContent}</i> » a été supprimé.",
     "reason": "Motif : {deleteReason}",
-    "unsubscribe": { "text": "Vous ne souhaitez plus recevoir de notifications ?", "link": "Se désabonner" }
+    "unsubscribe": {
+      "text": "Vous ne souhaitez plus recevoir de notifications ?",
+      "link": "Se désabonner"
+    }
   },
   "verificationCode": {
     "subject": "Code de vérification pour {userName}",
@@ -61,16 +70,19 @@
     "intro_with_reason_temporary": "Votre compte a été suspendu sur le sous-domaine <b>{clientSiteId}</b> pour la raison suivante : {reason}. La suspension est en vigueur jusqu'au {banDuration}.",
     "intro_no_reason": "Votre compte a été suspendu sur le sous-domaine <b>{clientSiteId}</b>.",
     "reason": "{reason}",
-    "unsubscribe": { "text": "Vous ne souhaitez plus recevoir de notifications ?", "link": "Se désabonner" }
+    "unsubscribe": {
+      "text": "Vous ne souhaitez plus recevoir de notifications ?",
+      "link": "Se désabonner"
+    }
   },
   "creditsDepleted": {
-    "subject": "{tenantName} n’a plus d’articles",
-    "preview": "La publication planifiée est en pause jusqu’à votre recharge.",
+    "subject": "{tenantName} a besoin de crédits",
+    "preview": "Rechargez les crédits pour le prochain article IA.",
     "greeting": "Votre publication a besoin d’une recharge",
-    "intro": "<b>{tenantName}</b> n’a plus d’articles, l’auteur IA a donc cessé d’écrire.",
-    "paused": "La publication planifiée est en pause. Le prochain article de votre rythme sera généré dès que vous ajouterez des articles — aucun autre réglage à modifier.",
+    "intro": "<b>{tenantName}</b> n’a pas assez de crédits pour le prochain article de la qualité choisie.",
+    "paused": "Les nouveaux articles planifiés sont en pause. La rédaction automatique reprend selon le calendrier dès que vous ajoutez assez de crédits ou réduisez la qualité.",
     "safe": "Tout ce qui est déjà publié, planifié ou enregistré en brouillon reste inchangé.",
-    "button": "Recharger des articles",
+    "button": "Recharger des crédits",
     "footer": "Nous n’envoyons ce message qu’une fois par recharge, il n’encombrera pas votre boîte."
   }
 }

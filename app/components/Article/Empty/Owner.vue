@@ -52,7 +52,9 @@ const { site } = defineProps<{ site?: SiteSetupInfo | null }>()
 const localePath = useLocalePath()
 const { data: status } = await useClientSiteStatus()
 const canGenerateAi = computed(
-  () => hasAiPlan(status.value?.plan ?? site?.plan) && Number(status.value?.articlesRemaining ?? 0) > 0,
+  () =>
+    hasAiPlan(status.value?.plan ?? site?.plan) &&
+    Number(status.value?.articlesRemaining ?? 0) >= articleCreditCost(status.value?.articleQuality),
 )
 const editorLink = (query?: Record<string, string>) =>
   localePath({ name: 'admin-editor-id', params: { id: 'new' }, query })

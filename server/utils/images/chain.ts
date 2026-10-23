@@ -7,7 +7,7 @@ export const imageChains: Record<'photo' | 'stock', ImageProvider[]> = {
   stock: [openverse],
 }
 
-const firstHit = async (providers: ImageProvider[], query: string, accept?: (image: StockImage) => boolean) => {
+const firstHit = async (providers: ImageProvider[], query: string, accept?: ImageAccept) => {
   for (const provider of providers) {
     const image = await provider.search(query.trim(), accept)
     if (image) return image
@@ -21,7 +21,7 @@ export const findStockImage = async (
   intent: ImageIntent,
   query: string,
   chains = imageChains,
-  accept?: (image: StockImage) => boolean,
+  accept?: ImageAccept,
 ): Promise<{ image: StockImage; kind: ImageKind } | null> => {
   if (intent === 'photo' || intent === 'generate') {
     const documentary = await firstHit(chains.photo, query, accept)

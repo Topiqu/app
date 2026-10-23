@@ -75,7 +75,7 @@ describe('wikimediaImage', () => {
 })
 
 describe('pickWikimediaImage', () => {
-  it('takes the first landscape result, ignoring search order', () => {
+  it('takes the first landscape result, ignoring search order', async () => {
     const portrait = { ...commonsPage(), index: 1 }
     portrait.imageinfo[0]!.width = 800
     portrait.imageinfo[0]!.height = 1200
@@ -83,28 +83,40 @@ describe('pickWikimediaImage', () => {
 
     const landscape = { ...commonsPage(), index: 2 }
 
-    expect(pickWikimediaImage([landscape, portrait])!.url).toBe('https://upload.wikimedia.org/thumb-1200.jpg')
+    expect((await pickWikimediaImage([landscape, portrait]))!.url).toBe('https://upload.wikimedia.org/thumb-1200.jpg')
   })
 
-  it('still returns a portrait when that is all there is', () => {
+  it('still returns a portrait when that is all there is', async () => {
     const portrait = commonsPage({ width: 800, height: 1200 })
 
-    expect(pickWikimediaImage([portrait])).not.toBeNull()
+    expect(await pickWikimediaImage([portrait])).not.toBeNull()
   })
 
-  it('moves past candidates the caller refuses', () => {
+  it('moves past candidates the caller refuses', async () => {
     const refused = { ...commonsPage(), index: 1 }
     const next = commonsPage({ thumburl: 'https://upload.wikimedia.org/next.jpg' })
     next.index = 2
 
-    expect(pickWikimediaImage([refused, next], undefined, (image) => image.url.includes('next'))!.url).toBe(
+    expect((await pickWikimediaImage([refused, next], undefined, (image) => image.url.includes('next')))!.url).toBe(
       'https://upload.wikimedia.org/next.jpg',
     )
   })
 
-  it('returns null for an empty or unusable result set', () => {
-    expect(pickWikimediaImage([])).toBeNull()
-    expect(pickWikimediaImage([commonsPage({ mime: 'image/svg+xml' })])).toBeNull()
+  it('matches a generic query against the opening of a description, not every word of a long one', async () => {
+    const ceremony = commonsPage({
+      extmetadata: {
+        ImageDescription: {
+          value: `Grand Canyon National Park was certified as an International Dark Sky Park. ${'A ceremony was held on the South Rim. '.repeat(5)}The park retrofitted energy efficient lighting fixtures.`,
+        },
+      },
+    })
+    expect(await pickWikimediaImage([ceremony], 'energy efficient retrofit')).toBeNull()
+    expect(await pickWikimediaImage([ceremony], 'dark sky park ceremony')).not.toBeNull()
+  })
+
+  it('returns null for an empty or unusable result set', async () => {
+    expect(await pickWikimediaImage([])).toBeNull()
+    expect(await pickWikimediaImage([commonsPage({ mime: 'image/svg+xml' })])).toBeNull()
   })
 })
 
@@ -125,26 +137,26 @@ describe('openverseImage', () => {
     expect(openverseImage({ title: 'no url' })).toBeNull()
   })
 
-  it('prefers landscape results', () => {
+  it('prefers landscape results', async () => {
     const results = [
       { url: 'https://x/portrait.jpg', width: 600, height: 900 },
       { url: 'https://x/landscape.jpg', width: 1600, height: 900 },
     ]
 
-    expect(pickOpenverseImage(results)!.url).toBe('https://x/landscape.jpg')
-    expect(pickOpenverseImage([])).toBeNull()
+    expect((await pickOpenverseImage(results))!.url).toBe('https://x/landscape.jpg')
+    expect(await pickOpenverseImage([])).toBeNull()
   })
 
-  it('moves past candidates the caller refuses, landscape first', () => {
+  it('moves past candidates the caller refuses, landscape first', async () => {
     const results = [
       { url: 'https://x/portrait.jpg', width: 600, height: 900 },
       { url: 'https://x/refused.jpg', width: 1600, height: 900 },
     ]
 
-    expect(pickOpenverseImage(results, undefined, (image) => !image.url.includes('refused'))!.url).toBe(
+    expect((await pickOpenverseImage(results, undefined, (image) => !image.url.includes('refused')))!.url).toBe(
       'https://x/portrait.jpg',
     )
-    expect(pickOpenverseImage(results, undefined, () => false)).toBeNull()
+    expect(await pickOpenverseImage(results, undefined, () => false)).toBeNull()
   })
 })
 

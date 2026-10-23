@@ -31,6 +31,10 @@ watch(
   },
   { immediate: true },
 )
+watch(
+  () => `${data.value?.connection?.status ?? ''}:${data.value?.connection?.blogId ?? ''}`,
+  () => refreshClientSiteStatus(),
+)
 
 const action = async (run: () => Promise<void>) => {
   if (busy.value) return

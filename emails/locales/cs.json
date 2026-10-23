@@ -76,13 +76,13 @@
     }
   },
   "creditsDepleted": {
-    "subject": "{tenantName}: došly články",
-    "preview": "Automatické vydávání je pozastavené, dokud články nedoplníte.",
+    "subject": "{tenantName} potřebuje doplnit kredity",
+    "preview": "Doplňte kredity pro další AI článek.",
     "greeting": "Váš magazín potřebuje doplnit články",
-    "intro": "<b>{tenantName}</b> už nemá žádné články, takže AI autor přestal psát.",
-    "paused": "Automatické vydávání je pozastavené. Další článek podle vašeho rytmu vygenerujeme hned, jak články doplníte — nic dalšího měnit nemusíte.",
+    "intro": "<b>{tenantName}</b> nemá dost kreditů na další článek ve zvolené kvalitě.",
+    "paused": "Nové plánované články se teď negenerují. Jakmile doplníte dostatek kreditů nebo snížíte kvalitu článků, automatické psaní pokračuje podle rozvrhu.",
     "safe": "Vše, co už je publikované, naplánované nebo uložené jako koncept, zůstává beze změny.",
-    "button": "Doplnit články",
+    "button": "Doplnit kredity",
     "footer": "Tento e-mail posíláme jen jednou za každé doplnění, schránku vám nezaplní."
   }
 }

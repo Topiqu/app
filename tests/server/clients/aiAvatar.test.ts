@@ -21,7 +21,7 @@ describe('AI author avatar access control', () => {
   })
 
   it('only ever resolves the AI row of the site named in the path', () => {
-    expect(util).toContain("where: { clientSiteId, role: 'ai' }")
+    expect(util).toContain("where: { clientSiteId, role: 'ai', deletedAt: null }")
   })
 
   it('allows preparing an AI identity before the site has a token allowance', () => {
@@ -64,13 +64,13 @@ describe('settings save no longer owns the AI avatar', () => {
   const patch = source('server/api/clients/[id]/index.patch.ts')
 
   it('never writes avatarUrl from the settings payload', () => {
-    const aiData = patch.slice(patch.indexOf('const aiData = {'), patch.indexOf('if (currentAiUser)'))
+    const aiData = patch.slice(patch.indexOf('const aiData = {'), patch.indexOf('const updatedAiUser'))
 
     expect(aiData).not.toContain('avatarUrl')
     expect(patch).not.toContain('optimizedAvatarUrl')
   })
 
   it('leaves an existing username alone when the form sends an empty one', () => {
-    expect(patch).toContain('...(aiUserPayload.username ? { username: aiUserPayload.username } : {})')
+    expect(patch).toContain('...(username ? { username } : {})')
   })
 })

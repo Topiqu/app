@@ -107,10 +107,19 @@ export const extractKnowledgeFile = async (bytes: Uint8Array, filename: string) 
   throw new KnowledgeExtractError('unsupported')
 }
 
-export const extractKnowledgeUrl = async (url: string) => {
+export const extractKnowledgeUrl = async (
+  url: string,
+  options: {
+    maxBytes?: number
+    maxCharacters?: number
+    htmlOnly?: boolean
+    allowUrl?: (url: URL) => boolean
+    onHtml?: (html: string) => void
+  } = {},
+) => {
   let response: Response
   try {
-    response = await fetchPublicUrl(url, 10_000)
+    response = await fetchPublicUrl(url, 10_000, undefined, { allowUrl: options.allowUrl })
   } catch {
     throw new KnowledgeExtractError('unreachable')
   }
@@ -119,15 +128,23 @@ export const extractKnowledgeUrl = async (url: string) => {
     throw new KnowledgeExtractError('unreachable')
   }
   const contentType = response.headers.get('content-type')?.toLowerCase() ?? ''
-  const bytes = await readLimitedBody(response, KNOWLEDGE_LIMITS.maxFileBytes).catch(() => {
+  if (options.htmlOnly && !contentType.includes('text/html')) {
+    await response.body?.cancel()
+    throw new KnowledgeExtractError('unsupported')
+  }
+  const bytes = await readLimitedBody(response, options.maxBytes ?? KNOWLEDGE_LIMITS.maxFileBytes).catch(() => {
     throw new KnowledgeExtractError('tooLarge')
   })
   if (contentType.includes('application/pdf')) return extractPdf(bytes)
   if (contentType.includes('text/html')) {
-    const { title, content, publishedAt } = htmlText(decodeUtf8(bytes))
+    const html = decodeUtf8(bytes)
+    options.onHtml?.(html)
+    const { title, content, publishedAt } = options.maxCharacters
+      ? extractReadableSource(html, { headings: true, maxCharacters: options.maxCharacters })
+      : htmlText(html)
     return finish(title, content, 'text/html', parseDocumentDate(publishedAt))
   }
   if (contentType.includes('text/plain') || contentType.includes('text/markdown'))
-    return finish(null, decodeUtf8(bytes), contentType.split(';')[0]!)
+    return finish(null, decodeUtf8(bytes).slice(0, options.maxCharacters), contentType.split(';')[0]!)
   throw new KnowledgeExtractError('unsupported')
 }

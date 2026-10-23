@@ -1,34 +1,172 @@
 {
   "common": {
+    "websiteImport": {
+      "title": "Website-Einstellungen aus der Einrichtung",
+      "description": "Wir bereiten Blog-Einstellungen und Wissensquellen im Hintergrund vor. Prüfe die Vorschläge vor der Verwendung.",
+      "review": "Vorschläge prüfen",
+      "open": "Fortschritt ansehen",
+      "reviewHelp": "Prüfe und bearbeite die Vorschläge. Übernimm ausgewählte Felder oder bestätige alles. Nicht ausgewählte Felder behalten ihre aktuellen Werte.",
+      "allCorrect": "Alles ist richtig",
+      "applySelected": "Auswahl übernehmen",
+      "skip": "Vorschläge überspringen",
+      "notFound": "Kein belegter Wert gefunden. Du kannst ihn später ergänzen.",
+      "current": "Aktuell: {value}",
+      "saveFirst": "Speichere oder verwirf deine anderen Einstellungsänderungen, bevor du die Vorschläge übernimmst.",
+      "background": "Du kannst Topiqu weiter nutzen. Das Ergebnis bleibt hier verfügbar, sobald es bereit ist.",
+      "budgetWait": "Die Verarbeitung wartet und wird später fortgesetzt. Du kannst Topiqu weiter nutzen.",
+      "failedHelp": "Die Vorbereitung konnte nicht abgeschlossen werden. Du kannst die Angaben in den jeweiligen Einstellungen ergänzen.",
+      "knowledgeConsent": "Mit der Bestätigung von Wissensquellen erlaubst du ihre KI-Verarbeitung und Verwendung in öffentlichen Artikeln. Bestätige keine vertraulichen oder personenbezogenen Informationen.",
+      "conflict": "Seit dem Öffnen der Prüfung wurden Einstellungen geändert. Lade die Seite neu und prüfe die aktuellen Werte.",
+      "assetFailed": "Ein vorgeschlagenes Logo oder Favicon konnte nicht importiert werden. Wähle dieses Feld ab und übernimm die übrigen Vorschläge.",
+      "rateLimited": "Zu viele Versuche. Versuche es später erneut.",
+      "applied": "Website-Vorschläge geprüft",
+      "status": {
+        "PENDING": "Website-Vorbereitung wartet",
+        "PROCESSING": "Einstellungen aus deiner Website werden vorbereitet",
+        "READY": "Deine Website-Vorschläge sind bereit",
+        "REVIEWED": "Website-Vorschläge geprüft",
+        "FAILED": "Website-Vorbereitung erfordert Aufmerksamkeit"
+      },
+      "fields": {
+        "accentColor": "Primärfarbe",
+        "logoUrl": "Logo",
+        "faviconUrl": "Favicon",
+        "keywords": "Schlüsselwörter",
+        "focus": "Blog-Schwerpunkt",
+        "audience": "Primäre Zielgruppe",
+        "aiToneOfVoice": "Schreibstil",
+        "language": "Inhaltssprache",
+        "socials": "Social-Media-Profile",
+        "knowledge": "Wissensquellen"
+      },
+      "warnings": {
+        "pageFailed": "Einige Seiten konnten nicht geladen werden. Die Vorschläge nutzen die übrigen Quellen.",
+        "knowledgeQuota": "Einige Seiten überschreiten dein Wissenslimit.",
+        "assetUnavailable": "Einige Markenmedien konnten nicht gelesen werden. Du kannst sie selbst hochladen.",
+        "analysisFailed": "Einige Inhaltsvorschläge konnten nicht vorbereitet werden. Prüfe die verfügbaren Werte."
+      }
+    },
     "entry": {
       "title": "Erstelle deinen ersten Blog",
       "description": "Richte deinen Blog ein und beginne dann, mit Topiqu Artikel zu schreiben und zu veröffentlichen.",
       "retry": "Erneut versuchen"
     },
     "setup": {
-      "menu": "Erste Schritte",
-      "title": "Bereiten Sie Ihre erste Veröffentlichung vor",
+      "checklist": {
+        "title": "Blog einrichten",
+        "description": "Schließen Sie die Einrichtung ab und bereiten Sie Ihren Blog auf die Veröffentlichung vor.",
+        "expand": "Anleitung zur Blog-Einrichtung aufklappen",
+        "collapse": "Anleitung zur Blog-Einrichtung zuklappen",
+        "processing": "In Bearbeitung",
+        "attention": "Prüfung erforderlich",
+        "saved": "Gespeicherte Änderungen aktualisieren diese Checkliste automatisch.",
+        "permission": "Ein Teammitglied mit der erforderlichen Berechtigung muss diesen Schritt abschließen.",
+        "resumeDraft": "Entwurf öffnen",
+        "resumeDescription": "Sie haben bereits einen Entwurf. Öffnen Sie ihn, prüfen Sie die Vorschau und veröffentlichen Sie ihn.",
+        "viewArticles": "Artikel anzeigen",
+        "progress": "{done} von {total} geklärt",
+        "optional": "Optional",
+        "skip": "Vorerst überspringen",
+        "skipped": "Übersprungen",
+        "restore": "Schritt wieder aufnehmen",
+        "confirmPublishing": "Diesen Modus bestätigen",
+        "manualDescription": "Artikel warten auf Ihre Freigabe. Bestätigen Sie diesen Modus oder aktivieren Sie die automatische Veröffentlichung und passen Sie den Zeitplan an.",
+        "automaticDescription": "KI-Artikel werden automatisch veröffentlicht. Prüfen Sie den Modus und bei regelmäßiger Erstellung auch Häufigkeit, Tage, Uhrzeit und Zeitzone.",
+        "requirements": {
+          "name": "Blogname",
+          "logo": "Bloglogo",
+          "description": "Beschreibung für Leser",
+          "authorName": "Name des Autors",
+          "avatar": "Porträt des Autors",
+          "bio": "Biografie des Autors",
+          "tone": "Schreibstil",
+          "focus": "Thematischer Schwerpunkt",
+          "audience": "Zielgruppe",
+          "source": "Verarbeitete und für KI aktivierte Quelle",
+          "domain": "Verifizierte Domain-Verbindung",
+          "article": "Veröffentlichter Artikel",
+          "publishingMode": "Veröffentlichungsmodus gewählt",
+          "schedule": "Gültiger Erstellungszeitplan",
+          "measurement": "Analytics aktiviert oder Search Console verbunden",
+          "teammate": "Weiteres Teammitglied oder gültige Einladung",
+          "channel": "Shopify-Blog oder LinkedIn-Profil verbunden und aktiviert"
+        },
+        "steps": {
+          "branding": {
+            "title": "Blogprofil vervollständigen",
+            "description": "Laden Sie ein Logo hoch und ergänzen Sie eine kurze Beschreibung, damit Leser wissen, wessen Blog sie lesen und was sie dort finden.",
+            "action": "Branding bearbeiten"
+          },
+          "author": {
+            "title": "KI-Autor vorstellen",
+            "description": "Ergänzen Sie Porträt und Biografie des Autors und wählen Sie einen Schreibstil. Das Profil erscheint bei seinen Artikeln.",
+            "action": "Profil und Stil festlegen"
+          },
+          "voice": {
+            "title": "Themen und Leser festlegen",
+            "description": "Legen Sie Schwerpunkt und Zielgruppe fest. Die KI wählt danach Themen und passende Erklärungen aus.",
+            "action": "Inhalte festlegen"
+          },
+          "knowledge": {
+            "title": "Quellen für die KI hinzufügen",
+            "description": "Fügen Sie Ihre Firmenwebsite oder ein Dokument hinzu. Der Schritt ist abgeschlossen, sobald eine Quelle verarbeitet und für die KI aktiviert ist.",
+            "action": "Quellen hinzufügen"
+          },
+          "domain": {
+            "title": "Eigene Domain verbinden",
+            "description": "Vervollständigen Sie die DNS-Einträge für {domain} und verifizieren Sie die Verbindung.",
+            "action": "Domain-Verbindung abschließen"
+          },
+          "article": {
+            "title": "Ersten Artikel veröffentlichen",
+            "description": "Erstellen Sie einen Artikel, prüfen Sie die Vorschau und veröffentlichen Sie ihn. Entwürfe und zukünftige Veröffentlichungen zählen noch nicht.",
+            "action": "Ersten Artikel erstellen"
+          },
+          "publishing": {
+            "title": "Veröffentlichungsmodus wählen",
+            "description": "Wählen Sie die Freigabe von Artikeln oder automatische Veröffentlichung. Legen Sie für regelmäßige Erstellung Häufigkeit, Tage, Uhrzeit und Zeitzone fest.",
+            "action": "Veröffentlichung einrichten"
+          },
+          "measurement": {
+            "title": "Messung einrichten",
+            "description": "Aktivieren Sie Google Analytics mit einer Mess-ID oder verbinden Sie Search Console und wählen Sie eine Property. Die Verfügbarkeit hängt vom Tarif ab.",
+            "action": "Messung einrichten"
+          },
+          "team": {
+            "title": "Kollegen einladen",
+            "description": "Laden Sie einen Kollegen in die Redaktion ein und wählen Sie seine Berechtigungen. Eine gültige versandte Einladung reicht aus; die Annahme muss nicht abgewartet werden.",
+            "action": "Kollegen einladen"
+          },
+          "channels": {
+            "title": "Veröffentlichungskanal verbinden",
+            "description": "Verbinden Sie Shopify und wählen Sie einen Zielblog oder verknüpfen Sie ein LinkedIn-Profil. Die Veröffentlichung muss für den verbundenen Kanal aktiviert sein.",
+            "action": "Kanal verbinden"
+          }
+        }
+      },
+      "menu": "Einrichtung abschließen",
+      "title": "Schließen Sie die Blog-Einrichtung ab",
       "completeTitle": "Der Blog ist eingerichtet",
       "progress": "{done} von {total} erledigt",
       "next": "Nächster Schritt: {step}",
-      "expand": "Checkliste zur Blog-Einrichtung aufklappen",
+      "expand": "Verbleibende Schritte der Blog-Einrichtung öffnen",
       "collapse": "Checkliste zur Blog-Einrichtung zuklappen",
       "done": "Erledigt",
       "remaining": "Offen",
       "review": "Einstellungen prüfen",
       "publishPermission": "Zum Veröffentlichen benötigen Sie Schreib- und Veröffentlichungsrechte. Wenden Sie sich an den Blog-Inhaber.",
       "recommended": "Weitere Empfehlungen",
-      "optional": "Öffnen Sie die Checkliste erneut über Erste Schritte im Menü.",
+      "optional": "Öffnen Sie die verbleibenden Schritte im Bereich Blog einrichten unten rechts.",
       "hide": "Checkliste ausblenden",
       "steps": {
         "branding": {
-          "title": "Stellen Sie Ihren Blog vor",
-          "description": "Beschreiben Sie kurz, was Leser in Ihrem Blog finden.",
+          "title": "Blog-Beschreibung ergänzen",
+          "description": "Beschreiben Sie unter Einstellungen → Branding, was Sie auf Ihrem Blog veröffentlichen.",
           "action": "Blog-Beschreibung ergänzen"
         },
         "voice": {
-          "title": "Themen und Zielgruppe festlegen",
-          "description": "Sagen Sie der KI, worüber sie schreiben und wem die Artikel helfen sollen.",
+          "title": "Schwerpunkt und Zielgruppe ergänzen",
+          "description": "Geben Sie unter Einstellungen → Inhalt an, worüber die KI schreiben soll und für wen.",
           "action": "Inhaltliche Ausrichtung festlegen"
         },
         "domain": {
@@ -38,7 +176,7 @@
         },
         "article": {
           "title": "Ersten Artikel veröffentlichen",
-          "description": "Erstellen Sie einen Artikel, prüfen Sie die Vorschau und veröffentlichen Sie ihn. Entwürfe und für später geplante Artikel zählen noch nicht.",
+          "description": "Schreiben oder generieren Sie im Editor einen Artikel und wählen Sie Veröffentlichen. Entwürfe und zukünftige Veröffentlichungen zählen nicht.",
           "action": "Editor öffnen"
         }
       },
@@ -56,15 +194,15 @@
       }
     },
     "wallet": {
-      "title": "Artikel",
-      "available": "Verbleibende Artikel",
-      "unit": "Artikel | Artikel",
-      "bonusExpiry": "Bonusartikel können verfallen; gekaufte Artikel nicht.",
-      "generationReservation": "Jede Generierung reserviert vorübergehend 1 Artikel. Bei Erfolg wird er berechnet; nach einem Fehler oder Abbruch wird er zurückgegeben.",
-      "neverExpires": "Im Tarif enthaltene Artikel gelten für den jeweiligen Zeitraum. Gekaufte Artikel verfallen nicht.",
-      "explanation": "Dein Tarif fügt jeden Monat Artikel hinzu. Gekaufte Artikel verfallen nie und werden nach den Tarifartikeln verwendet.",
+      "title": "Artikel-Credits",
+      "available": "Verfügbare Credits",
+      "unit": "Credit | Credits",
+      "bonusExpiry": "Bonus-Credits können verfallen; gekaufte Credits nicht.",
+      "generationReservation": "Ein Artikel reserviert je nach Qualität 1, 2 oder 3 Credits. Prüfung und eine automatische Überarbeitung sind enthalten. Bei einem technischen Fehler wird die gesamte Reservierung freigegeben.",
+      "neverExpires": "Tarif-Credits gelten für ihren Zeitraum. Gekaufte Credits verfallen nicht.",
+      "explanation": "Dein Tarif fügt monatlich Credits hinzu. Standard kostet 1, High 2 und Ultra 3 Credits pro Artikel inklusive Prüfung und einer automatischen Überarbeitung. Gekaufte Credits verfallen nicht und werden nach Tarif-Credits verbraucht.",
       "reserved": "Vorübergehend reserviert",
-      "reservedHint": "Jede Generierung reserviert 1 Artikel. Bei einem Fehler wird er freigegeben.",
+      "reservedHint": "Je nach Qualität werden 1, 2 oder 3 Credits reserviert. Bei einem technischen Fehler wird der gesamte Betrag freigegeben.",
       "reasons": {
         "manualArticle": "Manuell erstellter Artikel",
         "scheduledArticle": "Automatisch erstellter Artikel",
@@ -72,25 +210,26 @@
       },
       "periodUsage": "Verwendet in {period}",
       "expires": "Gültig bis",
-      "topup": "Weitere Artikel kaufen",
-      "history": "Artikelverlauf",
-      "empty": "Noch keine Artikelbewegungen.",
-      "initial": "Anfängliches Artikelkontingent",
-      "adjustment": "Anpassung des Artikelkontingents",
+      "topup": "Credits kaufen",
+      "history": "Credit-Verlauf",
+      "empty": "Noch keine Credit-Bewegungen.",
+      "initial": "Anfängliches Credit-Guthaben",
+      "adjustment": "Credit-Anpassung",
       "reason": "Begründung erforderlich",
-      "amount": "Anzahl der Artikel",
+      "amount": "Anzahl der Credits",
       "operation": "Ursprüngliche Vorgangs-ID (für Rückerstattungen)",
       "apply": "Anpassung anwenden",
       "kinds": {
-        "CREDIT": "Artikel hinzugefügt",
+        "CREDIT": "Credits hinzugefügt",
         "DEBIT": "Verbrauch",
         "RELEASE": "Reservierung freigegeben",
-        "EXPIRY": "Artikel abgelaufen",
-        "EXPIRE": "Artikel abgelaufen",
-        "REFUND": "Artikel zurückgegeben",
+        "EXPIRY": "Credits verfallen",
+        "EXPIRE": "Credits verfallen",
+        "REFUND": "Credits zurückgegeben",
         "BONUS": "Bonus",
         "ADJUSTMENT": "Manuelle Abbuchung"
-      }
+      },
+      "affordableArticles": "Reicht für {count} Artikel mit Qualität {quality}. | Reicht für {count} Artikel mit Qualität {quality}."
     },
     "searchConsole": {
       "title": "Google Search Console",
@@ -993,8 +1132,8 @@
         "monthly": "– Monatliche Abrechnung",
         "intervalMonthly": "Monatlich",
         "intervalAnnual": "Jährlich",
-        "tokenBalance": "Verbleibende Artikel",
-        "buyTokens": "Weitere Artikel kaufen",
+        "tokenBalance": "Verfügbare Credits",
+        "buyTokens": "Credits kaufen",
         "manage": "Abonnement und Rechnungen verwalten",
         "openPortal": "Abrechnung verwalten",
         "invoicesTitle": "Rechnungen und Zahlungen",
@@ -1221,7 +1360,7 @@
         "previewInterval": "Beispiel der nächsten Veröffentlichungen (genaue Zeiten werden ausgelost)",
         "perMonth": "Keine Artikel in den nächsten 30 Tagen | ≈ {count} Artikel in den nächsten 30 Tagen | ≈ {count} Artikel in den nächsten 30 Tagen",
         "creditsUntil": "Guthaben reicht etwa bis {date}",
-        "noCredits": "Kein Guthaben. Laden Sie auf, um weiter zu veröffentlichen.",
+        "noCredits": "Für einen Artikel in der gewählten Qualität fehlen Credits. Lade dein Guthaben auf oder wähle eine niedrigere Qualität.",
         "errors": {
           "timeZone": "Wählen Sie eine gültige Zeitzone.",
           "releaseHour": "Wählen Sie eine Veröffentlichungszeit.",
@@ -1267,6 +1406,16 @@
           "empty": "Für deine Hauptsprache sind keine weiteren Sprachen verfügbar."
         },
         "tokenWarning": "Die automatische Übersetzung erstellt für jeden veröffentlichten Artikel eine eigene Version pro Zielsprache."
+      },
+      "articleQuality": {
+        "title": "Artikelqualität",
+        "description": "Wähle die Qualität neuer manueller und geplanter Artikel. Die Prüfung und eine automatische Überarbeitung bei Bedarf sind im Preis enthalten.",
+        "options": {
+          "STANDARD": "Standard",
+          "HIGH": "Hoch",
+          "ULTRA": "Höchste"
+        },
+        "cost": "{count} Credit pro Artikel | {count} Credits pro Artikel"
       },
       "aiAuthor": {
         "title": "Einstellungen für den KI-Autor",
@@ -1527,17 +1676,17 @@
       "declined": "Einladung abgelehnt"
     },
     "articlePacks": {
-      "title": "Erweitere deine Veröffentlichungskapazität",
-      "pack5": "5 Artikel",
-      "pack12": "12 Artikel",
-      "pack25": "25 Artikel",
+      "title": "Credits für weitere Artikel",
+      "pack5": "5 Credits",
+      "pack12": "12 Credits",
+      "pack25": "25 Credits",
       "bestValue": "Bestes Preis-Leistungs-Verhältnis",
       "volumeDiscount": "{discount} % Mengenrabatt",
-      "articles": "Artikel | Artikel",
+      "articles": "Credit | Credits",
       "taxExclusive": "zzgl. MwSt.",
       "buy": "Kaufen",
-      "buyPack": "Paket mit {count} Artikeln kaufen",
-      "purchaseHint": "Füge jederzeit Artikel hinzu. Sie sind sofort verfügbar und verfallen nie.",
+      "buyPack": "{count} Credits kaufen",
+      "purchaseHint": "Credits sind sofort verfügbar und verfallen nicht. Ein Artikel kostet je nach Qualität 1, 2 oder 3 Credits inklusive Prüfung und einer automatischen Überarbeitung.",
       "neverExpires": "Verfällt nie",
       "upgradeToPremium": "Zu PREMIUM wechseln"
     },

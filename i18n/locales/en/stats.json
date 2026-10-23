@@ -53,7 +53,15 @@
     "sentiment": {
       "title": "Your community",
       "current": "Current summary",
-      "toxicity": "{value} toxicity"
+      "toxicity": "{value} toxicity",
+      "emotions": {
+        "joy": "Joy",
+        "anger": "Anger",
+        "sadness": "Sadness",
+        "fear": "Fear",
+        "surprise": "Surprise",
+        "curiosity": "Curiosity"
+      }
     },
     "totalShares": {
       "title": "Total Shares"

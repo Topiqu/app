@@ -43,6 +43,7 @@ const skippedSites = async (pickedIds: string[]) => {
       lastGeneratedAt: true,
       nextReleaseAt: true,
       generationFrequency: true,
+      articleQuality: true,
       articleCreditWallet: {
         select: {
           reserved: true,
@@ -62,12 +63,14 @@ const skippedSites = async (pickedIds: string[]) => {
     lastGeneratedAt: site.lastGeneratedAt?.toISOString() ?? null,
     nextReleaseAt: site.nextReleaseAt?.toISOString() ?? null,
     generationFrequency: site.generationFrequency,
+    creditsRequired: articleCreditCost(site.articleQuality),
     articlesRemaining: site.articleCreditWallet?.grants.reduce((total, grant) => total + grant.remaining, 0) ?? 0,
     reason: !site.features.length
       ? 'feature_inactive'
       : site.generationFrequency === 'NONE'
         ? 'frequency_disabled'
-        : (site.articleCreditWallet?.grants.reduce((total, grant) => total + grant.remaining, 0) ?? 0) < 1
+        : (site.articleCreditWallet?.grants.reduce((total, grant) => total + grant.remaining, 0) ?? 0) <
+            articleCreditCost(site.articleQuality)
           ? 'insufficient_articles'
           : 'not_due',
   }))
@@ -75,17 +78,28 @@ const skippedSites = async (pickedIds: string[]) => {
 
 export const processClient = async (client: ScheduledClient, slot: Date) => {
   const attemptId = randomUUID()
+  const articleQuality = articleQualityOf(client.articleQuality)
+  const creditsRequired = articleCreditCost(articleQuality)
   const audit = createArticleGenerationAudit({ attemptId, mode: 'scheduled', clientSiteId: client.id })
   let stage = 'reservation'
   let settlementStep: Awaited<ReturnType<typeof audit.startStep>> | undefined
   let publicationStep: Awaited<ReturnType<typeof audit.startStep>> | undefined
   await audit.record('CRON_GENERATION_STARTED', { scheduledFor: slot.toISOString(), language: client.language })
   const reservationStep = await audit.startStep('reservation')
+  const usageContext = (operation: { id: string }) => ({
+    attemptId,
+    clientSiteId: client.id as string,
+    operationId: operation.id,
+    articleQuality,
+    mode: 'scheduled' as const,
+  })
   return withArticleCreditReservation(
     client.id,
     'SCHEDULED_ARTICLE',
-    async (operation) => {
+    bindArticleUsage(usageContext, async (operation) => {
       await reservationStep.complete({ articleOperationId: operation.id })
+      stage = 'author'
+      const aiAuthor = await ensureAiAuthor(client.id)
       stage = 'topic'
       const clientSiteId = client.id
       const defaultLang = client.language
@@ -208,6 +222,14 @@ export const processClient = async (client: ScheduledClient, slot: Date) => {
         searchSignals,
         plan: planCandidates.map(planSignal),
         news: news?.items.map(newsSignal),
+        recentThemes: client.articles.slice(0, 5).map((a: any) => themeKey(a.theme)),
+        themes: [
+          ...new Set(
+            [...planCandidates.map(themeOf), ...client.articles.map((a: any) => themeKey(a.theme))].filter(
+              (theme): theme is string => !!theme,
+            ),
+          ),
+        ],
       }
 
       // Topic first, then the article. The writer used to receive the whole selection template as its
@@ -319,6 +341,7 @@ Respond ONLY in valid JSON (schema required).
       try {
         // Never `undefined` here: that would research the prompt, and the prompt is a template.
         ;({ usage, ...generated } = await generateArticle(clientSiteId, prompt, {
+          articleQuality,
           research: topic ? researchRequest(topic) : false,
           knowledgeQuery: topic ? `${topic.topic}\nAngle: ${topic.angle}` : null,
           format: cronFormat,
@@ -453,7 +476,7 @@ Respond ONLY in valid JSON (schema required).
                 title: generated.title,
                 excerpt: generated.perex,
                 slug,
-                userId: client.users[0]?.id || 'system',
+                userId: aiAuthor.id,
                 content: sanitizeHtml(stampHeadingIds(generated.content)),
                 // Empty means the format carries no answer — `applyFormat` blanks it. Stored as NULL so
                 // the column reads the same as a human article that never had one.
@@ -463,6 +486,8 @@ Respond ONLY in valid JSON (schema required).
                 format: cronFormat,
                 structureVariant: topic?.variant ?? null,
                 newsUrl: newsPick?.url ?? null,
+                // The plan's label wins: the cap counts plan topics and articles under one name.
+                theme: planCluster ? themeOf(planCluster) : themeKey(topic?.theme),
                 clientSiteId,
                 status,
                 releaseAt,
@@ -545,7 +570,10 @@ Respond ONLY in valid JSON (schema required).
         article.content,
       )
       if (contentWithPolls !== article.content) {
-        await prisma.article.update({ where: { id: article.id }, data: { content: sanitizeHtml(contentWithPolls) } })
+        await prisma.article.update({
+          where: { id: article.id },
+          data: { content: sanitizeHtml(contentWithPolls) },
+        })
       }
 
       const deliveredModules: Record<ArticleModule, boolean> = {
@@ -682,9 +710,18 @@ Respond ONLY in valid JSON (schema required).
           seriesId: appliedSeries.seriesId,
         },
       }
-    },
+    }),
     {
-      metadata: { attemptId, scheduledFor: slot.toISOString() },
+      amount: creditsRequired,
+      metadata: {
+        attemptId,
+        scheduledFor: slot.toISOString(),
+        articleQuality,
+        creditsRequired,
+        creditPolicyVersion: ARTICLE_CREDIT_POLICY_VERSION,
+        writerModel: aiModelId('articleWriter'),
+        writerEffort: ARTICLE_QUALITY_EFFORT[articleQuality],
+      },
       shouldCharge: (result) => result?.status !== 'failed',
     },
   )
@@ -755,6 +792,7 @@ const loadGenerationCandidates = (now: Date) =>
           format: true,
           structureVariant: true,
           newsUrl: true,
+          theme: true,
           answer: true,
           keyTakeaways: true,
           faq: true,
@@ -763,7 +801,6 @@ const loadGenerationCandidates = (now: Date) =>
         orderBy: { createdAt: 'desc' },
         take: 30,
       },
-      users: { select: { id: true }, orderBy: { role: 'desc' }, take: 1 },
     },
     where: {
       generationFrequency: { not: 'NONE' },
@@ -783,7 +820,9 @@ export default defineMonitoredTask({
 
     // Out of credits keeps its slot: the first run after a top-up generates for it.
     const funded = candidates.filter(
-      (client) => (client.articleCreditWallet?.grants.reduce((total, grant) => total + grant.remaining, 0) ?? 0) >= 1,
+      (client) =>
+        (client.articleCreditWallet?.grants.reduce((total, grant) => total + grant.remaining, 0) ?? 0) >=
+        articleCreditCost(client.articleQuality),
     )
     const due: { client: (typeof funded)[number]; slot: Date }[] = []
     for (const client of funded) {
@@ -825,6 +864,7 @@ export default defineMonitoredTask({
           reason: site.reason,
           generationFrequency: site.generationFrequency,
           articlesRemaining: site.articlesRemaining,
+          creditsRequired: site.creditsRequired,
         },
       })
       if (site.reason === 'insufficient_articles')

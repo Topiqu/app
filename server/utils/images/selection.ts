@@ -78,13 +78,16 @@ const canonicalImageUrl = (value: string) => {
   }
 }
 
-/** Reserve synchronously before emitting concurrent image results. */
+/** Reserve synchronously before emitting concurrent image results; `taken` only looks. */
 export const createImageSelection = () => {
   const used = new Set<string>()
-  return (image: Pick<ArticleImage, 'url' | 'credit'>) => {
-    const keys = [image.url, image.credit?.sourceUrl].filter((url): url is string => !!url).map(canonicalImageUrl)
-    if (keys.some((key) => used.has(key))) return false
-    keys.forEach((key) => used.add(key))
+  const keys = (image: Pick<ArticleImage, 'url' | 'credit'>) =>
+    [image.url, image.credit?.sourceUrl].filter((url): url is string => !!url).map(canonicalImageUrl)
+  const taken = (image: Pick<ArticleImage, 'url' | 'credit'>) => keys(image).some((key) => used.has(key))
+  const reserve = (image: Pick<ArticleImage, 'url' | 'credit'>) => {
+    if (taken(image)) return false
+    keys(image).forEach((key) => used.add(key))
     return true
   }
+  return Object.assign(reserve, { taken })
 }

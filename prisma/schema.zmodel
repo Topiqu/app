@@ -22,6 +22,7 @@ import "./models/keywordPlan"
 import "./models/backlink"
 import "./models/widget"
 import "./models/operations"
+import "./models/websiteImport"
 
 datasource db {
     provider  = "postgresql"

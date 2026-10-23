@@ -285,11 +285,16 @@ export const fetchPublicUrl = async (
   input: string | URL,
   timeoutMs = 8_000,
   signal?: AbortSignal,
-  options: { redirect?: 'follow' | 'error' } = {},
+  options: { redirect?: 'follow' | 'error'; allowUrl?: (url: URL) => boolean } = {},
 ) => {
   const deadline = publicRequestDeadline(timeoutMs, signal)
+  const resolveTarget = (input: string | URL) => {
+    const url = input instanceof URL ? input : new URL(input)
+    if (options.allowUrl && !options.allowUrl(url)) throw new Error('URL outside allowed scope')
+    return resolvePublicHttpsUrl(url, deadline.signal)
+  }
   try {
-    let target = await resolvePublicHttpsUrl(input, deadline.signal)
+    let target = await resolveTarget(input)
     for (let hop = 0; hop <= 3; hop += 1) {
       const { response, stream } = await requestPinned(target.url, target.addresses, deadline.signal)
       if (![301, 302, 303, 307, 308].includes(response.status)) {
@@ -301,7 +306,7 @@ export const fetchPublicUrl = async (
       await response.body?.cancel()
       if (options.redirect === 'error') throw new Error('Official media redirects are not allowed')
       if (!location || hop === 3) throw new Error('Official media redirect chain is invalid or too long')
-      target = await resolvePublicHttpsUrl(new URL(location, target.url), deadline.signal)
+      target = await resolveTarget(new URL(location, target.url))
     }
     throw new Error('Official media redirect chain is too long')
   } catch (error) {

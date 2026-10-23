@@ -2,6 +2,9 @@ import type { Language } from '~~/generated/zenstack/models'
 
 type FinalizeImage = { slot: number; html: string }
 
+// Library pictures looked at per search; past that the slot falls back as if nothing matched.
+const IMAGE_CHECKS = 3
+
 // Openverse labels `CC0` and `Public Domain Mark`, Commons `Public domain` or `PD-…`; none needs an author.
 const PUBLIC_DOMAIN_LICENSE = /^(cc0|public domain|pd\b)/i
 
@@ -148,19 +151,34 @@ export const finalizeArticle = async (
     const clear = clearOnly ? clearCandidate : undefined
     // `acceptImage` records the pick, so it runs only once the candidate passed every other check.
     const pick = (image: StockImage) => (!clear || clear(image)) && acceptImage(image)
+    // Official pages and store screenshots come from the subject's own publisher; library hits only
+    // matched words in a description, so each one is looked at before it is taken.
+    let checks = 0
+    const shows = (subject: string, intent: typeof type) => async (image: StockImage) => {
+      if ((clear && !clear(image)) || acceptImage.taken(image) || checks >= IMAGE_CHECKS) return false
+      checks += 1
+      const verdict = await auditArticleStep(
+        audit,
+        'image_check',
+        () => imageDepicts(image, { title: object.title, query: subject, type: intent }, abortSignal),
+        (result) => ({ ...result }),
+        { query: subject, sourceUrl: image.credit?.sourceUrl ?? image.url },
+      )
+      return verdict.depicts
+    }
     const official = await findPressImage(officialImages, query, pick, officialImageCache)
     if (official) return { image: official, kind: 'illustration', source: 'official' }
     for (const search of storeSearches) {
       const screenshot = await search(query, pick)
       if (screenshot) return { image: screenshot, kind: 'illustration', source: 'screenshot' }
     }
-    const hit = await findStockImage(type, query, undefined, clear)
+    const hit = await findStockImage(type, query, undefined, shows(query, type))
     if (hit && acceptImage(hit.image)) return { ...hit, source: 'library' }
     // A named subject has real photos even when the scene the writer described does not; that beats
     // an AI illustration of any intent.
     const subject = photoSubjectQuery(query)
     if (subject) {
-      const portrait = await findStockImage('photo', subject, undefined, clear)
+      const portrait = await findStockImage('photo', subject, undefined, shows(subject, 'photo'))
       if (portrait && acceptImage(portrait.image)) return { ...portrait, kind: 'illustration', source: 'library' }
     }
     return null

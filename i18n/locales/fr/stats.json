@@ -48,7 +48,19 @@
       "tooltip": "Estimation fondée sur les textes IA terminés, au tarif actuel de {rate}/h et à la vitesse de {speed} mots/h. Les modifications manuelles et les enregistrements ultérieurs n'augmentent pas le total."
     },
     "articleCount": "Articles publiés",
-    "sentiment": { "title": "Votre communauté", "current": "Résumé actuel", "toxicity": "{value} de toxicité" },
+    "sentiment": {
+      "title": "Votre communauté",
+      "current": "Résumé actuel",
+      "toxicity": "{value} de toxicité",
+      "emotions": {
+        "joy": "Joie",
+        "anger": "Colère",
+        "sadness": "Tristesse",
+        "fear": "Peur",
+        "surprise": "Surprise",
+        "curiosity": "Curiosité"
+      }
+    },
     "totalShares": { "title": "Partages au total" },
     "topArticle": { "pluralTitle": "Articles les plus lus", "noViews": "Aucun article n'a encore été lu" },
     "topTag": {

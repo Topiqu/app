@@ -12,6 +12,7 @@ const licenseName = (license?: string, version?: string) => {
 
 interface OpenverseResult {
   url?: string
+  thumbnail?: string
   title?: string
   creator?: string
   creator_url?: string
@@ -29,6 +30,7 @@ export const openverseImage = (result: OpenverseResult): StockImage | null => {
 
   return {
     url: result.url,
+    previewUrl: result.thumbnail,
     alt: result.title,
     credit: {
       author: result.creator,
@@ -41,17 +43,17 @@ export const openverseImage = (result: OpenverseResult): StockImage | null => {
   }
 }
 
-export const pickOpenverseImage = (
+export const pickOpenverseImage = async (
   results: OpenverseResult[],
   query?: string,
-  accept?: (image: StockImage) => boolean,
-): StockImage | null => {
+  accept?: ImageAccept,
+): Promise<StockImage | null> => {
   results = query ? results.filter((result) => matchesImageQuery(result.title, query)) : results
   const landscape = (result: OpenverseResult) => !!result.width && !!result.height && result.width > result.height
 
   for (const result of [...results.filter(landscape), ...results.filter((result) => !landscape(result))]) {
     const image = openverseImage(result)
-    if (image && (!accept || accept(image))) return image
+    if (image && (!accept || (await accept(image)))) return image
   }
 
   return null

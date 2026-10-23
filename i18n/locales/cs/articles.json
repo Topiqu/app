@@ -298,7 +298,7 @@
       "articleSavedAsDraft": "Článek uložen jako koncept",
       "insightGenerated": "Insight vytvořen",
       "lowTokensWarning": "Zbývá poslední článek",
-      "lowTokensHint": "Dokupte si další články, nebo počkejte na měsíční obnovení tarifu.",
+      "lowTokensHint": "Dokupte kredity nebo počkejte na měsíční obnovení tarifu.",
       "insightSkipped": "Insight přeskočen"
     },
     "dateFormats": {
@@ -481,7 +481,7 @@
         "waitingWriting": "Už {seconds} s nepřišel další text. Po 30 s bez textu se psaní zastaví.",
         "waitingResearch": "Ověřování zdrojů trvá déle než obvykle. Běh je stále aktivní a lze jej bezpečně zastavit.",
         "waitingImages": "Příprava obrázku může trvat až 45 s. Pokud jej služba nedodá, článek se dokončí bez něj.",
-        "reservedDuringRun": "Dočasně blokováno: {count} článek",
+        "reservedDuringRun": "Dočasně rezervováno: {count} kreditů",
         "writerIdleError": "Generování se zastavilo: 30 sekund nepřišel žádný text. Zkuste to znovu.",
         "writerDeadlineError": "Generování bylo zastaveno po dosažení 90sekundového limitu psaní.",
         "output": {
@@ -558,9 +558,9 @@
         },
         "youtubeHint": "Video se vloží pouze tehdy, když rešerše najde ověřený odkaz na YouTube.",
         "reservationLabel": "Jak se články odečítají",
-        "reservationSummary": "Každé generování dočasně zablokuje 1 článek. Dva souběžné běhy proto vyžadují alespoň 2 zbývající články.",
+        "reservationSummary": "Před spuštěním se rezervuje {count} kreditů. Kontrola i jedna automatická oprava jsou v ceně.",
         "billingDetails": "Podrobnosti účtování",
-        "billingExplanation": "Článek se odečte až po úspěšném dokončení. Při chybě nebo zastavení se rezervace vrátí.",
+        "billingExplanation": "Kredity se odečtou za hotový článek. Při technické chybě se vrátí celá rezervace. Zastavené generování se účtuje jen tehdy, když zůstane uložený použitelný text.",
         "reviewFailed": "Článek neprošel redakční kontrolou ani po opravě.",
         "allowGeneratedImages": "Povolit AI ilustrace jako poslední možnost",
         "useKnowledge": "Použít znalosti",
@@ -575,7 +575,7 @@
           "words": "Slov: {count}",
           "retry": "Zkusit znovu",
           "dismiss": "Zavřít přehled",
-          "creditReturned": "Blokovaný článek se vrátil do vašeho zůstatku, tento běh nebyl účtován.",
+          "creditReturned": "Všechny rezervované kredity se vrátily do zůstatku. Toto generování se neúčtovalo.",
           "failedHere": "Běh se zastavil v tomto kroku.",
           "openVideo": "Otevřít video",
           "cover": "Titulní",
@@ -677,7 +677,8 @@
           "title": "AI generování je součástí plánu PRO",
           "description": "Vytvořte článek z tématu včetně rešerše, zdrojů, obrázků a kontroly faktů.",
           "cta": "Zobrazit plány"
-        }
+        },
+        "insufficientCredits": "Tento článek potřebuje {required} kreditů. K dispozici máte {available}."
       },
       "drafts": {
         "loadDrafts": "Načíst koncepty",

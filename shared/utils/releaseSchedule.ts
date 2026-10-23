@@ -1,5 +1,9 @@
 import { CalendarDateTime, fromDate, toZoned, type ZonedDateTime } from '@internationalized/date'
 
+import type { ArticleQuality } from './articleQuality'
+
+import { affordableArticleCount } from './articleCredits'
+
 export type ReleaseFrequency = 'DAILY' | 'WEEKLY' | 'INTERVAL'
 
 export interface ReleaseSchedule {
@@ -159,13 +163,20 @@ export const upcomingReleases = (
 }
 
 /** Expected releases in the next 30 days and the slot the remaining credits run out at. */
-export const releaseForecast = (schedule: ReleaseSchedule, credits: number | null, now = new Date()) => {
+export const releaseForecast = (
+  schedule: ReleaseSchedule,
+  credits: number | null,
+  now = new Date(),
+  quality: ArticleQuality = 'STANDARD',
+) => {
   const random = seededRandom(17)
   const monthly = upcomingReleases(schedule, { now, until: new Date(now.getTime() + 30 * 24 * HOUR_MS), random })
-  const horizon = upcomingReleases(schedule, { now, count: Math.max(0, credits ?? 0) + 1, random: seededRandom(17) })
+  const affordableArticles = affordableArticleCount(credits ?? 0, quality)
+  const horizon = upcomingReleases(schedule, { now, count: affordableArticles + 1, random: seededRandom(17) })
   return {
     perMonth: monthly.length,
+    affordableArticles,
     // The slot of the last affordable article; null when there are no credits to spend.
-    creditsLastUntil: credits && credits > 0 ? (horizon[credits - 1] ?? null) : null,
+    creditsLastUntil: affordableArticles > 0 ? (horizon[affordableArticles - 1] ?? null) : null,
   }
 }

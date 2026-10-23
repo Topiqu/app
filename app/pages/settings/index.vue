@@ -24,6 +24,12 @@
       </LazyClientPreferencesGuide>
     </header>
 
+    <WebsiteImportPanel
+      v-if="can('TENANT_SETTINGS') && (activeTab === 'content' || route.query.websiteImport)"
+      :disabled="isDirty"
+      @applied="refresh()"
+    />
+
     <div class="flex flex-col md:flex-row gap-6 md:gap-10">
       <TabNav v-model="activeTab" :tabs="tabs" :label="$t('common.preferences.title')" />
 
@@ -173,6 +179,7 @@
             :canEnableArticleCrons="allowedFeatures.ARTICLE_CRONS ?? false"
             :autoRelease="form.autoRelease"
             :aiSeriesEnabled="form.aiSeriesEnabled"
+            :articleQuality="form.articleQuality"
             :generationFrequency="form.generationFrequency"
             :articlesRemaining="client?.articlesRemaining ?? null"
             :nextReleaseAt="releaseScheduleDirty ? null : (client?.nextReleaseAt ?? null)"
@@ -193,6 +200,7 @@
             @update:avatarUrl="((form.aiUser.avatarUrl = $event), (pristine.aiUser.avatarUrl = $event))"
             @update:autoRelease="form.autoRelease = $event"
             @update:aiSeriesEnabled="form.aiSeriesEnabled = $event"
+            @update:articleQuality="form.articleQuality = $event"
             @update:generationFrequency="form.generationFrequency = $event"
             @update:translationMode="form.translationMode = $event"
             @update:translationLanguages="form.translationLanguages = $event"

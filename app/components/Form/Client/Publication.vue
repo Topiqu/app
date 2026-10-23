@@ -30,6 +30,7 @@
           v-model:frequency="frequency"
           v-model:schedule="schedule"
           :articlesRemaining="articlesRemaining"
+          :articleQuality="articleQuality"
           :nextReleaseAt="nextReleaseAt"
         />
       </div>
@@ -62,12 +63,14 @@
 </template>
 
 <script setup lang="ts">
+import type { ArticleQuality } from '~~/shared/utils/articleQuality'
 import type { ReleaseFrequency, ReleaseScheduleSettings } from '~~/shared/utils/releaseSchedule'
 
 defineProps<{
   autoRelease: boolean
   aiSeriesEnabled: boolean
   articlesRemaining?: number | null
+  articleQuality?: ArticleQuality
   nextReleaseAt?: string | null
 }>()
 const emit = defineEmits<{

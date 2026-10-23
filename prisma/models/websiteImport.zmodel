@@ -1,0 +1,47 @@
+import "./base"
+import "./client"
+import "./knowledge"
+
+enum WebsiteImportStatus {
+    PENDING
+    PROCESSING
+    READY
+    REVIEWED
+    FAILED
+}
+
+model WebsiteImport with Base {
+    clientSiteId String
+    clientSite ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    sourceUrl String @length(1, 2048)
+    createdById String?
+    consentVersion Int
+    consentAt DateTime @default(now())
+    status WebsiteImportStatus @default(PENDING)
+    baseline Json
+    result Json?
+    acceptedFields String[] @default([])
+    attempts Int @default(0)
+    leaseToken String?
+    leaseUntil DateTime?
+    searchStartedAt DateTime?
+    searchCompletedAt DateTime?
+    searchText String?
+    searchSources Json?
+    extractionStartedAt DateTime?
+    extractionCompletedAt DateTime?
+    budgetDay DateTime?
+    reservedCostMicros Int @default(0)
+    budgetCostMicros Int @default(0)
+    usage Json?
+    errorCode String?
+    reviewedAt DateTime?
+    reviewedById String?
+    knowledgeSources KnowledgeSource[]
+
+    @@index([clientSiteId, createdAt])
+    @@index([status, leaseUntil])
+    @@index([budgetDay])
+    // Creation is system-only inside the signed onboarding transaction.
+    @@allow('read, update', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
+}

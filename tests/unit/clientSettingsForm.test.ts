@@ -98,6 +98,21 @@ describe('buildClientSettingsForm', () => {
     expect(form.optimizedUrl).toBe('')
   })
 
+  it('prefills the missing AI identity from the publication and persists quality changes', () => {
+    const form = buildClientSettingsForm(baseClient({ name: 'Trawl', aiUser: null, articleQuality: 'HIGH' }))
+    expect(form.aiUser.username).toBe('Redakce Trawl')
+    expect(form.aiUser.avatarUrl).toBe('https://cdn/logo.png')
+    expect(form.articleQuality).toBe('HIGH')
+    const edited = { ...form, articleQuality: 'ULTRA' as const }
+    expect(buildClientSettingsPatch(edited, form)).toEqual({ articleQuality: 'ULTRA' })
+    expect(buildClientSettingsForm(null).articleQuality).toBe('STANDARD')
+  })
+
+  it('preserves an explicitly removed avatar on an existing author', () => {
+    const form = buildClientSettingsForm(baseClient({ aiUser: { username: 'Writer', bio: '', avatarUrl: '' } }))
+    expect(form.aiUser.avatarUrl).toBe('')
+  })
+
   it('derives linkedin fields from linkedinCompanies[0]', () => {
     const client = baseClient({
       linkedinCompanies: [{ mode: 'FullAuto', type: 'personal' }],

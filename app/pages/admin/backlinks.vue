@@ -5,7 +5,7 @@
         <h1 class="text-2xl font-bold text-highlighted">{{ $t('backlinks.title') }}</h1>
         <p class="mt-1 text-sm text-muted">{{ $t('backlinks.description') }}</p>
       </div>
-      <div v-if="enabled" class="flex shrink-0 flex-col items-start gap-1 sm:items-end">
+      <div v-if="enabled && !empty" class="flex shrink-0 flex-col items-start gap-1 sm:items-end">
         <UButton
           icon="mdi:magnify"
           :loading="starting || data?.running"
@@ -50,8 +50,11 @@
         :title="$t('backlinks.unavailable')"
       />
       <AppStatTiles :items="stats" />
-      <BacklinksOpportunities />
-      <BacklinksLinks />
+      <BacklinksEmpty v-if="empty" :canRefresh :busy="starting" :running="data.running" :refreshNote @search="start" />
+      <template v-else>
+        <BacklinksOpportunities />
+        <BacklinksLinks />
+      </template>
     </template>
   </div>
 </template>
@@ -70,6 +73,7 @@ const starting = shallowRef(false)
 const { data, error, isPending, refetch } = useBacklinks()
 
 const enabled = computed(() => !!data.value?.allowance.kinds.length)
+const empty = computed(() => !!data.value && !data.value.links.length && !data.value.opportunities.length)
 const canRefresh = computed(
   () =>
     !!data.value?.available &&
@@ -106,7 +110,7 @@ const stats = computed((): StatTile[] => {
       icon: 'mdi:trophy-outline',
       label: label('won'),
       value: number.format(data.value?.won ?? 0),
-      note: t('backlinks.stats.won.hint'),
+      note: data.value?.won ? t('backlinks.stats.won.hint') : undefined,
       hint: info('won'),
     },
     {

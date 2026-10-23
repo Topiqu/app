@@ -10,6 +10,7 @@ export type ArticleGenerationStage =
   | 'revision'
   | 'media'
   | 'image_generation'
+  | 'image_check'
   | 'linking'
   | 'series'
   | 'persistence'
@@ -114,11 +115,11 @@ export const auditArticleStep = async <T>(
   summarize?: (result: T) => Metadata,
   metadata: Metadata = {},
 ): Promise<T> => {
-  if (!audit) return run()
+  if (!audit) return withArticleUsageStage(stage, run)
   const step = await audit.startStep(stage, metadata)
   let result: T
   try {
-    result = await run()
+    result = await withArticleUsageStage(stage, run)
   } catch (error) {
     await step.fail(error)
     throw error

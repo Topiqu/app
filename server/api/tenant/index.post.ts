@@ -94,6 +94,8 @@ export default defineEventHandler(async (event) => {
         select: { id: true, name: true, domain: true, language: true },
       })
 
+      await ensureAiAuthor(created.id, tx)
+
       await tx.tenantMembership.create({
         data: { clientSiteId: created.id, userId: user.id, role: 'OWNER', scopes: [...TENANT_SCOPES] },
       })

@@ -6,19 +6,19 @@ export interface ClientSiteStatus {
   language: Language
   domain: string
   domainVerified: boolean
+  pendingDomain: string | null
   plan: string
+  articleQuality: ArticleQuality
   articleWallet: {
     available: number
     reserved: number
     balance: number
     grants: { id: string; remaining: number; expiresAt: string | null; periodEnd: string | null; source: string }[]
   }
+  /** Available article credits; retained under the original API field name. */
   articlesRemaining: number
   knowledgeSources: number
-  setup: {
-    hasPublishedArticle: boolean
-    knowledge: { indexed: number; processing: number; failed: number }
-  }
+  setup: SiteSetupStatus
   websiteUrl: string | null
   createdAt: string
   firstPaidAt: string | null
@@ -31,6 +31,7 @@ export interface ClientSiteStatus {
   }
   focus: string | null
   audience: string | null
+  aiToneOfVoice: string | null
   theme: PublicClientSite['theme']
   typographyPreset: PublicClientSite['typographyPreset']
   accentColor: PublicClientSite['accentColor']
@@ -39,7 +40,7 @@ export interface ClientSiteStatus {
   bodyFontUrl: PublicClientSite['bodyFontUrl']
   discloseAiContent: boolean
   publishToWeb: boolean
-  aiUser: { username: string; avatarUrl: string | null } | null
+  aiUser: { username: string; bio: string | null; avatarUrl: string | null } | null
   hasActiveSubscription: boolean
   billingProvider: 'STRIPE' | 'SHOPIFY'
 }

@@ -1,34 +1,172 @@
 {
   "common": {
+    "websiteImport": {
+      "title": "Website settings from onboarding",
+      "description": "We can prepare your blog settings and knowledge sources in the background. Review the suggestions before using them.",
+      "review": "Review suggestions",
+      "open": "View progress",
+      "reviewHelp": "Check each suggestion, edit it if needed, then apply the selected fields or confirm everything. Unselected fields keep their current values.",
+      "allCorrect": "All's correct",
+      "applySelected": "Apply selected",
+      "skip": "Skip suggestions",
+      "notFound": "No supported value found. You can fill this in later.",
+      "current": "Current: {value}",
+      "saveFirst": "Save or discard your other settings changes before applying these suggestions.",
+      "background": "You can continue using Topiqu. The result will remain available here when it is ready.",
+      "budgetWait": "Processing is queued and will continue later. You can keep using Topiqu.",
+      "failedHelp": "We could not finish preparing the settings. You can complete them in the individual settings sections.",
+      "knowledgeConsent": "By accepting knowledge sources, you confirm that they may be processed by AI and used in public articles. Do not accept confidential or personal information.",
+      "conflict": "Some settings changed since you opened this review. Refresh the page and check the current values.",
+      "assetFailed": "A suggested logo or favicon could not be imported. Uncheck that field and apply the other suggestions.",
+      "rateLimited": "Too many attempts. Please try again later.",
+      "applied": "Website suggestions reviewed",
+      "status": {
+        "PENDING": "Website preparation is queued",
+        "PROCESSING": "Preparing settings from your website",
+        "READY": "Your website suggestions are ready",
+        "REVIEWED": "Website suggestions reviewed",
+        "FAILED": "Website preparation needs attention"
+      },
+      "fields": {
+        "accentColor": "Primary color",
+        "logoUrl": "Logo",
+        "faviconUrl": "Favicon",
+        "keywords": "Keywords",
+        "focus": "Blog focus",
+        "audience": "Primary audience",
+        "aiToneOfVoice": "Writing style",
+        "language": "Content language",
+        "socials": "Social profiles",
+        "knowledge": "Knowledge sources"
+      },
+      "warnings": {
+        "pageFailed": "Some pages could not be loaded. The available suggestions use the remaining sources.",
+        "knowledgeQuota": "Some pages did not fit your knowledge allowance.",
+        "assetUnavailable": "Some brand assets could not be read. You can upload them yourself.",
+        "analysisFailed": "Some content suggestions could not be prepared. Review the available values."
+      }
+    },
     "entry": {
       "title": "Create your first blog",
       "description": "Set up your blog, then start writing and publishing articles with Topiqu.",
       "retry": "Try again"
     },
     "setup": {
-      "menu": "Getting started",
-      "title": "Prepare your first publication",
+      "checklist": {
+        "title": "Blog setup",
+        "description": "Finish setting up your blog and get ready to publish.",
+        "expand": "Expand the blog setup guide",
+        "collapse": "Collapse the blog setup guide",
+        "processing": "Processing",
+        "attention": "Needs attention",
+        "saved": "Saved changes update this checklist automatically.",
+        "permission": "A team member with the required permission must complete this step.",
+        "resumeDraft": "Open your draft",
+        "resumeDescription": "You already have a draft. Open it, check the preview and publish it.",
+        "viewArticles": "View articles",
+        "progress": "Resolved {done} of {total}",
+        "optional": "Optional",
+        "skip": "Skip for now",
+        "skipped": "Skipped",
+        "restore": "Restore step",
+        "confirmPublishing": "Confirm this mode",
+        "manualDescription": "Articles wait for your approval. Confirm this mode, or enable automatic publishing and adjust the schedule in settings.",
+        "automaticDescription": "AI articles are published automatically. Review this mode and, for scheduled creation, the frequency, days, time and time zone.",
+        "requirements": {
+          "name": "Blog name",
+          "logo": "Blog logo",
+          "description": "Description for readers",
+          "authorName": "Author name",
+          "avatar": "Author portrait",
+          "bio": "Author biography",
+          "tone": "Writing style",
+          "focus": "Blog focus",
+          "audience": "Target audience",
+          "source": "Processed source enabled for AI",
+          "domain": "Verified domain connection",
+          "article": "Published article",
+          "publishingMode": "Publishing mode chosen",
+          "schedule": "Valid creation schedule",
+          "measurement": "Analytics enabled or Search Console connected",
+          "teammate": "Another team member or a valid invitation",
+          "channel": "Shopify blog or LinkedIn profile connected and enabled"
+        },
+        "steps": {
+          "branding": {
+            "title": "Complete your blog profile",
+            "description": "Upload a logo and add a short description so readers know whose blog this is and what they will find.",
+            "action": "Edit branding"
+          },
+          "author": {
+            "title": "Introduce your AI author",
+            "description": "Add the author's portrait and biography and choose a writing style. This profile appears with their articles.",
+            "action": "Set profile and style"
+          },
+          "voice": {
+            "title": "Define topics and readers",
+            "description": "Set your focus and target audience. AI uses them to choose topics and explain them to the right readers.",
+            "action": "Set content direction"
+          },
+          "knowledge": {
+            "title": "Add sources for AI",
+            "description": "Add your company website or a document. This step is complete once a source has been processed and enabled for AI.",
+            "action": "Add sources"
+          },
+          "domain": {
+            "title": "Connect your custom domain",
+            "description": "Complete the DNS records for {domain} and verify the connection.",
+            "action": "Finish domain connection"
+          },
+          "article": {
+            "title": "Publish your first article",
+            "description": "Create an article, check its preview and publish it. Drafts and future publications do not count yet.",
+            "action": "Create your first article"
+          },
+          "publishing": {
+            "title": "Choose how to publish",
+            "description": "Choose article approval or automatic publishing. For scheduled creation, set the frequency, days, time and time zone.",
+            "action": "Set up publishing"
+          },
+          "measurement": {
+            "title": "Set up measurement",
+            "description": "Enable Google Analytics with a measurement ID, or connect Search Console and select a property. Availability depends on your plan.",
+            "action": "Set up measurement"
+          },
+          "team": {
+            "title": "Invite a colleague",
+            "description": "Invite a colleague to your editorial team and choose their permissions. A valid sent invitation counts; you do not need to wait for acceptance.",
+            "action": "Invite a colleague"
+          },
+          "channels": {
+            "title": "Connect a publishing channel",
+            "description": "Connect Shopify and select a destination blog, or link a LinkedIn profile. Publishing must be enabled for the connected channel.",
+            "action": "Connect a channel"
+          }
+        }
+      },
+      "menu": "Finish setup",
+      "title": "Finish setting up your blog",
       "completeTitle": "Blog setup is complete",
       "progress": "{done} of {total} complete",
       "next": "Next step: {step}",
-      "expand": "Expand the blog setup checklist",
+      "expand": "Open remaining blog setup steps",
       "collapse": "Collapse the blog setup checklist",
       "done": "Done",
       "remaining": "Remaining",
       "review": "Review settings",
       "publishPermission": "Writing and publishing permissions are required to publish. Contact the blog owner.",
       "recommended": "Recommended extras",
-      "optional": "Reopen this checklist from Getting started in the menu.",
+      "optional": "Open the remaining steps in the Blog setup panel at the bottom right.",
       "hide": "Hide checklist",
       "steps": {
         "branding": {
-          "title": "Introduce your blog",
-          "description": "Add a short description of what readers will find on your blog.",
+          "title": "Add a blog description",
+          "description": "In Settings → Branding, describe what you publish on your blog.",
           "action": "Add a blog description"
         },
         "voice": {
-          "title": "Set your topics and audience",
-          "description": "Tell AI what to write about and who your articles should help.",
+          "title": "Add your focus and target audience",
+          "description": "In Settings → Content, enter what AI should write about and who it is for.",
           "action": "Set content direction"
         },
         "domain": {
@@ -38,7 +176,7 @@
         },
         "article": {
           "title": "Publish your first article",
-          "description": "Create an article, check its preview and publish it. Drafts and articles scheduled for the future do not count yet.",
+          "description": "Write or generate an article in the editor, then select Publish. Drafts and future publications do not count.",
           "action": "Open editor"
         }
       },
@@ -56,15 +194,15 @@
       }
     },
     "wallet": {
-      "title": "Articles",
-      "available": "Articles remaining",
-      "unit": "article | articles",
-      "bonusExpiry": "Bonus articles may expire; purchased articles do not.",
-      "generationReservation": "Each generation temporarily holds 1 article. It is charged on success and returned after an error or cancellation.",
-      "neverExpires": "Plan articles are valid for their period. Purchased articles do not expire.",
-      "explanation": "Your plan adds articles each month. Purchased articles never expire and are used after plan articles.",
+      "title": "Article credits",
+      "available": "Available credits",
+      "unit": "credit | credits",
+      "bonusExpiry": "Bonus credits may expire; purchased credits do not.",
+      "generationReservation": "Each article reserves 1, 2 or 3 credits according to quality. Review and one automatic revision are included. A technical failure returns the full reservation.",
+      "neverExpires": "Plan credits are valid for their period. Purchased credits do not expire.",
+      "explanation": "Your plan adds credits each month. Standard costs 1, High 2 and Ultra 3 credits per article, including review and one automatic revision. Purchased credits never expire and are used after plan credits.",
       "reserved": "Temporarily reserved",
-      "reservedHint": "Each generation reserves 1 article. It is released if generation fails.",
+      "reservedHint": "Each article reserves 1, 2 or 3 credits according to quality. A technical failure returns the full amount.",
       "reasons": {
         "manualArticle": "Manually created article",
         "scheduledArticle": "Automatically created article",
@@ -72,25 +210,26 @@
       },
       "periodUsage": "Used in {period}",
       "expires": "Valid until",
-      "topup": "Buy more articles",
-      "history": "Article history",
-      "empty": "No article movements yet.",
-      "initial": "Initial article allowance",
-      "adjustment": "Article allowance adjustment",
+      "topup": "Buy more credits",
+      "history": "Credit history",
+      "empty": "No credit movements yet.",
+      "initial": "Initial credit allowance",
+      "adjustment": "Credit adjustment",
       "reason": "Required reason",
-      "amount": "Number of articles",
+      "amount": "Number of credits",
       "operation": "Original operation ID (for refunds)",
       "apply": "Apply adjustment",
       "kinds": {
-        "CREDIT": "Articles added",
+        "CREDIT": "Credits added",
         "DEBIT": "Usage",
         "RELEASE": "Reservation released",
-        "EXPIRY": "Articles expired",
-        "EXPIRE": "Articles expired",
-        "REFUND": "Articles returned",
+        "EXPIRY": "Credits expired",
+        "EXPIRE": "Credits expired",
+        "REFUND": "Credits returned",
         "BONUS": "Bonus",
         "ADJUSTMENT": "Manual debit"
-      }
+      },
+      "affordableArticles": "Enough for {count} article at {quality} quality. | Enough for {count} articles at {quality} quality."
     },
     "searchConsole": {
       "title": "Google Search Console",
@@ -993,8 +1132,8 @@
         "monthly": "– Monthly billing",
         "intervalMonthly": "Monthly",
         "intervalAnnual": "Annual",
-        "tokenBalance": "Articles remaining",
-        "buyTokens": "Buy more articles",
+        "tokenBalance": "Available credits",
+        "buyTokens": "Buy more credits",
         "manage": "Manage subscription & invoices",
         "openPortal": "Manage billing",
         "invoicesTitle": "Invoices and payments",
@@ -1221,7 +1360,7 @@
         "previewInterval": "Example of upcoming releases (exact times are drawn at random)",
         "perMonth": "No articles in the next 30 days | ≈ {count} article in the next 30 days | ≈ {count} articles in the next 30 days",
         "creditsUntil": "credits last until about {date}",
-        "noCredits": "You have no credits. Top up to keep publishing.",
+        "noCredits": "You need more credits for an article at the selected quality. Top up or choose a lower quality.",
         "errors": {
           "timeZone": "Choose a valid time zone.",
           "releaseHour": "Choose a release time.",
@@ -1267,6 +1406,16 @@
           "empty": "No other languages available for your primary language."
         },
         "tokenWarning": "Automatic translation creates a separate version of every published article for each target language."
+      },
+      "articleQuality": {
+        "title": "Article quality",
+        "description": "Choose the quality of new manual and scheduled articles. The price includes review and one automatic revision when needed.",
+        "options": {
+          "STANDARD": "Standard",
+          "HIGH": "High",
+          "ULTRA": "Highest"
+        },
+        "cost": "{count} credit per article | {count} credits per article"
       },
       "aiAuthor": {
         "title": "AI Author Settings",
@@ -1527,17 +1676,17 @@
       "declined": "Invitation declined"
     },
     "articlePacks": {
-      "title": "Expand your publishing capacity",
-      "pack5": "5 articles",
-      "pack12": "12 articles",
-      "pack25": "25 articles",
+      "title": "Credits for more articles",
+      "pack5": "5 credits",
+      "pack12": "12 credits",
+      "pack25": "25 credits",
       "bestValue": "Best value",
       "volumeDiscount": "{discount}% volume discount",
-      "articles": "article | articles",
+      "articles": "credit | credits",
       "taxExclusive": "excl. VAT",
       "buy": "Buy",
-      "buyPack": "Buy a {count}-article pack",
-      "purchaseHint": "Add articles whenever you need them. They are available immediately and never expire.",
+      "buyPack": "Buy a pack of {count} credits",
+      "purchaseHint": "Credits are available immediately and never expire. Each article costs 1, 2 or 3 credits according to quality, including review and one automatic revision.",
       "neverExpires": "Never expires",
       "upgradeToPremium": "Upgrade to PREMIUM"
     },

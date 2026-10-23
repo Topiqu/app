@@ -55,13 +55,7 @@ export default defineEventHandler(async (event) => {
 
   // A full manual generation is written by the configured AI author just like a scheduled one.
   // The signed-in member remains the actor in the audit log; `userId` here is public authorship.
-  const aiAuthor =
-    body.aiInvolvement === 'FULL'
-      ? await db.user.findFirst({
-          where: { clientSiteId: user.clientSiteId, role: 'ai' },
-          select: { id: true },
-        })
-      : null
+  const aiAuthor = body.aiInvolvement === 'FULL' ? await ensureAiAuthor(user.clientSiteId!) : null
 
   if (
     body.tags !== undefined &&

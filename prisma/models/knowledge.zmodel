@@ -2,6 +2,7 @@ import "./base"
 import "./client"
 import "./user"
 import "./shopify"
+import "./websiteImport"
 
 enum KnowledgeSourceKind {
     NOTE
@@ -33,6 +34,8 @@ model KnowledgeSource with Base {
     clientSite       ClientSite            @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
     createdById      String?
     createdBy        User?                 @relation("KnowledgeSourceCreator", fields: [createdById], references: [id], onDelete: SetNull)
+    websiteImportId String?
+    websiteImport WebsiteImport? @relation(fields: [websiteImportId], references: [id], onDelete: SetNull)
     kind             KnowledgeSourceKind
     title            String                @length(1, 200)
     status           KnowledgeSourceStatus @default(PENDING)
@@ -71,6 +74,7 @@ model KnowledgeSource with Base {
     @@allow('read', auth().role == 'superadmin' || auth().clientSiteId == clientSiteId)
     @@allow('all', auth().role == 'admin' && auth().clientSiteId == clientSiteId)
     @@index([clientSiteId, createdAt])
+    @@index([websiteImportId])
     @@index([clientSiteId, contentHash])
     @@index([status, updatedAt])
     @@index([kind, fetchedAt])

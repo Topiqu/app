@@ -135,6 +135,18 @@ describe('releaseScheduleError', () => {
 })
 
 describe('releaseForecast', () => {
+  it('uses only affordable whole articles at High and Ultra quality', () => {
+    const now = new Date('2026-10-05T06:00:00Z')
+    expect(releaseForecast(schedule(), 5, now, 'HIGH')).toMatchObject({
+      affordableArticles: 2,
+      creditsLastUntil: releaseForecast(schedule(), 2, now).creditsLastUntil,
+    })
+    expect(releaseForecast(schedule(), 5, now, 'ULTRA')).toMatchObject({
+      affordableArticles: 1,
+      creditsLastUntil: releaseForecast(schedule(), 1, now).creditsLastUntil,
+    })
+    expect(releaseForecast(schedule(), 2, now, 'ULTRA').creditsLastUntil).toBeNull()
+  })
   it('counts a month of daily releases and the slot the credits last until', () => {
     const now = new Date('2026-10-05T06:00:00Z')
     const forecast = releaseForecast(schedule(), 5, now)

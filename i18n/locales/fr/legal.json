@@ -1,7 +1,7 @@
 {
   "legal": {
     "lastUpdated": "Dernière mise à jour : {date}",
-    "updatedAt": "10 octobre 2026",
+    "updatedAt": "18 octobre 2026",
     "placeholderNote": "L'adresse postale est volontairement omise : un lien vers ARES est fourni et l'adresse est communiquée sur demande.",
     "tos": {
       "title": "Conditions d'utilisation",
@@ -17,7 +17,7 @@
           "icon": "mdi:credit-card-outline",
           "iconColor": "text-emerald-500",
           "title": "2. Offres et paiements",
-          "content": "<ul class='list-disc pl-5 mt-2 space-y-1'><li>Les prix affichés lors de la commande s'appliquent, TVA incluse le cas échéant. Les paiements sont traités par Stripe.</li><li>Les abonnements se renouvellent automatiquement. Vous pouvez les résilier à tout moment dans les paramètres, avec effet à la fin de la période de facturation.</li><li>Une génération IA réussie consomme un article. Les articles inclus dans l'offre valent pour leur période mensuelle ; les articles achetés n'expirent pas.</li><li>En cas d'impayé, nous pouvons suspendre les fonctions payantes après vous avoir prévenu.</li></ul>Nous annonçons tout changement de prix à l'avance par e-mail. Il s'applique à la période suivante et vous pouvez résilier d'ici là."
+          "content": "<ul class='list-disc pl-5 mt-2 space-y-1'><li>Les prix affichés lors de la commande s'appliquent, TVA incluse le cas échéant. Les paiements sont traités par Stripe.</li><li>Les abonnements se renouvellent automatiquement. Vous pouvez les résilier à tout moment dans les paramètres, avec effet à la fin de la période de facturation.</li><li>Un article IA consomme 1 crédit en qualité Standard, 2 en High ou 3 en Ultra, vérification et une révision automatique incluses. Un échec technique restitue toute la réservation. Les crédits du forfait sont valables pour leur période mensuelle ; les crédits achetés n’expirent pas.</li><li>En cas d'impayé, nous pouvons suspendre les fonctions payantes après vous avoir prévenu.</li></ul>Nous annonçons tout changement de prix à l'avance par e-mail. Il s'applique à la période suivante et vous pouvez résilier d'ici là."
         },
         {
           "icon": "mdi:keyboard-return",

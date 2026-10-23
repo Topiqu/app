@@ -303,11 +303,10 @@ const customDomainPlaceholder = computed(() =>
 )
 
 const isFormValid = computed(() => {
-  const { name, domain, customDomain, domainType, email, initialArticles, aiUser } = newClient.value
+  const { name, domain, customDomain, domainType, email } = newClient.value
   if (!name || !email) return false
   if (domainType === 'SUBDOMAIN' && !domain) return false
   if (domainType === 'CUSTOM' && !customDomain) return false
-  if (initialArticles > 0 && !aiUser.name) return false
   return true
 })
 

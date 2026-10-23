@@ -86,10 +86,10 @@
 
         <!-- Performance and completed work share one concise summary. -->
         <section
-          class="grid min-w-0 grid-cols-1 gap-x-4 gap-y-6 rounded-[var(--topiqu-surface-radius)] border border-default bg-elevated/40 p-5 sm:grid-cols-2 lg:col-span-2 lg:grid-cols-4 lg:divide-x lg:divide-default"
+          class="grid min-w-0 grid-cols-1 gap-x-6 gap-y-6 rounded-[var(--topiqu-surface-radius)] border border-default bg-elevated/40 p-5 sm:grid-cols-2 lg:col-span-2 xl:grid-cols-4"
         >
-          <div class="lg:pr-5">
-            <p class="text-xs font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+          <div class="min-w-0">
+            <p class="text-sm font-medium text-muted">
               {{ $t('stats.totalViews.title') }}
             </p>
             <p
@@ -102,8 +102,8 @@
             </p>
           </div>
 
-          <div class="lg:px-5">
-            <p class="text-xs font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+          <div class="min-w-0">
+            <p class="text-sm font-medium text-muted">
               {{ $t('stats.articleCount') }}
             </p>
             <p
@@ -126,12 +126,10 @@
             </p>
           </div>
 
-          <div class="lg:px-5">
-            <p
-              class="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
-            >
-              {{ $t('stats.savedAmount.title') }}
-              <UTooltip :text="savingsTooltip">
+          <div class="min-w-0">
+            <div class="flex items-start gap-1.5 text-sm font-medium text-muted">
+              <p class="min-w-0">{{ $t('stats.savedAmount.title') }}</p>
+              <UPopover :content="{ align: 'end' }" :ui="{ content: 'w-80 max-w-[calc(100vw-2rem)]' }">
                 <UButton
                   icon="mdi:help-circle-outline"
                   color="neutral"
@@ -139,11 +137,16 @@
                   size="xs"
                   square
                   :aria-label="$t('stats.savedAmount.method')"
-                  :ui="{ base: 'size-6 p-0', leadingIcon: 'size-3.5' }"
+                  :ui="{ base: '-my-0.5 size-6 shrink-0 p-0', leadingIcon: 'size-4' }"
                 />
-              </UTooltip>
-            </p>
-            <p class="mt-1 text-3xl font-semibold tracking-tight tabular-nums text-primary sm:text-4xl">
+                <template #content>
+                  <p class="whitespace-normal break-words p-4 text-sm font-normal leading-6 text-default">
+                    {{ savingsTooltip }}
+                  </p>
+                </template>
+              </UPopover>
+            </div>
+            <p class="mt-1 break-words text-3xl font-semibold tracking-tight tabular-nums text-primary sm:text-4xl">
               {{ headlineValue ? `~${formatMoney(headlineValue.estimatedAmountUsd)}` : '—' }}
             </p>
             <p v-if="usingLegacyEstimate" class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
@@ -161,15 +164,11 @@
               }}
             </p>
           </div>
-          <div class="lg:pl-5">
-            <p
-              class="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
-            >
+          <div class="min-w-0">
+            <p class="text-sm font-medium text-muted">
               {{ $t('stats.savedTime.title') }}
             </p>
-            <p
-              class="mt-1 whitespace-nowrap text-3xl font-semibold tracking-tight tabular-nums text-neutral-900 sm:text-4xl lg:text-3xl xl:text-4xl dark:text-neutral-50"
-            >
+            <p class="mt-1 break-words text-3xl font-semibold tracking-tight tabular-nums text-highlighted sm:text-4xl">
               {{
                 headlineValue
                   ? `~${headlineValue.estimatedMinutes > 0 ? formatDuration(headlineValue.estimatedMinutes) : $t('stats.duration.lessThanMinute')}`
@@ -372,9 +371,9 @@
             >
               <p class="text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">{{ insight.summary }}</p>
               <div class="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-xs">
-                <span class="flex items-center gap-1.5 text-neutral-600 dark:text-neutral-400">
+                <span v-if="topEmotion" class="flex items-center gap-1.5 text-neutral-600 dark:text-neutral-400">
                   <UIcon name="mdi:emoticon-happy-outline" class="size-4 shrink-0 text-neutral-400" />
-                  {{ insight.topEmotion }}
+                  {{ topEmotion }}
                 </span>
                 <span class="flex items-center gap-1.5 text-neutral-600 dark:text-neutral-400">
                   <UIcon name="mdi:fire" class="size-4 shrink-0 text-neutral-400" />
@@ -538,6 +537,10 @@ const formatMoney = (usd: number) =>
 const insight = computed(() => {
   if (!rawInsight.value) return null
   return typeof rawInsight.value === 'string' ? JSON.parse(rawInsight.value) : rawInsight.value
+})
+const topEmotion = computed(() => {
+  const emotion = communityEmotion(insight.value?.topEmotion)
+  return emotion ? t(`stats.sentiment.emotions.${emotion}`) : null
 })
 
 const stats = computed(() => ({

@@ -20,10 +20,12 @@ export default defineEventHandler(async (event) => {
   const article = await db.article.findUnique({
     where: {
       id,
-      status: 'published',
       deletedAt: null,
       clientSite: { deletedAt: null },
-      OR: [{ releaseAt: null }, { releaseAt: { lte: new Date() } }],
+      OR: [
+        { status: 'published', OR: [{ releaseAt: null }, { releaseAt: { lte: new Date() } }] },
+        ...(user ? [{ status: 'draft' as const, userId: user.id }] : []),
+      ],
     },
     select: { userId: true },
   })

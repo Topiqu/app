@@ -29,6 +29,7 @@ const schema = z.object({
   billingInterval: z.enum(['month', 'year']).default('month'),
   // Not `website`: that name is the landing's bot honeypot.
   websiteUrl: z.string().trim().max(2048).optional(),
+  websiteImportConsentVersion: z.literal(WEBSITE_IMPORT_CONSENT_VERSION).optional(),
 })
 
 /** Only a valid http(s) address is kept; a typo must not cost the visitor their sign-up. */
@@ -138,6 +139,8 @@ export default defineEventHandler(async (event) => {
         },
       })
 
+      await ensureAiAuthor(site.id, tx)
+
       if (trial)
         await creditArticleCredits(
           {
@@ -196,10 +199,32 @@ export default defineEventHandler(async (event) => {
           tx,
         })
 
-      return site
+      const importUrl = site.websiteUrl ? normalizeWebsiteUrl(site.websiteUrl) : null
+      const websiteImport =
+        body.websiteImportConsentVersion && importUrl
+          ? await tx.websiteImport.create({
+              data: {
+                clientSiteId: site.id,
+                sourceUrl: importUrl,
+                createdById: user.id,
+                consentVersion: body.websiteImportConsentVersion,
+                baseline: { ...emptyWebsiteValues(), accentColor: site.accentColor, language: site.language },
+              },
+            })
+          : null
+      if (websiteImport)
+        await logAction({
+          action: 'WEBSITE_IMPORT_QUEUED',
+          clientSiteId: site.id,
+          userId: user.id,
+          tx,
+          metadata: { importId: websiteImport.id, consentVersion: body.websiteImportConsentVersion },
+        })
+      return { ...site, websiteImportId: websiteImport?.id }
     })
 
     clientSiteId = result.id
+    if (result.websiteImportId) kickWebsiteImport(result.websiteImportId)
   } catch (error: any) {
     console.error('Account creation error:', error)
     if (isUniqueViolation(error)) {

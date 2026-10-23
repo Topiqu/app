@@ -15,7 +15,7 @@ beforeAll(async () => {
   handler = (await import('../../server/api/clients/[id]/index.patch')).default
 })
 
-const setup = async (body: Record<string, unknown>, role = 'admin', plan = 'PRO') => {
+const setup = async (body: Record<string, unknown>, role = 'admin', plan = 'PRO', missingAuthor = false) => {
   let site = {
     id: 'tenant-1',
     plan,
@@ -28,6 +28,7 @@ const setup = async (body: Record<string, unknown>, role = 'admin', plan = 'PRO'
     socials: [{ platform: 'FACEBOOK', url: 'https://facebook.com/old' }],
     users: [{ id: 'ai-1', username: 'Writer', bio: 'Original bio' }],
   }
+  if (missingAuthor) site.users = []
   let linkedinMode = 'PERSONAL'
   const log = vi.fn()
   const db = {
@@ -69,6 +70,14 @@ const setup = async (body: Record<string, unknown>, role = 'admin', plan = 'PRO'
   vi.stubGlobal('getIp', () => '203.0.113.4')
   vi.stubGlobal('RELEASE_SCHEDULE_FIELDS', [])
   vi.stubGlobal('invalidateAuthor', vi.fn())
+  vi.stubGlobal(
+    'ensureAiAuthor',
+    vi.fn(async () => {
+      const author = { id: 'default-ai', username: 'Original site Editorial Team 0123abcd', bio: '' }
+      site.users.push(author)
+      return author
+    }),
+  )
   vi.stubGlobal('isDomainTaken', async () => false)
   vi.stubGlobal('logAction', log)
   return { run: () => handler({} as never), db, log }
@@ -101,6 +110,19 @@ describe('tenant settings audit', () => {
     expect(db.clientSite.update).not.toHaveBeenCalled()
   })
 
+  it('keeps a collision-safe default name when an older site first customizes its author', async () => {
+    const { run, db } = await setup(
+      { aiUser: { username: 'Original site Editorial Team', bio: 'Our editorial team' } },
+      'admin',
+      'PRO',
+      true,
+    )
+    await run()
+    expect(db.user.update).toHaveBeenCalledWith({
+      where: { id: 'default-ai' },
+      data: { username: 'Original site Editorial Team 0123abcd', bio: 'Our editorial team' },
+    })
+  })
   it('records changed persisted values and ignores unchanged and uneditable input', async () => {
     const { run, log } = await setup({
       name: 'New site',

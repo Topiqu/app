@@ -4,8 +4,16 @@ import { generateText, Output } from 'ai'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { stubNitroImports } from '../../helpers/nitroImports'
+import { ARTICLE_QUALITY_EFFORT } from '../../../shared/utils/articleQuality'
 
 async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/aiUsage'), 'recordAiUsage')
+  await stubNitroImports(
+    import('../../../server/utils/ai/articleUsage'),
+    'articleEmbeddingUsage',
+    'articleImageUsage',
+    'articleLanguageUsage',
+  )
   await stubNitroImports(
     import('../../../server/utils/ai/modelRegistry'),
     'aiEmbeddingModelId',
@@ -165,6 +173,29 @@ describe('AI model integration', () => {
     expect(requests[0]?.body).not.toHaveProperty('temperature')
     expect(result.output).toEqual({ title: 'Verified' })
     expect(result.usage.totalTokens).toBe(22)
+  })
+
+  it.each([
+    ['STANDARD', 24_000],
+    ['HIGH', 40_000],
+    ['ULTRA', 72_000],
+  ] as const)('writes %s with Luna at its effort and matching thinking headroom', async (quality, maxTokens) => {
+    const result = await generateText({
+      model: aiModel('articleWriter'),
+      prompt: 'Write an article title.',
+      output: Output.object({ schema: z.object({ title: z.string() }) }),
+      maxOutputTokens: 8000,
+      providerOptions: aiReasoning(ARTICLE_QUALITY_EFFORT[quality]),
+    })
+    expect(requests).toHaveLength(1)
+    expect(requests[0]?.url).toBe('https://api.openai.com/v1/responses')
+    expect(requests[0]?.body).toMatchObject({
+      model: 'gpt-6-luna',
+      max_output_tokens: maxTokens,
+      reasoning: { effort: ARTICLE_QUALITY_EFFORT[quality] },
+      text: { format: { type: 'json_schema', strict: true } },
+    })
+    expect(result.output).toEqual({ title: 'Verified' })
   })
 
   it.each(['translation', 'textEdit', 'promptEnhance', 'linkedinPost', 'backlinkOutreach'] as const)(

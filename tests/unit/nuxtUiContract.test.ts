@@ -200,7 +200,7 @@ describe('Nuxt UI template contract', () => {
             const lastFieldToken = fieldTokens.at(-1)?.[0] ?? ''
             const inField = lastFieldToken.startsWith('<UFormField') && !lastFieldToken.endsWith('/>')
             const explicitlyLabelled =
-              /\b(?::?aria-label|:?id)=/.test(tag) ||
+              /\b(?::?aria-label(?:ledby)?|:?id)=/.test(tag) ||
               (name === 'UCheckbox' && /\b:?label=/.test(tag)) ||
               (name === 'URadioGroup' && /\b:?legend=/.test(tag))
             return !inField && !explicitlyLabelled

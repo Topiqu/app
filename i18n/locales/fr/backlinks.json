@@ -14,6 +14,15 @@
     "disabledTitle": "Les backlinks font partie des forfaits Pro et Premium",
     "disabledDescription": "Nous trouvons les sites qui vous citent sans lien et vérifions chaque lien obtenu.",
     "upgrade": "Voir les forfaits",
+    "empty": {
+      "title": "Aucun lien ni opportunité pour le moment",
+      "description": "Nous recherchons les sites qui vous mentionnent sans lien, puis vérifions régulièrement les liens trouvés.",
+      "steps": {
+        "discover": "Nous trouvons une mention sans lien",
+        "contact": "Vous demandez un lien à l’auteur",
+        "verify": "Nous vérifions le nouveau lien"
+      }
+    },
     "stats": {
       "live": {
         "label": "Liens vérifiés",

@@ -50,6 +50,24 @@ describe.skipIf(!enabled)('article wallet on PostgreSQL', () => {
     expect(await getArticleCreditWallet(id)).toMatchObject({ available: 0, balance: 1, reserved: 1 })
   })
 
+  it('serializes competing quality-priced reservations without overspending', async () => {
+    const id = await tenant(4)
+    const results = await Promise.allSettled([
+      reserveArticleCredit(id, 'MANUAL_ARTICLE', randomUUID(), { articleQuality: 'ULTRA' }, 3),
+      reserveArticleCredit(id, 'SCHEDULED_ARTICLE', randomUUID(), { articleQuality: 'HIGH' }, 2),
+    ])
+    const completed = results.filter((result) => result.status === 'fulfilled')
+    expect(completed).toHaveLength(1)
+    const reserved = completed[0]!.value.reserved
+    expect(await getArticleCreditWallet(id)).toMatchObject({ balance: 4, reserved, available: 4 - reserved })
+    await settleArticleCredit(completed[0]!.value, true)
+    expect(await getArticleCreditWallet(id)).toMatchObject({
+      balance: 4 - reserved,
+      reserved: 0,
+      available: 4 - reserved,
+    })
+  })
+
   it('charges success and returns a failed reservation', async () => {
     const id = await tenant(2)
     const completed = await reserveArticleCredit(id, 'MANUAL_ARTICLE')

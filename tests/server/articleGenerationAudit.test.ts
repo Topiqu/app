@@ -3,6 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { stubNitroImports } from '../helpers/nitroImports'
 
 async function stubImports() {
+  await stubNitroImports(import('../../server/utils/aiUsage'), 'recordAiUsage')
+  await stubNitroImports(import('../../server/utils/ai/articleUsage'), 'withArticleUsageStage')
   await stubNitroImports(import('../../server/utils/databaseJson'), 'toDatabaseJson')
 }
 

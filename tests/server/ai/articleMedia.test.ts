@@ -4,6 +4,9 @@ import { stubNitroImports } from '../../helpers/nitroImports'
 import { applyContentSlots, dropAuthoredImages } from '../../../shared/utils/contentSlots'
 
 async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/aiUsage'), 'recordAiUsage')
+  await stubNitroImports(import('../../../server/utils/ai/articleUsage'), 'withArticleUsageStage')
+  await stubNitroImports(import('../../../server/utils/images/verify'), 'imageDepicts')
   await stubNitroImports(import('../../../server/utils/ai/formats'), 'applyFormat', 'formatRules', 'selectedModulesFor')
   await stubNitroImports(import('../../../server/utils/sanitize'), 'escapeHtml')
   await stubNitroImports(import('../../../server/utils/ai/reasoning'), 'aiReasoning')
@@ -72,6 +75,8 @@ const { steamSearch } = vi.hoisted(() => ({
   steamSearch: vi.fn<(query: string, accept: (image: any) => boolean) => Promise<any>>(async () => null),
 }))
 vi.mock('../../../server/utils/images/steam', () => ({ createSteamImageSearch: () => steamSearch }))
+const { imageDepicts } = vi.hoisted(() => ({ imageDepicts: vi.fn(async () => ({ depicts: true })) }))
+vi.mock('../../../server/utils/images/verify', () => ({ imageDepicts }))
 vi.mock('../../../server/utils/images/appStore', () => ({ createAppStoreImageSearch: () => async () => null }))
 vi.mock('ai', async (importOriginal) => ({
   ...(await importOriginal<typeof import('ai')>()),
@@ -109,6 +114,7 @@ const hit = (id: string) => ({
 
 beforeEach(() => {
   vi.mocked(findStockImage).mockReset()
+  imageDepicts.mockReset().mockResolvedValue({ depicts: true })
   steamSearch.mockReset()
   vi.stubGlobal('getServerTranslator', async () => (key: string) => key)
   vi.stubGlobal('dropBlankLines', (content: string) => content)
@@ -318,7 +324,7 @@ describe('article media finalization', () => {
       images: [],
     }
     const result = await finalizeArticle(object, 'en', { allowGeneratedImages: true })
-    expect(findStockImage).toHaveBeenLastCalledWith('photo', 'Jeseniky mountains', undefined, undefined)
+    expect(findStockImage).toHaveBeenLastCalledWith('photo', 'Jeseniky mountains', undefined, expect.any(Function))
     expect(result.articleImageUrl).toBe('https://images.test/mountains')
     expect(result.articleImageCredit?.kind).toBe('illustration')
     expect(generateImage).not.toHaveBeenCalled()
@@ -351,11 +357,66 @@ describe('article media finalization', () => {
       'photo',
       'Andrej Babis Petr Pavel 2026 meeting',
       undefined,
-      undefined,
+      expect.any(Function),
     )
-    expect(findStockImage).toHaveBeenNthCalledWith(2, 'photo', 'Andrej Babis', undefined, undefined)
+    expect(findStockImage).toHaveBeenNthCalledWith(2, 'photo', 'Andrej Babis', undefined, expect.any(Function))
     expect(result.articleImageCredit?.kind).toBe('illustration')
     expect(generateImage).not.toHaveBeenCalled()
+  })
+
+  describe('vision check of library images', () => {
+    const insulation = {
+      ...draft(),
+      title: 'Dotace na zateplení 2026',
+      coverImage: { type: 'stock' as const, query: 'house facade insulation', broaderQuery: '' },
+      images: [],
+    }
+    /** Offers the candidates in order, each through the caller's `accept`, like a provider. */
+    const offering = (ids: string[]) =>
+      vi.mocked(findStockImage).mockImplementation(async (_intent, _query, _chains, accept) => {
+        for (const id of ids) if (!accept || (await accept(hit(id).image))) return hit(id)
+        return null
+      })
+
+    it('looks at each library candidate and moves past one that shows something else', async () => {
+      offering(['grand-canyon-ceremony', 'facade'])
+      imageDepicts.mockResolvedValueOnce({ depicts: false }).mockResolvedValueOnce({ depicts: true })
+
+      const result = await finalizeArticle(insulation, 'en')
+
+      expect(result.articleImageUrl).toBe('https://images.test/facade')
+      expect(imageDepicts).toHaveBeenCalledWith(
+        expect.objectContaining({ url: 'https://images.test/grand-canyon-ceremony' }),
+        { title: 'Dotace na zateplení 2026', query: 'house facade insulation', type: 'stock' },
+        undefined,
+      )
+    })
+
+    it('looks at no more than three candidates per search and leaves the slot to the fallback', async () => {
+      offering(['a', 'b', 'c', 'd', 'e'])
+      imageDepicts.mockResolvedValue({ depicts: false })
+
+      const result = await finalizeArticle(insulation, 'en')
+
+      expect(imageDepicts).toHaveBeenCalledTimes(3)
+      expect(result.articleImageUrl).toBe('')
+    })
+
+    it('records each look in the generation audit', async () => {
+      const log = vi.fn()
+      vi.stubGlobal('logAction', log)
+      offering(['facade'])
+      imageDepicts.mockResolvedValue({ depicts: true })
+      const audit = createArticleGenerationAudit({ attemptId: 'attempt-1', mode: 'manual', clientSiteId: 'site' })
+
+      await finalizeArticle(insulation, 'en', { audit })
+
+      expect(log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          metadata: expect.objectContaining({ stage: 'image_check', depicts: true }),
+        }),
+      )
+    })
   })
 
   it('never synthesizes the people or event of an unavailable documentary cover', async () => {
@@ -400,7 +461,7 @@ it('prefers a real photo of a named subject over AI and reports where every imag
     ],
   }
   const result = await finalizeArticle(object, 'en', { allowGeneratedImages: true, onMedia })
-  expect(findStockImage).toHaveBeenNthCalledWith(2, 'photo', 'Andrej Babis', undefined, undefined)
+  expect(findStockImage).toHaveBeenNthCalledWith(2, 'photo', 'Andrej Babis', undefined, expect.any(Function))
   expect(result.articleImageUrl).toBe('https://images.test/babis')
   expect(generateImage).toHaveBeenCalledTimes(1)
   expect(onMedia).toHaveBeenLastCalledWith(
@@ -441,9 +502,9 @@ describe('auto-published media rights', () => {
   const library = (fallback: (() => ReturnType<typeof hit>) | null) =>
     vi.mocked(findStockImage).mockImplementation(async (_intent, _query, _chains, accept) => {
       const first = unclear()
-      if (!accept || accept(first.image)) return first
+      if (!accept || (await accept(first.image))) return first
       const next = fallback?.()
-      return next && accept(next.image) ? next : null
+      return next && (await accept(next.image)) ? next : null
     })
   const auto = { clientSiteId: 'site', allowGeneratedImages: true, requireClearRights: true }
 

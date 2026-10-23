@@ -5,6 +5,8 @@ import { describe, expect, it, beforeEach } from 'vitest'
 import { stubNitroImports } from '../../helpers/nitroImports'
 
 async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/aiUsage'), 'recordAiUsage')
+  await stubNitroImports(import('../../../server/utils/ai/articleUsage'), 'withArticleUsageStage')
   await stubNitroImports(import('../../../server/utils/ai/reasoning'), 'aiReasoning')
   await stubNitroImports(
     import('../../../server/utils/ai/formats'),

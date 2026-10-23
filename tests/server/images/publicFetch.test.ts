@@ -260,6 +260,17 @@ describe('official media network guard', () => {
     expect(pinned).toEqual(['93.184.216.34'])
   })
 
+  it('rejects an out-of-scope redirect before resolving or contacting its host', async () => {
+    serve({ status: 302, headers: { location: 'https://outside.example.org/page' } })
+    await expect(
+      fetchPublicUrl('https://press.example.org/page', 8000, undefined, {
+        allowUrl: (url) => url.hostname === 'press.example.org',
+      }),
+    ).rejects.toThrow('outside allowed scope')
+    expect(requestMock).toHaveBeenCalledTimes(1)
+    expect(lookup).not.toHaveBeenCalledWith('outside.example.org', expect.anything())
+  })
+
   it('decompresses gzip bodies and drops the compressed length', async () => {
     const text = 'Compressed press page body'
     const compressed = gzipSync(text)

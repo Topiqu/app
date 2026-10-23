@@ -2,6 +2,9 @@ import * as cheerio from 'cheerio'
 
 const SEARCH_URL = 'https://commons.wikimedia.org/w/api.php'
 
+// A long description holds half the words of almost any generic query; the opening states the subject.
+const DESCRIPTION_CHARS = 200
+
 /** Commons also serves SVG, TIFF, PDF and video from the same namespace; none of those belong in a body. */
 const RASTER = new Set(['image/jpeg', 'image/png', 'image/webp'])
 
@@ -65,7 +68,10 @@ export const wikimediaImage = (page: CommonsPage): StockImage | null => {
 const rankWikimediaPages = (pages: CommonsPage[], query?: string): CommonsPage[] => {
   pages = query
     ? pages.filter((page) =>
-        matchesImageQuery([page.title, metaText(page, 'ImageDescription')].filter(Boolean).join(' '), query),
+        matchesImageQuery(
+          [page.title, metaText(page, 'ImageDescription')?.slice(0, DESCRIPTION_CHARS)].filter(Boolean).join(' '),
+          query,
+        ),
       )
     : pages
   const usable = [...pages]
@@ -80,14 +86,14 @@ const rankWikimediaPages = (pages: CommonsPage[], query?: string): CommonsPage[]
 }
 
 /** `accept` lets a caller skip candidates it cannot use, e.g. ones whose licence needs a person to confirm. */
-export const pickWikimediaImage = (
+export const pickWikimediaImage = async (
   pages: CommonsPage[],
   query?: string,
-  accept?: (image: StockImage) => boolean,
-): StockImage | null => {
+  accept?: ImageAccept,
+): Promise<StockImage | null> => {
   for (const page of rankWikimediaPages(pages, query)) {
     const image = wikimediaImage(page)
-    if (image && (!accept || accept(image))) return image
+    if (image && (!accept || (await accept(image)))) return image
   }
 
   return null

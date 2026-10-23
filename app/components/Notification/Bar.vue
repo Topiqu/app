@@ -36,14 +36,14 @@
                       <ULink
                         v-if="n.article?.slug"
                         :to="localePath({ name: 'clanky-slug', params: { slug: n.article.slug } }, n.article.language)"
-                        class="mt-1 block line-clamp-2 break-words text-sm leading-5 text-muted hover:text-primary"
+                        class="mt-1 block text-sm leading-5 text-muted hover:text-primary"
                       >
-                        {{ n.article.title }}
+                        <span class="line-clamp-2 break-words">{{ n.article.title }}</span>
                       </ULink>
                     </div>
                     <div class="flex items-start gap-1">
                       <ULink
-                        v-if="n.type === 'LIKE' && n.article?.imageUrl && n.article.slug"
+                        v-if="n.article?.imageUrl && n.article.slug"
                         :to="localePath({ name: 'clanky-slug', params: { slug: n.article.slug } }, n.article.language)"
                         class="shrink-0 rounded-[var(--ui-radius)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                         :aria-label="n.article.title"

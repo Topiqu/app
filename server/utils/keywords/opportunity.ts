@@ -40,6 +40,12 @@ const decisionSchema = z.object({
       'Focused means the query itself names a concrete reader problem, comparison or task; a generic brand, product or category is broad even if the proposed angle is specific.',
     ),
   intent: z.enum(['informational', 'commercial', 'transactional', 'navigational', 'mixed']),
+  theme: z
+    .string()
+    .max(80)
+    .describe(
+      'Subject area in one to three words, in the blog language, shared by every query about the same subject whatever its wording: all subsidy programmes get one label. Reuse a KNOWN THEMES label when it fits.',
+    ),
   angle: z
     .string()
     .max(300)
@@ -82,8 +88,9 @@ export const assessOpportunities = async (
   site: ScopeSite,
   candidates: OpportunityCandidate[],
   articles: CoveredArticle[],
+  themes: string[] = [],
 ) => {
-  if (!candidates.length) return { accepted: [], expansions: [] }
+  if (!candidates.length) return { accepted: [], expansions: [], covered: [] }
   const result = await generateText({
     model: aiModel('keywordOpportunity'),
     maxOutputTokens: 3000 + candidates.length * 180,
@@ -94,6 +101,9 @@ Assessment date: ${new Date().toISOString().slice(0, 10)}. Do not frame an old r
 
 ## EXISTING ARTICLES (including drafts)
 ${articles.map((article, index) => `${index + 1}. ${article.title} — ${article.excerpt?.slice(0, 220) || ''}`).join('\n') || 'none'}
+
+## KNOWN THEMES
+${themes.join(', ') || 'none'}
 
 ## CANDIDATES
 ${JSON.stringify(candidates.map((candidate, index) => ({ item: index + 1, ...candidate })))}`,
@@ -143,5 +153,8 @@ ${JSON.stringify(candidates.map((candidate, index) => ({ item: index + 1, ...can
       },
     ]
   })
-  return { accepted, expansions }
+  const covered = decisions.flatMap((decision, index) =>
+    decision.coveredBy > 0 && decision.coveredBy <= articles.length ? [{ index, article: decision.coveredBy - 1 }] : [],
+  )
+  return { accepted, expansions, covered }
 }

@@ -51,11 +51,13 @@ const current = computed(() => locales.find((item) => item.value === locale.valu
 
 // The account copy also decides the language of the user's emails, so signed-in choices are saved.
 async function select(language: Language) {
-  if (language === locale.value || saving.value) return
+  if (saving.value) return
+  const saveAccountLanguage = !!auth.value?.user && auth.value.user.language !== language
+  if (language === locale.value && !saveAccountLanguage) return
   saving.value = true
   try {
-    if (auth.value?.user) await saveProfile({ language })
-    await setLocale(language)
+    if (saveAccountLanguage) await saveProfile({ language })
+    if (language !== locale.value) await setLocale(language)
     preferences.language.value = language
   } finally {
     saving.value = false

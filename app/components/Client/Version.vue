@@ -1,36 +1,48 @@
 <template>
   <div
-    data-client-version-bar
-    class="bottom-action-bar fixed right-3 bottom-3 z-overlay flex max-w-[calc(100vw-1.5rem)] items-center gap-1 rounded-[calc(var(--ui-radius)+0.25rem)] bg-elevated p-1 shadow-lg ring ring-default"
+    class="pointer-events-none fixed right-3 bottom-3 z-overlay flex max-w-[calc(100vw-1.5rem)] flex-col items-end gap-2"
   >
-    <UButton class="min-w-0" color="neutral" variant="soft" trailingIcon="mdi:chevron-up" @click="show = true">
-      <span class="sr-only">{{ $t('common.wallet.title') }}</span>
-      <span class="hidden shrink-0 sm:inline">Topiqu {{ config.public.appVersion }}</span>
-      <UBadge class="min-w-0 shrink truncate" :color="planBadgeColor" variant="soft">{{
-        site?.plan ?? $t('articles.userMenu.noClientAssigned')
-      }}</UBadge>
-      <UBadge
-        v-if="status?.articlesRemaining != null"
-        class="ml-auto min-w-0 max-w-[8.5rem] shrink truncate tabular-nums"
-        :title="$t('common.wallet.available')"
-        :color="isLowArticles ? 'error' : 'success'"
-        variant="soft"
-      >
-        {{ status.articlesRemaining.toLocaleString(locale) }}
-      </UBadge>
-    </UButton>
-
-    <UTooltip :text="$t('common.consent.openSettings')">
+    <AdminWebsiteImportNotice />
+    <AdminSetupChecklist />
+    <div
+      data-client-version-bar
+      class="bottom-action-bar pointer-events-auto flex max-w-full items-center gap-1 rounded-[calc(var(--ui-radius)+0.25rem)] bg-elevated p-1 shadow-lg ring ring-default"
+    >
       <UButton
-        data-consent-settings
-        square
+        class="min-w-0"
         color="neutral"
         variant="soft"
-        icon="mdi:cookie-settings-outline"
-        :aria-label="$t('common.consent.openSettings')"
-        @click="openConsentSettings"
-      />
-    </UTooltip>
+        trailingIcon="mdi:chevron-up"
+        :aria-label="$t('common.wallet.title')"
+        @click="show = true"
+      >
+        <span class="hidden shrink-0 sm:inline">Topiqu {{ config.public.appVersion }}</span>
+        <UBadge class="min-w-0 shrink truncate" :color="planBadgeColor" variant="soft">{{
+          site?.plan ?? $t('articles.userMenu.noClientAssigned')
+        }}</UBadge>
+        <UBadge
+          v-if="status?.articlesRemaining != null"
+          class="ml-auto min-w-0 max-w-[8.5rem] shrink truncate tabular-nums"
+          :title="$t('common.wallet.available')"
+          :color="isLowArticles ? 'error' : 'success'"
+          variant="soft"
+        >
+          {{ status.articlesRemaining.toLocaleString(locale) }}
+        </UBadge>
+      </UButton>
+
+      <UTooltip :text="$t('common.consent.openSettings')">
+        <UButton
+          data-consent-settings
+          square
+          color="neutral"
+          variant="soft"
+          icon="mdi:cookie-settings-outline"
+          :aria-label="$t('common.consent.openSettings')"
+          @click="openConsentSettings"
+        />
+      </UTooltip>
+    </div>
   </div>
 
   <USlideover
@@ -58,6 +70,18 @@
                   >{{ articlesRemaining.toLocaleString(locale) }}</span
                 >
                 <span class="text-sm text-muted">{{ $t('common.wallet.unit', articlesRemaining) }}</span>
+              </p>
+              <p class="mt-2 text-xs leading-5 text-muted">
+                {{
+                  $t(
+                    'common.wallet.affordableArticles',
+                    {
+                      count: affordableArticles,
+                      quality: $t(`common.preferences.articleQuality.options.${status?.articleQuality ?? 'STANDARD'}`),
+                    },
+                    affordableArticles,
+                  )
+                }}
               </p>
             </div>
 
@@ -280,7 +304,8 @@ watch(
 
 const articlesRemaining = computed(() => status.value?.articlesRemaining ?? 0)
 const articleUnit = (count: number) => t('common.articlePacks.articles', count)
-const isLowArticles = computed(() => articlesRemaining.value <= 1)
+const affordableArticles = computed(() => affordableArticleCount(articlesRemaining.value, status.value?.articleQuality))
+const isLowArticles = computed(() => affordableArticles.value <= 1)
 // Summary numbers come from the status payload, which is already loaded — the paginated
 // /wallet fetch is deliberately not the source, it would render zeros until it resolves.
 const wallet = computed(() => status.value?.articleWallet)

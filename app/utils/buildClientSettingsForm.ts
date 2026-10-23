@@ -55,6 +55,7 @@ export interface ClientSettingsForm extends PublicationChannelSettings, ReleaseS
   commentsEnabled: boolean
   commentGifsEnabled: boolean
   aiSeriesEnabled: boolean
+  articleQuality: ArticleQuality
   generationFrequency: 'DAILY' | 'WEEKLY' | 'INTERVAL' | 'NONE'
   translationMode: 'OFF' | 'MANUAL' | 'AUTO' | 'HYBRID'
   translationLanguages: string[]
@@ -93,6 +94,7 @@ const emptyForm = (): ClientSettingsForm => ({
   commentGifsEnabled: true,
   ...publicationChannelSettings(),
   aiSeriesEnabled: false,
+  articleQuality: 'STANDARD',
   generationFrequency: 'NONE',
   ...releaseScheduleSettings(),
   translationMode: 'OFF',
@@ -137,9 +139,9 @@ export function buildClientSettingsForm(client?: ClientSite | null): ClientSetti
     socials: client.socials ?? [],
     apiKey: client.apiKey ?? '',
     aiUser: {
-      username: client.aiUser?.username ?? '',
+      username: client.aiUser?.username ?? defaultAiAuthorName(client.name ?? '', client.language),
       bio: client.aiUser?.bio ?? '',
-      avatarUrl: client.aiUser?.avatarUrl ?? '',
+      avatarUrl: client.aiUser ? (client.aiUser.avatarUrl ?? '') : (client.logoUrl ?? ''),
       optimizedAvatarUrl: '',
     },
     aiToneOfVoice: client.aiToneOfVoice ?? '',
@@ -151,6 +153,7 @@ export function buildClientSettingsForm(client?: ClientSite | null): ClientSetti
     commentGifsEnabled: client.commentGifsEnabled ?? true,
     ...publicationChannelSettings(client),
     aiSeriesEnabled: client.aiSeriesEnabled ?? false,
+    articleQuality: articleQualityOf(client.articleQuality),
     generationFrequency: client.generationFrequency ?? 'NONE',
     ...releaseScheduleSettings(client),
     translationMode: client.translationMode ?? 'OFF',

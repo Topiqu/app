@@ -8,7 +8,9 @@ export default defineEventHandler(async (event) => {
     where: { id },
     include: {
       users: {
-        where: { role: 'ai' },
+        where: { role: 'ai', deletedAt: null },
+        orderBy: { createdAt: 'asc' },
+        take: 1,
         select: { id: true, username: true, bio: true, avatarUrl: true },
       },
       socials: true,
@@ -104,6 +106,7 @@ export default defineEventHandler(async (event) => {
         articleWallet,
         autoRelease: clientSite.autoRelease,
         aiSeriesEnabled: clientSite.aiSeriesEnabled,
+        articleQuality: clientSite.articleQuality,
         aiToneOfVoice: clientSite.aiToneOfVoice,
         aiControversyLevel: clientSite.aiControversyLevel,
         translationMode: clientSite.translationMode,

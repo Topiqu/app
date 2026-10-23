@@ -104,6 +104,7 @@ export default defineNuxtConfig({
     turnstile: { secretKey: process.env.TURNSTILE_SECRET_KEY || '' },
     openAi: { apiKey: process.env.OPENAI_API_KEY },
     anthropic: { apiKey: process.env.ANTHROPIC_API_KEY || '' },
+    websiteImport: { dailyBudgetUsd: process.env.WEBSITE_IMPORT_DAILY_BUDGET_USD || '100' },
     xai: { apiKey: process.env.XAI_API_KEY || '' },
     googleGenerativeAi: { apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY || '' },
     metaModel: { apiKey: process.env.META_MODEL_API_KEY || process.env.MODEL_API_KEY || '' },
@@ -161,7 +162,7 @@ export default defineNuxtConfig({
     scheduledTasks:
       IS_PROD && !IS_BROWSER_TEST
         ? {
-            '* * * * *': ['webhook-deliver'],
+            '* * * * *': ['webhook-deliver', 'website-import'],
             '*/15 * * * *': ['generate-article'],
             '*/30 * * * *': ['sentiment-analysis'],
             '0 * * * *': ['community-insights'],

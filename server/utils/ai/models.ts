@@ -1,11 +1,16 @@
-import { wrapLanguageModel, type LanguageModelMiddleware } from 'ai'
+import { wrapEmbeddingModel, wrapImageModel, wrapLanguageModel, type LanguageModelMiddleware } from 'ai'
 
 import openAi from './openai'
 import anthropic from './anthropic'
 
 // Both providers count reasoning against the output limit. Call-site budgets size the answer;
-// reserve additional space for thinking, with more headroom at high effort.
-const THINKING_HEADROOM = { medium: 8000, high: 16000 } as const
+// reserve additional space for thinking, growing with effort.
+const THINKING_HEADROOM = { medium: 8000, high: 16000, xhigh: 32000, max: 64000 } as const satisfies Record<
+  ReasoningEffort,
+  number
+>
+const headroom = (effort: unknown) =>
+  THINKING_HEADROOM[Object.hasOwn(THINKING_HEADROOM, String(effort)) ? (effort as ReasoningEffort) : 'medium']
 
 const thinkingHeadroom = (provider: AiProvider): LanguageModelMiddleware => ({
   transformParams: async ({ params }) => {
@@ -16,7 +21,7 @@ const thinkingHeadroom = (provider: AiProvider): LanguageModelMiddleware => ({
       ? params
       : {
           ...params,
-          maxOutputTokens: params.maxOutputTokens + THINKING_HEADROOM[effort === 'high' ? 'high' : 'medium'],
+          maxOutputTokens: params.maxOutputTokens + headroom(effort),
         }
   },
 })
@@ -25,13 +30,21 @@ export const aiModel = (task: AiTask) => {
   const provider = aiModelProvider(task)
   return wrapLanguageModel({
     model: provider === 'anthropic' ? anthropic(aiModelId(task)) : openAi.responses(aiModelId(task)),
-    middleware: thinkingHeadroom(provider),
+    middleware: [thinkingHeadroom(provider), articleLanguageUsage(task, provider, aiModelId(task))],
   })
 }
 
-export const aiImageModel = (task: AiImageTask) => openAi.image(aiImageModelId(task))
+export const aiImageModel = (task: AiImageTask) =>
+  wrapImageModel({
+    model: openAi.image(aiImageModelId(task)),
+    middleware: articleImageUsage(task, 'openai', aiImageModelId(task)),
+  })
 
-export const aiEmbeddingModel = (task: AiEmbeddingTask) => openAi.embedding(aiEmbeddingModelId(task))
+export const aiEmbeddingModel = (task: AiEmbeddingTask) =>
+  wrapEmbeddingModel({
+    model: openAi.embedding(aiEmbeddingModelId(task)),
+    middleware: articleEmbeddingUsage(task, 'openai', aiEmbeddingModelId(task)),
+  })
 
 type SearchDepth = 'low' | 'medium' | 'high'
 

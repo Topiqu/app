@@ -1,14 +1,15 @@
 export interface ArticlePack {
   id: string
+  /** Number of article credits. The field name is retained for existing checkout metadata. */
   articles: number
   priceUsd: number
   name: string
 }
 
 export const ARTICLE_PACKS: Record<string, ArticlePack> = {
-  '5': { id: '5', articles: 5, priceUsd: 8.99, name: '5 additional articles' },
-  '12': { id: '12', articles: 12, priceUsd: 14.99, name: '12 additional articles' },
-  '25': { id: '25', articles: 25, priceUsd: 22.49, name: '25 additional articles' },
+  '5': { id: '5', articles: 5, priceUsd: 8.99, name: '5 article credits' },
+  '12': { id: '12', articles: 12, priceUsd: 14.99, name: '12 article credits' },
+  '25': { id: '25', articles: 25, priceUsd: 22.49, name: '25 article credits' },
 }
 
 export const ARTICLE_PACK_LIST = Object.values(ARTICLE_PACKS)

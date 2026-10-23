@@ -5,6 +5,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { stubNitroImports } from '../../helpers/nitroImports'
 
 async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/ai/articleUsage'), 'withArticleUsageStage', 'bindArticleUsage')
+  await stubNitroImports(import('../../../server/utils/keywords/plan'), 'themeKey', 'themeOf')
   await stubNitroImports(import('../../../server/utils/databaseJson'), 'toDatabaseJson')
   await stubNitroImports(import('../../../server/utils/planFeatures'), 'activeFeatureFilter')
   await stubNitroImports(import('../../../server/utils/keywords/rank'), 'firstRankCheck')
@@ -40,6 +42,8 @@ vi.mock('../../../server/utils/keywords/plan', () => ({
   keywordPlanFor: async () => [],
   planSignal: vi.fn(),
   sameKeyword: vi.fn(),
+  themeKey: (value?: string | null) => value?.trim().toLocaleLowerCase() || null,
+  themeOf: () => null,
 }))
 vi.mock('../../../server/utils/keywords/dataforseo', () => ({ hasDataForSeo: () => false, dataForSeo: vi.fn() }))
 
@@ -47,8 +51,9 @@ beforeEach(() => vi.resetModules())
 afterEach(() => vi.unstubAllGlobals())
 
 const setup = async (
-  failure?: 'reservation' | 'generation' | 'persistence' | 'publication' | 'settlement',
+  failure?: 'reservation' | 'author' | 'generation' | 'persistence' | 'publication' | 'settlement',
   communityInsight: JsonValue = null,
+  articleQuality = 'STANDARD',
 ) => {
   const log = vi.fn().mockResolvedValue({})
   const client = {
@@ -61,6 +66,7 @@ const setup = async (
     publishToWeb: true,
     aiSeriesEnabled: false,
     communityInsight,
+    articleQuality,
   }
   const generated = {
     title: 'Generated article',
@@ -76,12 +82,13 @@ const setup = async (
     research: { status: 'skipped' },
     usage: { totalTokens: 42 },
   }
+  const createArticle = vi.fn(async ({ data }) => ({ ...data, id: 'article-1', user: { role: 'ai' } }))
   const transaction = vi.fn(async (run) => {
     if (failure === 'persistence') throw new Error('Article persistence failed')
     return run({
       article: {
         findMany: async () => [],
-        create: async ({ data }) => ({ ...data, id: 'article-1', user: { role: 'ai' } }),
+        create: createArticle,
       },
       articleTag: { createMany: async () => ({ count: 0 }) },
       mediaRightsPublicationSnapshot: { create: async () => ({}) },
@@ -97,6 +104,14 @@ const setup = async (
   vi.stubGlobal('logAction', log)
   vi.stubGlobal('reportCaughtError', vi.fn())
   vi.stubGlobal('withArticleCreditReservation', reservation)
+  vi.stubGlobal(
+    'ensureAiAuthor',
+    vi.fn(async () => {
+      if (failure === 'author') throw new Error('Author unavailable')
+      return { id: 'editorial-ai' }
+    }),
+  )
+  vi.stubGlobal('aiModelId', () => 'gpt-6-luna')
   vi.stubGlobal('prisma', {
     article: { findMany: async () => [] },
     articleTranslation: { findMany: async () => [] },
@@ -112,13 +127,11 @@ const setup = async (
   )
   vi.stubGlobal('selectedModulesFor', () => [])
   vi.stubGlobal('researchRequest', () => false)
-  vi.stubGlobal(
-    'generateArticle',
-    vi.fn(async () => {
-      if (failure === 'generation') throw new Error('Writer unavailable')
-      return generated
-    }),
-  )
+  const writer = vi.fn(async () => {
+    if (failure === 'generation') throw new Error('Writer unavailable')
+    return generated
+  })
+  vi.stubGlobal('generateArticle', writer)
   vi.stubGlobal('recordAiUsage', vi.fn())
   vi.stubGlobal('calculateArticleMetrics', () => ({ totalWords: 4, savedAmount: 1, savedTimeMinutes: 1 }))
   vi.stubGlobal('evaluateMediaRights', async () => ({
@@ -135,7 +148,14 @@ const setup = async (
   })
   vi.stubGlobal('invalidateFeed', vi.fn())
   const { processClient } = await import('../../../server/tasks/generate-article')
-  return { run: () => processClient(client, new Date('2020-01-01T12:00:00Z')), log, transaction, reservation }
+  return {
+    run: () => processClient(client, new Date('2020-01-01T12:00:00Z')),
+    log,
+    transaction,
+    reservation,
+    writer,
+    createArticle,
+  }
 }
 
 describe('scheduled generation audit', () => {
@@ -160,6 +180,38 @@ describe('scheduled generation audit', () => {
     expect(pickArticleTopic).toHaveBeenCalledWith(expect.objectContaining({ suggestion: undefined }))
   })
 
+  it.each([
+    ['STANDARD', 'high', 1],
+    ['HIGH', 'xhigh', 2],
+    ['ULTRA', 'max', 3],
+  ] as const)(
+    'uses the editorial author and saved %s quality for a scheduled article',
+    async (quality, effort, amount) => {
+      const { run, writer, createArticle, reservation } = await setup(undefined, null, quality)
+      await expect(run()).resolves.toMatchObject({ status: 'draft', articleId: 'article-1' })
+      expect(writer).toHaveBeenCalledWith(
+        'tenant-1',
+        expect.any(String),
+        expect.objectContaining({ articleQuality: quality }),
+      )
+      expect(createArticle).toHaveBeenCalledWith(
+        expect.objectContaining({ data: expect.objectContaining({ userId: 'editorial-ai' }) }),
+      )
+      expect(reservation.mock.calls[0]?.[3].metadata).toMatchObject({
+        articleQuality: quality,
+        writerModel: 'gpt-6-luna',
+        writerEffort: effort,
+        creditsRequired: amount,
+      })
+      expect(reservation.mock.calls[0]?.[3].amount).toBe(amount)
+    },
+  )
+
+  it('does not invoke a paid writer when the editorial author cannot be resolved', async () => {
+    const { run, writer } = await setup('author')
+    expect(await run()).toMatchObject({ status: 'failed', stage: 'author' })
+    expect(writer).not.toHaveBeenCalled()
+  })
   it('correlates reservation, topic, persistence, delivery and settlement with one attempt', async () => {
     const { run, log, reservation } = await setup()
     await expect(run()).resolves.toMatchObject({ status: 'draft', articleId: 'article-1' })

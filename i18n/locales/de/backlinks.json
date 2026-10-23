@@ -14,6 +14,15 @@
     "disabledTitle": "Backlinks sind in den Tarifen Pro und Premium enthalten",
     "disabledDescription": "Wir finden Websites, die Sie ohne Link erwähnen, und prüfen jeden Link, den Sie gewinnen.",
     "upgrade": "Tarife ansehen",
+    "empty": {
+      "title": "Noch keine Links oder Möglichkeiten",
+      "description": "Wir suchen Websites, die Sie ohne Link erwähnen, und prüfen gefundene Links regelmäßig.",
+      "steps": {
+        "discover": "Wir finden eine Erwähnung ohne Link",
+        "contact": "Sie bitten den Autor um einen Link",
+        "verify": "Wir prüfen den neuen Link"
+      }
+    },
     "stats": {
       "live": {
         "label": "Bestätigte Links",

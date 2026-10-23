@@ -1,34 +1,172 @@
 {
   "common": {
+    "websiteImport": {
+      "title": "Nastavení z webu při založení blogu",
+      "description": "Na pozadí připravíme nastavení blogu a podklady do znalostní báze. Před použitím návrhy zkontrolujete.",
+      "review": "Zkontrolovat návrhy",
+      "open": "Zobrazit průběh",
+      "reviewHelp": "Zkontrolujte jednotlivé návrhy, případně je upravte a použijte vybraná pole nebo potvrďte vše. Nevybraná pole si ponechají současné hodnoty.",
+      "allCorrect": "Vše je správně",
+      "applySelected": "Použít vybrané",
+      "skip": "Přeskočit návrhy",
+      "notFound": "Nepodařilo se najít podloženou hodnotu. Můžete ji doplnit později.",
+      "current": "Současná hodnota: {value}",
+      "saveFirst": "Před přijetím návrhů uložte nebo zahoďte ostatní změny nastavení.",
+      "background": "Můžete dál používat Topiqu. Jakmile budou návrhy připravené, zůstanou zde dostupné.",
+      "budgetWait": "Zpracování čeká ve frontě a bude pokračovat později. Topiqu můžete dál používat.",
+      "failedHelp": "Přípravu se nepodařilo dokončit. Nastavení můžete doplnit v jednotlivých sekcích.",
+      "knowledgeConsent": "Potvrzením znalostních podkladů souhlasíte s jejich zpracováním AI a použitím ve veřejných článcích. Nepotvrzujte důvěrné ani osobní údaje.",
+      "conflict": "Od otevření kontroly se změnilo nastavení. Obnovte stránku a zkontrolujte současné hodnoty.",
+      "assetFailed": "Navržené logo nebo favicon se nepodařilo importovat. Zrušte výběr tohoto pole a použijte ostatní návrhy.",
+      "rateLimited": "Příliš mnoho pokusů. Zkuste to prosím později.",
+      "applied": "Návrhy z webu byly zkontrolovány",
+      "status": {
+        "PENDING": "Příprava z webu čeká ve frontě",
+        "PROCESSING": "Připravujeme nastavení z vašeho webu",
+        "READY": "Návrhy z vašeho webu jsou připravené",
+        "REVIEWED": "Návrhy z webu byly zkontrolovány",
+        "FAILED": "Příprava z webu vyžaduje pozornost"
+      },
+      "fields": {
+        "accentColor": "Primární barva",
+        "logoUrl": "Logo",
+        "faviconUrl": "Favicon",
+        "keywords": "Klíčová slova",
+        "focus": "Zaměření blogu",
+        "audience": "Primární publikum",
+        "aiToneOfVoice": "Styl psaní",
+        "language": "Jazyk obsahu",
+        "socials": "Sociální profily",
+        "knowledge": "Znalostní podklady"
+      },
+      "warnings": {
+        "pageFailed": "Některé stránky se nepodařilo načíst. Návrhy vycházejí ze zbývajících podkladů.",
+        "knowledgeQuota": "Některé stránky se nevešly do limitu znalostní báze.",
+        "assetUnavailable": "Některé podklady značky se nepodařilo načíst. Můžete je nahrát ručně.",
+        "analysisFailed": "Některé obsahové návrhy se nepodařilo připravit. Zkontrolujte dostupné hodnoty."
+      }
+    },
     "entry": {
       "title": "Založte svůj první blog",
       "description": "Nastavte si blog a začněte psát a publikovat články s Topiqu.",
       "retry": "Zkusit znovu"
     },
     "setup": {
-      "menu": "Začínáme",
-      "title": "Připravte první publikaci",
+      "checklist": {
+        "title": "Nastavení blogu",
+        "description": "Dokončete nastavení a připravte blog na publikování.",
+        "expand": "Rozbalit průvodce nastavením blogu",
+        "collapse": "Sbalit průvodce nastavením blogu",
+        "processing": "Zpracovává se",
+        "attention": "Vyžaduje pozornost",
+        "saved": "Uložené změny se v checklistu projeví automaticky.",
+        "permission": "Tento krok musí dokončit člen týmu s příslušným oprávněním.",
+        "resumeDraft": "Otevřít rozepsaný článek",
+        "resumeDescription": "Máte rozepsaný článek. Otevřete ho, zkontrolujte náhled a publikujte.",
+        "viewArticles": "Zobrazit články",
+        "progress": "Vyřízeno {done} z {total}",
+        "optional": "Volitelné",
+        "skip": "Teď přeskočit",
+        "skipped": "Přeskočeno",
+        "restore": "Vrátit do seznamu",
+        "confirmPublishing": "Potvrdit tento režim",
+        "manualDescription": "Články čekají na vaše schválení. Tento režim můžete potvrdit, nebo v nastavení zapnout automatické publikování a upravit harmonogram.",
+        "automaticDescription": "AI články se publikují automaticky. Zkontrolujte režim a při pravidelné tvorbě i frekvenci, dny, čas a časové pásmo.",
+        "requirements": {
+          "name": "Název blogu",
+          "logo": "Logo blogu",
+          "description": "Popis pro čtenáře",
+          "authorName": "Jméno autora",
+          "avatar": "Portrét autora",
+          "bio": "Medailonek autora",
+          "tone": "Styl psaní",
+          "focus": "Zaměření blogu",
+          "audience": "Cílová skupina",
+          "source": "Zpracovaný zdroj zapnutý pro AI",
+          "domain": "Ověřené připojení domény",
+          "article": "Publikovaný článek",
+          "publishingMode": "Zvolený způsob publikování",
+          "schedule": "Platný harmonogram tvorby",
+          "measurement": "Zapnuté Analytics nebo připojená služba Search Console",
+          "teammate": "Další člen týmu nebo platná pozvánka",
+          "channel": "Připojený a zapnutý Shopify blog nebo LinkedIn profil"
+        },
+        "steps": {
+          "branding": {
+            "title": "Doplňte profil blogu",
+            "description": "Nahrajte logo a napište krátký popis, aby čtenáři věděli, čí blog čtou a co tu najdou.",
+            "action": "Upravit branding"
+          },
+          "author": {
+            "title": "Představte AI autora",
+            "description": "Doplňte portrét a medailonek autora a určete styl psaní. Profil se zobrazí u jeho článků.",
+            "action": "Nastavit profil a styl"
+          },
+          "voice": {
+            "title": "Určete témata a čtenáře",
+            "description": "Vyplňte zaměření a cílovou skupinu. AI podle nich vybírá témata i způsob vysvětlení.",
+            "action": "Nastavit obsah"
+          },
+          "knowledge": {
+            "title": "Přidejte podklady pro AI",
+            "description": "Přidejte firemní web nebo dokument. Krok je hotový, až je alespoň jeden zdroj zpracovaný a zapnutý pro AI.",
+            "action": "Přidat podklady"
+          },
+          "domain": {
+            "title": "Připojte vlastní doménu",
+            "description": "Dokončete DNS záznamy pro {domain} a ověřte připojení.",
+            "action": "Dokončit připojení domény"
+          },
+          "article": {
+            "title": "Publikujte první článek",
+            "description": "Vytvořte článek, zkontrolujte náhled a publikujte. Koncepty a budoucí publikace se zatím nepočítají.",
+            "action": "Vytvořit první článek"
+          },
+          "publishing": {
+            "title": "Zvolte způsob publikování",
+            "description": "Zvolte schvalování článků, nebo automatické publikování. Pro pravidelnou tvorbu nastavte frekvenci, dny, čas a časové pásmo.",
+            "action": "Nastavit publikování"
+          },
+          "measurement": {
+            "title": "Zapojte měření",
+            "description": "Zapněte Google Analytics s ID měření, nebo připojte Search Console a vyberte web. Dostupnost služeb závisí na vašem tarifu.",
+            "action": "Nastavit měření"
+          },
+          "team": {
+            "title": "Pozvěte kolegu",
+            "description": "Přizvěte kolegu do redakce a vyberte mu oprávnění. Platná odeslaná pozvánka stačí; na její přijetí čekat nemusíte.",
+            "action": "Pozvat kolegu"
+          },
+          "channels": {
+            "title": "Propojte publikační kanál",
+            "description": "Připojte Shopify a vyberte cílový blog, nebo propojte LinkedIn profil. Propojený kanál musí mít zapnuté publikování.",
+            "action": "Propojit kanál"
+          }
+        }
+      },
+      "menu": "Dokončit nastavení",
+      "title": "Dokončete nastavení blogu",
       "completeTitle": "Nastavení blogu je hotové",
       "progress": "Hotovo {done} z {total}",
       "next": "Další krok: {step}",
-      "expand": "Rozbalit checklist nastavení blogu",
+      "expand": "Otevřít zbývající kroky nastavení blogu",
       "collapse": "Sbalit checklist nastavení blogu",
       "done": "Hotovo",
       "remaining": "Zbývá",
       "review": "Zkontrolovat nastavení",
       "publishPermission": "K publikaci potřebujete oprávnění psát a publikovat články. Obraťte se na vlastníka blogu.",
       "recommended": "Doporučené navíc",
-      "optional": "Checklist znovu otevřete přes Začínáme v menu.",
+      "optional": "Zbývající kroky otevřete v panelu Nastavení blogu vpravo dole.",
       "hide": "Schovat checklist",
       "steps": {
         "branding": {
-          "title": "Představte blog čtenářům",
-          "description": "Doplňte krátký popis toho, co čtenáři na blogu najdou.",
+          "title": "Doplňte popis blogu",
+          "description": "V Nastavení → Branding vyplňte popis toho, co na blogu publikujete.",
           "action": "Doplnit popis blogu"
         },
         "voice": {
-          "title": "Nastavte obsah a čtenáře",
-          "description": "Řekněte AI, o čem má psát a komu mají články pomáhat.",
+          "title": "Doplňte zaměření a cílovou skupinu",
+          "description": "V Nastavení → Obsah vyplňte, o čem má AI psát a pro koho.",
           "action": "Doplnit zaměření"
         },
         "domain": {
@@ -38,7 +176,7 @@
         },
         "article": {
           "title": "Publikujte první článek",
-          "description": "Vytvořte článek, zkontrolujte náhled a publikujte. Koncepty a články naplánované do budoucna se zatím nepočítají.",
+          "description": "V editoru napište nebo vygenerujte článek a zvolte Publikovat. Koncept ani budoucí publikace se nepočítá.",
           "action": "Otevřít editor"
         }
       },
@@ -56,15 +194,15 @@
       }
     },
     "wallet": {
-      "title": "Články",
-      "available": "Zbývající články",
-      "unit": "článků | článek | články | článků",
-      "bonusExpiry": "Bonusové články mohou mít datum platnosti; dokoupené články neexpirují.",
-      "generationReservation": "Každé generování dočasně zablokuje 1 článek. Po úspěšném dokončení se odečte; při chybě nebo přerušení se vrátí.",
-      "neverExpires": "Články z tarifu platí pro dané období. Dokoupené články neexpirují.",
-      "explanation": "Tarif přidává články každý měsíc. Dokoupené články neexpirují a spotřebují se až po článcích z tarifu.",
+      "title": "Kredity na články",
+      "available": "Dostupné kredity",
+      "unit": "kredit | kredity | kreditů",
+      "bonusExpiry": "Bonusové kredity mohou expirovat, dokoupené ne.",
+      "generationReservation": "Článek rezervuje podle kvality 1, 2 nebo 3 kredity. Kontrola i jedna automatická oprava jsou v ceně. Při technické chybě se rezervace vrátí.",
+      "neverExpires": "Kredity z tarifu platí pro dané období. Dokoupené kredity neexpirují.",
+      "explanation": "Tarif přidává kredity každý měsíc. Standard stojí 1, High 2 a Ultra 3 kredity za článek včetně kontroly a jedné automatické opravy. Dokoupené kredity neexpirují a čerpají se až po kreditech z tarifu.",
       "reserved": "Dočasně rezervováno",
-      "reservedHint": "Každé generování rezervuje 1 článek. Při chybě se uvolní.",
+      "reservedHint": "Článek podle kvality rezervuje 1, 2 nebo 3 kredity. Při technické chybě se celá částka vrátí.",
       "reasons": {
         "manualArticle": "Ručně vytvořený článek",
         "scheduledArticle": "Automaticky vytvořený článek",
@@ -72,25 +210,26 @@
       },
       "periodUsage": "Spotřeba za {period}",
       "expires": "Platnost do",
-      "topup": "Dokoupit články",
-      "history": "Historie článků",
-      "empty": "Zatím žádné pohyby článků.",
-      "initial": "Počáteční počet článků",
-      "adjustment": "Úprava počtu článků",
+      "topup": "Dokoupit kredity",
+      "history": "Historie kreditů",
+      "empty": "Zatím žádné pohyby kreditů.",
+      "initial": "Počáteční počet kreditů",
+      "adjustment": "Úprava kreditů",
       "reason": "Povinný důvod",
-      "amount": "Počet článků",
+      "amount": "Počet kreditů",
       "operation": "ID původní operace (pro vrácení)",
       "apply": "Provést úpravu",
       "kinds": {
-        "CREDIT": "Připsání článků",
+        "CREDIT": "Připsané kredity",
         "DEBIT": "Spotřeba",
         "RELEASE": "Uvolnění rezervace",
-        "EXPIRY": "Expirace",
-        "EXPIRE": "Expirace",
-        "REFUND": "Vrácení článků",
+        "EXPIRY": "Expirované kredity",
+        "EXPIRE": "Expirované kredity",
+        "REFUND": "Vrácené kredity",
         "BONUS": "Bonus",
         "ADJUSTMENT": "Ruční odečet"
-      }
+      },
+      "affordableArticles": "Vystačí na {count} článek v kvalitě {quality}. | Vystačí na {count} články v kvalitě {quality}. | Vystačí na {count} článků v kvalitě {quality}."
     },
     "searchConsole": {
       "title": "Google Search Console",
@@ -993,8 +1132,8 @@
         "monthly": "– Měsíční platba",
         "intervalMonthly": "Měsíčně",
         "intervalAnnual": "Ročně",
-        "tokenBalance": "Zbývající články",
-        "buyTokens": "Dokoupit články",
+        "tokenBalance": "Dostupné kredity",
+        "buyTokens": "Dokoupit kredity",
         "manage": "Spravovat předplatné a faktury",
         "openPortal": "Spravovat fakturaci",
         "invoicesTitle": "Faktury a platby",
@@ -1221,7 +1360,7 @@
         "previewInterval": "Příklad nejbližších vydání (přesné časy losujeme)",
         "perMonth": "Žádný článek v příštích 30 dnech | ≈ {count} článek v příštích 30 dnech | ≈ {count} články v příštích 30 dnech | ≈ {count} článků v příštích 30 dnech",
         "creditsUntil": "kredity vystačí zhruba do {date}",
-        "noCredits": "Nemáte kredity. Pro další vydávání je doplňte.",
+        "noCredits": "Na článek ve zvolené kvalitě nemáte dost kreditů. Doplňte je nebo zvolte nižší kvalitu.",
         "errors": {
           "timeZone": "Vyberte platné časové pásmo.",
           "releaseHour": "Vyberte čas vydání.",
@@ -1267,6 +1406,16 @@
           "empty": "Pro váš primární jazyk nejsou k dispozici žádné další jazyky."
         },
         "tokenWarning": "Automatický překlad vytvoří samostatnou jazykovou verzi každého publikovaného článku pro každý cílový jazyk."
+      },
+      "articleQuality": {
+        "title": "Kvalita článků",
+        "description": "Zvolte kvalitu nových článků z editoru i automatického plánování. Cena zahrnuje kontrolu a jednu automatickou opravu, pokud ji článek potřebuje.",
+        "options": {
+          "STANDARD": "Standardní",
+          "HIGH": "Vysoká",
+          "ULTRA": "Nejvyšší"
+        },
+        "cost": "{count} kredit za článek | {count} kredity za článek | {count} kreditů za článek"
       },
       "aiAuthor": {
         "title": "Nastavení AI autora",
@@ -1527,17 +1676,17 @@
       "declined": "Pozvánka odmítnuta"
     },
     "articlePacks": {
-      "title": "Rozšiřte publikační kapacitu",
-      "pack5": "5 článků",
-      "pack12": "12 článků",
-      "pack25": "25 článků",
+      "title": "Kredity na další články",
+      "pack5": "5 kreditů",
+      "pack12": "12 kreditů",
+      "pack25": "25 kreditů",
       "bestValue": "Nejvýhodnější",
       "volumeDiscount": "{discount} % množstevní sleva",
-      "articles": "článků | článek | články | článků",
+      "articles": "kredit | kredity | kreditů",
       "taxExclusive": "bez DPH",
       "buy": "Koupit",
-      "buyPack": "Koupit balíček s {count} články",
-      "purchaseHint": "Doplňte si články podle potřeby. Připíšeme je ihned a neexpirují.",
+      "buyPack": "Koupit balíček {count} kreditů",
+      "purchaseHint": "Kredity jsou dostupné hned a neexpirují. Článek stojí podle kvality 1, 2 nebo 3 kredity včetně kontroly a jedné automatické opravy.",
       "neverExpires": "Bez expirace",
       "upgradeToPremium": "Povýšit na PREMIUM"
     },

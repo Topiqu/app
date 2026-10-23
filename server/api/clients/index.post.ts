@@ -17,8 +17,6 @@ export default defineEventHandler(async (event) => {
   const initialArticles = body.initialArticles ?? 0
   if (!Number.isSafeInteger(initialArticles) || initialArticles < 0 || initialArticles > 10000)
     throw createError({ statusCode: 400, message: 'Invalid initial article allowance' })
-  if (initialArticles > 0 && !body.aiUser?.name)
-    throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
   const [existingUser, existingSubdomain] = await Promise.all([
     db.user.findUnique({ where: { email: body.email } }),
@@ -76,6 +74,8 @@ export default defineEventHandler(async (event) => {
         },
       })
     }
+
+    await ensureAiAuthor(clientSite.id, tx)
 
     return clientSite
   })

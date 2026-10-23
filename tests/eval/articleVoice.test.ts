@@ -14,6 +14,9 @@ import { hedges } from './hedging'
 import { stubNitroImports } from '../helpers/nitroImports'
 
 async function stubImports() {
+  await stubNitroImports(import('../../server/utils/aiUsage'), 'recordAiUsage')
+  await stubNitroImports(import('../../server/utils/ai/articleUsage'), 'withArticleUsageStage')
+  await stubNitroImports(import('../../server/utils/images/verify'), 'imageDepicts')
   await stubNitroImports(import('../../server/utils/ai/formats'), 'applyFormat', 'formatRules', 'selectedModulesFor')
   await stubNitroImports(import('../../server/utils/sanitize'), 'escapeHtml')
   await stubNitroImports(import('../../server/utils/ai/reasoning'), 'aiReasoning')

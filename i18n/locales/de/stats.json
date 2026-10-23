@@ -48,7 +48,19 @@
       "tooltip": "Geschätzt anhand abgeschlossener KI-Texte mit dem aktuellen Satz von {rate}/Std. und {speed} Wörtern/Std. Manuelle Bearbeitungen und spätere Speichervorgänge erhöhen den Gesamtwert nicht."
     },
     "articleCount": "Veröffentlichte Artikel",
-    "sentiment": { "title": "Deine Community", "current": "Aktuelle Übersicht", "toxicity": "{value} Toxizität" },
+    "sentiment": {
+      "title": "Deine Community",
+      "current": "Aktuelle Übersicht",
+      "toxicity": "{value} Toxizität",
+      "emotions": {
+        "joy": "Freude",
+        "anger": "Ärger",
+        "sadness": "Traurigkeit",
+        "fear": "Angst",
+        "surprise": "Überraschung",
+        "curiosity": "Neugier"
+      }
+    },
     "totalShares": { "title": "Geteilte Inhalte insgesamt" },
     "topArticle": { "pluralTitle": "Meistgelesene Artikel", "noViews": "Noch kein Artikel wurde gelesen" },
     "topTag": { "title": "Beliebtester Tag", "noTags": "Noch keine Tags verwendet", "showAll": "Alle anzeigen" },

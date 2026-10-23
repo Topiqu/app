@@ -32,7 +32,11 @@
       </p>
     </section>
 
-    <p v-if="articlesRemaining === 0" role="status" class="flex items-start gap-2 text-sm leading-5 text-warning">
+    <p
+      v-if="articlesRemaining != null && forecast.affordableArticles === 0"
+      role="status"
+      class="flex items-start gap-2 text-sm leading-5 text-warning"
+    >
       <UIcon name="mdi:alert-circle-outline" class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
       {{ $t('common.preferences.releaseSchedule.noCredits') }}
     </p>
@@ -47,11 +51,13 @@
 </template>
 
 <script setup lang="ts">
+import type { ArticleQuality } from '~~/shared/utils/articleQuality'
 import type { ReleaseSchedule } from '~~/shared/utils/releaseSchedule'
 
 const props = defineProps<{
   rules: ReleaseSchedule
   articlesRemaining?: number | null
+  articleQuality?: ArticleQuality
   nextReleaseAt?: string | null
 }>()
 const { t, locale } = useI18n()
@@ -61,7 +67,9 @@ const seed = computed(() =>
   [...JSON.stringify(props.rules)].reduce((hash, char) => (hash * 31 + char.charCodeAt(0)) | 0, 7),
 )
 const preview = computed(() => upcomingReleases(props.rules, { count: 4, random: seededRandom(seed.value) }))
-const forecast = computed(() => releaseForecast(props.rules, props.articlesRemaining ?? null))
+const forecast = computed(() =>
+  releaseForecast(props.rules, props.articlesRemaining ?? null, new Date(), props.articleQuality),
+)
 
 const formatSlot = (date: Date, options: Intl.DateTimeFormatOptions = {}) =>
   new Intl.DateTimeFormat(locale.value, {

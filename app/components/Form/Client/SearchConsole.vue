@@ -115,6 +115,7 @@ interface Status {
     query: string
   }
   connection: null | {
+    status: NonNullable<InternalApi['/api/search-console/status']['get']['connection']>['status']
     googleEmail: string | null
     propertyUrl: string | null
     lastSyncAt: string | null
@@ -129,6 +130,10 @@ interface Property {
 const toast = useToast()
 const { locale, t } = useI18n()
 const { data, pending, refresh } = await useFetch<Status>('/api/search-console/status')
+watch(
+  () => `${data.value?.connection?.status ?? ''}:${data.value?.connection?.propertyUrl ?? ''}`,
+  () => refreshClientSiteStatus(),
+)
 const properties = shallowRef<Property[]>([])
 const selectedProperty = shallowRef('')
 const autopilotPending = shallowRef(false)

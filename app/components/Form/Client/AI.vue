@@ -21,6 +21,7 @@
               v-model="avatarUrl"
               :api="`/api/clients/${clientId}/ai-avatar`"
               :name="username || $t('common.preferences.aiAuthor.title')"
+              @upload="onAvatarUploaded"
             >
               <template #default="{ open }">
                 <button
@@ -90,6 +91,8 @@
       </div>
     </section>
 
+    <FormClientArticleQuality v-model="articleQuality" />
+
     <div v-if="!setupOnly" class="space-y-4">
       <div>
         <h3 class="text-base font-semibold text-highlighted">{{ $t('common.preferences.aiPage.capabilities') }}</h3>
@@ -141,6 +144,7 @@
       :autoRelease="autoRelease"
       :aiSeriesEnabled="aiSeriesEnabled"
       :articlesRemaining="articlesRemaining"
+      :articleQuality="articleQuality"
       :nextReleaseAt="nextReleaseAt"
       @update:autoRelease="handleAutoReleaseToggle"
       @update:aiSeriesEnabled="emit('update:aiSeriesEnabled', $event)"
@@ -238,9 +242,11 @@
 </template>
 
 <script setup lang="ts">
+import type { ArticleQuality } from '~~/shared/utils/articleQuality'
 import type { ReleaseFrequency, ReleaseScheduleSettings } from '~~/shared/utils/releaseSchedule'
 
 const { t, locale } = useI18n()
+const onAvatarUploaded = () => refreshClientSiteStatus()
 
 const props = defineProps<{
   clientId: string
@@ -301,6 +307,7 @@ const generationFrequency = computed<ReleaseFrequency>({
   set: (value) => emit('update:generationFrequency', value),
 })
 const releaseSchedule = defineModel<ReleaseScheduleSettings>('releaseSchedule', { required: true })
+const articleQuality = defineModel<ArticleQuality>('articleQuality', { required: true })
 
 const translationModeOptions = computed(() =>
   (['OFF', 'MANUAL', 'AUTO', 'HYBRID'] as const).map((value) => ({

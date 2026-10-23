@@ -1,7 +1,7 @@
 {
   "legal": {
     "lastUpdated": "Naposledy aktualizováno: {date}",
-    "updatedAt": "10. 10. 2026",
+    "updatedAt": "18. října 2026",
     "placeholderNote": "Adresa sídla se záměrně neuvádí — odkazuje se na ARES a sdělujeme ji na vyžádání.",
     "tos": {
       "title": "Obchodní podmínky",
@@ -17,7 +17,7 @@
           "icon": "mdi:credit-card-outline",
           "iconColor": "text-emerald-500",
           "title": "2. Tarify a platby",
-          "content": "<ul class='list-disc pl-5 mt-2 space-y-1'><li>Platí ceny zobrazené při objednávce, včetně DPH, je-li uplatňována. Platby zpracovává Stripe.</li><li>Předplatné se automaticky obnovuje. Zrušit ho můžete kdykoli v nastavení s účinností ke konci zúčtovacího období.</li><li>Jedno úspěšné AI generování spotřebuje jeden článek. Články v tarifu platí pro dané měsíční období, dokoupené články neexpirují.</li><li>Při neuhrazené platbě můžeme po upozornění pozastavit placené funkce.</li></ul>Změnu ceny oznámíme předem e-mailem. Platí od dalšího období a do té doby můžete předplatné zrušit."
+          "content": "<ul class='list-disc pl-5 mt-2 space-y-1'><li>Platí ceny zobrazené při objednávce, včetně DPH, je-li uplatňována. Platby zpracovává Stripe.</li><li>Předplatné se automaticky obnovuje. Zrušit ho můžete kdykoli v nastavení s účinností ke konci zúčtovacího období.</li><li>AI článek spotřebuje podle kvality Standard 1, High 2 nebo Ultra 3 kredity včetně kontroly a jedné automatické opravy. Při technické chybě se celá rezervace vrací. Kredity v tarifu platí pro dané měsíční období, dokoupené kredity neexpirují.</li><li>Při neuhrazené platbě můžeme po upozornění pozastavit placené funkce.</li></ul>Změnu ceny oznámíme předem e-mailem. Platí od dalšího období a do té doby můžete předplatné zrušit."
         },
         {
           "icon": "mdi:keyboard-return",

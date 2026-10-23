@@ -14,6 +14,15 @@
     "disabledTitle": "Zpětné odkazy jsou součástí tarifů Pro a Premium",
     "disabledDescription": "Najdeme weby, které o vás píšou bez odkazu, a ověříme každý odkaz, který získáte.",
     "upgrade": "Zobrazit tarify",
+    "empty": {
+      "title": "Zatím žádné odkazy ani příležitosti",
+      "description": "Hledáme weby, které vás zmiňují bez odkazu. Nalezené odkazy pak pravidelně kontrolujeme.",
+      "steps": {
+        "discover": "Najdeme zmínku bez odkazu",
+        "contact": "Požádáte autora o doplnění",
+        "verify": "Ověříme získaný odkaz"
+      }
+    },
     "stats": {
       "live": {
         "label": "Ověřené odkazy",

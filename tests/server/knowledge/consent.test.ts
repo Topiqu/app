@@ -5,6 +5,7 @@ import { stubNitroImports } from '../../helpers/nitroImports'
 import { KNOWLEDGE_CONSENT_VERSION } from '../../../shared/utils/knowledge'
 
 async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/knowledge/create'), 'createKnowledgeSource')
   await stubNitroImports(import('../../../server/utils/images/publicFetch'), 'assertPublicHttpsUrl')
   await stubNitroImports(
     import('../../../server/utils/knowledge/extract'),
@@ -59,7 +60,12 @@ describe('knowledge publish confirmation', () => {
 
   const createNote = async (confirmed?: string) => {
     const create = vi.fn().mockResolvedValue({ id: 'source-1', kind: 'NOTE' })
-    const log = stubServer({ knowledgeSource: { findFirst: vi.fn().mockResolvedValue(null), create } })
+    const tx = {
+      knowledgeSource: { findFirst: vi.fn().mockResolvedValue(null), create },
+      clientSite: { findUniqueOrThrow: vi.fn().mockResolvedValue({ plan: 'PRO' }) },
+      $queryRaw: vi.fn().mockResolvedValue([{ sources: 0, characters: 0 }]),
+    }
+    const log = stubServer({ ...tx, $transaction: async (run: (value: typeof tx) => unknown) => run(tx) })
     const parts = [part('kind', 'NOTE'), part('title', 'Pricing'), part('text', 'The Pro plan costs 49 USD per month.')]
     vi.stubGlobal('readMultipartFormData', async () => (confirmed ? [...parts, part('confirmed', confirmed)] : parts))
     const handler = (await import('../../../server/api/knowledge/index.post')).default

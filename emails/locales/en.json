@@ -76,13 +76,13 @@
     }
   },
   "creditsDepleted": {
-    "subject": "{tenantName} has run out of articles",
-    "preview": "Scheduled publishing is paused until you top up.",
+    "subject": "{tenantName} needs more credits",
+    "preview": "Top up credits for the next AI article.",
     "greeting": "Your publication needs a top-up",
-    "intro": "<b>{tenantName}</b> has no articles left, so the AI author has stopped writing.",
-    "paused": "Scheduled publishing is paused. The next article in your rhythm will be generated as soon as you add articles — no other setting needs to change.",
+    "intro": "<b>{tenantName}</b> does not have enough credits for the next article at the selected quality.",
+    "paused": "New scheduled articles are paused. Automatic writing resumes on schedule once you add enough credits or lower the writing quality.",
     "safe": "Everything already published, scheduled or saved as a draft stays exactly as it is.",
-    "button": "Top up articles",
+    "button": "Top up credits",
     "footer": "We send this once per top-up, so it will not fill your inbox."
   }
 }

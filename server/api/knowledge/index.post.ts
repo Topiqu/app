@@ -120,43 +120,28 @@ export default defineEventHandler(async (event) => {
 
   // Every feed starts empty, so a feed is a duplicate by its address; the sync replaces this hash.
   const contentHash = hashKnowledge(input.kind === 'FEED' ? sourceUrl! : extracted.content)
-  const duplicate = await db.knowledgeSource.findFirst({
-    where:
-      input.kind === 'FEED'
-        ? { clientSiteId, kind: 'FEED', sourceUrl, deletedAt: null }
-        : { clientSiteId, contentHash, deletedAt: null },
-    select: { id: true },
+  const stored = await createKnowledgeSource(db, {
+    clientSiteId,
+    createdById: user.id,
+    kind: input.kind,
+    title: input.title || extracted.title || originalFilename || sourceUrl || 'Untitled',
+    useInArticles,
+    publicUrl,
+    sourceUrl,
+    originalFilename,
+    mimeType: extracted.mimeType,
+    sizeBytes,
+    content: extracted.content,
+    contentHash,
+    ...(input.kind === 'FEED'
+      ? { language: input.language, currency: input.currency }
+      : {
+          validAsOf: options.data.validAsOf ? new Date(options.data.validAsOf) : (extracted.validAsOf ?? null),
+          fetchedAt: sourceUrl ? new Date() : null,
+        }),
   })
-  if (duplicate)
-    throw createError({
-      statusCode: 409,
-      statusMessage: 'This content is already in knowledge',
-      data: { code: 'KNOWLEDGE_DUPLICATE', id: duplicate.id },
-    })
-
-  const source = await db.knowledgeSource.create({
-    data: {
-      clientSiteId,
-      createdById: user.id,
-      kind: input.kind,
-      title: input.title || extracted.title || originalFilename || sourceUrl || 'Untitled',
-      useInArticles,
-      publicUrl,
-      sourceUrl,
-      originalFilename,
-      mimeType: extracted.mimeType,
-      sizeBytes,
-      content: extracted.content,
-      contentHash,
-      ...(input.kind === 'FEED'
-        ? { language: input.language, currency: input.currency }
-        : {
-            validAsOf: options.data.validAsOf ? new Date(options.data.validAsOf) : (extracted.validAsOf ?? null),
-            fetchedAt: sourceUrl ? new Date() : null,
-          }),
-    },
-    select: KNOWLEDGE_SOURCE_VIEW,
-  })
+  if (stored.reused) throw createError({ statusCode: 409, data: { code: 'KNOWLEDGE_DUPLICATE', id: stored.source.id } })
+  const source = stored.source
   await logAction({
     action: 'KNOWLEDGE_SOURCE_CREATED',
     userId: user.id,
