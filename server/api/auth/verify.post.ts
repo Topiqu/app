@@ -1,29 +1,20 @@
-export default defineEventHandler(async (e) => {
-  const { translate: t } = await useServerI18n(e)
-  const body = await readBody(e)
-  if (!body?.code)
-    throw createError({
-      statusCode: 400,
-      message: t('common.errors.missing')!,
-    })
+import { z } from 'zod'
+import { emailVerificationCodeSchema, emailVerificationEmailSchema } from '~~/shared/utils/auth'
+import { allowEmailVerificationRequest, consumeEmailVerification } from '~~/server/utils/emailVerification'
 
-  const { code } = body
-
-  const verification = await prisma.verificationCode.findFirst({
-    where: { code, expiresAt: { gt: new Date() } },
-    include: { user: true },
-  })
-
-  if (!verification)
+export default defineEventHandler(async (event) => {
+  const { translate: t } = await useServerI18n(event)
+  const { email, code } = await readValidatedBody(
+    event,
+    z.object({ email: emailVerificationEmailSchema, code: emailVerificationCodeSchema }).parse,
+  )
+  if (!(await allowEmailVerificationRequest(event, email, 'verify')))
+    throw createError({ statusCode: 429, message: t('common.errors.tooManyRequests')! })
+  if (!(await consumeEmailVerification(email, code)))
     throw createError({
       statusCode: 400,
       message: t('common.errors.invalidRequest')!,
     })
-
-  await prisma.user.update({
-    where: { id: verification.userId },
-    data: { emailVerified: true, verification: { delete: true } },
-  })
 
   return { success: true }
 })

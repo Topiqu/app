@@ -171,8 +171,9 @@ model UserBan with Base {
 }
 
 model VerificationCode with Base, Ownable {
-    code      String   @length(8, 8, "Kód musí mít přesně 8 znaků")
+    /// Legacy eight-character codes expire within 24h; new values are account/email-bound HMACs.
+    code      String   @omit @length(8, 67)
     expiresAt DateTime
     @@unique([userId])
-    @@allow('all', true)
+    @@deny('all', true)
 }

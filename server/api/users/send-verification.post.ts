@@ -1,29 +1,13 @@
-import { randomBytes } from 'crypto'
+import { allowEmailVerificationRequest, issueEmailVerification } from '~~/server/utils/emailVerification'
 
 export default defineEventHandler(async (e) => {
   const { translate: t } = await useServerI18n(e)
   const user = await getSessionUser(e)
   if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
-  const { emailVerified } =
-    (await prisma.user.findUnique({ where: { id: user.id }, select: { emailVerified: true } })) ?? {}
-  if (emailVerified) throw createError({ statusCode: 400, message: t('common.errors.alreadyExists')! })
-
-  const code = randomBytes(4).toString('hex')
-  const expires = new Date(Date.now() + 24 * 60 * 60 * 1000)
-
-  await prisma.verificationCode.deleteMany({ where: { userId: user.id } })
-  await prisma.verificationCode.create({ data: { code, userId: user.id, expiresAt: expires } })
-
-  await sendEmail({
-    to: user.email,
-    template: 'verificationCode',
-    data: {
-      verificationCode: code,
-      userName: user.name ?? '',
-      actionType: '{t:verificationCode.actions.emailVerification}',
-    },
-  })
-
-  return { success: true, message: t('common.auth.verificationCodeSent')! }
+  const current = await prisma.user.findFirst({ where: { id: user.id, deletedAt: null }, select: { email: true } })
+  if (!current) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
+  if (await allowEmailVerificationRequest(e, current.email, 'issue'))
+    await issueEmailVerification(e, current.email, user.id)
+  return { success: true, message: t('common.auth.verificationRequested')! }
 })
