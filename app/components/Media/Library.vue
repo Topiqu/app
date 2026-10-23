@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-0 flex-col gap-4">
+  <div class="flex min-h-0 flex-col gap-4" :aria-busy="loading">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
       <UFormField :label="$t('media.search')" :ui="{ label: 'sr-only' }" class="min-w-0 flex-1">
         <UInput v-model="search" type="search" icon="mdi:magnify" :placeholder="$t('media.search')" class="w-full" />
@@ -105,25 +105,33 @@ import type { MediaLibraryAsset, MediaLibraryPage } from '~~/shared/types/mediaL
 
 import { MEDIA_ORIGINS } from '~~/shared/types/mediaRights'
 
-const props = withDefaults(defineProps<{ selectable?: boolean; selectedId?: string | null }>(), {
-  selectable: false,
-  selectedId: null,
-})
+import { createAsyncDataRequest } from '~/utils/asyncDataRequest'
+
+const { selectable = false, selectedId = null } = defineProps<{ selectable?: boolean; selectedId?: string | null }>()
 const emit = defineEmits<{ select: [asset: MediaLibraryAsset]; inspect: [id: string] }>()
 const { t } = useI18n()
 const requestFetch = useRequestFetch()
+const { data: auth } = useAuth()
+const instanceId = useId()
+const scopeKey = computed(() => `${auth.value?.user.id ?? ''}:${auth.value?.user.clientSiteId ?? ''}`)
 const search = shallowRef('')
 const debouncedSearch = refDebounced(search, 350)
 const origin = shallowRef('all')
 const usage = shallowRef('all')
 const archived = shallowRef(false)
-const items = shallowRef<MediaLibraryAsset[]>([])
 const page = shallowRef(1)
 const pageSize = 30
-const total = shallowRef(0)
-const loading = shallowRef(true)
-const loadError = shallowRef(false)
-let requestVersion = 0
+const lastPage = shallowRef<MediaLibraryPage>()
+
+watch([debouncedSearch, origin, usage, archived], () => (page.value = 1), { flush: 'sync' })
+watch(
+  scopeKey,
+  () => {
+    lastPage.value = undefined
+    page.value = 1
+  },
+  { flush: 'sync' },
+)
 
 const originItems = computed(() => [
   { label: t('media.allOrigins'), value: 'all' },
@@ -134,42 +142,46 @@ const usageItems = computed(() => [
   { label: t('media.used'), value: 'used' },
   { label: t('media.unused'), value: 'unused' },
 ])
-const query = () => ({
+const query = computed(() => ({
   ...(debouncedSearch.value ? { query: debouncedSearch.value } : {}),
   ...(origin.value !== 'all' ? { origin: origin.value } : {}),
   usage: usage.value,
   archived: archived.value,
   page: page.value,
   limit: pageSize,
+}))
+const key = computed(() => `media-library:${instanceId}:${scopeKey.value}`)
+const request = createAsyncDataRequest((signal) =>
+  requestFetch<MediaLibraryPage>('/api/media', { query: query.value, signal }),
+)
+onScopeDispose(request.dispose)
+const { data, error, status, refresh, clear } = useAsyncData(key, request.fetch, { lazy: true, deep: false })
+// A reactive key handles tenant changes. Keep filters in a scoped watcher rather than
+// Nuxt's retained options, which would otherwise capture the component through query.
+watch([query, scopeKey], ([_query, scope], [_previousQuery, previousScope]) => {
+  if (scope === previousScope) void refresh()
 })
 
-const fetchFirst = async () => {
-  const version = ++requestVersion
-  loading.value = true
-  loadError.value = false
-  try {
-    const response = await requestFetch<MediaLibraryPage>('/api/media', { query: query() })
-    if (version !== requestVersion) return
-    items.value = response.items
-    total.value = response.total
-  } catch {
-    if (version === requestVersion) loadError.value = true
-  } finally {
-    if (version === requestVersion) loading.value = false
-  }
+// Keep the current grid during refresh; Nuxt owns cancellation and rejects stale completions.
+watch(
+  [data, status],
+  ([response, currentStatus]) => {
+    if (response && currentStatus === 'success') lastPage.value = response
+  },
+  { immediate: true },
+)
+const items = computed(() => lastPage.value?.items ?? [])
+const total = computed(() => lastPage.value?.total ?? 0)
+const loading = computed(() => status.value === 'idle' || status.value === 'pending')
+const loadError = computed(() => !!error.value)
+const reload = () => {
+  // A mutation must fetch fresh data even while the surrounding app is still hydrating.
+  clear()
+  return refresh()
 }
-
-const reload = () => fetchFirst()
 defineExpose({ reload })
-
-await fetchFirst()
-watch([debouncedSearch, origin, usage, archived], () => {
-  if (page.value === 1) fetchFirst()
-  else page.value = 1
-})
-watch(page, fetchFirst)
 
 const rangeStart = computed(() => (total.value ? (page.value - 1) * pageSize + 1 : 0))
 const rangeEnd = computed(() => Math.min(page.value * pageSize, total.value))
-const activate = (asset: MediaLibraryAsset) => (props.selectable ? emit('select', asset) : emit('inspect', asset.id))
+const activate = (asset: MediaLibraryAsset) => (selectable ? emit('select', asset) : emit('inspect', asset.id))
 </script>
