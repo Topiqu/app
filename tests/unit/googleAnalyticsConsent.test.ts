@@ -1,169 +1,129 @@
-import { mount } from '@vue/test-utils'
-import { mockNuxtImport } from '@nuxt/test-utils/runtime'
-import { defineComponent, h, nextTick, shallowRef } from 'vue'
+// @vitest-environment nuxt
+
+import type { MaybeRefOrGetter } from 'vue'
+
+import { enableAutoUnmount } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
+import { computed, defineComponent, h, nextTick, shallowRef, toValue } from 'vue'
 
-import type { ConsentDecision, ConsentSite } from '../../shared/utils/consent'
+import { useNuxtApp } from '#app'
 
-import { useConsent } from '../../app/composables/useConsent'
-import { consentCapabilities, createConsentDecision } from '../../shared/utils/consent'
+import type { ConsentSite } from '../../shared/utils/consent'
+
+import { consentCapabilities } from '../../shared/utils/consent'
+import { configuredTagIds } from '../../node_modules/nuxt-gtag/dist/runtime/utils.js'
 import { useGoogleAnalyticsConsent } from '../../app/composables/useGoogleAnalyticsConsent'
 
-const mocks = vi.hoisted(() => ({
-  cookie: null as ReturnType<typeof shallowRef<ConsentDecision | null>> | null,
-  states: new Map<string, ReturnType<typeof shallowRef>>(),
-  initialize: vi.fn(),
-  gtag: vi.fn(),
-  enableAnalytics: vi.fn(),
-  disableAnalytics: vi.fn(),
-  guard: null as ((to: { meta: { shell: string } }) => void) | null,
-}))
-mockNuxtImport('useCookie', () => () => mocks.cookie)
-mockNuxtImport('useRequestURL', () => () => new URL('https://blog.example.com'))
-mockNuxtImport('useState', () => (key: string, init: () => unknown) => {
-  if (!mocks.states.has(key)) mocks.states.set(key, shallowRef(init()))
-  return mocks.states.get(key)
-})
-mockNuxtImport('useGtag', () => () => mocks)
-mockNuxtImport('useRouter', () => () => ({
-  beforeEach: (guard: typeof mocks.guard) => {
-    mocks.guard = guard
-    return () => {
-      mocks.guard = null
-    }
+const analytics = shallowRef(false)
+const marketing = shallowRef(false)
+const guards: ((route: { meta: { shell: string } }) => void)[] = []
+const removeGuard = vi.fn()
+const config = {
+  public: {
+    gtag: {
+      tags: [],
+      url: 'https://www.googletagmanager.com/gtag/js',
+      initMode: 'manual',
+      config: { cookie_domain: 'none', allow_google_signals: false, allow_ad_personalization_signals: false },
+      initCommands: [
+        [
+          'consent',
+          'default',
+          { analytics_storage: 'denied', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' },
+        ],
+      ],
+    },
   },
+}
+mockNuxtImport('useHead', () => () => {})
+mockNuxtImport('useConsent', () => (site: MaybeRefOrGetter<ConsentSite | null | undefined>) => ({
+  capabilities: computed(() => consentCapabilities(toValue(site))),
+  analyticsGranted: analytics,
+  marketingGranted: marketing,
 }))
 
-let wrapper: ReturnType<typeof mount> | undefined
-beforeEach(() => {
-  mocks.cookie = shallowRef(null)
-  mocks.states.clear()
-  vi.clearAllMocks()
-  delete (window as unknown as { dataLayer?: unknown[] }).dataLayer
-})
-afterEach(() => wrapper?.unmount())
-
-const setup = (initial: ConsentSite, enabled = shallowRef(true)) => {
-  const site = shallowRef(initial)
-  let consent!: ReturnType<typeof useConsent>
-  wrapper = mount(
+const commands = () => (window.dataLayer ?? []).map((entry) => Array.from(entry as ArrayLike<unknown>))
+const mountConsent = async () => {
+  const site = shallowRef<ConsentSite>({ id: 'site-1', plan: 'PRO', allowGtag: true, gtagId: 'G-EXAMPLE123' })
+  const enabled = shallowRef(true)
+  const wrapper = await mountSuspended(
     defineComponent({
       setup() {
-        consent = useConsent(site)
         useGoogleAnalyticsConsent(site, enabled)
         return () => h('div')
       },
     }),
   )
-  return { site, consent, enabled }
+  return { wrapper, site, enabled }
 }
 
-describe('Google Analytics consent lifecycle', () => {
-  const gaSite = { id: 'site-1', plan: 'PRO', allowGtag: true, gtagId: 'G-ONE123' }
-
-  it('loads no Google tag before consent or after rejection', async () => {
-    const { consent } = setup(gaSite)
-    expect(mocks.initialize).not.toHaveBeenCalled()
-    consent.rejectAll()
-    await nextTick()
-    expect(mocks.initialize).not.toHaveBeenCalled()
-    expect(mocks.cookie?.value?.analytics).toBe(false)
+enableAutoUnmount(afterEach)
+beforeEach(() => {
+  vi.clearAllMocks()
+  Object.assign(useNuxtApp().$config.public.gtag, config.public.gtag)
+  vi.spyOn(useNuxtApp().$router, 'beforeEach').mockImplementation((guard) => {
+    guards.push(guard as (route: { meta: { shell: string } }) => void)
+    return removeGuard
   })
+  configuredTagIds.clear()
+  guards.length = 0
+  analytics.value = false
+  marketing.value = false
+  Reflect.deleteProperty(window, 'dataLayer')
+  for (const id of ['G-EXAMPLE123', 'G-NEXT456']) Reflect.deleteProperty(window, `ga-disable-${id}`)
+})
+afterEach(() => vi.restoreAllMocks())
 
-  it('requires a new choice before adding GA4 to previously accepted internal statistics', async () => {
-    const { site, consent } = setup({ id: 'site-1', plan: 'PRO' })
-    consent.acceptAll()
+describe('Google tag consent with nuxt-gtag 5', () => {
+  it.each([false, true])('configures a tag exactly once with a preexisting dataLayer=%s', async (existing) => {
+    if (existing) window.dataLayer = [['other-snippet']]
+    const { wrapper } = await mountConsent()
+    expect(commands().filter(([name]) => name === 'config')).toHaveLength(0)
+    analytics.value = true
     await nextTick()
-    site.value = gaSite
-    await nextTick()
-    expect(consent.needsDecision.value).toBe(true)
-    expect(consent.analyticsGranted.value).toBe(false)
-    expect(mocks.initialize).not.toHaveBeenCalled()
-    consent.acceptAll()
-    await nextTick()
-    expect(mocks.initialize).toHaveBeenCalledExactlyOnceWith('G-ONE123')
-    expect(mocks.cookie?.value?.configuration).toBe(consentCapabilities(gaSite).configuration)
-  })
-
-  it('stops the previous ID and waits for consent when a GA4 property changes', async () => {
-    const { site, consent } = setup(gaSite)
-    consent.acceptAll()
-    await nextTick()
-    site.value = { ...gaSite, gtagId: 'G-TWO456' }
-    await nextTick()
-    expect(mocks.disableAnalytics).toHaveBeenCalledWith('G-ONE123')
-    expect(mocks.initialize).toHaveBeenCalledTimes(1)
-    consent.acceptAll()
-    await nextTick()
-    expect(mocks.initialize).toHaveBeenLastCalledWith('G-TWO456')
-  })
-
-  it('revokes measurement and deletes first-party GA cookies', async () => {
-    const { consent } = setup(gaSite)
-    consent.acceptAll()
-    await nextTick()
-    document.cookie = '_ga=visitor; Path=/'
-    document.cookie = '_ga_ONE123=session; Path=/'
-    consent.rejectAll()
-    await nextTick()
-    expect(mocks.disableAnalytics).toHaveBeenCalledWith('G-ONE123')
-    expect(document.cookie).not.toContain('_ga')
-    expect(mocks.gtag).toHaveBeenLastCalledWith(
+    const queued = commands()
+    expect(queued.filter(([name]) => name === 'config')).toEqual([
+      ['config', 'G-EXAMPLE123', config.public.gtag.config],
+    ])
+    expect(queued.findIndex(([name, action]) => name === 'consent' && action === 'default')).toBeLessThan(
+      queued.findIndex(([name]) => name === 'config'),
+    )
+    expect(queued.at(-1)).toMatchObject([
       'consent',
       'update',
-      expect.objectContaining({ analytics_storage: 'denied' }),
-    )
+      { analytics_storage: 'granted', ad_storage: 'denied', ad_personalization: 'denied' },
+    ])
+    analytics.value = false
+    await nextTick()
+    analytics.value = true
+    await nextTick()
+    expect(commands().filter(([name]) => name === 'config')).toHaveLength(1)
+    wrapper.unmount()
+    expect(removeGuard).toHaveBeenCalledOnce()
+    expect(window['ga-disable-G-EXAMPLE123']).toBe(true)
   })
 
-  it('keeps halted advertising denied even when a saved choice requests Marketing', async () => {
-    const { consent } = setup({ ...gaSite, gamNetworkCode: '123' })
-    consent.save({ analytics: false, marketing: true })
+  it('disables the previous tag on tenant change and disables collection before private navigation', async () => {
+    analytics.value = true
+    const { site, enabled } = await mountConsent()
+    site.value = { ...site.value, id: 'site-2', gtagId: 'G-NEXT456' }
     await nextTick()
-    expect(consent.marketingGranted.value).toBe(false)
-    expect(mocks.initialize).not.toHaveBeenCalled()
-    consent.save({ analytics: true, marketing: true })
+    expect(window['ga-disable-G-EXAMPLE123']).toBe(true)
+    expect(
+      commands()
+        .filter(([name]) => name === 'config')
+        .map(([, id]) => id),
+    ).toEqual(['G-EXAMPLE123', 'G-NEXT456'])
+    guards[0]!({ meta: { shell: 'dashboard' } })
+    expect(window['ga-disable-G-NEXT456']).toBe(true)
+    expect(commands().at(-1)).toMatchObject(['consent', 'update', { analytics_storage: 'denied' }])
+    enabled.value = false
     await nextTick()
-    expect(mocks.gtag).toHaveBeenLastCalledWith(
-      'consent',
-      'update',
-      expect.objectContaining({
-        analytics_storage: 'granted',
-        ad_storage: 'denied',
-        ad_personalization: 'denied',
-      }),
-    )
-  })
-
-  it('configures GA4 even when another integration already created dataLayer', async () => {
-    ;(window as unknown as { dataLayer: unknown[] }).dataLayer = []
-    mocks.cookie!.value = createConsentDecision(consentCapabilities(gaSite), { analytics: true, marketing: false })
-    setup(gaSite)
-    expect(mocks.gtag).toHaveBeenCalledWith('config', 'G-ONE123', expect.objectContaining({ cookie_domain: 'none' }))
-  })
-
-  it('does not load the tag on administrative surfaces', () => {
-    mocks.cookie!.value = createConsentDecision(consentCapabilities(gaSite), { analytics: true, marketing: false })
-    setup(gaSite, shallowRef(false))
-    expect(mocks.initialize).not.toHaveBeenCalled()
-  })
-
-  it('stops Google measurement when the consent cookie is changed outside this component', async () => {
-    const { consent } = setup(gaSite)
-    consent.acceptAll()
+    expect(commands().filter(([name]) => name === 'config')).toHaveLength(2)
+    enabled.value = true
     await nextTick()
-    mocks.cookie!.value = createConsentDecision(consentCapabilities(gaSite), { analytics: false, marketing: false })
-    await nextTick()
-    expect(consent.analyticsGranted.value).toBe(false)
-    expect(mocks.disableAnalytics).toHaveBeenCalledWith('G-ONE123')
-  })
-
-  it('disables GA4 before navigation to a private page can emit a history event', async () => {
-    const { consent } = setup(gaSite)
-    consent.acceptAll()
-    await nextTick()
-    mocks.disableAnalytics.mockClear()
-    mocks.guard!({ meta: { shell: 'dashboard' } })
-    expect(mocks.disableAnalytics).toHaveBeenCalledWith('G-ONE123')
-    expect(mocks.gtag).toHaveBeenLastCalledWith('consent', 'update', { analytics_storage: 'denied' })
+    expect(window['ga-disable-G-NEXT456']).toBeUndefined()
+    expect(commands().filter(([name]) => name === 'config')).toHaveLength(2)
   })
 })

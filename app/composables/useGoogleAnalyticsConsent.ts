@@ -58,16 +58,10 @@ export const useGoogleAnalyticsConsent = (
 
         enableAnalytics(tagId)
         if (!initialized.has(tagId)) {
-          // nuxt-gtag 4.1 skips config when another tag already created dataLayer.
+          // Keep an existing tag queue informed before initializing this tenant's tag.
           const existingQueue = Boolean((window as unknown as { dataLayer?: unknown[] }).dataLayer)
           if (existingQueue) gtag('consent', 'update', consent)
           initialize(tagId)
-          if (existingQueue)
-            gtag('config', tagId, {
-              cookie_domain: 'none',
-              allow_google_signals: false,
-              allow_ad_personalization_signals: false,
-            })
           initialized.add(tagId)
         }
         gtag('consent', 'update', consent)
