@@ -8,12 +8,19 @@ export const domainAdminNotifications = async (clientSiteId: string, key: string
     },
     select: { userId: true, user: { select: { language: true } } },
   })
-  return await Promise.all(
-    members.map(async (member) => ({
-      userId: member.userId,
-      type: 'SYSTEM' as const,
-      message: (await getServerTranslator(member.user.language))(key, { domain }),
-      link: '/settings?tab=branding',
-    })),
+  const notifications = await Promise.all(
+    members.map(async (member) => {
+      const message = (await getServerTranslator(member.user.language))(key, { domain })
+      if (!message) {
+        await reportCaughtError('Domain notification translation missing', new Error('Missing translated message'), {
+          clientSiteId,
+          key,
+          locale: member.user.language,
+        })
+        return null
+      }
+      return { userId: member.userId, type: 'SYSTEM' as const, message, link: '/settings?tab=branding' }
+    }),
   )
+  return notifications.filter((notification) => notification !== null)
 }
