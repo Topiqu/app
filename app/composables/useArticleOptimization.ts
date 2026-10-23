@@ -14,6 +14,7 @@ export const useArticleOptimization = (input: MaybeRefOrGetter<ArticleOptimizati
 
   const analyze = () => {
     if (!mounted) return
+    schedule.cancel()
     const current = toValue(input)
     if (!current.title.trim() && !htmlToText(current.content)) {
       result.value = null
@@ -44,6 +45,10 @@ export const useArticleOptimization = (input: MaybeRefOrGetter<ArticleOptimizati
   onMounted(() => {
     mounted = true
     analyze()
+  })
+  onScopeDispose(() => {
+    mounted = false
+    schedule.cancel()
   })
 
   return { state, result, failure, retry: analyze }
