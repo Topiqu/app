@@ -56,6 +56,27 @@ describe('official media network guard', () => {
     await expect(assertPublicHttpsUrl('https://media.example.org/image.jpg')).rejects.toThrow('non-public')
   })
 
+  it.each(['100.64.0.1', '192.0.0.1', '198.18.0.1', '198.51.100.1', '203.0.113.1', '240.0.0.1'])(
+    'rejects special-use IPv4 %s',
+    async (address) => {
+      vi.mocked(lookup).mockResolvedValue([{ address, family: 4 }] as never)
+      await expect(assertPublicHttpsUrl('https://press.example.org/asset')).rejects.toThrow('non-public')
+    },
+  )
+
+  it.each(['::ffff:7f00:1', '::ffff:a00:1', 'fc00::1', 'fe80::1', '2001:db8::1', '2002:7f00:1::1'])(
+    'rejects special-use and mapped IPv6 %s',
+    async (address) => {
+      vi.mocked(lookup).mockResolvedValue([{ address, family: 6 }] as never)
+      await expect(assertPublicHttpsUrl('https://press.example.org/asset')).rejects.toThrow('non-public')
+    },
+  )
+
+  it('accepts an ordinary public IPv6 address', async () => {
+    vi.mocked(lookup).mockResolvedValue([{ address: '2606:4700:4700::1111', family: 6 }] as never)
+    await expect(assertPublicHttpsUrl('https://press.example.org/asset')).resolves.toBeInstanceOf(URL)
+  })
+
   it('revalidates every redirect target before following it', async () => {
     serve(
       { status: 302, headers: { location: 'https://cdn.example.org/a.jpg' } },
@@ -82,6 +103,15 @@ describe('official media network guard', () => {
       .mockResolvedValue([{ address: '169.254.169.254', family: 4 }] as never)
     await fetchPublicUrl('https://press.example.org/asset')
     expect(pinned).toEqual(['93.184.216.34'])
+  })
+
+  it('rejects an out-of-scope redirect before resolving or contacting its host', async () => {
+    serve({ status: 302, headers: { location: 'https://outside.example.org/page' } })
+    await expect(
+      fetchPublicUrl('https://press.example.org/page', 8000, (url) => url.hostname === 'press.example.org'),
+    ).rejects.toThrow('outside allowed scope')
+    expect(requestMock).toHaveBeenCalledTimes(1)
+    expect(lookup).not.toHaveBeenCalledWith('outside.example.org', expect.anything())
   })
 
   it('decompresses gzip bodies and drops the compressed length', async () => {

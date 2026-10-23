@@ -1,5 +1,51 @@
 {
   "common": {
+    "websiteImport": {
+      "title": "Website-Einstellungen aus der Einrichtung",
+      "description": "Wir bereiten Blog-Einstellungen und Wissensquellen im Hintergrund vor. Prüfe die Vorschläge vor der Verwendung.",
+      "review": "Vorschläge prüfen",
+      "open": "Fortschritt ansehen",
+      "reviewHelp": "Prüfe und bearbeite die Vorschläge. Übernimm ausgewählte Felder oder bestätige alles. Nicht ausgewählte Felder behalten ihre aktuellen Werte.",
+      "allCorrect": "Alles ist richtig",
+      "applySelected": "Auswahl übernehmen",
+      "skip": "Vorschläge überspringen",
+      "notFound": "Kein belegter Wert gefunden. Du kannst ihn später ergänzen.",
+      "current": "Aktuell: {value}",
+      "saveFirst": "Speichere oder verwirf deine anderen Einstellungsänderungen, bevor du die Vorschläge übernimmst.",
+      "background": "Du kannst Topiqu weiter nutzen. Das Ergebnis bleibt hier verfügbar, sobald es bereit ist.",
+      "budgetWait": "Die Verarbeitung wartet und wird später fortgesetzt. Du kannst Topiqu weiter nutzen.",
+      "failedHelp": "Die Vorbereitung konnte nicht abgeschlossen werden. Du kannst die Angaben in den jeweiligen Einstellungen ergänzen.",
+      "knowledgeConsent": "Mit der Bestätigung von Wissensquellen erlaubst du ihre KI-Verarbeitung und Verwendung in öffentlichen Artikeln. Bestätige keine vertraulichen oder personenbezogenen Informationen.",
+      "conflict": "Seit dem Öffnen der Prüfung wurden Einstellungen geändert. Lade die Seite neu und prüfe die aktuellen Werte.",
+      "assetFailed": "Ein vorgeschlagenes Logo oder Favicon konnte nicht importiert werden. Wähle dieses Feld ab und übernimm die übrigen Vorschläge.",
+      "rateLimited": "Zu viele Versuche. Versuche es später erneut.",
+      "applied": "Website-Vorschläge geprüft",
+      "status": {
+        "PENDING": "Website-Vorbereitung wartet",
+        "PROCESSING": "Einstellungen aus deiner Website werden vorbereitet",
+        "READY": "Deine Website-Vorschläge sind bereit",
+        "REVIEWED": "Website-Vorschläge geprüft",
+        "FAILED": "Website-Vorbereitung erfordert Aufmerksamkeit"
+      },
+      "fields": {
+        "accentColor": "Primärfarbe",
+        "logoUrl": "Logo",
+        "faviconUrl": "Favicon",
+        "keywords": "Schlüsselwörter",
+        "focus": "Blog-Schwerpunkt",
+        "audience": "Primäre Zielgruppe",
+        "aiToneOfVoice": "Schreibstil",
+        "language": "Inhaltssprache",
+        "socials": "Social-Media-Profile",
+        "knowledge": "Wissensquellen"
+      },
+      "warnings": {
+        "pageFailed": "Einige Seiten konnten nicht geladen werden. Die Vorschläge nutzen die übrigen Quellen.",
+        "knowledgeQuota": "Einige Seiten überschreiten dein Wissenslimit.",
+        "assetUnavailable": "Einige Markenmedien konnten nicht gelesen werden. Du kannst sie selbst hochladen.",
+        "analysisFailed": "Einige Inhaltsvorschläge konnten nicht vorbereitet werden. Prüfe die verfügbaren Werte."
+      }
+    },
     "entry": {
       "title": "Erstelle deinen ersten Blog",
       "description": "Richte deinen Blog ein und beginne dann, mit Topiqu Artikel zu schreiben und zu veröffentlichen.",

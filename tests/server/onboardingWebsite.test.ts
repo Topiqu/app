@@ -2,7 +2,8 @@
 import { createError } from 'h3'
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
-const mocks = vi.hoisted(() => ({ verified: vi.fn(), createSite: vi.fn() }))
+const mocks = vi.hoisted(() => ({ verified: vi.fn(), createSite: vi.fn(), createImport: vi.fn(), kick: vi.fn() }))
+vi.mock('../../server/utils/websiteImport', () => ({ kickWebsiteImport: mocks.kick }))
 vi.mock('../../server/utils/onboardingTokens', () => ({
   verifyVerifiedToken: mocks.verified,
   landingClientIp: () => '203.0.113.4',
@@ -16,9 +17,10 @@ const transaction = vi.fn(async (run) =>
   run({
     clientSite: { create: mocks.createSite },
     tenantMembership: { create: vi.fn() },
+    websiteImport: { create: mocks.createImport },
   }),
 )
-const signup = (websiteUrl?: string) =>
+const signup = (websiteUrl?: string, websiteImportConsentVersion?: number) =>
   handler({
     body: {
       siteName: 'Firma',
@@ -29,6 +31,7 @@ const signup = (websiteUrl?: string) =>
       password: 'strong-test-password',
       verifiedToken: 'verified',
       websiteUrl,
+      websiteImportConsentVersion,
     },
   } as never)
 
@@ -58,6 +61,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   mocks.verified.mockReturnValue(true)
   mocks.createSite.mockImplementation(async ({ data }) => ({ id: 'site-1', ...data }))
+  mocks.createImport.mockResolvedValue({ id: 'import-1' })
 })
 
 describe('company website at signup', () => {
@@ -82,5 +86,25 @@ describe('company website at signup', () => {
     await expect(signup('firma.cz')).rejects.toMatchObject({ statusCode: 400 })
     expect(transaction).not.toHaveBeenCalled()
     expect(mocks.createSite).not.toHaveBeenCalled()
+  })
+
+  it('queues background preparation only with the current website-processing confirmation', async () => {
+    await signup('firma.cz', 1)
+    expect(mocks.createImport).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        clientSiteId: 'site-1',
+        sourceUrl: 'https://firma.cz/',
+        consentVersion: 1,
+        createdById: 'user-1',
+      }),
+    })
+    expect(mocks.kick).toHaveBeenCalledWith('import-1')
+  })
+
+  it('keeps older signup clients and unsafe website inputs from triggering analysis', async () => {
+    await signup('firma.cz')
+    await signup('https://127.0.0.1', 1)
+    expect(mocks.createImport).not.toHaveBeenCalled()
+    expect(mocks.kick).not.toHaveBeenCalled()
   })
 })

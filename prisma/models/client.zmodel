@@ -18,6 +18,7 @@ import "./webhook"
 import "./keywordPlan"
 import "./backlink"
 import "./widget"
+import "./websiteImport"
 
 enum GenerationFrequency {
     NONE
@@ -113,7 +114,7 @@ model ClientSite with Base {
     domainConnections    DomainConnection[]
     plan                 ClientPlan          @default(BASIC)
     focus                String?
-    // The company website given at sign-up; only prefills the knowledge import, nothing fetches it unasked.
+    // Automatic analysis is queued only with the versioned website-import confirmation.
     websiteUrl           String?
     description          String?             @length(0, 255, "Popisek musí mít max. 255 znaků")
     tagline              String?             @length(0, 80, "Tagline musí mít max. 80 znaků")
@@ -146,6 +147,7 @@ model ClientSite with Base {
     mediaRightsSnapshots MediaRightsPublicationSnapshot[]
     articleGenerationSessions ArticleGenerationSession[]
     knowledgeSources     KnowledgeSource[]
+    websiteImports       WebsiteImport[]
     webhooks             Webhook[]
     widgets              SiteWidget[]
     keywordClusters      KeywordCluster[]

@@ -2,6 +2,7 @@
   <div
     class="pointer-events-none fixed right-3 bottom-3 z-overlay flex max-w-[calc(100vw-1.5rem)] flex-col items-end gap-2"
   >
+    <AdminWebsiteImportNotice />
     <AdminSetupChecklist />
     <div
       data-client-version-bar

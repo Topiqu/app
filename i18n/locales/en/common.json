@@ -1,5 +1,51 @@
 {
   "common": {
+    "websiteImport": {
+      "title": "Website settings from onboarding",
+      "description": "We can prepare your blog settings and knowledge sources in the background. Review the suggestions before using them.",
+      "review": "Review suggestions",
+      "open": "View progress",
+      "reviewHelp": "Check each suggestion, edit it if needed, then apply the selected fields or confirm everything. Unselected fields keep their current values.",
+      "allCorrect": "All's correct",
+      "applySelected": "Apply selected",
+      "skip": "Skip suggestions",
+      "notFound": "No supported value found. You can fill this in later.",
+      "current": "Current: {value}",
+      "saveFirst": "Save or discard your other settings changes before applying these suggestions.",
+      "background": "You can continue using Topiqu. The result will remain available here when it is ready.",
+      "budgetWait": "Processing is queued and will continue later. You can keep using Topiqu.",
+      "failedHelp": "We could not finish preparing the settings. You can complete them in the individual settings sections.",
+      "knowledgeConsent": "By accepting knowledge sources, you confirm that they may be processed by AI and used in public articles. Do not accept confidential or personal information.",
+      "conflict": "Some settings changed since you opened this review. Refresh the page and check the current values.",
+      "assetFailed": "A suggested logo or favicon could not be imported. Uncheck that field and apply the other suggestions.",
+      "rateLimited": "Too many attempts. Please try again later.",
+      "applied": "Website suggestions reviewed",
+      "status": {
+        "PENDING": "Website preparation is queued",
+        "PROCESSING": "Preparing settings from your website",
+        "READY": "Your website suggestions are ready",
+        "REVIEWED": "Website suggestions reviewed",
+        "FAILED": "Website preparation needs attention"
+      },
+      "fields": {
+        "accentColor": "Primary color",
+        "logoUrl": "Logo",
+        "faviconUrl": "Favicon",
+        "keywords": "Keywords",
+        "focus": "Blog focus",
+        "audience": "Primary audience",
+        "aiToneOfVoice": "Writing style",
+        "language": "Content language",
+        "socials": "Social profiles",
+        "knowledge": "Knowledge sources"
+      },
+      "warnings": {
+        "pageFailed": "Some pages could not be loaded. The available suggestions use the remaining sources.",
+        "knowledgeQuota": "Some pages did not fit your knowledge allowance.",
+        "assetUnavailable": "Some brand assets could not be read. You can upload them yourself.",
+        "analysisFailed": "Some content suggestions could not be prepared. Review the available values."
+      }
+    },
     "entry": {
       "title": "Create your first blog",
       "description": "Set up your blog, then start writing and publishing articles with Topiqu.",

@@ -21,6 +21,7 @@ export const AI_MODELS = {
   visibilityPrompts: HAIKU,
   factCheck: HAIKU,
   knowledgeSelect: HAIKU,
+  websiteImport: HAIKU,
   articleLinks: HAIKU,
   keywordSeeds: HAIKU,
   topicScope: HAIKU,

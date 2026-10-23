@@ -24,6 +24,12 @@
       </LazyClientPreferencesGuide>
     </header>
 
+    <WebsiteImportPanel
+      v-if="can('TENANT_SETTINGS') && (activeTab === 'content' || route.query.websiteImport)"
+      :disabled="isDirty"
+      @applied="refresh()"
+    />
+
     <div class="flex flex-col md:flex-row gap-6 md:gap-10">
       <TabNav v-model="activeTab" :tabs="tabs" :label="$t('common.preferences.title')" />
 

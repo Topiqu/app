@@ -23,6 +23,7 @@
 
 - 📝 **AI-assisted publishing** — Tiptap editor, article generation, drafts, translations and recoverable source-article versions.
 - 🌐 **Client sites** — isolated tenants, subdomains, custom domains and configurable site widgets.
+- 🧭 **Onboarding website import** — background AI suggestions for branding, editorial settings and knowledge sources, applied after review.
 - 🔎 **SEO & AI visibility** — search insights, citation monitoring and content opportunities.
 - 💬 **Community** — comments, follows and reader notifications.
 - 💳 **Billing** — Stripe subscriptions and credit top-ups.

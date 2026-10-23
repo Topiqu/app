@@ -1,5 +1,6 @@
 export const monitoredTaskIntervals = {
   'webhook-deliver': 1,
+  'website-import': 1,
   'generate-article': 15,
   'sentiment-analysis': 30,
   'community-insights': 1440,

@@ -2,33 +2,45 @@ import type { LookupAddress } from 'node:dns'
 import type { IncomingMessage } from 'node:http'
 
 import https from 'node:https'
-import { isIP } from 'node:net'
+import { BlockList, isIP } from 'node:net'
 import { lookup } from 'node:dns/promises'
 import { pipeline, Readable } from 'node:stream'
 import { createBrotliDecompress, createGunzip, createInflate } from 'node:zlib'
 
-const blockedIpv4 = (address: string) => {
-  const parts = address.split('.').map(Number)
-  if (parts.length !== 4 || parts.some((part) => !Number.isInteger(part) || part < 0 || part > 255)) return true
-  const [a, b] = parts
-  return (
-    a === 0 ||
-    a === 10 ||
-    a === 127 ||
-    (a === 169 && b === 254) ||
-    (a === 172 && b! >= 16 && b! <= 31) ||
-    (a === 192 && b === 168) ||
-    a! >= 224
-  )
-}
+const reservedIpv4 = new BlockList()
+for (const [network, prefix] of [
+  ['0.0.0.0', 8],
+  ['10.0.0.0', 8],
+  ['100.64.0.0', 10],
+  ['127.0.0.0', 8],
+  ['169.254.0.0', 16],
+  ['172.16.0.0', 12],
+  ['192.0.0.0', 24],
+  ['192.0.2.0', 24],
+  ['192.88.99.0', 24],
+  ['192.168.0.0', 16],
+  ['198.18.0.0', 15],
+  ['198.51.100.0', 24],
+  ['203.0.113.0', 24],
+  ['224.0.0.0', 4],
+  ['240.0.0.0', 4],
+] as const)
+  reservedIpv4.addSubnet(network, prefix, 'ipv4')
+const publicIpv6 = new BlockList()
+publicIpv6.addSubnet('2000::', 3, 'ipv6')
+const reservedIpv6 = new BlockList()
+for (const [network, prefix] of [
+  ['2001::', 23],
+  ['2001:db8::', 32],
+  ['2002::', 16],
+  ['3fff::', 20],
+] as const)
+  reservedIpv6.addSubnet(network, prefix, 'ipv6')
 
-const blockedIpv6 = (address: string) => {
-  const normalized = address.toLowerCase().split('%')[0]!
-  if (normalized === '::' || normalized === '::1') return true
-  if (normalized.startsWith('fc') || normalized.startsWith('fd') || /^fe[89ab]/.test(normalized)) return true
-  const mapped = normalized.match(/::ffff:(\d+\.\d+\.\d+\.\d+)$/)?.[1]
-  return mapped ? blockedIpv4(mapped) : false
-}
+const blockedIpv4 = (address: string) => isIP(address) !== 4 || reservedIpv4.check(address, 'ipv4')
+// The public-unicast allowlist also rejects alternate IPv4-mapped forms and translation prefixes.
+const blockedIpv6 = (address: string) =>
+  isIP(address) !== 6 || !publicIpv6.check(address, 'ipv6') || reservedIpv6.check(address, 'ipv6')
 
 /** Dynamic first-party media cannot use a static hostname allowlist. Resolve every target and
  * reject all non-public addresses before each no-redirect fetch. */
@@ -151,7 +163,8 @@ export const postPublicUrl = async (
   return requestPinned(target.url, target.addresses, timeoutMs, { method: 'POST', headers, body })
 }
 
-export const fetchPublicUrl = async (input: string | URL, timeoutMs = 8_000) => {
+export const fetchPublicUrl = async (input: string | URL, timeoutMs = 8_000, allowUrl?: (url: URL) => boolean) => {
+  if (allowUrl && !allowUrl(input instanceof URL ? input : new URL(input))) throw new Error('URL outside allowed scope')
   let target = await resolvePublicHttpsUrl(input)
   for (let hop = 0; hop <= 3; hop += 1) {
     const response = await requestPinned(target.url, target.addresses, timeoutMs)
@@ -159,7 +172,9 @@ export const fetchPublicUrl = async (input: string | URL, timeoutMs = 8_000) => 
     const location = response.headers.get('location')
     await response.body?.cancel()
     if (!location || hop === 3) throw new Error('Official media redirect chain is invalid or too long')
-    target = await resolvePublicHttpsUrl(new URL(location, target.url))
+    const next = new URL(location, target.url)
+    if (allowUrl && !allowUrl(next)) throw new Error('URL outside allowed scope')
+    target = await resolvePublicHttpsUrl(next)
   }
   throw new Error('Official media redirect chain is too long')
 }

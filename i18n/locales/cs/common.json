@@ -1,5 +1,51 @@
 {
   "common": {
+    "websiteImport": {
+      "title": "Nastavení z webu při založení blogu",
+      "description": "Na pozadí připravíme nastavení blogu a podklady do znalostní báze. Před použitím návrhy zkontrolujete.",
+      "review": "Zkontrolovat návrhy",
+      "open": "Zobrazit průběh",
+      "reviewHelp": "Zkontrolujte jednotlivé návrhy, případně je upravte a použijte vybraná pole nebo potvrďte vše. Nevybraná pole si ponechají současné hodnoty.",
+      "allCorrect": "Vše je správně",
+      "applySelected": "Použít vybrané",
+      "skip": "Přeskočit návrhy",
+      "notFound": "Nepodařilo se najít podloženou hodnotu. Můžete ji doplnit později.",
+      "current": "Současná hodnota: {value}",
+      "saveFirst": "Před přijetím návrhů uložte nebo zahoďte ostatní změny nastavení.",
+      "background": "Můžete dál používat Topiqu. Jakmile budou návrhy připravené, zůstanou zde dostupné.",
+      "budgetWait": "Zpracování čeká ve frontě a bude pokračovat později. Topiqu můžete dál používat.",
+      "failedHelp": "Přípravu se nepodařilo dokončit. Nastavení můžete doplnit v jednotlivých sekcích.",
+      "knowledgeConsent": "Potvrzením znalostních podkladů souhlasíte s jejich zpracováním AI a použitím ve veřejných článcích. Nepotvrzujte důvěrné ani osobní údaje.",
+      "conflict": "Od otevření kontroly se změnilo nastavení. Obnovte stránku a zkontrolujte současné hodnoty.",
+      "assetFailed": "Navržené logo nebo favicon se nepodařilo importovat. Zrušte výběr tohoto pole a použijte ostatní návrhy.",
+      "rateLimited": "Příliš mnoho pokusů. Zkuste to prosím později.",
+      "applied": "Návrhy z webu byly zkontrolovány",
+      "status": {
+        "PENDING": "Příprava z webu čeká ve frontě",
+        "PROCESSING": "Připravujeme nastavení z vašeho webu",
+        "READY": "Návrhy z vašeho webu jsou připravené",
+        "REVIEWED": "Návrhy z webu byly zkontrolovány",
+        "FAILED": "Příprava z webu vyžaduje pozornost"
+      },
+      "fields": {
+        "accentColor": "Primární barva",
+        "logoUrl": "Logo",
+        "faviconUrl": "Favicon",
+        "keywords": "Klíčová slova",
+        "focus": "Zaměření blogu",
+        "audience": "Primární publikum",
+        "aiToneOfVoice": "Styl psaní",
+        "language": "Jazyk obsahu",
+        "socials": "Sociální profily",
+        "knowledge": "Znalostní podklady"
+      },
+      "warnings": {
+        "pageFailed": "Některé stránky se nepodařilo načíst. Návrhy vycházejí ze zbývajících podkladů.",
+        "knowledgeQuota": "Některé stránky se nevešly do limitu znalostní báze.",
+        "assetUnavailable": "Některé podklady značky se nepodařilo načíst. Můžete je nahrát ručně.",
+        "analysisFailed": "Některé obsahové návrhy se nepodařilo připravit. Zkontrolujte dostupné hodnoty."
+      }
+    },
     "entry": {
       "title": "Založte svůj první blog",
       "description": "Nastavte si blog a začněte psát a publikovat články s Topiqu.",

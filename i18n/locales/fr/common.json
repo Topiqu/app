@@ -1,5 +1,51 @@
 {
   "common": {
+    "websiteImport": {
+      "title": "Réglages du site issus de l’inscription",
+      "description": "Nous préparons les réglages du blog et les sources de connaissances en arrière-plan. Vérifiez les suggestions avant de les utiliser.",
+      "review": "Vérifier les suggestions",
+      "open": "Voir la progression",
+      "reviewHelp": "Vérifiez et modifiez les suggestions. Appliquez les champs sélectionnés ou confirmez tout. Les champs non sélectionnés conservent leurs valeurs actuelles.",
+      "allCorrect": "Tout est correct",
+      "applySelected": "Appliquer la sélection",
+      "skip": "Ignorer les suggestions",
+      "notFound": "Aucune valeur étayée trouvée. Vous pourrez la renseigner plus tard.",
+      "current": "Actuellement : {value}",
+      "saveFirst": "Enregistrez ou annulez vos autres modifications avant d’appliquer ces suggestions.",
+      "background": "Vous pouvez continuer à utiliser Topiqu. Le résultat restera disponible ici lorsqu’il sera prêt.",
+      "budgetWait": "Le traitement est en attente et reprendra plus tard. Vous pouvez continuer à utiliser Topiqu.",
+      "failedHelp": "La préparation n’a pas pu être terminée. Vous pouvez compléter les informations dans les différentes sections des réglages.",
+      "knowledgeConsent": "En acceptant les sources de connaissances, vous autorisez leur traitement par l’IA et leur utilisation dans des articles publics. N’acceptez aucune information confidentielle ou personnelle.",
+      "conflict": "Des réglages ont changé depuis l’ouverture de cette vérification. Actualisez la page et vérifiez les valeurs actuelles.",
+      "assetFailed": "Un logo ou favicon suggéré n’a pas pu être importé. Décochez ce champ et appliquez les autres suggestions.",
+      "rateLimited": "Trop de tentatives. Réessayez plus tard.",
+      "applied": "Suggestions du site vérifiées",
+      "status": {
+        "PENDING": "Préparation du site en attente",
+        "PROCESSING": "Préparation des réglages depuis votre site",
+        "READY": "Les suggestions de votre site sont prêtes",
+        "REVIEWED": "Suggestions du site vérifiées",
+        "FAILED": "La préparation du site demande votre attention"
+      },
+      "fields": {
+        "accentColor": "Couleur principale",
+        "logoUrl": "Logo",
+        "faviconUrl": "Favicon",
+        "keywords": "Mots-clés",
+        "focus": "Orientation du blog",
+        "audience": "Public principal",
+        "aiToneOfVoice": "Style rédactionnel",
+        "language": "Langue du contenu",
+        "socials": "Profils sociaux",
+        "knowledge": "Sources de connaissances"
+      },
+      "warnings": {
+        "pageFailed": "Certaines pages n’ont pas pu être chargées. Les suggestions utilisent les autres sources.",
+        "knowledgeQuota": "Certaines pages dépassent votre quota de connaissances.",
+        "assetUnavailable": "Certains éléments de marque n’ont pas pu être lus. Vous pouvez les importer manuellement.",
+        "analysisFailed": "Certaines suggestions de contenu n’ont pas pu être préparées. Vérifiez les valeurs disponibles."
+      }
+    },
     "entry": {
       "title": "Créez votre premier blog",
       "description": "Configurez votre blog, puis commencez à rédiger et publier des articles avec Topiqu.",
