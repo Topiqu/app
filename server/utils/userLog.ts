@@ -1,10 +1,12 @@
 import type { H3Event } from 'h3'
 
-import { zxcvbn } from '@zxcvbn-ts/core'
+import { ZxcvbnFactory } from '@zxcvbn-ts/core'
+
+const passwordStrength = new ZxcvbnFactory()
 
 export async function saveUserWithLogging(event: H3Event, data: any, isUpdate = false, tx?: any) {
   const ip = getIp(event)
-  const strength = data.password ? zxcvbn(data.password).score : null
+  const strength = data.password ? passwordStrength.check(data.password).score : null
   const db = tx || (await getEnhancedPrisma(await getSessionUser(event)))
   const user = isUpdate
     ? await db.user.update({
