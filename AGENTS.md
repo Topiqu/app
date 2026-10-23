@@ -122,7 +122,12 @@ recursive deletion, broad globs, and commands whose resolved target has not been
 
 ## 6. Localization and copy
 
-- Supported locales are Czech and English. Every new user-facing string must be translated in both.
+- Supported locales are English (`en`), Czech (`cs`), German (`de`) and French (`fr`). Every new
+  user-facing string must be translated in all four.
+- Locale authority conflict resolved on 2026-10-22: the former Czech/English-only instruction was
+  stale. `shared/siteSchemas.ts::LANGUAGE_OPTIONS`, `nuxt.config.ts::i18n.locales`, the locale files
+  and language-registry/completeness tests define the retained four-language contract. Keep
+  `README.md` and `CLAUDE.md` aligned with it; do not remove languages as cleanup.
 - Do not hardcode user-facing copy in Vue templates, composables, or route handlers when the project
   has an i18n surface for it.
 - Follow the existing locale namespace and file structure. Reuse common action/status keys when their
@@ -301,10 +306,12 @@ recursive deletion, broad globs, and commands whose resolved target has not been
 - A production release consists of more than a Git merge: migrations, the Docker/Nitro build,
   runtime configuration, scheduled tasks, service-worker compatibility, health checks, and rollback
   or forward-fix readiness must all be considered.
-- The production container is built with Bun 1.4.3 and `bun run build`; runtime starts
+- The production container is built with Bun 1.4.4 and `bun run build`; runtime starts
   `.output/server/index.mjs`. Keep package manager, lockfile, Docker, and CI versions aligned.
-- Apply production migrations only through the established release command and authorized deployment
-  process. Never point local destructive tooling at an ambiguous database URL.
+- The Docker entrypoint applies committed migrations before starting Nitro; an image build never
+  applies migrations. Starting a production container therefore requires an explicitly authorized
+  deployment against an identified database. Outside Docker, use the established release command
+  under the same authorization. Never point local destructive tooling at an ambiguous database URL.
 - Deployments are human-controlled. Do not trigger Dokploy, change platform state, rotate secrets,
   alter DNS/TLS, scale replicas, or run production backfills without explicit approval.
 - After an authorized release, verify CI/deployment status and the smallest meaningful production

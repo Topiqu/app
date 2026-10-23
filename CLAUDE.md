@@ -38,6 +38,9 @@
 ## i18n (Internationalization)
 
 - The platform supports `en`, `cs`, `de`, and `fr`.
+- `shared/siteSchemas.ts::LANGUAGE_OPTIONS` and `nuxt.config.ts::i18n.locales` define this supported
+  registry; keep every new user-facing key complete in all four locales. `AGENTS.md` §6 records
+  the resolution of its former two-language wording.
 - All hardcoded strings in templates **MUST** use translation keys (`$t('key')`). Never leave raw text.
 
 ## Code Style
@@ -61,7 +64,7 @@
 
 Treat every change through an OWASP lens. In this codebase the #1 risk class is **Broken Access Control**, not injection — guard it relentlessly.
 
-- **Authorization on every mutation.** Each non-public route handler **MUST** resolve the session (`getServerSession`) and reject unauthenticated/unauthorized requests. There is no global server middleware — a forgotten check = an open door. IDs from `getRouterParam`/body are attacker-controlled (IDOR).
+- **Authorization on every mutation.** Each non-public route handler **MUST** authenticate through the existing `getSessionUser`/`requireUser` or tenant membership/scope guards and reject unauthorized requests. Global origin/domain/locale middleware does not replace route authorization. IDs from `getRouterParam`/body are attacker-controlled (IDOR).
 - **Tenant isolation via ZenStack, not memory.** For request-scoped data access, use `getEnhancedPrisma(user)` so `@@allow` policies enforce tenant/role at runtime. Reserve raw `prisma` for deliberately system-scoped work (crons, webhooks, OAuth callbacks) — never as the default in a user-facing route. Never trust a manual `where` clause as the only isolation.
 - **Never leak secrets.** Tokens/secrets (`accessToken`, `refreshToken`, `password`, `totpSecret`, …) must be `@omit`-ed in the zmodel and excluded via explicit `select`. Never return a full DB row to the client.
 - **Enforce auth where state is created, not on the client.** Security checks (2FA, ownership) belong server-side in the Better Auth credential endpoints before opening a session, never as a frontend-only gate the client can skip.
