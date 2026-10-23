@@ -95,9 +95,30 @@ const props = defineProps<{
 }>()
 
 const toast = useToast()
-const previewUrl = ref(props.imageUrl || null)
+const previewUrl = shallowRef(props.imageUrl || null)
 const selectedFile = shallowRef<File | null>(null)
 const isProcessing = shallowRef(false)
+let uploadVersion = 0
+let controller: AbortController | undefined
+let disposed = false
+const objectUrls = new Set<string>()
+const releaseObjectUrl = (url: string) => {
+  if (objectUrls.delete(url)) URL.revokeObjectURL(url)
+}
+const invalidateUpload = () => {
+  uploadVersion++
+  controller?.abort()
+  controller = undefined
+  for (const url of objectUrls) releaseObjectUrl(url)
+  if (isProcessing.value) {
+    isProcessing.value = false
+    emit('processing', false)
+  }
+}
+onScopeDispose(() => {
+  disposed = true
+  invalidateUpload()
+})
 const upload = useTemplateRef<{ inputRef?: HTMLInputElement }>('upload')
 const openPicker = () => upload.value?.inputRef?.click()
 const resolvedAspectRatio = computed(() => props.aspectRatio || (props.compact ? '1 / 1' : '16 / 9'))
@@ -121,8 +142,13 @@ const uploadUi = computed(() =>
 )
 
 watch(
-  () => props.imageUrl,
-  (val) => (previewUrl.value = val || null),
+  [() => props.imageUrl, () => props.type],
+  () => {
+    invalidateUpload()
+    previewUrl.value = props.imageUrl || null
+    selectedFile.value = null
+  },
+  { flush: 'sync' },
 )
 
 const formatBytes = (bytes: number) =>
@@ -155,23 +181,37 @@ const constraintInfo = computed(() => {
 })
 
 const cancelUpload = () => {
+  invalidateUpload()
   previewUrl.value = null
   selectedFile.value = null
   emit('upload', { url: '', optimizedUrl: '' })
 }
 
 // Resolves null instead of rejecting: a file the browser cannot decode must surface a reason, not hang the promise.
-const loadImage = (src: string) =>
+const loadImage = (src: string, signal: AbortSignal) =>
   new Promise<HTMLImageElement | null>((resolve) => {
     const image = new Image()
-    image.onload = () => resolve(image)
-    image.onerror = () => resolve(null)
-    image.src = src
+    let settled = false
+    const finish = (result: HTMLImageElement | null) => {
+      if (settled) return
+      settled = true
+      clearTimeout(timeout)
+      image.onload = null
+      image.onerror = null
+      signal.removeEventListener('abort', abort)
+      resolve(result)
+    }
+    const abort = () => finish(null)
+    const timeout = setTimeout(abort, 30_000)
+    image.onload = () => finish(image)
+    image.onerror = () => finish(null)
+    signal.addEventListener('abort', abort, { once: true })
+    if (signal.aborted) abort()
+    else image.src = src
   })
 
-const rejectionReason = async (file: File, src: string) => {
-  const c = constraints.value
-  const isFavicon = props.type === 'client-favicon'
+const rejectionReason = async (file: File, src: string, signal: AbortSignal, c: typeof constraints.value) => {
+  const isFavicon = c.type === 'client-favicon'
 
   if (!file.type.startsWith('image/')) return $t('common.upload.notImage')
   if (isFavicon && !isFaviconMimeType(file.type))
@@ -181,7 +221,7 @@ const rejectionReason = async (file: File, src: string) => {
   if (c.minSize && file.size < c.minSize)
     return $t('common.upload.tooSmall', { actual: formatBytes(file.size), limit: formatBytes(c.minSize) })
 
-  const image = await loadImage(src)
+  const image = await loadImage(src, signal)
   if (!image) return $t('common.upload.unreadable')
 
   const { naturalWidth: width, naturalHeight: height } = image
@@ -195,48 +235,55 @@ const rejectionReason = async (file: File, src: string) => {
 }
 
 const handleFile = async (file: File) => {
-  if (props.disabled) return
-
-  const objectUrl = URL.createObjectURL(file)
-  const reason = await rejectionReason(file, objectUrl)
-  if (reason) {
-    URL.revokeObjectURL(objectUrl)
-    selectedFile.value = null
-    toast.add({
-      color: 'error',
-      icon: 'mdi:image-off-outline',
-      title: $t('common.upload.rejected'),
-      description: reason,
-      duration: 8000,
-    })
-    return
-  }
-
+  if (disposed || props.disabled) return
+  invalidateUpload()
+  const version = uploadVersion
+  controller = new AbortController()
+  const signal = controller.signal
   const c = constraints.value
+  let objectUrl: string | undefined
+  selectedFile.value = file
   isProcessing.value = true
   emit('processing', true)
-  previewUrl.value = objectUrl
-
-  const formData = new FormData()
-  formData.append('file', file)
-  formData.append('type', props.type || 'article-image')
-
-  const { shortcode: _, isAiUser: __, ...cOnly } = c
-  Object.entries({ shortcode: props.shortcode, isAiUser: props.isAiUser, ...cOnly }).forEach(
-    ([k, v]) => v !== undefined && formData.append(k, String(v)),
-  )
 
   try {
+    objectUrl = URL.createObjectURL(file)
+    objectUrls.add(objectUrl)
+    const reason = await rejectionReason(file, objectUrl, signal, c)
+    if (version !== uploadVersion) return
+    if (reason) {
+      previewUrl.value = props.imageUrl || null
+      selectedFile.value = null
+      toast.add({
+        color: 'error',
+        icon: 'mdi:image-off-outline',
+        title: $t('common.upload.rejected'),
+        description: reason,
+        duration: 8000,
+      })
+      return
+    }
+    previewUrl.value = objectUrl
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('type', c.type || 'article-image')
+    const { shortcode, isAiUser, ...cOnly } = c
+    Object.entries({ shortcode, isAiUser, ...cOnly }).forEach(
+      ([k, v]) => v !== undefined && formData.append(k, String(v)),
+    )
     const { url, optimizedUrl, mediaAsset } = await $fetch<
       {
         url: string
         optimizedUrl: string
-        mediaAsset: { id: string }
+        mediaAsset?: { id: string }
       },
       '/api/upload'
-    >('/api/upload', { method: 'POST', body: formData })
+    >('/api/upload', { method: 'POST', body: formData, signal })
+    if (version !== uploadVersion) return
+    previewUrl.value = optimizedUrl || url
     emit('upload', { url, optimizedUrl, mediaAsset })
   } catch (e: any) {
+    if (version !== uploadVersion) return
     toast.add({
       color: 'error',
       icon: 'mdi:cloud-off-outline',
@@ -246,10 +293,13 @@ const handleFile = async (file: File) => {
     })
     previewUrl.value = props.imageUrl || null
     selectedFile.value = null
-    URL.revokeObjectURL(objectUrl)
   } finally {
-    isProcessing.value = false
-    emit('processing', false)
+    if (objectUrl) releaseObjectUrl(objectUrl)
+    if (version === uploadVersion) {
+      isProcessing.value = false
+      controller = undefined
+      emit('processing', false)
+    }
   }
 }
 
