@@ -4,7 +4,7 @@ Single source of truth for the structure of **topiqu-blog**.
 
 Product work deferred from the current scope is tracked in `ROADMAP.md`.
 
-Bun 1.4.3 is pinned across the package manifest, Docker and CI; Node 24.21.0 is pinned for Vue type checking and browser tooling in `.node-version` and CI. `patches/@nuxt%2Fdevtools@3.4.2.patch` adapts the DevTools import to patched `simple-git` 4; Docker copies patches before installing dependencies.
+Bun 1.4.4 is pinned across the package manifest, Docker and CI; Node 24.21.0 is pinned for Vue type checking and browser tooling in `.node-version` and CI. `patches/@nuxt%2Fdevtools@3.4.2.patch` adapts the DevTools import to patched `simple-git` 4; Docker copies patches before installing dependencies.
 
 Docker uses an app/architecture-scoped Bun package cache and BuildKit APT mounts. The dependency stage stays independent of application source. Host-generated ZenStack output and local test/tool artifacts are excluded from the context; the build regenerates the ORM before Nuxt. Runtime defaults explicitly set production mode and listen on `0.0.0.0:3000` as `bun`, with its working directory owned by that user. Readiness follows Nitro's `NITRO_PORT`/`PORT` precedence. Image builds never migrate a database; the deployment entrypoint applies committed migrations before starting Nitro and exits if they fail. Production deployment remains operator-controlled.
 

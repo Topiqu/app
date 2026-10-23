@@ -301,7 +301,7 @@ recursive deletion, broad globs, and commands whose resolved target has not been
 - A production release consists of more than a Git merge: migrations, the Docker/Nitro build,
   runtime configuration, scheduled tasks, service-worker compatibility, health checks, and rollback
   or forward-fix readiness must all be considered.
-- The production container is built with Bun 1.4.3 and `bun run build`; runtime starts
+- The production container is built with Bun 1.4.4 and `bun run build`; runtime starts
   `.output/server/index.mjs`. Keep package manager, lockfile, Docker, and CI versions aligned.
 - Apply production migrations only through the established release command and authorized deployment
   process. Never point local destructive tooling at an ambiguous database URL.

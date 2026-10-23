@@ -1,10 +1,10 @@
 {
   "name": "topiqu-blog",
   "private": true,
-  "packageManager": "bun@1.4.3",
+  "packageManager": "bun@1.4.4",
   "engines": {
     "node": "^22.21.0 || ^24.11.0 || >=26.0.0",
-    "bun": ">=1.4.3"
+    "bun": ">=1.4.4"
   },
   "type": "module",
   "scripts": {

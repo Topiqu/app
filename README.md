@@ -31,7 +31,7 @@
 
 ## Quick start
 
-**Requirements:** Bun **1.4.3**, Node **24.21.0** and Docker. Bun is pinned in [package.json](./package.json), Docker and CI; Node is pinned in [.node-version](./.node-version) for Vue type checking and browser tests.
+**Requirements:** Bun **1.4.4**, Node **24.21.0** and Docker. Bun is pinned in [package.json](./package.json), Docker and CI; Node is pinned in [.node-version](./.node-version) for Vue type checking and browser tests.
 
 **1. Configure your environment**
 
@@ -80,7 +80,7 @@ ZenStack generates ignored schema metadata and TypeScript types in `generated/ze
 | **Data**            | ZenStack ORM 3 · PostgreSQL · pgvector |
 | **Editor**          | Tiptap 3 with custom extensions        |
 | **AI**              | AI SDK 7 · Claude Haiku 5.5 · OpenAI   |
-| **Runtime**         | Bun 1.4.3 · Node 24.21.0               |
+| **Runtime**         | Bun 1.4.4 · Node 24.21.0               |
 
 <details>
 <summary><strong>Integrations and tooling</strong></summary>
@@ -176,7 +176,7 @@ Superadmins can inspect `/master/operations` for shared task status, queues, cac
 
 `bun run perf:check` enforces gzip asset ceilings in [performance-budgets.json](performance-budgets.json) after a production build. Consenting production visitors are sampled for LCP, INP and CLS using the existing Sentry DSN. Field p75 results require production samples; asset checks do not establish those results. The [backup/restore runbook](docs/operations/backup-restore.md) includes a dry-run-first local restore rehearsal, available as `bun run backup:verify --container NAME --source-db TEST_DATABASE`.
 
-Release CI starts the deployment image on a separate empty database and verifies migration startup, non-root execution, Bun 1.4.3, readiness and liveness. Compiled browser checks cover recovery, sessions and operator status in addition to the existing release and wallet scenarios. An upgrade rehearsal against a recent production backup remains an operator step.
+Release CI starts the deployment image on a separate empty database and verifies migration startup, non-root execution, Bun 1.4.4, readiness and liveness. Compiled browser checks cover recovery, sessions and operator status in addition to the existing release and wallet scenarios. An upgrade rehearsal against a recent production backup remains an operator step.
 
 Release order is operator-controlled: identify the target database and image, take a backup and verify restore on a separate database, configure runtime credentials, then roll out the tested image. Startup applies pending migrations before serving requests; migration failure exits the container without starting the app. `DIRECT_DATABASE_URL`, when set, is used only by migrations; the app keeps `DATABASE_URL`. Database credentials must permit the committed DDL, and deployment startup/readiness timeouts must allow migrations to finish. Prisma's advisory lock serializes migration attempts across replicas; lock timeout fails startup and requires an orchestrator retry. Keep rolling-release schema changes backward compatible with old replicas. Check readiness, login, tenant access, publication and cron heartbeats. Retain the previous image. Roll it back only if it is compatible with the applied schema; otherwise use a reviewed forward fix or restore the verified backup under a maintenance plan. Never assume rolling back an image rolls back migrations. Neither a Git push nor an image build authorizes these production operations.
 
