@@ -1,6 +1,3 @@
-import { callWithNuxt } from '#app'
-import { isForeignHost, isManagedDomain, normalizeDomain, toHostname } from '~~/shared/utils/domain'
-
 export default defineNuxtRouteMiddleware(async (to) => {
   const nuxtApp = useNuxtApp()
   const url = useRequestURL()
@@ -24,10 +21,9 @@ export default defineNuxtRouteMiddleware(async (to) => {
       : `app.${normalizeDomain(baseDomain)}`
     : ''
 
-  if (!ownDomain || toHostname(ownDomain) === toHostname(url.host))
-    return await callWithNuxt(nuxtApp, navigateTo, ['/'])
+  if (!ownDomain || toHostname(ownDomain) === toHostname(url.host)) return nuxtApp.runWithContext(() => navigateTo('/'))
 
   const own = `${url.protocol}//${ownDomain}${to.fullPath}`
 
-  return await callWithNuxt(nuxtApp, navigateTo, [own, { external: true }])
+  return nuxtApp.runWithContext(() => navigateTo(own, { external: true }))
 })

@@ -11,11 +11,7 @@ const { state, navigateTo } = vi.hoisted(() => ({
   navigateTo: vi.fn((path: unknown) => path),
 }))
 
-vi.mock('#app', async (original) => ({
-  ...(await original<object>()),
-  callWithNuxt: (_app: unknown, callback: (...args: unknown[]) => unknown, args: unknown[]) => callback(...args),
-}))
-mockNuxtImport('useNuxtApp', () => () => ({}))
+mockNuxtImport('useNuxtApp', () => () => ({ runWithContext: (callback: () => unknown) => callback() }))
 mockNuxtImport('useRequestURL', () => () => new URL(state.origin))
 mockNuxtImport('useRuntimeConfig', () => () => ({ public: { baseDomain: 'topiqu.com' } }))
 mockNuxtImport('useAuth', () => () => ({ data: { value: { user: state.user } } }))
