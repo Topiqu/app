@@ -12,7 +12,10 @@ export default defineEventHandler(async (event) => {
 
   const db = await getEnhancedPrisma(user)
 
-  const followedUser = await db.user.findFirst({ where: { id: body.followedId } })
+  const followedUser = await db.user.findFirst({
+    where: { id: body.followedId, deletedAt: null },
+    select: { id: true },
+  })
   if (!followedUser) throw createError({ statusCode: 404, message: t('common.errors.userNotFound')! })
 
   const existingFollow = await db.follow.findFirst({ where: { followerId: user.id, followedId: body.followedId } })
@@ -27,13 +30,20 @@ export default defineEventHandler(async (event) => {
     t('common.notifications.newFollower', { user: user.name || 'Anonymous' }) ||
     `${user.name || 'Anonymous'} started following you.`
 
-  await prisma.notification.create({
-    data: {
-      userId: body.followedId,
-      message,
-      type: 'FOLLOW',
-    },
-  })
+  try {
+    await prisma.notification.create({
+      data: {
+        userId: body.followedId,
+        message,
+        type: 'FOLLOW',
+      },
+    })
+  } catch (error) {
+    await reportCaughtError('Follow notification failed after persistence', error, {
+      followerId: user.id,
+      followedId: body.followedId,
+    })
+  }
 
   const followerCount = await db.follow.count({
     where: { followedId: body.followedId },
