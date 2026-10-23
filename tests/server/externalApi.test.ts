@@ -56,9 +56,13 @@ describe('external API helpers', () => {
   })
 
   it('builds an AND filter scoped to published tenant articles', () => {
-    expect(externalArticleWhere('site-1', ['seo', 'news'])).toEqual({
+    const now = new Date('2026-10-22T12:00:00Z')
+    expect(externalArticleWhere('site-1', ['seo', 'news'], now)).toEqual({
       clientSiteId: 'site-1',
       status: 'published',
+      deletedAt: null,
+      clientSite: { deletedAt: null },
+      OR: [{ releaseAt: null }, { releaseAt: { lte: now } }],
       AND: [{ tags: { some: { tag: { slug: 'seo' } } } }, { tags: { some: { tag: { slug: 'news' } } } }],
     })
   })
@@ -80,5 +84,23 @@ describe('external API helpers', () => {
       availableTranslations: [{ language: 'en', slug: 'hello' }],
     })
     expect(result).not.toHaveProperty('translations')
+  })
+})
+
+describe('external article source identity', () => {
+  afterEach(() => vi.unstubAllGlobals())
+  it('returns the authenticated tenant identity with every article page', async () => {
+    vi.stubGlobal('defineEventHandler', (handler: unknown) => handler)
+    vi.stubGlobal('getQuery', () => ({}))
+    vi.stubGlobal('getPagination', async () => ({ skip: 0, take: 100 }))
+    vi.stubGlobal('requireExternalClient', async () => ({ id: 'tenant-page-owner', language: 'cs' }))
+    vi.stubGlobal('parseExternalTagFilter', parseExternalTagFilter)
+    vi.stubGlobal('externalArticleWhere', externalArticleWhere)
+    vi.stubGlobal('prisma', {
+      article: { count: async () => 0, findMany: async () => [] },
+      $transaction: async (work: Promise<unknown>[]) => Promise.all(work),
+    })
+    const route = (await import('../../server/api/external/articles.get')).default
+    await expect(route({} as never)).resolves.toMatchObject({ meta: { siteId: 'tenant-page-owner' } })
   })
 })

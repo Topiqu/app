@@ -1,16 +1,19 @@
+import { publicArticleWhere } from '../../utils/articleViewerAccess'
+
 export default defineEventHandler(async (event) => {
   const clientSite = await requireExternalClient(event)
+  const where = { clientSiteId: clientSite.id, ...publicArticleWhere() }
 
   const tags = await prisma.tag.findMany({
     where: {
-      articles: { some: { article: { clientSiteId: clientSite.id, status: 'published' } } },
+      articles: { some: { article: where } },
     },
     select: {
       id: true,
       name: true,
       slug: true,
       articles: {
-        where: { article: { clientSiteId: clientSite.id, status: 'published' } },
+        where: { article: where },
         select: { articleId: true },
       },
     },

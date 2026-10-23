@@ -1,10 +1,12 @@
+import { publicArticleWhere } from '../../../utils/articleViewerAccess'
+
 export default defineEventHandler(async (event) => {
   const clientSite = await requireExternalClient(event)
   const id = getRouterParam(event, 'id')
   if (!id) throw createError({ statusCode: 400, message: 'Missing article ID' })
 
   const article = await prisma.article.findFirst({
-    where: { id, clientSiteId: clientSite.id, status: 'published' },
+    where: { id, clientSiteId: clientSite.id, ...publicArticleWhere() },
     select: externalArticleSelect,
   })
 

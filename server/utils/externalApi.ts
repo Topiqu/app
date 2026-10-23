@@ -1,5 +1,7 @@
 import type { H3Event } from 'h3'
 
+import { publicArticleWhere } from './articleViewerAccess'
+
 export const externalArticleSelect = {
   id: true,
   title: true,
@@ -39,9 +41,9 @@ export const parseExternalTagFilter = (value: unknown): string[] => {
   ]
 }
 
-export const externalArticleWhere = (clientSiteId: string, tags: string[]) => ({
+export const externalArticleWhere = (clientSiteId: string, tags: string[], now = new Date()) => ({
+  ...publicArticleWhere(now),
   clientSiteId,
-  status: 'published' as const,
   ...(tags.length
     ? {
         AND: tags.map((slug) => ({

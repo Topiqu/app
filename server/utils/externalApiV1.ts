@@ -1,39 +1,14 @@
-const externalArticleV1Select = {
-  id: true,
-  title: true,
-  slug: true,
-  language: true,
-  excerpt: true,
-  content: true,
-  imageUrl: true,
-  imageCredit: true,
-  aiInvolvement: true,
-  readingTime: true,
-  totalWords: true,
-  sources: true,
-  allowedComments: true,
-  createdAt: true,
-  updatedAt: true,
-  publishedAt: true,
-  articleSeries: { select: { id: true, name: true, slug: true } },
-  tags: { select: { tag: { select: { id: true, name: true, slug: true } } } },
-  user: { select: { id: true, username: true, avatarUrl: true } },
-  translations: {
-    where: { status: 'PUBLISHED' as const },
-    select: { id: true, language: true, slug: true, title: true, excerpt: true, translatedAt: true },
-    orderBy: { language: 'asc' as const },
-  },
-} as const
+import { externalArticleSelect } from './externalApi'
 
 export const externalArticleSummaryV1Select = {
-  ...externalArticleV1Select,
+  ...externalArticleSelect,
   content: false,
   imageCredit: false,
   sources: false,
   allowedComments: false,
 } as const
 
-export const externalArticleDetailV1Select = externalArticleV1Select
+export const externalArticleDetailV1Select = externalArticleSelect
 
 type ExternalArticleV1 = {
   createdAt: Date

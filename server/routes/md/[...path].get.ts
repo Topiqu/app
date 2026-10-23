@@ -3,6 +3,8 @@ import type { Language } from '~~/generated/zenstack/models'
 import { readFaq } from '~~/shared/utils/articleFaq'
 import { LOCALIZED_SEGMENTS } from '~~/shared/utils/routes'
 
+import { canReadArticle } from '../../utils/articleViewerAccess'
+
 /** `/md/{locale}/{segment}/{slug}[.md]` — the plain-text article for LLM and agent consumption. */
 export default defineEventHandler(async (event) => {
   const tenant = await tenantByHost(event)
@@ -17,6 +19,11 @@ export default defineEventHandler(async (event) => {
   const slug = decodeURIComponent(rawSlug)
 
   const article = await resolveArticleBySlug<{
+    clientSiteId: string
+    status: string
+    deletedAt: Date | null
+    releaseAt: Date | null
+    clientSite: { deletedAt: Date | null }
     title: string
     language: Language
     excerpt: string | null
@@ -34,6 +41,10 @@ export default defineEventHandler(async (event) => {
     prisma,
     { slug, clientSiteId: tenant.id, locale: language },
     {
+      clientSiteId: true,
+      deletedAt: true,
+      releaseAt: true,
+      clientSite: { select: { deletedAt: true } },
       title: true,
       language: true,
       excerpt: true,
@@ -51,7 +62,7 @@ export default defineEventHandler(async (event) => {
     },
   )
 
-  if (!article || (article as { status?: string }).status !== 'published') {
+  if (!article || !canReadArticle(null, article)) {
     throw createError({ statusCode: 404, message: 'Not found' })
   }
 

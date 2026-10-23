@@ -1,5 +1,8 @@
+import { publicArticleWhere } from '../../utils/articleViewerAccess'
+
 export default defineEventHandler(async (event) => {
   const clientSite = await requireExternalClient(event)
+  const where = { clientSiteId: clientSite.id, ...publicArticleWhere() }
 
   const [socials, translatedLanguages, sourceLanguages, articleCount] = await prisma.$transaction([
     prisma.social.findMany({
@@ -8,17 +11,17 @@ export default defineEventHandler(async (event) => {
       orderBy: { platform: 'asc' },
     }),
     prisma.articleTranslation.findMany({
-      where: { clientSiteId: clientSite.id, status: 'PUBLISHED' },
+      where: { clientSiteId: clientSite.id, status: 'PUBLISHED', article: where },
       distinct: ['language'],
       select: { language: true },
       orderBy: { language: 'asc' },
     }),
     prisma.article.findMany({
-      where: { clientSiteId: clientSite.id, status: 'published' },
+      where,
       distinct: ['language'],
       select: { language: true },
     }),
-    prisma.article.count({ where: { clientSiteId: clientSite.id, status: 'published' } }),
+    prisma.article.count({ where }),
   ])
 
   return {

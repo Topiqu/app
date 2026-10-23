@@ -1,8 +1,11 @@
-import type { SitemapUrl } from '#sitemap/types'
 import type { Language } from '~~/generated/zenstack/models'
 
 import { hasSeoPlan } from '~~/shared/utils/seo'
 import { articlePath, authorPath, homePath, tagPath } from '~~/shared/utils/routes'
+
+import type { SitemapUrl } from '#sitemap/types'
+
+import { publicArticleWhere } from '../../utils/articleViewerAccess'
 
 type Alternative = { hreflang: string; href: string }
 
@@ -14,7 +17,7 @@ export default defineSitemapEventHandler(async (event) => {
   const primary = tenant.language as Language
 
   const articles = await prisma.article.findMany({
-    where: { clientSiteId: tenant.id, status: 'published' },
+    where: { clientSiteId: tenant.id, ...publicArticleWhere() },
     orderBy: { publishedAt: 'desc' },
     select: {
       slug: true,

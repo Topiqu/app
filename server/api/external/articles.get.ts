@@ -58,6 +58,7 @@ export default defineEventHandler(async (event) => {
   return {
     data: articles,
     meta: {
+      siteId: clientSite.id,
       total,
       page: Math.floor(skip / take) + 1,
       limit: take,

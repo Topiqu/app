@@ -1,5 +1,7 @@
 import { articlePath } from '~~/shared/utils/routes'
 
+import { publicArticleWhere } from '../utils/articleViewerAccess'
+
 const xml = (value: string) =>
   value
     .replace(/&/g, '&amp;')
@@ -15,7 +17,7 @@ export default defineEventHandler(async (event) => {
   const origin = requestOrigin(event)
 
   const articles = await prisma.article.findMany({
-    where: { clientSiteId: tenant.id, status: 'published' },
+    where: { clientSiteId: tenant.id, ...publicArticleWhere() },
     orderBy: { publishedAt: 'desc' },
     take: 50,
     select: {
