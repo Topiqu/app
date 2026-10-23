@@ -20,7 +20,9 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{ items: any[]; command: any }>()
+import type { SlashCommandItem } from '~/composables/useTiptapSlashCommand'
+
+const props = defineProps<{ items: SlashCommandItem[]; command: (item: SlashCommandItem) => void }>()
 const selected = shallowRef(0),
   refs = ref<HTMLElement[]>([])
 
@@ -32,6 +34,7 @@ watch(
 const exec = (i: number) => props.items[i] && props.command(props.items[i])
 
 const nav = (dir: number) => {
+  if (!props.items.length) return
   selected.value = (selected.value + dir + props.items.length) % props.items.length
   nextTick(() => refs.value[selected.value]?.scrollIntoView({ block: 'nearest' }))
 }
