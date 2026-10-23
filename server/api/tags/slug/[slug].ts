@@ -1,3 +1,5 @@
+import { hasArticleAdminAccess, publicArticleWhere } from '../../../utils/articleViewerAccess'
+
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
 
@@ -45,6 +47,9 @@ export default defineEventHandler(async (event) => {
   // ArticleTag itself is public, but its article may be hidden by policy. Query articles as the
   // root so ZenStack filters invisible drafts before pagination instead of returning null joins.
   const where = {
+    ...(hasArticleAdminAccess(user, clientSite.id)
+      ? { deletedAt: null, clientSite: { deletedAt: null } }
+      : publicArticleWhere()),
     clientSiteId: clientSite.id,
     tags: { some: { tagId: tag.id } },
     ...(search ? { title: { contains: search, mode: 'insensitive' as const } } : {}),

@@ -48,7 +48,14 @@ describe('public tag lookup', () => {
     const { run, articles } = await setup([tag])
     await run()
     const query = articles.findMany.mock.calls[0]![0]
-    expect(query.where).toEqual({ clientSiteId: 'tenant-1', tags: { some: { tagId: tag.id } } })
+    expect(query.where).toEqual({
+      clientSiteId: 'tenant-1',
+      tags: { some: { tagId: tag.id } },
+      status: 'published',
+      deletedAt: null,
+      clientSite: { deletedAt: null },
+      OR: [{ releaseAt: null }, { releaseAt: { lte: expect.any(Date) } }],
+    })
     expect(query).toMatchObject({ take: 21, skip: 0 })
     expect(query.select).not.toHaveProperty('content')
     expect(articles.count).toHaveBeenCalledWith({ where: query.where })
