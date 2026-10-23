@@ -1,5 +1,6 @@
 const TOKEN_URL = 'https://oauth2.googleapis.com/token'
 const API_BASE = 'https://www.googleapis.com/webmasters/v3'
+const REQUEST_TIMEOUT_MS = 10_000
 
 export interface GoogleTokens {
   access_token: string
@@ -22,6 +23,8 @@ export const searchConsoleClientId = () =>
 export const exchangeSearchConsoleCode = async (code: string, redirectUri: string): Promise<GoogleTokens> => {
   const { clientId, clientSecret } = credentials()
   return await $fetch<GoogleTokens, string>(TOKEN_URL, {
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    retry: 0,
     method: 'POST',
     body: new URLSearchParams({
       code,
@@ -36,6 +39,8 @@ export const exchangeSearchConsoleCode = async (code: string, redirectUri: strin
 export const refreshSearchConsoleAccess = async (refreshToken: string): Promise<string> => {
   const { clientId, clientSecret } = credentials()
   const result = await $fetch<GoogleTokens, string>(TOKEN_URL, {
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    retry: 0,
     method: 'POST',
     body: new URLSearchParams({
       refresh_token: refreshToken,
@@ -51,6 +56,8 @@ export const listSearchConsoleSites = async (accessToken: string) => {
   const result = await $fetch<{ siteEntry?: { siteUrl: string; permissionLevel: string }[] }, string>(
     `${API_BASE}/sites`,
     {
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      retry: 0,
       headers: { Authorization: `Bearer ${accessToken}` },
     },
   )
@@ -59,6 +66,8 @@ export const listSearchConsoleSites = async (accessToken: string) => {
 
 export const getGoogleIdentity = async (accessToken: string) =>
   await $fetch<{ sub: string; email?: string }, string>('https://openidconnect.googleapis.com/v1/userinfo', {
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    retry: 0,
     headers: { Authorization: `Bearer ${accessToken}` },
   })
 
@@ -101,6 +110,8 @@ export const querySearchConsole = async (
   const result = await $fetch<{ rows?: SearchConsoleRow[] }, string>(
     `${API_BASE}/sites/${encoded}/searchAnalytics/query`,
     {
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      retry: 0,
       method: 'POST',
       headers: { Authorization: `Bearer ${accessToken}` },
       body: { startDate, endDate, dimensions: ['date', 'page', 'query'], rowLimit: 25000, dataState: 'final' },
