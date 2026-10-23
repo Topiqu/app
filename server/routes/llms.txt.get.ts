@@ -1,5 +1,7 @@
 import { markdownPath } from '~~/shared/utils/routes'
 
+import { publicArticleWhere } from '../utils/articleViewerAccess'
+
 /** Tenant index for LLM crawlers: what the blog is, and every article as a markdown link. */
 export default defineEventHandler(async (event) => {
   const tenant = await tenantByHost(event)
@@ -8,7 +10,7 @@ export default defineEventHandler(async (event) => {
   const origin = requestOrigin(event)
 
   const articles = await prisma.article.findMany({
-    where: { clientSiteId: tenant.id, status: 'published' },
+    where: { clientSiteId: tenant.id, ...publicArticleWhere() },
     orderBy: { publishedAt: 'desc' },
     select: {
       slug: true,
