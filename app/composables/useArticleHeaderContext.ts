@@ -3,6 +3,8 @@ export interface ArticleHeaderContext {
   backTo: string
   canEdit: boolean
   liked: boolean
+  likes: number
+  pending: boolean
   title: string
 }
 

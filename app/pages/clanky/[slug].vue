@@ -51,14 +51,11 @@
         >
           <template #sharing>
             <div class="flex flex-wrap items-center gap-1">
-              <UButton
-                :color="articleLiked ? 'error' : 'neutral'"
-                :variant="articleLiked ? 'soft' : 'ghost'"
-                icon="mdi:heart"
-                square
-                :aria-label="$t('common.actions.like')"
-                :loading="articleReactionPending"
-                @click="toggleArticleLike"
+              <ArticleLikeButton
+                :liked="articleLiked"
+                :likes="articleLikes"
+                :pending="articleReactionPending"
+                @toggle="toggleArticleLike"
               />
               <UButton
                 color="neutral"
@@ -424,7 +421,9 @@ watchEffect(() => {
     articleId: data.value.id,
     backTo: localePath({ name: 'index' }),
     canEdit: session.value?.user?.role === 'admin' && session.value.user.id === data.value.user.id,
-    liked: Boolean(data.value.likedByUser),
+    liked: articleLiked.value,
+    likes: articleLikes.value,
+    pending: articleReactionPending.value,
     title: data.value.title,
   }
 })

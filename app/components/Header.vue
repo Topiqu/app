@@ -56,14 +56,13 @@
     </template>
     <template #right>
       <div class="flex min-w-0 items-center gap-0 sm:gap-2">
-        <UButton
+        <ArticleLikeButton
           v-if="articleState.showHeader && articleHeader"
-          :color="articleHeader.liked ? 'error' : 'neutral'"
-          :variant="articleHeader.liked ? 'soft' : 'ghost'"
-          square
-          :icon="articleHeader.liked ? 'mdi:heart' : 'mdi:heart-outline'"
-          :aria-label="$t('common.actions.like')"
-          @click="articleLikeBus.emit()"
+          :liked="articleHeader.liked"
+          :likes="articleHeader.likes"
+          :pending="articleHeader.pending"
+          iconOnly
+          @toggle="articleLikeBus.emit()"
         />
         <UButton
           v-if="articleState.showHeader && articleHeader?.canEdit"

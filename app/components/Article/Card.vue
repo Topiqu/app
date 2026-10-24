@@ -67,46 +67,15 @@
             </NuxtLink>
             <p
               v-if="plainExcerpt"
-              :class="variant === 'compact' ? 'line-clamp-2 text-sm' : 'line-clamp-3'"
-              class="leading-relaxed text-muted"
+              :class="variant === 'compact' ? 'text-sm' : ''"
+              class="line-clamp-2 leading-relaxed text-muted"
             >
               {{ plainExcerpt }}
             </p>
           </div>
 
-          <div class="mt-auto space-y-3 pt-1" data-article-footer>
-            <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-sm text-muted">
-              <span class="inline-flex flex-wrap items-center gap-x-2 gap-y-1">
-                <span class="inline-flex whitespace-nowrap items-center gap-1">
-                  <UIcon name="mdi:calendar-outline" size="16" />
-                  {{ formatDate(displayDate, locale) }}
-                </span>
-                <span v-if="article.readingTime" class="inline-flex whitespace-nowrap items-center gap-1">
-                  <UIcon name="mdi:clock-outline" size="16" />
-                  {{ $t('articles.readingTime', [article.readingTime]) }}
-                </span>
-              </span>
-              <span v-if="variant !== 'compact'" class="inline-flex shrink-0 items-center gap-3 whitespace-nowrap">
-                <span class="inline-flex items-center gap-1"
-                  ><UIcon name="mdi:comment-outline" size="16" />{{ comments }}</span
-                >
-                <span class="inline-flex items-center gap-1"
-                  ><UIcon name="mdi:heart-outline" size="16" />{{ reactions }}</span
-                >
-                <span class="inline-flex items-center gap-1"
-                  ><UIcon name="mdi:eye-outline" size="16" />{{ article.views ?? 0 }}</span
-                >
-                <span class="inline-flex items-center gap-1"
-                  ><UIcon name="mdi:share-variant-outline" size="16" />{{ shares }}</span
-                >
-              </span>
-            </div>
-
-            <USeparator v-if="variant !== 'compact'" />
-            <div
-              v-if="authorName || variant !== 'compact' || $slots.actions"
-              class="flex min-h-9 items-center justify-between gap-3"
-            >
+          <footer class="mt-auto space-y-3 pt-1" data-article-footer>
+            <div class="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
               <NuxtLink
                 v-if="variant === 'compact' && authorName"
                 :to="localePath({ name: 'autor-name', params: { name: authorName } })"
@@ -119,24 +88,41 @@
                 v-else-if="authorName && authorId"
                 :user="{ id: authorId, username: authorName, avatarUrl: authorAvatar, bio: null }"
               />
-              <span v-else />
-              <div class="flex shrink-0 items-center gap-1">
+              <span class="inline-flex flex-wrap items-center gap-x-2 gap-y-1">
+                <AppTime :datetime="displayDate" preset="date" />
+                <template v-if="article.readingTime">
+                  <span aria-hidden="true">·</span>
+                  <span class="whitespace-nowrap">{{ $t('articles.readingTime', [article.readingTime]) }}</span>
+                </template>
+              </span>
+            </div>
+            <div v-if="variant !== 'compact' || $slots.actions" class="flex flex-wrap items-center gap-2">
+              <UButton
+                v-if="variant !== 'compact' && comments > 0"
+                :to="`${articlePath}#comments`"
+                color="neutral"
+                variant="ghost"
+                size="sm"
+                icon="mdi:comment-outline"
+                :aria-label="$t('articles.comments.unit', comments)"
+              >
+                {{ comments }}
+              </UButton>
+              <div class="ml-auto flex flex-wrap items-center gap-2">
                 <slot name="actions" :article="article">
-                  <UButton
+                  <ArticleLikeButton
                     v-if="variant !== 'compact'"
-                    :icon="liked ? 'mdi:heart' : 'mdi:heart-outline'"
-                    :color="liked ? 'error' : 'neutral'"
-                    variant="ghost"
-                    square
-                    :loading="reactionPending"
-                    :aria-label="$t('common.actions.like')"
-                    @click="toggleReaction"
+                    :liked="liked"
+                    :likes="reactions"
+                    :pending="reactionPending"
+                    @toggle="toggleReaction"
                   />
                   <UButton
                     v-if="variant !== 'compact'"
                     icon="mdi:share-variant-outline"
                     color="neutral"
                     variant="ghost"
+                    size="sm"
                     square
                     :aria-label="$t('common.actions.share')"
                     @click="shareArticle"
@@ -144,7 +130,7 @@
                 </slot>
               </div>
             </div>
-          </div>
+          </footer>
         </div>
       </article>
     </UCard>
@@ -166,7 +152,6 @@ const {
   layout?: ArticleCardLayout
 }>()
 const localePath = useLocalePath()
-const { locale } = useI18n()
 const articlePath = computed(() =>
   localePath({ name: 'clanky-slug', params: { slug: article.slug } }, article.language),
 )
@@ -187,7 +172,6 @@ const {
     likes: article._count?.reactions ?? article.likes ?? 0,
   }),
 )
-const shares = computed(() => article._count?.shares ?? article.shares ?? 0)
 const plainExcerpt = computed(() => articleExcerpt(article.excerpt, article.content))
 const normalizedTags = computed(() =>
   (article.tags ?? [])

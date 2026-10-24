@@ -35,10 +35,6 @@
           <span>{{ formatNumber(article.views) }}x {{ $t('stats.totalViews.title') }}</span>
         </div>
         <div class="flex items-center gap-1">
-          <UIcon size="16" name="mdi:heart" :class="article.likedByUser ? 'text-error' : 'text-muted'" />
-          <span>{{ formatNumber(article.likes) }}</span>
-        </div>
-        <div class="flex items-center gap-1">
           <UIcon size="16" name="mdi:share-variant" /><span>{{ formatNumber(article.shared) }}</span>
         </div>
       </div>
