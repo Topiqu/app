@@ -210,7 +210,12 @@ describe('translation draft and request ownership', () => {
     state.activeLang.value = 'fr'
     mocks.fetch.mockResolvedValueOnce({ translation: row('fr', { updatedAt: savedVersion }) })
     await state.translateNow()
-    expect(mocks.fetch.mock.lastCall![1].body).toEqual({ language: 'fr', replace: false, expectedUpdatedAt: null })
+    expect(mocks.fetch.mock.lastCall![1].body).toEqual({
+      language: 'fr',
+      replace: false,
+      expectedUpdatedAt: null,
+      background: true,
+    })
     expect(state.draft.value.title).toBe('fr title')
   })
 

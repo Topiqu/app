@@ -64,7 +64,28 @@ export const useArticleTranslations = (articleId?: string, initialLang = '') => 
   )
   type PendingAction = 'save' | 'publish' | 'translate' | 'discard'
   const pendingLanguages = shallowReactive(new Map<string, PendingAction>())
-  const pending = computed(() => pendingLanguages.get(activeLang.value) ?? null)
+  const pending = computed(
+    () =>
+      pendingLanguages.get(activeLang.value) ??
+      (active.value?.status === 'TRANSLATING' || active.value?.translationStartedAt ? 'translate' : null),
+  )
+  const visibility = useDocumentVisibility()
+  const { pause: pausePolling, resume: resumePolling } = useIntervalFn(
+    () => {
+      if (status.value !== 'pending') void refresh({ dedupe: 'defer' }).catch(() => undefined)
+    },
+    3000,
+    { immediate: false },
+  )
+  watch(
+    () =>
+      visibility.value === 'visible' &&
+      translations.value.some(
+        (row) => row.translationStartedAt || row.status === 'TRANSLATING' || row.status === 'PENDING',
+      ),
+    (running) => (running ? resumePolling() : pausePolling()),
+    { immediate: true },
+  )
   const conflict = shallowRef(false)
   let disposed = false
   let viewVersion = 0
@@ -141,6 +162,13 @@ export const useArticleTranslations = (articleId?: string, initialLang = '') => 
   const save = (nextStatus?: 'PUBLISHED') => {
     const token = identity && { ...identity }
     const submitted = { ...draft.value }
+    if (!submitted.title.trim() || !hasArticleBody(submitted.content)) {
+      toast.add({
+        color: 'error',
+        title: t(!submitted.title.trim() ? 'common.messages.articleTitleRequired' : 'articles.editor.contentRequired'),
+      })
+      return Promise.resolve()
+    }
     if (!token?.id || token.language !== activeLang.value) return Promise.resolve()
     return run(
       nextStatus ? 'publish' : 'save',
@@ -188,7 +216,7 @@ export const useArticleTranslations = (articleId?: string, initialLang = '') => 
           `/api/articles/${articleId}/translate` as '/api/articles/:id/translate',
           {
             method: 'POST',
-            body: { language, replace: !!token.id, expectedUpdatedAt: token.expectedUpdatedAt },
+            body: { language, replace: !!token.id, expectedUpdatedAt: token.expectedUpdatedAt, background: true },
           },
         ),
       ({ translation }, current) => {
@@ -203,7 +231,7 @@ export const useArticleTranslations = (articleId?: string, initialLang = '') => 
         identity = { language, id: translation.id, expectedUpdatedAt: translationVersion(translation) }
         conflict.value = false
       },
-      'articles.translations.messages.translated',
+      'articles.editor.translationStarted',
     )
   }
 
