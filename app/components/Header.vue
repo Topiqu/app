@@ -44,7 +44,7 @@
           sizes="128px"
           :width="128"
           priority
-          containerClass="h-10 w-32 shrink-0 bg-transparent [&_[aria-hidden]]:translate-x-px"
+          containerClass="h-10 w-16 shrink-0 bg-transparent sm:w-32 [&_[aria-hidden]]:translate-x-px"
         />
       </NuxtLink>
       <p
