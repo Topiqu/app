@@ -236,7 +236,7 @@ const { data: relatedArticles, pending } = await useArticleFeed(
     requestFetch(`/api/articles/${slug.value}/related`, {
       signal,
       query: {
-        limit: 3,
+        limit: 2,
         clientSiteId: data.value?.clientSiteId,
         locale: data.value?.language,
       },
