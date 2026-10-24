@@ -680,6 +680,7 @@
             "invented_detail": "Vymyšlený detail",
             "generic_language": "Obecné formulace",
             "missing_specifics": "Chybí konkrétní údaje",
+            "assignment_mismatch": "Nesoulad se zadáním",
             "broken_structure": "Rozbitá struktura"
           },
           "busy": "Právě se generuje jiný článek. Počkejte, až doběhne, nebo ho nejdřív zastavte."

@@ -189,7 +189,7 @@ export const buildArticleConfig = async (
   const articleLanguage = requestedLanguage ?? language
   const writingQuality = requestedQuality ?? articleQualityOf(articleQuality)
 
-  const editorialDirection = editorialPolicy(format, aiControversyLevel, illustrative)
+  const editorialDirection = editorialPolicy(format, aiControversyLevel, illustrative, aiToneOfVoice)
 
   const researchQuery = researchOption === undefined ? prompt : researchOption ? researchOption.query : null
   const knowledgeQuery = knowledgeQueryOption === undefined ? researchQuery : knowledgeQueryOption
@@ -279,7 +279,6 @@ export const buildArticleConfig = async (
       The current date and time is ${currentDateTime}. This is authoritative and more important than dates implied by the user prompt or older sources.
       Write a detailed, well-structured article based on the user prompt aiming on ${audience || 'wide audience'}.
       Use appropriate headings, subheadings, and formatting.
-      ${aiToneOfVoice ? `Write in the following tone of voice: ${aiToneOfVoice}.` : ''}
       ${editorialDirection}
       ${communityPrompt}${knowledgePrompt}${researchPrompt}
       Respond ONLY in valid JSON format with the structure:

@@ -30,7 +30,7 @@ const angles: Record<string, string> = {
   story:
     'Story: narrate what happened to one protagonist as a sequence of scenes, in the past tense. Open at a concrete decision or obstacle, give the protagonist a goal and something to lose, and let choices cause the next scene. Rules, institutions and numbers enter through what the protagonist runs into, not as separate explanatory sections, and the ending shows where the sequence left them. Do not substitute a guide, list of possibilities or moral lesson for the requested story.',
   opinion:
-    "Opinion: defend the position the author actually requested. State the thesis early, build the strongest concrete case for it and answer a serious objection without surrendering the thesis to a neutral both-sides recap. A sharp value judgment needs an argument, not a source agreeing with the judgment. Correct a false factual premise while preserving the requested viewpoint wherever the argument can stand on true premises. Never replace the assignment with an unsolicited opposing editorial or a lecture about the author's tone.",
+    "Opinion: defend the position the author actually requested. State the thesis early, build the strongest concrete case for it and answer a serious objection without surrendering the thesis to a neutral both-sides recap. A sharp value judgment needs an argument, not a source agreeing with the judgment. Correct a false factual premise while preserving the requested viewpoint wherever the argument can stand on true premises. When correcting an incidental false premise, keep the title and perex centered on the requested argument; correct the premise once in the body and move on. Do not promote that correction into a fact-check headline or make it the article's theme unless the assignment requests a fact-check. Treat a short profane political dismissal as an expressive stance to develop into an argument; profanity alone is neither a factual allegation nor evidence of an intent to commit violence. Do not introduce bloodshed, threats or a nonviolence campaign that the assignment did not ask for. Never replace the assignment with an unsolicited opposing editorial, a civility lesson or a lecture about the author's tone. These rules apply equally to every political viewpoint.",
   default:
     "Develop the most useful angle within the requested format: analysis can explain mechanisms and test a scenario, comparison can examine differences, and opinion can defend a thesis. Preserve an author's first-hand story. If the original premise is unsupported, use the available factual premises to develop a substantive related angle rather than an article about the absence of confirmation.",
 }
@@ -39,7 +39,12 @@ const argumentStructure =
   'Before drafting, choose one central question or thesis and distinct supporting points. Each body section must advance the argument with a new premise, mechanism, comparison, counterargument or consequence. A table must compare meaningful shared criteria; a poll must address the substantive tension. Neither should merely repeat the lead.'
 const storyStructure = 'Each scene moves the sequence forward with a new obstacle, decision or consequence.'
 
-export const editorialPolicy = (format?: ArticleFormat, controversyLevel?: string | null, illustrative = false) => {
+export const editorialPolicy = (
+  format?: ArticleFormat,
+  controversyLevel?: string | null,
+  illustrative = false,
+  toneOfVoice?: string | null,
+) => {
   const voices: Record<string, string> = {
     NONE: 'Use a restrained explanatory voice. Explain disagreements fairly without manufacturing a controversy.',
     LOW: 'Use a measured voice. Explain tradeoffs and disagreements without provocation.',
@@ -52,6 +57,8 @@ export const editorialPolicy = (format?: ArticleFormat, controversyLevel?: strin
     AUTHORIAL_REASONING,
     format === 'story' && (illustrative ? ILLUSTRATIVE_STORY : DOCUMENTED_STORY),
     voice ?? 'Use the requested authorial voice and make the reasoning concrete.',
+    toneOfVoice?.trim() &&
+      `Requested tone of voice (publisher preference): ${JSON.stringify(toneOfVoice.trim())}. Deliver this tone within the requested format; an explicit tone in the article assignment takes precedence. Preserve requested aggression, satire and profanity rather than silently making the prose polite. Tone never authorizes invented factual allegations or threats.`,
     uncertainty[controversyLevel ?? ''] ?? uncertainty.LOW,
     angles[format ?? ''] ?? angles.default,
     format === 'story' ? storyStructure : argumentStructure,

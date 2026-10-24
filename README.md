@@ -192,6 +192,17 @@ bun run eval:ai
 bun run knowledge:eval
 ```
 
+The article voice eval uses the production OpenAI and Anthropic adapters and needs both providers' keys from the normal configuration. To run only its opinion and assignment-fidelity cases in PowerShell:
+
+```powershell
+$env:AI_EVAL = '1'
+bun run test tests/eval/articleVoice.test.ts -t 'opinion-|review-'
+Remove-Item Env:AI_EVAL
+```
+
+Results in `tests/eval/.results/` include the original assignment, first draft, reviewed article and a separate model assessment of stance, tone and unsolicited lectures. Inspect the texts as well as the automated verdicts.
+The false-premise case also accepts the existing manual-review fallback after one revision, but only when the copy desk flags the remaining assignment mismatch. Its result is recorded as `needs_author_review` with the failed criteria, separately from `voice_fulfilled`. Voice success alone does not imply editorial approval; other findings stay in the report.
+
 </details>
 
 ## Production build

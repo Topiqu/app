@@ -27,6 +27,15 @@ describe('editorial policy', () => {
     expect(policy).toContain('sarcasm, satire, anger or profanity')
     expect(policy).not.toContain('illustrative narrative')
     expect(policy).toContain('Never invent criminal allegations')
+    expect(policy).toContain('keep the title and perex centered on the requested argument')
+  })
+
+  it('shares the publisher tone while allowing an explicit assignment to override it', () => {
+    const policy = editorialPolicy('opinion', 'HIGH', false, '  direct, aggressive, vulgar  ')
+    expect(policy).toContain('"direct, aggressive, vulgar"')
+    expect(policy).toContain('an explicit tone in the article assignment takes precedence')
+    expect(policy).toContain('profanity alone is neither a factual allegation nor evidence of an intent')
+    expect(editorialPolicy('opinion', 'HIGH', false, '  ')).not.toContain('Requested tone of voice')
   })
 
   it.each([

@@ -685,6 +685,7 @@
             "invented_detail": "Invented detail",
             "generic_language": "Generic language",
             "missing_specifics": "Missing specifics",
+            "assignment_mismatch": "Assignment mismatch",
             "broken_structure": "Broken structure"
           },
           "busy": "Another article is being generated. Wait for it to finish or stop it first."

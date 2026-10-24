@@ -63,6 +63,18 @@ describe('article copy desk', () => {
     ).toBe(false)
   })
 
+  it('accepts an actionable assignment mismatch for revision', () => {
+    const issue = {
+      code: 'assignment_mismatch',
+      note: 'The title replaces the requested argument with a civility lecture. Restore the assigned stance.',
+    }
+    const review = editorialReviewSchema.parse({ approved: false, issues: [issue] })
+
+    expect(buildRevisionPrompt('Write an aggressive political opinion.', draft, review)).toContain(
+      `assignment_mismatch: ${issue.note}`,
+    )
+  })
+
   it('accepts a verbose review, whose caps the provider does not enforce', () => {
     const issue = { code: 'missing_specifics', note: 'Name the passage. '.repeat(30) }
 

@@ -680,6 +680,7 @@
             "invented_detail": "Détail inventé",
             "generic_language": "Formulations génériques",
             "missing_specifics": "Détails manquants",
+            "assignment_mismatch": "Non-respect de la consigne",
             "broken_structure": "Structure défaillante"
           },
           "busy": "Un autre article est en cours de génération. Attendez la fin ou arrêtez-le d’abord."

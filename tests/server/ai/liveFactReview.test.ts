@@ -231,6 +231,22 @@ it('after a verified revision, trusts the verification but still blocks invented
   expect(result.review).toMatchObject({ approved: false, issues: [quote] })
 })
 
+it.each([false, true])('keeps assignment mismatches blocking with factsChecked=%s', async (factsChecked) => {
+  const issue = {
+    code: 'assignment_mismatch',
+    note: 'The title turns the requested opinion into a civility lesson. Restore the assigned stance.',
+  }
+  vi.mocked(generateStructuredText).mockResolvedValue({
+    output: { approved: false, issues: [issue] },
+    usage: { totalTokens: 20 },
+  } as never)
+
+  const result = await reviewArticle(draft, { ...context, verifyFacts: false, factsChecked })
+
+  expect(result.review).toMatchObject({ approved: false, issues: [issue] })
+  expect(generatePlainText).not.toHaveBeenCalled()
+})
+
 it('lets only an editor-requested story skip documentation of its plot', async () => {
   vi.mocked(generatePlainText).mockResolvedValue({
     text: `SUPPORTED: Ciri is the protagonist. ${url}`,

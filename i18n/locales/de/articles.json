@@ -685,6 +685,7 @@
             "invented_detail": "Erfundenes Detail",
             "generic_language": "Allgemeine Formulierungen",
             "missing_specifics": "Fehlende Details",
+            "assignment_mismatch": "Abweichung vom Auftrag",
             "broken_structure": "Fehlerhafte Struktur"
           },
           "busy": "Gerade wird ein anderer Artikel generiert. Warten Sie, bis er fertig ist, oder stoppen Sie ihn zuerst."

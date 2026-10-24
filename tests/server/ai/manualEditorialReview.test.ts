@@ -252,9 +252,81 @@ describe('manual editorial review', () => {
       expect(instructions).toContain('Sources establish the factual premises')
       if (format === 'news')
         expect(instructions).toContain('even HIGH controversy does not turn news into an opinion column')
-      else expect(instructions).toContain('opinion can defend a thesis')
+      else expect(instructions).toContain('defend the position the author actually requested')
     }
     expect(generation.editorialReview?.approved).toBe(true)
+  })
+
+  it('carries the requested tone through writing, review, revision and rechecking', async () => {
+    const tone = 'direct, aggressive, vulgar'
+    vi.mocked(prisma.clientSite.findFirstOrThrow).mockResolvedValue({
+      language: 'cs',
+      aiControversyLevel: 'HIGH',
+      aiToneOfVoice: tone,
+    } as never)
+    const mismatch = {
+      approved: false,
+      issues: [
+        {
+          code: 'assignment_mismatch',
+          note: 'The title lectures the author about insults. Restore the requested political argument and tone.',
+        },
+      ],
+    }
+    const moralizing = { ...draft, title: 'Jsou komunisté tupci? Urážka argument nenahradí' }
+    const revision = { ...draft, title: 'Komunistické sliby svobody jsou podvod' }
+    vi.mocked(generateStructuredText)
+      .mockResolvedValueOnce(response(mismatch, 10) as never)
+      .mockResolvedValueOnce(response(revision, 20) as never)
+      .mockResolvedValueOnce(response(approved, 5) as never)
+    const generation = await streamArticle('site', 'Jebat komouše', {
+      research: false,
+      format: 'opinion',
+      modules: [],
+    })
+
+    expect(await generation.review(moralizing)).toEqual(revision)
+    const writer = vi.mocked(streamText).mock.calls.at(-1)![0]
+    for (const call of [writer, ...vi.mocked(generateStructuredText).mock.calls.map(([options]) => options)]) {
+      expect(call.instructions).toContain(tone)
+    }
+    expect(vi.mocked(generateStructuredText).mock.calls[1]![0].prompt).toContain('assignment_mismatch')
+    expect(generation.editorialReview).toMatchObject({ approved: true, revised: true, resolvedIssues: mismatch.issues })
+    expect(generatePlainText).not.toHaveBeenCalled()
+    expect(generation.editorialTokens).toBe(35)
+  })
+
+  it('keeps an assignment mismatch blocking after the single revision', async () => {
+    const mismatch = {
+      approved: false,
+      issues: [
+        {
+          code: 'assignment_mismatch',
+          note: 'Replace the unsolicited nonviolence lesson with the requested argument.',
+        },
+      ],
+    }
+    const moralizing = { ...draft, title: 'Want Communism Defeated? Fight It Without Bloodshed' }
+    vi.mocked(generateStructuredText)
+      .mockResolvedValueOnce(response(mismatch, 10) as never)
+      .mockResolvedValueOnce(response(moralizing, 20) as never)
+      .mockResolvedValueOnce(response(mismatch, 5) as never)
+    const generation = await streamArticle('site', 'Fuck communism', {
+      research: false,
+      format: 'opinion',
+      modules: [],
+    })
+
+    expect(await generation.review(moralizing)).toEqual(moralizing)
+    expect(generation.editorialReview).toMatchObject({
+      approved: false,
+      revised: true,
+      checkedAfterRevision: true,
+      issues: mismatch.issues,
+      resolvedIssues: [],
+    })
+    expect(generateStructuredText).toHaveBeenCalledTimes(3)
+    expect(generation.editorialTokens).toBe(35)
   })
 
   it('returns the reviewed original with a warning when the revision call fails', async () => {
