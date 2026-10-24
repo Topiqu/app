@@ -100,12 +100,14 @@ export const articleLanguageUsage = (task: string, provider: string, model: stri
       const result = await doStream()
       const reader = result.stream.getReader()
       let failed = false
+      let cancelled = false
       return {
         ...result,
         stream: new ReadableStream({
           async pull(controller) {
             try {
               const part = await reader.read()
+              if (cancelled) return
               if (part.done) {
                 reader.releaseLock()
                 await record(failed ? 'failed' : 'incomplete')
@@ -120,12 +122,15 @@ export const articleLanguageUsage = (task: string, provider: string, model: stri
                 )
               controller.enqueue(part.value)
             } catch (error) {
+              if (cancelled) return
               reader.releaseLock()
               await record('failed')
               controller.error(error)
             }
           },
           async cancel(reason) {
+            // Cancelling resolves a pending read before reader.cancel() itself settles.
+            cancelled = true
             try {
               await reader.cancel(reason)
             } finally {
