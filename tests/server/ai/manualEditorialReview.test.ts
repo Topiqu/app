@@ -252,7 +252,7 @@ describe('manual editorial review', () => {
       expect(instructions).toContain('Sources establish the factual premises')
       if (format === 'news')
         expect(instructions).toContain('even HIGH controversy does not turn news into an opinion column')
-      else expect(instructions).toContain('defend the position the author actually requested')
+      else expect(instructions).toContain('Opinion: defend the position the author actually requested')
     }
     expect(generation.editorialReview?.approved).toBe(true)
   })
