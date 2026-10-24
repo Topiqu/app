@@ -57,7 +57,12 @@ export const assertTenantMedia = async (clientSiteId: string, mediaId?: string |
   const asset = await prisma.mediaAsset.findFirst({
     where: { id: mediaId, clientSiteId, archivedAt: null, purgeAfter: null, purgedAt: null },
   })
-  if (!asset) throw createError({ statusCode: 400, statusMessage: 'Selected media is unavailable' })
+  if (!asset)
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Selected media is unavailable',
+      data: { code: 'MEDIA_UNAVAILABLE' },
+    })
   return asset
 }
 

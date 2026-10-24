@@ -22,7 +22,15 @@ export default defineEventHandler(async (event) => {
   if (!title && !content && content !== '<p></p>' && !excerpt)
     throw createError({ statusCode: 400, message: t('common.errors.missing')! })
   if (!user.clientSiteId) throw createError({ statusCode: 400, message: t('common.errors.missing')! })
-  await assertTenantMedia(user.clientSiteId, coverMediaId)
+  let availableCoverMediaId = coverMediaId
+  let mediaUnavailable = false
+  try {
+    await assertTenantMedia(user.clientSiteId, coverMediaId)
+  } catch (error: unknown) {
+    if ((error as { data?: { code?: string } })?.data?.code !== 'MEDIA_UNAVAILABLE') throw error
+    availableCoverMediaId = null
+    mediaUnavailable = true
+  }
 
   const clientSite = await prisma.clientSite.findUnique({ where: { id: user.clientSiteId } })
   if (!clientSite || clientSite.id !== user.clientSiteId)
@@ -33,7 +41,7 @@ export default defineEventHandler(async (event) => {
     excerpt: excerpt || null,
     content: content || '',
     imageUrl: imageUrl || null,
-    coverMediaId: coverMediaId || null,
+    coverMediaId: availableCoverMediaId || null,
     language: language ?? null,
   }
   const select = {
@@ -61,5 +69,5 @@ export default defineEventHandler(async (event) => {
         select,
       })
 
-  return { success: true, draft }
+  return { success: true, draft, mediaUnavailable }
 })

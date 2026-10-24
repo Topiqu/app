@@ -16,6 +16,7 @@ export const useArticleDrafts = (
   const { enabled } = options
   let disposed = false
   let documentVersion = 0
+  let warnedCoverId: string | null = null
 
   const successMessage = shallowRef('')
   const draftsOpen = shallowRef(false)
@@ -73,7 +74,10 @@ export const useArticleDrafts = (
 
     saving.value = true
     try {
-      const { draft } = await $fetch<{ draft: ArticleDraft }, '/api/articles/draft'>('/api/articles/draft', {
+      const { draft, mediaUnavailable } = await $fetch<
+        { draft: ArticleDraft; mediaUnavailable?: boolean },
+        '/api/articles/draft'
+      >('/api/articles/draft', {
         method: 'POST',
         body: {
           id: draftId.value ?? undefined,
@@ -82,6 +86,10 @@ export const useArticleDrafts = (
       })
       if (disposed || version !== documentVersion) return true
       draftId.value = draft.id
+      if (mediaUnavailable && warnedCoverId !== currentData.coverMediaId) {
+        warnedCoverId = currentData.coverMediaId
+        toast.add({ color: 'warning', title: t('articles.editor.draftMediaRemoved'), duration: 10000 })
+      }
 
       lastSavedAt.value = new Date()
       successMessage.value = t('common.messages.draftSaved')
