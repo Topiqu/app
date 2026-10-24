@@ -56,40 +56,51 @@
           <article
             v-for="draft in filteredDrafts"
             :key="draft.id"
-            class="group relative min-w-0 overflow-hidden rounded-(--topiqu-surface-radius) border border-default bg-default transition hover:border-primary/50 hover:shadow-md focus-within:ring-2 focus-within:ring-primary"
+            class="group flex min-w-0 flex-col overflow-hidden rounded-(--topiqu-surface-radius) border border-default bg-default transition hover:border-primary/50 focus-within:ring-2 focus-within:ring-primary"
           >
-            <ULink as="button" type="button" class="block size-full min-w-0 text-left" @click="selectDraft(draft)">
+            <div
+              role="button"
+              tabindex="0"
+              :aria-label="draft.title || $t('articles.editor.drafts.untitled', [draft.id.slice(-4)])"
+              class="flex min-w-0 flex-1 cursor-pointer flex-col outline-none"
+              @click="selectDraft(draft)"
+              @keydown.enter.prevent="selectDraft(draft)"
+              @keydown.space.prevent="selectDraft(draft)"
+            >
               <AppMedia
                 :src="draft.imageUrl"
                 :alt="draft.title || $t('articles.articleCard.imageAlt')"
                 aspectRatio="16 / 9"
                 sizes="xs:100vw phone:100vw sm:400px"
-                containerClass="w-full rounded-none"
+                containerClass="w-full shrink-0 rounded-none"
               />
-              <div class="min-w-0 space-y-2 p-4 pr-12">
-                <h3 class="line-clamp-2 text-base font-semibold tracking-tight text-highlighted">
+              <div class="min-w-0 flex-1 space-y-2 p-4">
+                <h3
+                  class="line-clamp-2 min-h-12 text-base leading-6 font-semibold tracking-tight break-words text-highlighted"
+                >
                   {{ draft.title || $t('articles.editor.drafts.untitled', [draft.id.slice(-4)]) }}
                 </h3>
-                <p v-if="draft.excerpt" class="line-clamp-2 text-sm leading-snug text-muted">
+                <p class="line-clamp-2 h-10 text-sm leading-5 break-words text-muted">
                   {{ draft.excerpt }}
                 </p>
-                <div class="flex min-w-0 items-center gap-1.5 border-t border-default pt-2 text-xs text-muted">
-                  <span class="truncate">{{ format(draft.createdAt, dateFormat, { locale: dateLocale }) }}</span>
-                </div>
               </div>
-            </ULink>
-            <UTooltip :text="$t('common.actions.delete')">
-              <UButton
-                color="error"
-                variant="soft"
-                size="sm"
-                square
-                icon="mdi:delete"
-                class="absolute right-3 bottom-3 z-10"
-                :aria-label="$t('common.actions.delete')"
-                @click.stop="deleteDraft(draft.id)"
-              />
-            </UTooltip>
+            </div>
+            <div
+              class="flex min-w-0 items-center justify-between gap-2 border-t border-default px-4 py-2 text-xs text-muted"
+            >
+              <span class="min-w-0 break-words">{{ format(draft.createdAt, dateFormat, { locale: dateLocale }) }}</span>
+              <UTooltip :text="$t('common.actions.delete')">
+                <UButton
+                  color="error"
+                  variant="ghost"
+                  size="xs"
+                  square
+                  icon="mdi:delete-outline"
+                  :aria-label="$t('common.actions.delete')"
+                  @click="deleteDraft(draft.id)"
+                />
+              </UTooltip>
+            </div>
           </article>
         </div>
 
