@@ -13,7 +13,7 @@
         variant="ghost"
         icon="mdi:list-status"
         :trailingIcon="expanded ? 'mdi:chevron-down' : 'mdi:chevron-up'"
-        :aria-label="$t(expanded ? 'common.setup.checklist.collapse' : 'common.setup.checklist.expand')"
+        :title="$t(expanded ? 'common.setup.checklist.collapse' : 'common.setup.checklist.expand')"
         data-setup-toggle
       >
         <span class="flex min-w-0 flex-1 items-center justify-between gap-3 text-left">

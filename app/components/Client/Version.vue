@@ -8,14 +8,8 @@
       data-client-version-bar
       class="bottom-action-bar pointer-events-auto flex w-full items-center gap-1 rounded-(--topiqu-surface-radius) border border-accented bg-default p-1 shadow-lg"
     >
-      <UButton
-        class="min-w-0 flex-1"
-        color="neutral"
-        variant="soft"
-        trailingIcon="mdi:chevron-up"
-        :aria-label="$t('common.wallet.title')"
-        @click="show = true"
-      >
+      <UButton class="min-w-0 flex-1" color="neutral" variant="soft" trailingIcon="mdi:chevron-up" @click="show = true">
+        <span class="sr-only">{{ $t('common.wallet.title') }}</span>
         <span class="hidden shrink-0 sm:inline">Topiqu {{ config.public.appVersion }}</span>
         <UBadge class="ml-auto min-w-0 shrink truncate" :color="planBadgeColor" variant="soft">{{
           site?.plan ?? $t('articles.userMenu.noClientAssigned')
