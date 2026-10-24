@@ -76,10 +76,66 @@ describe('structured application logging', () => {
       name: 'Error',
       message: 'Provider unavailable',
       code: 'ECONNREFUSED',
-      cause: 'Connection refused',
+      cause: { name: 'Error', message: 'Connection refused' },
       stack: expect.stringContaining('logger.test.ts'),
     })
     expect(JSON.stringify(logErrorDetails(error))).not.toContain('private')
+  })
+
+  it('serializes plain-object causes with useful fields without including provider payloads', () => {
+    const error = new Error('Request failed', {
+      cause: {
+        message: 'Connection refused',
+        code: 'ECONNREFUSED',
+        statusCode: 503,
+        headers: { authorization: 'Bearer private-value' },
+        data: { content: 'private provider response' },
+      },
+    })
+    const details = logErrorDetails(error)
+    expect(details.cause).toEqual({
+      name: 'Error',
+      message: 'Connection refused',
+      code: 'ECONNREFUSED',
+      statusCode: 503,
+    })
+    expect(JSON.stringify(details)).not.toMatch(/private|\[object Object\]/)
+  })
+
+  it('bounds cyclic and deeply nested error causes', () => {
+    const circular = new Error('Circular cause')
+    circular.cause = circular
+    expect(JSON.stringify(logErrorDetails(circular))).toContain('[circular]')
+    let chain = new Error('Deepest error')
+    for (let index = 0; index < 10; index++) chain = new Error(`Failure ${index}`, { cause: chain })
+    const details = JSON.stringify(logErrorDetails(chain))
+    expect(details).toContain('[truncated]')
+    expect(details).not.toContain('Deepest error')
+  })
+
+  it('can omit stacks throughout an expected error cause chain', () => {
+    const details = logErrorDetails(new Error('Invalid credentials', { cause: new Error('Password mismatch') }), {
+      includeStack: false,
+    })
+    expect(details).toMatchObject({ message: 'Invalid credentials', cause: { message: 'Password mismatch' } })
+    expect(JSON.stringify(details)).not.toContain('stack')
+  })
+
+  it('redacts raw network identity fields centrally while retaining a pseudonymous fingerprint', () => {
+    const context = sanitizeLogContext({
+      ip: '203.0.113.4',
+      ipAddress: '2001:db8::1',
+      userAgent: 'Synthetic Browser/123',
+      nested: { client_ip: '203.0.113.4', 'user-agent': 'Synthetic Browser/123', 'x-forwarded-for': '203.0.113.4' },
+      ipFingerprint: 'synthetic-fingerprint',
+      requestId: 'request-one',
+    })
+    expect(JSON.stringify(context)).not.toMatch(/203\.0\.113\.4|2001:db8::1|Synthetic Browser/)
+    expect(context).toMatchObject({
+      ip: '[redacted]',
+      ipFingerprint: 'synthetic-fingerprint',
+      requestId: 'request-one',
+    })
   })
 
   it('suppresses successful debug reads by default and permits explicit debug mode', async () => {

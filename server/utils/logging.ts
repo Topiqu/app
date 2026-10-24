@@ -2,6 +2,18 @@ export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 
 const privateKey =
   /^(?:authorization|cookies?|headers?|password|secret|.*(?:_token|Token|Secret|Password|ApiKey)|apiKey|api_key|privateKey|credentials|body|payload|data|query|params|prompt|content|request|response|user|profile|session|account)$/i
+const privateNetworkKeys = new Set([
+  'ip',
+  'ipaddress',
+  'clientip',
+  'clientipaddress',
+  'remoteip',
+  'remoteaddress',
+  'useragent',
+  'xforwardedfor',
+  'xrealip',
+  'cfconnectingip',
+])
 
 export const sanitizeLogText = (value: string, limit = 1500): string => {
   let text = value
@@ -36,35 +48,47 @@ export const sanitizeLogText = (value: string, limit = 1500): string => {
     .slice(0, limit)
 }
 
-export const logErrorDetails = (error: unknown): Record<string, unknown> => {
-  if (!error || typeof error !== 'object') return { message: sanitizeLogText(String(error ?? 'Unknown error')) }
-  const value = error as {
-    name?: unknown
-    message?: unknown
-    statusMessage?: unknown
-    code?: unknown
-    stack?: unknown
-    cause?: unknown
+export const logErrorDetails = (error: unknown, { includeStack = true } = {}): Record<string, unknown> => {
+  const seen = new WeakSet<object>()
+  const visit = (current: unknown, depth: number): Record<string, unknown> => {
+    if (depth >= 3) return { message: '[truncated]' }
+    if (!current || typeof current !== 'object') return { message: sanitizeLogText(String(current ?? 'Unknown error')) }
+    if (seen.has(current)) return { message: '[circular]' }
+    seen.add(current)
+    const value = current as {
+      name?: unknown
+      message?: unknown
+      statusMessage?: unknown
+      code?: unknown
+      statusCode?: unknown
+      stack?: unknown
+      cause?: unknown
+    }
+    const message = [value.message, value.statusMessage].find(
+      (candidate): candidate is string => typeof candidate === 'string' && !!candidate.trim(),
+    )
+    return {
+      name: typeof value.name === 'string' ? sanitizeLogText(value.name, 100) : 'Error',
+      message: sanitizeLogText(message ?? 'Unknown error'),
+      ...(typeof value.code === 'string' || typeof value.code === 'number'
+        ? { code: sanitizeLogText(String(value.code), 100) }
+        : {}),
+      ...(typeof value.statusCode === 'number' && Number.isInteger(value.statusCode)
+        ? { statusCode: value.statusCode }
+        : {}),
+      ...(includeStack && typeof value.stack === 'string'
+        ? {
+            stack: value.stack
+              .split('\n')
+              .slice(0, 9)
+              .map((line) => sanitizeLogText(line, 500))
+              .join('\n'),
+          }
+        : {}),
+      ...(value.cause != null ? { cause: visit(value.cause, depth + 1) } : {}),
+    }
   }
-  return {
-    name: typeof value.name === 'string' ? sanitizeLogText(value.name, 100) : 'Error',
-    message: sanitizeLogText(String(value.message || value.statusMessage || 'Unknown error')),
-    ...(typeof value.code === 'string' || typeof value.code === 'number'
-      ? { code: sanitizeLogText(String(value.code), 100) }
-      : {}),
-    ...(typeof value.stack === 'string'
-      ? {
-          stack: value.stack
-            .split('\n')
-            .slice(0, 9)
-            .map((line) => sanitizeLogText(line, 500))
-            .join('\n'),
-        }
-      : {}),
-    ...(value.cause && value.cause !== error
-      ? { cause: sanitizeLogText(value.cause instanceof Error ? value.cause.message : String(value.cause)) }
-      : {}),
-  }
+  return visit(error, 0)
 }
 
 export const sanitizeLogContext = (context: Record<string, unknown>): Record<string, unknown> => {
@@ -94,7 +118,12 @@ export const sanitizeLogContext = (context: Record<string, unknown>): Record<str
     return Object.fromEntries(
       Object.entries(value)
         .slice(0, 50)
-        .map(([key, item]) => [key, privateKey.test(key) ? '[redacted]' : visit(item, depth + 1)]),
+        .map(([key, item]) => [
+          key,
+          privateKey.test(key) || privateNetworkKeys.has(key.replace(/[_-]/g, '').toLowerCase())
+            ? '[redacted]'
+            : visit(item, depth + 1),
+        ]),
     )
   }
   return visit(context, 0) as Record<string, unknown>

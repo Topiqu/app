@@ -28,16 +28,18 @@ const header = (req: AuthRequest, name: string) => {
   return Array.isArray(value) ? value[0] : value
 }
 
-export const loginRequestContext = (req: AuthRequest, email: string) => ({
-  identity: authFingerprint(normalizeLoginEmail(email)),
-  ip: clientIp(req.headers ?? {}),
-  host: header(req, 'x-forwarded-host') || header(req, 'host') || null,
-  userAgent: header(req, 'user-agent') || null,
-})
+export const loginRequestContext = (req: AuthRequest, email: string) => {
+  const ip = clientIp(req.headers ?? {})
+  return {
+    identity: authFingerprint(normalizeLoginEmail(email)),
+    ipFingerprint: ip ? pepperIp(ip) : null,
+    host: header(req, 'x-forwarded-host') || header(req, 'host') || null,
+  }
+}
 
 export async function checkLoginRateLimit(req: AuthRequest, email: string, stage: 'preflight' | 'authorize') {
   const context = loginRequestContext(req, email)
-  const ipKey = context.ip ? authFingerprint(context.ip) : 'unknown'
+  const ipKey = context.ipFingerprint ?? 'unknown'
   const [ipAllowed, identityAllowed] = await Promise.all([
     consumeRateLimit(`login:${stage}:ip:${ipKey}`, 30, 15 * 60),
     consumeRateLimit(`login:${stage}:identity:${context.identity}`, 8, 15 * 60),

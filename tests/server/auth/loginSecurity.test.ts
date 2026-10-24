@@ -1,16 +1,19 @@
 import { resolve } from 'node:path'
 import { readFileSync } from 'node:fs'
-import { describe, expect, it, beforeEach } from 'vitest'
+import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 
 import { stubNitroImports } from '../../helpers/nitroImports'
 
 async function stubImports() {
-  await stubNitroImports(import('../../../server/utils/ip'), 'clientIp')
+  await stubNitroImports(import('../../../server/utils/ip'), 'clientIp', 'pepperIp')
 }
 
 await stubImports()
 
-const { credentialFailure, loginRequestContext, normalizeLoginEmail } = await import('../../../server/utils/authLogin')
+const { credentialFailure, loginRequestContext, normalizeLoginEmail, checkLoginRateLimit, logLoginFailure } =
+  await import('../../../server/utils/authLogin')
+const limits = vi.fn().mockResolvedValue(true)
+const log = { warn: vi.fn().mockResolvedValue(undefined) }
 
 describe('credential login decisions', () => {
   it.each([
@@ -44,8 +47,41 @@ describe('credential login decisions', () => {
       } as any,
       'client@example.com',
     )
-    expect(context).toMatchObject({ ip: '203.0.113.4', host: 'tenant.example.com', userAgent: 'Browser' })
-    expect(JSON.stringify(context)).not.toContain('client@example.com')
+    expect(context).toMatchObject({
+      ipFingerprint: expect.stringMatching(/^[a-f0-9]{64}$/),
+      host: 'tenant.example.com',
+    })
+    expect(JSON.stringify(context)).not.toMatch(/client@example\.com|203\.0\.113\.4|172\.70\.240\.24|Browser/)
+  })
+
+  it.each(['203.0.113.4', '2001:db8::1'])('keeps a stable fingerprint for %s without storing the address', (ip) => {
+    const req = { headers: { 'x-forwarded-for': ip } }
+    const first = loginRequestContext(req, 'client@example.test')
+    expect(first.ipFingerprint).toMatch(/^[a-f0-9]{64}$/)
+    expect(loginRequestContext(req, 'other@example.test').ipFingerprint).toBe(first.ipFingerprint)
+    expect(JSON.stringify(first)).not.toContain(ip)
+  })
+
+  it('preserves the existing rate-limit keys and thresholds using the fingerprint directly', async () => {
+    const req = { headers: { 'x-forwarded-for': '203.0.113.4' } }
+    const context = loginRequestContext(req, 'client@example.test')
+    await checkLoginRateLimit(req, 'client@example.test', 'preflight')
+    expect(limits).toHaveBeenCalledWith(`login:preflight:ip:${context.ipFingerprint}`, 30, 15 * 60)
+    expect(limits).toHaveBeenCalledWith(`login:preflight:identity:${context.identity}`, 8, 15 * 60)
+  })
+
+  it('does not pass raw addresses or browser signatures to the authentication logger', async () => {
+    await logLoginFailure(
+      { headers: { 'x-forwarded-for': '203.0.113.4', 'user-agent': 'Synthetic Browser/123' } },
+      'client@example.test',
+      'password_mismatch',
+      'preflight',
+    )
+    expect(log.warn).toHaveBeenCalledWith(
+      'AUTH_LOGIN_FAILED',
+      expect.objectContaining({ ipFingerprint: expect.any(String), reason: 'password_mismatch' }),
+    )
+    expect(JSON.stringify(log.warn.mock.calls)).not.toMatch(/203\.0\.113\.4|Synthetic Browser|client@example\.test/)
   })
 })
 
@@ -76,4 +112,14 @@ describe('credential login wiring', () => {
   })
 })
 
-beforeEach(stubImports)
+beforeEach(async () => {
+  await stubImports()
+  vi.clearAllMocks()
+  vi.stubEnv('AUTH_SECRET', 'synthetic-auth-secret-for-log-tests')
+  vi.stubGlobal('consumeRateLimit', limits)
+  vi.stubGlobal('logger', log)
+})
+afterEach(() => {
+  vi.unstubAllGlobals()
+  vi.unstubAllEnvs()
+})

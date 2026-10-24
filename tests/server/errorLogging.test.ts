@@ -73,6 +73,31 @@ describe('Nitro error logging', () => {
     expect(log.error.mock.calls[0]![1]).toMatchObject({ reason: 'HTTP_503' })
   })
 
+  it.each([400, 401, 403, 404, 429])('omits stack traces for expected HTTP %i failures', async (statusCode) => {
+    const event = setupEvent('POST', statusCode)
+    hooks.request(event)
+    await hooks.error(
+      createError({ statusCode, message: 'Request rejected', cause: new Error('Expected rejection') }),
+      { event },
+    )
+    const context = (log.info.mock.calls[0] ?? log.warn.mock.calls[0])![1]
+    expect(context.error).toMatchObject({ message: 'Request rejected', cause: { message: 'Expected rejection' } })
+    expect(JSON.stringify(context.error)).not.toContain('stack')
+  })
+
+  it('retains diagnostic stacks for unexpected server failures', async () => {
+    const event = setupEvent('POST', 500)
+    await hooks.error(
+      createError({ statusCode: 500, message: 'Database unavailable', cause: new Error('Connection refused') }),
+      { event },
+    )
+    expect(log.error.mock.calls[0]![1].error).toMatchObject({
+      message: 'Database unavailable',
+      stack: expect.any(String),
+      cause: { message: 'Connection refused', stack: expect.any(String) },
+    })
+  })
+
   it('keeps successful reads at debug level and mutations at info level', async () => {
     await hooks.afterResponse(setupEvent())
     await hooks.afterResponse(setupEvent('POST'))

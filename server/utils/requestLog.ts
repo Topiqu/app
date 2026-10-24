@@ -33,7 +33,7 @@ export const requestLogContext = (event: H3Event, statusCode: number, error?: un
   }
   const failure = error as { data?: { code?: unknown } } | undefined
   const code = failure?.data?.code
-  const details = error ? logErrorDetails(error) : undefined
+  const details = error ? logErrorDetails(error, { includeStack: statusCode >= 500 }) : undefined
   if (details?.message === 'Unknown error') details.message = STATUS_CODES[statusCode] ?? 'Request failed'
   return {
     source: 'http',
