@@ -93,9 +93,24 @@ export const requireMediaRightsReview = async (
   clientSiteId: string,
   input: ArticleMediaInput,
   review?: MediaRightsReview | null,
+  publication?: { articleId: string; language: Language },
 ) => {
   const report = await evaluateMediaRights(db, clientSiteId, input)
   if (report.counts.needsAttention && (!review?.acknowledged || review.fingerprint !== report.fingerprint)) {
+    const acknowledged = publication
+      ? await db.mediaRightsPublicationSnapshot.findFirst({
+          where: {
+            clientSiteId,
+            articleId: publication.articleId,
+            language: publication.language,
+            fingerprint: report.fingerprint,
+            overrideConfirmed: true,
+            confirmedById: { not: null },
+          },
+          select: { id: true },
+        })
+      : null
+    if (acknowledged) return report
     throw createError({
       statusCode: 409,
       statusMessage: 'Media rights review required',
