@@ -6,7 +6,8 @@
       size="xs"
       :loading="inProgress"
       trailingIcon="mdi:chevron-down"
-      class="w-24 justify-between tabular-nums"
+      class="w-24 tabular-nums"
+      :ui="{ base: 'justify-between' }"
       :aria-label="summary"
       :title="summary"
     >
