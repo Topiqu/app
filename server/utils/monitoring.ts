@@ -88,6 +88,8 @@ export async function withHeartbeat<T>(taskName: string, run: () => T | Promise<
       .info(`cron:${taskName}`, {
         source: 'cron',
         task: taskName,
+        runId,
+        status: status.failed ? 'degraded' : 'succeeded',
         durationMs: status.durationMs,
         result: status.counts,
       })
@@ -100,6 +102,8 @@ export async function withHeartbeat<T>(taskName: string, run: () => T | Promise<
       .error(`cron:${taskName} failed`, {
         source: 'cron',
         task: taskName,
+        runId,
+        status: 'failed',
         durationMs: status.durationMs,
         code: 'TASK_FAILED',
       })

@@ -308,7 +308,14 @@ export const authForEvent = async (event: H3Event) => {
     where: { domain: url.hostname, domainVerified: true, deletedAt: null },
     select: { id: true },
   })
-  if (!site || (isSecureAuth && url.protocol !== 'https:')) throw createError({ statusCode: 403 })
+  if (!site || (isSecureAuth && url.protocol !== 'https:')) {
+    const { translate: t } = await useServerI18n(event)
+    throw createError({
+      statusCode: 403,
+      message: t('common.errors.forbidden')!,
+      data: { code: !site ? 'AUTH_HOST_UNAVAILABLE' : 'AUTH_HTTPS_REQUIRED' },
+    })
+  }
   const key = `${origin}:${site.id}`
   let instance = customAuth.get(key)
   if (!instance) {

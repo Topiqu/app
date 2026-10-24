@@ -31,6 +31,7 @@ beforeEach(() => {
   vi.stubEnv('AUTH_SECRET', 'synthetic-auth-secret-for-host-isolation-only')
   vi.stubGlobal('useRuntimeConfig', () => ({ auth: { secret: 'synthetic-auth-secret-for-host-isolation-only' } }))
   vi.stubGlobal('createError', createError)
+  vi.stubGlobal('useServerI18n', async () => ({ translate: () => 'Forbidden.' }))
   vi.stubGlobal('getRequestURL', (event: { url: string }) => new URL(event.url))
   vi.stubGlobal('isPlatformAuthHost', (host: string) => host === 'app.topiqu.com')
   vi.stubGlobal('prisma', { $options: {}, $setOptions: () => ({}), clientSite: { findFirst: lookup } })

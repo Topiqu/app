@@ -1,35 +1,40 @@
-// Nitro answers a thrown error with its own 500 and stops — nothing reported unhandled throws,
-// so a broken handler was only visible as a generic "Server Error" in the browser. Sentry covers
-// error *tracking*; this puts the same failure in Better Stack Logs next to the cron and audit
-// lines, with the request context that makes it findable.
+import { getResponseStatus } from 'h3'
+
+import { logErrorDetails } from '../utils/logging'
+import { requestLogContext, requestLogState } from '../utils/requestLog'
+
 export default defineNitroPlugin((nitro) => {
+  nitro.hooks.hook('request', (event) => {
+    requestLogState(event)
+  })
+
   nitro.hooks.hook('error', async (error, { event }) => {
     const statusCode = (error as { statusCode?: number }).statusCode ?? 500
-    const method = event?.method ?? '?'
-    // Never log the query string: auth callbacks and invitation routes can carry secrets there.
-    const path = event ? getRequestURL(event).pathname : '?'
-
-    // Most 4xx responses are expected client input. A 403 is different: it marks an authorization
-    // boundary and is valuable when a valid public page is accidentally treated as tenant-private.
-    if (statusCode === 403) {
-      await logger.warn(`${method} ${path} → ${statusCode}`, {
-        source: 'nitro',
-        method,
-        path,
-        statusCode,
-        error: error.message,
-      })
+    const level = statusCode >= 500 ? 'error' : statusCode === 401 || statusCode === 404 ? 'info' : 'warn'
+    if (!event) {
+      await logger[level]('Background application error', { source: 'nitro', error: logErrorDetails(error) })
       return
     }
-    if (statusCode < 500) return
+    const state = requestLogState(event)
+    if (state.errorLogged) return
+    state.errorLogged = true
+    const context = requestLogContext(event, statusCode, error)
+    await logger[level](`${context.method} ${context.path} → ${statusCode}: ${context.reason}`, context)
+  })
 
-    await logger.error(`${method} ${path} → ${statusCode}`, {
-      source: 'nitro',
-      method,
-      path,
-      statusCode,
-      error: error.message,
-      stack: error.stack,
-    })
+  nitro.hooks.hook('afterResponse', async (event) => {
+    const state = requestLogState(event)
+    if (state.errorLogged) return
+    const statusCode = getResponseStatus(event)
+    const context = requestLogContext(event, statusCode)
+    const level =
+      statusCode >= 500
+        ? 'error'
+        : statusCode >= 400 || context.durationMs >= 2000
+          ? 'warn'
+          : ['GET', 'HEAD', 'OPTIONS'].includes(event.method)
+            ? 'debug'
+            : 'info'
+    await logger[level](`${context.method} ${context.path} → ${statusCode}`, context)
   })
 })

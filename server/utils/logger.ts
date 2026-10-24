@@ -1,4 +1,4 @@
-type LogLevel = 'debug' | 'info' | 'warn' | 'error'
+import { logLevelEnabled, sanitizeLogContext, sanitizeLogText, type LogLevel } from './logging'
 
 type LogContext = Record<string, unknown>
 
@@ -12,15 +12,22 @@ const consoleMethod: Record<LogLevel, (...args: unknown[]) => void> = {
   error: console.error,
 }
 
-const pending: Array<{ level: LogLevel; message: string; context?: LogContext }> = []
+const pending: Array<Record<string, unknown>> = []
 let sending = false
+let lastTransportWarning = 0
+
+const transportWarning = (reason: string) => {
+  if (Date.now() - lastTransportWarning < 60_000) return
+  lastTransportWarning = Date.now()
+  consoleMethod.warn(JSON.stringify({ level: 'warn', source: 'logging', message: reason }))
+}
 
 async function drain(): Promise<void> {
   if (sending) return
   sending = true
   try {
     while (pending.length) {
-      const { level, message, context } = pending.shift()!
+      const entry = pending.shift()!
       try {
         await $fetch(`https://${INGEST_HOST}`, {
           method: 'POST',
@@ -28,18 +35,12 @@ async function drain(): Promise<void> {
             Authorization: `Bearer ${SOURCE_TOKEN}`,
             'Content-Type': 'application/json',
           },
-          body: {
-            dt: new Date().toISOString(),
-            level,
-            message,
-            environment: process.env.APP_ENV || process.env.VERCEL_ENV || process.env.NODE_ENV || 'development',
-            ...context,
-          },
+          body: entry,
           timeout: 5000,
           retry: 0,
         })
       } catch {
-        /* The immutable DB audit and console remain authoritative. */
+        transportWarning('External log delivery failed; the original record remains in container logs.')
       }
     }
   } finally {
@@ -48,10 +49,23 @@ async function drain(): Promise<void> {
 }
 
 async function ship(level: LogLevel, message: string, context?: LogContext): Promise<void> {
-  consoleMethod[level](`[${level}] ${message}`, context ?? '')
+  if (!logLevelEnabled(level)) return
+  const entry = {
+    source: 'app',
+    ...sanitizeLogContext(context ?? {}),
+    dt: new Date().toISOString(),
+    level,
+    message: sanitizeLogText(message),
+    environment: process.env.APP_ENV || process.env.VERCEL_ENV || process.env.NODE_ENV || 'development',
+  }
+  // A single JSON line keeps container collectors from splitting one event into unrelated records.
+  consoleMethod[level](JSON.stringify(entry))
   if (!SOURCE_TOKEN || !INGEST_HOST) return
-  if (pending.length >= 200) return
-  pending.push({ level, message, context })
+  if (pending.length >= 200) {
+    transportWarning('External log queue is full; additional records remain in container logs.')
+    return
+  }
+  pending.push(entry)
   void drain()
 }
 
