@@ -1,7 +1,7 @@
 // @vitest-environment nuxt
 
-import { nextTick, reactive } from 'vue'
 import { enableAutoUnmount } from '@vue/test-utils'
+import { defineComponent, h, nextTick, reactive, shallowRef } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
 
@@ -29,8 +29,17 @@ mockNuxtImport('useRoute', () => () => route)
 mockNuxtImport('useArticleGenerationStore', () => () => generation)
 mockNuxtImport('useI18n', () => () => ({ t: (key: string) => key, te: () => false }))
 mockNuxtImport('useLocalePath', () => () => () => '/admin')
+mockNuxtImport('useTenantScope', () => () => () => false)
+mockNuxtImport('useLazyFetch', () => () => ({ data: shallowRef([]), status: shallowRef('idle'), refresh: vi.fn() }))
+const Slideover = defineComponent({
+  setup:
+    (_, { slots }) =>
+    () =>
+      h('div', slots.body?.()),
+})
 const global = {
   renderStubDefaultSlot: true,
+  stubs: { USlideover: Slideover },
   mocks: {
     $t: (key: string, params?: { seconds?: number }) =>
       key === 'articles.editor.ai.elapsed' ? `elapsed:${params?.seconds}` : key,
