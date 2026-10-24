@@ -1,7 +1,7 @@
 <template>
   <WidgetBar v-if="widget.kind === 'ANNOUNCEMENT'" :announcement="barPreview(widget.config)" preview />
   <WidgetDivider v-else-if="widget.kind === 'DIVIDER'" :config="widget.config" />
-  <WidgetCta v-else-if="widget.kind === 'CTA'" :config="ctaPreview(widget.config)" />
+  <WidgetCta v-else-if="widget.kind === 'CTA'" :config="ctaPreview(widget.config)" :preview="sample" />
   <WidgetPrice
     v-else-if="widget.kind === 'PRICE' && sample"
     :config="widget.config"

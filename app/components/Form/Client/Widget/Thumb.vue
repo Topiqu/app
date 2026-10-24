@@ -1,5 +1,5 @@
 <template>
-  <div class="relative h-40 overflow-hidden bg-muted" aria-hidden="true">
+  <div class="relative h-32 overflow-hidden bg-elevated" aria-hidden="true">
     <!-- Rendered at twice the width and scaled down, so container queries lay it out like a real slot. -->
     <div
       inert

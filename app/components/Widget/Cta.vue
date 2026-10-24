@@ -1,26 +1,26 @@
 <template>
   <section
-    class="@container overflow-hidden rounded-2xl"
+    class="@container overflow-hidden rounded-(--topiqu-surface-radius)"
     :class="
-      config.tone === 'accent'
-        ? 'bg-[var(--topiqu-cta-bg,var(--ui-primary))] text-[var(--topiqu-cta-fg,white)] dark:bg-[var(--topiqu-cta-dark-bg,var(--ui-primary))]'
-        : 'border border-default bg-elevated'
+      config.tone === 'accent' && !preview
+        ? 'bg-[var(--topiqu-cta-bg,var(--ui-primary))] text-[var(--topiqu-cta-fg,var(--ui-bg))] dark:bg-[var(--topiqu-cta-dark-bg,var(--ui-primary))]'
+        : 'border border-default bg-default text-default'
     "
     :aria-labelledby="titleId"
   >
     <!-- Container queries: the same widget sits full-width on the homepage and in a narrow editor preview. -->
-    <div class="grid items-center gap-6 p-5 @md:p-8" :class="{ '@xl:grid-cols-[2fr_1fr]': config.image?.url }">
+    <div class="grid items-center gap-5 p-5 @md:p-6" :class="{ '@xl:grid-cols-[2fr_1fr]': config.image?.url }">
       <div class="min-w-0 space-y-3">
-        <h2 :id="titleId" class="text-xl font-bold tracking-tight text-balance break-words @md:text-2xl">
+        <h2 :id="titleId" class="text-lg font-semibold tracking-tight text-balance break-words @md:text-xl">
           {{ config.title }}
         </h2>
-        <p v-if="config.text" class="text-pretty break-words opacity-90">{{ config.text }}</p>
+        <p v-if="config.text" class="text-sm leading-relaxed text-pretty break-words opacity-90">{{ config.text }}</p>
         <UButton
           :to="config.button.url"
           :target="config.button.url.startsWith('https://') ? '_blank' : undefined"
-          size="lg"
+          size="md"
           :color="config.tone === 'accent' ? 'neutral' : 'primary'"
-          class="mt-2 max-w-full"
+          class="mt-1 max-w-full"
         >
           {{ config.button.label }}
         </UButton>
@@ -40,6 +40,6 @@
 <script setup lang="ts">
 import type { CtaConfig } from '~~/shared/utils/widgets'
 
-const { config } = defineProps<{ config: CtaConfig }>()
+const { config, preview = false } = defineProps<{ config: CtaConfig; preview?: boolean }>()
 const titleId = useId()
 </script>
