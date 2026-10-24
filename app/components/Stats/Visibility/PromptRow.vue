@@ -1,43 +1,11 @@
-<script setup lang="ts">
-import type { DropdownMenuItem } from '@nuxt/ui'
-
-import type { VisibilityOverview, VisibilityPrompt } from '~/types/visibility'
-const props = defineProps<{
-  prompt: VisibilityPrompt
-  /** Open opportunity: AI keeps citing other sites for this question. */
-  opportunity?: VisibilityOverview['opportunities'][number]
-  canSample: boolean
-  running: boolean
-  disabled: boolean
-  actions: DropdownMenuItem[][]
-}>()
-const emit = defineEmits<{ run: [] }>()
-const localePath = useLocalePath()
-const open = shallowRef(false)
-const outcome = computed(() => promptOutcome(props.prompt.latestRuns))
-const counted = computed(() => outcome.value.status === 'CITED' || outcome.value.status === 'NOT_CITED')
-const citing = computed(() => props.opportunity?.citedDomains.slice(0, 3) ?? [])
-const citingRest = computed(() => (props.opportunity?.citedDomains.length ?? 0) - citing.value.length)
-const opportunityLink = computed(() => ({
-  path: localePath({ name: 'admin-editor-id', params: { id: props.opportunity?.article?.slug ?? 'new' } }),
-  query: { ai: '1', prompt: props.prompt.text },
-}))
-const tones: Record<string, string> = {
-  UNCHECKED: 'bg-accented',
-  RUNNING: 'bg-info',
-  FAILED: 'bg-error',
-  CITED: 'bg-success',
-  NOT_CITED: 'bg-neutral-400',
-}
-</script>
 <template>
-  <div class="group/row flex min-w-0 items-start gap-2">
+  <div class="flex min-w-0 items-start gap-1 py-1">
     <UCollapsible v-model:open="open" class="min-w-0 flex-1">
       <UButton
         type="button"
         color="neutral"
         variant="ghost"
-        :ui="{ base: 'group/prompt h-auto min-h-10 w-full items-start justify-start px-0 py-1' }"
+        :ui="{ base: 'group/prompt h-auto min-h-10 w-full items-start justify-start px-3 py-2.5' }"
       >
         <span class="flex w-full items-start gap-3 text-left">
           <span class="mt-1.5 size-2.5 shrink-0 rounded-full" :class="tones[outcome.status]" aria-hidden="true" />
@@ -84,11 +52,11 @@ const tones: Record<string, string> = {
       </UButton>
 
       <template #content>
-        <p class="py-2 text-xs text-muted">
+        <p class="px-3 py-2 text-xs text-muted">
           <template v-if="counted">{{ $t(`visibility.outcome.${outcome.status}`, outcome) }} · </template>
           {{ prompt.language.toUpperCase() }} · {{ $t(`visibility.prompts.sources.${prompt.source}`) }}
         </p>
-        <ul class="mt-2 divide-y divide-default border-t border-default">
+        <ul class="mx-3 mt-2 divide-y divide-default border-t border-default">
           <li v-for="run in prompt.latestRuns" :key="run.id">
             <UCollapsible>
               <UButton
@@ -96,14 +64,14 @@ const tones: Record<string, string> = {
                 color="neutral"
                 variant="ghost"
                 class="group/run w-full"
-                :ui="{ base: 'justify-start' }"
+                :ui="{ base: 'h-auto min-h-10 justify-start px-3 py-2.5' }"
               >
                 <span class="flex w-full items-center gap-3 text-left text-sm">
                   <span class="size-2 shrink-0 rounded-full" :class="tones[runOutcome(run)]" aria-hidden="true" />
                   <span class="min-w-0 flex-1 font-medium text-highlighted">
                     {{ $t(`visibility.providers.${run.provider}`) }}
                   </span>
-                  <span class="text-muted">{{ $t(`visibility.runs.${runOutcome(run)}`) }}</span>
+                  <span class="text-xs text-muted">{{ $t(`visibility.runs.${runOutcome(run)}`) }}</span>
                   <NuxtTime :datetime="run.executedAt" relative class="hidden text-xs text-muted sm:inline" />
                   <UIcon
                     name="mdi:chevron-down"
@@ -156,7 +124,7 @@ const tones: Record<string, string> = {
       </template>
     </UCollapsible>
 
-    <div class="flex shrink-0 items-center gap-1">
+    <div class="flex shrink-0 items-center gap-1 pt-0.5">
       <UButton
         v-if="opportunity"
         :to="opportunityLink"
@@ -169,34 +137,61 @@ const tones: Record<string, string> = {
           {{ $t(opportunity.article ? 'visibility.opportunities.update' : 'visibility.opportunities.create') }}
         </span>
       </UButton>
-      <!-- Desktop reveals it on hover/focus; opacity alone keeps it reachable by keyboard and touch. -->
       <UButton
         v-if="canSample"
         size="sm"
         color="neutral"
         variant="ghost"
         icon="mdi:radar"
+        square
         :loading="running"
         :disabled="!prompt.active || disabled"
-        :class="
-          running
-            ? undefined
-            : 'transition-opacity lg:opacity-0 lg:group-hover/row:opacity-100 lg:group-focus-within/row:opacity-100'
-        "
         :aria-label="$t('visibility.prompts.run')"
         @click="emit('run')"
-      >
-        <span class="hidden lg:inline">{{ $t('visibility.prompts.run') }}</span>
-      </UButton>
+      />
       <UDropdownMenu :items="actions" :content="{ align: 'end' }">
         <UButton
           size="sm"
           color="neutral"
           variant="ghost"
           icon="mdi:dots-horizontal"
+          square
           :aria-label="$t('visibility.prompts.actions')"
         />
       </UDropdownMenu>
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import type { DropdownMenuItem } from '@nuxt/ui'
+
+import type { VisibilityOverview, VisibilityPrompt } from '~/types/visibility'
+const props = defineProps<{
+  prompt: VisibilityPrompt
+  /** Open opportunity: AI keeps citing other sites for this question. */
+  opportunity?: VisibilityOverview['opportunities'][number]
+  canSample: boolean
+  running: boolean
+  disabled: boolean
+  actions: DropdownMenuItem[][]
+}>()
+const emit = defineEmits<{ run: [] }>()
+const localePath = useLocalePath()
+const open = shallowRef(false)
+const outcome = computed(() => promptOutcome(props.prompt.latestRuns))
+const counted = computed(() => outcome.value.status === 'CITED' || outcome.value.status === 'NOT_CITED')
+const citing = computed(() => props.opportunity?.citedDomains.slice(0, 3) ?? [])
+const citingRest = computed(() => (props.opportunity?.citedDomains.length ?? 0) - citing.value.length)
+const opportunityLink = computed(() => ({
+  path: localePath({ name: 'admin-editor-id', params: { id: props.opportunity?.article?.slug ?? 'new' } }),
+  query: { ai: '1', prompt: props.prompt.text },
+}))
+const tones: Record<string, string> = {
+  UNCHECKED: 'bg-accented',
+  RUNNING: 'bg-info',
+  FAILED: 'bg-error',
+  CITED: 'bg-success',
+  NOT_CITED: 'bg-neutral-400',
+}
+</script>
