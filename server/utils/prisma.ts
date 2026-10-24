@@ -65,4 +65,9 @@ const appGlobal = globalThis as typeof globalThis & {
 const prisma = appGlobal.prismaGlobal ?? prismaClientSingleton()
 if (process.env.NODE_ENV !== 'production') appGlobal.prismaGlobal = prisma
 
+export const disconnectDatabase = async () => {
+  if (appGlobal.prismaGlobal === prisma) delete appGlobal.prismaGlobal
+  await prisma.$disconnect()
+}
+
 export default prisma
