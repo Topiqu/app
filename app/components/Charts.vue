@@ -1,8 +1,8 @@
 <template>
-  <UCard as="figure" class="h-full min-w-0" :ui="{ body: 'flex h-full min-w-0 flex-col' }">
+  <UCard as="figure" class="min-w-0" :ui="{ body: 'min-w-0' }">
     <span ref="colorProbe" class="hidden" aria-hidden="true">
-      <span class="text-highlighted" /><span class="text-default" /><span class="text-toned" />
-      <span class="text-muted" /><span class="text-dimmed" /><span class="text-default border-default bg-default" />
+      <span class="text-info" /><span class="text-success" /><span class="text-warning" />
+      <span class="text-error" /><span class="text-muted" /><span class="text-default border-default bg-default" />
     </span>
     <figcaption class="mb-4 flex min-w-0 items-start justify-between gap-3">
       <h2 class="min-w-0 text-lg font-semibold sm:text-xl">{{ title }}</h2>
@@ -28,11 +28,18 @@
     </div>
 
     <!-- The table twin: the values stay readable when the colours don't carry them. -->
-    <details class="mt-auto pt-4 text-sm">
-      <summary class="cursor-pointer text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+    <details class="group mt-4 border-t border-default pt-2 text-sm">
+      <summary
+        class="flex min-h-10 cursor-pointer list-none items-center gap-2 rounded-(--ui-radius) px-2 text-muted hover:bg-elevated hover:text-default focus-visible:outline-2 focus-visible:outline-primary [&::-webkit-details-marker]:hidden"
+      >
+        <UIcon
+          name="mdi:chevron-down"
+          class="size-4 shrink-0 transition-transform group-open:rotate-180"
+          aria-hidden="true"
+        />
         {{ $t('stats.charts.showTable') }}
       </summary>
-      <UTable :data="tableRows" :columns="tableColumns">
+      <UTable :data="tableRows" :columns="tableColumns" class="mt-2">
         <template #category-cell="{ row }">
           <span class="inline-flex items-center gap-2">
             <UIcon
@@ -106,7 +113,7 @@ const syncColors = () => {
   const styles = Array.from(colorProbe.value.children, (element) => getComputedStyle(element))
   palette.value = styles.slice(0, 5).map((style) => style.color)
   const surface = styles[5]!
-  ink.value = { muted: styles[3]!.color, grid: surface.borderColor, surface: surface.backgroundColor }
+  ink.value = { muted: styles[4]!.color, grid: surface.borderColor, surface: surface.backgroundColor }
 }
 onMounted(syncColors)
 watch(() => theme.isDark, syncColors, { flush: 'post' })
@@ -151,7 +158,7 @@ const tableColumns = computed<TableColumn<(typeof tableRows.value)[number]>[]>((
 const chartData = computed(() => {
   // A trend is one series, so it is one colour; a breakdown colours by entity, which is
   // what the pie needs and what keeps the two views of it consistent.
-  const colors = chartType.value === 'pie' ? categoryColors.value : (palette.value[2] ?? palette.value[0]!)
+  const colors = isBreakdown.value ? categoryColors.value : palette.value[0]!
 
   return {
     labels: props.labels,
