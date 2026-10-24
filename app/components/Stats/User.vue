@@ -6,9 +6,9 @@
       color="neutral"
       variant="soft"
       :icon="item.icon"
-      size="xs"
-      class="h-auto min-h-12 w-full min-w-0 justify-start px-3 py-2"
-      :ui="{ leadingIcon: 'size-4 shrink-0' }"
+      size="metric"
+      class="w-full min-w-0"
+      :ui="{ base: 'justify-start', leadingIcon: 'size-4 shrink-0' }"
       data-profile-metric
       :aria-label="`${item.label}: ${item.value}`"
       @click="item.action()"
@@ -23,9 +23,9 @@
       color="neutral"
       variant="soft"
       icon="mdi:thumb-up"
-      size="xs"
-      class="h-auto min-h-12 w-full min-w-0 justify-start px-3 py-2"
-      :ui="{ leadingIcon: 'size-4 shrink-0' }"
+      size="metric"
+      class="w-full min-w-0"
+      :ui="{ base: 'justify-start', leadingIcon: 'size-4 shrink-0' }"
       data-profile-metric
       disabled
     >
