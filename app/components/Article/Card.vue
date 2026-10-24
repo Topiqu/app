@@ -26,7 +26,7 @@
                 : variant === 'featured'
                   ? '3 / 2'
                   : variant === 'compact'
-                    ? '5 / 2'
+                    ? '16 / 9'
                     : '8 / 5'
             "
             :sizes="
@@ -41,26 +41,24 @@
         </NuxtLink>
 
         <div :class="variant === 'compact' ? 'gap-3 p-4' : 'gap-5 p-5 sm:p-6'" class="flex min-h-0 flex-1 flex-col">
-          <div v-if="normalizedTags.length" class="flex flex-wrap gap-2">
+          <div v-if="normalizedTags.length" class="flex flex-wrap gap-1.5">
             <NuxtLink
               v-for="tag in visibleTags"
               :key="tag.id"
               :to="localePath({ name: 'stitky-slug', params: { slug: tag.slug } })"
               class="relative rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             >
-              <UBadge color="primary" variant="soft">{{ tag.name }}</UBadge>
+              <UBadge color="neutral" variant="soft" size="md">{{ tag.name }}</UBadge>
             </NuxtLink>
-            <UBadge v-if="normalizedTags.length > tagLimit" color="neutral" variant="soft">
+            <UBadge v-if="variant !== 'compact' && normalizedTags.length > tagLimit" color="neutral" variant="soft">
               +{{ normalizedTags.length - tagLimit }}
             </UBadge>
           </div>
 
-          <div class="min-w-0 space-y-3">
+          <div class="min-w-0" :class="variant === 'compact' ? 'space-y-2' : 'space-y-3'">
             <NuxtLink :to="articlePath">
               <h2
-                :class="
-                  variant === 'featured' ? 'text-2xl sm:text-3xl' : variant === 'compact' ? 'text-base' : 'text-xl'
-                "
+                :class="variant === 'featured' ? 'text-2xl sm:text-3xl' : variant === 'compact' ? 'text-lg' : 'text-xl'"
                 class="font-bold leading-snug tracking-tight text-highlighted"
                 :title="article.title"
               >
@@ -88,7 +86,7 @@
                   {{ $t('articles.readingTime', [article.readingTime]) }}
                 </span>
               </span>
-              <span class="inline-flex shrink-0 items-center gap-3 whitespace-nowrap">
+              <span v-if="variant !== 'compact'" class="inline-flex shrink-0 items-center gap-3 whitespace-nowrap">
                 <span class="inline-flex items-center gap-1"
                   ><UIcon name="mdi:comment-outline" size="16" />{{ comments }}</span
                 >
@@ -104,16 +102,28 @@
               </span>
             </div>
 
-            <USeparator />
-            <div class="flex min-h-9 items-center justify-between gap-3">
+            <USeparator v-if="variant !== 'compact'" />
+            <div
+              v-if="authorName || variant !== 'compact' || $slots.actions"
+              class="flex min-h-9 items-center justify-between gap-3"
+            >
+              <NuxtLink
+                v-if="variant === 'compact' && authorName"
+                :to="localePath({ name: 'autor-name', params: { name: authorName } })"
+                class="inline-flex min-w-0 items-center gap-2 text-sm text-muted hover:text-highlighted"
+              >
+                <UserPicture :url="authorAvatar" :name="authorName" size="mn" />
+                <span class="line-clamp-2 break-words">{{ authorName }}</span>
+              </NuxtLink>
               <UserCard
-                v-if="authorName && authorId"
+                v-else-if="authorName && authorId"
                 :user="{ id: authorId, username: authorName, avatarUrl: authorAvatar, bio: null }"
               />
               <span v-else />
               <div class="flex shrink-0 items-center gap-1">
                 <slot name="actions" :article="article">
                   <UButton
+                    v-if="variant !== 'compact'"
                     :icon="liked ? 'mdi:heart' : 'mdi:heart-outline'"
                     :color="liked ? 'error' : 'neutral'"
                     variant="ghost"
@@ -123,6 +133,7 @@
                     @click="toggleReaction"
                   />
                   <UButton
+                    v-if="variant !== 'compact'"
                     icon="mdi:share-variant-outline"
                     color="neutral"
                     variant="ghost"
@@ -187,7 +198,7 @@ const normalizedTags = computed(() =>
     }))
     .filter((tag) => tag.name),
 )
-const tagLimit = computed(() => (variant === 'compact' ? 2 : 3))
+const tagLimit = computed(() => (variant === 'compact' ? 1 : 3))
 const visibleTags = computed(() => normalizedTags.value.slice(0, tagLimit.value))
 const toast = useToast()
 const trackShare = useArticleShare()
