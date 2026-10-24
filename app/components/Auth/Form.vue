@@ -323,11 +323,14 @@ const resendVerification = async () => {
   verificationController = controller
   resendingVerification.value = true
   try {
-    const response = await $fetch('/api/auth/resend-verification', {
-      method: 'POST',
-      body: { email: requestedEmail },
-      signal: controller.signal,
-    })
+    const response = await $fetch<{ success: boolean; message: string }, '/api/auth/resend-verification'>(
+      '/api/auth/resend-verification',
+      {
+        method: 'POST',
+        body: { email: requestedEmail },
+        signal: controller.signal,
+      },
+    )
     if (controller.signal.aborted || form.value.email !== requestedEmail) return
     startVerificationCooldown()
     toast.add({ color: 'success', title: response.message })
