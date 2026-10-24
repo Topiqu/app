@@ -203,17 +203,15 @@ export default defineEventHandler(async (event) => {
   let seriesNav = null
 
   if (article.articleSeriesId && article.seriesOrder !== null) {
-    const whereFilter: any = { articleSeriesId: article.articleSeriesId }
-    whereFilter.deletedAt = null
-    whereFilter.clientSiteId = clientSiteId
-    if (!isAdmin) {
-      whereFilter.status = 'published'
-      whereFilter.OR = [{ releaseAt: null }, { releaseAt: { lte: new Date() } }]
-    }
-
     const allSeriesArticles = await prisma.article.findMany({
-      where: whereFilter,
-      orderBy: { seriesOrder: 'asc' },
+      where: {
+        articleSeriesId: article.articleSeriesId,
+        clientSiteId,
+        deletedAt: null,
+        status: 'published',
+        OR: [{ releaseAt: null }, { releaseAt: { lte: new Date() } }],
+      },
+      orderBy: [{ seriesOrder: 'asc' }, { createdAt: 'asc' }, { id: 'asc' }],
       select: {
         id: true,
         title: true,
@@ -226,20 +224,14 @@ export default defineEventHandler(async (event) => {
       },
     })
 
-    const currentIndex = allSeriesArticles.findIndex((a) => a.id === article.id)
-    const prev = currentIndex > 0 ? allSeriesArticles[currentIndex - 1] : null
-    const next =
-      currentIndex !== -1 && currentIndex < allSeriesArticles.length - 1 ? allSeriesArticles[currentIndex + 1] : null
-
-    seriesNav = {
-      name: article.articleSeries?.name,
-      slug: article.articleSeries?.slug,
-      total: allSeriesArticles.length,
-      current: article.seriesOrder,
-      prev,
-      next,
-      articles: allSeriesArticles,
-    }
+    const navigation = seriesNavigation(allSeriesArticles, article.id)
+    seriesNav = navigation
+      ? {
+          name: article.articleSeries?.name,
+          slug: article.articleSeries?.slug,
+          ...navigation,
+        }
+      : null
   }
 
   const { reactions, _count, clientSite, deletedAt: _deletedAt, ...rest } = article

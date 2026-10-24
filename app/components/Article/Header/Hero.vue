@@ -7,7 +7,7 @@
       <span class="text-sm font-medium text-muted">
         <span class="font-bold text-highlighted">{{ series.name }}</span>
         <span class="mx-2">•</span>
-        {{ $t('series.part', 'Část') }} {{ series.current }} / {{ series.total }}
+        {{ $t('series.part', { count: series.current }) }} / {{ series.total }}
       </span>
     </div>
 
