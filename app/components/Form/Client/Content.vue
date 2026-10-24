@@ -81,7 +81,7 @@
             :aria-describedby="keywordsHintId"
             :placeholder="$t('common.preferences.keywords.placeholder')"
             class="mt-1 w-full"
-            :ui="{ item: 'rounded-full ps-2.5', itemText: 'break-words [overflow-wrap:anywhere]' }"
+            :ui="{ itemText: 'break-words [overflow-wrap:anywhere]' }"
           />
           <p :id="keywordsHintId" class="text-xs leading-5 text-muted">
             {{ $t('common.preferences.keywords.hint') }}
