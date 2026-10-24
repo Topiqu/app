@@ -171,6 +171,11 @@ export default defineEventHandler(async (event) => {
     mode: 'manual' as const,
     userId: user.id,
   }
+  let resolveWork!: () => void
+  const workFinished = new Promise<void>((resolve) => {
+    resolveWork = resolve
+  })
+  event.waitUntil(workFinished)
   const stream = new ReadableStream({
     start: bindArticleUsage(usageContext, async (controller: ReadableStreamDefaultController) => {
       try {
@@ -178,6 +183,25 @@ export default defineEventHandler(async (event) => {
         // writer's time-to-first-token can both exceed that, so keep the response active below both
         // Bun's idle timeout and Cloudflare's proxy timeout while useful work is still running.
         const heartbeat = setInterval(() => send(controller, { type: 'heartbeat' }), 5_000)
+        let checkingStop = false
+        const stopMonitor = setInterval(async () => {
+          if (checkingStop || abortController.signal.aborted) return
+          checkingStop = true
+          try {
+            const session = await prisma.articleGenerationSession.findUnique({
+              where: { id: recoverySession!.id },
+              select: { failureReason: true },
+            })
+            if (session?.failureReason === 'USER_STOP_REQUESTED') abortController.abort()
+          } catch (error) {
+            await reportCaughtError('Generation stop check failed', error, {
+              clientSiteId,
+              sessionId: recoverySession!.id,
+            })
+          } finally {
+            checkingStop = false
+          }
+        }, 2_000)
 
         try {
           send(controller, { type: 'reservation', articles: articleReservation.reserved })
@@ -482,6 +506,7 @@ export default defineEventHandler(async (event) => {
             })
         } finally {
           clearInterval(heartbeat)
+          clearInterval(stopMonitor)
           if (writerWaitTimer) clearTimeout(writerWaitTimer)
           try {
             controller.close()
@@ -498,6 +523,8 @@ export default defineEventHandler(async (event) => {
         } catch {
           /* already closed */
         }
+      } finally {
+        resolveWork()
       }
     }),
     async cancel(reason) {
