@@ -2,10 +2,9 @@ import argon from 'argon2'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
-  const body = await readBody(event)
-  const email = typeof body.email === 'string' ? normalizeLoginEmail(body.email) : ''
+  const body = await readValidatedBody(event, signInSchema.pick({ email: true, password: true }).parse)
+  const email = normalizeLoginEmail(body.email)
   const password = body.password
-  if (!email || !password) throw createError({ statusCode: 400, message: t('common.errors.missing')! })
 
   const limit = await checkLoginRateLimit(event.node.req, email, 'preflight')
   if (!limit.allowed) {
