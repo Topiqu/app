@@ -21,6 +21,14 @@ describe('editorial policy', () => {
     expect(editorialPolicy('analysis', 'LOW')).toContain('central question or thesis')
   })
 
+  it('preserves a requested opinion without injecting illustrative-story framing', () => {
+    const policy = editorialPolicy('opinion', 'HIGH', true)
+    expect(policy).toContain('defend the position the author actually requested')
+    expect(policy).toContain('sarcasm, satire, anger or profanity')
+    expect(policy).not.toContain('illustrative narrative')
+    expect(policy).toContain('Never invent criminal allegations')
+  })
+
   it.each([
     ['NONE', 'attribute it to its source once'],
     ['LOW', 'attribute it to its source once'],

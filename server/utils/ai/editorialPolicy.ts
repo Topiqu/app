@@ -28,7 +28,9 @@ const uncertainty: Record<string, string> = {
 const angles: Record<string, string> = {
   news: 'News: lead with a documented development when one exists. Keep commentary subordinate to reporting and distinguish it from facts; even HIGH controversy does not turn news into an opinion column. If the supposed development is unsupported, write a concise factual background explainer using documented positions and concrete differences. Make the title and lead describe that context honestly, without implying a new event or turning the article into repeated denials.',
   story:
-    'Story: narrate what happened to one protagonist as a sequence of scenes, in the past tense. Rules, institutions and numbers enter through what the protagonist runs into, not as separate explanatory sections, and the ending shows where the sequence left them.',
+    'Story: narrate what happened to one protagonist as a sequence of scenes, in the past tense. Open at a concrete decision or obstacle, give the protagonist a goal and something to lose, and let choices cause the next scene. Rules, institutions and numbers enter through what the protagonist runs into, not as separate explanatory sections, and the ending shows where the sequence left them. Do not substitute a guide, list of possibilities or moral lesson for the requested story.',
+  opinion:
+    "Opinion: defend the position the author actually requested. State the thesis early, build the strongest concrete case for it and answer a serious objection without surrendering the thesis to a neutral both-sides recap. A sharp value judgment needs an argument, not a source agreeing with the judgment. Correct a false factual premise while preserving the requested viewpoint wherever the argument can stand on true premises. Never replace the assignment with an unsolicited opposing editorial or a lecture about the author's tone.",
   default:
     "Develop the most useful angle within the requested format: analysis can explain mechanisms and test a scenario, comparison can examine differences, and opinion can defend a thesis. Preserve an author's first-hand story. If the original premise is unsupported, use the available factual premises to develop a substantive related angle rather than an article about the absence of confirmation.",
 }
@@ -42,13 +44,13 @@ export const editorialPolicy = (format?: ArticleFormat, controversyLevel?: strin
     NONE: 'Use a restrained explanatory voice. Explain disagreements fairly without manufacturing a controversy.',
     LOW: 'Use a measured voice. Explain tradeoffs and disagreements without provocation.',
     MEDIUM: 'Make and defend a clear thesis where the format allows it. Engage with a serious counterargument.',
-    HIGH: 'Use a bold, opinionated voice where the format allows it. Develop sharp contrasts, challenge assumptions and defend a provocative thesis with concrete reasoning. Do not neutralize a supported argument just because it is contentious. Controversy changes the strength of the position, never the standard for factual premises.',
+    HIGH: 'Use a bold, opinionated voice where the format allows it. Develop sharp contrasts, challenge assumptions and defend a provocative thesis with concrete reasoning. When the assignment requests it, use biting criticism, sarcasm, satire, anger or profanity appropriate to the audience; do not automatically replace these with polite corporate language. Direct criticism at the relevant conduct, policy or argument. Never invent criminal allegations, threats or factual accusations to sound aggressive. Do not neutralize a supported argument just because it is contentious. Controversy changes the strength of the position, never the standard for factual premises.',
   }
   const voice = voices[controversyLevel ?? '']
 
   return [
     AUTHORIAL_REASONING,
-    illustrative ? ILLUSTRATIVE_STORY : format === 'story' && DOCUMENTED_STORY,
+    format === 'story' && (illustrative ? ILLUSTRATIVE_STORY : DOCUMENTED_STORY),
     voice ?? 'Use the requested authorial voice and make the reasoning concrete.',
     uncertainty[controversyLevel ?? ''] ?? uncertainty.LOW,
     angles[format ?? ''] ?? angles.default,
