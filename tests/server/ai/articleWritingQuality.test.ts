@@ -6,6 +6,8 @@ import { ARTICLE_QUALITY_EFFORT, ARTICLE_QUALITY_LEVELS } from '../../../shared/
 
 async function stubImports() {
   await stubNitroImports(import('../../../server/utils/ai/reasoning'), 'aiReasoning')
+  await stubNitroImports(import('../../../server/utils/ai/insight'), 'insightSchema')
+  await stubNitroImports(import('../../../server/utils/community'), 'readCommunityInsight')
   await stubNitroImports(import('../../../server/utils/ai/researchEvidence'), 'researchTopic')
   await stubNitroImports(import('../../../server/utils/ai/editorialPolicy'), 'editorialPolicy')
   await stubNitroImports(import('../../../server/utils/ai/articleQuality'), 'AUTHOR_ACCOUNT_RULE')
