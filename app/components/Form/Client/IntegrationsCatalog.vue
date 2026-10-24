@@ -106,7 +106,7 @@
             </div>
           </template>
 
-          <div v-else-if="card.kind === 'api'" class="grid gap-x-8 gap-y-5 lg:grid-cols-2">
+          <div v-else-if="card.kind === 'api'" class="flex min-w-0 flex-col gap-5">
             <div>
               <div class="flex items-center gap-3 font-semibold text-highlighted">
                 <span class="grid size-10 shrink-0 place-items-center rounded-lg bg-elevated text-highlighted">
@@ -114,7 +114,7 @@
                 </span>
                 {{ $t('common.preferences.api.title') }}
               </div>
-              <p class="mt-4 text-sm leading-relaxed text-muted">
+              <p class="mt-4 max-w-3xl text-sm leading-relaxed text-muted">
                 {{ $t('common.preferences.api.description') }}
               </p>
               <ul class="mt-4 space-y-2 text-sm text-muted">
@@ -123,7 +123,7 @@
                 </li>
               </ul>
             </div>
-            <div v-if="!apiKey" class="lg:self-center">
+            <div v-if="!apiKey">
               <UButton
                 color="neutral"
                 variant="soft"
@@ -133,7 +133,7 @@
                 @click="$emit('generateApiKey')"
               />
             </div>
-            <div v-else class="space-y-3">
+            <div v-else class="max-w-3xl space-y-3">
               <UFormField :label="$t('common.preferences.api.title')">
                 <div class="flex items-center gap-2" data-api-key-row>
                   <UInput
