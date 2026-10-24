@@ -33,7 +33,6 @@
 
     <template #default="{ collapsed }">
       <TenantSwitcher v-if="collapsed && auth?.user?.role === 'admin'" collapsed />
-      <!-- The most frequent action, so a button rather than one more place in the list. -->
       <UButton
         v-if="auth?.user?.role === 'admin'"
         :to="localePath({ name: 'admin-editor-id', params: { id: 'new' } })"
@@ -54,16 +53,26 @@
     <template #footer="{ collapsed }">
       <div class="flex w-full flex-col gap-1">
         <UButton
-          v-if="!hasInternalSiteLink"
           :to="siteUrl"
           :disabled="!siteUrl"
-          target="_blank"
-          rel="noopener noreferrer"
-          icon="mdi:open-in-new"
+          :target="hasInternalSiteLink ? undefined : '_blank'"
+          :rel="hasInternalSiteLink ? undefined : 'noopener noreferrer'"
+          :icon="hasInternalSiteLink ? 'mdi:web' : 'mdi:open-in-new'"
           color="neutral"
           variant="ghost"
           :label="collapsed ? undefined : $t('common.navigation.openSite')"
           :aria-label="$t('common.navigation.openSite')"
+          :square="collapsed"
+          :ui="{ base: collapsed ? 'self-center' : 'w-full justify-start' }"
+        />
+        <UButton
+          v-if="auth?.user?.role === 'admin'"
+          :to="localePath({ name: 'settings' })"
+          icon="mdi:cog-outline"
+          color="neutral"
+          variant="ghost"
+          :label="collapsed ? undefined : $t('common.navigation.settings')"
+          :aria-label="$t('common.navigation.settings')"
           :square="collapsed"
           :ui="{ base: collapsed ? 'self-center' : 'w-full justify-start' }"
         />
@@ -108,41 +117,32 @@ const siteUrl = computed(() => publicationNavigationUrl(clientStatus.value, loca
 // Only a publication on this origin belongs in the same-tab page navigation.
 const hasInternalSiteLink = computed(() => siteUrl.value?.startsWith('/') ?? false)
 
-// Groups render with a divider between them: home, content, reach, settings.
 const navigation = computed<NavigationMenuItem[][]>(() => {
-  const web: NavigationMenuItem[] = hasInternalSiteLink.value
-    ? [
-        {
-          label: $t('common.navigation.publication'),
-          icon: 'mdi:web',
-          to: siteUrl.value,
-          disabled: !siteUrl.value,
-          exact: true,
-        },
-      ]
-    : []
   if (auth.value?.user.role === 'superadmin')
-    return [
-      [...web, { label: $t('master.title'), icon: 'mdi:view-dashboard-outline', to: localePath({ name: 'master' }) }],
-    ]
+    return [[{ label: $t('master.title'), icon: 'mdi:view-dashboard-outline', to: localePath({ name: 'master' }) }]]
 
   return [
     [
-      ...web,
+      { type: 'label', label: $t('common.navigation.groups.content') },
       {
-        label: $t('common.navigation.dashboard'),
-        icon: 'mdi:view-dashboard-outline',
+        label: $t('articles.title'),
+        icon: 'mdi:file-document-multiple-outline',
         to: localePath({ name: 'admin' }),
         exact: true,
       },
-      { label: $t('common.navigation.stats'), icon: 'mdi:chart-line', to: localePath({ name: 'admin-stats' }) },
-    ],
-    [
       {
         label: $t('common.navigation.keywords'),
         icon: 'mdi:lightbulb-on-outline',
         to: localePath({ name: 'admin-keywords' }),
       },
+      {
+        label: $t('series.overview'),
+        icon: 'mdi:bookshelf',
+        to: localePath({ name: 'admin-series' }),
+      },
+    ],
+    [
+      { type: 'label', label: $t('common.navigation.groups.resources') },
       {
         label: $t('common.navigation.media'),
         icon: 'mdi:image-multiple-outline',
@@ -155,6 +155,8 @@ const navigation = computed<NavigationMenuItem[][]>(() => {
       },
     ],
     [
+      { type: 'label', label: $t('common.navigation.groups.performance') },
+      { label: $t('common.navigation.stats'), icon: 'mdi:chart-line', to: localePath({ name: 'admin-stats' }) },
       { label: $t('visibility.title'), icon: 'mdi:radar', to: localePath({ name: 'admin-visibility' }) },
       {
         label: $t('common.navigation.backlinks'),
@@ -162,7 +164,6 @@ const navigation = computed<NavigationMenuItem[][]>(() => {
         to: localePath({ name: 'admin-backlinks' }),
       },
     ],
-    [{ label: $t('common.navigation.settings'), icon: 'mdi:cog-outline', to: localePath({ name: 'settings' }) }],
   ]
 })
 </script>

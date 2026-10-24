@@ -343,6 +343,7 @@ export default defineNuxtConfig({
         'mdi:chevron-right',
         'mdi:chevron-up',
         'mdi:dots-horizontal',
+        'mdi:file-document-multiple-outline',
         'mdi:file-outline',
         'mdi:folder-open-outline',
         'mdi:folder-outline',
