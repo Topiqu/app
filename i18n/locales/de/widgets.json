@@ -6,6 +6,8 @@
     "emptyHint": "Wählen Sie aus der Bibliothek: Ankündigungen, Handlungsaufforderungen, Live-Kurse, Wetter und mehr.",
     "edit": "{name} bearbeiten",
     "done": "Fertig",
+    "deleteTitle": "Widget löschen?",
+    "deleteConfirm": "Das Widget „{name}“ löschen? Die Änderung wird nach dem Speichern wirksam.",
     "allLanguages": "Alle Sprachen",
     "item": "Widget {n}: {kind}",
     "add": "Widget hinzufügen",

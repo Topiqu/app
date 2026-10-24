@@ -6,6 +6,8 @@
     "emptyHint": "Choisissez dans la bibliothèque : annonces, appels à l’action, cours en direct, météo et plus encore.",
     "edit": "Modifier {name}",
     "done": "Terminé",
+    "deleteTitle": "Supprimer le widget ?",
+    "deleteConfirm": "Supprimer le widget « {name} » ? La modification prendra effet après l’enregistrement.",
     "allLanguages": "Toutes les langues",
     "item": "Widget {n} : {kind}",
     "add": "Ajouter un widget",

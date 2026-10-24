@@ -6,6 +6,8 @@
     "emptyHint": "Pick one from the library: announcements, calls to action, live rates, weather and more.",
     "edit": "Edit {name}",
     "done": "Done",
+    "deleteTitle": "Delete widget?",
+    "deleteConfirm": "Delete the widget “{name}”? The change takes effect when you save.",
     "allLanguages": "All languages",
     "item": "Widget {n}: {kind}",
     "add": "Add widget",

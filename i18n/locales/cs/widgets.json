@@ -6,6 +6,8 @@
     "emptyHint": "Vyberte si z knihovny: oznámení, výzvy k akci, živé kurzy, počasí a další.",
     "edit": "Upravit {name}",
     "done": "Hotovo",
+    "deleteTitle": "Smazat widget?",
+    "deleteConfirm": "Opravdu chcete smazat widget „{name}“? Změna se projeví po uložení.",
     "allLanguages": "Všechny jazyky",
     "item": "Widget {n}: {kind}",
     "add": "Přidat widget",

@@ -281,6 +281,7 @@ type StoredWidget = {
 
 const { t } = useI18n()
 const toast = useToast()
+const confirm = useConfirm()
 const requestFetch = useRequestFetch()
 const site = await useLiveClientSite()
 const { data: ownedSite } = await useClientSiteStatus()
@@ -382,9 +383,23 @@ function add(presetId: string) {
   editingKey.value = key
 }
 
-function remove(index: number) {
-  const [item] = items.value.splice(index, 1)
-  if (item?.key === editingKey.value) editingKey.value = null
+async function remove(index: number) {
+  const item = items.value[index]
+  if (!item) return
+  if (
+    !(await confirm({
+      title: t('widgets.deleteTitle'),
+      message: t('widgets.deleteConfirm', { name: cardTitle(item) }),
+      confirmText: t('common.actions.delete'),
+      cancelText: t('common.actions.cancel'),
+      variant: 'danger',
+    }))
+  )
+    return
+  const currentIndex = items.value.findIndex((widget) => widget.key === item.key)
+  if (currentIndex === -1) return
+  items.value.splice(currentIndex, 1)
+  if (item.key === editingKey.value) editingKey.value = null
 }
 
 function move(entries: { index: number }[], at: number, by: -1 | 1) {

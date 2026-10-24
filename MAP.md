@@ -404,6 +404,7 @@ validity and tenant capabilities and atomically consumes the grant.
 
 ### Site widgets (`shared/utils/widgets.ts`)
 
+- Deleting from a widget card or its editor uses the shared `useConfirm` dialog with the widget's title. Approval removes the draft by its stable key; the existing Save action persists the change. Cancel leaves the widget and editor intact.
 - `SiteWidget` rows (Settings → Widgets, `GET`/`PUT /api/widgets`, `TENANT_SETTINGS` scope). `PUT` replaces the tenant's whole set in one transaction; array order is `position`, and a body id that is not one of the tenant's live rows becomes a new row. Widgets left out are soft-deleted (`deletedAt`), and the audit entry lists their ids and kinds. `config` is Json validated per `kind`.
 - `slot` is a string key of `WIDGET_SLOTS`, not an enum. The layout owns the slots; when a redesign drops one, map it in `RETIRED_SLOTS` so its widgets move, and `resolveWidgetSlot` skips anything unknown. Pages render a slot with `<WidgetSlot name>`: `HOME_TOP` / `HOME_MIDDLE` / `HOME_BOTTOM` in `pages/index.vue`, `ARTICLE_END` in the article footer, `FOOTER` in the layout. At most `MAX_PER_SLOT` active widgets each.
 - Active widgets ride in `publicClientSiteSelect`, so rendering costs no extra request. Both routes that return it pass them through `publicWidgets`, which drops kinds the plan lacks and strips the HTML body. Plan limits apply at render, not on `PUT`, so a downgraded tenant keeps and can still save its widgets.
