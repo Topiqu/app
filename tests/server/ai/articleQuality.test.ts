@@ -52,6 +52,7 @@ describe('article copy desk', () => {
     expect(prompt).toContain('stale_framing')
     expect(prompt).toContain('Delete the artificial September 2026 framing.')
     expect(prompt).toContain('complete replacement object')
+    expect(prompt).toContain('Limit factual repairs to the claims the findings actually identify')
   })
 
   it('rejects an approval that carries no actionable issue shape', () => {

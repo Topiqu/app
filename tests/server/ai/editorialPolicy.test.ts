@@ -7,6 +7,14 @@ describe('editorial policy', () => {
     expect(editorialPolicy('analysis', 'LOW')).toContain('Write about the topic, never about the research behind it')
   })
 
+  it('distinguishes expressive judgments from concrete allegations for factual verification', () => {
+    const policy = editorialPolicy('opinion', 'HIGH')
+    expect(policy).toContain('Do not fact-check them as literal factual allegations')
+    expect(policy).toContain(
+      'Concrete claims about real acts, crimes, motives or affiliations still require factual grounding',
+    )
+  })
+
   it('allows an invented illustrative story only when the author asks for it in the editor', () => {
     expect(editorialPolicy('story', 'LOW', true)).toContain('illustrative narrative')
     const unattended = editorialPolicy('story', 'LOW')
@@ -36,6 +44,23 @@ describe('editorial policy', () => {
     expect(policy).toContain('an explicit tone in the article assignment takes precedence')
     expect(policy).toContain('profanity alone is neither a factual allegation nor evidence of an intent')
     expect(editorialPolicy('opinion', 'HIGH', false, '  ')).not.toContain('Requested tone of voice')
+  })
+
+  it.each(['opinion', 'story'] as const)('keeps HIGH %s forceful through editorial review', (format) => {
+    const policy = editorialPolicy(format, 'HIGH', true, 'biting, sarcastic')
+    expect(policy).toContain('Deliberately confrontational writing is part of this assignment')
+    expect(policy).toContain('Do not add mandatory balancing paragraphs')
+    expect(policy).toContain('Correct only the defective factual premise')
+    expect(policy).toContain('assignment_mismatch')
+  })
+
+  it('reserves the confrontational directive for HIGH opinion and story', () => {
+    for (const policy of [
+      editorialPolicy('opinion', 'LOW'),
+      editorialPolicy('story', 'MEDIUM'),
+      editorialPolicy('news', 'HIGH'),
+    ])
+      expect(policy).not.toContain('Deliberately confrontational writing is part of this assignment')
   })
 
   it.each([
