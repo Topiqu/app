@@ -1,50 +1,63 @@
 <template>
   <div class="@container min-w-0 space-y-6">
     <div class="space-y-3">
-      <p class="text-sm font-medium text-highlighted" aria-hidden="true">
-        {{ $t('common.preferences.branding.presetColors') }}
-      </p>
-      <URadioGroup
-        :modelValue="accentColor ? undefined : theme"
-        :items="colorItems"
-        variant="card"
-        indicator="hidden"
-        orientation="horizontal"
-        :aria-label="$t('common.preferences.branding.presetColors')"
-        :ui="{
-          fieldset: 'flex flex-wrap gap-2',
-          item: 'relative size-8 shrink-0 cursor-pointer rounded-full border-0 p-0 ring-1 ring-black/10 transition-shadow has-data-[state=checked]:ring-2 has-data-[state=checked]:ring-inverted has-data-[state=checked]:ring-offset-2 has-data-[state=checked]:ring-offset-(--ui-bg) has-focus-visible:outline-2 has-focus-visible:outline-offset-4 has-focus-visible:outline-primary dark:ring-white/15',
-          wrapper: 'absolute inset-0 m-0',
-          label: 'size-full',
-          container: 'sr-only',
-        }"
-        @update:modelValue="selectPreset($event as ThemeKey)"
-      >
-        <template #label="{ item }">
-          <span
-            class="grid size-full place-items-center rounded-full"
-            :style="{
-              backgroundColor: themeColors[item.value as ThemeKey],
-              color: contrastRatio(themeColors[item.value as ThemeKey], '#FFFFFF') >= 3 ? '#FFFFFF' : '#0F172A',
-            }"
-            :title="item.label"
-          >
-            <span class="sr-only">{{ item.label }}</span>
-            <UIcon
-              name="mdi:check-bold"
-              size="18"
-              :class="(accentColor || theme !== item.value) && 'invisible'"
-              aria-hidden="true"
-            />
-          </span>
-        </template>
-      </URadioGroup>
-      <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <p class="text-xs font-medium text-muted" aria-live="polite">{{ selectedColorLabel }}</p>
+      <div class="flex flex-wrap items-center gap-2">
+        <URadioGroup
+          :modelValue="accentColor ? undefined : theme"
+          :items="colorItems"
+          variant="card"
+          indicator="hidden"
+          orientation="horizontal"
+          :aria-label="$t('common.preferences.branding.presetColors')"
+          :ui="{
+            root: 'contents',
+            fieldset: 'contents',
+            item: 'relative size-8 shrink-0 cursor-pointer rounded-full border-0 p-0 ring-1 ring-black/10 transition-shadow has-data-[state=checked]:ring-2 has-data-[state=checked]:ring-inverted has-data-[state=checked]:ring-offset-2 has-data-[state=checked]:ring-offset-(--ui-bg) has-focus-visible:outline-2 has-focus-visible:outline-offset-4 has-focus-visible:outline-primary dark:ring-white/15',
+            wrapper: 'absolute inset-0 m-0',
+            label: 'size-full',
+            container: 'sr-only',
+          }"
+          @update:modelValue="selectPreset($event as ThemeKey)"
+        >
+          <template #label="{ item }">
+            <span
+              class="grid size-full place-items-center rounded-full"
+              :style="{
+                backgroundColor: themeColors[item.value as ThemeKey],
+                color: contrastRatio(themeColors[item.value as ThemeKey], '#FFFFFF') >= 3 ? '#FFFFFF' : '#0F172A',
+              }"
+              :title="item.label"
+            >
+              <span class="sr-only">{{ item.label }}</span>
+              <UIcon
+                name="mdi:check-bold"
+                size="18"
+                :class="(accentColor || theme !== item.value) && 'invisible'"
+                aria-hidden="true"
+              />
+            </span>
+          </template>
+        </URadioGroup>
         <FormClientBrandColorInput
           :modelValue="currentColor"
           :label="$t('common.preferences.branding.customColor')"
-          class="w-40"
+          display="swatch"
+          :class="accentColor && 'rounded-full ring-2 ring-inverted ring-offset-2 ring-offset-(--ui-bg)'"
+          @update:modelValue="emit('update:accentColor', $event)"
+        />
+      </div>
+      <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
+        <span
+          class="size-3.5 shrink-0 rounded-full ring-1 ring-black/10 ring-inset dark:ring-white/15"
+          :style="{ backgroundColor: currentColor }"
+          aria-hidden="true"
+        />
+        <p class="text-sm font-medium text-muted" aria-live="polite">{{ selectedColorLabel }}</p>
+        <FormClientBrandColorInput
+          :modelValue="currentColor"
+          :label="$t('common.preferences.branding.customColor')"
+          display="hex"
+          class="w-28"
           @update:modelValue="emit('update:accentColor', $event)"
         />
       </div>

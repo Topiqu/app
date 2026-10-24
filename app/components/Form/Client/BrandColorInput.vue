@@ -1,6 +1,6 @@
 <template>
   <div class="flex items-center gap-2">
-    <UPopover :content="{ align: 'start' }">
+    <UPopover v-if="display !== 'hex'" :content="{ align: 'start' }">
       <UButton
         type="button"
         color="neutral"
@@ -9,7 +9,15 @@
         square
         :style="{ backgroundColor: modelValue }"
         :aria-label="label"
-      />
+      >
+        <UIcon
+          v-if="display === 'swatch'"
+          name="mdi:eyedropper-variant"
+          size="18"
+          :style="{ color: contrastRatio(modelValue, '#FFFFFF') >= 3 ? '#FFFFFF' : '#0F172A' }"
+          aria-hidden="true"
+        />
+      </UButton>
       <template #content>
         <div class="w-64 p-3">
           <UFormField :label :ui="{ label: 'sr-only' }">
@@ -19,6 +27,7 @@
       </template>
     </UPopover>
     <UInput
+      v-if="display !== 'swatch'"
       :modelValue="draft"
       :aria-label="label"
       size="sm"
@@ -34,7 +43,11 @@
 </template>
 
 <script setup lang="ts">
-const { modelValue } = defineProps<{ modelValue: string; label: string }>()
+const { modelValue, display = 'both' } = defineProps<{
+  modelValue: string
+  label: string
+  display?: 'both' | 'swatch' | 'hex'
+}>()
 const emit = defineEmits<{ 'update:modelValue': [color: string] }>()
 const draft = shallowRef(modelValue.toUpperCase())
 

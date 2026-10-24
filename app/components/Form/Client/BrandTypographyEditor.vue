@@ -8,7 +8,7 @@
       :aria-label="$t('common.preferences.branding.typography')"
       :ui="{
         fieldset: 'grid min-w-0 grid-cols-[minmax(0,1fr)] gap-2 @md:grid-cols-2',
-        item: 'min-w-0 cursor-pointer overflow-hidden rounded-(--topiqu-surface-radius) border-default bg-default px-3 py-2.5 transition-colors hover:border-accented has-data-[state=checked]:border-primary has-data-[state=checked]:bg-primary/5 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-primary',
+        item: 'min-w-0 cursor-pointer overflow-hidden rounded-(--ui-radius) border-default bg-default p-4 transition-colors hover:border-accented has-data-[state=checked]:border-primary has-data-[state=checked]:bg-primary/5 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-primary',
         wrapper: 'm-0 min-w-0 w-full text-start',
         label: 'min-w-0 w-full whitespace-normal font-normal',
         container: 'sr-only',
@@ -16,30 +16,31 @@
       @update:modelValue="emit('update:preset', $event as PublicationTypography)"
     >
       <template #label="{ item }">
-        <span data-typography-preset class="block min-w-0">
-          <span class="flex min-w-0 items-center justify-between gap-2">
-            <span class="min-w-0 truncate text-xs font-semibold uppercase tracking-wide text-muted">
+        <span data-typography-preset class="flex min-w-0 items-center gap-3">
+          <span class="block min-w-0 flex-1">
+            <span class="block text-xs font-semibold uppercase tracking-wider text-muted [overflow-wrap:anywhere]">
               {{ item.label }}
             </span>
-            <UIcon
-              name="mdi:check-circle"
-              size="16"
-              class="shrink-0 text-primary"
-              :class="preset !== item.value && 'invisible'"
-            />
+            <span
+              class="mt-1 block min-w-0 text-base font-semibold leading-snug text-highlighted [overflow-wrap:anywhere]"
+              :style="{ fontFamily: item.fonts.heading }"
+            >
+              {{ $t('common.preferences.branding.sampleTitle') }}
+            </span>
+            <span
+              class="mt-0.5 block min-w-0 whitespace-normal break-words text-sm text-muted"
+              :style="{ fontFamily: item.fonts.body }"
+            >
+              {{ $t('common.preferences.branding.sampleExcerpt') }}
+            </span>
           </span>
-          <span
-            class="mt-1 block min-w-0 text-base font-semibold leading-snug text-highlighted [overflow-wrap:anywhere]"
-            :style="{ fontFamily: item.fonts.heading }"
-          >
-            {{ $t('common.preferences.branding.sampleTitle') }}
-          </span>
-          <span
-            class="mt-0.5 block min-w-0 whitespace-normal break-words text-sm text-muted"
-            :style="{ fontFamily: item.fonts.body }"
-          >
-            {{ $t('common.preferences.branding.sampleExcerpt') }}
-          </span>
+          <UIcon
+            name="mdi:check-circle"
+            size="18"
+            class="shrink-0 text-primary"
+            :class="preset !== item.value && 'invisible'"
+            aria-hidden="true"
+          />
         </span>
       </template>
     </URadioGroup>

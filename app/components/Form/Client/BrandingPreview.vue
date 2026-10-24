@@ -8,6 +8,7 @@
         color="neutral"
         variant="soft"
         :icon="darkPreview ? 'mdi:weather-sunny' : 'mdi:weather-night'"
+        :aria-pressed="darkPreview"
         @click="darkPreview = !darkPreview"
       >
         {{
@@ -17,12 +18,12 @@
     </div>
     <div
       data-publication-preview
-      class="publication-surface overflow-hidden rounded-(--topiqu-surface-radius) border border-default bg-default text-default"
+      class="publication-surface min-w-0 overflow-hidden rounded-(--topiqu-surface-radius) border border-default bg-elevated/50 text-default"
       :class="darkPreview ? 'dark' : 'light'"
       :style="previewStyle"
     >
       <div>
-        <header class="flex items-center gap-3 border-b border-default p-4" :style="heroStyle">
+        <header class="flex flex-wrap items-center gap-3 p-4" :style="heroStyle">
           <AppMedia
             :src="logoUrl"
             :fallbackText="name.trim().charAt(0)"
@@ -36,33 +37,32 @@
             containerClass="size-10 shrink-0 rounded-(--ui-radius) bg-transparent"
             :style="logoStyle"
           />
-          <div class="min-w-0 flex-1">
+          <div class="min-w-0 flex-1 basis-24">
             <p class="truncate text-base font-bold" :style="{ fontFamily: baseStyle['--topiqu-heading-font'] }">
               {{ name }}
             </p>
-            <p v-if="tagline" class="line-clamp-2 break-words text-xs opacity-80">{{ tagline }}</p>
+            <p class="truncate text-xs opacity-80">{{ tagline || domain }}</p>
           </div>
           <span
-            class="inline-flex shrink-0 items-center rounded-(--ui-radius) border px-3 py-1.5 text-xs font-semibold"
-            :style="{ color: activeGradient ? 'inherit' : 'var(--ui-primary)', borderColor: 'currentColor' }"
+            class="publication-primary-cta inline-flex shrink-0 items-center rounded-(--ui-radius) border px-3 py-1.5 text-xs font-semibold"
           >
             {{ $t('widgets.presets.ctaNewsletter.button') }}
           </span>
         </header>
-        <article class="m-3.5 rounded-(--ui-radius) border border-default bg-default p-4">
-          <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">
+        <article class="m-3.5 grid min-w-0 gap-1.5 rounded-(--ui-radius) border border-default bg-default p-4">
+          <p class="text-xs font-semibold uppercase tracking-wider text-primary">
             {{ $t('common.preferences.branding.sampleCategory') }}
           </p>
           <h3
-            class="text-xl font-bold leading-tight tracking-tight text-highlighted"
+            class="text-xl font-bold leading-tight tracking-tight text-highlighted [overflow-wrap:anywhere]"
             :style="{ fontFamily: baseStyle['--topiqu-heading-font'] }"
           >
             {{ $t('common.preferences.branding.sampleTitle') }}
           </h3>
-          <p class="mt-3 text-sm leading-relaxed text-muted">
+          <p class="text-sm leading-relaxed text-muted [overflow-wrap:anywhere]">
             {{ description || $t('common.preferences.branding.sampleExcerpt') }}
           </p>
-          <span class="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary">
+          <span class="inline-flex items-center gap-1 text-sm font-semibold text-primary">
             {{ $t('common.readMore') }}
             <UIcon name="mdi:arrow-right" size="16" aria-hidden="true" />
           </span>
@@ -79,6 +79,7 @@ import type { PublicationTypography } from '~~/generated/zenstack/models'
 const props = defineProps<{
   logoUrl: string
   name: string
+  domain: string
   tagline: string
   description: string
   currentTheme: string
