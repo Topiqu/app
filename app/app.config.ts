@@ -69,10 +69,10 @@ export default defineAppConfig({
       },
       variants: {
         size: {
-          xs: { base: 'h-8 px-2 text-xs gap-1' },
-          sm: { base: 'h-9 px-2.5 text-xs gap-1.5' },
-          md: { base: 'h-10 px-3 text-sm gap-1.5' },
-          lg: { base: 'h-11 px-3.5 text-sm gap-2' },
+          xs: { base: 'h-8 px-3 text-xs gap-1' },
+          sm: { base: 'h-9 px-3.5 text-xs gap-1.5' },
+          md: { base: 'h-10 px-4 text-sm gap-1.5' },
+          lg: { base: 'h-11 px-5 text-sm gap-2' },
         },
       },
       compoundVariants: [
@@ -97,6 +97,17 @@ export default defineAppConfig({
     fieldGroup: {
       base: 'isolate',
     },
+    tabs: {
+      variants: {
+        variant: {
+          pill: {
+            list: 'rounded-(--ui-radius) p-1',
+            trigger: 'rounded-[calc(var(--ui-radius)-0.25rem)]',
+            indicator: 'rounded-[calc(var(--ui-radius)-0.25rem)]',
+          },
+        },
+      },
+    },
     input: {
       slots: { root: 'w-full', base: 'rounded-[var(--ui-radius)]' },
       variants: {
@@ -111,6 +122,21 @@ export default defineAppConfig({
         color: 'primary',
         variant: 'outline',
         size: 'md',
+      },
+    },
+    inputTags: {
+      slots: {
+        base: 'rounded-(--ui-radius) p-1.5',
+        item: 'rounded-[calc(var(--ui-radius)-0.375rem)]',
+      },
+      variants: {
+        size: {
+          xs: { base: 'p-1' },
+          sm: { base: 'p-1.5' },
+          md: { base: 'p-1.5' },
+          lg: { base: 'p-2' },
+          xl: { base: 'p-2' },
+        },
       },
     },
     textarea: {
@@ -224,9 +250,8 @@ export default defineAppConfig({
         variant: {
           segmented: {
             root: '@container',
-            fieldset:
-              'grid grid-cols-[auto_auto_auto] gap-1 rounded-[var(--ui-radius)] bg-elevated p-1 @sm:grid-cols-3',
-            item: 'group relative min-h-10 min-w-0 cursor-pointer items-center justify-center rounded-md px-1 py-2 text-center has-data-[state=checked]:bg-default has-data-[state=checked]:shadow-sm has-focus-visible:ring-2 has-focus-visible:ring-primary',
+            fieldset: 'grid grid-cols-3 gap-1 rounded-(--ui-radius) bg-elevated p-1',
+            item: 'group relative min-h-10 min-w-0 cursor-pointer items-center justify-center rounded-[calc(var(--ui-radius)-0.25rem)] px-3 py-2 text-center has-data-[state=checked]:bg-default has-data-[state=checked]:shadow-sm has-focus-visible:ring-2 has-focus-visible:ring-primary',
             container: 'sr-only',
             label: 'text-xs leading-5 text-muted group-has-data-[state=checked]:text-highlighted @sm:text-sm',
           },
@@ -261,6 +286,14 @@ export default defineAppConfig({
         variant: 'outline',
         highlightColor: 'primary',
         spotlightColor: 'primary',
+      },
+    },
+    footer: {
+      slots: {
+        container: 'flex flex-col gap-5 py-6 sm:py-8 lg:flex-row lg:gap-8',
+        left: 'order-1 mt-0 min-w-0 w-full justify-start lg:w-auto',
+        center: 'order-2 mt-0 min-w-0 w-full justify-start empty:hidden lg:w-auto',
+        right: 'order-3 min-w-0 w-full justify-start empty:hidden lg:w-auto lg:flex-none',
       },
     },
     modal: {
