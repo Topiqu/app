@@ -127,7 +127,7 @@
               <label
                 v-for="scope in scopes"
                 :key="scope"
-                class="rounded-full border px-2.5 py-1.5 text-xs transition"
+                class="inline-flex items-center gap-1.5 rounded-(--ui-radius) border p-1.5 text-xs leading-4 transition"
                 :class="
                   hasScope(member, scope)
                     ? 'border-primary/30 bg-primary/10 text-primary'
@@ -140,7 +140,7 @@
                   :disabled="pendingMemberIds.has(member.id)"
                   @update:modelValue="toggle(member, scope)"
                 />
-                <UIcon v-else-if="hasScope(member, scope)" name="mdi:check" class="mr-1 inline size-3" />
+                <UIcon v-else-if="hasScope(member, scope)" name="mdi:check" class="size-3 shrink-0" />
                 {{ $t(`common.members.scopes.${scope}`) }}
               </label>
             </div>
