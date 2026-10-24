@@ -86,6 +86,26 @@
         :class="hasHeroRail ? '@5xl:col-span-5' : ''"
       >
         <NuxtLink :to="articlePath(leadArticle)" class="absolute inset-0 z-10" :aria-label="leadArticle.title" />
+        <div class="absolute top-3 right-3 z-20 flex items-center gap-2">
+          <ArticleLikeButton
+            :liked="leadLiked"
+            :likes="leadLikes"
+            :pending="leadReactionPending"
+            iconOnly
+            variant="overlay"
+            @toggle="toggleLeadLike"
+          />
+          <UButton
+            icon="mdi:share-variant-outline"
+            color="neutral"
+            variant="overlay"
+            size="sm"
+            square
+            :aria-label="$t('common.actions.share')"
+            :title="$t('common.actions.share')"
+            @click="shareLeadArticle"
+          />
+        </div>
         <AppMedia
           v-if="leadArticle.imageUrl"
           :src="leadArticle.imageUrl"
@@ -111,43 +131,21 @@
           >
             {{ leadArticle.title }}
           </h2>
-          <p v-if="leadArticle.excerpt" class="text-pretty text-sm leading-6 text-muted @2xl:line-clamp-2">
+          <p v-if="leadArticle.excerpt" class="mb-3 text-pretty text-sm leading-6 text-muted @2xl:line-clamp-2">
             {{ leadArticle.excerpt }}
           </p>
-          <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
-            <span>{{ formatDate(leadArticle.publishedAt || leadArticle.createdAt, locale) }}</span>
-            <span v-if="leadArticle.readingTime">{{ $t('articles.readingTime', [leadArticle.readingTime]) }}</span>
-            <span class="inline-flex items-center gap-1"
-              ><UIcon name="mdi:eye-outline" size="16" />{{ leadArticle.views ?? 0 }}</span
-            >
-          </div>
-          <div class="relative z-20 mt-auto space-y-3 pt-2" data-article-footer>
-            <USeparator />
-            <div class="flex min-h-9 items-center justify-between gap-3">
-              <UserCard
-                v-if="leadArticle.user?.id"
-                :user="{ ...leadArticle.user, id: leadArticle.user.id, bio: null }"
-              />
-              <span v-else />
-              <div class="flex shrink-0 items-center gap-1">
-                <UButton
-                  :icon="leadLiked ? 'mdi:heart' : 'mdi:heart-outline'"
-                  :color="leadLiked ? 'error' : 'neutral'"
-                  variant="ghost"
-                  square
-                  :loading="leadReactionPending"
-                  :aria-label="$t('common.actions.like')"
-                  @click="toggleLeadLike"
-                />
-                <UButton
-                  icon="mdi:share-variant-outline"
-                  color="neutral"
-                  variant="ghost"
-                  square
-                  :aria-label="$t('common.actions.share')"
-                  @click="shareLeadArticle"
-                />
-              </div>
+          <div
+            class="mt-auto flex min-w-0 flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t border-default pt-4 text-xs text-muted"
+          >
+            <div v-if="leadArticle.user?.id" class="relative z-20 min-w-0">
+              <UserCard :user="{ ...leadArticle.user, id: leadArticle.user.id, bio: null }" />
+            </div>
+            <div class="ml-auto flex max-w-full flex-wrap items-center justify-end gap-x-4 gap-y-1 text-right">
+              <span>{{ formatDate(leadArticle.publishedAt || leadArticle.createdAt, locale) }}</span>
+              <span v-if="leadArticle.readingTime">{{ $t('articles.readingTime', [leadArticle.readingTime]) }}</span>
+              <span class="inline-flex items-center gap-1"
+                ><UIcon name="mdi:eye-outline" size="16" />{{ leadArticle.views ?? 0 }}</span
+              >
             </div>
           </div>
         </div>
@@ -212,31 +210,7 @@
         </h2>
       </div>
       <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <article v-for="article in recommendedArticles" :key="article.id" class="min-w-0">
-          <NuxtLink
-            :to="articlePath(article)"
-            class="group block min-w-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-          >
-            <AppMedia
-              :src="article.imageUrl"
-              :alt="''"
-              :fallbackText="article.title"
-              :fallbackBorder="false"
-              aspectRatio="4 / 3"
-              sizes="xs:100vw phone:100vw sm:100vw md:50vw lg:33vw xl:420px"
-              containerClass="w-full rounded-(--topiqu-surface-radius) bg-elevated"
-            />
-            <div class="min-w-0 space-y-2 pt-4">
-              <h3
-                class="break-words text-balance text-lg font-bold leading-snug text-highlighted group-hover:text-primary sm:text-xl"
-              >
-                {{ article.title }}
-              </h3>
-              <p v-if="article.excerpt" class="line-clamp-2 text-sm leading-6 text-muted">{{ article.excerpt }}</p>
-              <p class="text-xs text-muted">{{ formatDate(article.publishedAt || article.createdAt, locale) }}</p>
-            </div>
-          </NuxtLink>
-        </article>
+        <ArticleCard v-for="article in recommendedArticles" :key="article.id" :article="article" variant="editorial" />
       </div>
     </section>
 
@@ -625,6 +599,7 @@ const articlePath = (article: { slug: string; language?: Language }) =>
 
 const {
   liked: leadLiked,
+  likes: leadLikes,
   isPending: leadReactionPending,
   toggle: toggleLeadLike,
 } = useArticleReaction(
