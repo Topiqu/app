@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-5">
+  <div class="@container space-y-5">
     <div
       class="flex w-fit max-w-full flex-wrap gap-1 rounded-[calc(var(--ui-radius)+0.25rem)] bg-muted p-1"
       role="tablist"
@@ -20,8 +20,8 @@
       </UButton>
     </div>
 
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-      <UFormField :label="$t('common.search')" class="w-full sm:max-w-xs">
+    <div class="flex flex-col gap-3 @min-[40rem]:flex-row @min-[40rem]:items-end" data-activity-toolbar>
+      <UFormField :label="$t('common.search')" class="w-full min-w-0 @min-[40rem]:flex-1">
         <UInput
           v-model="searchQuery"
           name="activitySearch"
@@ -30,8 +30,21 @@
           class="w-full"
         />
       </UFormField>
-      <div class="flex w-full items-end gap-2 sm:ml-auto sm:w-auto">
-        <UFormField :label="$t('common.labels.sortBy')" class="min-w-0 flex-1 sm:w-48 sm:flex-none">
+      <div class="flex w-full min-w-0 items-end gap-2 @min-[40rem]:w-auto">
+        <UButton
+          v-if="availableTags.length"
+          icon="mdi:filter-variant"
+          color="neutral"
+          :variant="showTags ? 'soft' : 'ghost'"
+          :aria-expanded="showTags"
+          :aria-label="$t('articles.activity.filterTags')"
+          class="shrink-0"
+          @click="showTags = !showTags"
+        >
+          <span class="hidden @min-[30rem]:inline">{{ $t('articles.activity.filterTags') }}</span>
+          <span v-if="selectedTags.length">{{ selectedTags.length }}</span>
+        </UButton>
+        <UFormField :label="$t('common.labels.sortBy')" class="min-w-0 flex-1 @min-[40rem]:w-44 @min-[40rem]:flex-none">
           <USelect v-model="sortOption" :items="sortItems" valueKey="value" labelKey="label" class="w-full" />
         </UFormField>
         <UButton
@@ -47,7 +60,7 @@
       </div>
     </div>
 
-    <div v-if="availableTags.length" class="flex flex-wrap gap-1.5">
+    <div v-if="showTags && availableTags.length" class="flex flex-wrap gap-1.5 rounded-lg border border-default p-3">
       <UButton
         v-for="tag in availableTags"
         :key="tag"
@@ -180,7 +193,8 @@ const tabs = [
 ] as const
 
 const sortOption = shallowRef('createdAt:desc')
-const isGrid = shallowRef(true)
+const isGrid = shallowRef(false)
+const showTags = shallowRef(false)
 const searchQuery = shallowRef('')
 const selectedTags = ref<string[]>([])
 const page = shallowRef(1)
@@ -245,6 +259,7 @@ watch([sortOption, () => activeTab], () => {
   allArticles.value = []
   allComments.value = []
   hasMore.value = { likedArticles: true, comments: true }
+  selectedTags.value = []
   // A sort the current tab does not offer would be sent to the API verbatim.
   if (activeTab === 'comments' && sortOption.value === 'views:desc') sortOption.value = 'createdAt:desc'
   refresh()

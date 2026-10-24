@@ -45,6 +45,7 @@ defineEmits<{ (e: 'unlike', id: string): void; (e: 'share', article: ActivityArt
 const cardArticle = computed(() => ({
   ...article,
   createdAt: article.createdAt ?? new Date(0).toISOString(),
+  author: { name: article.authorUsername, avatarUrl: article.authorPfp },
   tags: article.tags.map((name, index) => ({ id: `${index}`, name })),
   _count: { reactions: article.likesCount },
 }))
