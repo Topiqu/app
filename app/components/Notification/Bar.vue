@@ -13,11 +13,29 @@
         icon="mdi:bell-outline"
         square
         :aria-label="$t('common.actions.openNotifications')"
-        :title="$t(pollActive ? 'common.notifications.pollingActive' : 'common.notifications.pollingPaused')"
+        :title="$t(pollTitle)"
       />
 
       <template #content>
         <div class="w-[26rem] max-w-[95vw]">
+          <UAlert
+            v-if="pollStatus === 'retrying' || pollStatus === 'forbidden' || pollStatus === 'unauthorized'"
+            color="warning"
+            variant="soft"
+            icon="mdi:bell-alert-outline"
+            :title="$t(pollTitle)"
+            class="m-3"
+          >
+            <template #actions>
+              <UButton
+                color="neutral"
+                variant="outline"
+                size="sm"
+                :label="$t('common.messages.retry')"
+                @click="retryPolling"
+              />
+            </template>
+          </UAlert>
           <template v-if="auth?.user">
             <UScrollArea v-if="notifications.length" class="max-h-[30rem]">
               <div ref="scroll" class="divide-y divide-default bg-default">
@@ -109,6 +127,7 @@
 
 <script lang="ts" setup>
 import type { InternalApi } from 'nitropack'
+import type { NotificationCursor } from '~~/shared/types/notification'
 
 type Notif = {
   id: string
@@ -125,6 +144,7 @@ type FetchResponse = {
   notifications: Notif[]
   unreadCount: number
   hasMore: boolean
+  cursor?: NotificationCursor
 }
 const notificationKey = (n: Notif) => [n.type, n.message, n.article?.slug ?? '', n.link ?? ''].join('|')
 
@@ -150,29 +170,27 @@ const {
   error,
   refresh,
 } = await useFetch<FetchResponse>(url, {
+  key: computed(() => `notifications:${auth.value?.user?.id ?? 'guest'}`),
   immediate: !!auth.value?.user,
 })
 
-const POLL_INTERVAL_MS = 10_000
-const pollEnabled = computed(() => !!auth?.value?.user)
-const visibility = useDocumentVisibility()
-const pollActive = computed(() => pollEnabled.value && visibility.value === 'visible')
-
-const poll = async () => {
-  if (!pollEnabled.value) return
-  try {
-    const res = await $fetch<{ notifications: Notif[]; unreadCount: number }, '/api/notifications/poll'>(
-      '/api/notifications/poll',
-      {
-        query: { since: data.value[0]?.createdAt ?? undefined },
-      },
-    )
+const { status: pollStatus, retry: retryPolling } = useNotificationPolling<Notif>({
+  initialCursor: () => fetchedData.value?.cursor,
+  reset: () => {
+    data.value = []
+    unreadCount.value = 0
+    deletingKeys.value = new Set()
+    pendingDeletes.value = new Map()
+  },
+  receive: (res) => {
     const known = new Set(data.value.map((n) => n.id))
     const fresh = res.notifications.filter(
       (n) => n?.id && !known.has(n.id) && !deletingKeys.value.has(notificationKey(n)),
     )
     if (fresh.length) {
       data.value = [...fresh, ...data.value]
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.id.localeCompare(a.id))
+        .slice(0, max)
       for (const n of fresh)
         useToast().add({
           color: 'success',
@@ -181,22 +199,18 @@ const poll = async () => {
     }
     const hiddenUnread = [...pendingDeletes.value.values()].flat().filter((n) => !n.isRead).length
     unreadCount.value = Math.max(0, res.unreadCount - hiddenUnread)
-  } catch {
-    // next tick retries
-  }
-}
-
-const { pause, resume } = useIntervalFn(poll, POLL_INTERVAL_MS, {
-  immediate: false,
-})
-
-watch(
-  pollActive,
-  (active) => {
-    if (active) resume()
-    else pause()
   },
-  { immediate: true },
+})
+const pollTitle = computed(
+  () =>
+    ({
+      active: 'common.notifications.pollingActive',
+      paused: 'common.notifications.pollingPaused',
+      connecting: 'common.notifications.pollingConnecting',
+      retrying: 'common.notifications.pollingRetrying',
+      forbidden: 'common.notifications.pollingUnavailable',
+      unauthorized: 'common.notifications.pollingSignIn',
+    })[pollStatus.value],
 )
 
 watch(
@@ -204,7 +218,10 @@ watch(
   async (v) => {
     if (!v) return
     const visible = v.notifications.filter((n) => !deletingKeys.value.has(notificationKey(n)))
-    data.value = page.value === 1 ? visible : [...data.value, ...visible]
+    data.value =
+      page.value === 1
+        ? visible
+        : [...new Map([...data.value, ...visible].map((n) => [n.id, n])).values()].slice(0, max)
     const hiddenUnread = [...pendingDeletes.value.values()].flat().filter((n) => !n.isRead).length
     unreadCount.value = Math.max(0, (v.unreadCount || 0) - hiddenUnread)
     hasMore.value = v.hasMore && data.value.length < max
@@ -215,7 +232,7 @@ watch(
 )
 
 watch(error, (e) => {
-  if (e)
+  if (e && auth.value?.user && ![401, 403].includes(e.statusCode ?? 0))
     useToast().add({
       color: 'error',
       title: $t('common.notifications.loadFailed', { message: e.message || $t('common.error') }),
@@ -242,6 +259,7 @@ const notifications = computed(() => {
 
 const handleOpen = (open: boolean) => {
   if (open && auth?.value?.user) {
+    if (pollStatus.value === 'forbidden' || pollStatus.value === 'unauthorized') return
     page.value = 1
     refresh()
   }
@@ -269,6 +287,7 @@ const focusAfterRemoval = async (id?: string) => {
 }
 
 const del = async (id: string) => {
+  const userId = auth.value?.user?.id
   const rendered = notifications.value
   const renderedIndex = rendered.findIndex((n) => n.id === id)
   const focusId = rendered[renderedIndex + 1]?.id ?? rendered[renderedIndex - 1]?.id
@@ -295,8 +314,9 @@ const del = async (id: string) => {
         ),
       ),
     )
-    optimisticStatus.saved()
+    if (auth.value?.user?.id === userId) optimisticStatus.saved()
   } catch (e: any) {
+    if (auth.value?.user?.id !== userId) return
     const known = new Set(data.value.map((n) => n.id))
     data.value = [...data.value, ...toDelete.filter((n) => !known.has(n.id))].sort(
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
@@ -310,17 +330,19 @@ const del = async (id: string) => {
       }),
     })
   } finally {
-    const nextDeleting = new Set(deletingKeys.value)
-    nextDeleting.delete(key)
-    deletingKeys.value = nextDeleting
-    const nextDeletes = new Map(pendingDeletes.value)
-    nextDeletes.delete(key)
-    pendingDeletes.value = nextDeletes
+    if (auth.value?.user?.id === userId) {
+      const nextDeleting = new Set(deletingKeys.value)
+      nextDeleting.delete(key)
+      deletingKeys.value = nextDeleting
+      const nextDeletes = new Map(pendingDeletes.value)
+      nextDeletes.delete(key)
+      pendingDeletes.value = nextDeletes
+    }
   }
 }
 
 watch(
-  () => auth?.value?.user,
+  () => auth?.value?.user?.id,
   async (u) => {
     if (u && import.meta.client) {
       page.value = 1
@@ -330,7 +352,6 @@ watch(
       unreadCount.value = 0
     }
   },
-  { immediate: true },
 )
 
 watch(

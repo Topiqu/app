@@ -4,6 +4,7 @@ export default defineEventHandler(async (event) => {
   const user = await getSessionUser(event)
   if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
+  const startedAt = new Date()
   const db = await getEnhancedPrisma(user)
   const { skip, take } = await getPagination(event)
   const max = 75
@@ -24,9 +25,7 @@ export default defineEventHandler(async (event) => {
         },
       },
     },
-    orderBy: {
-      createdAt: 'desc',
-    },
+    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
     skip,
     take: adjustedTake,
   })
@@ -50,5 +49,6 @@ export default defineEventHandler(async (event) => {
     notifications,
     unreadCount,
     hasMore: skip + notifications.length < Math.min(totalCount, max),
+    cursor: notificationCursor(notifications[0], startedAt),
   }
 })
