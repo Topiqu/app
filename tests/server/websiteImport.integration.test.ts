@@ -2,6 +2,7 @@
 import { createError } from 'h3'
 import { randomUUID } from 'node:crypto'
 import { PolicyPlugin } from '@zenstackhq/plugin-policy'
+import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { SessionUser } from '../../shared/types/auth'
@@ -10,6 +11,7 @@ import { stubNitroImports } from '../helpers/nitroImports'
 import { emptyWebsiteValues, normalizeWebsiteUrl } from '../../shared/utils/websiteImport'
 
 async function stubImports() {
+  await stubNitroImports(import('../../server/utils/knowledge/indexing'), 'indexKnowledgeSource')
   await stubNitroImports(import('../../server/utils/storage'), 'putToCdn')
   await stubNitroImports(
     import('../../server/utils/websiteImport/policy'),
@@ -79,6 +81,10 @@ const mocks = vi.hoisted(() => ({
 }))
 vi.mock('nitropack/runtime', () => ({
   useRuntimeConfig: () => ({ anthropic: { apiKey: 'synthetic-key' }, websiteImport: { dailyBudgetUsd: mocks.budget } }),
+}))
+mockNuxtImport('useRuntimeConfig', () => () => ({
+  anthropic: { apiKey: 'synthetic-key' },
+  websiteImport: { dailyBudgetUsd: mocks.budget },
 }))
 vi.mock('../../server/utils/websiteImport/ai', () => ({
   researchWebsite: mocks.research,
