@@ -126,7 +126,7 @@ describe('article table request intent', () => {
     await flushPromises()
     expect(mocks.fetch).toHaveBeenCalledExactlyOnceWith('/api/articles/article-a/translate', {
       method: 'POST',
-      body: { language: 'cs', replace: true, expectedUpdatedAt: '2026-10-22T09:00:00.000Z' },
+      body: { language: 'cs', replace: true, expectedUpdatedAt: '2026-10-22T09:00:00.000Z', background: true },
     })
     expect(mocks.invalidate).toHaveBeenCalledTimes(1)
   })
@@ -135,7 +135,12 @@ describe('article table request intent', () => {
     const wrapper = await mountTable()
     wrapper.findComponent(TranslationMenu).vm.$emit('translate', 'cs')
     await flushPromises()
-    expect(mocks.fetch.mock.calls[0]?.[1].body).toEqual({ language: 'cs', replace: false, expectedUpdatedAt: null })
+    expect(mocks.fetch.mock.calls[0]?.[1].body).toEqual({
+      language: 'cs',
+      replace: false,
+      expectedUpdatedAt: null,
+      background: true,
+    })
   })
 
   it('snapshots the target and version and blocks duplicate requests', async () => {
@@ -170,12 +175,14 @@ describe('article table request intent', () => {
     expect(mocks.toast).not.toHaveBeenCalled()
   })
 
-  it('keeps a successful translation successful when list invalidation fails', async () => {
+  it('keeps an accepted background translation queued when list invalidation fails', async () => {
     mocks.invalidate.mockRejectedValueOnce(new Error('Cache unavailable'))
     const wrapper = await mountTable()
     wrapper.findComponent(TranslationMenu).vm.$emit('translate', 'cs')
     await flushPromises()
-    expect(mocks.toast).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ color: 'success' }))
+    expect(mocks.toast).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ color: 'info', title: 'articles.editor.translationStarted' }),
+    )
     expect(console.warn).toHaveBeenCalledTimes(1)
     expect(wrapper.findComponent(TranslationMenu).props('translating')).toBe(false)
   })
