@@ -19,7 +19,7 @@ describe('background work recovery', () => {
     vi.stubGlobal('defineMonitoredTask', (task: unknown) => task)
     vi.stubGlobal('activeFeatureFilter', () => ({}))
     const claimedAt = new Date()
-    const updateMany = vi.fn().mockResolvedValueOnce({ count: 1 }).mockResolvedValueOnce({ count: 1 })
+    const updateMany = vi.fn().mockResolvedValue({ count: 1 })
     const finalUpdate = vi.fn().mockResolvedValue({ count: 0 })
     const media = vi.fn()
     const invalidate = vi.fn()
@@ -59,7 +59,7 @@ describe('background work recovery', () => {
     expect(recovery.where.status).toBe('TRANSLATING')
     expect(recovery.where.updatedAt.lt.getTime()).toBeLessThanOrEqual(claimedAt.getTime() - 29 * 60_000)
     expect(recovery.data.status).toBe('PENDING')
-    const claim = updateMany.mock.calls[1]![0]
+    const claim = updateMany.mock.calls[3]![0]
     expect(finalUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({ id: 'translation', status: 'TRANSLATING', updatedAt: claim.data.updatedAt }),
