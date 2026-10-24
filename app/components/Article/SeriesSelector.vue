@@ -31,7 +31,7 @@
               {{ modelValue.name }}
             </span>
             <span class="text-xs text-muted font-medium">
-              {{ $t('series.part', { count: (modelValue.articles?.length ?? 0) + 1 }, '{count}. díl') }}
+              {{ $t('series.part', { count: selectedPart }) }}
             </span>
           </div>
         </div>
@@ -138,6 +138,14 @@ defineProps<{ compact?: boolean }>()
 const { data: series, refresh } = await useLazyFetch('/api/series', {
   server: false,
   default: emptyAsyncDataList,
+})
+const route = useRoute()
+const selectedPart = computed(() => {
+  const parts =
+    series.value.find((item) => item.id === modelValue.value?.id)?.articles ?? modelValue.value?.articles ?? []
+  const articleId = 'id' in route.params ? route.params.id : undefined
+  const current = parts.findIndex((article) => article.id === articleId)
+  return current >= 0 ? current + 1 : parts.length + 1
 })
 
 const createModal = shallowRef(false)
