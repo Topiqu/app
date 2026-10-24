@@ -6,6 +6,12 @@ export default defineEventHandler(async (event) => {
 
   const db = await getEnhancedPrisma(user)
   const body = await readBody(event)
+  if (typeof body.title !== 'string' || !body.title.trim())
+    throw createError({ statusCode: 400, message: t('common.messages.articleTitleRequired')! })
+  if (typeof body.content !== 'string') body.content = ''
+  if ((body.status === 'published' || body.releaseAt) && !hasArticleBody(sanitizeHtml(body.content)))
+    throw createError({ statusCode: 400, message: t('articles.editor.contentRequired')! })
+  if (!body.content.trim()) body.content = '<p></p>'
   const mediaRightsReview = body.mediaRightsReview
   delete body.mediaRightsReview
   body.slug = articleSlug(String(body.slug || body.title || ''))

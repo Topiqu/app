@@ -2,6 +2,8 @@ import { createError } from 'h3'
 import { DbNull } from '@zenstackhq/orm'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { hasArticleBody } from '../../../shared/utils/articleEditor'
+
 describe('article creation tags', () => {
   beforeEach(() => {
     vi.resetModules()
@@ -43,6 +45,7 @@ describe('article creation tags', () => {
     vi.stubGlobal('applyMediaAttributions', async (_site: string, content: string) => content)
     vi.stubGlobal('stampHeadingIds', (content: string) => content)
     vi.stubGlobal('sanitizeHtml', (content: string) => content)
+    vi.stubGlobal('hasArticleBody', hasArticleBody)
     vi.stubGlobal('isUniqueViolation', () => false)
     vi.stubGlobal('coverCreditFromMedia', async () => null)
     vi.stubGlobal('syncArticlePolls', async (_db: unknown, _id: string, content: string) => content)

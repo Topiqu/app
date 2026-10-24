@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { schema } from '../../../generated/zenstack/schema'
 import { sanitizeHtml } from '../../../server/utils/sanitize'
+import { hasArticleBody } from '../../../shared/utils/articleEditor'
 import { changesReaderText } from '../../../server/utils/articleModified'
 
 const updateSchema = createQuerySchemaFactory(schema).makeUpdateSchema('Article')
@@ -77,6 +78,7 @@ describe('article updates', () => {
     vi.stubGlobal('coverCreditFromMedia', async () => null)
     vi.stubGlobal('requireMediaRightsReview', async () => null)
     vi.stubGlobal('changesReaderText', changesReaderText)
+    vi.stubGlobal('hasArticleBody', hasArticleBody)
     vi.stubGlobal('applyMediaAttributions', async (_site: string, content: string) => content)
     vi.stubGlobal('stampHeadingIds', (content: string) => content)
     vi.stubGlobal('sanitizeHtml', sanitizeHtml)
@@ -90,6 +92,7 @@ describe('article updates', () => {
     vi.stubGlobal('getIp', () => '127.0.0.1')
     vi.stubGlobal('enqueueArticleWebhook', vi.fn())
     vi.stubGlobal('announceArticle', vi.fn())
+    vi.stubGlobal('articlePublicPaths', async () => [])
 
     const handler = (await import('../../../server/api/articles/[id]/index.patch')).default
     return { run: () => handler({} as never), update, query, tx, transaction, syncPolls }
@@ -211,5 +214,33 @@ describe('article updates', () => {
     syncPolls.mockRejectedValue(new Error('Synthetic poll write failure'))
     await expect(run()).rejects.toThrow('Synthetic poll write failure')
     expect(update).not.toHaveBeenCalled()
+  })
+
+  it('allows hiding a published article without requiring media rights confirmation', async () => {
+    const { run, update } = await setup({ status: 'draft' }, { status: 'published', publishedAt: new Date() })
+    const review = vi.fn().mockRejectedValue(createError({ statusCode: 409 }))
+    vi.stubGlobal('requireMediaRightsReview', review)
+    await expect(run()).resolves.toMatchObject({ success: true })
+    expect(review).not.toHaveBeenCalled()
+    expect(update.mock.calls[0]![0].data.status).toBe('draft')
+  })
+
+  it('explains an empty article body before attempting publication', async () => {
+    const { run, update } = await setup({ content: '<p><br></p>', status: 'published' })
+    await expect(run()).rejects.toMatchObject({ statusCode: 400, message: 'articles.editor.contentRequired' })
+    expect(update).not.toHaveBeenCalled()
+  })
+
+  it('clears the old publication schedule when hiding a published article', async () => {
+    const releaseAt = new Date('2025-01-01T12:00:00Z')
+    const { run, update } = await setup(
+      { status: 'draft', releaseAt },
+      { status: 'published', publishedAt: releaseAt, releaseAt },
+    )
+    const review = vi.fn().mockRejectedValue(createError({ statusCode: 409 }))
+    vi.stubGlobal('requireMediaRightsReview', review)
+    await expect(run()).resolves.toMatchObject({ success: true })
+    expect(review).not.toHaveBeenCalled()
+    expect(update.mock.calls[0]![0].data).toMatchObject({ status: 'draft', releaseAt: null })
   })
 })

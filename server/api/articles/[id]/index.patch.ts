@@ -33,16 +33,14 @@ export default defineEventHandler(async (event): Promise<{ success: true; editVe
       ? undefined
       : z.object({ fingerprint: z.string(), acknowledged: z.literal(true) }).parse(rawBody.mediaRightsReview)
   delete rawBody.mediaRightsReview
+  if (typeof rawBody.title === 'string' && !rawBody.title.trim())
+    throw createError({ statusCode: 400, message: t('common.messages.articleTitleRequired')! })
+  if (typeof rawBody.content === 'string' && !rawBody.content.trim()) rawBody.content = '<p></p>'
   if (rawBody.imageCredit === null) rawBody.imageCredit = DbNull
   const body = ArticleUpdateSchema.parse(rawBody)
 
   if (body.clientSiteId && body.clientSiteId !== user?.clientSiteId)
     throw createError({ statusCode: 403, message: t('common.errors.articleEditForbidden')! })
-
-  const coverMedia =
-    body.coverMediaId === undefined ? null : await assertTenantMedia(user.clientSiteId!, body.coverMediaId)
-  if (!isCoverImageUrl(body.imageUrl, coverMedia))
-    throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
   const currentDate = new Date()
   const maxDate = new Date(currentDate.getFullYear() + 100, 11, 31, 23, 59)
@@ -73,6 +71,15 @@ export default defineEventHandler(async (event): Promise<{ success: true; editVe
   })
 
   if (!previousArticle) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
+  const retainsCover =
+    (body.coverMediaId === undefined || body.coverMediaId === previousArticle.coverMediaId) &&
+    (body.imageUrl === undefined || body.imageUrl === previousArticle.imageUrl)
+  if (!retainsCover) {
+    const coverMedia =
+      body.coverMediaId === undefined ? null : await assertTenantMedia(user.clientSiteId!, body.coverMediaId)
+    if (!isCoverImageUrl(body.imageUrl, coverMedia))
+      throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
+  }
   const conflict = () =>
     createError({
       statusCode: 409,
@@ -90,6 +97,10 @@ export default defineEventHandler(async (event): Promise<{ success: true; editVe
   const previousSlug = body.slug !== undefined && body.slug !== previousArticle.slug ? previousArticle.slug : null
   if (previousArticle.userId !== user.id && !hasTenantScope(membership, 'ARTICLE_WRITE_OTHERS'))
     throw createError({ statusCode: 403, message: t('common.errors.articleEditForbidden')! })
+  if (previousArticle.status === ArticleStatus.published) {
+    if (body.status !== undefined && body.status !== ArticleStatus.published) body.releaseAt = null
+    else delete body.releaseAt
+  }
   if ((body.status === ArticleStatus.published || body.releaseAt) && !hasTenantScope(membership, 'ARTICLE_PUBLISH'))
     throw createError({ statusCode: 403, message: 'Missing tenant scope: ARTICLE_PUBLISH' })
   if ((body.status === ArticleStatus.published || body.releaseAt) && previousArticle.clientSite?.publishToWeb === false)
@@ -98,7 +109,9 @@ export default defineEventHandler(async (event): Promise<{ success: true; editVe
   const requiresPublicationReview =
     body.status === ArticleStatus.published ||
     Boolean(body.releaseAt) ||
-    previousArticle.status === ArticleStatus.published
+    (body.status === undefined && previousArticle.status === ArticleStatus.published)
+  if (requiresPublicationReview && !hasArticleBody(sanitizeHtml(body.content ?? previousArticle.content)))
+    throw createError({ statusCode: 400, message: t('articles.editor.contentRequired')! })
   const mediaReport = requiresPublicationReview
     ? await requireMediaRightsReview(
         prisma,
@@ -109,12 +122,9 @@ export default defineEventHandler(async (event): Promise<{ success: true; editVe
           content: body.content === undefined ? previousArticle.content : body.content,
         },
         mediaRightsReview,
+        { articleId: id, language: previousArticle.language },
       )
     : null
-
-  if (previousArticle.status === ArticleStatus.published) {
-    delete body.releaseAt
-  }
 
   if (body.releaseAt) {
     const releaseDate = new Date(body.releaseAt)
