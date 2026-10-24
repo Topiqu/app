@@ -37,7 +37,7 @@ describe('imageDepicts', () => {
 
     await expect(imageDepicts(image, check)).resolves.toEqual({ depicts: false })
 
-    expect(fetchPublicUrl).toHaveBeenCalledWith('https://images.test/thumb.jpg')
+    expect(fetchPublicUrl).toHaveBeenCalledWith('https://images.test/thumb.jpg', 8000, undefined)
     const call = vi.mocked(generateText).mock.calls[0]![0] as any
     expect(call.model).toBe('imageCheck')
     expect(call.providerOptions).toEqual({ anthropic: { thinking: { type: 'disabled' } } })
@@ -54,7 +54,7 @@ describe('imageDepicts', () => {
     await expect(imageDepicts({ ...image, previewUrl: undefined }, { ...check, type: 'photo' })).resolves.toEqual({
       depicts: true,
     })
-    expect(fetchPublicUrl).toHaveBeenCalledWith('https://images.test/original.jpg')
+    expect(fetchPublicUrl).toHaveBeenCalledWith('https://images.test/original.jpg', 8000, undefined)
     expect((vi.mocked(generateText).mock.calls[0]![0] as any).messages[0].content[1].text).toContain(
       'must show this subject itself',
     )
@@ -64,6 +64,17 @@ describe('imageDepicts', () => {
     fetchPublicUrl.mockResolvedValue(new Response('<html>', { headers: { 'content-type': 'text/html' } }))
     await expect(imageDepicts(image, check)).resolves.toMatchObject({ depicts: false, failure: expect.any(String) })
     expect(generateText).not.toHaveBeenCalled()
+  })
+
+  it('checks geographic context and archive metadata rather than treating article language as location', async () => {
+    fetchPublicUrl.mockResolvedValue(jpeg())
+    vi.mocked(generateText).mockResolvedValue({ output: { depicts: false } } as never)
+    await imageDepicts({ ...image, alt: 'US housing development' }, { ...check, context: 'Czech housing subsidies' })
+    const call = vi.mocked(generateText).mock.calls[0]![0] as any
+    const text = call.messages[0].content[1].text
+    expect(text).toContain('Czech housing subsidies')
+    expect(text).toContain('US housing development')
+    expect(text).toContain('Do not infer country solely from the article language')
   })
 
   it('rejects when the download or the model fails', async () => {

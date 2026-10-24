@@ -160,7 +160,17 @@ export const finalizeArticle = async (
       const verdict = await auditArticleStep(
         audit,
         'image_check',
-        () => imageDepicts(image, { title: object.title, query: subject, type: intent }, abortSignal),
+        () =>
+          imageDepicts(
+            image,
+            {
+              title: object.title,
+              query: subject,
+              type: intent,
+              context: `${object.perex}\n${object.content.replace(/<[^>]+>/g, ' ').slice(0, 2600)}`,
+            },
+            abortSignal,
+          ),
         (result) => ({ ...result }),
         { query: subject, sourceUrl: image.credit?.sourceUrl ?? image.url },
       )

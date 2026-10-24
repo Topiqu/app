@@ -327,6 +327,7 @@ export const buildArticleConfig = async (
       A missing documentary photo is not permission to invent a depiction of a real person or event. Leave that image slot empty if the licensed search fails.
       Every article needs a cover, so the coverImage also carries a "broaderQuery" for when the exact subject has no photo: the place, organisation, product line or field it belongs to.
       Preserve the exact product, installment number and named subject in each query. For games, request a screenshot of the actual game, not cosplay, fan art, an older installment, a generic forest or a gaming desk. Do not pad the article with generic mood images. Each visual must contribute distinct relevant information.
+      Preserve the article's geographic setting in every query, including broaderQuery: when the subject concerns Czech housing, institutions or local rules, ask for the relevant Czech place or Czech setting, never a generic American house, US institution or unrelated foreign event. Infer location from the subject and research, never from the article language alone. A broader search may relax the activity, not silently move the story to another country.
       Each content image also needs a "caption": one factual sentence, in the same language as the article, saying what is in the picture — for 'photo' name who or what it is and when. Never write "Illustrative image", "AI generated", "Source:" or any credit into the caption; the system adds those itself.
 
       ${
