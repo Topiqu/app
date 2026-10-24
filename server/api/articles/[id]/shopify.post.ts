@@ -43,7 +43,13 @@ export default defineEventHandler(async (event) => {
   })
   if (!connection || connection.status !== 'CONNECTED' || !connection.blogId || !connection.author)
     throw createError({ statusCode: 409, message: 'Connect Shopify and choose a blog and author first' })
-  const report = await requireMediaRightsReview(prisma, site.id, article, parsed.data.mediaRightsReview)
+  const report =
+    parsed.data.mode === 'published'
+      ? await requireMediaRightsReview(prisma, site.id, article, parsed.data.mediaRightsReview, {
+          articleId,
+          language: article.language,
+        })
+      : null
   const content = await applyMediaAttributions(site.id, article.content)
   const payload: ShopifyArticlePayload = {
     blogId: connection.blogId,
@@ -56,13 +62,14 @@ export default defineEventHandler(async (event) => {
     isPublished: parsed.data.mode === 'published',
     image: article.imageUrl ? { url: article.imageUrl, altText: article.title } : null,
   }
-  await createMediaRightsSnapshot(prisma, {
-    articleId,
-    clientSiteId: site.id,
-    language: article.language,
-    report,
-    confirmedById: user.id,
-  })
+  if (report)
+    await createMediaRightsSnapshot(prisma, {
+      articleId,
+      clientSiteId: site.id,
+      language: article.language,
+      report,
+      confirmedById: user.id,
+    })
   const publication = await db.$transaction(async (tx) => {
     const existing = await tx.shopifyPublication.findUnique({
       where: { connectionId_articleId: { connectionId: connection.id, articleId } },
