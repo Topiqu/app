@@ -1,6 +1,8 @@
 <template>
-  <div class="grid min-w-0 items-start gap-8 xl:grid-cols-[minmax(0,1fr)_28rem]">
-    <div class="flex min-w-0 flex-col gap-8">
+  <div
+    class="grid min-w-0 grid-cols-[minmax(0,1fr)] items-start gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(20rem,0.85fr)]"
+  >
+    <div class="flex min-w-0 flex-col gap-6">
       <h2 data-branding-section="identity" class="text-lg font-semibold text-highlighted">
         {{ $t('common.preferences.branding.identity') }}
       </h2>
@@ -84,24 +86,8 @@
         />
       </section>
 
-      <div class="xl:hidden">
-        <FormClientBrandingPreview
-          :logoUrl
-          :name
-          :tagline="localTagline"
-          :description="localDescription"
-          :currentTheme
-          :typographyPreset
-          :accentColor
-          :brandGradient
-          :headingFontUrl
-          :bodyFontUrl
-          :plan
-        />
-      </div>
-
-      <div class="flex flex-col gap-6">
-        <div class="flex items-center justify-between">
+      <section class="@container min-w-0 space-y-4 rounded-(--topiqu-surface-radius) border border-default p-4 sm:p-5">
+        <div class="flex flex-wrap items-center justify-between gap-3">
           <span data-branding-section="socials" class="text-lg font-semibold text-highlighted">
             {{ $t('common.preferences.socials.label') }}
           </span>
@@ -109,54 +95,56 @@
             <UButton
               color="neutral"
               variant="soft"
+              size="sm"
               icon="mdi:plus"
               :label="$t('common.preferences.branding.addSocial')"
             />
           </UDropdownMenu>
         </div>
 
-        <div v-if="localSocials.length" class="grid gap-4">
-          <UCard v-for="(social, index) in localSocials" :key="index">
-            <div class="flex items-center gap-3 border-b border-default p-4">
-              <div
-                class="flex h-9 w-9 items-center justify-center rounded-lg"
-                :style="{ backgroundColor: platformColors[social.platform] }"
-              >
-                <UIcon size="20" :name="platformIcons[social.platform]" class="text-white" />
-              </div>
-              <span class="text-sm font-medium text-highlighted">{{ social.platform }}</span>
-              <UBadge v-if="!isValidUrl(social.url)" color="error" variant="soft">{{
-                $t('common.messages.invalidUrlShort')
-              }}</UBadge>
-              <UButton
-                color="neutral"
-                variant="ghost"
-                square
-                icon="mdi:trash-can-outline"
-                class="ml-auto"
-                :aria-label="$t('common.actions.delete')"
-                @click="removeSocial(index)"
+        <div v-if="localSocials.length" class="divide-y divide-default">
+          <div
+            v-for="(social, index) in localSocials"
+            :key="social.platform"
+            class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 py-3 first:pt-0 last:pb-0 @sm:grid-cols-[7rem_minmax(0,1fr)_auto]"
+          >
+            <div class="col-span-2 flex min-w-0 items-center gap-2 @sm:col-span-1">
+              <UIcon size="18" :name="platformIcons[social.platform]" class="shrink-0 text-muted" />
+              <span class="text-sm font-medium text-highlighted">{{
+                $t(`common.preferences.socials.platforms.${social.platform}`)
+              }}</span>
+            </div>
+            <UFormField
+              :label="$t(`common.preferences.socials.platforms.${social.platform}`)"
+              :ui="{ wrapper: 'sr-only', container: 'mt-0' }"
+              :error="!isValidUrl(social.url) ? $t('common.messages.invalidUrlShort') : undefined"
+              class="min-w-0"
+            >
+              <UInput
+                v-model="localSocials[index]!.url"
+                :placeholder="platformPlaceholders[social.platform]"
+                :maxLength="255"
+                class="w-full"
+                @blur="normalizeUrl(index)"
               />
-            </div>
-            <div class="p-4">
-              <UFormField :label="social.platform" :ui="{ label: 'sr-only' }">
-                <UInput
-                  v-model="localSocials[index]!.url"
-                  :placeholder="platformPlaceholders[social.platform]"
-                  :maxLength="255"
-                  :leadingIcon="platformIcons[social.platform]"
-                  @blur="normalizeUrl(index)"
-                />
-              </UFormField>
-            </div>
-          </UCard>
+            </UFormField>
+            <UButton
+              color="neutral"
+              variant="ghost"
+              size="sm"
+              square
+              icon="mdi:trash-can-outline"
+              :aria-label="`${$t('common.actions.delete')}: ${$t(`common.preferences.socials.platforms.${social.platform}`)}`"
+              @click="removeSocial(index)"
+            />
+          </div>
         </div>
 
         <UEmpty v-else size="sm" :description="$t('common.preferences.socials.noSocials')" />
-      </div>
+      </section>
+      <slot name="after" />
     </div>
-
-    <aside data-publication-preview class="sticky top-24 hidden xl:block">
+    <aside class="order-first min-w-0 xl:order-last xl:sticky xl:top-6">
       <FormClientBrandingPreview
         :logoUrl
         :name
@@ -246,7 +234,7 @@ const availableSocialItems = computed(() =>
   socialPlatforms
     .filter((platform) => !localSocials.value.some((social) => social.platform === platform))
     .map((platform) => ({
-      label: platform,
+      label: $t(`common.preferences.socials.platforms.${platform}`),
       icon: platformIcons[platform],
       onSelect: () => addSocial(platform),
     })),
@@ -261,22 +249,13 @@ const platformIcons: Record<SocialPlatform, string> = {
   OTHER: 'mdi:web',
 }
 
-const platformColors: Record<SocialPlatform, string> = {
-  FACEBOOK: '#1877F2',
-  TWITTER: '#09090B',
-  INSTAGRAM: '#E1306C',
-  LINKEDIN: '#0A66C2',
-  YOUTUBE: '#FF0000',
-  OTHER: '#4B5563',
-}
-
 const platformPlaceholders = computed(() => ({
   FACEBOOK: `https://facebook.com/${name ?? ''}`,
   TWITTER: `https://x.com/${name ?? ''}`,
   INSTAGRAM: `https://instagram.com/${name ?? ''}`,
   LINKEDIN: `https://linkedin.com/company/${name ?? ''}`,
   YOUTUBE: `https://youtube.com/@${name ?? ''}`,
-  OTHER: `https://${domain ?? ''}.cz`,
+  OTHER: `https://${domain ?? ''}`,
 }))
 
 const addSocial = (platform: SocialPlatform) => {

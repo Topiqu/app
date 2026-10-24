@@ -17,40 +17,44 @@
     </div>
     <div
       data-publication-preview
-      class="publication-surface overflow-hidden rounded-(--topiqu-surface-radius) border border-default bg-default text-default shadow-sm"
+      class="publication-surface overflow-hidden rounded-(--topiqu-surface-radius) border border-default bg-default text-default"
       :class="darkPreview ? 'dark' : 'light'"
       :style="previewStyle"
     >
-      <div class="p-5">
-        <header class="relative flex items-center gap-3 border-b border-default pb-4">
-          <!-- Mirrors the article reading-progress bar, the place the gradient really shows. -->
-          <span
-            class="absolute inset-x-0 -bottom-px h-1 [clip-path:inset(0_60%_0_0)]"
-            :style="{ background: activeGradient ? gradientCss(activeGradient) : accent }"
-            aria-hidden="true"
-          />
+      <div>
+        <header class="flex items-center gap-3 border-b border-default p-4" :style="heroStyle">
           <AppMedia
             :src="logoUrl"
-            :fallbackText="name"
+            :fallbackText="name.trim().charAt(0)"
             :fallbackBorder="false"
             :alt="name"
-            aspectRatio="16 / 5"
+            aspectRatio="1 / 1"
             fit="contain"
-            sizes="96px"
-            :width="256"
-            containerClass="h-10 w-24 shrink-0 bg-transparent"
+            sizes="40px"
+            :width="80"
+            :height="80"
+            containerClass="size-10 shrink-0 rounded-(--ui-radius) bg-transparent"
+            :style="logoStyle"
           />
-          <div class="min-w-0">
-            <p class="truncate text-sm font-bold text-highlighted">{{ name }}</p>
-            <p v-if="tagline" class="line-clamp-1 text-xs text-muted">{{ tagline }}</p>
+          <div class="min-w-0 flex-1">
+            <p class="truncate text-base font-bold" :style="{ fontFamily: baseStyle['--topiqu-heading-font'] }">
+              {{ name }}
+            </p>
+            <p v-if="tagline" class="line-clamp-2 break-words text-xs opacity-80">{{ tagline }}</p>
           </div>
+          <span
+            class="inline-flex shrink-0 items-center rounded-(--ui-radius) border px-3 py-1.5 text-xs font-semibold"
+            :style="{ color: activeGradient ? 'inherit' : 'var(--ui-primary)', borderColor: 'currentColor' }"
+          >
+            {{ $t('widgets.presets.ctaNewsletter.button') }}
+          </span>
         </header>
-        <article class="pt-5">
+        <article class="m-3.5 rounded-(--ui-radius) border border-default bg-default p-4">
           <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">
             {{ $t('common.preferences.branding.sampleCategory') }}
           </p>
           <h3
-            class="text-2xl font-bold leading-tight tracking-tight text-highlighted"
+            class="text-xl font-bold leading-tight tracking-tight text-highlighted"
             :style="{ fontFamily: baseStyle['--topiqu-heading-font'] }"
           >
             {{ $t('common.preferences.branding.sampleTitle') }}
@@ -58,13 +62,9 @@
           <p class="mt-3 text-sm leading-relaxed text-muted">
             {{ description || $t('common.preferences.branding.sampleExcerpt') }}
           </p>
-          <p class="mt-3 text-sm leading-relaxed">
-            {{ $t('common.preferences.branding.sampleBody') }}
-          </p>
-          <span
-            class="publication-primary-cta mt-5 inline-flex rounded-[var(--ui-radius)] px-4 py-2 text-xs font-semibold"
-          >
-            {{ $t('articles.home.latestStory') }}
+          <span class="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary">
+            {{ $t('common.readMore') }}
+            <UIcon name="mdi:arrow-right" size="16" aria-hidden="true" />
           </span>
         </article>
       </div>
@@ -108,10 +108,38 @@ const baseStyle = computed(() =>
   }),
 )
 const activeGradient = computed(() => activeBrandGradient(props.brandGradient, props.plan))
-const accent = computed(() => resolveBrandAccent(props.currentTheme, props.accentColor))
+const brandAccent = computed(() => resolveBrandAccent(props.currentTheme, props.accentColor))
+const logoStyle = computed(() =>
+  props.logoUrl
+    ? undefined
+    : {
+        backgroundColor: brandAccent.value,
+        '--ui-text-highlighted': contrastRatio(brandAccent.value, '#FFFFFF') >= 4.5 ? '#FFFFFF' : '#0F172A',
+      },
+)
+const heroStyle = computed(() => {
+  const gradient = activeGradient.value
+  if (!gradient)
+    return {
+      background: `color-mix(in srgb, ${brandAccent.value} 10%, var(--ui-bg))`,
+      color: 'var(--ui-text-highlighted)',
+    }
+  const minimumContrast = (foreground: string) =>
+    Math.min(...gradient.colors.map((color) => contrastRatio(color, foreground)))
+  return {
+    background: gradientCss(gradient),
+    color: minimumContrast('#ffffff') >= minimumContrast('#0f172a') ? '#ffffff' : '#0f172a',
+  }
+})
 const previewStyle = computed(() => ({
   ...baseStyle.value,
   colorScheme: darkPreview.value ? 'dark' : 'light',
+  '--ui-bg': darkPreview.value ? 'var(--color-neutral-900)' : 'var(--color-white)',
+  '--ui-bg-elevated': darkPreview.value ? 'var(--color-neutral-800)' : 'var(--color-neutral-100)',
+  '--ui-text': darkPreview.value ? 'var(--color-neutral-200)' : 'var(--color-neutral-700)',
+  '--ui-text-highlighted': darkPreview.value ? 'var(--color-white)' : 'var(--color-neutral-900)',
+  '--ui-text-muted': darkPreview.value ? 'var(--color-neutral-400)' : 'var(--color-neutral-600)',
+  '--ui-border': darkPreview.value ? 'var(--color-neutral-700)' : 'var(--color-neutral-200)',
   '--ui-primary': darkPreview.value
     ? baseStyle.value['--topiqu-tenant-accent-dark']
     : baseStyle.value['--topiqu-tenant-accent-light'],

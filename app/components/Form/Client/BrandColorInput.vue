@@ -5,8 +5,9 @@
         type="button"
         color="neutral"
         variant="outline"
+        size="sm"
         square
-        class="size-10 shrink-0"
+        class="size-8 shrink-0 rounded-full"
         :style="{ backgroundColor: modelValue }"
         :aria-label="label"
       />
@@ -21,7 +22,10 @@
     <UInput
       :modelValue="draft"
       :aria-label="label"
+      size="sm"
       maxlength="7"
+      spellcheck="false"
+      autocapitalize="off"
       class="min-w-0 flex-1"
       :ui="{ base: 'font-mono uppercase' }"
       @update:modelValue="updateText(String($event))"

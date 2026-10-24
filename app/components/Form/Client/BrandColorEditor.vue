@@ -1,14 +1,9 @@
 <template>
-  <div class="min-w-0 space-y-6">
+  <div class="@container min-w-0 space-y-6">
     <div class="space-y-3">
-      <div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-        <p class="text-sm font-medium text-highlighted" aria-hidden="true">
-          {{ $t('common.preferences.branding.presetColors') }}
-        </p>
-        <p class="text-xs text-muted" aria-live="polite">
-          {{ selectedColorLabel }} · <span class="font-mono">{{ currentColor.toUpperCase() }}</span>
-        </p>
-      </div>
+      <p class="text-sm font-medium text-highlighted" aria-hidden="true">
+        {{ $t('common.preferences.branding.presetColors') }}
+      </p>
       <URadioGroup
         :modelValue="accentColor ? undefined : theme"
         :items="colorItems"
@@ -17,39 +12,50 @@
         orientation="horizontal"
         :aria-label="$t('common.preferences.branding.presetColors')"
         :ui="{
-          fieldset: 'flex flex-wrap gap-2.5',
-          item: 'relative size-8 cursor-pointer rounded-full border-0 p-0 ring-1 ring-black/10 transition-shadow has-data-[state=checked]:ring-2 has-data-[state=checked]:ring-inverted has-data-[state=checked]:ring-offset-2 has-data-[state=checked]:ring-offset-(--ui-bg) has-focus-visible:outline-2 has-focus-visible:outline-offset-4 has-focus-visible:outline-primary dark:ring-white/15',
+          fieldset: 'flex flex-wrap gap-2',
+          item: 'relative size-8 shrink-0 cursor-pointer rounded-full border-0 p-0 ring-1 ring-black/10 transition-shadow has-data-[state=checked]:ring-2 has-data-[state=checked]:ring-inverted has-data-[state=checked]:ring-offset-2 has-data-[state=checked]:ring-offset-(--ui-bg) has-focus-visible:outline-2 has-focus-visible:outline-offset-4 has-focus-visible:outline-primary dark:ring-white/15',
           wrapper: 'absolute inset-0 m-0',
           label: 'size-full',
+          container: 'sr-only',
         }"
         @update:modelValue="selectPreset($event as ThemeKey)"
       >
         <template #label="{ item }">
           <span
-            class="block size-full rounded-full"
-            :style="{ backgroundColor: themeColors[item.value as ThemeKey] }"
+            class="grid size-full place-items-center rounded-full"
+            :style="{
+              backgroundColor: themeColors[item.value as ThemeKey],
+              color: contrastRatio(themeColors[item.value as ThemeKey], '#FFFFFF') >= 3 ? '#FFFFFF' : '#0F172A',
+            }"
             :title="item.label"
           >
             <span class="sr-only">{{ item.label }}</span>
+            <UIcon
+              name="mdi:check-bold"
+              size="18"
+              :class="(accentColor || theme !== item.value) && 'invisible'"
+              aria-hidden="true"
+            />
           </span>
         </template>
       </URadioGroup>
-    </div>
-
-    <div class="flex flex-wrap items-end gap-2">
-      <UFormField :label="$t('common.preferences.branding.customColor')" class="w-44">
+      <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
+        <p class="text-xs font-medium text-muted" aria-live="polite">{{ selectedColorLabel }}</p>
         <FormClientBrandColorInput
           :modelValue="currentColor"
           :label="$t('common.preferences.branding.customColor')"
+          class="w-40"
           @update:modelValue="emit('update:accentColor', $event)"
         />
-      </UFormField>
+      </div>
       <UTooltip :text="$t('common.preferences.branding.fromLogoNeedsLogo')" :disabled="!!logoUrl">
         <span class="inline-flex">
           <UButton
             type="button"
             color="neutral"
-            variant="soft"
+            variant="link"
+            size="sm"
+            class="px-0"
             icon="mdi:eyedropper-variant"
             :loading="suggesting"
             :disabled="!logoUrl || !clientId"
@@ -90,14 +96,8 @@
           <p class="text-sm font-medium text-highlighted">{{ $t('common.preferences.branding.gradient') }}</p>
           <p class="mt-0.5 text-xs text-muted">{{ $t('common.preferences.branding.gradientHelp') }}</p>
         </div>
-        <USwitch
-          v-if="advanced"
-          :modelValue="!!brandGradient"
-          :aria-label="$t('common.preferences.branding.gradient')"
-          @update:modelValue="toggleGradient"
-        />
         <UButton
-          v-else
+          v-if="!advanced"
           :to="localePath({ name: 'settings', query: { tab: 'billing' } })"
           color="neutral"
           variant="soft"
@@ -107,28 +107,35 @@
           :label="$t('common.preferences.branding.unlockPro')"
         />
       </div>
+      <URadioGroup
+        :modelValue="selectedGradientPreset"
+        :items="gradientPresets"
+        variant="card"
+        indicator="hidden"
+        orientation="horizontal"
+        :aria-label="$t('common.preferences.branding.gradient')"
+        class="mt-4"
+        :ui="{
+          fieldset: 'grid grid-cols-2 gap-2 @xs:grid-cols-4',
+          item: 'min-w-0 cursor-pointer rounded-(--ui-radius) border-default p-1.5 transition-colors hover:border-accented has-data-[state=checked]:border-primary has-data-[state=checked]:bg-primary/5 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-primary',
+          wrapper: 'm-0 block min-w-0 w-full',
+          label: 'min-w-0 w-full font-normal',
+          container: 'sr-only',
+        }"
+        @update:modelValue="applyGradientPreset(String($event))"
+      >
+        <template #label="{ item }">
+          <span
+            class="block h-8 w-full rounded-[calc(var(--ui-radius)-0.25rem)]"
+            :style="{ background: item.gradient ? gradientCss(item.gradient) : currentColor }"
+            aria-hidden="true"
+          />
+          <span class="mt-1.5 block whitespace-normal break-words text-center text-xs text-default">{{
+            item.label
+          }}</span>
+        </template>
+      </URadioGroup>
       <template v-if="brandGradient && advanced">
-        <URadioGroup
-          :modelValue="selectedGradientPreset"
-          :items="gradientPresets"
-          variant="card"
-          indicator="hidden"
-          orientation="horizontal"
-          :aria-label="$t('common.preferences.branding.gradient')"
-          class="mt-4"
-          :ui="{
-            fieldset: 'grid grid-cols-3 gap-2',
-            item: 'min-w-0 cursor-pointer border-default p-1.5 transition-colors hover:border-accented has-data-[state=checked]:border-primary has-data-[state=checked]:bg-primary/5 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-primary',
-            wrapper: 'm-0 min-w-0',
-            label: 'min-w-0 font-normal',
-          }"
-          @update:modelValue="applyGradientPreset(String($event))"
-        >
-          <template #label="{ item }">
-            <span class="block h-8 rounded-md" :style="{ background: gradientCss(item.gradient) }" aria-hidden="true" />
-            <span class="mt-1.5 block truncate text-center text-xs text-default">{{ item.label }}</span>
-          </template>
-        </URadioGroup>
         <UCollapsible class="mt-3">
           <UButton
             type="button"
@@ -236,7 +243,23 @@ const emit = defineEmits<{
 }>()
 
 const localePath = useLocalePath()
-const themes = ThemeSchema.options
+const themes: ThemeKey[] = [
+  'indigo',
+  'blue',
+  'sky',
+  'cyan',
+  'teal',
+  'green',
+  'lime',
+  'yellow',
+  'amber',
+  'orange',
+  'red',
+  'pink',
+  'purple',
+  'violet',
+  'gray',
+]
 const advanced = computed(() => hasAdvancedBranding(props.plan))
 const currentColor = computed(() => resolveBrandAccent(props.theme, props.accentColor))
 const selectedColorLabel = computed(() =>
@@ -262,7 +285,8 @@ const colorItems = computed(() =>
 )
 const gradientPresets = computed(() => {
   const color = currentColor.value
-  const presets: { value: string; label: string; gradient: BrandGradient }[] = [
+  const presets: { value: string; label: string; gradient: BrandGradient | null; disabled?: boolean }[] = [
+    { value: 'none', label: $t('common.none'), gradient: null },
     {
       value: 'soft',
       label: $t('common.preferences.branding.gradientSoft'),
@@ -282,14 +306,14 @@ const gradientPresets = computed(() => {
       },
     },
   ]
-  return presets
+  return presets.map((preset) => ({ ...preset, disabled: preset.value !== 'none' && !advanced.value }))
 })
 // Presets derive from the accent, so a stored gradient stops matching one once the accent changes.
 const selectedGradientPreset = computed(() => {
   const current = props.brandGradient
-  if (!current) return undefined
+  if (!current) return 'none'
   const key = (g: BrandGradient) => `${g.angle}:${g.colors.join().toUpperCase()}`
-  return gradientPresets.value.find((preset) => key(preset.gradient) === key(current))?.value
+  return gradientPresets.value.find((preset) => preset.gradient && key(preset.gradient) === key(current))?.value
 })
 
 const selectPreset = (theme: ThemeKey) => {
@@ -298,14 +322,11 @@ const selectPreset = (theme: ThemeKey) => {
 }
 const applyGradientPreset = (value: string) => {
   const preset = gradientPresets.value.find((option) => option.value === value)
-  if (preset) emit('update:brandGradient', preset.gradient)
+  if (preset && !preset.disabled) emit('update:brandGradient', preset.gradient)
 }
 const updateGradient = (patch: Partial<BrandGradient>) => {
   if (!advanced.value) return
   emit('update:brandGradient', { ...gradientValue.value, ...patch })
-}
-const toggleGradient = (enabled: boolean) => {
-  emit('update:brandGradient', enabled && advanced.value ? gradientValue.value : null)
 }
 const setStop = (index: number, color: string) => {
   const colors = [...gradientValue.value.colors]
