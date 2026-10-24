@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto w-full max-w-screen-xl space-y-5 px-4 py-6 sm:px-6 lg:px-8">
+  <div class="topiqu-dashboard-page space-y-5 py-6">
     <UButton :to="localePath({ name: 'master' })" color="neutral" variant="link" icon="mdi:arrow-left">
       {{ $t('operations.clients') }}
     </UButton>

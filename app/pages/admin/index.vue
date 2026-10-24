@@ -1,7 +1,5 @@
 <template>
-  <div
-    class="mx-auto flex min-h-0 w-full max-w-screen-2xl flex-col gap-4 px-4 py-6 sm:px-6 md:h-full md:overflow-hidden lg:px-8"
-  >
+  <div class="topiqu-dashboard-page flex min-h-0 flex-col gap-4 py-6 md:h-full md:overflow-hidden">
     <AdminDomainVerificationBanner v-if="client && !client.domainVerified && can('TENANT_SETTINGS')" />
     <AdminUpgradeBanner v-if="client?.plan === 'BASIC'" />
     <ArticleTable />

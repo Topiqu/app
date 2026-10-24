@@ -1,5 +1,5 @@
 <template>
-  <main class="w-full max-w-5xl mx-auto pt-6 sm:pt-10 px-4 sm:px-6 pb-28 flex flex-col gap-6">
+  <main class="topiqu-dashboard-page flex flex-col gap-6 pb-28 pt-6">
     <header class="flex items-center justify-between gap-4">
       <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
         {{ $t('profile.title') }}

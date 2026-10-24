@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto flex min-h-0 w-full max-w-screen-lg flex-1 flex-col gap-5 px-4 py-6 sm:px-6 lg:px-8">
+  <div class="topiqu-dashboard-page flex min-h-0 flex-1 flex-col gap-5 py-6">
     <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <div class="max-w-2xl">
         <h1 class="text-2xl font-bold text-highlighted">{{ $t('knowledge.title') }}</h1>

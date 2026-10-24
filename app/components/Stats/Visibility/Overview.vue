@@ -221,7 +221,7 @@ const setOpportunity = (id: string, status: 'DISMISSED' | 'RESOLVED' | 'OPEN') =
 </script>
 
 <template>
-  <UContainer>
+  <div class="topiqu-dashboard-page">
     <DefinePromptForm>
       <form
         class="grid gap-3 text-left sm:grid-cols-[minmax(0,1fr)_9rem_auto] sm:items-end"
@@ -387,5 +387,5 @@ const setOpportunity = (id: string, status: 'DISMISSED' | 'RESOLVED' | 'OPEN') =
         :description="$t('visibility.messages.failed')"
       />
     </div>
-  </UContainer>
+  </div>
 </template>
