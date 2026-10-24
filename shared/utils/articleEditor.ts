@@ -30,6 +30,14 @@ export const canManageArticle = (
 export const isBlankArticle = (article: { title?: string | null; content?: string | null }) =>
   !article.title && (!article.content || article.content === '<p></p>')
 
+export const hasArticleBody = (content?: string | null) =>
+  !!content &&
+  (/<(?:img|video|audio|iframe|table)\b|data-poll-id=/i.test(content) ||
+    !!content
+      .replace(/<[^>]*>/g, '')
+      .replace(/&(?:nbsp|#160|#x[aA]0);/g, ' ')
+      .trim())
+
 export type PublishAction = 'saveChanges' | 'schedule' | 'createAndPublish' | 'publishNow'
 
 /**

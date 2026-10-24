@@ -2,13 +2,25 @@ import { resolve } from 'node:path'
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
-import { canManageArticle, dropBlankLines, isBlankArticle, publishAction } from '../../shared/utils/articleEditor'
+import {
+  canManageArticle,
+  dropBlankLines,
+  hasArticleBody,
+  isBlankArticle,
+  publishAction,
+} from '../../shared/utils/articleEditor'
 
 const editorSource = readFileSync(resolve(process.cwd(), 'app/components/Article/Editor/Workspace.vue'), 'utf8')
 const generationStore = readFileSync(resolve(process.cwd(), 'app/stores/articleGeneration.ts'), 'utf8')
 const clientSiteSource = readFileSync(resolve(process.cwd(), 'app/composables/useClientSite.ts'), 'utf8')
 
 describe('generated article modules', () => {
+  it('distinguishes an empty editor document from text and media content', () => {
+    expect(hasArticleBody('<p><br></p>')).toBe(false)
+    expect(hasArticleBody('<p>&nbsp;</p>')).toBe(false)
+    expect(hasArticleBody('<p>Obsah</p>')).toBe(true)
+    expect(hasArticleBody('<p><img src="/cover.jpg"></p>')).toBe(true)
+  })
   it('renders extraction fields in the editor canvas', () => {
     expect(editorSource).toContain(
       'const activeExtraction = computed(() => (tr.isSource ? editedArticle.value : tr.active))',
