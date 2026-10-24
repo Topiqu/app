@@ -1,15 +1,15 @@
 <template>
   <div
-    class="pointer-events-none fixed right-3 bottom-3 z-overlay flex max-w-[calc(100vw-1.5rem)] flex-col items-end gap-2"
+    class="pointer-events-none fixed right-3 bottom-3 z-overlay flex w-88 max-w-[calc(100vw-1.5rem)] flex-col items-stretch gap-2"
   >
     <AdminWebsiteImportNotice />
     <AdminSetupChecklist />
     <div
       data-client-version-bar
-      class="bottom-action-bar pointer-events-auto flex max-w-full items-center gap-1 rounded-[calc(var(--ui-radius)+0.25rem)] bg-elevated p-1 shadow-lg ring ring-default"
+      class="bottom-action-bar pointer-events-auto flex w-full items-center gap-1 rounded-(--topiqu-surface-radius) border border-accented bg-default p-1 shadow-lg"
     >
       <UButton
-        class="min-w-0"
+        class="min-w-0 flex-1"
         color="neutral"
         variant="soft"
         trailingIcon="mdi:chevron-up"
@@ -17,12 +17,12 @@
         @click="show = true"
       >
         <span class="hidden shrink-0 sm:inline">Topiqu {{ config.public.appVersion }}</span>
-        <UBadge class="min-w-0 shrink truncate" :color="planBadgeColor" variant="soft">{{
+        <UBadge class="ml-auto min-w-0 shrink truncate" :color="planBadgeColor" variant="soft">{{
           site?.plan ?? $t('articles.userMenu.noClientAssigned')
         }}</UBadge>
         <UBadge
           v-if="status?.articlesRemaining != null"
-          class="ml-auto min-w-0 max-w-[8.5rem] shrink truncate tabular-nums"
+          class="min-w-0 max-w-[8.5rem] shrink truncate tabular-nums"
           :title="$t('common.wallet.available')"
           :color="isLowArticles ? 'error' : 'success'"
           variant="soft"
@@ -30,6 +30,8 @@
           {{ status.articlesRemaining.toLocaleString(locale) }}
         </UBadge>
       </UButton>
+
+      <LazyArticleGenerationActivity />
 
       <UTooltip :text="$t('common.consent.openSettings')">
         <UButton

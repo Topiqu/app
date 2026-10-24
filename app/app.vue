@@ -22,7 +22,6 @@
     <ClientOnly v-if="!isWidgetPagePreview">
       <LazyClientVersion v-if="consentLauncher === 'client-version'" />
       <ConsentSettingsButton v-else-if="consentLauncher === 'cookie-button'" />
-      <LazyArticleGenerationActivity v-if="dashboardAccess" />
     </ClientOnly>
   </UApp>
 </template>
@@ -42,7 +41,6 @@ const i18nHead = useLocaleHead()
 const canonicalOrigin = useCanonicalOrigin()
 const { locale } = useI18n()
 const { data: auth } = useAuth()
-const dashboardAccess = useDashboardAccess(liveClientSite)
 const uiLocales = { cs, de, en, fr }
 const uiLocale = computed(() => uiLocales[locale.value as keyof typeof uiLocales] ?? en)
 const isBrowserTest = Boolean(useRuntimeConfig().public.browserTest)

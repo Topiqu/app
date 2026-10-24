@@ -59,6 +59,8 @@ const generatedFromFinal = (final: FinalArticle, format?: string): GeneratedArti
 export const useArticleGenerationStore = defineStore('articleGeneration', () => {
   const { t } = useI18n()
   const toast = useToast()
+  const { data: auth } = useAuth()
+  const owner = () => `${auth.value?.user.id ?? ''}:${auth.value?.user.clientSiteId ?? ''}`
   const { streamGenerate, stop: abort } = useArticleGeneration()
 
   const run = shallowRef<GenerationRun | null>(null)
@@ -113,6 +115,7 @@ export const useArticleGenerationStore = defineStore('articleGeneration', () => 
 
     const reservedBefore = wallet()?.reserved ?? 0
     let charged = false
+    let resumedAfterDisconnect = false
     let streamedContent = ''
     const streamedImages = new Map<number, string>()
     const present = () => {
@@ -174,6 +177,11 @@ export const useArticleGenerationStore = defineStore('articleGeneration', () => 
       )
       if (run.value) settle(finishGenerationRun(run.value, outcome, Date.now()))
     } catch (error: any) {
+      if (sessionId.value && !(error instanceof GenerationStreamError) && !stopRequested.value) {
+        resumedAfterDisconnect = true
+        await resume()
+        return
+      }
       const failure =
         error instanceof GenerationStreamError
           ? { message: error.message, stage: error.stage, creditReturned: error.creditReturned }
@@ -183,7 +191,7 @@ export const useArticleGenerationStore = defineStore('articleGeneration', () => 
       // Slots still unresolved when the stream ended must not reach the editor as raw markers.
       if (streamedContent) update({ content: present() })
       const status = run.value?.status
-      if (status && status !== 'running')
+      if (status && status !== 'running' && !resumedAfterDisconnect)
         toast.add({
           color: RUN_TOAST_COLOR[status],
           title: t(`articles.editor.ai.run.title.${status}`),
@@ -268,6 +276,7 @@ export const useArticleGenerationStore = defineStore('articleGeneration', () => 
     let saved: ({ run?: GenerationRun } & Record<string, any>) | null = null
     try {
       saved = JSON.parse(sessionStorage.getItem(STORAGE_KEY) ?? 'null')
+      if (saved?.owner !== owner()) saved = null
     } catch {
       sessionStorage.removeItem(STORAGE_KEY)
     }
@@ -277,7 +286,7 @@ export const useArticleGenerationStore = defineStore('articleGeneration', () => 
       const state = { run: run.value, target: target.value, editorPath: editorPath.value, language: language.value }
       sessionStorage.setItem(
         STORAGE_KEY,
-        JSON.stringify({ ...state, sessionId: sessionId.value, article: article.value }),
+        JSON.stringify({ ...state, owner: owner(), sessionId: sessionId.value, article: article.value }),
       )
     }
     watchThrottled([run, target, editorPath, language, sessionId, article], persist, { throttle: 1_000 })

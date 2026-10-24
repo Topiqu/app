@@ -1,8 +1,7 @@
 <template>
   <section
     v-if="visible"
-    class="pointer-events-auto w-88 rounded-(--topiqu-surface-radius) border border-default bg-default p-1 shadow-lg"
-    :class="expanded ? 'max-w-[calc(100vw-1.5rem)]' : 'max-w-[calc(100vw-5.5rem)] sm:max-w-[calc(100vw-1.5rem)]'"
+    class="pointer-events-auto w-full rounded-(--topiqu-surface-radius) border border-accented bg-default p-1 shadow-lg"
     :aria-label="$t('common.setup.checklist.title')"
     :data-expanded="expanded"
     data-setup-widget
