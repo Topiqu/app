@@ -115,7 +115,7 @@
             @delete="handleDelete"
             @like="handleLike"
             @dislike="handleDislike"
-            @refresh="refreshComment"
+            @refresh="refreshVisible"
             @loadReplies="loadReplies"
             @loadContext="loadContext"
           />
@@ -208,29 +208,36 @@ const {
   index: commentIndex,
   error,
   refresh,
+  refreshVisible,
+  total,
   loading,
   hasMore,
   loadMore,
   loadReplies,
   loadContext,
-  refreshComment,
   pendingReplies,
   pendingContexts,
 } = useCommentThreads(toRef(props, 'articleId'), sort)
 const visibleThreads = computed(() => comments.value.map((root) => flattenCommentThreads([root])))
 await ready
 useCommentAnchor(toRef(props, 'articleId'), comments)
-watch(
-  error,
-  (e) =>
-    e &&
-    toast.add({
-      color: 'error',
-      title: $t('articles.comments.errorLoadingComments', {
-        0: e.message || $t('common.error'),
-      }),
-    }),
-)
+watch(total, (count) => {
+  if (count !== undefined) commCount.value = count
+})
+const visibility = useDocumentVisibility()
+const pollComments = () => {
+  if (
+    visibility.value === 'visible' &&
+    !isSubmitting.value &&
+    !deletingCommentIds.value.size &&
+    !optimisticCommentIds.value.size
+  )
+    void refreshVisible()
+}
+useIntervalFn(pollComments, 15_000)
+watch(visibility, (value) => {
+  if (value === 'visible') pollComments()
+})
 useInfiniteScroll(sentinel, loadMore, {
   distance: 100,
   interval: 300,
@@ -265,7 +272,7 @@ const replaceComment = (id: string, patch: Partial<CommentWithReplies>) => {
 const refreshAfterMutation = async (articleId: string, current: boolean) => {
   const results = await Promise.allSettled([
     Promise.resolve().then(() => invalidateArticleDetail(articleId)),
-    ...(current ? [Promise.resolve().then(refresh)] : []),
+    ...(current ? [Promise.resolve().then(refreshVisible)] : []),
   ])
   if (results.some((result) => result.status === 'rejected'))
     console.warn('[CommentSection] Could not refresh saved comment data.')
@@ -379,6 +386,7 @@ const submitComment = async () => {
       replyingTo.value = draft.parent
     }
     toast.add({
+      id: `comment-submit-${draft.articleId}`,
       color: 'error',
       title: fetchErrorMessage(e, $t('common.messages.operationFailed')),
     })
@@ -426,7 +434,7 @@ const handleDelete = async (c: CommentWithReplies, r: string | null) => {
       body: { reason: r },
     })
     optimisticStatus.saved(sequence)
-    await refreshAfterMutation(articleId, false)
+    await refreshAfterMutation(articleId, true)
     if (!current()) return
     toast.add({ color: 'success', title: $t('common.messages.deleteSuccess') })
     await nextTick()

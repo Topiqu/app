@@ -18,7 +18,7 @@ export interface EmojiReactionEvent {
 
 export function useCommentReactions(
   comment: Ref<CommentWithReplies>,
-  opts: { isSiteAdmin: Ref<boolean>; currentUserId: Ref<string | undefined> },
+  opts: { isSiteAdmin: Ref<boolean>; currentUserId: Ref<string | undefined>; onSaved?: () => void },
 ) {
   const toast = useToast()
   const { t } = useI18n()
@@ -57,10 +57,15 @@ export function useCommentReactions(
         body: { commentId: comment.value.id, type },
       })
       optimisticStatus.saved()
-    } catch {
+      opts.onSaved?.()
+    } catch (error) {
       Object.assign(state, { likes, dislikes, userReaction, publicationLikes })
       optimisticStatus.reverted()
-      toast.add({ color: 'error', title: t('articles.comments.reactionFailed') })
+      toast.add({
+        id: `comment-reaction-${comment.value.id}`,
+        color: 'error',
+        title: fetchErrorMessage(error, t('articles.comments.reactionFailed')),
+      })
     } finally {
       isPending.value = false
     }

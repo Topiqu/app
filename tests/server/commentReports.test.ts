@@ -13,7 +13,7 @@ afterEach(() => {
   vi.resetModules()
 })
 
-const setup = async (options: { status?: string; budget?: boolean; moderatorCount?: number } = {}) => {
+const setup = async (options: { status?: string; budget?: boolean; moderatorCount?: number; reason?: string } = {}) => {
   let readerId = 'u1'
   const claimed = new Set<string>()
   const createMany = vi.fn().mockResolvedValue({ count: 1 })
@@ -43,7 +43,7 @@ const setup = async (options: { status?: string; budget?: boolean; moderatorCoun
   vi.stubGlobal('createError', createError)
   vi.stubGlobal('useServerI18n', async () => ({ translate: (key: string) => key }))
   vi.stubGlobal('getSessionUser', async () => ({ id: readerId, role: 'reader', name: 'Reader' }))
-  vi.stubGlobal('readValidatedBody', async () => ({ commentId: 'c1' }))
+  vi.stubGlobal('readValidatedBody', async () => ({ commentId: 'c1', reason: options.reason }))
   vi.stubGlobal('getEnhancedPrisma', async () => db)
   vi.stubGlobal('prisma', db)
   vi.stubGlobal('getIp', () => '192.0.2.1')
@@ -88,6 +88,12 @@ it('suppresses duplicate reports by one reader without suppressing independent r
   setReader('u2')
   await run()
   expect(createMany).toHaveBeenCalledTimes(2)
+})
+
+it('includes the supplied report reason in the moderator notification', async () => {
+  const { run, createMany } = await setup({ reason: 'Spam links unrelated to the article' })
+  await run()
+  expect(createMany.mock.calls[0]?.[0].data[0].message).toContain('Spam links unrelated to the article')
 })
 
 it('does not notify moderators about an inaccessible article', async () => {

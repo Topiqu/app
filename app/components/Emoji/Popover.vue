@@ -63,6 +63,7 @@ import type { InternalApi } from 'nitropack'
 
 const props = defineProps<{ commentId: string; articleId: string }>()
 const emit = defineEmits<{
+  (e: 'saved'): void
   (
     e: 'reaction',
     data: {
@@ -124,9 +125,14 @@ const toggleEmoji = async (emojiId: string, close: () => void) => {
     )
     if (!res.success) throw new Error()
     optimisticStatus.saved()
-  } catch {
+    emit('saved')
+  } catch (error) {
     optimisticStatus.reverted()
-    toast.add({ color: 'error', title: $t('articles.comments.reactionFailed') })
+    toast.add({
+      id: `comment-emoji-${props.commentId}`,
+      color: 'error',
+      title: fetchErrorMessage(error, $t('articles.comments.reactionFailed')),
+    })
     emit('reaction', {
       commentId: props.commentId,
       emojiId,

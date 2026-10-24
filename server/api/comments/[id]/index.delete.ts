@@ -1,3 +1,7 @@
+import { z } from 'zod'
+
+const bodySchema = z.object({ reason: z.string().trim().max(255).nullable().optional() })
+
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const user = await getSessionUser(event)
@@ -28,7 +32,11 @@ export default defineEventHandler(async (event) => {
   if (!isOwner && !isAdmin) throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
   if (!isOwner) await requireTenantScope(event, 'CONTENT_MODERATE', comment.article.clientSiteId)
 
-  const { reason } = await readBody(event)
+  const { reason } = await readValidatedBody(event, (input) => {
+    const parsed = bodySchema.safeParse(input)
+    if (!parsed.success) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
+    return parsed.data
+  })
   const deleteReason = reason?.trim() || t('common.user.violateRules')!
 
   await db.comment.update({
@@ -37,18 +45,25 @@ export default defineEventHandler(async (event) => {
   })
 
   if (comment.user.email && isAdmin && !isOwner && comment.user.allowEmail) {
-    await sendEmail({
-      event,
-      to: comment.user.email,
-      template: 'deleteComment',
-      data: {
-        userName: comment.user.username,
-        commentContent: comment.content.slice(0, 50) + (comment.content.length > 50 ? '...' : ''),
-        deleteReason,
-        logoUrl: 'https://cdn.topiqu.com/app-logo.png',
-        unsubscribeUrl: unsubscribeUrl(comment.user),
-      },
-    })
+    try {
+      await sendEmail({
+        event,
+        to: comment.user.email,
+        template: 'deleteComment',
+        data: {
+          userName: comment.user.username,
+          commentContent: comment.content.slice(0, 50) + (comment.content.length > 50 ? '...' : ''),
+          deleteReason,
+          logoUrl: 'https://cdn.topiqu.com/app-logo.png',
+          unsubscribeUrl: unsubscribeUrl(comment.user),
+        },
+      })
+    } catch (error) {
+      await reportCaughtError('Comment deletion email failed after persistence', error, {
+        commentId,
+        clientSiteId: comment.article.clientSiteId,
+      })
+    }
   }
 
   return { message: t('common.messages.successGeneral')! }

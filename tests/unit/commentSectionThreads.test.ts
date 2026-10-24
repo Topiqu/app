@@ -37,6 +37,8 @@ const threadState = {
   pendingReplies: new Set<string>(),
   pendingContexts: new Set<string>(),
   refresh: mocks.refresh,
+  refreshVisible: mocks.refresh,
+  total: shallowRef<number | undefined>(),
   refreshComment: mocks.refreshComment,
   loadMore: mocks.more,
   loadReplies: mocks.replies,
@@ -173,7 +175,7 @@ describe('comment section pagination and flat rendering', () => {
       .vm.$emit('click')
     expect(mocks.replies).toHaveBeenCalledWith(comments.value[0])
     expect(mocks.context).toHaveBeenCalledWith(comments.value[0])
-    expect(mocks.refreshComment).toHaveBeenCalledWith(comments.value[0])
+    expect(mocks.refresh).toHaveBeenCalledWith(comments.value[0])
     expect(mocks.more).toHaveBeenCalledTimes(1)
   })
 

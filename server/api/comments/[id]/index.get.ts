@@ -6,8 +6,19 @@ const querySchema = z
     target: z.string().min(1).max(128).optional(),
     parent: z.string().min(1).max(128).optional(),
     cursor: z.string().min(1).max(128).optional(),
+    ids: z
+      .string()
+      .max(8000)
+      .transform((value) => value.split(','))
+      .pipe(z.array(z.string().min(1).max(128)).min(1).max(60))
+      .optional(),
   })
-  .refine((query) => !(query.target && query.parent) && (!query.cursor || !!query.parent))
+  .refine(
+    (query) =>
+      !(query.target && query.parent) &&
+      (!query.cursor || !!query.parent) &&
+      !(query.ids && (query.target || query.parent || query.cursor)),
+  )
 
 export default defineEventHandler(async (event): Promise<CommentPage> => {
   const { translate: t } = await useServerI18n(event)
@@ -15,7 +26,7 @@ export default defineEventHandler(async (event): Promise<CommentPage> => {
   if (!articleId) throw createError({ statusCode: 400, message: t('common.errors.articleIdRequired')! })
   const parsed = querySchema.safeParse(getQuery(event))
   if (!parsed.success) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
-  const { sort, target, parent, cursor } = parsed.data
+  const { sort, target, parent, cursor, ids: snapshotIds } = parsed.data
 
   const user = await getSessionUser(event)
   const db = await getEnhancedPrisma(user)
@@ -87,7 +98,9 @@ export default defineEventHandler(async (event): Promise<CommentPage> => {
   let parentPage: CommentPage['parent']
   const childCursors = new Map<string, string>()
 
-  if (parent) {
+  if (snapshotIds) {
+    roots = await findComments({ id: { in: snapshotIds } }, { take: COMMENT_THREAD_NODE_LIMIT })
+  } else if (parent) {
     const found = await db.comment.findFirst({ where: { id: parent, articleId }, select: { id: true } })
     if (!found) throw createError({ statusCode: 404, message: t('common.errors.commentNotFound')! })
     if (
@@ -146,7 +159,7 @@ export default defineEventHandler(async (event): Promise<CommentPage> => {
 
   const rows = new Map([...roots, ...path].map((row) => [row.id, row]))
   const rootIds = new Set(roots.map((row) => row.id))
-  let frontier = roots
+  let frontier = snapshotIds ? [] : roots
   for (
     let depth = 1;
     depth < COMMENT_INITIAL_REPLY_DEPTH && frontier.length && rows.size < COMMENT_THREAD_NODE_LIMIT;
@@ -286,5 +299,7 @@ export default defineEventHandler(async (event): Promise<CommentPage> => {
       pending.push(reply)
     }
   }
-  return { comments, hasMore, ...(parentPage ? { parent: parentPage } : {}) }
+  const total =
+    !parent && !target && !snapshotIds ? await db.comment.count({ where: { articleId, deletedAt: null } }) : undefined
+  return { comments, hasMore, ...(total !== undefined ? { total } : {}), ...(parentPage ? { parent: parentPage } : {}) }
 })

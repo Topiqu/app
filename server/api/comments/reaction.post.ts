@@ -38,7 +38,7 @@ export default defineEventHandler(async (event) => {
     },
     select: { id: true },
   })
-  if (ban) throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
+  if (ban) throw createError({ statusCode: 403, message: t('articles.comments.postingBanned')! })
 
   const where = { userId_commentId: { userId: user.id, commentId: body.commentId } }
   const existing = await db.commentReaction.findUnique({ where, select: { type: true } })

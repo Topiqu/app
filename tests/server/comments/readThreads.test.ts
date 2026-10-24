@@ -62,6 +62,29 @@ describe('comment read access', () => {
 })
 
 describe('bounded comment threads', () => {
+  it('refreshes selected loaded comments without crossing the article boundary or expanding replies', async () => {
+    const state = await commentReadFixture({
+      query: { ids: 'root,foreign' },
+      comments: [
+        storedComment('root'),
+        storedComment('reply', 'root'),
+        storedComment('foreign', null, 'another-article'),
+      ],
+    })
+    const result = await state.run()
+    expect(result.comments.map((comment) => comment.id)).toEqual(['root'])
+    expect(result.comments[0]?.replies).toEqual([])
+    expect(result.comments[0]?.repliesHasMore).toBe(true)
+    expect(state.db.comment.findMany).toHaveBeenCalledOnce()
+  })
+
+  it('rejects an unbounded refresh snapshot before reading comments', async () => {
+    const state = await commentReadFixture({
+      query: { ids: Array.from({ length: 61 }, (_, i) => `comment-${i}`).join(',') },
+    })
+    await expect(state.run()).rejects.toMatchObject({ statusCode: 400 })
+    expect(state.db.comment.findMany).not.toHaveBeenCalled()
+  })
   it('bounds broad response shaping and leaves omitted replies explicitly available', async () => {
     const comments = [
       storedComment('root'),

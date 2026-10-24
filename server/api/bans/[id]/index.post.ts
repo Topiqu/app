@@ -1,3 +1,10 @@
+import { z } from 'zod'
+
+const bodySchema = z.object({
+  reason: z.string().trim().min(1).max(255),
+  expiresAt: z.iso.datetime().nullable().optional(),
+})
+
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const user = await getSessionUser(event)
@@ -26,8 +33,11 @@ export default defineEventHandler(async (event) => {
   if (user.clientSiteId !== comment.article.clientSiteId)
     throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
 
-  const { reason, expiresAt } = await readBody(event)
-  if (!reason?.trim()) throw createError({ statusCode: 400, message: t('common.errors.banReasonRequired')! })
+  const body = bodySchema.safeParse(await readBody(event))
+  if (!body.success) throw createError({ statusCode: 400, message: t('common.errors.banReasonRequired')! })
+  const { reason, expiresAt } = body.data
+  if (expiresAt && new Date(expiresAt) <= new Date())
+    throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
 
   const existingBan = await db.userBan.findFirst({
     where: {
@@ -82,21 +92,28 @@ export default defineEventHandler(async (event) => {
         : 'intro_with_reason_temporary'
       : 'intro_no_reason'
 
-    await sendEmail({
-      event,
-      to: comment.user.email,
-      template: 'userBan',
-      lang,
-      data: {
-        userName: comment.user.username,
+    try {
+      await sendEmail({
+        event,
+        to: comment.user.email,
+        template: 'userBan',
+        lang,
+        data: {
+          userName: comment.user.username,
+          clientSiteId: comment.article.clientSiteId,
+          reason: reason.trim(),
+          banDuration,
+          introKey,
+          logoUrl: 'https://cdn.topiqu.com/app-logo.png',
+          unsubscribeUrl: unsubscribeUrl(comment.user),
+        },
+      })
+    } catch (error) {
+      await reportCaughtError('Comment ban email failed after persistence', error, {
+        commentId,
         clientSiteId: comment.article.clientSiteId,
-        reason: reason.trim(),
-        banDuration,
-        introKey,
-        logoUrl: 'https://cdn.topiqu.com/app-logo.png',
-        unsubscribeUrl: unsubscribeUrl(comment.user),
-      },
-    })
+      })
+    }
   }
 
   return { message: t('common.messages.successGeneral')! }

@@ -7,7 +7,8 @@ export default defineEventHandler(async (event) => {
   const commentId = getRouterParam(event, 'id')
   if (!commentId) throw createError({ statusCode: 400, message: t('common.errors.missing')! })
 
-  const comment = await prisma.comment.findUnique({
+  const db = await getEnhancedPrisma(user)
+  const comment = await db.comment.findUnique({
     where: { id: commentId },
     select: {
       userId: true,
@@ -20,7 +21,7 @@ export default defineEventHandler(async (event) => {
   if (user.clientSiteId !== comment.article.clientSiteId)
     throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
 
-  const activeBan = await prisma.userBan.findFirst({
+  const activeBan = await db.userBan.findFirst({
     where: {
       userId: comment.userId,
       clientSiteId: comment.article.clientSiteId,
@@ -31,7 +32,7 @@ export default defineEventHandler(async (event) => {
 
   if (!activeBan) throw createError({ statusCode: 404, message: t('common.errors.banNotFound')! })
 
-  await prisma.userBan.update({
+  await db.userBan.update({
     where: { id: activeBan.id },
     data: { deletedAt: new Date() },
   })

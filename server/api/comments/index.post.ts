@@ -51,7 +51,7 @@ export default defineEventHandler(async (event) => {
     },
     select: { id: true },
   })
-  if (activeBan) throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
+  if (activeBan) throw createError({ statusCode: 403, message: t('articles.comments.postingBanned')! })
 
   const protocol = import.meta.dev ? 'http' : 'https'
   const host = import.meta.dev ? 'localhost:3000' : `${article.clientSite.domain}`

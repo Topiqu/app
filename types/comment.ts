@@ -39,5 +39,6 @@ export interface CommentWithReplies {
 export interface CommentPage {
   comments: CommentWithReplies[]
   hasMore: boolean
+  total?: number
   parent?: { id: string; cursor: string | null; hasMore: boolean }
 }

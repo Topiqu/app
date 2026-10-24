@@ -15,6 +15,8 @@ export function useCommentThreads(articleId: MaybeRefOrGetter<string>, sort: Ref
   const requests = new Map<string, AbortController>()
   let version = 0
   let disposed = false
+  let refreshingVisible = false
+  let refreshQueued = false
   const root = useAsyncData(
     computed(() => `comment-threads:${id.value}:${viewer.value}`),
     async (_app, { signal }) => {
@@ -75,13 +77,56 @@ export function useCommentThreads(articleId: MaybeRefOrGetter<string>, sort: Ref
     await root.refresh()
   }
   const loadMore = async () => {
-    if (disposed || loading.value || !hasMore.value) return
+    if (disposed || loading.value || refreshingVisible || !hasMore.value) return
     const previousPage = page.value
     const generation = version
     page.value++
     root.clear()
     await root.refresh()
     if (!disposed && version === generation && root.error.value) page.value = previousPage
+  }
+  const refreshVisible = async () => {
+    if (disposed) return
+    if (refreshingVisible) {
+      refreshQueued = true
+      return
+    }
+    if (loading.value) return
+    refreshingVisible = true
+    const previousPage = page.value
+    const previousHasMore = hasMore.value
+    const generation = version
+    const controller = new AbortController()
+    requests.set('snapshot', controller)
+    const visibleIds = [...index.value.keys()].filter((id) => !id.startsWith('optimistic-'))
+    try {
+      await refresh()
+      for (let start = 0; start < visibleIds.length; start += COMMENT_THREAD_NODE_LIMIT) {
+        if (disposed || controller.signal.aborted || generation !== version) return
+        const snapshot = await requestFetch<CommentPage, '/api/comments/:id'>(
+          `/api/comments/${id.value}` as '/api/comments/:id',
+          {
+            query: { ids: visibleIds.slice(start, start + COMMENT_THREAD_NODE_LIMIT).join(',') },
+            signal: controller.signal,
+          },
+        )
+        if (disposed || controller.signal.aborted || generation !== version) return
+        comments.value = mergeCommentThreads(comments.value, snapshot.comments)
+      }
+    } catch {
+      // The next visible refresh retries; keep the reader's loaded discussion intact.
+    } finally {
+      if (requests.get('snapshot') === controller) requests.delete('snapshot')
+      if (!disposed && generation === version && previousPage > 1) {
+        page.value = previousPage
+        hasMore.value = previousHasMore
+      }
+      refreshingVisible = false
+      if (refreshQueued && !disposed) {
+        refreshQueued = false
+        void refreshVisible()
+      }
+    }
   }
   const loadBranch = async (comment: CommentWithReplies, mode: 'replies' | 'context' | 'refresh') => {
     const context = mode === 'context'
@@ -139,6 +184,8 @@ export function useCommentThreads(articleId: MaybeRefOrGetter<string>, sort: Ref
     loading,
     error: root.error,
     refresh,
+    refreshVisible,
+    total: computed(() => root.data.value?.total),
     loadMore,
     pendingReplies,
     pendingContexts,

@@ -49,7 +49,7 @@ export default defineEventHandler(async (event) => {
       },
       select: { id: true },
     })
-    if (ban) throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
+    if (ban) throw createError({ statusCode: 403, message: t('articles.comments.postingBanned')! })
 
     // Serialize toggles of this one identity across replicas; no remote work runs under this lock.
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`emoji-reaction:${user.id}:${commentId}:${emojiId}`}))`

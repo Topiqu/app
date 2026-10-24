@@ -6,8 +6,15 @@ export default defineEventHandler(async (event) => {
   const user = await getSessionUser(event)
   if (!user) throw createError({ statusCode: 401, message: t('common.errors.unauthorized')! })
 
-  const schema = z.object({ commentId: z.string().min(1).max(128) })
-  const body = await readValidatedBody(event, schema.parse)
+  const schema = z.object({
+    commentId: z.string().min(1).max(128),
+    reason: z.string().trim().min(1).max(160).optional(),
+  })
+  const body = await readValidatedBody(event, (input) => {
+    const parsed = schema.safeParse(input)
+    if (!parsed.success) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
+    return parsed.data
+  })
   const limits = await Promise.all([
     consumeRateLimit(`comment-report:reader:${user.id}`, 10, 3600),
     consumeRateLimit(`comment-report:ip:${getIp(event)}`, 40, 3600),
@@ -48,12 +55,15 @@ export default defineEventHandler(async (event) => {
     const moderators = (await commentAudience(comment.article, user.id)).filter((member) => member.allowNotifs)
     if (!moderators.length) throw createError({ statusCode: 404, message: t('common.errors.adminNotFound')! })
 
-    const origin = import.meta.dev ? 'http://localhost:3000' : `https://${comment.article.clientSite.domain}`
+    const origin = import.meta.dev ? requestOrigin(event) : `https://${comment.article.clientSite.domain}`
     const url = `${origin}${articlePath(comment.article.language, comment.article.slug)}#comment-${comment.id}`
-    const message = t('common.notifications.userReportedComment', {
+    const summary = t('common.notifications.userReportedComment', {
       user: user.name || 'Anonymous',
       article: comment.article.title,
     })!
+    const summaryLimit = body.reason ? 94 : 255
+    const preview = summary.slice(0, summaryLimit).replace(/[\uD800-\uDBFF]$/, '')
+    const message = body.reason ? `${preview}\n${body.reason}` : preview
 
     await db.$transaction(async (tx) => {
       for (let start = 0; start < moderators.length; start += 500) {
