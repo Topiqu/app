@@ -388,7 +388,7 @@
           </section>
         </div>
 
-        <section v-if="!isBasicPlan" class="grid min-w-0 grid-cols-1 items-stretch gap-6 lg:col-span-2 lg:grid-cols-2">
+        <section v-if="!isBasicPlan" class="grid min-w-0 grid-cols-1 items-start gap-6 lg:col-span-2 lg:grid-cols-2">
           <div class="min-w-0">
             <LazyCharts
               kind="trend"

@@ -1,10 +1,10 @@
 <template>
-  <div class="flex h-8 items-start justify-between gap-4 border-b border-neutral-200 dark:border-neutral-800">
-    <h3 class="text-xs font-semibold leading-5 uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+  <div class="flex min-h-9 flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-default pb-3">
+    <h3 class="min-w-0 text-xs font-semibold leading-5 uppercase tracking-wider text-muted">
       {{ title }}
     </h3>
-    <p v-if="note" class="min-w-0 truncate text-xs text-neutral-500 dark:text-neutral-400" :title="note">{{ note }}</p>
-    <slot name="action" />
+    <p v-if="note" class="min-w-0 text-xs text-muted">{{ note }}</p>
+    <div v-if="$slots.action" class="ml-auto flex shrink-0 items-center"><slot name="action" /></div>
   </div>
 </template>
 
