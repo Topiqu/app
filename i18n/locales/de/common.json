@@ -605,6 +605,11 @@
     "poweredBy": "Erstellt mit",
     "breadcrumbs": "Navigationspfad",
     "navigation": {
+      "groups": {
+        "content": "Inhalte",
+        "resources": "Ressourcen",
+        "performance": "Ergebnisse"
+      },
       "publication": "Website",
       "openSite": "Website öffnen",
       "settings": "Einstellungen",
@@ -1005,6 +1010,14 @@
     "deleted": "Gelöscht am:",
     "cancelAction": "Aktion abbrechen",
     "preferences": {
+      "danger": {
+        "title": "Gefahrenbereich · nur für Blog-Inhaber",
+        "deactivate": "Blog deaktivieren",
+        "description": "Der Blog und seine öffentlichen Inhalte werden nicht mehr erreichbar sein. Die Daten bleiben gespeichert; Wiederherstellung oder endgültige Löschung erfolgt über den Support. Bestehende Abonnements und auf externen Plattformen veröffentlichte Kopien werden dadurch nicht gekündigt oder entfernt.",
+        "confirmation": "Zur Bestätigung {domain} eingeben",
+        "confirmationRequired": "Geben Sie die vollständige Domain des Blogs ein, um die Deaktivierung zu bestätigen.",
+        "deactivated": "Blog deaktiviert"
+      },
       "footer": {
         "title": "Fußzeile",
         "description": "Wählen Sie, was Besucher am Ende Ihres Blogs sehen.",
@@ -1012,7 +1025,8 @@
         "enabled": "Fußzeile anzeigen",
         "text": "Text der Fußzeile",
         "textHelp": "Leer lassen, um den Blognamen zu verwenden. Bis zu 300 Zeichen.",
-        "socials": "Die für diesen Blog eingerichteten sozialen Links anzeigen",
+        "socials": "Soziale Profile in der Fußzeile",
+        "socialsHelp": "Verwendet die Profile aus dem Abschnitt Soziale Netzwerke oben. Sie erscheinen neben den Links in der Fußzeile.",
         "links": "Links in der Fußzeile",
         "linksHelp": "Fügen Sie bis zu {count} Links hinzu, etwa Kontakt, Über uns oder eigene Richtlinien.",
         "linkLabel": "Linkbezeichnung",
@@ -1219,8 +1233,8 @@
         "fromLogoNeedsLogo": "Lade zuerst ein Logo hoch",
         "logoSuggestions": "Farben aus dem Logo",
         "noLogoColors": "In diesem Logo wurde keine eindeutige Farbe gefunden.",
-        "gradient": "Farbverlauf im Titelbereich der Startseite",
-        "gradientHelp": "Hinter dem Titelbereich der Startseite, im Lesefortschritt von Artikeln und im Vorschaubild zum Teilen.",
+        "gradient": "Markenfarbverlauf",
+        "gradientHelp": "Im Lesefortschritt von Artikeln und im Vorschaubild zum Teilen. Die Vorschau zeigt die gewählten Farben.",
         "gradientStop": "Farbe {number}",
         "gradientAngle": "Richtung",
         "gradientSoft": "Dezent",
@@ -1459,6 +1473,14 @@
         }
       },
       "socials": {
+        "platforms": {
+          "FACEBOOK": "Facebook",
+          "TWITTER": "X",
+          "INSTAGRAM": "Instagram",
+          "LINKEDIN": "LinkedIn",
+          "YOUTUBE": "YouTube",
+          "OTHER": "Website"
+        },
         "label": "Soziale Netzwerke",
         "noSocials": "Noch keine sozialen Netzwerke hinzugefügt."
       },

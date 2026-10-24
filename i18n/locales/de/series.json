@@ -1,5 +1,11 @@
 {
   "series": {
+    "overview": "Artikelserien",
+    "overviewDescription": "Serien und ihre Teile durchsuchen. Leser sehen nur veröffentlichte Teile, deren Veröffentlichungszeit erreicht ist.",
+    "publishedCount": "{published} von {total} Teilen verfügbar",
+    "scheduled": "Geplant",
+    "allParts": "Alle Status",
+    "mostParts": "Meiste Teile",
     "label": "Serie",
     "placeholder": "Serie auswählen oder erstellen...",
     "part": "Teil {count}",

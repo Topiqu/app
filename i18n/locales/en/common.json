@@ -605,6 +605,11 @@
     "poweredBy": "Made with",
     "breadcrumbs": "Breadcrumbs",
     "navigation": {
+      "groups": {
+        "content": "Content",
+        "resources": "Resources",
+        "performance": "Performance"
+      },
       "publication": "Website",
       "openSite": "Open site",
       "settings": "Settings",
@@ -1005,6 +1010,14 @@
     "deleted": "Deleted at:",
     "cancelAction": "Cancel action",
     "preferences": {
+      "danger": {
+        "title": "Danger zone · blog owner only",
+        "deactivate": "Deactivate blog",
+        "description": "The blog and its public content will become unavailable. Data stays stored; contact support to restore it or arrange permanent deletion. Existing subscriptions and copies published to external platforms are not cancelled or removed by this action.",
+        "confirmation": "Type {domain} to confirm",
+        "confirmationRequired": "Type the blog's full domain to confirm deactivation.",
+        "deactivated": "Blog deactivated"
+      },
       "footer": {
         "title": "Footer",
         "description": "Choose what visitors see at the bottom of your blog.",
@@ -1012,7 +1025,8 @@
         "enabled": "Show footer",
         "text": "Footer text",
         "textHelp": "Leave empty to use the blog name. Up to 300 characters.",
-        "socials": "Show social links configured for this blog",
+        "socials": "Social profiles in the footer",
+        "socialsHelp": "Uses the profiles from the Social links section above. They appear beside the footer links.",
         "links": "Footer links",
         "linksHelp": "Add up to {count} links, such as contact, about or your own policies.",
         "linkLabel": "Link label",
@@ -1219,8 +1233,8 @@
         "fromLogoNeedsLogo": "Upload a logo first",
         "logoSuggestions": "Colors from logo",
         "noLogoColors": "No distinct color could be found in this logo.",
-        "gradient": "Homepage hero gradient",
-        "gradientHelp": "Used behind the homepage hero, in the article reading bar and on the share image.",
+        "gradient": "Brand gradient",
+        "gradientHelp": "Used in the article reading bar and on the share image. The preview shows your selected colors.",
         "gradientStop": "Color {number}",
         "gradientAngle": "Direction",
         "gradientSoft": "Soft",
@@ -1459,6 +1473,14 @@
         }
       },
       "socials": {
+        "platforms": {
+          "FACEBOOK": "Facebook",
+          "TWITTER": "X",
+          "INSTAGRAM": "Instagram",
+          "LINKEDIN": "LinkedIn",
+          "YOUTUBE": "YouTube",
+          "OTHER": "Website"
+        },
         "label": "Social Networks",
         "noSocials": "No social networks added yet."
       },

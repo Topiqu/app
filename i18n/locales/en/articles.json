@@ -1,6 +1,9 @@
 {
   "articles": {
     "comments": {
+      "reportDescription": "Tell the publication's moderators what is wrong with this comment. The author will not see your report.",
+      "reportReason": "Reason for reporting",
+      "postingBanned": "You cannot comment or react on this blog because its moderators have restricted your account.",
       "unit": "no comments | {count} comment | {count} comments",
       "addGif": "Add GIF",
       "clearGifCategory": "Clear GIF category",
@@ -329,6 +332,7 @@
       "yourVote": "Your vote"
     },
     "activity": {
+      "filterTags": "Filter by tag",
       "noArticles": "You don't have any favorite articles yet",
       "tabs": {
         "likedArticles": "Liked Articles",
@@ -378,6 +382,21 @@
       }
     },
     "editor": {
+      "translationTimedOut": "The translation took too long. Try translating again; the previous text is still available.",
+      "generationTask": "Article generation",
+      "activityStatus": {
+        "running": "In progress",
+        "completed": "Completed",
+        "failed": "Failed",
+        "stopped": "Stopped"
+      },
+      "contentRequired": "Add article content before publishing. You can save an empty article as a draft.",
+      "backgroundTasksHelp": "This task continues in the background. You can leave this page and return to its progress.",
+      "translationStarted": "Translation started",
+      "activityTitle": "Background activity",
+      "activityEmpty": "No background tasks",
+      "mediaUnavailable": "The selected cover image is unavailable. Choose another image or remove the cover; your text is kept.",
+      "draftMediaRemoved": "Draft saved. The unavailable cover was detached; select it again from the media library.",
       "history": {
         "title": "Version history",
         "description": "The last 50 changes to the original article are retained. Loading a version changes your draft; it does not publish it or change its address or schedule.",
@@ -478,12 +497,12 @@
         "researchOff": "without research",
         "modulesLabel": "Article components",
         "elapsed": "Elapsed {seconds}s",
-        "waitingWriting": "No new text for {seconds}s. Writing stops after 30s without text.",
+        "waitingWriting": "No new text for {seconds}s. Writing stops after 45s without text.",
         "waitingResearch": "Source verification is taking longer than usual. The run is still active and can be stopped safely.",
         "waitingImages": "Preparing an image can take up to 45s. If the service does not return one, the article will finish without it.",
         "reservedDuringRun": "Temporarily held: {count} credits",
-        "writerIdleError": "Generation stopped: no text arrived for 30 seconds. Try again.",
-        "writerDeadlineError": "Generation stopped after reaching the 90-second writing limit.",
+        "writerIdleError": "Generation stopped: no text arrived for 45 seconds. Try again.",
+        "writerDeadlineError": "Generation stopped after reaching the 120-second writing limit.",
         "output": {
           "news": "News report",
           "analysis": "Analysis",

@@ -605,6 +605,11 @@
     "poweredBy": "Créé avec",
     "breadcrumbs": "Fil d'Ariane",
     "navigation": {
+      "groups": {
+        "content": "Contenu",
+        "resources": "Ressources",
+        "performance": "Résultats"
+      },
       "publication": "Site",
       "openSite": "Ouvrir le site",
       "settings": "Paramètres",
@@ -1005,6 +1010,14 @@
     "deleted": "Supprimé le :",
     "cancelAction": "Annuler l'action",
     "preferences": {
+      "danger": {
+        "title": "Zone de danger · propriétaire du blog uniquement",
+        "deactivate": "Désactiver le blog",
+        "description": "Le blog et ses contenus publics deviendront inaccessibles. Les données restent conservées ; contactez le support pour une restauration ou une suppression définitive. Cette action ne résilie pas les abonnements existants et ne supprime pas les copies publiées sur des plateformes externes.",
+        "confirmation": "Saisissez {domain} pour confirmer",
+        "confirmationRequired": "Saisissez le domaine complet du blog pour confirmer sa désactivation.",
+        "deactivated": "Blog désactivé"
+      },
       "footer": {
         "title": "Pied de page",
         "description": "Choisissez ce que les visiteurs voient en bas de votre blog.",
@@ -1012,7 +1025,8 @@
         "enabled": "Afficher le pied de page",
         "text": "Texte du pied de page",
         "textHelp": "Laissez vide pour utiliser le nom du blog. Jusqu’à 300 caractères.",
-        "socials": "Afficher les liens sociaux configurés pour ce blog",
+        "socials": "Profils sociaux dans le pied de page",
+        "socialsHelp": "Utilise les profils de la section Réseaux sociaux ci-dessus. Ils apparaissent à côté des liens du pied de page.",
         "links": "Liens du pied de page",
         "linksHelp": "Ajoutez jusqu’à {count} liens, comme un contact, une présentation ou vos propres conditions.",
         "linkLabel": "Libellé du lien",
@@ -1219,8 +1233,8 @@
         "fromLogoNeedsLogo": "Importez d'abord un logo",
         "logoSuggestions": "Couleurs du logo",
         "noLogoColors": "Aucune couleur distincte n'a été trouvée dans ce logo.",
-        "gradient": "Dégradé de l'en-tête de la page d'accueil",
-        "gradientHelp": "Derrière l’en-tête de la page d’accueil, dans la barre de lecture des articles et sur l’image de partage.",
+        "gradient": "Dégradé de marque",
+        "gradientHelp": "Dans la barre de lecture des articles et sur l’image de partage. L’aperçu montre les couleurs choisies.",
         "gradientStop": "Couleur {number}",
         "gradientAngle": "Direction",
         "gradientSoft": "Doux",
@@ -1459,6 +1473,14 @@
         }
       },
       "socials": {
+        "platforms": {
+          "FACEBOOK": "Facebook",
+          "TWITTER": "X",
+          "INSTAGRAM": "Instagram",
+          "LINKEDIN": "LinkedIn",
+          "YOUTUBE": "YouTube",
+          "OTHER": "Site web"
+        },
         "label": "Réseaux sociaux",
         "noSocials": "Aucun réseau social ajouté pour le moment."
       },

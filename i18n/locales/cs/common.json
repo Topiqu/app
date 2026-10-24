@@ -605,6 +605,11 @@
     "poweredBy": "Vytvořeno pomocí",
     "breadcrumbs": "Drobečková navigace",
     "navigation": {
+      "groups": {
+        "content": "Obsah",
+        "resources": "Podklady",
+        "performance": "Výsledky"
+      },
       "publication": "Web",
       "openSite": "Otevřít web",
       "settings": "Nastavení",
@@ -1005,6 +1010,14 @@
     "deleted": "Smazáno:",
     "cancelAction": "Zrušit akci",
     "preferences": {
+      "danger": {
+        "title": "Nebezpečná zóna · pouze vlastník blogu",
+        "deactivate": "Deaktivovat blog",
+        "description": "Blog a jeho veřejný obsah přestanou být dostupné. Data zůstanou uložená; obnovení nebo trvalé smazání řeší podpora. Tato akce neruší existující předplatné ani neodstraní kopie publikované na externích platformách.",
+        "confirmation": "Pro potvrzení napište {domain}",
+        "confirmationRequired": "Pro potvrzení deaktivace napište celou doménu blogu.",
+        "deactivated": "Blog byl deaktivován"
+      },
       "footer": {
         "title": "Patička",
         "description": "Vyberte, co návštěvníci uvidí ve spodní části blogu.",
@@ -1012,7 +1025,8 @@
         "enabled": "Zobrazovat patičku",
         "text": "Text patičky",
         "textHelp": "Prázdné pole použije název blogu. Nejvýše 300 znaků.",
-        "socials": "Zobrazit sociální sítě nastavené pro tento blog",
+        "socials": "Sociální sítě v patičce",
+        "socialsHelp": "Použijí se profily ze sekce Sociální sítě výše. Zobrazí se vedle odkazů v patičce.",
         "links": "Odkazy v patičce",
         "linksHelp": "Přidejte až {count} odkazů, například kontakt, o nás nebo vlastní podmínky.",
         "linkLabel": "Název odkazu",
@@ -1219,8 +1233,8 @@
         "fromLogoNeedsLogo": "Nejdřív nahrajte logo",
         "logoSuggestions": "Barvy z loga",
         "noLogoColors": "Z tohoto loga se nepodařilo získat výraznou barvu.",
-        "gradient": "Gradient titulní části",
-        "gradientHelp": "Pozadí titulní části, ukazatel čtení v článcích a obrázek pro sdílení.",
+        "gradient": "Gradient značky",
+        "gradientHelp": "Používá se v ukazateli čtení a obrázku pro sdílení. Náhled ukazuje zvolené barvy.",
         "gradientStop": "Barva {number}",
         "gradientAngle": "Směr",
         "gradientSoft": "Jemný",
@@ -1459,6 +1473,14 @@
         }
       },
       "socials": {
+        "platforms": {
+          "FACEBOOK": "Facebook",
+          "TWITTER": "X",
+          "INSTAGRAM": "Instagram",
+          "LINKEDIN": "LinkedIn",
+          "YOUTUBE": "YouTube",
+          "OTHER": "Web"
+        },
         "label": "Sociální sítě",
         "noSocials": "Zatím nebyly přidány žádné sociální sítě."
       },

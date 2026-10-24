@@ -1,6 +1,9 @@
 {
   "articles": {
     "comments": {
+      "reportDescription": "Expliquez aux modérateurs du blog le problème avec ce commentaire. Son auteur ne verra pas votre signalement.",
+      "reportReason": "Motif du signalement",
+      "postingBanned": "Vous ne pouvez pas commenter ni réagir sur ce blog, car les modérateurs ont restreint votre compte.",
       "unit": "aucun commentaire | {count} commentaire | {count} commentaires",
       "addGif": "Ajouter un GIF",
       "clearGifCategory": "Effacer la catégorie de GIF",
@@ -329,6 +332,7 @@
       "yourVote": "Votre vote"
     },
     "activity": {
+      "filterTags": "Filtrer par étiquette",
       "noArticles": "Vous n’avez pas encore d’articles favoris",
       "tabs": {
         "likedArticles": "Articles aimés",
@@ -378,6 +382,16 @@
       }
     },
     "editor": {
+      "translationTimedOut": "La traduction a pris trop de temps. Relancez-la ; le texte précédent est conservé.",
+      "generationTask": "Génération d’article",
+      "activityStatus": { "running": "En cours", "completed": "Terminé", "failed": "Échec", "stopped": "Arrêté" },
+      "contentRequired": "Ajoutez du contenu avant de publier. Vous pouvez enregistrer un article vide comme brouillon.",
+      "backgroundTasksHelp": "Cette tâche continue en arrière-plan. Vous pouvez quitter cette page et consulter sa progression plus tard.",
+      "translationStarted": "Traduction lancée",
+      "activityTitle": "Activité en arrière-plan",
+      "activityEmpty": "Aucune tâche en arrière-plan",
+      "mediaUnavailable": "L’image de couverture sélectionnée est indisponible. Choisissez-en une autre ou retirez-la ; votre texte est conservé.",
+      "draftMediaRemoved": "Brouillon enregistré. L’image de couverture indisponible a été détachée ; sélectionnez-la à nouveau dans la médiathèque.",
       "history": {
         "title": "Historique des versions",
         "description": "Les 50 dernières modifications de l’article original sont conservées. Charger une version modifie le brouillon sans le publier ni changer son adresse ou sa programmation.",
@@ -478,12 +492,12 @@
         "researchOff": "sans recherche",
         "modulesLabel": "Éléments de l'article",
         "elapsed": "Temps écoulé : {seconds} s",
-        "waitingWriting": "Aucun nouveau texte depuis {seconds} s. La rédaction s'arrête après 30 s sans texte.",
+        "waitingWriting": "Aucun nouveau texte depuis {seconds} s. La rédaction s'arrête après 45 s sans texte.",
         "waitingResearch": "La vérification des sources prend plus de temps que prévu. La tâche est toujours active et peut être arrêtée sans risque.",
         "waitingImages": "La préparation d'une image peut prendre jusqu'à 45 s. Si le service n'en fournit pas, l'article sera terminé sans image.",
         "reservedDuringRun": "Réservés temporairement : {count} crédits",
-        "writerIdleError": "La génération s'est arrêtée : aucun texte reçu pendant 30 secondes. Réessayez.",
-        "writerDeadlineError": "La génération s'est arrêtée après avoir atteint la limite de rédaction de 90 secondes.",
+        "writerIdleError": "La génération s'est arrêtée : aucun texte reçu pendant 45 secondes. Réessayez.",
+        "writerDeadlineError": "La génération s'est arrêtée après avoir atteint la limite de rédaction de 120 secondes.",
         "output": {
           "news": "Actualité",
           "analysis": "Analyse",

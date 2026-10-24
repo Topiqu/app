@@ -1,6 +1,9 @@
 {
   "articles": {
     "comments": {
+      "reportDescription": "Napište moderátorům blogu, co je s komentářem v nepořádku. Autor vaše hlášení neuvidí.",
+      "reportReason": "Důvod nahlášení",
+      "postingBanned": "Na tomto blogu nemůžete komentovat ani reagovat, protože moderátoři omezili váš účet.",
       "unit": "0 komentářů | {count} komentář | {count} komentáře | {count} komentářů",
       "addGif": "Přidat GIF",
       "clearGifCategory": "Zrušit výběr kategorie GIF",
@@ -329,6 +332,7 @@
       "yourVote": "Vaše volba"
     },
     "activity": {
+      "filterTags": "Filtrovat podle štítku",
       "noArticles": "Zatím nemáte žádné oblíbené články",
       "tabs": {
         "likedArticles": "Oblíbené články",
@@ -378,6 +382,16 @@
       }
     },
     "editor": {
+      "translationTimedOut": "Překlad trval příliš dlouho. Zkuste jej spustit znovu; původní text zůstává zachovaný.",
+      "generationTask": "Generování článku",
+      "activityStatus": { "running": "Probíhá", "completed": "Dokončeno", "failed": "Selhalo", "stopped": "Zastaveno" },
+      "contentRequired": "Před publikováním doplňte obsah článku. Prázdný článek můžete uložit jako koncept.",
+      "backgroundTasksHelp": "Úloha pokračuje na pozadí. Můžete odejít ze stránky a později se vrátit k jejímu průběhu.",
+      "translationStarted": "Překlad byl spuštěn",
+      "activityTitle": "Aktivita na pozadí",
+      "activityEmpty": "Žádné úlohy na pozadí",
+      "mediaUnavailable": "Vybraný úvodní obrázek není dostupný. Vyberte jiný nebo obrázek odeberte; napsaný text zůstává zachovaný.",
+      "draftMediaRemoved": "Koncept byl uložen. Nedostupný úvodní obrázek byl odpojen; vyberte jej znovu z knihovny médií.",
       "history": {
         "title": "Historie verzí",
         "description": "Uchovává se posledních 50 změn původního článku. Načtení verze upraví rozepsaný obsah; nezveřejní ho ani nezmění adresu nebo plán publikace.",
@@ -478,12 +492,12 @@
         "researchOff": "bez výzkumu",
         "modulesLabel": "Součásti článku",
         "elapsed": "Uplynulo {seconds} s",
-        "waitingWriting": "Už {seconds} s nepřišel další text. Po 30 s bez textu se psaní zastaví.",
+        "waitingWriting": "Už {seconds} s nepřišel další text. Po 45 s bez textu se psaní zastaví.",
         "waitingResearch": "Ověřování zdrojů trvá déle než obvykle. Běh je stále aktivní a lze jej bezpečně zastavit.",
         "waitingImages": "Příprava obrázku může trvat až 45 s. Pokud jej služba nedodá, článek se dokončí bez něj.",
         "reservedDuringRun": "Dočasně rezervováno: {count} kreditů",
-        "writerIdleError": "Generování se zastavilo: 30 sekund nepřišel žádný text. Zkuste to znovu.",
-        "writerDeadlineError": "Generování bylo zastaveno po dosažení 90sekundového limitu psaní.",
+        "writerIdleError": "Generování se zastavilo: 45 sekund nepřišel žádný text. Zkuste to znovu.",
+        "writerDeadlineError": "Generování bylo zastaveno po dosažení 120sekundového limitu psaní.",
         "output": {
           "news": "Zpráva",
           "analysis": "Analýza",

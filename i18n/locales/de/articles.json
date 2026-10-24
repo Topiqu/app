@@ -1,6 +1,9 @@
 {
   "articles": {
     "comments": {
+      "reportDescription": "Beschreiben Sie den Moderatoren des Blogs das Problem mit diesem Kommentar. Der Verfasser sieht Ihre Meldung nicht.",
+      "reportReason": "Grund der Meldung",
+      "postingBanned": "Sie können in diesem Blog keine Kommentare oder Reaktionen hinzufügen, weil die Moderatoren Ihr Konto eingeschränkt haben.",
       "unit": "keine Kommentare | {count} Kommentar | {count} Kommentare",
       "addGif": "GIF hinzufügen",
       "clearGifCategory": "GIF-Kategorie zurücksetzen",
@@ -329,6 +332,7 @@
       "yourVote": "Deine Stimme"
     },
     "activity": {
+      "filterTags": "Nach Schlagwort filtern",
       "noArticles": "Du hast noch keine Lieblingsartikel",
       "tabs": {
         "likedArticles": "Artikel mit „Gefällt mir“",
@@ -378,6 +382,21 @@
       }
     },
     "editor": {
+      "translationTimedOut": "Die Übersetzung hat zu lange gedauert. Starten Sie sie erneut; der bisherige Text bleibt erhalten.",
+      "generationTask": "Artikelerstellung",
+      "activityStatus": {
+        "running": "In Bearbeitung",
+        "completed": "Abgeschlossen",
+        "failed": "Fehlgeschlagen",
+        "stopped": "Gestoppt"
+      },
+      "contentRequired": "Ergänzen Sie vor der Veröffentlichung den Artikelinhalt. Einen leeren Artikel können Sie als Entwurf speichern.",
+      "backgroundTasksHelp": "Diese Aufgabe läuft im Hintergrund weiter. Sie können diese Seite verlassen und den Fortschritt später ansehen.",
+      "translationStarted": "Übersetzung gestartet",
+      "activityTitle": "Hintergrundaktivität",
+      "activityEmpty": "Keine Hintergrundaufgaben",
+      "mediaUnavailable": "Das ausgewählte Titelbild ist nicht verfügbar. Wählen Sie ein anderes Bild oder entfernen Sie es; Ihr Text bleibt erhalten.",
+      "draftMediaRemoved": "Entwurf gespeichert. Das nicht verfügbare Titelbild wurde getrennt; wählen Sie es erneut aus der Mediathek.",
       "history": {
         "title": "Versionsverlauf",
         "description": "Die letzten 50 Änderungen des Originalartikels bleiben erhalten. Eine geladene Version ändert den Entwurf; sie veröffentlicht ihn nicht und ändert weder Adresse noch Zeitplan.",
@@ -478,12 +497,12 @@
         "researchOff": "ohne Recherche",
         "modulesLabel": "Artikelbausteine",
         "elapsed": "Vergangen: {seconds} s",
-        "waitingWriting": "Seit {seconds} s kam kein neuer Text. Nach 30 s ohne Text wird das Schreiben beendet.",
+        "waitingWriting": "Seit {seconds} s kam kein neuer Text. Nach 45 s ohne Text wird das Schreiben beendet.",
         "waitingResearch": "Die Quellenprüfung dauert länger als üblich. Der Vorgang läuft noch und kann sicher gestoppt werden.",
         "waitingImages": "Die Vorbereitung eines Bildes kann bis zu 45 s dauern. Falls der Dienst kein Bild liefert, wird der Artikel ohne Bild abgeschlossen.",
         "reservedDuringRun": "Vorübergehend reserviert: {count} Credits",
-        "writerIdleError": "Die Generierung wurde gestoppt: 30 Sekunden lang kam kein Text. Versuche es erneut.",
-        "writerDeadlineError": "Die Generierung wurde nach Erreichen des 90-Sekunden-Limits für das Schreiben gestoppt.",
+        "writerIdleError": "Die Generierung wurde gestoppt: 45 Sekunden lang kam kein Text. Versuche es erneut.",
+        "writerDeadlineError": "Die Generierung wurde nach Erreichen des 120-Sekunden-Limits für das Schreiben gestoppt.",
         "output": {
           "news": "Nachrichtenbericht",
           "analysis": "Analyse",

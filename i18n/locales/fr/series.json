@@ -1,5 +1,11 @@
 {
   "series": {
+    "overview": "Séries d’articles",
+    "overviewDescription": "Consultez les séries et leurs épisodes. Les lecteurs ne voient que les épisodes publiés dont la date de publication est passée.",
+    "publishedCount": "{published} épisodes disponibles sur {total}",
+    "scheduled": "Planifié",
+    "allParts": "Tous les statuts",
+    "mostParts": "Le plus d’épisodes",
     "label": "Série",
     "placeholder": "Sélectionner ou créer une série...",
     "part": "Partie {count}",

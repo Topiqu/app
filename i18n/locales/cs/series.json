@@ -1,5 +1,11 @@
 {
   "series": {
+    "overview": "Série článků",
+    "overviewDescription": "Přehled sérií a jejich dílů. Čtenáři vidí pouze publikované díly, u kterých už nastal čas vydání.",
+    "publishedCount": "Dostupné díly: {published} z {total}",
+    "scheduled": "Naplánováno",
+    "allParts": "Všechny stavy",
+    "mostParts": "Nejvíce dílů",
     "label": "Série",
     "placeholder": "Vyber nebo vytvoř sérii...",
     "part": "{count}. díl",

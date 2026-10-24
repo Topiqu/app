@@ -1,5 +1,11 @@
 {
   "series": {
+    "overview": "Article series",
+    "overviewDescription": "Browse series and their parts. Readers only see published parts whose release time has passed.",
+    "publishedCount": "{published} of {total} parts available",
+    "scheduled": "Scheduled",
+    "allParts": "All statuses",
+    "mostParts": "Most parts",
     "label": "Series",
     "placeholder": "Select or create a series...",
     "part": "Part {count}",
