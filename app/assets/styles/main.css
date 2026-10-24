@@ -319,6 +319,26 @@ main {
   scrollbar-width: none;
 }
 
+.topiqu-dashboard-page {
+  width: 100%;
+  min-width: 0;
+  max-width: var(--topiqu-dashboard-width);
+  margin-inline: auto;
+  padding-inline: calc(var(--spacing) * 4);
+}
+
+@media (min-width: 40rem) {
+  .topiqu-dashboard-page {
+    padding-inline: calc(var(--spacing) * 6);
+  }
+}
+
+@media (min-width: 64rem) {
+  .topiqu-dashboard-page {
+    padding-inline: calc(var(--spacing) * 8);
+  }
+}
+
 .topiqu-dashboard-scroll::-webkit-scrollbar {
   width: 0;
   height: 0;
@@ -632,6 +652,22 @@ main {
 .article-table td {
   border-bottom: 1px solid var(--ui-border);
   color: var(--ui-text);
+}
+
+/* Old generated tables can carry light-mode fills on rows and cells. Keep their text legible
+   in dark mode without changing the stored document or the selected editor colours in light mode. */
+.dark :is(.article-table, .editor-table .ProseMirror) :is(table, thead, tbody, tr, td, th) {
+  background-color: transparent !important;
+  color: var(--ui-text) !important;
+}
+
+.dark :is(.article-table, .editor-table .ProseMirror) th {
+  background-color: var(--ui-bg-elevated) !important;
+  color: var(--ui-text-highlighted) !important;
+}
+
+.dark :is(.article-table, .editor-table .ProseMirror) tbody tr:nth-child(even) {
+  background-color: color-mix(in oklab, var(--ui-bg-elevated) 65%, transparent) !important;
 }
 
 .article-table tbody tr:nth-child(even) {
