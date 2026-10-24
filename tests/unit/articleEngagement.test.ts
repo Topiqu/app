@@ -94,7 +94,8 @@ describe('article card engagement', () => {
     expect(wrapper.text()).not.toContain('345')
     expect(wrapper.text()).not.toContain('123')
     const like = wrapper.get('button[aria-pressed]')
-    expect(like.text()).toBe('Lajknout')
+    expect(like.text()).toBe('')
+    expect(like.attributes('aria-label')).toBe('Lajknout')
     expect(like.attributes('aria-pressed')).toBe('false')
     expect(wrapper.find('a[href="/clanky/clanek#comments"]').exists()).toBe(false)
   })
@@ -103,8 +104,9 @@ describe('article card engagement', () => {
     const wrapper = await mountCard({ ...article, _count: { comments: 2, reactions: 0 } })
     const comments = wrapper.get('a[href="/clanky/clanek#comments"]')
 
-    expect(comments.text()).toBe('2')
+    expect(comments.text()).toBe('')
     expect(comments.attributes('aria-label')).toBe('2 komentáře')
+    expect(comments.attributes('title')).toBe('2 komentáře')
   })
 
   it('shares the actual like state between a card and a detail button', async () => {
@@ -131,7 +133,8 @@ describe('article card engagement', () => {
     const buttons = wrapper.findAll('button[aria-pressed]')
     expect(buttons.map((button) => button.attributes('aria-pressed'))).toEqual(['true', 'true'])
     expect(buttons.every((button) => button.attributes('disabled') !== undefined)).toBe(true)
-    expect(buttons.every((button) => button.text().includes('1'))).toBe(true)
+    expect(buttons[0]!.text()).toBe('')
+    expect(buttons[1]!.text()).toContain('1')
     expect(mocks.request).toHaveBeenCalledExactlyOnceWith('/api/articles/article-1/reaction', { method: 'POST' })
 
     resolve({ liked: true, likes: 1 })
@@ -141,7 +144,8 @@ describe('article card engagement', () => {
     await flushPromises()
 
     expect(buttons.map((button) => button.attributes('aria-pressed'))).toEqual(['false', 'false'])
-    expect(buttons.every((button) => button.text() === 'Lajknout')).toBe(true)
+    expect(buttons[0]!.text()).toBe('')
+    expect(buttons[1]!.text()).toBe('Lajknout')
   })
 
   it('restores the button and count when a like fails', async () => {
@@ -152,7 +156,8 @@ describe('article card engagement', () => {
     await flushPromises()
 
     expect(wrapper.get('button[aria-pressed]').attributes('aria-pressed')).toBe('false')
-    expect(wrapper.get('button[aria-pressed]').text()).toBe('Lajknout')
+    expect(wrapper.get('button[aria-pressed]').text()).toBe('')
+    expect(wrapper.get('button[aria-pressed]').attributes('aria-label')).toBe('Lajknout')
     expect(mocks.toast).toHaveBeenCalledOnce()
   })
 })

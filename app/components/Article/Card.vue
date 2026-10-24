@@ -4,44 +4,98 @@
       data-article-card
       :data-article-variant="variant"
       :data-article-layout="layout"
+      :variant="editorial ? 'editorial' : 'outline'"
       class="h-full"
       :ui="{ body: 'h-full p-0 sm:p-0' }"
     >
       <article
-        class="flex min-w-0 flex-col overflow-hidden"
+        class="flex min-w-0 flex-col"
         :class="[
           'h-full',
+          !editorial && 'overflow-hidden',
           layout === 'responsive-row' ? '@min-[36rem]:grid @min-[36rem]:grid-cols-[11rem_minmax(0,1fr)]' : '',
         ]"
       >
-        <NuxtLink :to="articlePath" class="block shrink-0">
-          <AppMedia
-            :src="article.imageUrl"
-            :alt="article.title"
-            :fallbackBorder="false"
-            :priority="variant === 'featured'"
-            :aspectRatio="
-              variant === 'featured' && !article.imageUrl
-                ? '5 / 1'
-                : variant === 'featured'
-                  ? '3 / 2'
-                  : variant === 'compact'
-                    ? '16 / 9'
-                    : '8 / 5'
-            "
-            :sizes="
-              variant === 'featured'
-                ? 'xs:100vw phone:100vw sm:100vw md:100vw lg:55vw xl:720px'
-                : layout === 'responsive-row'
-                  ? 'xs:100vw phone:100vw 576:176px'
-                  : 'xs:100vw phone:100vw sm:50vw lg:33vw xl:420px'
-            "
-            :containerClass="layout === 'responsive-row' ? 'w-full @min-[36rem]:h-full' : 'w-full'"
-          />
-        </NuxtLink>
+        <div class="relative shrink-0">
+          <NuxtLink :to="articlePath" :aria-label="article.title" class="block h-full">
+            <AppMedia
+              :src="article.imageUrl"
+              :alt="editorial ? '' : article.title"
+              :fallbackText="editorial ? article.title : undefined"
+              :fallbackBorder="false"
+              :priority="variant === 'featured'"
+              :aspectRatio="
+                editorial
+                  ? '4 / 3'
+                  : variant === 'featured' && !article.imageUrl
+                    ? '5 / 1'
+                    : variant === 'featured'
+                      ? '3 / 2'
+                      : variant === 'compact'
+                        ? '16 / 9'
+                        : '8 / 5'
+              "
+              :sizes="
+                variant === 'featured'
+                  ? 'xs:100vw phone:100vw sm:100vw md:100vw lg:55vw xl:720px'
+                  : layout === 'responsive-row'
+                    ? 'xs:100vw phone:100vw 576:176px'
+                    : 'xs:100vw phone:100vw sm:50vw lg:33vw xl:420px'
+              "
+              :containerClass="
+                editorial
+                  ? 'w-full rounded-(--topiqu-surface-radius) bg-elevated'
+                  : layout === 'responsive-row'
+                    ? 'w-full @min-[36rem]:h-full'
+                    : 'w-full'
+              "
+            />
+          </NuxtLink>
+          <div
+            v-if="variant !== 'compact' || $slots.actions"
+            class="absolute top-3 right-3 z-10 flex items-center gap-2"
+          >
+            <UButton
+              v-if="variant !== 'compact' && !editorial && comments > 0"
+              :to="`${articlePath}#comments`"
+              color="neutral"
+              variant="overlay"
+              size="sm"
+              square
+              icon="mdi:comment-outline"
+              :aria-label="$t('articles.comments.unit', comments)"
+              :title="$t('articles.comments.unit', comments)"
+            />
+            <slot name="actions" :article="article">
+              <ArticleLikeButton
+                v-if="variant !== 'compact'"
+                :liked="liked"
+                :likes="reactions"
+                :pending="reactionPending"
+                iconOnly
+                variant="overlay"
+                @toggle="toggleReaction"
+              />
+              <UButton
+                v-if="variant !== 'compact'"
+                icon="mdi:share-variant-outline"
+                color="neutral"
+                variant="overlay"
+                size="sm"
+                square
+                :aria-label="$t('common.actions.share')"
+                :title="$t('common.actions.share')"
+                @click="shareArticle"
+              />
+            </slot>
+          </div>
+        </div>
 
-        <div :class="variant === 'compact' ? 'gap-3 p-4' : 'gap-5 p-5 sm:p-6'" class="flex min-h-0 flex-1 flex-col">
-          <div v-if="normalizedTags.length" class="flex flex-wrap gap-1.5">
+        <div
+          :class="editorial ? 'gap-0 p-0' : variant === 'compact' ? 'gap-3 p-4' : 'gap-5 p-5 sm:p-6'"
+          class="flex min-h-0 flex-1 flex-col"
+        >
+          <div v-if="!editorial && normalizedTags.length" class="flex flex-wrap gap-1.5">
             <NuxtLink
               v-for="tag in visibleTags"
               :key="tag.id"
@@ -55,27 +109,47 @@
             </UBadge>
           </div>
 
-          <div class="min-w-0" :class="variant === 'compact' ? 'space-y-2' : 'space-y-3'">
-            <NuxtLink :to="articlePath">
-              <h2
-                :class="variant === 'featured' ? 'text-2xl sm:text-3xl' : variant === 'compact' ? 'text-lg' : 'text-xl'"
+          <div
+            class="min-w-0"
+            :class="editorial ? 'space-y-2 pt-4' : variant === 'compact' ? 'space-y-2' : 'space-y-3'"
+          >
+            <NuxtLink :to="articlePath" class="group">
+              <component
+                :is="editorial ? 'h3' : 'h2'"
+                :class="
+                  editorial
+                    ? 'break-words text-balance text-lg group-hover:text-primary sm:text-xl'
+                    : variant === 'featured'
+                      ? 'text-2xl sm:text-3xl'
+                      : variant === 'compact'
+                        ? 'text-lg'
+                        : 'text-xl'
+                "
                 class="font-bold leading-snug tracking-tight text-highlighted"
                 :title="article.title"
               >
-                <span :class="variant === 'compact' ? 'line-clamp-2' : 'line-clamp-3'">{{ article.title }}</span>
-              </h2>
+                <span :class="variant === 'compact' || editorial ? 'line-clamp-2' : 'line-clamp-3'">{{
+                  article.title
+                }}</span>
+              </component>
             </NuxtLink>
             <p
               v-if="plainExcerpt"
-              :class="variant === 'compact' ? 'text-sm' : ''"
-              class="line-clamp-2 leading-relaxed text-muted"
+              :class="
+                editorial ? 'text-sm leading-6' : variant === 'compact' ? 'text-sm leading-relaxed' : 'leading-relaxed'
+              "
+              class="line-clamp-2 text-muted"
             >
               {{ plainExcerpt }}
             </p>
           </div>
 
-          <footer class="mt-auto space-y-3 pt-1" data-article-footer>
-            <div class="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
+          <footer
+            :class="editorial ? 'pt-2 text-xs text-muted' : 'mt-auto border-t border-default pt-4'"
+            data-article-footer
+          >
+            <AppTime v-if="editorial" :datetime="displayDate" preset="datetime" />
+            <div v-else class="flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-2 text-xs text-muted">
               <NuxtLink
                 v-if="variant === 'compact' && authorName"
                 :to="localePath({ name: 'autor-name', params: { name: authorName } })"
@@ -88,47 +162,15 @@
                 v-else-if="authorName && authorId"
                 :user="{ id: authorId, username: authorName, avatarUrl: authorAvatar, bio: null }"
               />
-              <span class="inline-flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span
+                class="ml-auto inline-flex max-w-full flex-wrap items-center justify-end gap-x-2 gap-y-1 text-right"
+              >
                 <AppTime :datetime="displayDate" preset="date" />
                 <template v-if="article.readingTime">
                   <span aria-hidden="true">·</span>
                   <span class="whitespace-nowrap">{{ $t('articles.readingTime', [article.readingTime]) }}</span>
                 </template>
               </span>
-            </div>
-            <div v-if="variant !== 'compact' || $slots.actions" class="flex flex-wrap items-center gap-2">
-              <UButton
-                v-if="variant !== 'compact' && comments > 0"
-                :to="`${articlePath}#comments`"
-                color="neutral"
-                variant="ghost"
-                size="sm"
-                icon="mdi:comment-outline"
-                :aria-label="$t('articles.comments.unit', comments)"
-              >
-                {{ comments }}
-              </UButton>
-              <div class="ml-auto flex flex-wrap items-center gap-2">
-                <slot name="actions" :article="article">
-                  <ArticleLikeButton
-                    v-if="variant !== 'compact'"
-                    :liked="liked"
-                    :likes="reactions"
-                    :pending="reactionPending"
-                    @toggle="toggleReaction"
-                  />
-                  <UButton
-                    v-if="variant !== 'compact'"
-                    icon="mdi:share-variant-outline"
-                    color="neutral"
-                    variant="ghost"
-                    size="sm"
-                    square
-                    :aria-label="$t('common.actions.share')"
-                    @click="shareArticle"
-                  />
-                </slot>
-              </div>
             </div>
           </footer>
         </div>
@@ -151,6 +193,7 @@ const {
   variant?: ArticleCardVariant
   layout?: ArticleCardLayout
 }>()
+const editorial = computed(() => variant === 'editorial')
 const localePath = useLocalePath()
 const articlePath = computed(() =>
   localePath({ name: 'clanky-slug', params: { slug: article.slug } }, article.language),

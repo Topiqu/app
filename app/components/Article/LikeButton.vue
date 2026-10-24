@@ -4,7 +4,7 @@
     size="sm"
     :icon="liked ? 'mdi:heart' : 'mdi:heart-outline'"
     :color="liked ? 'error' : 'neutral'"
-    :variant="liked ? 'soft' : 'outline'"
+    :variant="variant ?? (liked ? 'soft' : 'outline')"
     :loading="pending"
     :disabled="pending"
     :square="iconOnly"
@@ -21,11 +21,14 @@
 </template>
 
 <script setup lang="ts">
+import type { ButtonProps } from '@nuxt/ui'
+
 const { pending = false, iconOnly = false } = defineProps<{
   liked: boolean
   likes: number
   pending?: boolean
   iconOnly?: boolean
+  variant?: ButtonProps['variant']
 }>()
 
 defineEmits<{ toggle: [] }>()

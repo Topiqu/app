@@ -22,7 +22,7 @@ export type ArticleCardData = {
   _count?: { comments?: number; reactions?: number; shares?: number } | null
 }
 
-export type ArticleCardVariant = 'standard' | 'featured' | 'compact'
+export type ArticleCardVariant = 'standard' | 'featured' | 'compact' | 'editorial'
 export type ArticleCardLayout = 'column' | 'responsive-row'
 
 /** Public-safe author data. Never add account, authentication, or contact fields here. */
