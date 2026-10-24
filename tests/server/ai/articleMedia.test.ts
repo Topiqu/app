@@ -387,7 +387,12 @@ describe('article media finalization', () => {
       expect(result.articleImageUrl).toBe('https://images.test/facade')
       expect(imageDepicts).toHaveBeenCalledWith(
         expect.objectContaining({ url: 'https://images.test/grand-canyon-ceremony' }),
-        { title: 'Dotace na zateplení 2026', query: 'house facade insulation', type: 'stock' },
+        expect.objectContaining({
+          title: 'Dotace na zateplení 2026',
+          query: 'house facade insulation',
+          type: 'stock',
+          context: expect.stringContaining('Ciri leads the new game.'),
+        }),
         undefined,
       )
     })
