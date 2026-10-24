@@ -81,9 +81,11 @@ const fetchClientSite = async () => {
         `/api/clients/slug/${encodeURIComponent(hostname)}` as '/api/clients/slug/:slug',
       ),
     {
-      // A manual refresh must bypass the payload, or refreshClientSite() would keep handing back the stale copy.
+      // refreshNuxtData dispatches refresh:hook; both explicit refresh paths must bypass the payload.
       getCachedData: (key, nuxtApp, ctx) =>
-        ctx.cause === 'refresh:manual' ? undefined : (nuxtApp.payload.data[key] ?? nuxtApp.static.data[key]),
+        ctx.cause === 'refresh:manual' || ctx.cause === 'refresh:hook'
+          ? undefined
+          : (nuxtApp.payload.data[key] ?? nuxtApp.static.data[key]),
     },
   )
 }

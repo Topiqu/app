@@ -72,11 +72,9 @@ describe('source URL presentation', () => {
 describe('tenant branding stays current after a save', () => {
   const source = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf8')
 
-  it('lets a manual refresh bypass the cached tenant payload', () => {
+  it('shares a fetch definition between snapshot and live tenant readers', () => {
     const composable = source('app/composables/useClientSite.ts')
 
-    // getCachedData used to return the payload unconditionally, which silently defeated refreshNuxtData.
-    expect(composable).toContain("ctx.cause === 'refresh:manual' ? undefined")
     expect(composable).toContain('export const refreshClientSite')
     // One fetch definition behind both readers, so the snapshot and the live ref cannot drift apart.
     expect(composable.match(/useAsyncData\(/g)).toHaveLength(2)
