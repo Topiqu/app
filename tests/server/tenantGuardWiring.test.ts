@@ -12,7 +12,6 @@ const exempt: Record<string, string> = {
   'admin/verify-domain.post.ts': 're-exports domain-verification/check.post',
   'admin/webhook-deliveries/[id]/retry.post.ts':
     'superadmin-only immutable delivery requeue with same-origin guard and atomic audit',
-  'clients/[id]/index.delete.ts': 'superadmin only',
   'clients/[id]/wallet-adjustments.post.ts': 'superadmin only',
   'clients/index.post.ts': 'superadmin only',
   'users/index.post.ts': 'superadmin only',
