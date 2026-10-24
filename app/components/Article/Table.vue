@@ -342,7 +342,12 @@ const translateArticle = async (article: ArticleWithDetails, language: Language)
   if (disposed || translatingArticleId.value) return
   const id = article.id
   const translation = article.translations?.find((row) => row.language === language)
-  const body = { language, replace: !!translation, expectedUpdatedAt: translationVersion(translation) }
+  const body = {
+    language,
+    replace: !!translation,
+    expectedUpdatedAt: translationVersion(translation),
+    background: true,
+  }
   translatingArticleId.value = id
   try {
     await $fetch<unknown, '/api/articles/:id/translate'>(
@@ -364,7 +369,11 @@ const translateArticle = async (article: ArticleWithDetails, language: Language)
   } finally {
     if (!disposed) {
       translatingArticleId.value = null
-      toast.add({ color: 'success', title: $t('articles.translations.messages.translated') })
+      toast.add({
+        color: 'info',
+        title: $t('articles.editor.translationStarted'),
+        description: $t('articles.editor.backgroundTasksHelp'),
+      })
     }
   }
 }
@@ -435,6 +444,21 @@ const rows = computed(() =>
   ),
 )
 const totalPages = computed(() => Math.ceil((articles.value?.total ?? 0) / limit))
+const visibility = useDocumentVisibility()
+const { pause: pauseTranslations, resume: resumeTranslations } = useIntervalFn(() => refetch(), 3000, {
+  immediate: false,
+})
+watch(
+  () =>
+    visibility.value === 'visible' &&
+    rows.value.some((article) =>
+      article.translations?.some(
+        (translation) => translation.translationStartedAt || ['PENDING', 'TRANSLATING'].includes(translation.status),
+      ),
+    ),
+  (running) => (running ? resumeTranslations() : pauseTranslations()),
+  { immediate: true },
+)
 const loadFailed = computed(() => !!error.value && rows.value.length === 0)
 const activeFilterCount = computed(
   () => [statusFilter.value !== 'all', dateFrom.value, dateTo.value].filter(Boolean).length,

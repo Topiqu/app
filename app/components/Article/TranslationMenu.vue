@@ -4,8 +4,9 @@
       color="neutral"
       variant="soft"
       size="xs"
+      :loading="inProgress"
       trailingIcon="mdi:chevron-down"
-      class="tabular-nums"
+      class="w-24 justify-between tabular-nums"
       :aria-label="summary"
       :title="summary"
     >
@@ -33,7 +34,7 @@ const {
   source: Language
   /** Source slug — the editor resolves the article by it, `lang` picks the tab. */
   slug: string
-  translations?: { language: string; status: string }[]
+  translations?: { language: string; status: string; translationStartedAt?: string | Date | null }[]
   translating?: boolean
 }>()
 
@@ -48,6 +49,11 @@ const statusOf = (language: Language) =>
   translations.find((row) => row.language === language)?.status as TranslationStatus | undefined
 const targets = computed(() => LANGUAGE_OPTIONS.filter((language) => language !== source))
 const existing = computed(() => targets.value.filter((language) => statusOf(language)))
+const inProgress = computed(
+  () =>
+    translating ||
+    translations.some((row) => row.translationStartedAt || row.status === 'TRANSLATING' || row.status === 'PENDING'),
+)
 const attention = computed(() =>
   ATTENTION.find((status) => existing.value.some((language) => statusOf(language) === status)),
 )
@@ -88,7 +94,7 @@ const items = computed<DropdownMenuItem[][]>(() => [
           label: $t(`languages.${language}`),
           description: $t('articles.translations.actions.translate'),
           language,
-          disabled: translating,
+          disabled: inProgress.value,
           onSelect: () => emit('translate', language),
         }
   }),
@@ -98,7 +104,7 @@ const items = computed<DropdownMenuItem[][]>(() => [
           {
             label: $t('articles.translations.actions.retranslate'),
             icon: 'mdi:refresh',
-            disabled: translating,
+            disabled: inProgress.value,
             children: existing.value.map((language) => ({
               label: $t(`languages.${language}`),
               language,
