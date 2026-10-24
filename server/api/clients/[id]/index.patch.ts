@@ -127,6 +127,8 @@ export default defineEventHandler(async (event) => {
   if (scalarBody.description !== undefined)
     data.description = scalarBody.description ? sanitizeHtml(scalarBody.description) : null
   if (scalarBody.deletedAt !== undefined) {
+    const { membership } = await requireTenantMember(event, id)
+    if (membership.role !== 'OWNER') throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
     if (scalarBody.deletedAt === null && !isSuperadmin)
       throw createError({ statusCode: 403, message: t('common.errors.unauthorized')! })
     data.deletedAt = scalarBody.deletedAt === null ? null : new Date()

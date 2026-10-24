@@ -42,6 +42,7 @@ export default defineEventHandler(async (event) => {
     language: clientSite.language,
     activeFeatures,
     allowedFeatures,
+    canDeactivate: membership.role === 'OWNER',
   }
   const settings = hasTenantScope(membership, 'TENANT_SETTINGS')
     ? {

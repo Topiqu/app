@@ -22,6 +22,7 @@ export interface ClientSite extends Omit<
   aiUser: { username: string; bio: string; avatarUrl: string } | null
   aiToneOfVoice: string | null
   aiControversyLevel: string | null
+  canDeactivate?: boolean
   linkedinCompanies?: { linkedinOrgId: string }[]
   articlesRemaining?: number
   articleWallet?: { balance: number; reserved: number; available: number } | null

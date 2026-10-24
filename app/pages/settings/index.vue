@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 pb-28 pt-6 sm:px-6 sm:pt-10">
+  <div class="topiqu-dashboard-page flex flex-col gap-6 pb-28 pt-6">
     <header class="flex items-center justify-between gap-4">
       <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-highlighted">
         {{ $t('common.preferences.title') }}
@@ -77,9 +77,13 @@
             @update:faviconUrl="form.faviconUrl = $event.url"
             @update:headingFontUrl="onFontStored('headingFontUrl', $event)"
             @update:bodyFontUrl="onFontStored('bodyFontUrl', $event)"
-          />
-          <FormClientFooter v-model="form.footerSettings" :plan="client?.plan ?? 'BASIC'" class="mt-8" />
-          <FormClientDomain class="mt-8" />
+          >
+            <template #after>
+              <FormClientFooter v-model="form.footerSettings" :plan="client?.plan ?? 'BASIC'" />
+              <FormClientDomain />
+              <SettingsDangerZone v-if="client?.canDeactivate" :clientId="client.id" :domain="client.domain" />
+            </template>
+          </FormClientBranding>
         </section>
 
         <section v-show="activeTab === 'content'">

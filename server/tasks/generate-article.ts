@@ -803,6 +803,7 @@ const loadGenerationCandidates = (now: Date) =>
       },
     },
     where: {
+      deletedAt: null,
       generationFrequency: { not: 'NONE' },
       ...activeFeatureFilter('ARTICLE_CRONS'),
       OR: [{ nextReleaseAt: null }, { nextReleaseAt: { lte: new Date(now.getTime() + GENERATION_LEAD_MS) } }],
