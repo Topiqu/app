@@ -51,9 +51,13 @@
       </template>
       <ul class="divide-y divide-default">
         <li v-for="(article, index) in series.visibleArticles" :key="article.id">
-          <NuxtLink
+          <UButton
             :to="localePath({ name: 'admin-editor-id', params: { id: article.id } })"
-            class="flex items-center gap-3 px-4 py-3 hover:bg-elevated sm:px-6"
+            color="neutral"
+            variant="ghost"
+            size="row"
+            block
+            :ui="{ base: 'justify-start' }"
           >
             <span class="w-6 shrink-0 text-sm tabular-nums text-muted">{{ index + 1 }}</span>
             <span class="min-w-0 flex-1 break-words text-sm text-highlighted">{{ article.title }}</span>
@@ -66,7 +70,7 @@
             >
             <ArticleStatusPill v-else :status="article.status" />
             <UIcon name="mdi:chevron-right" class="size-4 shrink-0 text-muted" />
-          </NuxtLink>
+          </UButton>
         </li>
       </ul>
     </UCard>
