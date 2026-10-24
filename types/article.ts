@@ -57,6 +57,12 @@ export type ArticleWithDetails = {
   user: { id: string; username: string; email?: string; avatarUrl: string | null } | null
   tags: { tag: { id: string; name: string; slug: string } }[]
   articleSeries?: ArticleSeriesSelection | null
-  translations?: { language: string; status: string; slug: string | null; updatedAt?: string | Date | null }[]
+  translations?: {
+    language: string
+    status: string
+    slug: string | null
+    updatedAt?: string | Date | null
+    translationStartedAt?: string | Date | null
+  }[]
   _count: { comments: number; reactions: number } | null
 }

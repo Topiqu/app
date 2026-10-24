@@ -16,6 +16,7 @@ export interface ArticleTranslationRow {
   source: TranslationSource
   error: string | null
   translatedAt: string | Date | null
+  translationStartedAt?: string | Date | null
   updatedAt?: string | Date | null
 }
 

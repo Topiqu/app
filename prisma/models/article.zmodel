@@ -195,6 +195,7 @@ model ArticleTranslation with Base {
     usage        Json?
     error        String?           @length(0, 1000)
     translatedAt DateTime?
+    translationStartedAt DateTime?
     mediaUsages  ArticleMediaUsage[]
     @@unique([articleId, language])
     @@unique([slug, clientSiteId, language])
