@@ -6,26 +6,34 @@
       color="neutral"
       variant="soft"
       :icon="item.icon"
-      :label="`${item.label}: ${item.value}`"
       size="xs"
-      class="w-full"
-      :ui="{ base: 'h-full min-h-14 min-w-0 justify-start px-3', label: 'text-xs whitespace-normal text-left' }"
+      class="h-auto min-h-12 w-full min-w-0 justify-start px-3 py-2"
+      :ui="{ leadingIcon: 'size-4 shrink-0' }"
       data-profile-metric
       :aria-label="`${item.label}: ${item.value}`"
       @click="item.action()"
-    />
+    >
+      <span class="flex min-w-0 items-baseline gap-1.5 text-left whitespace-normal">
+        <span class="shrink-0 text-sm font-semibold tabular-nums text-highlighted">{{ item.value }}</span>
+        <span class="text-xs leading-4 text-muted">{{ item.label }}</span>
+      </span>
+    </UButton>
 
     <UButton
       color="neutral"
       variant="soft"
       icon="mdi:thumb-up"
-      :label="`${$t('profile.likes')}: ${likesCount ?? 0}`"
       size="xs"
-      class="w-full"
-      :ui="{ base: 'h-full min-h-14 min-w-0 justify-start px-3', label: 'text-xs whitespace-normal text-left' }"
+      class="h-auto min-h-12 w-full min-w-0 justify-start px-3 py-2"
+      :ui="{ leadingIcon: 'size-4 shrink-0' }"
       data-profile-metric
       disabled
-    />
+    >
+      <span class="flex min-w-0 items-baseline gap-1.5 text-left whitespace-normal">
+        <span class="shrink-0 text-sm font-semibold tabular-nums text-highlighted">{{ likesCount ?? 0 }}</span>
+        <span class="text-xs leading-4 text-muted">{{ $t('profile.likes') }}</span>
+      </span>
+    </UButton>
   </div>
 </template>
 
