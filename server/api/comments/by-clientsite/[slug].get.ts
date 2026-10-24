@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
   const db = await getEnhancedPrisma()
   const clientSite = await db.clientSite.findUnique({
     where: { name, deletedAt: null },
-    select: { id: true, language: true, commentsEnabled: true },
+    select: { id: true, language: true, commentsEnabled: true, commentGifsEnabled: true },
   })
   if (!clientSite) throw createError({ statusCode: 404, message: t('common.errors.blogNotFound')! })
   if (!clientSite.commentsEnabled) return []
@@ -43,6 +43,7 @@ export default defineEventHandler(async (event) => {
       select: {
         id: true,
         content: true,
+        gifUrl: true,
         createdAt: true,
         user: { select: { username: true, avatarUrl: true } },
         article: {
@@ -82,5 +83,9 @@ export default defineEventHandler(async (event) => {
 
   // No generation bump on comment writes: a minute of staleness keeps every homepage hit off the
   // comments table, and a moderated comment drops out on the next rebuild.
-  return cached(`discussions:${clientSite.id}:loc=${locale ?? '_def'}`, 60, buildDiscussions)
+  const discussions = await cached(`discussions:${clientSite.id}:loc=${locale ?? '_def'}`, 60, buildDiscussions)
+  return discussions.map((comment) => ({
+    ...comment,
+    gifUrl: clientSite.commentGifsEnabled ? (comment.gifUrl ?? null) : null,
+  }))
 })

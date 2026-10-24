@@ -48,6 +48,7 @@ export default defineEventHandler(async (event) => {
           language: true,
           title: true,
           views: true,
+          clientSite: { select: { commentGifsEnabled: true } },
           tags: { select: { tag: { select: { name: true } } } },
         },
       },
@@ -61,6 +62,7 @@ export default defineEventHandler(async (event) => {
               language: true,
               title: true,
               views: true,
+              clientSite: { select: { commentGifsEnabled: true } },
               tags: { select: { tag: { select: { name: true } } } },
             },
           },
@@ -90,6 +92,7 @@ export default defineEventHandler(async (event) => {
     comments: comments.map((c) => ({
       id: c.id,
       content: c.content,
+      gifUrl: !c.deletedAt && c.article?.clientSite?.commentGifsEnabled ? c.gifUrl : null,
       articleSlug: c.article?.slug || '',
       articleLanguage: c.article?.language,
       articleTitle: c.article?.title || '',
@@ -104,6 +107,7 @@ export default defineEventHandler(async (event) => {
       replies: c.replies.map((reply) => ({
         id: reply.id,
         content: reply.content,
+        gifUrl: !reply.deletedAt && reply.article?.clientSite?.commentGifsEnabled ? reply.gifUrl : null,
         articleSlug: reply.article?.slug || '',
         articleLanguage: reply.article?.language,
         articleTitle: reply.article?.title || '',

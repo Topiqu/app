@@ -15,7 +15,7 @@ const article = {
   reactions: [{ id: 'reaction-1' }],
 }
 
-describe('user activity article visibility', () => {
+describe('user activity', () => {
   const db = {
     article: { count: vi.fn(), findMany: vi.fn() },
     // Reactions remain readable even when their article is hidden by read policies.
@@ -93,5 +93,75 @@ describe('user activity article visibility', () => {
       expect.objectContaining({ skip: 5, take: 5, orderBy: { reactions: { _count: 'desc' } } }),
     )
     expect(result.hasMore.likedArticles).toBe(true)
+  })
+
+  it.each([true, false])('respects commentGifsEnabled=%s for comments and replies', async (commentGifsEnabled) => {
+    const saved = {
+      id: 'comment-1',
+      content: 'Komentář s GIFem',
+      gifUrl: 'https://media.giphy.com/media/comment/giphy.gif',
+      userId: 'user-1',
+      parentId: null,
+      deletedAt: null,
+      createdAt: new Date('2026-09-30T09:00:00Z'),
+      article: { ...article, clientSite: { commentGifsEnabled } },
+      user: null,
+      reactions: [],
+    }
+    const reply = { ...saved, id: 'reply-1', parentId: saved.id }
+    db.comment.count.mockResolvedValue(1)
+    db.comment.findMany.mockResolvedValue([{ ...saved, replies: [reply] }])
+
+    const result = await run()
+
+    expect(result.comments[0]!.gifUrl).toBe(commentGifsEnabled ? saved.gifUrl : null)
+    expect(result.comments[0]!.replies[0]!.gifUrl).toBe(commentGifsEnabled ? reply.gifUrl : null)
+    expect(saved.gifUrl).toBe('https://media.giphy.com/media/comment/giphy.gif')
+    expect(db.comment.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        include: expect.objectContaining({
+          article: { select: expect.objectContaining({ clientSite: { select: { commentGifsEnabled: true } } }) },
+          replies: {
+            include: expect.objectContaining({
+              article: { select: expect.objectContaining({ clientSite: { select: { commentGifsEnabled: true } } }) },
+            }),
+          },
+        }),
+      }),
+    )
+  })
+
+  it('omits GIFs for text-only comments and deleted replies', async () => {
+    const saved = {
+      id: 'comment-1',
+      content: 'Komentář bez GIFu',
+      gifUrl: null,
+      userId: 'user-1',
+      parentId: null,
+      deletedAt: null,
+      createdAt: new Date('2026-09-30T09:00:00Z'),
+      article: { ...article, clientSite: { commentGifsEnabled: true } },
+      user: null,
+      reactions: [],
+    }
+    db.comment.findMany.mockResolvedValue([
+      {
+        ...saved,
+        replies: [
+          {
+            ...saved,
+            id: 'reply-1',
+            parentId: saved.id,
+            gifUrl: 'https://media.giphy.com/media/deleted/giphy.gif',
+            deletedAt: new Date('2026-10-01T09:00:00Z'),
+          },
+        ],
+      },
+    ])
+
+    const result = await run()
+
+    expect(result.comments[0]!.gifUrl).toBeNull()
+    expect(result.comments[0]!.replies[0]!.gifUrl).toBeNull()
   })
 })

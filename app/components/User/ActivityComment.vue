@@ -25,6 +25,10 @@
       {{ comment.content }}
     </NuxtLink>
 
+    <div v-if="comment.gifUrl && !comment.deletedAt">
+      <Gif :content="comment.gifUrl" />
+    </div>
+
     <NuxtLink
       :to="commentUrl"
       class="mt-2 inline-flex items-center gap-1 text-xs text-neutral-500 hover:text-neutral-900 hover:underline dark:text-neutral-400 dark:hover:text-neutral-100"
@@ -76,7 +80,7 @@
 import type { Language } from '~~/shared/utils/language'
 import type { Comment as _Comment } from '~~/generated/zenstack/models'
 
-export type ActivityComment = Pick<_Comment, 'id' | 'content' | 'userId' | 'parentId'> & {
+export type ActivityComment = Pick<_Comment, 'id' | 'content' | 'gifUrl' | 'userId' | 'parentId'> & {
   articleSlug: string
   articleLanguage?: Language
   articleTitle: string

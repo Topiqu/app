@@ -14,6 +14,9 @@
             <AppTime :datetime="comment.createdAt" preset="relative" class="shrink-0 text-xs text-muted" />
           </header>
           <blockquote class="line-clamp-3 text-pretty text-sm leading-6 text-toned">{{ comment.content }}</blockquote>
+          <div v-if="comment.gifUrl">
+            <Gif :content="comment.gifUrl" size="sm" />
+          </div>
           <footer
             class="mt-auto flex items-center justify-between gap-3 border-t border-default pt-3 text-xs text-muted"
           >

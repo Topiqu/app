@@ -8,7 +8,8 @@
       alt="GIF"
       width="480"
       sizes="240px sm:320px md:480px"
-      class="block h-auto max-h-72 w-auto max-w-full object-contain"
+      class="block h-auto w-auto max-w-full object-contain"
+      :class="size === 'sm' ? 'max-h-40' : 'max-h-72'"
     />
     <UButton
       v-if="cancellable"
@@ -24,8 +25,9 @@
   </div>
 </template>
 <script lang="ts" setup>
-const { cancellable = false } = defineProps<{
+const { cancellable = false, size = 'md' } = defineProps<{
   cancellable?: boolean
+  size?: 'sm' | 'md'
 }>()
 const content = defineModel<string | null>('content')
 const optimizedContent = computed(() => content.value?.replace(/\/giphy\.gif(?=[?#]|$)/i, '/giphy.webp'))
