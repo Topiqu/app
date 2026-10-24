@@ -1,3 +1,5 @@
+import { hasArticleBody } from './articleEditor'
+
 export type TranslationStatus = 'PENDING' | 'TRANSLATING' | 'READY' | 'PUBLISHED' | 'FAILED' | 'STALE'
 export type TranslationSource = 'AI' | 'HUMAN'
 
@@ -43,7 +45,10 @@ export const translationVersion = (row?: Pick<ArticleTranslationRow, 'updatedAt'
 export const translationHasBody = (row?: ArticleTranslationRow | null) => Boolean(row?.title && row?.content)
 
 export const isTranslationDirty = (draft: TranslationDraft, pristine: TranslationDraft) =>
-  draft.title !== pristine.title || draft.excerpt !== pristine.excerpt || draft.content !== pristine.content
+  draft.title !== pristine.title ||
+  draft.excerpt !== pristine.excerpt ||
+  // Tiptap normalizes an untranslated body's empty string to an empty paragraph.
+  (draft.content !== pristine.content && (hasArticleBody(draft.content) || hasArticleBody(pristine.content)))
 
 export const countAwaitingReview = (rows: ArticleTranslationRow[]) =>
   rows.filter((row) => row.status === 'READY').length

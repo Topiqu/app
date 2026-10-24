@@ -9,7 +9,13 @@ import type { ArticleTranslationsPayload } from '../../app/composables/useArticl
 
 import { useArticleTranslations } from '../../app/composables/useArticleTranslations'
 
-const mocks = vi.hoisted(() => ({ fetch: vi.fn(), refresh: vi.fn(), invalidate: vi.fn(), toast: vi.fn() }))
+const mocks = vi.hoisted(() => ({
+  fetch: vi.fn(),
+  refresh: vi.fn(),
+  invalidate: vi.fn(),
+  toast: vi.fn(),
+  confirm: vi.fn(),
+}))
 const data = shallowRef<ArticleTranslationsPayload>({
   translations: [],
   targetLanguages: ['en', 'de', 'fr'],
@@ -20,6 +26,7 @@ mockNuxtImport('$fetch', () => mocks.fetch)
 mockNuxtImport('useFetch', () => () => ({ data, status, error: shallowRef(null), refresh: mocks.refresh }))
 mockNuxtImport('useI18n', () => () => ({ t: (key: string) => key }))
 mockNuxtImport('useToast', () => () => ({ add: mocks.toast }))
+mockNuxtImport('useConfirm', () => () => mocks.confirm)
 mockNuxtImport('useCacheInvalidation', () => () => ({ invalidateArticleLists: mocks.invalidate }))
 
 const initialVersion = '2026-10-22T12:00:00.000Z'
@@ -60,10 +67,12 @@ const deferred = () => {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  mocks.fetch.mockReset()
   status.value = 'success'
   data.value = { translations: [row(), row('de')], targetLanguages: ['en', 'de', 'fr'], translationMode: 'MANUAL' }
   mocks.refresh.mockResolvedValue(undefined)
   mocks.invalidate.mockResolvedValue(undefined)
+  mocks.confirm.mockResolvedValue(false)
   mocks.fetch.mockResolvedValue({ translation: row('en', { updatedAt: savedVersion, source: 'HUMAN' }) })
   vi.spyOn(console, 'warn').mockImplementation(() => {})
 })
@@ -217,6 +226,55 @@ describe('translation draft and request ownership', () => {
       background: true,
     })
     expect(state.draft.value.title).toBe('fr title')
+  })
+
+  it('starts a missing translation after Tiptap normalizes its empty body', async () => {
+    const state = setup('fr')
+    state.draft.value.content = '<p></p>'
+    mocks.fetch.mockResolvedValueOnce({
+      translation: row('fr', { title: null, excerpt: null, content: null, status: 'TRANSLATING' }),
+    })
+    await state.translateNow()
+    expect(mocks.fetch).toHaveBeenCalledExactlyOnceWith('/api/articles/article-1/translate', {
+      method: 'POST',
+      body: { language: 'fr', replace: false, expectedUpdatedAt: null, background: true },
+    })
+    expect(mocks.confirm).not.toHaveBeenCalled()
+    expect(state.pending.value).toBe('translate')
+    data.value = { ...data.value, translations: [row('fr', { updatedAt: savedVersion })] }
+    expect(state.draft.value.title).toBe('fr title')
+    expect(state.isDirty.value).toBe(false)
+    expect(state.pending.value).toBeNull()
+  })
+
+  it.each([false, true])('asks before replacing unsaved translation edits (confirmed: %s)', async (confirmed) => {
+    const state = setup('fr')
+    state.draft.value.title = 'Unsaved title'
+    mocks.confirm.mockResolvedValueOnce(confirmed)
+    mocks.fetch.mockResolvedValueOnce({ translation: row('fr') })
+    await state.translateNow()
+    expect(mocks.confirm).toHaveBeenCalledWith(expect.objectContaining({ variant: 'danger' }))
+    expect(mocks.fetch).toHaveBeenCalledTimes(confirmed ? 1 : 0)
+    expect(state.draft.value.title).toBe(confirmed ? 'fr title' : 'Unsaved title')
+  })
+
+  it('does not apply an overwrite confirmation to another language or newer edits', async () => {
+    let answer!: (value: boolean) => void
+    mocks.confirm.mockImplementation(() => new Promise<boolean>((resolve) => (answer = resolve)))
+    const state = setup('fr')
+    state.draft.value.title = 'Unsaved title'
+    const switched = state.translateNow()
+    state.activeLang.value = 'de'
+    answer(true)
+    await switched
+    expect(mocks.fetch).not.toHaveBeenCalled()
+    state.draft.value.title = 'Another title'
+    const edited = state.translateNow()
+    state.draft.value.title = 'Newer title'
+    answer(true)
+    await edited
+    expect(mocks.fetch).not.toHaveBeenCalled()
+    expect(state.draft.value.title).toBe('Newer title')
   })
 
   it('sends the captured nullable edit token when discarding and resets an unchanged removed buffer', async () => {

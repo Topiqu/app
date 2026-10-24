@@ -65,6 +65,20 @@ describe('dirty tracking', () => {
     expect(isTranslationDirty({ ...pristine }, pristine)).toBe(false)
   })
 
+  it.each(['<p></p>', '<p><br></p>', '<p>&nbsp;</p>'])('ignores empty editor markup (%s)', (content) => {
+    const empty = translationDraft()
+    expect(isTranslationDirty({ ...empty, content }, empty)).toBe(false)
+    expect(isTranslationDirty(empty, { ...empty, content })).toBe(false)
+    expect(isTranslationDirty({ ...empty, title: 'My title', content }, empty)).toBe(true)
+  })
+
+  it('retains real text, media and formatting edits', () => {
+    const empty = translationDraft()
+    for (const content of ['<p>Text</p>', '<img src="/image.webp">', '<table><tr><td></td></tr></table>'])
+      expect(isTranslationDirty({ ...empty, content }, empty)).toBe(true)
+    expect(isTranslationDirty({ ...pristine, content: '<p><strong>Body</strong></p>' }, pristine)).toBe(true)
+  })
+
   it('reports every editable field, excerpt included', () => {
     expect(isTranslationDirty({ ...pristine, title: 'Other' }, pristine)).toBe(true)
     expect(isTranslationDirty({ ...pristine, excerpt: 'Other' }, pristine)).toBe(true)

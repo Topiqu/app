@@ -14,6 +14,7 @@ export interface ArticleTranslationsPayload {
 export const useArticleTranslations = (articleId?: string, initialLang = '') => {
   const toast = useToast()
   const { t } = useI18n()
+  const confirm = useConfirm()
   const { invalidateArticleLists } = useCacheInvalidation()
 
   const { data, refresh, status, error } = useFetch<ArticleTranslationsPayload>(
@@ -204,11 +205,32 @@ export const useArticleTranslations = (articleId?: string, initialLang = '') => 
     )
   }
 
-  const translateNow = () => {
+  const translateNow = async () => {
     const token = identity && { ...identity }
     const language = activeLang.value
     const submitted = { ...draft.value }
-    if (!token || token.language !== language || isDirty.value) return Promise.resolve()
+    const version = viewVersion
+    if (!token || token.language !== language || disposed || pending.value) return
+    if (isDirty.value) {
+      if (
+        !(await confirm({
+          title: t('articles.translations.unsaved'),
+          message: t('common.messages.discardChangesText'),
+          confirmText: t('common.messages.discardConfirm'),
+          cancelText: t('common.actions.cancel'),
+          variant: 'danger',
+        }))
+      )
+        return
+      if (
+        disposed ||
+        viewVersion !== version ||
+        identity?.id !== token.id ||
+        identity?.expectedUpdatedAt !== token.expectedUpdatedAt ||
+        isTranslationDirty(draft.value, submitted)
+      )
+        return
+    }
     return run(
       'translate',
       () =>
