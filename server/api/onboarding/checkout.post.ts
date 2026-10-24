@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import argon2 from 'argon2'
 import { randomBytes } from 'crypto'
 
 const LOGIN_TOKEN_TTL_MS = 30 * 60 * 1000
@@ -164,14 +163,12 @@ export default defineEventHandler(async (event) => {
         console.error('TRIAL_FEATURE_PROVISIONING_FAILED', site.id, error)
       }
 
-      const hashedPassword = await argon2.hash(body.password)
-
       const user = await saveUserWithLogging(
         event,
         {
           username: body.username,
           email: body.email,
-          password: hashedPassword,
+          password: body.password,
           role: 'admin',
           clientSiteId: site.id,
           language: body.language,

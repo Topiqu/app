@@ -11,15 +11,20 @@ async function stubImports() {
   await stubNitroImports(import('../../server/utils/onboardingTokens'), 'landingClientIp', 'verifyVerifiedToken')
 }
 
-const mocks = vi.hoisted(() => ({ verified: vi.fn(), createSite: vi.fn(), createImport: vi.fn(), kick: vi.fn() }))
+const mocks = vi.hoisted(() => ({
+  verified: vi.fn(),
+  createSite: vi.fn(),
+  createImport: vi.fn(),
+  kick: vi.fn(),
+  saveUser: vi.fn(),
+}))
 vi.mock('../../server/utils/websiteImport', () => ({ kickWebsiteImport: mocks.kick }))
 vi.mock('../../server/utils/onboardingTokens', () => ({
   verifyVerifiedToken: mocks.verified,
   landingClientIp: () => '203.0.113.4',
 }))
-vi.mock('../../server/utils/userLog', () => ({ saveUserWithLogging: async () => ({ id: 'user-1' }) }))
+vi.mock('../../server/utils/userLog', () => ({ saveUserWithLogging: mocks.saveUser }))
 vi.mock('../../server/utils/log', () => ({ logAction: vi.fn() }))
-vi.mock('argon2', () => ({ default: { hash: async () => 'hashed-password' } }))
 
 let handler: typeof import('../../server/api/onboarding/checkout.post').default
 const transaction = vi.fn(async (run) =>
@@ -71,9 +76,20 @@ beforeEach(() => {
   mocks.verified.mockReturnValue(true)
   mocks.createSite.mockImplementation(async ({ data }) => ({ id: 'site-1', ...data }))
   mocks.createImport.mockResolvedValue({ id: 'import-1' })
+  mocks.saveUser.mockResolvedValue({ id: 'user-1' })
 })
 
 describe('company website at signup', () => {
+  it('passes the original password to the shared writer so the mutation plugin hashes it exactly once', async () => {
+    await signup()
+    expect(mocks.saveUser).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ password: 'strong-test-password' }),
+      false,
+      expect.anything(),
+    )
+  })
+
   it.each([
     ['firma.cz/o-nas', 'https://firma.cz/o-nas'],
     [' https://FIRMA.cz ', 'https://firma.cz/'],
