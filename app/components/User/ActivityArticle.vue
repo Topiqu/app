@@ -6,8 +6,9 @@
         square
         size="sm"
         color="error"
-        variant="ghost"
-        :aria-label="$t('profile.likedArticles')"
+        variant="overlay"
+        :aria-label="$t('common.actions.unlike')"
+        :title="$t('common.actions.unlike')"
         @click="$emit('unlike', article.id)"
       />
       <UButton
@@ -15,7 +16,7 @@
         square
         size="sm"
         color="neutral"
-        variant="ghost"
+        variant="overlay"
         :aria-label="$t('common.actions.copyLink')"
         :title="$t('common.actions.copyLink')"
         @click="$emit('share', article)"
