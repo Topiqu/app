@@ -22,11 +22,31 @@ const fetchSession = async (): Promise<AuthSession | null> => {
 /** Session state shared by the app; `undefined` until the auth plugin has fetched it. */
 export const useAuth = () => {
   const data = useState<AuthSession | null | undefined>('auth', () => undefined)
+  const sessionRequest = useState('auth-session-request', () => 0)
   const status = computed(() =>
     data.value === undefined ? 'loading' : data.value ? 'authenticated' : 'unauthenticated',
   )
 
-  const getSession = async () => (data.value = await fetchSession().catch(() => null))
+  const getSession = async ({ throwOnError = false }: { throwOnError?: boolean } = {}) => {
+    const version = ++sessionRequest.value
+    const initial = data.value
+    const current = () => sessionRequest.value === version && data.value === initial
+    try {
+      const session = await fetchSession()
+      if (current()) data.value = session
+    } catch (error: unknown) {
+      if (!current()) return data.value ?? null
+      const status =
+        (error as { statusCode?: number; response?: { status?: number } })?.statusCode ??
+        (error as { response?: { status?: number } })?.response?.status
+      if (status === 401) data.value = null
+      else {
+        if (data.value === undefined) data.value = null
+        if (throwOnError) throw error
+      }
+    }
+    return data.value ?? null
+  }
 
   // A full reload drops every store that still holds the signed-out user's data.
   const signOut = async ({ callbackUrl = useRequestURL().href }: { callbackUrl?: string } = {}) => {
