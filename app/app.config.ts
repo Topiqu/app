@@ -68,14 +68,23 @@ export default defineAppConfig({
         label: 'whitespace-nowrap',
       },
       variants: {
+        variant: {
+          overlay: {
+            base: 'rounded-full bg-default/95 text-default ring-1 ring-accented backdrop-blur-sm hover:bg-elevated focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
+          },
+        },
         size: {
           xs: { base: 'h-8 px-3 text-xs gap-1' },
           sm: { base: 'h-9 px-3.5 text-xs gap-1.5' },
           md: { base: 'h-10 px-4 text-sm gap-1.5' },
           lg: { base: 'h-11 px-5 text-sm gap-2' },
+          metric: { base: 'h-auto min-h-12 px-3 py-2 text-xs gap-1.5' },
+          swatch: { base: 'size-8 shrink-0 rounded-full p-0 justify-center' },
+          row: { base: 'h-auto px-4 py-3 text-sm gap-3 sm:px-6' },
         },
       },
       compoundVariants: [
+        { color: 'error', variant: 'overlay', class: 'text-error' },
         { square: true, size: 'xs', class: 'size-8 shrink-0 p-0 justify-center' },
         { square: true, size: 'sm', class: 'size-9 shrink-0 p-0 justify-center' },
         { square: true, size: 'md', class: 'size-10 shrink-0 p-0 justify-center' },
@@ -275,6 +284,11 @@ export default defineAppConfig({
     card: {
       slots: {
         root: 'rounded-(--topiqu-surface-radius) ring-default',
+      },
+      variants: {
+        variant: {
+          editorial: { root: 'overflow-visible rounded-none bg-transparent ring-0 shadow-none' },
+        },
       },
       defaultVariants: {
         variant: 'outline',
