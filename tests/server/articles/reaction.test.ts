@@ -27,6 +27,7 @@ beforeEach(() => {
   vi.stubGlobal('consumeRateLimit', async () => true)
   sessionUser.mockResolvedValue({ id: 'author-1', name: 'Author' })
   db.articleReaction.findFirst.mockResolvedValue(null)
+  notify.mockResolvedValue(undefined)
   db.articleReaction.count.mockResolvedValue(1)
   db.article.findUnique.mockResolvedValue({ userId: 'author-1' })
 })
@@ -40,7 +41,10 @@ describe('article reactions before publication', () => {
         id: 'article-1',
         deletedAt: null,
         clientSite: { deletedAt: null },
-        OR: [{ status: 'published' }, { status: 'draft', userId: 'author-1' }],
+        OR: [
+          { status: 'published', OR: [{ releaseAt: null }, { releaseAt: { lte: expect.any(Date) } }] },
+          { status: 'draft', userId: 'author-1' },
+        ],
       },
       select: { userId: true },
     })
@@ -53,7 +57,9 @@ describe('article reactions before publication', () => {
   it('allows guests to react only to published articles', async () => {
     sessionUser.mockResolvedValue(null)
     await handler({} as never)
-    expect(db.article.findUnique.mock.calls[0]![0].where.OR).toEqual([{ status: 'published' }])
+    expect(db.article.findUnique.mock.calls[0]![0].where.OR).toEqual([
+      { status: 'published', OR: [{ releaseAt: null }, { releaseAt: { lte: expect.any(Date) } }] },
+    ])
   })
 
   it('does not grant a reader access to another author’s draft', async () => {
@@ -61,7 +67,7 @@ describe('article reactions before publication', () => {
     db.article.findUnique.mockResolvedValue(null)
     await expect(handler({} as never)).rejects.toMatchObject({ statusCode: 404 })
     expect(db.article.findUnique.mock.calls[0]![0].where.OR).toEqual([
-      { status: 'published' },
+      { status: 'published', OR: [{ releaseAt: null }, { releaseAt: { lte: expect.any(Date) } }] },
       { status: 'draft', userId: 'reader-1' },
     ])
     expect(db.articleReaction.create).not.toHaveBeenCalled()
