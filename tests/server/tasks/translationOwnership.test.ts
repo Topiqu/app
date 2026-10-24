@@ -9,8 +9,9 @@ async function stubImports() {
 beforeEach(() => vi.resetModules())
 afterEach(() => vi.unstubAllGlobals())
 
-const setup = async () => {
-  let status = 'PENDING'
+const setup = async (stalledPublished = false) => {
+  let status = stalledPublished ? 'PUBLISHED' : 'PENDING'
+  let translationStartedAt: Date | null = stalledPublished ? new Date('2020-01-01T00:00:00Z') : null
   let version: Date | null = new Date('2020-01-01T00:00:00Z')
   let content = 'Original translation'
   let sourceVersion = 1
@@ -22,17 +23,31 @@ const setup = async () => {
       (typeof where.status === 'string' ? status !== where.status : !where.status.in.includes(status))
     )
       return { count: 0 }
-    if (!where.id) return { count: 0 }
+    if (!where.id) {
+      if (
+        !stalledPublished ||
+        where.status !== 'PUBLISHED' ||
+        !where.translationStartedAt?.lt ||
+        !translationStartedAt ||
+        translationStartedAt >= where.translationStartedAt.lt
+      )
+        return { count: 0 }
+      translationStartedAt = null
+      version = data.updatedAt
+      return { count: 1 }
+    }
     if (where.updatedAt instanceof Date && version?.getTime() !== where.updatedAt.getTime()) return { count: 0 }
     mutations.push(data)
     if (data.status) status = data.status
     if (data.updatedAt) version = data.updatedAt
     if (data.content) content = data.content
+    if ('translationStartedAt' in data) translationStartedAt = data.translationStartedAt
     return { count: 1 }
   })
   const translation = {
     updateMany,
-    findMany: async () => [{ id: 'translation-1', updatedAt: version }],
+    findMany: async () => (stalledPublished ? [] : [{ id: 'translation-1', updatedAt: version }]),
+    count: async () => 0,
     findUnique: async () => ({
       id: 'translation-1',
       language: 'en',
@@ -83,7 +98,7 @@ const setup = async () => {
     usage,
     report,
     mutations,
-    state: () => ({ status, version, content }),
+    state: () => ({ status, version, content, translationStartedAt }),
     changeSource: () => {
       sourceVersion++
     },
@@ -96,6 +111,16 @@ const setup = async () => {
 }
 
 describe('queued translation ownership', () => {
+  it('releases an abandoned published replacement without hiding or changing its live content', async () => {
+    const fixture = await setup(true)
+    await fixture.run()
+    expect(fixture.state()).toMatchObject({
+      status: 'PUBLISHED',
+      content: 'Original translation',
+      translationStartedAt: null,
+    })
+    expect(fixture.generate).not.toHaveBeenCalled()
+  })
   it('requeues a translation when the source changes while the provider is running', async () => {
     const fixture = await setup()
     fixture.generate.mockImplementationOnce(async () => {

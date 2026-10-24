@@ -12,8 +12,21 @@ export default defineMonitoredTask({
   async run() {
     const now = new Date()
     await prisma.articleTranslation.updateMany({
+      where: {
+        status: 'TRANSLATING',
+        updatedAt: { lt: new Date(now.getTime() - 30 * 60_000) },
+        article: { status: 'published' },
+        clientSite: { translationMode: { in: ['AUTO', 'HYBRID'] } },
+      },
+      data: { status: 'PENDING', translationStartedAt: null, error: null, updatedAt: now },
+    })
+    await prisma.articleTranslation.updateMany({
       where: { status: 'TRANSLATING', updatedAt: { lt: new Date(now.getTime() - 30 * 60_000) } },
-      data: { status: 'PENDING', error: null, updatedAt: now },
+      data: { status: 'FAILED', translationStartedAt: null, error: 'TRANSLATION_TIMEOUT', updatedAt: now },
+    })
+    await prisma.articleTranslation.updateMany({
+      where: { status: 'PUBLISHED', translationStartedAt: { lt: new Date(now.getTime() - 30 * 60_000) } },
+      data: { translationStartedAt: null, error: 'TRANSLATION_TIMEOUT', updatedAt: now },
     })
 
     const candidates = await prisma.articleTranslation.findMany({
@@ -59,7 +72,7 @@ export default defineMonitoredTask({
       // so concurrent cron runs / manual triggers can never double-translate the same row.
       const claim = await prisma.articleTranslation.updateMany({
         where: { id, updatedAt, status: { in: ['PENDING', 'STALE'] } },
-        data: { status: 'TRANSLATING', updatedAt: claimedAt },
+        data: { status: 'TRANSLATING', translationStartedAt: claimedAt, updatedAt: claimedAt },
       })
       if (claim.count !== 1) {
         skipped++
@@ -93,6 +106,7 @@ export default defineMonitoredTask({
           where: { id, status: 'TRANSLATING', updatedAt: claimedAt },
           data: {
             status: 'FAILED',
+            translationStartedAt: null,
             error: 'Source article or tenant missing',
             updatedAt: nextTranslationVersion(claimedAt),
           },
@@ -159,6 +173,7 @@ export default defineMonitoredTask({
               usage: toDatabaseJson(usage),
               error: null,
               translatedAt: new Date(),
+              translationStartedAt: null,
               updatedAt: nextTranslationVersion(claimedAt),
             },
           })
@@ -168,7 +183,12 @@ export default defineMonitoredTask({
         if (!updatedTranslation) {
           await prisma.articleTranslation.updateMany({
             where: { id, status: 'TRANSLATING', updatedAt: claimedAt },
-            data: { status: 'STALE', error: null, updatedAt: nextTranslationVersion(claimedAt) },
+            data: {
+              status: 'STALE',
+              translationStartedAt: null,
+              error: null,
+              updatedAt: nextTranslationVersion(claimedAt),
+            },
           })
           skipped++
           continue
@@ -211,6 +231,7 @@ export default defineMonitoredTask({
           where: { id, status: 'TRANSLATING', updatedAt: claimedAt },
           data: {
             status: 'FAILED',
+            translationStartedAt: null,
             error: message,
             updatedAt: nextTranslationVersion(claimedAt),
           },

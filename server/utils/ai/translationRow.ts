@@ -15,5 +15,6 @@ export const translationSelect = {
   source: true,
   error: true,
   translatedAt: true,
+  translationStartedAt: true,
   updatedAt: true,
 } as const

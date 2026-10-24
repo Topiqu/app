@@ -93,7 +93,7 @@ describe('syncArticleTranslationQueue', () => {
     await syncArticleTranslationQueue(db as any, 'a1', 'cs1', { contentChanged: true })
     expect(db.articleTranslation.updateMany).toHaveBeenCalledWith({
       where: { id: 'translation-1', articleId: 'a1', clientSiteId: 'cs1', status: 'PUBLISHED', updatedAt: observed },
-      data: { status: 'STALE', updatedAt: new Date(observed.getTime() + 1) },
+      data: { status: 'STALE', translationStartedAt: null, updatedAt: new Date(observed.getTime() + 1) },
     })
   })
 
@@ -105,7 +105,7 @@ describe('syncArticleTranslationQueue', () => {
     await syncArticleTranslationQueue(db as any, 'a1', 'cs1', { contentChanged: true })
     expect(db.articleTranslation.updateMany).toHaveBeenCalledWith({
       where: { id: 'translation-1', articleId: 'a1', clientSiteId: 'cs1', status: 'TRANSLATING', updatedAt: observed },
-      data: { status: 'STALE', updatedAt: new Date(observed.getTime() + 1) },
+      data: { status: 'STALE', translationStartedAt: null, updatedAt: new Date(observed.getTime() + 1) },
     })
   })
 

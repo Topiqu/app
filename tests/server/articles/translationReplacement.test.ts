@@ -109,10 +109,19 @@ const setup = async (
   vi.stubGlobal('toDatabaseJson', (value: unknown) => value)
   vi.stubGlobal('isUniqueViolation', (error: { dbErrorCode?: string }) => error.dbErrorCode === '23505')
   vi.stubGlobal('prisma', {})
+  vi.stubGlobal('setResponseStatus', vi.fn())
+  vi.stubGlobal('reportCaughtError', vi.fn())
+  let pendingWork: Promise<unknown> | undefined
   const manual = () =>
     import('../../../server/api/articles/[id]/translations.post').then(({ default: handler }) => handler({} as never))
   const ai = () =>
-    import('../../../server/api/articles/[id]/translate.post').then(({ default: handler }) => handler({} as never))
+    import('../../../server/api/articles/[id]/translate.post').then(({ default: handler }) =>
+      handler({
+        waitUntil: (work: Promise<unknown>) => {
+          pendingWork = work
+        },
+      } as never),
+    )
   return {
     manual,
     ai,
@@ -121,6 +130,7 @@ const setup = async (
     updateMany,
     scope,
     getRow: () => row,
+    getWork: () => pendingWork,
     editDuringGeneration: () => {
       row = { ...row, content: 'New human edit', updatedAt: new Date('2026-10-22T12:00:00Z') }
     },
@@ -129,6 +139,48 @@ const setup = async (
     },
   }
 }
+
+it.each([false, true])('keeps published=%s text while the background provider runs', async (published) => {
+  const f = await setup({ published, body: { replace: true, expectedUpdatedAt: observed, background: true } })
+  const provider = Promise.withResolvers<Record<string, unknown>>()
+  f.generate.mockReturnValue(provider.promise)
+  const response = await f.ai()
+  expect(response.translation.status).toBe(published ? 'PUBLISHED' : 'TRANSLATING')
+  expect(response.translation.translationStartedAt).toBeInstanceOf(Date)
+  expect(f.getRow()?.content).toBe('Human text')
+  expect(f.getWork()).toBeInstanceOf(Promise)
+  provider.resolve({
+    title: 'Translated',
+    content: '<p>Translated body</p>',
+    slug: 'translated',
+    usage: { totalTokens: 10 },
+  })
+  await f.getWork()
+  expect(f.getRow()).toMatchObject({ status: 'READY', content: '<p>Translated body</p>', translationStartedAt: null })
+})
+
+it.each([false, true])('keeps published=%s text after a failed background translation', async (published) => {
+  const f = await setup({ published, body: { replace: true, expectedUpdatedAt: observed, background: true } })
+  f.generate.mockRejectedValue(new Error('Provider unavailable'))
+  await f.ai()
+  await f.getWork()
+  expect(f.getRow()).toMatchObject({
+    status: published ? 'PUBLISHED' : 'FAILED',
+    content: 'Human text',
+    translationStartedAt: null,
+  })
+})
+
+it('rejects an outdated background result and releases its published replacement lease', async () => {
+  const f = await setup({ published: true, body: { replace: true, expectedUpdatedAt: observed, background: true } })
+  const provider = Promise.withResolvers<Record<string, unknown>>()
+  f.generate.mockReturnValue(provider.promise)
+  await f.ai()
+  f.changeSource()
+  provider.resolve({ title: 'Outdated', content: '<p>Outdated body</p>', slug: 'outdated', usage: { totalTokens: 10 } })
+  await f.getWork()
+  expect(f.getRow()).toMatchObject({ status: 'PUBLISHED', content: 'Human text', translationStartedAt: null })
+})
 
 it('makes manual POST create-only instead of overwriting an existing human translation', async () => {
   const f = await setup()
@@ -193,4 +245,8 @@ it('replaces exactly the observed translation when its version is unchanged', as
   expect(new Date(f.getRow()?.updatedAt as Date).getTime()).toBeGreaterThan(new Date(observed).getTime())
 })
 
-beforeEach(stubImports)
+beforeEach(async () => {
+  await stubImports()
+  vi.stubGlobal('defineEventHandler', (handler: unknown) => handler)
+  await import('../../../server/api/articles/[id]/translate.post')
+})

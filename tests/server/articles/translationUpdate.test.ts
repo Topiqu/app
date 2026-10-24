@@ -2,6 +2,7 @@ import { createError } from 'h3'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { stubNitroImports } from '../../helpers/nitroImports'
+import { hasArticleBody } from '../../../shared/utils/articleEditor'
 
 async function stubImports() {
   await stubNitroImports(
@@ -72,6 +73,7 @@ beforeEach(() => {
   vi.stubGlobal('requireArticleAccess', access)
   vi.stubGlobal('requireTenantScope', scope)
   vi.stubGlobal('sanitizeHtml', sanitizeHtml)
+  vi.stubGlobal('hasArticleBody', hasArticleBody)
   vi.stubGlobal('prisma', {})
   vi.stubGlobal('syncArticleMediaUsages', media)
   vi.stubGlobal('logAction', audit)

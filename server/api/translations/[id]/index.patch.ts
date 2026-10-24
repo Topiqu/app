@@ -15,7 +15,14 @@ export default defineEventHandler(async (event) => {
 
   const { user, db } = await requireDb(event, { minRole: 'admin', clientSite: true })
 
-  const body = await readValidatedBody(event, BodySchema.parse)
+  const body = await readValidatedBody(event, (value) => {
+    const raw = value as Record<string, unknown> | null
+    if (typeof raw?.title === 'string' && !raw.title.trim())
+      throw createError({ statusCode: 400, message: t('common.messages.articleTitleRequired')! })
+    if (typeof raw?.content === 'string' && !hasArticleBody(sanitizeHtml(raw.content)))
+      throw createError({ statusCode: 400, message: t('articles.editor.contentRequired')! })
+    return BodySchema.parse(value)
+  })
   if (body.expectedUpdatedAt === undefined)
     throw createError({
       statusCode: 428,
@@ -33,6 +40,7 @@ export default defineEventHandler(async (event) => {
       title: true,
       content: true,
       status: true,
+      translationStartedAt: true,
       clientSite: { select: { publishToWeb: true } },
     },
   })
@@ -41,6 +49,12 @@ export default defineEventHandler(async (event) => {
     await requireTenantScope(event, 'ARTICLE_PUBLISH')
   if (!translation)
     throw createError({ statusCode: 404, message: t('common.errors.notFound') ?? 'Translation not found' })
+  if (translation.status === 'TRANSLATING' || translation.translationStartedAt)
+    throw createError({
+      statusCode: 409,
+      message: t('articles.translations.status.TRANSLATING')!,
+      data: { code: 'ARTICLE_EDIT_CONFLICT' },
+    })
 
   const nextTitle = body.title ?? translation.title
   const nextContent = body.content ?? translation.content

@@ -75,7 +75,7 @@ export const syncArticleTranslationQueue = async (
       if (!targets.includes(row.language) || !['READY', 'PUBLISHED', 'TRANSLATING'].includes(row.status)) continue
       await db.articleTranslation.updateMany({
         where: { id: row.id, articleId, clientSiteId, status: row.status, updatedAt: row.updatedAt },
-        data: { status: 'STALE', updatedAt: nextTranslationVersion(row.updatedAt) },
+        data: { status: 'STALE', translationStartedAt: null, updatedAt: nextTranslationVersion(row.updatedAt) },
       })
     }
   }
