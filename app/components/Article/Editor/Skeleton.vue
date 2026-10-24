@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto w-full max-w-7xl px-4 pb-12" :aria-label="$t('common.loading')" aria-busy="true">
+  <div class="topiqu-dashboard-page pb-12" :aria-label="$t('common.loading')" aria-busy="true">
     <div class="-mx-4 mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-default px-4 py-3">
       <div class="flex items-center gap-3"><USkeleton class="size-10" /><USkeleton class="h-6 w-32" /></div>
       <div class="flex gap-2"><USkeleton class="h-10 w-24" /><USkeleton class="h-10 w-32" /></div>

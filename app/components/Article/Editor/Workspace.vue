@@ -1,6 +1,6 @@
 <template>
   <div
-    class="mx-auto flex min-w-0 w-full max-w-7xl flex-1 flex-col px-4 pb-12"
+    class="topiqu-dashboard-page flex flex-1 flex-col pb-12"
     :style="{ '--editor-command-bar-height': `${commandBarHeight}px` }"
   >
     <div
@@ -129,6 +129,45 @@
         >
           {{ publishLabel }}
         </UButton>
+
+        <template v-if="!isNew && !tr.isSource">
+          <UButton
+            v-if="tr.active?.status !== 'PUBLISHED'"
+            color="neutral"
+            variant="soft"
+            icon="mdi:content-save-outline"
+            :loading="tr.pending === 'save'"
+            :disabled="Boolean(tr.pending) || !tr.hasBody || !tr.isDirty"
+            @click="tr.save()"
+          >
+            {{ $t('common.actions.saveChanges') }}
+          </UButton>
+          <UButton
+            :icon="tr.hasBody ? 'mdi:check-circle-outline' : 'mdi:translate'"
+            :loading="Boolean(tr.pending)"
+            :disabled="Boolean(tr.pending)"
+            @click="tr.hasBody ? tr.save('PUBLISHED') : tr.translateNow()"
+          >
+            {{
+              $t(
+                !tr.hasBody
+                  ? 'articles.translations.actions.translate'
+                  : tr.active?.status === 'PUBLISHED'
+                    ? 'articles.saveChanges'
+                    : 'articles.translations.actions.approve',
+              )
+            }}
+          </UButton>
+          <UDropdownMenu v-if="tr.hasBody" :items="translationActions">
+            <UButton
+              icon="mdi:dots-vertical"
+              color="neutral"
+              variant="ghost"
+              :disabled="Boolean(tr.pending)"
+              :aria-label="$t('common.actions.more')"
+            />
+          </UDropdownMenu>
+        </template>
       </div>
     </div>
 
@@ -181,61 +220,19 @@
       </template>
     </UAlert>
 
-    <div
-      v-if="!isNew && tr.enabled && !tr.isSource"
-      class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end"
+    <UAlert
+      v-if="!tr.isSource && tr.pending === 'translate'"
+      class="mb-6"
+      color="info"
+      icon="mdi:translate"
+      :title="$t('articles.translations.status.TRANSLATING')"
+      :description="$t('articles.editor.backgroundTasksHelp')"
     >
-      <div v-if="!tr.isSource" class="flex flex-wrap items-center gap-2">
-        <UButton
-          v-if="!tr.hasBody"
-          icon="mdi:translate"
-          :loading="tr.pending === 'translate'"
-          :disabled="Boolean(tr.pending)"
-          @click="tr.translateNow()"
-        >
-          {{ $t('articles.translations.actions.translate') }}
-        </UButton>
-        <template v-else>
-          <UButton
-            color="neutral"
-            variant="soft"
-            icon="mdi:content-save-outline"
-            :loading="tr.pending === 'save'"
-            :disabled="Boolean(tr.pending) || !tr.isDirty"
-            @click="tr.save()"
-          >
-            {{ $t('common.actions.saveChanges') }}
-          </UButton>
-          <UButton
-            icon="mdi:check-circle-outline"
-            :loading="tr.pending === 'publish'"
-            :disabled="Boolean(tr.pending)"
-            @click="tr.save('PUBLISHED')"
-          >
-            {{ $t('articles.translations.actions.approve') }}
-          </UButton>
-          <UButton
-            color="neutral"
-            variant="ghost"
-            icon="mdi:translate"
-            :loading="tr.pending === 'translate'"
-            :disabled="Boolean(tr.pending) || tr.isDirty"
-            @click="tr.translateNow()"
-          >
-            {{ $t('articles.translations.actions.retranslate') }}
-          </UButton>
-          <UButton
-            color="error"
-            variant="ghost"
-            icon="mdi:delete-outline"
-            :disabled="Boolean(tr.pending)"
-            @click="discardTranslationOpen = true"
-          >
-            {{ $t('articles.translations.actions.discard') }}
-          </UButton>
-        </template>
-      </div>
-    </div>
+      <template #description>
+        <p>{{ $t('articles.editor.backgroundTasksHelp') }}</p>
+        <UProgress class="mt-3" :aria-label="$t('articles.translations.status.TRANSLATING')" />
+      </template>
+    </UAlert>
 
     <UAlert
       v-if="!isNew && !tr.isSource && !tr.hasBody && !tr.error"
@@ -262,6 +259,21 @@
       </template>
     </UAlert>
 
+    <UAlert
+      v-if="!tr.isSource && tr.active?.error && !tr.pending"
+      class="mb-6"
+      color="error"
+      icon="mdi:alert-circle-outline"
+      :title="$t('common.messages.operationFailed')"
+      :description="
+        $t(
+          tr.active.error === 'TRANSLATION_TIMEOUT'
+            ? 'articles.editor.translationTimedOut'
+            : 'common.messages.loadFailedText',
+        )
+      "
+    />
+
     <div
       class="grid flex-1 items-start gap-8"
       :class="settingsExpanded ? 'xl:grid-cols-[minmax(0,1fr)_30rem]' : 'xl:grid-cols-[minmax(0,1fr)_3rem]'"
@@ -283,6 +295,7 @@
             <UInput
               :id="`${editorFieldId}-title`"
               v-model="titleModel"
+              :disabled="tr.pending === 'translate'"
               name="title"
               :placeholder="$t('common.labels.articleTitle')"
               class="w-full"
@@ -313,6 +326,7 @@
               :id="`${editorFieldId}-perex`"
               name="perex"
               :modelValue="excerptModel ?? undefined"
+              :disabled="tr.pending === 'translate'"
               :placeholder="$t('common.labels.articleExcerpt')"
               class="w-full"
               autoresize
@@ -327,7 +341,7 @@
           <TiptapEditor
             ref="tiptapEditor"
             v-model="bodyModel"
-            :edit="bodyEditable && !aiGenerating"
+            :edit="bodyEditable && !aiGenerating && tr.pending !== 'translate'"
             class="min-h-[500px]"
           />
 
@@ -1063,8 +1077,10 @@ const submit = async (
     }
   }
   const sourceDraft = isNew ? newLanguageDrafts[primaryLanguage.value] : null
-  if (!(sourceDraft?.title ?? editedArticle.value.title))
+  if (!(sourceDraft?.title ?? editedArticle.value.title)?.trim())
     return toast.add({ color: 'error', title: t('common.messages.articleTitleRequired') })
+  if (targetStatus === 'published' && !hasArticleBody(sourceDraft?.content ?? editedArticle.value.content))
+    return toast.add({ color: 'error', title: t('articles.editor.contentRequired') })
 
   const releaseAt = editedArticle.value.releaseAt ? new Date(editedArticle.value.releaseAt) : null
   const schedulesForLater = targetStatus === 'published' && !!releaseAt && releaseAt.getTime() > Date.now()
@@ -1227,6 +1243,10 @@ const submit = async (
       mediaPublishReviewOpen.value = true
       return
     }
+    if (responseData?.code === 'MEDIA_UNAVAILABLE') {
+      toast.add({ color: 'error', title: t('articles.editor.mediaUnavailable'), duration: 10000 })
+      return
+    }
     toast.add({
       color: 'error',
       title: fetchErrorMessage(e, t('common.messages.saveFailed')),
@@ -1371,6 +1391,23 @@ const discardTranslation = async () => {
   await tr.discard()
   discardTranslationOpen.value = false
 }
+
+const translationActions = computed(() => [
+  {
+    label: t('articles.translations.actions.retranslate'),
+    icon: 'mdi:translate',
+    disabled: tr.isDirty,
+    onSelect: () => tr.translateNow(),
+  },
+  {
+    label: t('articles.translations.actions.discard'),
+    icon: 'mdi:delete-outline',
+    color: 'error' as const,
+    onSelect: () => {
+      discardTranslationOpen.value = true
+    },
+  },
+])
 
 watch(
   () => editedArticle.value.title,

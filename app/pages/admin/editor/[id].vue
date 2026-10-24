@@ -5,7 +5,7 @@
       <template #fallback><ArticleEditorSkeleton /></template>
     </Suspense>
     <template #error>
-      <div class="mx-auto w-full max-w-7xl p-4">
+      <div class="topiqu-dashboard-page py-4">
         <UAlert
           color="error"
           icon="mdi:alert-circle-outline"
