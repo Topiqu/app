@@ -94,12 +94,7 @@
       </template>
 
       <template #footer>
-        <div
-          class="mt-8 flex flex-col items-start justify-between gap-4 border-t border-default pt-8 sm:flex-row sm:items-center"
-        >
-          <div class="flex shrink-0 items-center">
-            <ClientSocials :clientSiteId="data.clientSiteId" class="flex gap-2 text-muted" />
-          </div>
+        <div class="mt-8 flex justify-end border-t border-default pt-8">
           <LazyArticleFeedback :articleId="data.id" class="w-full sm:max-w-xl" />
         </div>
         <WidgetSlot name="ARTICLE_END" class="mt-8" />

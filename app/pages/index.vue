@@ -432,10 +432,6 @@
     </section>
 
     <WidgetSlot name="HOME_BOTTOM" />
-
-    <div v-if="clientSite?.id" class="border-t border-default pt-6">
-      <ClientSocials :clientSiteId="clientSite.id" />
-    </div>
   </UContainer>
 </template>
 
