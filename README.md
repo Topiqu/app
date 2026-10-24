@@ -255,6 +255,8 @@ Nuxt compilation uses the Node version pinned in `.node-version` in CI and Docke
 
 ## Documentation
 
+Application logs are single-line JSON records. `LOG_LEVEL` defaults to `info` (`debug`, `info`, `warn`, `error`); successful reads are visible only at `debug`, while mutations, slow requests and failures remain visible at their normal levels. HTTP records include a server-generated `x-request-id`, host, protocol, query-free path, status, elapsed milliseconds and a failure reason. Notification authorization failures identify `AUTH_HOST_UNAVAILABLE` or `AUTH_HTTPS_REQUIRED`. Sensitive context is redacted before console/external delivery; Better Stack remains optional. See [Observability](./MAP.md#9-observability--errors-traces-and-document-metrics).
+
 Custom-domain provisioning configuration, migration order and operational limitations are documented in [Custom domains](./docs/custom-domains.md).
 
 Operations, workflow rollout and field-performance measurement are documented in [Production workflows](./docs/operations/production-workflows.md). Database recovery rehearsals are described in [Backup and restore](./docs/operations/backup-restore.md).
