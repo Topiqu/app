@@ -55,7 +55,6 @@
             color="neutral"
             variant="link"
             size="sm"
-            class="px-0"
             icon="mdi:eyedropper-variant"
             :loading="suggesting"
             :disabled="!logoUrl || !clientId"

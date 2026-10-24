@@ -5,9 +5,8 @@
         type="button"
         color="neutral"
         variant="outline"
-        size="sm"
+        size="swatch"
         square
-        class="size-8 shrink-0 rounded-full"
         :style="{ backgroundColor: modelValue }"
         :aria-label="label"
       />
