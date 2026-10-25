@@ -126,16 +126,14 @@
 
     <div class="flex shrink-0 items-center gap-1 pt-0.5">
       <UButton
-        v-if="opportunity"
-        :to="opportunityLink"
+        v-if="opportunityAction"
+        :to="opportunityAction.to"
         size="sm"
         variant="soft"
-        :icon="opportunity.article ? 'mdi:file-edit-outline' : 'mdi:plus'"
-        :aria-label="$t(opportunity.article ? 'visibility.opportunities.update' : 'visibility.opportunities.create')"
+        :icon="opportunityAction.icon"
+        :aria-label="$t(opportunityAction.label)"
       >
-        <span class="hidden sm:inline">
-          {{ $t(opportunity.article ? 'visibility.opportunities.update' : 'visibility.opportunities.create') }}
-        </span>
+        <span class="hidden sm:inline">{{ $t(opportunityAction.label) }}</span>
       </UButton>
       <UButton
         v-if="canSample"
@@ -172,6 +170,8 @@ const props = defineProps<{
   /** Open opportunity: AI keeps citing other sites for this question. */
   opportunity?: VisibilityOverview['opportunities'][number]
   canSample: boolean
+  canGenerate: boolean
+  canEnableAi: boolean
   running: boolean
   disabled: boolean
   actions: DropdownMenuItem[][]
@@ -183,10 +183,26 @@ const outcome = computed(() => promptOutcome(props.prompt.latestRuns))
 const counted = computed(() => outcome.value.status === 'CITED' || outcome.value.status === 'NOT_CITED')
 const citing = computed(() => props.opportunity?.citedDomains.slice(0, 3) ?? [])
 const citingRest = computed(() => (props.opportunity?.citedDomains.length ?? 0) - citing.value.length)
-const opportunityLink = computed(() => ({
-  path: localePath({ name: 'admin-editor-id', params: { id: props.opportunity?.article?.slug ?? 'new' } }),
-  query: { ai: '1', prompt: props.prompt.text },
-}))
+const opportunityAction = computed(() => {
+  if (!props.opportunity) return null
+  const { article } = props.opportunity
+  if (props.canGenerate)
+    return {
+      to: {
+        path: localePath({ name: 'admin-editor-id', params: { id: article?.slug ?? 'new' } }),
+        query: { ai: '1', prompt: props.prompt.text },
+      },
+      icon: article ? 'mdi:file-edit-outline' : 'mdi:plus',
+      label: article ? 'visibility.opportunities.update' : 'visibility.opportunities.create',
+    }
+  if (props.canEnableAi)
+    return {
+      to: localePath({ name: 'settings', query: { tab: 'ai' } }),
+      icon: 'mdi:robot-outline',
+      label: 'visibility.opportunities.enableAi',
+    }
+  return null
+})
 const tones: Record<string, string> = {
   UNCHECKED: 'bg-accented',
   RUNNING: 'bg-info',

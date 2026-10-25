@@ -67,6 +67,7 @@
       "response": "Réponse"
     },
     "opportunities": {
+      "enableAi": "Activer la génération par IA",
       "update": "Améliorer l’article",
       "create": "Créer un article",
       "dismiss": "Ignorer la suggestion",

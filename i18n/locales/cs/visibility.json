@@ -67,6 +67,7 @@
       "response": "Odpověď"
     },
     "opportunities": {
+      "enableAi": "Zapnout AI generování",
       "update": "Vylepšit článek",
       "create": "Vytvořit článek",
       "dismiss": "Skrýt doporučení",

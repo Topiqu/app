@@ -67,6 +67,7 @@
       "response": "Antwort"
     },
     "opportunities": {
+      "enableAi": "KI-Generierung aktivieren",
       "update": "Artikel verbessern",
       "create": "Artikel erstellen",
       "dismiss": "Empfehlung ausblenden",

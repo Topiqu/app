@@ -28,7 +28,21 @@ const newLanguage = shallowRef<Language>(isLanguage(locale.value) ? locale.value
 const showForm = shallowRef(false)
 const adding = shallowRef(false)
 const runningPrompt = shallowRef<string | null>(null)
+const can = useTenantScope()
 const canSample = computed(() => ['PREMIUM', 'CUSTOM'].includes(clientStatus.value?.plan ?? ''))
+const canGenerate = computed(
+  () =>
+    hasAiPlan(clientStatus.value?.plan) &&
+    clientStatus.value?.activeFeatures?.includes('AI') === true &&
+    can('ARTICLE_WRITE') &&
+    can('AI_USE'),
+)
+const canEnableAi = computed(
+  () =>
+    hasAiPlan(clientStatus.value?.plan) &&
+    clientStatus.value?.activeFeatures?.includes('AI') === false &&
+    can('BILLING_CHANGE'),
+)
 const billingLink = computed(() => localePath({ name: 'settings', query: { tab: 'billing' } }))
 
 const {
@@ -339,6 +353,8 @@ const setOpportunity = (id: string, status: 'DISMISSED' | 'RESOLVED' | 'OPEN') =
                 :prompt
                 :opportunity="opportunityByPrompt.get(prompt.id)"
                 :canSample
+                :canGenerate
+                :canEnableAi
                 :running="runningPrompt === prompt.id"
                 :disabled="runningPrompt !== null"
                 :actions="promptActions(prompt, opportunityByPrompt.get(prompt.id))"
