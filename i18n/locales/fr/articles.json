@@ -152,7 +152,7 @@
     "empty": {
       "badge": "Bientôt",
       "title": "Rien ici pour le moment",
-      "message": "Le premier article arrive. Revenez bientôt.",
+      "message": "Revenez bientôt.",
       "owner": {
         "badge": "Visible uniquement par vous",
         "title": "Votre blog est prêt pour son premier article",

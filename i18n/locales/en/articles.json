@@ -152,7 +152,7 @@
     "empty": {
       "badge": "Coming soon",
       "title": "Nothing here yet",
-      "message": "The first article is on its way. Check back soon.",
+      "message": "Check back soon.",
       "owner": {
         "badge": "Only you can see this",
         "title": "Your blog is ready for its first article",
