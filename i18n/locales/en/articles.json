@@ -654,6 +654,11 @@
           },
           "review": {
             "running": "Checking facts and consistency…",
+            "verifying": "Verifying the article's claims against live sources…",
+            "checking": "Checking continuity, structure and alignment with the assignment…",
+            "revising": "Revising the text to address the issues found…",
+            "rechecking": "Checking the revised text…",
+            "waiting": "Waiting for the current step's result. Last update {seconds} s ago.",
             "approved": "Approved without changes.",
             "revised": "Revised; issues fixed: {count}",
             "revisedIssues": "Revised, left for manual review: {count}",

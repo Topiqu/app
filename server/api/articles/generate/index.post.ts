@@ -317,7 +317,7 @@ export default defineEventHandler(async (event) => {
           send(controller, { type: 'activity', phase: 'writing', writingStage: 'review' })
           const draft = await result.output
           await writingAuditStep.complete({ contentLength: draft.content.length })
-          const object = await generation.review(draft)
+          const object = await generation.review(draft, (stage) => send(controller, { type: 'review-progress', stage }))
           recoverySnapshot = { ...recoverySnapshot, ...object }
           await checkpointGeneration(recoverySession!.id, 'review', recoverySnapshot)
           send(controller, { type: 'review', review: generation.editorialReview })

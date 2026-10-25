@@ -64,6 +64,7 @@ export interface ArticleGenerationBilling {
 
 export type GenerationPhase = 'research' | 'writing' | 'images'
 export type GenerationWritingStage = 'starting' | 'title' | 'intro' | 'body' | 'review'
+export type GenerationReviewStage = 'verifying' | 'checking' | 'revising' | 'rechecking'
 export type GenerationFailureStage = 'research' | 'writing' | 'finalization' | 'writer_idle' | 'writer_deadline'
 
 export type GenerationEvent =
@@ -72,6 +73,7 @@ export type GenerationEvent =
   | ({ type: 'research' } & GenerationResearchResult)
   | { type: 'activity'; writingStage?: GenerationWritingStage }
   | ({ type: 'media' } & ArticleMediaProgress)
+  | { type: 'review-progress'; stage: GenerationReviewStage }
   | { type: 'review'; review: GenerationReview }
   | { type: 'final'; missingModules?: ArticleGenerationModule[] }
   | ({ type: 'billing' } & ArticleGenerationBilling)
@@ -83,6 +85,8 @@ export interface GenerationRun {
   useKnowledge: boolean
   phase: GenerationPhase
   writingStage: GenerationWritingStage
+  /** Optional so runs saved before detailed review progress remain readable. */
+  reviewStage?: GenerationReviewStage
   startedAt: number
   finishedAt: number | null
   lastActivityAt: number
@@ -134,6 +138,8 @@ export const reduceGenerationRun = (run: GenerationRun, event: GenerationEvent, 
       const { type: _, ...media } = event
       return { ...next, media }
     }
+    case 'review-progress':
+      return { ...next, phase: 'writing', writingStage: 'review', reviewStage: event.stage }
     case 'review':
       return { ...next, review: event.review }
     case 'final':
@@ -252,7 +258,11 @@ export const generationSteps = (run: GenerationRun, words: number): GenerationSt
       params: { count: review.issues?.length ?? 0 },
     })
   else
-    steps.push({ id: 'review', state: reviewing ? 'running' : 'pending', detail: reviewing ? 'review.running' : null })
+    steps.push({
+      id: 'review',
+      state: reviewing ? 'running' : 'pending',
+      detail: reviewing ? `review.${run.reviewStage ?? 'running'}` : null,
+    })
 
   const media = run.media
   if (!media)

@@ -1,3 +1,5 @@
+import type { GenerationReviewStage } from '~~/shared/utils/articleGeneration'
+
 import { z } from 'zod'
 import { load } from 'cheerio'
 import { generateText, Output } from 'ai'
@@ -71,6 +73,7 @@ type ReviewContext = {
   factsChecked?: boolean
   /** The author asked for this in the editor, so an invented illustrative narrative is allowed. */
   illustrative?: boolean
+  onProgress?: (stage: GenerationReviewStage) => void
 }
 
 /** Repeating a subject in a comparison table makes rows look duplicated even when the prose differs. */
@@ -207,6 +210,7 @@ export const reviewArticle = async (draft: ReviewDraft, context: ReviewContext) 
   let verdicts: string | null = null
   let factualIssues: EditorialReview['issues'] = []
   if (context.verifyFacts ?? !!context.researchBrief) {
+    context.onProgress?.('verifying')
     const verification = await generateText({
       model: aiModel('articleResearch'),
       tools: { web_search: aiWebSearchTool('articleResearch', 'high') as never },
@@ -268,6 +272,7 @@ firstPartyKnowledge is the publisher's own material, dated per entry. A claim ab
       }
     }
   }
+  context.onProgress?.('checking')
   const { output: object, usage } = await generateText({
     model: aiModel('articleEditor'),
     maxOutputTokens: 2000,

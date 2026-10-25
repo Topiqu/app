@@ -69,6 +69,27 @@ describe('generation run', () => {
     })
   })
 
+  it('shows the actual review stage and records only received progress as activity', () => {
+    let run = start()
+    for (const [index, stage] of (['verifying', 'checking', 'revising', 'rechecking'] as const).entries()) {
+      run = reduceGenerationRun(run, { type: 'review-progress', stage }, (index + 1) * 10_000)
+      expect(step(run, 'review')).toMatchObject({ state: 'running', detail: `review.${stage}` })
+      expect(step(run, 'writing')).toMatchObject({ state: 'done' })
+      expect(run.lastActivityAt).toBe((index + 1) * 10_000)
+      expect(run.review).toBeNull()
+    }
+    run = reduceGenerationRun(run, { type: 'review', review: { approved: true, revised: false } }, 50_000)
+    expect(step(run, 'review')).toMatchObject({ state: 'done', detail: 'review.approved' })
+  })
+
+  it('keeps the generic review label for older runs without a detailed stage', () => {
+    const run = play(start(), [
+      { type: 'phase', phase: 'writing' },
+      { type: 'activity', writingStage: 'review' },
+    ])
+    expect(step(run, 'review')).toMatchObject({ state: 'running', detail: 'review.running' })
+  })
+
   it('reports partial media and open review issues as a partial result', () => {
     const run = play(start(), [
       research({ status: 'noCandidates' }),

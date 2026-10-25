@@ -649,6 +649,11 @@
           },
           "review": {
             "running": "Kontroluji fakta a konzistenci…",
+            "verifying": "Ověřuji tvrzení článku proti živým zdrojům…",
+            "checking": "Kontroluji návaznost, strukturu a soulad se zadáním…",
+            "revising": "Přepracovávám text podle nalezených problémů…",
+            "rechecking": "Kontroluji upravený text…",
+            "waiting": "Čekám na výsledek aktuálního kroku. Poslední změna před {seconds} s.",
             "approved": "Schváleno bez úprav.",
             "revised": "Upraveno, opravené problémy: {count}",
             "revisedIssues": "Upraveno, k ruční kontrole zbývá: {count}",

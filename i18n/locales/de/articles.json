@@ -654,6 +654,11 @@
           },
           "review": {
             "running": "Fakten und Konsistenz werden geprüft…",
+            "verifying": "Die Aussagen des Artikels werden anhand aktueller Quellen überprüft…",
+            "checking": "Zusammenhang, Struktur und Übereinstimmung mit dem Auftrag werden geprüft…",
+            "revising": "Der Text wird anhand der gefundenen Probleme überarbeitet…",
+            "rechecking": "Der überarbeitete Text wird geprüft…",
+            "waiting": "Warten auf das Ergebnis des aktuellen Schritts. Letzte Änderung vor {seconds} s.",
             "approved": "Ohne Änderungen freigegeben.",
             "revised": "Überarbeitet; behobene Probleme: {count}",
             "revisedIssues": "Überarbeitet, zur manuellen Prüfung offen: {count}",

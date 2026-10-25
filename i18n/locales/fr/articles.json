@@ -649,6 +649,11 @@
           },
           "review": {
             "running": "Vérification des faits et de la cohérence…",
+            "verifying": "Vérification des affirmations de l'article à partir de sources en ligne…",
+            "checking": "Vérification de la cohérence, de la structure et du respect de la consigne…",
+            "revising": "Révision du texte pour corriger les problèmes relevés…",
+            "rechecking": "Vérification du texte révisé…",
+            "waiting": "En attente du résultat de l'étape actuelle. Dernière mise à jour il y a {seconds} s.",
             "approved": "Approuvé sans modification.",
             "revised": "Révisé ; problèmes corrigés : {count}",
             "revisedIssues": "Révisé, reste à vérifier manuellement : {count}",

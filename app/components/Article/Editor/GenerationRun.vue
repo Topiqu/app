@@ -98,7 +98,24 @@
           <p class="text-sm font-medium" :class="step.state === 'pending' ? 'text-muted' : 'text-highlighted'">
             {{ $t(`articles.editor.ai.run.step.${step.id}`) }}
           </p>
-          <p v-if="step.detail" class="mt-0.5 text-xs leading-5" :class="stepTone[step.state].text">
+          <UCollapsible
+            v-if="step.id === 'research' && step.state === 'done' && researchSources.length"
+            v-model:open="researchSourcesOpen"
+            class="mt-0.5 min-w-0"
+          >
+            <UButton
+              color="neutral"
+              variant="link"
+              size="xs"
+              :label="$t('articles.editor.ai.run.research.sources', { count: run.researchResult?.sourceCount ?? 0 })"
+              :trailingIcon="researchSourcesOpen ? 'mdi:chevron-up' : 'mdi:chevron-down'"
+              class="max-w-full px-0 text-left text-xs text-muted"
+            />
+            <template #content>
+              <ArticleSourceList :sources="researchSources" class="mt-2 max-h-72 overflow-y-auto" />
+            </template>
+          </UCollapsible>
+          <p v-else-if="step.detail" class="mt-0.5 text-xs leading-5" :class="stepTone[step.state].text">
             {{ $t(`articles.editor.ai.run.${step.detail}`, step.params ?? {}) }}
           </p>
           <p v-else-if="step.state === 'failed' && run.error" class="mt-0.5 text-xs leading-5 text-error">
@@ -229,6 +246,8 @@ const stepTone: Record<GenerationStepState, { icon: string; class: string; text:
 }
 
 const knowledgeSources = computed(() => run.researchResult?.knowledgeSources ?? [])
+const researchSources = computed(() => run.researchResult?.sources ?? [])
+const researchSourcesOpen = shallowRef(false)
 const youtube = computed(() => run.researchResult?.youtube)
 
 const mediaItems = computed(() => {
@@ -261,7 +280,7 @@ const stalledMessage = computed(() => {
   if (run.phase === 'research') return t('articles.editor.ai.waitingResearch')
   if (run.phase === 'images') return t('articles.editor.ai.waitingImages')
   return run.writingStage === 'review'
-    ? t('articles.editor.ai.writingStage.review')
+    ? t('articles.editor.ai.run.review.waiting', { seconds: idle })
     : t('articles.editor.ai.waitingWriting', { seconds: idle })
 })
 </script>

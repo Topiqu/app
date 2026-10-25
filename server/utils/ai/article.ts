@@ -1,4 +1,5 @@
 import type { Language } from '~~/generated/zenstack/models'
+import type { GenerationReviewStage } from '~~/shared/utils/articleGeneration'
 
 import { generateText, streamText } from 'ai'
 
@@ -239,7 +240,7 @@ export const streamArticle = async (
         verification?: string[]
       })
     | null = null
-  const review = async (draft: ArticleObject) => {
+  const review = async (draft: ArticleObject, onProgress?: (stage: GenerationReviewStage) => void) => {
     const context = {
       prompt,
       researchBrief,
@@ -250,6 +251,7 @@ export const streamArticle = async (
       abortSignal: opts.abortSignal,
       verifyFacts: opts.research !== false,
       illustrative: true,
+      onProgress,
     }
     draft.sources = filterResearchSources(draft.sources, groundingBrief)
     const first = await auditArticleStep(
@@ -270,6 +272,7 @@ export const streamArticle = async (
     if (first.review.approved) return draft
     let revisedDraft = draft
     try {
+      onProgress?.('revising')
       const revision = await auditArticleStep(
         audit,
         'revision',
@@ -302,6 +305,7 @@ export const streamArticle = async (
             researchBrief: groundingBrief,
             verifyFacts: false,
             factsChecked: !!first.verificationBrief,
+            onProgress: () => onProgress?.('rechecking'),
           }),
         (result) => ({
           approved: result.review.approved,

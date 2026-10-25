@@ -135,7 +135,9 @@ describe('manual editorial review', () => {
       .mockResolvedValueOnce(response(revision, 20) as never)
       .mockResolvedValueOnce(response(approved, 5) as never)
     const generation = await streamArticle('site', 'Write a report', { research: false })
-    expect(await generation.review(draft)).toEqual(revision)
+    const progress = vi.fn()
+    expect(await generation.review(draft, progress)).toEqual(revision)
+    expect(progress.mock.calls.map(([stage]) => stage)).toEqual(['checking', 'revising', 'rechecking'])
     expect(generation.editorialReview).toMatchObject({
       approved: true,
       revised: true,
@@ -230,7 +232,9 @@ describe('manual editorial review', () => {
       .mockResolvedValueOnce(response(approved, 5) as never)
     const generation = await streamArticle('site', 'Compare decision-making', { format: 'comparison', modules: [] })
 
-    expect(await generation.review({ ...draft, sources: [source] })).toEqual(revision)
+    const progress = vi.fn()
+    expect(await generation.review({ ...draft, sources: [source] }, progress)).toEqual(revision)
+    expect(progress.mock.calls.map(([stage]) => stage)).toEqual(['verifying', 'checking', 'revising', 'rechecking'])
     expect(generatePlainText).toHaveBeenCalledTimes(2)
     expect(vi.mocked(generateStructuredText).mock.calls[2]![0].prompt).toContain(correction)
     expect(generation.editorialTokens).toBe(42)

@@ -80,7 +80,17 @@ export const useArticleGeneration = () => {
         billing: (msg) => handlers.onBilling?.(msg),
         final: (msg) => handlers.onFinal(msg.article),
       }
-      const progress = new Set(['reservation', 'phase', 'research', 'activity', 'media', 'review', 'final', 'billing'])
+      const progress = new Set([
+        'reservation',
+        'phase',
+        'research',
+        'activity',
+        'media',
+        'review-progress',
+        'review',
+        'final',
+        'billing',
+      ])
 
       const consume = (line: string) => {
         const trimmed = line.trim()
