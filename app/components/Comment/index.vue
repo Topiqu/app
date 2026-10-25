@@ -15,8 +15,8 @@
         >{{ $t('articles.comments.loadEarlierContext') }}</UButton
       >
     </div>
-    <header class="flex min-w-0 flex-wrap items-start justify-between gap-3">
-      <div class="flex min-w-0 max-w-full items-center gap-2 sm:gap-3 text-xs sm:text-sm md:text-base flex-wrap">
+    <header class="flex min-w-0 flex-wrap items-start gap-2 sm:gap-3">
+      <div class="flex min-w-0 flex-1 basis-32 items-center gap-2 sm:gap-3 text-xs sm:text-sm md:text-base flex-wrap">
         <UserCard v-if="userCardProps" :user="userCardProps" />
         <UBadge
           v-else-if="perms.isBanned"
@@ -34,30 +34,7 @@
         </UBadge>
         <span v-else class="font-semibold text-highlighted">{{ $t('common.user.notAvailable') }}</span>
       </div>
-      <div class="ml-auto flex max-w-full shrink-0 flex-wrap items-center justify-end gap-1">
-        <UButton
-          v-if="perms.report"
-          square
-          variant="ghost"
-          size="sm"
-          icon="mdi:flag-outline"
-          color="neutral"
-          :aria-label="$t('articles.comments.reportComment')"
-          :title="$t('articles.comments.reportComment')"
-          @click="showReportModal = true"
-        />
-        <UButton
-          v-if="perms.ban"
-          square
-          variant="ghost"
-          size="sm"
-          icon="mdi:account-cancel"
-          color="warning"
-          :aria-label="$t('articles.comments.banUser')"
-          :title="$t('articles.comments.banUser')"
-          :disabled="moderationPending"
-          @click="showBanModal = true"
-        />
+      <div class="ml-auto flex shrink-0 items-center justify-end gap-1">
         <UButton
           v-if="!comment.deletedAt && perms.reply && allowReplies !== false"
           size="sm"
@@ -69,40 +46,17 @@
         >
           <span class="hidden sm:inline">{{ $t('articles.comments.reply') }}</span>
         </UButton>
-        <UButton
-          v-if="!comment.deletedAt && perms.deleteOwn"
-          size="sm"
-          color="error"
-          variant="soft"
-          icon="mdi:delete"
-          :aria-label="$t('articles.comments.deleteComment')"
-          @click="emit('delete', comment, null)"
-        >
-          <span class="hidden sm:inline">{{ $t('articles.comments.deleteComment') }}</span>
-        </UButton>
-        <UButton
-          v-else-if="!comment.deletedAt && perms.moderateDelete"
-          size="sm"
-          color="error"
-          variant="soft"
-          icon="mdi:delete"
-          :aria-label="$t('articles.comments.deleteCommentAdmin')"
-          @click="showDeleteModal = true"
-        >
-          <span class="hidden sm:inline">{{ $t('articles.comments.deleteCommentAdmin') }}</span>
-        </UButton>
-        <UButton
-          v-if="perms.unban"
-          size="sm"
-          color="success"
-          variant="soft"
-          icon="mdi:account-check"
-          :loading="moderationPending"
-          :aria-label="$t('articles.comments.unbanUser')"
-          @click="unbanUser"
-        >
-          <span class="hidden sm:inline">{{ $t('articles.comments.unbanUser') }}</span>
-        </UButton>
+        <UDropdownMenu v-if="commentActions.length" :items="commentActions" :content="{ align: 'end' }">
+          <UButton
+            square
+            size="sm"
+            color="neutral"
+            variant="ghost"
+            icon="mdi:dots-horizontal"
+            :aria-label="$t('common.actions.more')"
+            :disabled="moderationPending || reportPending"
+          />
+        </UDropdownMenu>
       </div>
     </header>
 
@@ -191,20 +145,37 @@
 
     <UModal
       v-model:open="showReportModal"
+      scrollable
       :title="$t('articles.comments.reportComment')"
       :description="$t('articles.comments.reportDescription')"
+      :dismissible="!reportPending"
+      @after:enter="reportInput?.textareaRef?.focus()"
     >
       <template #body>
-        <UFormField :label="$t('articles.comments.reportReason')" required>
-          <UTextarea v-model="reportReason" :maxlength="160" autoresize class="w-full" :disabled="reportPending" />
-        </UFormField>
+        <form :id="reportFormId" @submit.prevent="report">
+          <UFormField :label="$t('articles.comments.reportReason')" name="reason" required>
+            <UTextarea
+              ref="reportInput"
+              v-model="reportReason"
+              name="reason"
+              :placeholder="$t('articles.comments.reportReason')"
+              :maxlength="160"
+              :rows="3"
+              required
+              autoresize
+              class="w-full"
+              :disabled="reportPending"
+            />
+            <template #hint>{{ reportReason.length }}/160</template>
+          </UFormField>
+        </form>
       </template>
       <template #footer>
         <div class="flex w-full justify-end gap-2">
-          <UButton color="neutral" variant="ghost" @click="showReportModal = false">{{
+          <UButton color="neutral" variant="ghost" :disabled="reportPending" @click="showReportModal = false">{{
             $t('common.actions.cancel')
           }}</UButton>
-          <UButton :disabled="!reportReason.trim()" :loading="reportPending" @click="report">{{
+          <UButton type="submit" :form="reportFormId" :disabled="!reportReason.trim()" :loading="reportPending">{{
             $t('articles.comments.reportComment')
           }}</UButton>
         </div>
@@ -272,6 +243,7 @@
 </template>
 
 <script setup lang="ts">
+import type { DropdownMenuItem } from '@nuxt/ui'
 import type { CommentWithReplies } from '~~/types/comment'
 
 const {
@@ -304,6 +276,8 @@ const showDeleteModal = shallowRef(false)
 const showBanModal = shallowRef(false)
 const showReportModal = shallowRef(false)
 const reportReason = shallowRef('')
+const reportInput = useTemplateRef('reportInput')
+const reportFormId = useId()
 const reportPending = shallowRef(false)
 const moderationPending = shallowRef(false)
 const deleteReason = shallowRef('')
@@ -313,6 +287,46 @@ const banExpiresAt = shallowRef<string | null>(null)
 const commentRef = computed(() => comment)
 const isReplyingRef = computed(() => isReplying)
 const perms = useCommentPermissions(commentRef, isReplyingRef)
+
+const commentActions = computed(() => {
+  const actions: DropdownMenuItem[] = []
+  if (perms.report)
+    actions.push({
+      label: $t('articles.comments.reportComment'),
+      icon: 'mdi:flag-outline',
+      onSelect: () => {
+        showReportModal.value = true
+      },
+    })
+  if (perms.ban)
+    actions.push({
+      label: $t('articles.comments.banUser'),
+      icon: 'mdi:account-cancel',
+      color: 'warning',
+      onSelect: () => {
+        showBanModal.value = true
+      },
+    })
+  if (perms.unban)
+    actions.push({ label: $t('articles.comments.unbanUser'), icon: 'mdi:account-check', onSelect: () => unbanUser() })
+  if (!comment.deletedAt && perms.deleteOwn)
+    actions.push({
+      label: $t('articles.comments.deleteComment'),
+      icon: 'mdi:delete-outline',
+      color: 'error',
+      onSelect: () => emit('delete', comment, null),
+    })
+  else if (!comment.deletedAt && perms.moderateDelete)
+    actions.push({
+      label: $t('articles.comments.deleteCommentAdmin'),
+      icon: 'mdi:delete-outline',
+      color: 'error',
+      onSelect: () => {
+        showDeleteModal.value = true
+      },
+    })
+  return actions
+})
 
 const displayContent = computed(() =>
   comment.deletedAt
