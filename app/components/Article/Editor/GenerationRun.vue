@@ -109,7 +109,7 @@
               size="xs"
               :label="$t('articles.editor.ai.run.research.sources', { count: run.researchResult?.sourceCount ?? 0 })"
               :trailingIcon="researchSourcesOpen ? 'mdi:chevron-up' : 'mdi:chevron-down'"
-              class="max-w-full px-0 text-left text-xs text-muted"
+              class="max-w-full"
             />
             <template #content>
               <ArticleSourceList :sources="researchSources" class="mt-2 max-h-72 overflow-y-auto" />
