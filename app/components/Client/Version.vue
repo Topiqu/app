@@ -1,6 +1,6 @@
 <template>
   <div
-    class="pointer-events-none fixed right-3 bottom-3 z-overlay flex w-88 max-w-[calc(100vw-1.5rem)] flex-col items-stretch gap-2"
+    class="pointer-events-none fixed right-3 bottom-[calc(0.75rem+var(--topiqu-unsaved-bar-height,0px))] z-overlay flex w-88 max-w-[calc(100vw-1.5rem)] flex-col items-stretch gap-2"
   >
     <AdminWebsiteImportNotice />
     <AdminSetupChecklist />

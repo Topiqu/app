@@ -1,6 +1,6 @@
 <template>
   <Teleport to="body">
-    <div class="pointer-events-none fixed inset-x-0 bottom-4 z-header flex justify-center px-4 sm:bottom-6 sm:px-6">
+    <div class="pointer-events-none fixed inset-x-0 bottom-4 z-header flex justify-center px-4 sm:px-6">
       <Transition
         enterActiveClass="transition duration-200 ease-out"
         enterFromClass="opacity-0 translate-y-3"
@@ -11,32 +11,28 @@
       >
         <div
           v-if="dirty"
+          ref="bar"
+          data-unsaved-bar
           role="status"
           aria-live="polite"
-          class="pointer-events-auto flex w-full max-w-xl items-center gap-3 rounded-(--topiqu-surface-radius) border border-default bg-default/85 p-2 pl-4 shadow-xl ring-1 ring-warning/15 backdrop-blur-md sm:w-auto sm:rounded-full"
+          class="pointer-events-auto flex w-full max-w-2xl flex-wrap items-center gap-3 rounded-(--topiqu-surface-radius) border-2 border-warning bg-elevated p-4 shadow-xl"
         >
-          <span class="relative flex size-2.5 shrink-0">
-            <span
-              class="absolute inline-flex size-full animate-ping rounded-full bg-warning/60 motion-reduce:hidden"
-              aria-hidden="true"
-            />
-            <span class="relative inline-flex size-2.5 rounded-full bg-warning" aria-hidden="true" />
-          </span>
+          <UIcon name="mdi:content-save-alert-outline" class="size-6 shrink-0 text-warning" aria-hidden="true" />
 
           <span class="min-w-0 flex-1">
-            <span class="block truncate text-sm font-medium text-highlighted">
+            <span class="block text-sm font-semibold text-highlighted">
               {{ $t('common.preferences.unsaved') }}
             </span>
-            <span class="hidden truncate text-xs text-muted sm:block">
+            <span class="block text-xs text-muted">
               {{ $t('common.preferences.unsavedDescription') }}
             </span>
           </span>
 
-          <span class="flex shrink-0 items-center gap-1.5">
-            <UButton color="neutral" variant="ghost" size="sm" :disabled="loading" @click="emit('reset')">
+          <span class="flex w-full flex-wrap items-center justify-end gap-2 sm:w-auto">
+            <UButton color="neutral" variant="outline" :disabled="loading" @click="emit('reset')">
               {{ $t('common.actions.discardChanges') }}
             </UButton>
-            <UButton size="sm" icon="mdi:content-save-outline" :loading @click="emit('save')">
+            <UButton icon="mdi:content-save-outline" :loading :disabled="loading" @click="emit('save')">
               {{ $t('common.actions.saveChanges') }}
             </UButton>
           </span>
@@ -47,6 +43,15 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{ dirty: boolean; loading?: boolean }>()
+const { dirty } = defineProps<{ dirty: boolean; loading?: boolean }>()
 const emit = defineEmits<{ reset: []; save: [] }>()
+const bar = useTemplateRef('bar')
+const { height } = useElementSize(bar, { width: 0, height: 0 }, { box: 'border-box' })
+const reservedHeight = useCssVar('--topiqu-unsaved-bar-height', undefined, { initialValue: '0px' })
+watchEffect(() => {
+  reservedHeight.value = dirty ? `${height.value + 16}px` : '0px'
+})
+onBeforeUnmount(() => {
+  if (import.meta.client) document.documentElement.style.setProperty('--topiqu-unsaved-bar-height', '0px')
+})
 </script>

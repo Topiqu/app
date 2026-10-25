@@ -1,5 +1,7 @@
 <template>
-  <main class="topiqu-dashboard-page flex flex-col gap-6 pb-28 pt-6">
+  <main
+    class="topiqu-dashboard-page flex flex-col gap-6 pb-[max(7rem,calc(var(--topiqu-unsaved-bar-height,0px)+1.5rem))] pt-6"
+  >
     <header class="flex items-center justify-between gap-4">
       <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
         {{ $t('profile.title') }}
