@@ -178,9 +178,9 @@
             :aiEnabled="activeFeatures.includes('AI')"
             :sentimentEnabled="activeFeatures.includes('SENTIMENT')"
             :articleCronsEnabled="activeFeatures.includes('ARTICLE_CRONS')"
-            :canEnableAi="allowedFeatures.AI ?? false"
-            :canEnableSentiment="allowedFeatures.SENTIMENT ?? false"
-            :canEnableArticleCrons="allowedFeatures.ARTICLE_CRONS ?? false"
+            :canEnableAi="(allowedFeatures.AI ?? false) && can('BILLING_CHANGE')"
+            :canEnableSentiment="(allowedFeatures.SENTIMENT ?? false) && can('BILLING_CHANGE')"
+            :canEnableArticleCrons="(allowedFeatures.ARTICLE_CRONS ?? false) && can('BILLING_CHANGE')"
             :autoRelease="form.autoRelease"
             :aiSeriesEnabled="form.aiSeriesEnabled"
             :articleQuality="form.articleQuality"
@@ -196,6 +196,7 @@
             :plan="client?.plan ?? 'BASIC'"
             :billingPlan="client?.billingPlan ?? 'MONTHLY'"
             :setupOnly="isBasic"
+            :togglePending="featurePending"
             @toggle:feature="toggleFeature"
             @update:username="form.aiUser.username = $event"
             @update:bio="form.aiUser.bio = $event"
@@ -269,9 +270,10 @@ const releaseScheduleModel = computed({
 })
 const pristine = ref(buildClientSettingsForm(client.value))
 watch(client, (value) => {
-  if (!value || isDirty.value) return
-  form.value = buildClientSettingsForm(value)
-  pristine.value = buildClientSettingsForm(value)
+  if (!value) return
+  const next = reconcileClientSettingsForm(form.value, pristine.value, value)
+  form.value = next.form
+  pristine.value = next.pristine
 })
 const isDirty = computed(() => !equal(form.value, pristine.value))
 const releaseScheduleDirty = computed(
@@ -326,31 +328,7 @@ const activeTab = computed<string>({
   },
 })
 
-const toggleFeature = async ({ code, enabled }: { code: 'AI' | 'SENTIMENT' | 'ARTICLE_CRONS'; enabled: boolean }) => {
-  if (!client.value?.id) return
-  try {
-    const res = await $fetch<
-      { activeFeatures: string[]; monthlyPayment: number; annualPayment: number },
-      '/api/clients/:id/features'
-    >(`/api/clients/${client.value.id}/features` as '/api/clients/:id/features', {
-      method: 'PATCH',
-      body: { code, enabled },
-    })
-    client.value = {
-      ...client.value,
-      activeFeatures: res.activeFeatures,
-      monthlyPayment: res.monthlyPayment,
-      annualPayment: res.annualPayment,
-    }
-    toast.add({
-      color: 'success',
-      title: enabled ? $t('common.messages.saveSuccess') : $t('common.messages.featureDisabled'),
-    })
-  } catch {
-    toast.add({ color: 'error', title: $t('common.messages.saveFailed') })
-    await refresh()
-  }
-}
+const { pending: featurePending, toggle: toggleFeature } = useClientFeatures(client, refresh)
 
 const savePreferences = async () => {
   if (!clientId.value) return toast.add({ color: 'error', title: $t('common.preferences.messages.noClientId') })

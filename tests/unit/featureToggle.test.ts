@@ -29,4 +29,15 @@ describe('feature toggle card', () => {
     await wrapper.get('[role="switch"]').trigger('click')
     expect(wrapper.emitted('toggle')).toBeUndefined()
   })
+
+  it('keeps the confirmed value and blocks clicks while a change is pending', async () => {
+    const wrapper = await mountSuspended(FeatureToggle, { props: { ...props, loading: true }, global })
+    const control = wrapper.get('[role="switch"]')
+    expect(control.attributes('disabled')).toBeDefined()
+    expect(control.attributes('aria-checked')).toBe('false')
+    await control.trigger('click')
+    await wrapper.get('label').trigger('click')
+    expect(wrapper.emitted('toggle')).toBeUndefined()
+    wrapper.unmount()
+  })
 })

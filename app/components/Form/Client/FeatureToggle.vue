@@ -3,7 +3,7 @@
     class="flex h-full select-none flex-col gap-4 rounded-(--topiqu-surface-radius) border bg-default p-4 transition-colors"
     :class="[
       active ? 'border-primary' : 'border-default hover:border-accented',
-      disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer',
+      disabled || loading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer',
     ]"
   >
     <div class="flex items-start justify-between gap-3">
@@ -14,7 +14,13 @@
       >
         <UIcon :name="icon" class="size-5" />
       </div>
-      <USwitch :modelValue="enabled" :disabled :aria-label="title" @update:modelValue="emit('toggle')" />
+      <USwitch
+        :modelValue="enabled"
+        :disabled="disabled || loading"
+        :loading
+        :aria-label="title"
+        @update:modelValue="emit('toggle')"
+      />
     </div>
 
     <div class="min-w-0 flex-1">

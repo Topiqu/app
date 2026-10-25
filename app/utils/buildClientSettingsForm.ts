@@ -106,6 +106,18 @@ const emptyForm = (): ClientSettingsForm => ({
   linkedinCompanyType: 'pages',
 })
 
+export const reconcileClientSettingsForm = (
+  form: ClientSettingsForm,
+  pristine: ClientSettingsForm,
+  client: ClientSite,
+) => {
+  const next = buildClientSettingsForm(client)
+  const edited = Object.fromEntries(
+    Object.entries(form).filter(([key, value]) => !equal(value, pristine[key as keyof ClientSettingsForm])),
+  )
+  return { form: { ...next, ...edited } as ClientSettingsForm, pristine: next }
+}
+
 export function buildClientSettingsForm(client?: ClientSite | null): ClientSettingsForm {
   const base = emptyForm()
   if (!client) return base

@@ -639,6 +639,12 @@
       "articleCrons": "Plánované generování článků",
       "articleCronsDesc": "Automatické vydávání článků pomocí AI na základě vašich preferencí",
       "includedInPlan": "Součástí tvého tarifu",
+      "enableTitle": "Zapnout {name}?",
+      "disableTitle": "Vypnout {name}?",
+      "toggleMessage": "Změna funkce {name} se projeví ihned po potvrzení a uloží se samostatně od ostatního nastavení.",
+      "togglePrice": "Cena funkce: {price} / {period}.",
+      "toggleBilling": "Aktivací začíná minimální účtované období v délce {days} dnů. Vypnutí funkce nezkracuje již zahájené účtované období.",
+      "refreshFailed": "Změna se uložila, ale některé údaje se nepodařilo obnovit. Aktuální stav zobrazíte obnovením stránky.",
       "disableAiTitle": "Vypnout AI?",
       "disableAiMessage": "Vypnutím AI se vypne i analýza sentimentu a plánované generování článků, které AI vyžadují."
     },

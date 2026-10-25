@@ -3,7 +3,11 @@ import { describe, expect, it } from 'vitest'
 
 import type { ClientSite } from '../../app/utils/buildClientSettingsForm'
 
-import { buildClientSettingsForm, buildClientSettingsPatch } from '../../app/utils/buildClientSettingsForm'
+import {
+  buildClientSettingsForm,
+  buildClientSettingsPatch,
+  reconcileClientSettingsForm,
+} from '../../app/utils/buildClientSettingsForm'
 
 const baseClient = (overrides: Partial<ClientSite> = {}): ClientSite =>
   ({
@@ -33,6 +37,23 @@ const baseClient = (overrides: Partial<ClientSite> = {}): ClientSite =>
   }) as unknown as ClientSite
 
 describe('buildClientSettingsForm', () => {
+  it('refreshes untouched settings after a feature change while preserving unsaved fields', () => {
+    const client = baseClient({ autoRelease: true, generationFrequency: 'NONE' })
+    const pristine = buildClientSettingsForm(client)
+    const form = { ...pristine, focus: 'My unsaved focus', aiUser: { ...pristine.aiUser, bio: 'Unsaved bio' } }
+    const latest = { ...client, autoRelease: false, generationFrequency: 'DAILY' as const }
+    const refreshed = reconcileClientSettingsForm(form, pristine, latest)
+    expect(refreshed.form).toMatchObject({
+      focus: 'My unsaved focus',
+      autoRelease: false,
+      generationFrequency: 'DAILY',
+      aiUser: { bio: 'Unsaved bio' },
+    })
+    expect(buildClientSettingsPatch(refreshed.form, refreshed.pristine)).toEqual({
+      focus: 'My unsaved focus',
+      aiUser: refreshed.form.aiUser,
+    })
+  })
   it('preserves disabled community and publication settings through reload and reset', () => {
     const disabled = {
       commentsEnabled: false,

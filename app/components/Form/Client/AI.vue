@@ -106,7 +106,7 @@
           :price="featurePrice('AI')"
           :billingPlan
           :enabled="aiEnabled"
-          :disabled="!canEnableAi"
+          :disabled="!canEnableAi || !catalogReady('AI')"
           :loading="togglePending"
           @toggle="toggle('AI')"
         />
@@ -118,7 +118,7 @@
           :price="featurePrice('SENTIMENT')"
           :billingPlan
           :enabled="sentimentEnabled"
-          :disabled="!canEnableSentiment || !aiEnabled"
+          :disabled="!canEnableSentiment || !aiEnabled || !catalogReady('SENTIMENT')"
           :loading="togglePending"
           @toggle="toggle('SENTIMENT')"
         />
@@ -130,7 +130,7 @@
           :price="featurePrice('ARTICLE_CRONS')"
           :billingPlan
           :enabled="articleCronsEnabled"
-          :disabled="!canEnableArticleCrons || !aiEnabled"
+          :disabled="!canEnableArticleCrons || !aiEnabled || !catalogReady('ARTICLE_CRONS')"
           :loading="togglePending"
           @toggle="toggle('ARTICLE_CRONS')"
         />
@@ -227,23 +227,14 @@
       :cancelText="$t('common.actions.cancel')"
       @confirm="confirmAutoRelease"
     />
-
-    <AppConfirmDialog
-      v-model:open="showAiDisableModal"
-      :title="$t('common.features.disableAiTitle')"
-      :message="$t('common.features.disableAiMessage')"
-      icon="mdi:alert-rhombus-outline"
-      variant="danger"
-      :confirmText="$t('common.actions.disable')"
-      :cancelText="$t('common.actions.cancel')"
-      @confirm="confirmAiDisable"
-    />
   </div>
 </template>
 
 <script setup lang="ts">
 import type { ArticleQuality } from '~~/shared/utils/articleQuality'
 import type { ReleaseFrequency, ReleaseScheduleSettings } from '~~/shared/utils/releaseSchedule'
+
+import type { FeatureToggleRequest } from '~/composables/useClientFeatures'
 
 const { t, locale } = useI18n()
 const onAvatarUploaded = () => refreshClientSiteStatus()
@@ -272,6 +263,8 @@ const props = defineProps<{
     code: string
     priceMonthly: number
     priceAnnual?: number | null
+    annualBillingPrice?: number
+    minimumBillingDays?: number
   }[]
   plan: string
   billingPlan: 'MONTHLY' | 'ANNUAL' | 'PERMANENT'
@@ -293,7 +286,7 @@ const emit = defineEmits<{
   'update:translationMode': ['OFF' | 'MANUAL' | 'AUTO' | 'HYBRID']
   'update:translationLanguages': [string[]]
   'update:discloseAiContent': [boolean]
-  'toggle:feature': [{ code: 'AI' | 'SENTIMENT' | 'ARTICLE_CRONS'; enabled: boolean }]
+  'toggle:feature': [FeatureToggleRequest]
 }>()
 
 const SUPPORTED_LANGUAGES = LANGUAGE_OPTIONS
@@ -326,7 +319,6 @@ const toggleTargetLang = (lang: string) => {
 }
 
 const showAutoReleaseModal = shallowRef(false)
-const showAiDisableModal = shallowRef(false)
 
 const rate = useCurrencyRate(() => props.currency)
 
@@ -375,6 +367,12 @@ const avatarUrl = computed({
   set: (v) => emit('update:avatarUrl', v ?? ''),
 })
 const togglePending = computed(() => props.togglePending ?? false)
+const catalogReady = (code: string) =>
+  props.plan !== 'CUSTOM' ||
+  props.billingPlan === 'PERMANENT' ||
+  props.features.some(
+    (feature) => feature.code === code && (props.billingPlan !== 'ANNUAL' || feature.annualBillingPrice != null),
+  )
 
 const handleAutoReleaseToggle = (newValue: boolean) => {
   if (newValue) {
@@ -397,26 +395,22 @@ const toggle = (code: 'AI' | 'SENTIMENT' | 'ARTICLE_CRONS') => {
       ARTICLE_CRONS: props.articleCronsEnabled,
     }[code] ?? false
 
-  if (code === 'AI' && current && (props.sentimentEnabled || props.articleCronsEnabled)) {
-    showAiDisableModal.value = true
-    return
-  }
-
-  emit('toggle:feature', { code, enabled: !current })
-}
-
-const confirmAiDisable = () => {
-  emit('toggle:feature', { code: 'AI', enabled: false })
-  showAiDisableModal.value = false
+  if (togglePending.value || !catalogReady(code)) return
+  emit('toggle:feature', {
+    code,
+    enabled: !current,
+    price: featurePrice(code),
+    minimumBillingDays: props.features.find((feature) => feature.code === code)?.minimumBillingDays,
+  })
 }
 
 const featurePrice = (code: string) => {
-  if (props.plan !== 'CUSTOM') return null
+  if (props.plan !== 'CUSTOM' || props.billingPlan === 'PERMANENT') return null
 
-  const monthlyUsd = props.features?.find((f) => f.code === code)?.priceMonthly
-  if (!monthlyUsd) return '–'
-
-  const price = props.billingPlan === 'ANNUAL' ? monthlyUsd * 12 * 0.8 : monthlyUsd
+  const feature = props.features.find((entry) => entry.code === code)
+  const price = props.billingPlan === 'ANNUAL' ? feature?.annualBillingPrice : feature?.priceMonthly
+  if (price == null) return '–'
+  if (price === 0) return null
 
   return new Intl.NumberFormat(languageTag(locale.value), {
     style: 'currency',

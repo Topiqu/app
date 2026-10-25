@@ -639,6 +639,12 @@
       "articleCrons": "Génération planifiée d'articles",
       "articleCronsDesc": "Publication automatique d'articles par IA selon vos préférences",
       "includedInPlan": "Inclus dans votre offre",
+      "enableTitle": "Activer {name} ?",
+      "disableTitle": "Désactiver {name} ?",
+      "toggleMessage": "La modification de {name} prend effet dès la confirmation et est enregistrée séparément de vos autres réglages.",
+      "togglePrice": "Tarif de la fonctionnalité : {price} / {period}.",
+      "toggleBilling": "L’activation ouvre une période minimale de facturation de {days} jours. La désactivation ne raccourcit pas un engagement de facturation existant.",
+      "refreshFailed": "La modification a été enregistrée, mais certaines informations n’ont pas pu être actualisées. Rechargez la page pour voir l’état actuel.",
       "disableAiTitle": "Désactiver l'IA ?",
       "disableAiMessage": "La désactivation de l'IA désactivera également l'analyse des sentiments et la génération planifiée d'articles, qui en dépendent."
     },

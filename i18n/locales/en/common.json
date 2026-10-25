@@ -639,6 +639,12 @@
       "articleCrons": "Scheduled Article Generation",
       "articleCronsDesc": "Automatic publishing of articles using AI based on your preferences",
       "includedInPlan": "Included in your plan",
+      "enableTitle": "Enable {name}?",
+      "disableTitle": "Disable {name}?",
+      "toggleMessage": "The change to {name} takes effect immediately after confirmation and is saved separately from your other settings.",
+      "togglePrice": "Feature rate: {price} / {period}.",
+      "toggleBilling": "Activation starts a minimum billing period of {days} days. Disabling the feature does not shorten an existing billing commitment.",
+      "refreshFailed": "The change was saved, but some information could not be refreshed. Reload the page to see the current state.",
       "disableAiTitle": "Disable AI?",
       "disableAiMessage": "Disabling AI will also disable sentiment analysis and scheduled article generation, which depend on it."
     },

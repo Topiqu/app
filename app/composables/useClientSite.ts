@@ -8,6 +8,7 @@ export interface ClientSiteStatus {
   domainVerified: boolean
   pendingDomain: string | null
   plan: string
+  activeFeatures: string[]
   articleQuality: ArticleQuality
   articleWallet: {
     available: number
