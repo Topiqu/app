@@ -1,3 +1,5 @@
+import { FEATURE_MIN_BILLING_DAYS } from '~~/server/utils/planFeatures'
+
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const user = await getSessionUser(event)
@@ -18,7 +20,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: t('common.errors.invalidFeature') ?? 'Invalid feature' })
 
   const now = new Date()
-  const lockUntil = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
+  const lockUntil = new Date(now.getTime() + FEATURE_MIN_BILLING_DAYS * 24 * 60 * 60 * 1000)
 
   const before = await prisma.clientSite.findUnique({
     where: { id: clientId },

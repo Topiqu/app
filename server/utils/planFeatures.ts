@@ -29,6 +29,7 @@ type FeatureSyncDb = {
 }
 
 export const FEATURE_CODES: FeatureCode[] = ['AI', 'SENTIMENT', 'ARTICLE_CRONS', 'SEARCH_CONSOLE']
+export const FEATURE_MIN_BILLING_DAYS = 30
 
 export const FEATURE_DEPENDENCIES: Record<FeatureCode, FeatureCode[]> = {
   AI: [],

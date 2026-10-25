@@ -40,7 +40,7 @@ export default defineEventHandler(async (event) => {
       publishToShopify: true,
       publishToLinkedIn: true,
       features: {
-        where: { isActive: true, feature: { code: { in: ['AI', 'ARTICLE_CRONS', 'SEARCH_CONSOLE'] } } },
+        where: { isActive: true },
         select: { feature: { select: { code: true } } },
       },
       searchConsoleConnection: { select: { status: true, propertyUrl: true, deletedAt: true } },
@@ -183,6 +183,7 @@ export default defineEventHandler(async (event) => {
     (await db.log.count({ where: { clientSiteId: clientSite.id, action: 'TRIAL_REPEAT_INBOX' } })) > 0
   return {
     ...status,
+    activeFeatures: [...activeFeatures],
     articlesRemaining: articleWallet.available,
     articleWallet,
     knowledgeSources: knowledgeSources.length,

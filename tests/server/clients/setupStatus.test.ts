@@ -45,6 +45,20 @@ beforeEach(() => {
 })
 
 describe('dashboard setup status', () => {
+  it('returns only active feature codes in the shared status', async () => {
+    db.clientSite.findUnique.mockResolvedValueOnce({
+      id: 'own-site',
+      plan: 'PREMIUM',
+      users: [],
+      features: [{ feature: { code: 'AI' } }, { feature: { code: 'SENTIMENT' } }],
+    })
+    const result = await handler(event())
+    expect(result?.activeFeatures).toEqual(['AI', 'SENTIMENT'])
+    expect(db.clientSite.findUnique.mock.calls[0]![0].select.features).toEqual({
+      where: { isActive: true },
+      select: { feature: { select: { code: true } } },
+    })
+  })
   const event = () => ({ query: { clientSiteId: 'foreign-site' } }) as never
 
   it('returns no setup without an active session tenant', async () => {
