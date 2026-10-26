@@ -38,7 +38,16 @@ const opportunity = {
 
 const mountRow = (props: Record<string, unknown>) =>
   mountSuspended(PromptRow, {
-    props: { prompt: prompt([run(false)]), canSample: true, running: false, disabled: false, actions: [], ...props },
+    props: {
+      prompt: prompt([run(false)]),
+      canSample: true,
+      canGenerate: true,
+      canEnableAi: false,
+      running: false,
+      disabled: false,
+      actions: [],
+      ...props,
+    },
   })
 
 describe('visibility prompt row', () => {

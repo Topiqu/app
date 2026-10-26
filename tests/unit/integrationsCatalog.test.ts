@@ -133,7 +133,7 @@ describe('settings integrations catalog', () => {
     expect(bar).toContain('<Teleport to="body">')
     expect(bar).toContain('fixed inset-x-0 bottom-4 z-header')
     expect(bar).toContain("$t('common.preferences.unsavedDescription')")
-    expect(bar).toContain('motion-reduce:hidden')
+    expect(bar).toContain('--topiqu-unsaved-bar-height')
     expect(confirmDialog).toMatch(/<UModal\s+:open(?:="open")?\s+portal\s+scrollable/)
     expect(styles).not.toMatch(/\.confirm-dialog-content\s*{[^}]*\b(?:top|left|transform):/s)
   })
