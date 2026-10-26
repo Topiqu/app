@@ -41,9 +41,10 @@
         <ArticleLanguageLinks :links="alternates" :current="data.language" />
       </template>
 
-      <template #actions>
+      <template #actions="{ aiDisclosure }">
         <ArticleActionsBar
           :article="data"
+          :aiDisclosure
           :isAdmin="canManageArticle(session?.user, data)"
           :onStatusUpdate="debouncedSetStatus"
           @toggleComments="toggleComments"

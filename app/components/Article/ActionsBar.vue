@@ -37,6 +37,7 @@
         <div class="flex items-center gap-1">
           <UIcon size="16" name="mdi:share-variant" /><span>{{ formatNumber(article.shared) }}</span>
         </div>
+        <ArticleAiDisclosure v-if="aiDisclosure" :involvement="aiDisclosure" />
       </div>
       <slot name="sharing" />
     </div>
@@ -50,6 +51,7 @@ const { locale } = useI18n()
 defineProps<{
   article: any
   isAdmin: boolean
+  aiDisclosure?: string | null
   onStatusUpdate: (id: string, status: string) => Promise<void>
 }>()
 

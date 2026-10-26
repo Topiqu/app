@@ -28,20 +28,14 @@
           :excerpt="article.excerpt"
           :imageUrl="article.imageUrl"
           :imageCredit="article.imageCredit"
+          :discloseAi
           :series="article.series?.name ? article.series : undefined"
           @follow="emit('follow')"
         />
       </div>
 
-      <div v-if="$slots.languages || aiDisclosure" class="flex flex-wrap items-center gap-2">
+      <div v-if="$slots.languages" class="flex flex-wrap items-center gap-2">
         <slot name="languages" />
-        <span
-          v-if="aiDisclosure"
-          class="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
-        >
-          <UIcon name="mdi:robot-outline" class="size-4" />
-          {{ $t(`articles.aiDisclosure.${aiDisclosure}`) }}
-        </span>
       </div>
 
       <div v-if="article.tags.length" class="flex flex-wrap gap-2.5">
@@ -64,7 +58,10 @@
 
       <ArticleSummary :answer="article.answer" :takeaways="article.takeaways" />
 
-      <slot name="actions" />
+      <!-- The page's actions bar lists the disclosure with the article meta; without one it stands alone. -->
+      <slot name="actions" :aiDisclosure>
+        <ArticleAiDisclosure v-if="aiDisclosure" :involvement="aiDisclosure" class="self-start" />
+      </slot>
 
       <article ref="content" class="article-content w-full max-w-none!" :class="ARTICLE_PROSE_CLASS">
         <ArticleParsed

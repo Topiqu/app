@@ -20,17 +20,12 @@
 <script setup lang="ts">
 import type { CoverCredit } from '~~/shared/utils/imageCredit'
 
-const { cover, discloseAi = true } = defineProps<{ cover?: CoverCredit | null; discloseAi?: boolean }>()
+const { cover } = defineProps<{ cover?: CoverCredit | null }>()
 
 const { t } = useI18n()
 
-/** Only a real photo goes unlabelled; anything else says so before it says who made it. */
-const prefix = computed(() => {
-  if (cover?.kind === 'ai') return discloseAi ? t('articles.image.ai') : ''
-  if (cover?.kind === 'illustration') return t('articles.image.illustration')
-
-  return ''
-})
+// A generated cover says so on the picture itself (`ArticleHeaderHero`).
+const prefix = computed(() => (cover?.kind === 'illustration' ? t('articles.image.illustration') : ''))
 
 const segments = computed(() => (cover?.credit ? creditSegments(cover.credit, t('articles.image.photoBy')) : []))
 </script>

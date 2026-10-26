@@ -1059,6 +1059,7 @@
     "image": {
       "illustration": "Image d'illustration",
       "ai": "Image d'illustration (IA)",
+      "aiBadge": "IA",
       "photoBy": "photo : {author}"
     },
     "aiDisclosure": {

@@ -47,17 +47,29 @@
       {{ excerpt }}
     </p>
 
-    <AppMedia
-      priority
-      :src="imageUrl"
-      :alt="$t('articles.articleCard.imageAlt')"
-      aspectRatio="16 / 9"
-      fit="contain"
-      sizes="xs:100vw phone:100vw sm:100vw md:100vw lg:1200px"
-      :width="1200"
-      :height="675"
-      containerClass="w-full rounded-lg"
-    />
+    <div class="relative">
+      <AppMedia
+        priority
+        :src="imageUrl"
+        :alt="$t('articles.articleCard.imageAlt')"
+        aspectRatio="16 / 9"
+        fit="contain"
+        sizes="xs:100vw phone:100vw sm:100vw md:100vw lg:1200px"
+        :width="1200"
+        :height="675"
+        containerClass="w-full rounded-lg"
+      />
+      <UBadge
+        v-if="imageUrl && discloseAi && imageCredit?.kind === 'ai'"
+        color="neutral"
+        variant="solid"
+        icon="mdi:robot-outline"
+        class="absolute bottom-3 left-3"
+      >
+        <span aria-hidden="true">{{ $t('articles.image.aiBadge') }}</span>
+        <span class="sr-only">{{ $t('articles.image.ai') }}</span>
+      </UBadge>
+    </div>
     <ArticleImageCredit :cover="imageCredit" />
   </div>
 </template>
