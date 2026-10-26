@@ -324,11 +324,10 @@ export const finalizeArticle = async (
 
   const polls = (object.polls ?? []).map((poll, idx) => {
     const pollId = crypto.randomUUID()
-    const optionObjects = poll.options.map((label: string) => ({ label }))
-    const escapedOptions = JSON.stringify(optionObjects).replace(/"/g, '&quot;')
+    const options = escapeHtml(JSON.stringify(poll.options.map((label: string) => ({ label }))))
     return {
       slot: idx + 1,
-      html: `<div data-type="poll" data-id="${pollId}" data-question="${poll.question}" data-options="${escapedOptions}"></div>`,
+      html: `<div data-type="poll" data-id="${pollId}" data-question="${escapeHtml(poll.question)}" data-options="${options}"></div>`,
     }
   })
   object.content = applyContentSlots(object.content, 'POLL', polls)

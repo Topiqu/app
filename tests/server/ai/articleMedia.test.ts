@@ -1,3 +1,4 @@
+import { load } from 'cheerio'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { stubNitroImports } from '../../helpers/nitroImports'
@@ -205,6 +206,19 @@ describe('article media finalization', () => {
     expect(result.content.match(/<img /g)).toHaveLength(1)
     expect(result.content).toContain('images.test/body')
     expect(result.content).not.toMatch(/alt="(Plot|Hills|Listing)"|listing\.test|Hills<\/figcaption>/)
+  })
+
+  it('escapes a poll question and its options into their attributes', async () => {
+    vi.mocked(findStockImage).mockResolvedValue(null)
+    const result = await finalizeArticle({
+      ...draft(),
+      content: '<p>a</p>[[POLL1]]',
+      images: [],
+      polls: [{ question: 'Who wins the "1v1"?', options: ['Jotaro', 'Tom & <b>Jerry</b>'] }],
+    })
+    const poll = load(result.content)('div[data-type="poll"]')
+    expect(poll.attr('data-question')).toBe('Who wins the "1v1"?')
+    expect(JSON.parse(poll.attr('data-options')!)).toEqual([{ label: 'Jotaro' }, { label: 'Tom & <b>Jerry</b>' }])
   })
 
   it('never generates a cover or body image when AI fallback is disabled', async () => {
