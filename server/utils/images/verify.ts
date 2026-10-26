@@ -54,6 +54,8 @@ ${
 }
 depicts=false when the main subject is something else (another event, place, person or object, a ceremony,
 a portrait, a landscape) even if a caption could connect it to the topic.
+depicts=false for a stand-in instead of the subject itself: a cosplayer, costume, figurine, toy, statue, mascot,
+merchandise or fan art of a character, brand or person, unless that object is what the article is about.
 Respect the country and local setting established by the article and query. Reject recognizably foreign institutions, landmarks, signage or architecture that would misrepresent that setting, including an American house or public event illustrating a specifically Czech local issue. A generic scene is acceptable only when it does not contradict the setting. Do not infer country solely from the article language.`,
             },
           ],
