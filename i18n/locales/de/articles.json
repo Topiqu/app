@@ -1065,7 +1065,8 @@
       "illustration": "Illustrationsbild",
       "ai": "Illustrationsbild (KI)",
       "aiBadge": "KI",
-      "photoBy": "Foto: {author}"
+      "photoBy": "Foto: {author}",
+      "illustrationBy": "Symbolfoto: {author}"
     },
     "aiDisclosure": {
       "ASSIST": "Mit KI-Unterstützung erstellt",

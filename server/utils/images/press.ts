@@ -188,7 +188,7 @@ export const youtubeThumbnailImage = (url: string, caption?: string): StockImage
     ? {
         url: `https://i.ytimg.com/vi/${id}/maxresdefault.jpg`,
         alt: caption,
-        credit: { source: 'YouTube — official video thumbnail', sourceUrl: url },
+        credit: { source: 'YouTube', sourceUrl: url },
       }
     : null
 }

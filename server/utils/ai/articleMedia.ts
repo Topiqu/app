@@ -51,7 +51,8 @@ const captionLabels = async (language: Language): Promise<CaptionLabels> => {
   return {
     illustration: t('articles.image.illustration') || 'Illustrative image',
     ai: t('articles.image.ai') || 'Illustrative image (AI)',
-    photoBy: t('articles.image.photoBy') || 'photo: {author}',
+    photoBy: t('articles.image.photoBy') || 'Photo: {author}',
+    illustrationBy: t('articles.image.illustrationBy') || 'Illustrative photo: {author}',
   }
 }
 

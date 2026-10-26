@@ -1060,7 +1060,8 @@
       "illustration": "Image d'illustration",
       "ai": "Image d'illustration (IA)",
       "aiBadge": "IA",
-      "photoBy": "photo : {author}"
+      "photoBy": "Photo : {author}",
+      "illustrationBy": "Photo d'illustration : {author}"
     },
     "aiDisclosure": {
       "ASSIST": "Créé avec l'aide de l'IA",

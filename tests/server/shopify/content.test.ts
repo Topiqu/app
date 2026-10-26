@@ -6,6 +6,7 @@ import { stubNitroImports } from '../../helpers/nitroImports'
 
 async function stubImports() {
   await stubNitroImports(import('../../../server/utils/sanitize'), 'escapeHtml', 'sanitizeHtml')
+  await stubNitroImports(import('../../../server/utils/images/caption'), 'renderCredit')
 }
 
 await stubImports()
@@ -82,6 +83,15 @@ describe('Shopify article export', () => {
     )
     expect(html).toContain('AI-generated illustration')
     expect(html).not.toMatch(/javascript:|onerror|http:\/\/unsafe/)
+  })
+
+  it('labels an illustrative cover in its credit', () => {
+    const html = exportShopifyContent(
+      { ...article(), imageCredit: { kind: 'illustration', credit: { author: 'Artist', source: 'Library' } } },
+      'https://tenant.example',
+      'cs',
+    )
+    expect(html).toContain('Ilustrační foto: Artist')
   })
 
   it('gives different articles distinct deterministic handles and bounds their length', () => {

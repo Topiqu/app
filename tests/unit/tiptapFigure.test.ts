@@ -41,7 +41,12 @@ const createEditor = (content: string) => {
   return editor
 }
 
-const LABELS = { illustration: 'Ilustrační obrázek', ai: 'Ilustrační obrázek (AI)', photoBy: 'foto: {author}' }
+const LABELS = {
+  illustration: 'Ilustrační obrázek',
+  ai: 'Ilustrační obrázek (AI)',
+  photoBy: 'Foto: {author}',
+  illustrationBy: 'Ilustrační foto: {author}',
+}
 
 afterEach(() => {
   editors.splice(0).forEach((editor) => editor.destroy())

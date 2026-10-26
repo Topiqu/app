@@ -1060,7 +1060,8 @@
       "illustration": "Ilustrační obrázek",
       "ai": "Ilustrační obrázek (AI)",
       "aiBadge": "AI",
-      "photoBy": "foto: {author}"
+      "photoBy": "Foto: {author}",
+      "illustrationBy": "Ilustrační foto: {author}"
     },
     "aiDisclosure": {
       "ASSIST": "Vytvořeno s pomocí AI",

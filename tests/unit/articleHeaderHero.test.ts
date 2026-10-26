@@ -10,6 +10,8 @@ const { t } = vi.hoisted(() => {
   const messages: Record<string, string> = {
     'articles.image.ai': 'Ilustrační obrázek (AI)',
     'articles.image.aiBadge': 'AI',
+    'articles.image.photoBy': 'Foto: {author}',
+    'articles.image.illustrationBy': 'Ilustrační foto: {author}',
   }
   return { t: (key: string) => messages[key] ?? key }
 })
@@ -37,5 +39,23 @@ describe('ArticleHeaderHero', () => {
     expect(shown.text()).toContain('Ilustrační obrázek (AI)')
     expect(shown.find('p').exists()).toBe(false)
     expect(mountHero({ imageCredit: { kind: 'ai' }, discloseAi: false }).text()).not.toContain('AI')
+  })
+
+  it('credits an illustrative cover in one short line', () => {
+    const wrapper = mountHero({
+      imageCredit: {
+        kind: 'illustration',
+        credit: {
+          author: 'Pikawil',
+          license: 'CC BY-SA 2.0',
+          licenseUrl: 'https://creativecommons.org/licenses/by-sa/2.0',
+          source: 'Wikimedia Commons',
+          sourceUrl: 'https://commons.wikimedia.org/wiki/File:X.jpg',
+        },
+      },
+    })
+
+    expect(wrapper.get('p').text()).toBe('Ilustrační foto: Pikawil (CC BY-SA 2.0)')
+    expect(wrapper.get('p a').attributes('href')).toBe('https://commons.wikimedia.org/wiki/File:X.jpg')
   })
 })

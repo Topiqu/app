@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { creditHref, creditSegments, creditSeparator } from '../../shared/utils/imageCredit'
+import { creditHref, creditSegments } from '../../shared/utils/imageCredit'
 
 describe('creditHref', () => {
   it('passes http(s) through', () => {
@@ -20,46 +20,44 @@ describe('creditHref', () => {
 })
 
 describe('creditSegments', () => {
-  it('orders author, license, then the library', () => {
-    const segments = creditSegments(
-      {
-        author: 'Kremlin.ru',
-        authorUrl: 'https://kremlin.ru',
-        license: 'CC BY 4.0',
-        licenseUrl: 'https://creativecommons.org/licenses/by/4.0',
-        source: 'Wikimedia Commons',
-      },
-      'foto: {author}',
-    )
+  const credit = {
+    author: 'Kremlin.ru',
+    authorUrl: 'https://kremlin.ru',
+    license: 'CC BY 4.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by/4.0',
+    source: 'Wikimedia Commons',
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:X.jpg',
+  }
 
-    expect(segments).toEqual([
+  it('links the name to the work, then the license in brackets', () => {
+    expect(creditSegments(credit, 'Foto: {author}')).toEqual([
       // The label stays out of the anchor — only the name itself is the link.
-      { before: 'foto: ', text: 'Kremlin.ru', after: '', href: 'https://kremlin.ru' },
-      { text: 'CC BY 4.0', href: 'https://creativecommons.org/licenses/by/4.0' },
-      { text: 'Wikimedia Commons', href: undefined },
+      { before: 'Foto: ', text: 'Kremlin.ru', after: '', href: 'https://commons.wikimedia.org/wiki/File:X.jpg' },
+      { before: ' (', text: 'CC BY 4.0', after: ')', href: 'https://creativecommons.org/licenses/by/4.0' },
     ])
   })
 
+  it("falls back to the author's page when the work has none", () => {
+    const [name] = creditSegments({ ...credit, sourceUrl: undefined }, 'Foto: {author}')
+
+    expect(name).toMatchObject({ text: 'Kremlin.ru', href: 'https://kremlin.ru' })
+  })
+
   it('keeps a label that follows the name', () => {
-    const [author] = creditSegments({ author: 'Jan', source: 'Openverse' }, '{author} (foto)')
+    const [name] = creditSegments({ author: 'Jan', source: 'Openverse' }, '{author} (foto)')
 
-    expect(author).toMatchObject({ before: '', text: 'Jan', after: ' (foto)' })
+    expect(name).toMatchObject({ before: '', text: 'Jan', after: ' (foto)' })
   })
 
-  it('drops an unsafe author link but keeps the name', () => {
-    const [author] = creditSegments({ author: 'X', authorUrl: 'javascript:alert(1)', source: 'Openverse' }, '{author}')
+  it('drops an unsafe link but keeps the name', () => {
+    const [name] = creditSegments({ author: 'X', authorUrl: 'javascript:alert(1)', source: 'Openverse' }, '{author}')
 
-    expect(author).toMatchObject({ text: 'X', href: undefined })
+    expect(name).toMatchObject({ text: 'X', href: undefined })
   })
 
-  it('always ends with the library, even alone', () => {
-    expect(creditSegments({ source: 'Openverse' }, 'foto: {author}')).toEqual([{ text: 'Openverse', href: undefined }])
-  })
-})
-
-describe('creditSeparator', () => {
-  it('commas between the attribution parts and a slash before the library', () => {
-    expect([0, 1, 2].map((i) => creditSeparator(i, 3))).toEqual(['', ', ', ' / '])
-    expect(creditSeparator(0, 1)).toBe('')
+  it('names the library when the author is unknown', () => {
+    expect(creditSegments({ source: 'Openverse' }, 'Foto: {author}')).toEqual([
+      { before: 'Foto: ', text: 'Openverse', after: '', href: undefined },
+    ])
   })
 })

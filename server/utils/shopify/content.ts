@@ -31,6 +31,7 @@ export interface ShopifyArticlePayload {
 const labels = {
   en: {
     photo: 'Photo: {author}',
+    illustration: 'Illustrative photo: {author}',
     faq: 'Frequently asked questions',
     sources: 'Sources',
     takeaways: 'Key takeaways',
@@ -38,6 +39,7 @@ const labels = {
   },
   cs: {
     photo: 'Foto: {author}',
+    illustration: 'Ilustrační foto: {author}',
     faq: 'Časté otázky',
     sources: 'Zdroje',
     takeaways: 'Hlavní body',
@@ -45,6 +47,7 @@ const labels = {
   },
   de: {
     photo: 'Foto: {author}',
+    illustration: 'Symbolfoto: {author}',
     faq: 'Häufig gestellte Fragen',
     sources: 'Quellen',
     takeaways: 'Wichtigste Punkte',
@@ -52,6 +55,7 @@ const labels = {
   },
   fr: {
     photo: 'Photo : {author}',
+    illustration: "Photo d'illustration : {author}",
     faq: 'Questions fréquentes',
     sources: 'Sources',
     takeaways: 'Points essentiels',
@@ -110,19 +114,9 @@ export const exportShopifyContent = (article: ShopifyArticleContent, origin: str
     )
   const credit = article.imageCredit as CoverCredit | null
   if (credit?.kind === 'ai') parts.push(`<p><small>${text.ai}</small></p>`)
-  if (credit?.credit && typeof credit.credit.source === 'string') {
-    const segments = creditSegments(credit.credit, text.photo)
+  if (credit?.credit && typeof credit.credit.source === 'string')
     parts.push(
-      `<p><small>${segments
-        .map((segment, index) => {
-          const value = escapeHtml(`${segment.before || ''}${segment.text}${segment.after || ''}`)
-          return (
-            creditSeparator(index, segments.length) +
-            (segment.href ? `<a href="${escapeHtml(segment.href)}">${value}</a>` : value)
-          )
-        })
-        .join('')}</small></p>`,
+      `<p><small>${renderCredit(credit.credit, credit.kind === 'illustration' ? text.illustration : text.photo)}</small></p>`,
     )
-  }
   return sanitizeHtml(parts.join('\n'))
 }

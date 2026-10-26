@@ -45,24 +45,22 @@ export interface CreditSegment {
 }
 
 /**
- * The credit as ordered parts, so the server (HTML string, baked into the body) and the cover
- * component (VNodes) cannot drift. `photoBy` carries an `{author}` placeholder; splitting on it
- * rather than substituting keeps the label out of the link and works whichever side it sits on.
+ * `Foto: Jan Novák (CC BY 4.0)` as ordered parts, so the server (HTML string, baked into the body)
+ * and the cover component (VNodes) cannot drift. The name links to the work's own page, which
+ * carries the full attribution; the licence stays visible because CC 2.0/3.0 require its URI with
+ * every use. `by` carries an `{author}` placeholder, split on rather than substituted so the label
+ * stays out of the link whichever side it sits on.
  */
-export const creditSegments = (credit: ImageCredit, photoBy: string): CreditSegment[] => {
-  const segments: CreditSegment[] = []
-
-  if (credit.author) {
-    const [before = '', after = ''] = photoBy.split('{author}')
-    segments.push({ before, text: credit.author, after, href: creditHref(credit.authorUrl) })
+export const creditSegments = (credit: ImageCredit, by: string): CreditSegment[] => {
+  const [before = '', after = ''] = by.split('{author}')
+  const name = {
+    before,
+    text: credit.author || credit.source,
+    after,
+    href: creditHref(credit.sourceUrl) ?? creditHref(credit.authorUrl),
   }
 
-  if (credit.license) segments.push({ text: credit.license, href: creditHref(credit.licenseUrl) })
-
-  segments.push({ text: credit.source, href: creditHref(credit.sourceUrl) })
-
-  return segments
+  return credit.license
+    ? [name, { before: ' (', text: credit.license, after: ')', href: creditHref(credit.licenseUrl) }]
+    : [name]
 }
-
-/** Everything but the library, then the library: `foto: Jan Novák, CC BY 4.0 / Wikimedia Commons`. */
-export const creditSeparator = (index: number, total: number) => (index === 0 ? '' : index === total - 1 ? ' / ' : ', ')

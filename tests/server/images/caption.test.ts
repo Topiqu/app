@@ -15,7 +15,8 @@ const { buildImageHtml, renderCredit } = await import('../../../server/utils/ima
 const LABELS: CaptionLabels = {
   illustration: 'Ilustrační obrázek',
   ai: 'Ilustrační obrázek (AI)',
-  photoBy: 'foto: {author}',
+  photoBy: 'Foto: {author}',
+  illustrationBy: 'Ilustrační foto: {author}',
 }
 
 const image = (over: Partial<ArticleImage> = {}): ArticleImage => ({
@@ -25,7 +26,7 @@ const image = (over: Partial<ArticleImage> = {}): ArticleImage => ({
 })
 
 describe('renderCredit', () => {
-  it('joins author, license and source with links', () => {
+  it('links the name to the work and keeps the license beside it', () => {
     const html = renderCredit(
       {
         author: 'Kremlin.ru',
@@ -35,23 +36,22 @@ describe('renderCredit', () => {
         source: 'Wikimedia Commons',
         sourceUrl: 'https://commons.wikimedia.org/wiki/File:X.jpg',
       },
-      LABELS,
+      LABELS.photoBy,
     )
 
     expect(html).toBe(
-      'foto: <a href="https://kremlin.ru" target="_blank" rel="noopener">Kremlin.ru</a>, ' +
-        '<a href="https://creativecommons.org/licenses/by/4.0" target="_blank" rel="noopener">CC BY 4.0</a> / ' +
-        '<a href="https://commons.wikimedia.org/wiki/File:X.jpg" target="_blank" rel="noopener">Wikimedia Commons</a>',
+      'Foto: <a href="https://commons.wikimedia.org/wiki/File:X.jpg" target="_blank" rel="noopener">Kremlin.ru</a> ' +
+        '(<a href="https://creativecommons.org/licenses/by/4.0" target="_blank" rel="noopener">CC BY 4.0</a>)',
     )
   })
 
-  it('degrades to the bare source when nothing else is known', () => {
-    expect(renderCredit({ source: 'Openverse' }, LABELS)).toBe('Openverse')
+  it('names the library when the author is unknown', () => {
+    expect(renderCredit({ source: 'Openverse' }, LABELS.photoBy)).toBe('Foto: Openverse')
   })
 
   it('escapes credit text and keeps a $-bearing author intact', () => {
     // `$&` in a name would splice the whole match back in under a string replacement.
-    const html = renderCredit({ author: 'A$& <b>B</b>', source: 'Openverse' }, LABELS)
+    const html = renderCredit({ author: 'A$& <b>B</b>', source: 'Openverse' }, LABELS.photoBy)
 
     expect(html).toContain('A$&amp; &lt;b&gt;B&lt;/b&gt;')
     expect(html).not.toContain('<b>')
@@ -77,17 +77,24 @@ describe('buildImageHtml', () => {
     expect(html).toContain('<figcaption><span data-ai-disclosure>Ilustrační obrázek (AI)</span></figcaption>')
     expect(html.match(/Hardware budoucnosti/g)).toHaveLength(1)
     expect(html).toContain('width="1280" height="800"')
-    expect(html).not.toContain('foto:')
+    expect(html).not.toContain('Foto:')
   })
 
-  it('labels a stock photo as illustrative while still crediting it', () => {
+  it('labels a stock photo as illustrative in its credit', () => {
     const html = buildImageHtml(
       image({ kind: 'illustration', credit: { author: 'Jan Novák', source: 'Openverse' } }),
       'Herní sestava',
       LABELS,
     )
 
-    expect(html).toContain('Ilustrační obrázek: Herní sestava — foto: Jan Novák / Openverse')
+    expect(html).toContain('Herní sestava — Ilustrační foto: Jan Novák')
+    expect(html).not.toContain('Ilustrační obrázek')
+  })
+
+  it('prefixes an uncredited illustration itself', () => {
+    expect(buildImageHtml(image({ kind: 'illustration' }), 'Herní sestava', LABELS)).toContain(
+      '<figcaption>Ilustrační obrázek: Herní sestava</figcaption>',
+    )
   })
 
   it('leaves a documentary caption unprefixed', () => {
