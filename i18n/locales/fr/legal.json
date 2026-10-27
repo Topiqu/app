@@ -107,7 +107,7 @@
           "icon": "mdi:cookie",
           "iconColor": "text-amber-500",
           "title": "6. Cookies",
-          "content": "Les cookies essentiels servent à la connexion, à la sécurité, à la langue et à mémoriser votre choix de cookies pendant 180 jours. Les cookies d'analyse (statistiques Topiqu pendant 30 jours et, le cas échéant, Google Analytics 4) et publicitaires de Google Ad Manager (annonces non personnalisées uniquement) ne fonctionnent qu'avec votre consentement. Les annonces Google AdSense sur les blogs gratuits sont régies par le message de consentement de Google (IAB TCF) et, dans l'EEE, au Royaume-Uni et en Suisse, ne s'affichent que selon votre choix dans ce message. Vous pouvez modifier votre choix via Paramètres des cookies en pied de page, ou dans le message de Google."
+          "content": "Les cookies essentiels servent à la connexion, à la sécurité, à la langue et à mémoriser votre choix de cookies pendant 180 jours. Les cookies d'analyse (statistiques Topiqu pendant 30 jours et, le cas échéant, Google Analytics 4) et publicitaires de Google Ad Manager (annonces non personnalisées uniquement) ne fonctionnent qu'avec votre consentement. Vous pouvez modifier votre choix via Paramètres des cookies en pied de page."
         },
         {
           "icon": "mdi:share-variant",

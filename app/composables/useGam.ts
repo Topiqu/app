@@ -42,7 +42,7 @@ const loadGpt = (site: GamSite) =>
 export const useGamAds = (site: GamSite | null) => {
   const marketingGranted = useMarketingConsent()
   const initialize = () => {
-    if (!import.meta.client || !site || !tenantGamEnabled(site.gamNetworkCode) || !marketingGranted.value)
+    if (!import.meta.client || !site || !tenantGamEnabled(site) || !marketingGranted.value)
       return Promise.resolve(false)
     ready ??= loadGpt(site).then((ok) => {
       if (!ok) ready = null

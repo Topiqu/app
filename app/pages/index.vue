@@ -329,10 +329,10 @@
               <ArticleCard :article="article" />
             </li>
             <li
-              v-if="feedAd && index === FEED_AD_AFTER - 1 && visibleArticles.length > FEED_AD_AFTER"
+              v-if="showAds && index === FEED_AD_AFTER - 1 && visibleArticles.length > FEED_AD_AFTER"
               class="col-span-full"
             >
-              <HomeFeedAd :provider="feedAd" />
+              <HomeFeedAd />
             </li>
           </template>
         </ol>
@@ -420,10 +420,7 @@ const localePath = useLocalePath()
 const { locale } = useI18n()
 const clientSite = await useClientSite()
 const { marketingGranted } = useConsent(() => clientSite)
-const adsenseSlot = String(useRuntimeConfig().public.adsenseFeedSlot || '')
-const feedAd = computed(() =>
-  preview.active.value ? null : adProviderFor(clientSite, { marketing: marketingGranted.value, adsenseSlot }),
-)
+const showAds = computed(() => !preview.active.value && marketingGranted.value && tenantGamEnabled(clientSite))
 const {
   data: featuredData,
   pending: featuredPending,

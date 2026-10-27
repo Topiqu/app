@@ -10,10 +10,6 @@
     </NuxtLayout>
 
     <ConsentManager v-if="!isWidgetPagePreview" :site="liveClientSite" :enabled="isPublicationSurface" />
-    <LazyAdSenseLoader
-      v-if="!isWidgetPagePreview && isPublicationSurface && platformAdsEnabledForPlan(liveClientSite?.plan)"
-      :enabled="isPublicationSurface && platformAdsEnabledForPlan(liveClientSite?.plan)"
-    />
 
     <DevOnly v-if="!isBrowserTest && !isWidgetPagePreview">
       <DevConsole />

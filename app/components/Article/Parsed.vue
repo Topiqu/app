@@ -3,7 +3,7 @@
     <template v-for="(block, i) in blocks" :key="i">
       <ArticlePoll v-if="block.type === 'poll'" :poll="block" :articleId="articleId" />
       <template v-else-if="block.type === 'ad'">
-        <ArticleBodyAd v-if="ad" :provider="ad" :articleId="articleId" />
+        <ArticleBodyAd v-if="ad" :articleId="articleId" />
       </template>
       <!-- eslint-disable-next-line vue/no-v-html -- server-sanitised body (`sanitizeHtml` on write) -->
       <div v-else v-html="visibleHtml(block.html)" />
@@ -12,7 +12,6 @@
 </template>
 
 <script setup lang="ts">
-import type { AdProvider } from '~~/shared/utils/advertising'
 import type { ArticleBlock } from '~~/shared/utils/articleBlocks'
 
 // Blocks come pre-built. Splitting here (in `onMounted`) left the SSR HTML with an empty body.
@@ -20,12 +19,12 @@ const {
   blocks,
   articleId,
   discloseAi = true,
-  ad = null,
+  ad = false,
 } = defineProps<{
   blocks: ArticleBlock[]
   articleId: string
   discloseAi?: boolean
-  ad?: AdProvider
+  ad?: boolean
 }>()
 const root = useTemplateRef<HTMLElement>('root')
 const image = useImage()

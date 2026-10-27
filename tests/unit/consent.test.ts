@@ -2,7 +2,6 @@ import { resolve } from 'node:path'
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
-import { platformAdsEnabledForPlan, tenantGamEnabled } from '../../shared/utils/advertising'
 import {
   CONSENT_VERSION,
   consentLauncherFor,
@@ -36,22 +35,6 @@ describe('tenant consent capabilities', () => {
     expect(consentCapabilities({ plan: 'BASIC', gamNetworkCode: '123456' }).marketing).toBe(false)
     expect(consentCapabilities({ plan: 'PRO' }).marketing).toBe(false)
     expect(consentCapabilities({ plan: 'PRO', gamNetworkCode: '123456' }).marketing).toBe(false)
-  })
-})
-
-describe('advertising plan policy', () => {
-  it('keeps advertising disabled on every plan during the product halt', () => {
-    expect(platformAdsEnabledForPlan('BASIC')).toBe(false)
-    expect(platformAdsEnabledForPlan('PRO')).toBe(false)
-    expect(platformAdsEnabledForPlan('PREMIUM')).toBe(false)
-    expect(platformAdsEnabledForPlan('CUSTOM')).toBe(false)
-    expect(platformAdsEnabledForPlan(null)).toBe(false)
-  })
-
-  it('does not activate retained tenant GAM configuration', () => {
-    expect(tenantGamEnabled('123456')).toBe(false)
-    expect(tenantGamEnabled('  ')).toBe(false)
-    expect(tenantGamEnabled(null)).toBe(false)
   })
 })
 
@@ -129,13 +112,12 @@ describe('consent settings launcher', () => {
 })
 
 describe('consent integration contracts', () => {
-  it('keeps external measurement manual and loads AdSense only through the tenant-aware component', () => {
+  it('keeps external measurement manual', () => {
     const config = source('nuxt.config.ts')
     const clientSite = source('app/composables/useClientSite.ts')
 
     expect(config).toContain("initMode: 'manual'")
     expect(config).toContain("cookie_domain: 'none'")
-    expect(source('app/components/AdSenseLoader.vue')).toContain('adsbygoogle.js')
     expect(clientSite).not.toContain('useGtag')
     expect(clientSite).not.toContain('gtag.initialize')
     const sentry = source('sentry.client.config.ts')
@@ -148,7 +130,6 @@ describe('consent integration contracts', () => {
       /<ConsentManager\b[^>]*:site="liveClientSite"[^>]*:enabled="isPublicationSurface"/,
     )
     expect(source('app/composables/useArticleTracking.ts')).toContain('useAnalyticsConsent()')
-    expect(source('app/app.vue')).toContain('platformAdsEnabledForPlan(liveClientSite?.plan)"')
     expect(source('app/app.vue')).not.toContain('marketingGranted')
     expect(source('app/composables/useGam.ts')).not.toContain('EnabledForPlan(client.plan)')
     const footer = source('app/components/Footer.vue')
@@ -187,17 +168,16 @@ describe('consent integration contracts', () => {
     expect(banner).toContain('aria-labelledby="consent-title"')
   })
 
-  it('renders one consent-gated sidebar placement: tenant GAM or platform AdSense', () => {
+  it('renders one consent-gated tenant GAM sidebar placement', () => {
     const article = source('app/pages/clanky/[slug].vue')
 
     expect(article.match(/<AdSlot/g)).toHaveLength(1)
-    expect(article.match(/<AdSenseSlot/g)).toHaveLength(1)
-    expect(article).toContain('<template v-if="sidebarAd" #sidebar>')
+    expect(article).toContain('<template v-if="showAds" #sidebar>')
     expect(article).toContain('adUnitPath="/article/sidebar"')
     expect(article).toContain('{ viewport: [0, 0], sizes: [] }')
-    expect(article).toContain('adProviderFor(clientSite, { marketing: marketingGranted.value')
-    // Both providers mount only once the separate rail is visible and has width.
-    expect(article).toMatch(/<ClientOnly>\s*<AdSenseSlot\s+v-if="sidebarAd === 'adsense' && isAdDesktop"/)
+    expect(article).toContain('marketingGranted.value && tenantGamEnabled(clientSite)')
+    // The slot mounts only once the separate rail is visible and has width.
+    expect(article).toMatch(/<ClientOnly>\s*<AdSlot\s+v-if="isAdDesktop"/)
     expect(source('app/components/AdSlot.vue')).toContain('if (!defined)')
   })
 })

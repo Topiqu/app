@@ -42,7 +42,6 @@ describe('cookie settings choices', () => {
     const wrapper = render({ plan: 'PRO' })
     expect(wrapper.text()).toContain('common.consent.internalAnalytics')
     expect(wrapper.text()).not.toContain('Google Analytics 4')
-    expect(wrapper.text()).not.toContain('Google AdSense')
     expect(wrapper.findAll('input')).toHaveLength(1)
     expect((wrapper.get('input').element as HTMLInputElement).checked).toBe(false)
     wrapper.unmount()
@@ -50,7 +49,6 @@ describe('cookie settings choices', () => {
   it('keeps BASIC to analytics only while advertising is halted', () => {
     const wrapper = render({ plan: 'BASIC' })
     expect(wrapper.findAll('input')).toHaveLength(1)
-    expect(wrapper.text()).not.toContain('Google AdSense')
     wrapper.unmount()
   })
   it('shows GA4 but not retained advertising configuration and saves the available categories', async () => {

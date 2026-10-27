@@ -87,7 +87,6 @@ mockNuxtImport('useClientSite', () => async () => ({ id: 'site', plan: 'BASIC' }
 mockNuxtImport('useSchemaOrg', () => () => {})
 mockNuxtImport('useWidgetPagePreview', () => () => ({ active: shallowRef(false) }))
 mockNuxtImport('useConsent', () => () => ({ marketingGranted: shallowRef(false) }))
-mockNuxtImport('useAdSenseStatus', () => () => shallowRef('idle'))
 mockNuxtImport('useArticleSeo', () => () => {})
 mockNuxtImport('defineOgImage', () => () => {})
 mockNuxtImport('useArticleTracking', () => () => ({ trackView: vi.fn() }))

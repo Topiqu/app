@@ -1,8 +1,6 @@
 <template>
   <!-- 298px = the tallest creative (336×280) plus the label, so filling never shifts the text below. -->
-  <AdSenseSlot v-if="provider === 'adsense'" :adSlot="adsenseSlot" class="not-prose my-8 min-h-[298px]" />
   <AdSlot
-    v-else-if="provider === 'gam'"
     adUnitPath="/article/body"
     :slotId="`article-body-ad-${articleId}`"
     :sizes="[[300, 250]]"
@@ -14,11 +12,7 @@
 </template>
 
 <script setup lang="ts">
-import type { AdProvider } from '~~/shared/utils/advertising'
-
-defineProps<{ provider: AdProvider; articleId: string }>()
-
-const adsenseSlot = String(useRuntimeConfig().public.adsenseArticleBodySlot || '')
+defineProps<{ articleId: string }>()
 
 const gamMapping: GamSizeMapping[] = [
   {

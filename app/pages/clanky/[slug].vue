@@ -4,7 +4,7 @@
       :article
       :aiDisclosure="showsAiDisclosure ? data.aiInvolvement : null"
       :discloseAi="clientSite?.discloseAiContent ?? false"
-      :ad="bodyAd"
+      :ad="showAds"
       :follow="{
         count: data.followerCount || 0,
         following: isFollowing,
@@ -111,19 +111,11 @@
         />
       </template>
 
-      <template v-if="sidebarAd" #sidebar>
+      <template v-if="showAds" #sidebar>
         <!-- This independent rail sits to the right of the TOC on wide screens. -->
         <ClientOnly>
-          <AdSenseSlot
-            v-if="sidebarAd === 'adsense' && isAdDesktop"
-            :key="`article-sidebar-adsense-${data.id}`"
-            :adSlot="sidebarAdsenseSlot"
-            format="vertical"
-            :fullWidthResponsive="false"
-            class="min-h-[618px]"
-          />
           <AdSlot
-            v-else-if="sidebarAd === 'gam' && isAdDesktop"
+            v-if="isAdDesktop"
             :key="`article-sidebar-${data.id}`"
             adUnitPath="/article/sidebar"
             slotId="article-sidebar-ad"
@@ -156,16 +148,7 @@ const canonicalOrigin = useCanonicalOrigin()
 const { data: session } = useAuth()
 const clientSite = await useClientSite()
 const { marketingGranted } = useConsent(() => clientSite)
-const adsense = useRuntimeConfig().public
-const sidebarAdsenseSlot = String(adsense.adsenseArticleSidebarSlot || '')
-const adsenseStatus = useAdSenseStatus()
-const adFor = (adsenseSlot: string) => {
-  if (preview.active.value) return null
-  const provider = adProviderFor(clientSite, { marketing: marketingGranted.value, adsenseSlot })
-  return provider === 'adsense' && adsenseStatus.value === 'error' ? null : provider
-}
-const sidebarAd = computed(() => adFor(sidebarAdsenseSlot))
-const bodyAd = computed(() => adFor(String(adsense.adsenseArticleBodySlot || '')))
+const showAds = computed(() => !preview.active.value && marketingGranted.value && tenantGamEnabled(clientSite))
 const isAdDesktop = useMediaQuery('(min-width: 1280px)')
 const articleSidebarMapping: GamSizeMapping[] = [
   { viewport: [1280, 0], sizes: [[160, 600]] },

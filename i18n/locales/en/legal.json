@@ -107,7 +107,7 @@
           "icon": "mdi:cookie",
           "iconColor": "text-amber-500",
           "title": "6. Cookies",
-          "content": "Essential cookies handle sign-in, security, language and storing your cookie choice for 180 days. Analytics cookies (Topiqu statistics for 30 days and, where enabled, Google Analytics 4) and Google Ad Manager advertising cookies (non-personalised ads only) run only with your consent. Google AdSense ads on free blogs are governed by Google's consent message (IAB TCF) and, in the EEA, the UK and Switzerland, appear only according to your choice there. You can change your choice under Cookie settings in the site footer, or in Google's message."
+          "content": "Essential cookies handle sign-in, security, language and storing your cookie choice for 180 days. Analytics cookies (Topiqu statistics for 30 days and, where enabled, Google Analytics 4) and Google Ad Manager advertising cookies (non-personalised ads only) run only with your consent. You can change your choice under Cookie settings in the site footer."
         },
         {
           "icon": "mdi:share-variant",

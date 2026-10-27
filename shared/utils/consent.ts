@@ -1,4 +1,4 @@
-import { platformAdsEnabledForPlan, tenantGamEnabled } from './advertising'
+import { tenantGamEnabled } from './advertising'
 
 export const CONSENT_COOKIE = 'topiqu_consent'
 export const CONSENT_VERSION = 3 as const
@@ -52,18 +52,17 @@ export const consentCapabilities = (site?: ConsentSite | null): ConsentCapabilit
   const googleAnalytics = Boolean(
     site.plan !== 'BASIC' && site.allowGtag && site.gtagId?.trim() && GA4_ID.test(site.gtagId.trim()),
   )
-  const marketing = !platformAdsEnabledForPlan(site.plan) && tenantGamEnabled(site.gamNetworkCode)
-  const advertising = platformAdsEnabledForPlan(site.plan)
-    ? 'adsense'
-    : tenantGamEnabled(site.gamNetworkCode)
-      ? `gam:${site.gamNetworkCode!.trim()}`
-      : null
+  const marketing = tenantGamEnabled(site)
 
   return {
     analytics: true,
     googleAnalytics,
     marketing,
-    configuration: JSON.stringify([site.id ?? null, googleAnalytics ? site.gtagId!.trim() : null, advertising]),
+    configuration: JSON.stringify([
+      site.id ?? null,
+      googleAnalytics ? site.gtagId!.trim() : null,
+      marketing ? `gam:${site.gamNetworkCode!.trim()}` : null,
+    ]),
   }
 }
 
