@@ -25,6 +25,8 @@ const loadGpt = (site: GamSite) =>
     script.onerror = () => resolve(false)
     script.onload = () =>
       window.googletag.cmd.push(() => {
+        // Same-origin creatives inherit the page CSP and break under it; SafeFrame isolates them.
+        window.googletag.setConfig({ safeFrame: { forceSafeFrame: true } })
         const pubads = window.googletag.pubads()
         // Personalized inventory needs a certified CMP; this integration serves NPA only.
         pubads.setPrivacySettings({ nonPersonalizedAds: true })

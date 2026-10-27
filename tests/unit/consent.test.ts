@@ -30,11 +30,18 @@ describe('tenant consent capabilities', () => {
     expect(consentCapabilities({ plan: 'PRO', allowGtag: true, gtagId: 'not-a-ga-id' }).googleAnalytics).toBe(false)
   })
 
-  it('does not offer marketing while advertising is halted, including retained GAM configuration', () => {
+  it('offers marketing only where tenant GAM can load', () => {
     expect(consentCapabilities({ plan: 'BASIC' }).marketing).toBe(false)
     expect(consentCapabilities({ plan: 'BASIC', gamNetworkCode: '123456' }).marketing).toBe(false)
     expect(consentCapabilities({ plan: 'PRO' }).marketing).toBe(false)
-    expect(consentCapabilities({ plan: 'PRO', gamNetworkCode: '123456' }).marketing).toBe(false)
+    expect(consentCapabilities({ plan: 'PRO', gamNetworkCode: '123456' }).marketing).toBe(true)
+  })
+
+  it('keeps the halted-era snapshot for sites without GAM, so stored choices stay valid', () => {
+    expect(consentCapabilities({ id: 'site-1', plan: 'PRO' }).configuration).toBe('["site-1",null,null]')
+    expect(consentCapabilities({ id: 'site-1', plan: 'PRO', gamNetworkCode: ' 123 ' }).configuration).toBe(
+      '["site-1",null,"gam:123"]',
+    )
   })
 })
 
@@ -83,9 +90,10 @@ describe('stored consent', () => {
     expect(hasAnalyticsConsent(decision, consentCapabilities({ ...site, id: 'site-2' }))).toBe(false)
   })
 
-  it('requires a new decision when Google Analytics changes but ignores halted ad configuration', () => {
+  it('requires a new decision when Google Analytics or the GAM network changes', () => {
     const site = { id: 'site-1', plan: 'PRO', allowGtag: true, gtagId: 'G-ONE123', gamNetworkCode: '123' }
     const decision = createConsentDecision(consentCapabilities(site), { analytics: true, marketing: true })
+    expect(hasMarketingConsent(decision, consentCapabilities(site))).toBe(true)
     expect(consentCovers(decision, consentCapabilities({ ...site, gtagId: 'G-TWO456' }))).toBe(false)
     expect(hasMarketingConsent(decision, consentCapabilities({ ...site, gamNetworkCode: '456' }))).toBe(false)
     expect(hasMarketingConsent(decision, consentCapabilities({ ...site, plan: 'BASIC' }))).toBe(false)

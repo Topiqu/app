@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest'
 import { FEED_AD_AFTER, tenantGamEnabled } from '~~/shared/utils/advertising'
 
 describe('tenantGamEnabled', () => {
-  it('does not activate retained GAM configuration while advertising is halted', () => {
-    expect(tenantGamEnabled({ plan: 'PRO', gamNetworkCode: '123' })).toBe(false)
-    expect(tenantGamEnabled({ plan: 'PREMIUM', gamNetworkCode: '123' })).toBe(false)
-    expect(tenantGamEnabled({ plan: 'CUSTOM', gamNetworkCode: '123' })).toBe(false)
+  it('serves the tenant network on paid plans', () => {
+    expect(tenantGamEnabled({ plan: 'PRO', gamNetworkCode: '123' })).toBe(true)
+    expect(tenantGamEnabled({ plan: 'PREMIUM', gamNetworkCode: ' 123 ' })).toBe(true)
+    expect(tenantGamEnabled({ plan: 'CUSTOM', gamNetworkCode: '123' })).toBe(true)
   })
 
   it('does not activate a leftover GAM code on BASIC', () => {

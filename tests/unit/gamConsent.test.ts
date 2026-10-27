@@ -9,7 +9,7 @@ vi.mock('~~/shared/utils/advertising', () => ({ tenantGamEnabled: () => mocks.en
 mockNuxtImport('useMarketingConsent', () => () => mocks.granted)
 
 describe('Google Ad Manager consent', () => {
-  it('does not load retained advertising even with stored marketing consent while halted', async () => {
+  it('does not load GPT where tenant GAM is unavailable, even with stored marketing consent', async () => {
     mocks.enabled = false
     mocks.granted = shallowRef(true)
     const ads = useGamAds({ id: 'site-1', plan: 'PRO', gamNetworkCode: '123' })
@@ -22,6 +22,7 @@ describe('Google Ad Manager consent', () => {
     mocks.granted = shallowRef(false)
     const privacy = vi.fn(),
       enable = vi.fn(),
+      setConfig = vi.fn(),
       defineSlot = vi.fn()
     const adWindow = window as unknown as { googletag: unknown }
     adWindow.googletag = {
@@ -34,6 +35,7 @@ describe('Google Ad Manager consent', () => {
         setTargeting: vi.fn(),
       }),
       enableServices: enable,
+      setConfig,
       defineSlot,
     }
     const ads = useGamAds({ id: 'site-1', plan: 'PRO', gamNetworkCode: '123' })
@@ -47,6 +49,8 @@ describe('Google Ad Manager consent', () => {
     expect(await ready).toBe(true)
     expect(privacy).toHaveBeenCalledWith({ nonPersonalizedAds: true })
     expect(privacy.mock.invocationCallOrder[0]).toBeLessThan(enable.mock.invocationCallOrder[0]!)
+    expect(setConfig).toHaveBeenCalledWith({ safeFrame: { forceSafeFrame: true } })
+    expect(setConfig.mock.invocationCallOrder[0]).toBeLessThan(enable.mock.invocationCallOrder[0]!)
     mocks.granted.value = false
     expect(await ads.defineSlot('/article/body', [[300, 250]], 'slot')).toBe(false)
     expect(defineSlot).not.toHaveBeenCalled()

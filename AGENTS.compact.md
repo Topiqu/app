@@ -107,8 +107,8 @@ commands whose target has not been resolved first.
 - Preserve AI reservation/settlement/cancellation semantics, media tenant ownership and provenance,
   and server-owned billing/plan catalogs.
 - Scheduled tasks may execute once per app replica. Do not scale scheduling without idempotency and
-  duplicate-execution analysis. Advertising/revenue share remains halted unless product explicitly
-  reactivates it.
+  duplicate-execution analysis. Tenant GAM on paid plans is active; platform ads and revenue share
+  remain halted unless product explicitly reactivates them.
 
 ## Verification
 

@@ -114,7 +114,7 @@ test('critical article media is visible without JavaScript', async ({ browser })
   }
 })
 
-test('guest publications do not bootstrap halted advertising', async ({ page }) => {
+test('guests without Marketing consent do not bootstrap advertising', async ({ page }) => {
   const advertising: string[] = []
   page.on('request', (request) => {
     if (/pagead2\.googlesyndication\.com|securepubads\.g\.doubleclick\.net/.test(request.url()))

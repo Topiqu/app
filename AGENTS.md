@@ -197,8 +197,9 @@ recursive deletion, broad globs, and commands whose resolved target has not been
   utilities. Never duplicate authoritative billing values in the UI.
 - Scheduled tasks may run once per application replica. Do not scale or redesign scheduling without
   addressing duplicate execution and idempotency.
-- Advertising/revenue-share functionality is halted. Do not enable, market, or reinterpret retained
-  code as an active entitlement without an explicit product decision.
+- Tenant GAM (the tenant's own network code, paid plans only) is active. Platform ads and revenue
+  share are halted; do not enable, market, or reinterpret that retained code as an active
+  entitlement without an explicit product decision.
 
 ## 10. Testing and verification
 
