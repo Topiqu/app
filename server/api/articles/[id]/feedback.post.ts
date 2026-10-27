@@ -19,16 +19,16 @@ export default defineEventHandler(async (event) => {
   const db = await getEnhancedPrisma(user)
 
   const article = await db.article.findUnique({
-    where: {
-      id: articleId,
-      status: 'published',
-      deletedAt: null,
-      clientSite: { deletedAt: null },
-      OR: [{ releaseAt: null }, { releaseAt: { lte: new Date() } }],
-    },
-    select: { id: true },
+    where: { id: articleId, deletedAt: null, clientSite: { deletedAt: null } },
+    select: { id: true, userId: true, clientSiteId: true, status: true, releaseAt: true },
   })
-  if (!article) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
+  if (!article || !canSeeUnreleasedArticle(user, article)) {
+    throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
+  }
+  // Whoever can (an admin previewing a draft or a scheduled article) is told why it is refused.
+  if (!isArticleLive(article)) {
+    throw createError({ statusCode: 409, message: t('common.errors.engagementNotOpen')! })
+  }
 
   let finalSessionId: string | null = null
   if (!user) {

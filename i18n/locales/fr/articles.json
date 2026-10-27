@@ -123,6 +123,7 @@
     "explore": "Explorer les articles",
     "openArticle": "Ouvrir l'article",
     "votes": "Votes",
+    "likeNotOpenYet": "Les « j’aime » s’ouvrent dès la publication de l’article.",
     "searchPlaceholder": "Rechercher des articles...",
     "latestArticle": "Dernier article :",
     "home": {
@@ -329,7 +330,8 @@
       "hpTitle": "Sondage du moment",
       "noPolls": "Aucun sondage",
       "addOption": "Ajouter une option",
-      "yourVote": "Votre vote"
+      "yourVote": "Votre vote",
+      "notOpenYet": "Le vote ouvre dès la publication de l'article."
     },
     "activity": {
       "filterTags": "Filtrer par étiquette",

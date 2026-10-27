@@ -123,6 +123,7 @@
     "explore": "Artikel entdecken",
     "openArticle": "Artikel öffnen",
     "votes": "Stimmen",
+    "likeNotOpenYet": "Liken ist ab der Veröffentlichung des Artikels möglich.",
     "searchPlaceholder": "Artikel suchen...",
     "latestArticle": "Neuester Artikel:",
     "home": {
@@ -329,7 +330,8 @@
       "hpTitle": "Aktuelle Umfrage",
       "noPolls": "Keine Umfrage",
       "addOption": "Option hinzufügen",
-      "yourVote": "Deine Stimme"
+      "yourVote": "Deine Stimme",
+      "notOpenYet": "Die Abstimmung öffnet, sobald der Artikel veröffentlicht ist."
     },
     "activity": {
       "filterTags": "Nach Schlagwort filtern",

@@ -240,6 +240,8 @@ export default defineEventHandler(async (event) => {
     ...rest,
     commentingEnabled: article.allowedComments && clientSite.commentsEnabled,
     commentGifsEnabled: clientSite.commentGifsEnabled,
+    // Likes, feedback and poll votes open with publication; the page shows them closed until then.
+    engagementOpen: isArticleLive(article),
     sourceSlug: baseSlug,
     language,
     primaryLanguage,

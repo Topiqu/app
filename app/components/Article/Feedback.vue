@@ -15,7 +15,11 @@
               <span v-else>{{ $t('feedback.question') }}</span>
             </span>
 
-            <span v-if="hasVoted" class="hidden items-center gap-1 text-xs text-muted sm:inline-flex">
+            <span v-if="closed" class="flex items-center gap-1 text-xs text-muted">
+              <UIcon name="mdi:lock-outline" class="size-3.5 shrink-0" />
+              {{ $t('feedback.notOpenYet') }}
+            </span>
+            <span v-else-if="hasVoted" class="hidden items-center gap-1 text-xs text-muted sm:inline-flex">
               {{ $t('feedback.recorded') }}
               <UButton color="neutral" variant="ghost" size="sm" @click="resetVote">
                 {{ $t('feedback.change') }}
@@ -24,7 +28,7 @@
           </div>
         </div>
 
-        <div v-if="!hasVoted" class="flex items-center gap-2">
+        <div v-if="!hasVoted && !closed" class="flex items-center gap-2">
           <UButton
             size="lg"
             color="neutral"
@@ -84,7 +88,8 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{ articleId: string }>()
+// `closed`: a draft or a scheduled article, rated only once it is published.
+const props = defineProps<{ articleId: string; closed?: boolean }>()
 
 const toast = useToast()
 const isLoading = shallowRef(false)
@@ -113,8 +118,8 @@ const submitVote = async (isHelpful: boolean) => {
     if (isHelpful) toast.add({ color: 'success', title: $t('feedback.thanks_short') })
     showReasonInput.value = false
     reasonText.value = ''
-  } catch {
-    toast.add({ color: 'error', title: $t('error.generic') })
+  } catch (e) {
+    toast.add({ color: 'error', title: fetchErrorMessage(e, $t('error.generic')) })
   } finally {
     finishLoadingLater()
   }

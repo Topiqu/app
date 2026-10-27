@@ -9,16 +9,18 @@ export default defineEventHandler(async (event) => {
   }
 
   const option = await prisma.pollOption.findFirst({
-    where: {
-      id: optionId,
-      pollId,
-      poll: { articleId: id, article: { status: 'published', deletedAt: null, clientSite: { deletedAt: null } } },
-    },
-    select: { id: true },
+    where: { id: optionId, pollId, poll: { articleId: id } },
+    select: { poll: { select: { article: { select: articleAccessSelect } } } },
   })
+  const article = option?.poll.article
 
-  if (!option) {
+  // A reader who cannot see the article learns nothing about it. One who can (an admin previewing
+  // a draft or a scheduled article) is told why the poll does not take votes yet.
+  if (!article || !canReadArticle(user, article)) {
     throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
+  }
+  if (!isArticleLive(article)) {
+    throw createError({ statusCode: 409, message: t('common.errors.pollNotOpen')! })
   }
 
   const sessionId = user?.id ? null : issueAnonSession(event)

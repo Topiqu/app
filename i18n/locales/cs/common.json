@@ -692,6 +692,8 @@
       "invalidReleaseDate": "Neplatné datum vydání",
       "missing": "Něco chybí",
       "alreadyVoted": "Už jste hlasovali v této anketě",
+      "pollNotOpen": "V konceptu ani v naplánovaném článku zatím nelze hlasovat. Anketa se otevře po publikování.",
+      "engagementNotOpen": "V konceptu ani v naplánovaném článku zatím nejde lajkovat ani hodnotit. Otevře se to po publikování.",
       "releaseDateLocked": "Nelze upravit datum vydání u publikovaného článku nebo článku s uplynulým datem vydání",
       "banReasonRequired": "Důvod banu je povinný.",
       "userAlreadyBanned": "Uživatel je již zabanován na této subdoméně.",

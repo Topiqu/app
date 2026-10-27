@@ -18,18 +18,12 @@ export default defineEventHandler(async (event) => {
   const db = await getEnhancedPrisma(user)
 
   const article = await db.article.findUnique({
-    where: {
-      id,
-      deletedAt: null,
-      clientSite: { deletedAt: null },
-      OR: [
-        { status: 'published', OR: [{ releaseAt: null }, { releaseAt: { lte: new Date() } }] },
-        ...(user ? [{ status: 'draft' as const, userId: user.id }] : []),
-      ],
-    },
-    select: { userId: true },
+    where: { id, deletedAt: null, clientSite: { deletedAt: null } },
+    select: { userId: true, clientSiteId: true, status: true, releaseAt: true },
   })
-  if (!article) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
+  if (!article || !canSeeUnreleasedArticle(user, article)) {
+    throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
+  }
 
   const where = user?.id
     ? { articleId: id, userId: user.id, sessionId: null }
@@ -43,6 +37,12 @@ export default defineEventHandler(async (event) => {
     await writable.articleReaction.deleteMany({ where })
     const count = await db.articleReaction.count({ where: { articleId: id } })
     return { liked: false, likes: count }
+  }
+
+  // Likes open with publication, so none is banked before readers can see the article. Whoever can
+  // see it earlier (an admin or the author previewing a draft or a scheduled article) is told why.
+  if (!isArticleLive(article)) {
+    throw createError({ statusCode: 409, message: t('common.errors.engagementNotOpen')! })
   }
 
   // Only the create path is metered: taking a like back never inflates a count, and blocking it

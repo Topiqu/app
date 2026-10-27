@@ -8,6 +8,7 @@
     "change": "Modifier mon avis",
     "thanks_short": "Merci !",
     "helpful": "Oui, cet article m’a été utile",
-    "notHelpful": "Non, cet article ne m’a pas été utile"
+    "notHelpful": "Non, cet article ne m’a pas été utile",
+    "notOpenYet": "L’évaluation s’ouvre dès la publication de l’article."
   }
 }

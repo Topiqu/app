@@ -123,6 +123,7 @@
     "explore": "Explore articles",
     "openArticle": "Open article",
     "votes": "Votes",
+    "likeNotOpenYet": "Likes open once the article is published.",
     "searchPlaceholder": "Search articles...",
     "latestArticle": "Latest article:",
     "home": {
@@ -329,7 +330,8 @@
       "hpTitle": "Hot Poll",
       "noPolls": "No Poll",
       "addOption": "Add option",
-      "yourVote": "Your vote"
+      "yourVote": "Your vote",
+      "notOpenYet": "Voting opens once the article is published."
     },
     "activity": {
       "filterTags": "Filter by tag",

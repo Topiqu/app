@@ -15,7 +15,7 @@
         :color="selectedOption === opt.id ? 'primary' : 'neutral'"
         :variant="selectedOption === opt.id ? 'soft' : 'ghost'"
         :icon="selectedOption === opt.id ? 'mdi:check-circle' : 'mdi:circle-outline'"
-        :disabled="hasVoted || voting"
+        :disabled="hasVoted || voting || !open"
         class="min-h-11 w-full"
         :aria-pressed="selectedOption === opt.id"
         @click="vote(opt.id)"
@@ -36,6 +36,10 @@
         size="sm"
       />
     </div>
+    <p v-if="!open" class="mt-4 flex items-center gap-1.5 text-sm text-muted">
+      <UIcon name="mdi:lock-outline" class="size-4 shrink-0" />
+      {{ $t('articles.poll.notOpenYet') }}
+    </p>
     <div v-if="hasVoted" class="mt-4 flex items-center gap-1.5 text-sm text-muted" aria-live="polite">
       <UIcon name="mdi:account-group-outline" class="size-4" />
       {{ `${getTotalVotes} ${$t('articles.votes').toLowerCase()}` }}
@@ -54,6 +58,8 @@ const props = defineProps<{
 const voteCounts = reactive<Record<string, number>>({})
 const hasVoted = shallowRef(false)
 const selectedOption = shallowRef<string | null>(null)
+// False while the article is a draft or scheduled: its admins see the poll, but it takes no votes.
+const open = shallowRef(true)
 const toast = useToast()
 const voting = shallowRef(false)
 const optimisticStatus = useOptimisticStatus()
@@ -62,12 +68,13 @@ const fetchResults = async () => {
   if (!props.articleId || !props.poll.pollId) return
   try {
     const res = await $fetch<
-      { pollResult: string | null; voteCounts: Record<string, number> },
+      { pollResult: string | null; voteCounts: Record<string, number>; open?: boolean },
       '/api/articles/:id/vote'
     >(`/api/articles/${props.articleId}/vote?pollId=${props.poll.pollId}` as '/api/articles/:id/vote')
     Object.assign(voteCounts, res.voteCounts || {})
     hasVoted.value = !!res.pollResult
     selectedOption.value = res.pollResult ? String(res.pollResult) : null
+    open.value = res.open !== false
   } catch (e) {
     console.error('Failed to fetch poll results:', e)
   }
@@ -85,7 +92,7 @@ const replaceVoteCounts = (next: Record<string, number>) => {
 }
 
 const vote = async (optionId?: string) => {
-  if (hasVoted.value || voting.value || !optionId) return
+  if (hasVoted.value || voting.value || !open.value || !optionId) return
   const previousCounts = { ...voteCounts }
   const previousSelection = selectedOption.value
   const previousHasVoted = hasVoted.value

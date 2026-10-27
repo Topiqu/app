@@ -6,11 +6,11 @@
     :color="liked ? 'error' : 'neutral'"
     :variant="variant ?? (liked ? 'soft' : 'outline')"
     :loading="pending"
-    :disabled="pending"
+    :disabled="pending || closed"
     :square="iconOnly"
     :aria-pressed="liked"
     :aria-label="iconOnly ? $t('common.actions.like') : undefined"
-    :title="$t(liked ? 'common.actions.unlike' : 'common.actions.like')"
+    :title="closed ? $t('articles.likeNotOpenYet') : $t(liked ? 'common.actions.unlike' : 'common.actions.like')"
     @click="$emit('toggle')"
   >
     <template v-if="!iconOnly">
@@ -23,12 +23,18 @@
 <script setup lang="ts">
 import type { ButtonProps } from '@nuxt/ui'
 
-const { pending = false, iconOnly = false } = defineProps<{
+const {
+  pending = false,
+  iconOnly = false,
+  closed = false,
+} = defineProps<{
   liked: boolean
   likes: number
   pending?: boolean
   iconOnly?: boolean
   variant?: ButtonProps['variant']
+  /** A draft or a scheduled article: likes open with publication. */
+  closed?: boolean
 }>()
 
 defineEmits<{ toggle: [] }>()

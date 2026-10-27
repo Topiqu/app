@@ -56,6 +56,7 @@
                 :liked="articleLiked"
                 :likes="articleLikes"
                 :pending="articleReactionPending"
+                :closed="!data.engagementOpen"
                 @toggle="toggleArticleLike"
               />
               <UButton
@@ -93,7 +94,7 @@
 
       <template #footer>
         <div class="mt-8 flex justify-end border-t border-default pt-8">
-          <LazyArticleFeedback :articleId="data.id" class="w-full sm:max-w-xl" />
+          <LazyArticleFeedback :articleId="data.id" :closed="!data.engagementOpen" class="w-full sm:max-w-xl" />
         </div>
         <WidgetSlot name="ARTICLE_END" class="mt-8" />
       </template>

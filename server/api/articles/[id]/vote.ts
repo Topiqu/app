@@ -8,14 +8,14 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: t('common.errors.missing')! })
   }
   const poll = await prisma.poll.findFirst({
-    where: {
-      id: pollId,
-      articleId: id,
-      article: { status: 'published', deletedAt: null, clientSite: { deletedAt: null } },
-    },
-    select: { id: true },
+    where: { id: pollId, articleId: id },
+    select: { article: { select: articleAccessSelect } },
   })
-  if (!poll) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
+  if (!poll || !canReadArticle(user, poll.article)) {
+    throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
+  }
+  // An admin previewing a draft or a scheduled article sees the poll closed, not an error.
+  const open = isArticleLive(poll.article)
 
   // Read-only: this route only reports counts, so it must not mint an identity for a crawler.
   // A first-time visitor has no cookie yet and correctly reads back no vote of their own.
@@ -39,5 +39,5 @@ export default defineEventHandler(async (event) => {
     select: { optionId: true },
   })
 
-  return { pollResult: userVote ? userVote.optionId : null, voteCounts }
+  return { pollResult: userVote ? userVote.optionId : null, voteCounts, open }
 })

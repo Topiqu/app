@@ -756,6 +756,8 @@
       "invalidReleaseDate": "Date de publication invalide",
       "missing": "Une information est manquante",
       "alreadyVoted": "Vous avez déjà voté à ce sondage",
+      "pollNotOpen": "Impossible de voter dans un brouillon ou un article programmé. Le sondage ouvre à la publication.",
+      "engagementNotOpen": "Impossible d’aimer ou d’évaluer un brouillon ou un article programmé. Ce sera possible dès sa publication.",
       "releaseDateLocked": "Impossible de modifier la date de publication d'un article déjà publié ou dont la date prévue est passée",
       "banReasonRequired": "Le motif de la suspension est obligatoire.",
       "userAlreadyBanned": "L'utilisateur est déjà suspendu sur ce sous-domaine.",

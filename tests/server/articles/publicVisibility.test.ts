@@ -9,7 +9,7 @@ async function stubImports() {
 
 await stubImports()
 
-const { hasArticleAdminAccess, sessionTenantId } = await import('../../../server/utils/articleViewerAccess')
+const { hasArticleAdminAccess, isArticleLive, sessionTenantId } = await import('../../../server/utils/articleViewerAccess')
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -50,6 +50,7 @@ const setup = async (
   vi.stubGlobal('readAnonSession', () => null)
   vi.stubGlobal('sessionTenantId', sessionTenantId)
   vi.stubGlobal('hasArticleAdminAccess', hasArticleAdminAccess)
+  vi.stubGlobal('isArticleLive', isArticleLive)
   vi.stubGlobal('resolveArticleLinks', links)
   vi.stubGlobal('articleBlocks', () => ({}))
   vi.stubGlobal('prisma', {

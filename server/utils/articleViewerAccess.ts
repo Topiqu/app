@@ -24,6 +24,36 @@ export const publicArticleWhere = (now = new Date()): ArticleWhereInput => ({
   OR: [{ releaseAt: null }, { releaseAt: { lte: now } }],
 })
 
+/**
+ * Live to the public: published and past its release. Reader engagement (poll votes, likes,
+ * feedback) opens only then, even for the admins who can already read a draft or a scheduled one.
+ */
+export const isArticleLive = (article: { status: string; releaseAt: Date | null }, now = new Date()) =>
+  article.status === 'published' && (!article.releaseAt || article.releaseAt <= now)
+
+/**
+ * Engagement routes read through the policy, which also returns a published row before its release.
+ * Before an article is live only its tenant's admins and its author may learn it exists; everyone
+ * else must get the same 404 as for a missing id.
+ */
+export const canSeeUnreleasedArticle = (
+  viewer: (ArticleViewer & { id?: string | null }) | null | undefined,
+  article: { clientSiteId: string; userId: string | null; status: string; releaseAt: Date | null },
+  now = new Date(),
+) =>
+  isArticleLive(article, now) ||
+  hasArticleAdminAccess(viewer, article.clientSiteId) ||
+  (!!viewer?.id && article.userId === viewer.id)
+
+/** The fields `canReadArticle` and `isArticleLive` decide on. */
+export const articleAccessSelect = {
+  clientSiteId: true,
+  status: true,
+  deletedAt: true,
+  releaseAt: true,
+  clientSite: { select: { deletedAt: true } },
+} as const
+
 export const canReadArticle = (
   viewer: ArticleViewer | null | undefined,
   article: {
@@ -37,5 +67,4 @@ export const canReadArticle = (
 ) =>
   !article.deletedAt &&
   !article.clientSite.deletedAt &&
-  (hasArticleAdminAccess(viewer, article.clientSiteId) ||
-    (article.status === 'published' && (!article.releaseAt || article.releaseAt <= now)))
+  (hasArticleAdminAccess(viewer, article.clientSiteId) || isArticleLive(article, now))

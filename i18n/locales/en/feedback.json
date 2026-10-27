@@ -8,6 +8,7 @@
     "change": "Change your mind",
     "thanks_short": "Thanks!",
     "helpful": "Yes, this article was helpful",
-    "notHelpful": "No, this article was not helpful"
+    "notHelpful": "No, this article was not helpful",
+    "notOpenYet": "Rating opens once the article is published."
   }
 }

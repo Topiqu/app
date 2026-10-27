@@ -756,6 +756,8 @@
       "invalidReleaseDate": "Ungültiges Veröffentlichungsdatum",
       "missing": "Eine Angabe fehlt",
       "alreadyVoted": "Du hast bei dieser Umfrage bereits abgestimmt",
+      "pollNotOpen": "In einem Entwurf oder geplanten Artikel kann noch nicht abgestimmt werden. Die Umfrage öffnet mit der Veröffentlichung.",
+      "engagementNotOpen": "Entwürfe und geplante Artikel können noch nicht geliked oder bewertet werden. Das ist ab der Veröffentlichung möglich.",
       "releaseDateLocked": "Das Veröffentlichungsdatum eines veröffentlichten Artikels oder eines Artikels mit vergangenem Veröffentlichungstermin kann nicht geändert werden",
       "banReasonRequired": "Ein Sperrgrund ist erforderlich.",
       "userAlreadyBanned": "Der Benutzer ist auf dieser Subdomain bereits gesperrt.",

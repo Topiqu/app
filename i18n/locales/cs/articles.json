@@ -123,6 +123,7 @@
     "explore": "Prozkoumat články",
     "openArticle": "Otevřít článek",
     "votes": "Hlasů",
+    "likeNotOpenYet": "Lajkovat půjde po publikování článku.",
     "searchPlaceholder": "Hledat články...",
     "readingTime": "{0} min čtení",
     "latestArticle": "Nejnovější článek:",
@@ -329,7 +330,8 @@
       "hpTitle": "Nejnovější anketa",
       "noPolls": "Žádné ankety",
       "addOption": "Přidat možnost",
-      "yourVote": "Vaše volba"
+      "yourVote": "Vaše volba",
+      "notOpenYet": "Hlasování se otevře po publikování článku."
     },
     "activity": {
       "filterTags": "Filtrovat podle štítku",
