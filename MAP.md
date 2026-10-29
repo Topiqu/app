@@ -654,6 +654,7 @@ Error tracking complements database audit, bounded external logging and monitore
 
 - `NUXT_PUBLIC_SENTRY_DSN` selects the Sentry-protocol error/metric destination. Local SDK transport tests do not establish provider-side ingestion, feature compatibility or current prices.
 - `server/utils/logger.ts` independently uses `BETTERSTACK_SOURCE_TOKEN` and `BETTERSTACK_INGEST_HOST`; missing configuration disables that external transport. Console output and database audit remain available.
+- **Provider error text stays server-side.** AI provider failures (quota, billing, raw response bodies) are kept in audit rows, `ArticleGenerationSession.failureReason`, `AiVisibilityRun.error` and the logs, but tenants only receive localized generic messages: the manual generation stream, `/api/articles/generations/*` and `/api/ai-visibility/*` never return the raw message. `tests/server/ai/manualGenerationStream.test.ts` and `visibilityMonitoring.test.ts` pin this.
 - The client initializer has no explicit trace sampling or Replay integration. The server initializer configures trace sampling; the separate browser Web Vitals plugin samples only consenting production documents and sends coarse metrics. Adding Session Replay would require an explicit product/privacy decision and verified configuration.
 
 ### Files / wiring

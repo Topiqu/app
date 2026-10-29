@@ -486,7 +486,7 @@ export default defineEventHandler(async (event) => {
                 ? timedOutStage === 'writer_idle'
                   ? t('articles.editor.ai.writerIdleError')
                   : t('articles.editor.ai.writerDeadlineError')
-                : error?.message || t('articles.editor.aiContentFailed'),
+                : t('articles.editor.aiContentFailed'),
               stage: failedStage,
               // A failed run always releases its held article below.
               creditReturned: true,
@@ -517,7 +517,7 @@ export default defineEventHandler(async (event) => {
       } catch (error: any) {
         await auditAttempt('MANUAL_GENERATION_FAILED', { stage: 'stream', error: error.message })
         settleArticleCredit(articleReservation, false, { ...runConfig, stage: 'stream' }).catch(() => undefined)
-        send(controller, { type: 'error', message: error.message })
+        send(controller, { type: 'error', message: t('articles.editor.aiContentFailed') })
         try {
           controller.close()
         } catch {

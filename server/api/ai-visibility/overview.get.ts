@@ -48,7 +48,6 @@ export default defineEventHandler(async (event) => {
         status: true,
         executedAt: true,
         responseText: true,
-        error: true,
         citations: {
           select: { url: true, normalizedUrl: true, domain: true, title: true, owned: true },
           orderBy: { position: 'asc' },

@@ -14,7 +14,11 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 403, message: 'AI visibility monitoring requires Premium' })
 
   const result = await runVisibilityPrompt(prompt.id, user.id)
-  if (result.status === 'failed') throw createError({ statusCode: 502, message: result.error })
+  // Provider errors (quota, billing, raw response bodies) stay in the run row and the logs.
+  if (result.status === 'failed') {
+    const { translate: t } = await useServerI18n(event)
+    throw createError({ statusCode: 502, message: t('visibility.messages.failed') })
+  }
   if (result.status === 'skipped')
     throw createError({
       statusCode: result.reason === 'no_configured_providers' ? 503 : 409,
@@ -23,5 +27,12 @@ export default defineEventHandler(async (event) => {
           ? 'No AI visibility provider is configured'
           : 'Prompt is inactive or already running',
     })
-  return result
+  return {
+    ...result,
+    providers: result.providers.map((outcome) =>
+      outcome.status === 'failed'
+        ? { status: outcome.status, runId: outcome.runId, provider: outcome.provider, model: outcome.model }
+        : outcome,
+    ),
+  }
 })

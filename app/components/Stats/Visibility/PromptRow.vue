@@ -82,7 +82,9 @@
               </UButton>
               <template #content>
                 <div class="space-y-4 border-t border-default bg-elevated/35 px-4 py-4">
-                  <p v-if="run.error" class="text-sm text-error">{{ run.error }}</p>
+                  <p v-if="run.status === 'FAILED'" class="text-sm text-error">
+                    {{ $t('visibility.messages.failed') }}
+                  </p>
                   <div v-else-if="run.responseText">
                     <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
                       {{ $t('visibility.runs.response') }}

@@ -35,6 +35,14 @@ describe('AI visibility monitoring contracts', () => {
     expect(runner).toContain("logger.error('ai visibility provider failed'")
   })
 
+  it('keeps provider error text out of tenant responses', () => {
+    const run = readFileSync(resolve(process.cwd(), 'server/api/ai-visibility/prompts/[id]/run.post.ts'), 'utf8')
+    const overview = readFileSync(resolve(process.cwd(), 'server/api/ai-visibility/overview.get.ts'), 'utf8')
+    expect(run).not.toContain('message: result.error')
+    expect(run).toContain("outcome.status === 'failed'")
+    expect(overview).not.toMatch(/\berror: true/)
+  })
+
   it('stores aggregated crawler observations without retaining IP addresses', () => {
     expect(crawlerPlugin).toContain('aiCrawlerDaily.upsert')
     expect(crawlerPlugin).toContain('cachedTenantByHost(event)')

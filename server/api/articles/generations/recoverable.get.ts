@@ -23,7 +23,6 @@ export default defineEventHandler(async (event) => {
         recoverableSnapshot: true,
         lastCheckpointAt: true,
         charged: true,
-        failureReason: true,
         options: true,
       },
     })

@@ -4,7 +4,7 @@ export default defineEventHandler(async (event) => {
   if (!id) throw createError({ statusCode: 400, message: 'Missing generation session id' })
   const session = await prisma.articleGenerationSession.findFirst({
     where: { id, userId: user.id, clientSiteId: user.clientSiteId! },
-    select: { status: true, recoverableSnapshot: true, failureReason: true },
+    select: { status: true, recoverableSnapshot: true },
   })
   if (!session) throw createError({ statusCode: 404, message: 'Generation session not found' })
   return session

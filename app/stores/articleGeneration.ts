@@ -30,7 +30,6 @@ type FinalArticle = Omit<GenerationSnapshot, 'tags'> & { tags?: unknown }
 type ResumedSession = {
   status: string
   recoverableSnapshot: FinalArticle | null
-  failureReason: string | null
 }
 
 const generatedFromFinal = (final: FinalArticle, format?: string): GeneratedArticle => ({
@@ -246,7 +245,7 @@ export const useArticleGenerationStore = defineStore('articleGeneration', () => 
         `/api/articles/generations/${id}/status` as '/api/articles/generations/:id/status',
       ).catch((error) =>
         error?.statusCode === 404
-          ? ({ status: 'FAILED', recoverableSnapshot: null, failureReason: null } as const)
+          ? ({ status: 'FAILED', recoverableSnapshot: null } as const)
           : null,
       )
       // Cleared, stopped or replaced by a new run while the request was out.
@@ -267,7 +266,7 @@ export const useArticleGenerationStore = defineStore('articleGeneration', () => 
       }
       if (session?.status === 'INTERRUPTED') return settleResumed('aborted')
       if (finished && session.status !== 'FAILED') return settleResumed('completed')
-      return settleResumed({ message: session?.failureReason || t('articles.editor.aiContentFailed') })
+      return settleResumed({ message: t('articles.editor.aiContentFailed') })
     }
   }
 

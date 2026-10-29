@@ -23,6 +23,16 @@ describe('manual article generation stream', () => {
     expect(store).toMatch(/await \$fetch(?:<[^>]+>)?\(\s*`\/api\/articles\/generations\/\$\{sessionId\.value\}\/stop`/)
   })
 
+  it('never sends a provider error message to the author', () => {
+    const status = readFileSync(resolve(process.cwd(), 'server/api/articles/generations/[id]/status.get.ts'), 'utf8')
+    const recoverable = readFileSync(resolve(process.cwd(), 'server/api/articles/generations/recoverable.get.ts'), 'utf8')
+    expect(endpoint).not.toMatch(/type: 'error',\s*message: error/)
+    expect(endpoint).not.toMatch(/: error\?\.message \|\| t\(/)
+    expect(status).not.toContain('failureReason')
+    expect(recoverable).not.toContain('failureReason')
+    expect(store).not.toContain('failureReason ||')
+  })
+
   it('returns the stream through the Fetch Response contract', () => {
     expect(endpoint).toContain('return new Response(stream, {')
     expect(endpoint).toContain("'Content-Type': 'application/x-ndjson; charset=utf-8'")
