@@ -4,17 +4,18 @@
     size="sm"
     :icon="liked ? 'mdi:heart' : 'mdi:heart-outline'"
     :color="liked ? 'error' : 'neutral'"
-    :variant="variant ?? (liked ? 'soft' : 'outline')"
+    :variant="variant ?? 'ghost'"
     :loading="pending"
     :disabled="pending || closed"
-    :square="iconOnly"
+    :square="iconOnly || likes === 0"
     :aria-pressed="liked"
     :aria-label="iconOnly ? $t('common.actions.like') : undefined"
     :title="closed ? $t('articles.likeNotOpenYet') : $t(liked ? 'common.actions.unlike' : 'common.actions.like')"
+    :class="['transition-transform motion-safe:active:scale-90', !liked && 'hover:text-error']"
     @click="$emit('toggle')"
   >
     <template v-if="!iconOnly">
-      {{ $t('common.actions.like') }}
+      <span class="sr-only">{{ $t('common.actions.like') }}</span>
       <span v-if="likes > 0" class="tabular-nums">{{ formatNumber(likes) }}</span>
     </template>
   </UButton>
