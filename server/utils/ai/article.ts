@@ -215,7 +215,14 @@ export const streamArticle = async (
             opts.modules,
           ),
           language,
-          { ...callbacks, allowGeneratedImages, officialMediaPages, clientSiteId, audit },
+          {
+            ...callbacks,
+            allowGeneratedImages,
+            officialMediaPages,
+            clientSiteId,
+            audit,
+            illustrative: opts.format === 'story',
+          },
         ),
       (result) => ({
         cover: Boolean(result.articleImageUrl),

@@ -30,7 +30,7 @@ const creditAsset = (credit?: ImageCredit, publisher = false) => {
   }
 }
 
-const coverIllustrationPrompt = (subject: string) =>
+const illustrationPrompt = (subject: string) =>
   `Atmospheric editorial illustration evoking ${subject}. No people, faces, logos, text or depiction of a specific real event.`
 export type FinalizeCallbacks = {
   audit?: import('../articleGenerationAudit').ArticleGenerationAudit
@@ -42,6 +42,8 @@ export type FinalizeCallbacks = {
   clientSiteId?: string
   /** Set when the article publishes without a human, so no one could confirm an image's rights. */
   requireClearRights?: boolean
+  /** An invented story's scenes were never photographed, so a missed photo slot may become an illustration. */
+  illustrative?: boolean
 }
 
 /** Falls back to English wording rather than dropping the disclosure when a key is missing. */
@@ -69,6 +71,7 @@ export const finalizeArticle = async (
     officialMediaPages = [],
     clientSiteId,
     requireClearRights = false,
+    illustrative = false,
     audit,
   } = callbacks
   const generateImageOptions = {
@@ -227,7 +230,7 @@ export const finalizeArticle = async (
     // illustration even for a photo subject — one that shows no person, logo, text or real event.
     const generated = hit
       ? null
-      : await tryGenerateImage(type === 'photo' ? coverIllustrationPrompt(broader || query) : query)
+      : await tryGenerateImage(type === 'photo' ? illustrationPrompt(broader || query) : query)
     // With no illustration either, a real cover that needs confirming still beats none; the article waits.
     if (!hit && !generated && requireClearRights) hit = await findCover(false)
     articleImageUrl = hit?.image.url ?? generated?.url ?? ''
@@ -267,10 +270,9 @@ export const finalizeArticle = async (
         },
       }
 
-    const generated =
-      instruction.type === 'photo'
-        ? null
-        : await tryGenerateImage(instruction.query, { filenameSuffix: idx.toString() })
+    const prompt =
+      instruction.type !== 'photo' ? instruction.query : illustrative ? illustrationPrompt(instruction.query) : null
+    const generated = prompt ? await tryGenerateImage(prompt, { filenameSuffix: idx.toString() }) : null
 
     return generated && acceptImage(generated) ? { source: 'ai', image: { ...generated, kind: 'ai' } } : null
   }

@@ -324,6 +324,11 @@ export const buildArticleConfig = async (
       - Use 'stock': for mood, atmosphere or a generic scene where any fitting picture works (e.g. "office meeting", "gaming setup at night"). Short, precise English keyword.
       - Use 'generate': ONLY for what cannot be photographed — abstract ideas, humor, non-existent concepts (e.g. "AI eating old code"). Provide short archive search keywords; existing suitable images are always searched first. NEVER use it for a real person, a real place or a real event.
       A missing documentary photo is not permission to invent a depiction of a real person or event. Leave that image slot empty if the licensed search fails.
+      ${
+        format === 'story' && illustrative
+          ? 'This story is invented, so no photo of its scenes exists. Use \'photo\' for the real places, institutions, objects and franchise material it passes through, named as an archive catalogues them (e.g. "Vsetin railway station", "Mortal Kombat Johnny Cage"), never for the invented scene. Use \'generate\' for an invented scene, described by its setting, light and mood without naming any character or real person.'
+          : ''
+      }
       Every article needs a cover, so the coverImage also carries a "broaderQuery" for when the exact subject has no photo: the place, organisation, product line or field it belongs to.
       Preserve the exact product, installment number and named subject in each query. For games, request a screenshot of the actual game, not cosplay, fan art, an older installment, a generic forest or a gaming desk. Do not pad the article with generic mood images. Each visual must contribute distinct relevant information.
       Preserve the article's geographic setting in every query, including broaderQuery: when the subject concerns Czech housing, institutions or local rules, ask for the relevant Czech place or Czech setting, never a generic American house, US institution or unrelated foreign event. Infer location from the subject and research, never from the article language alone. A broader search may relax the activity, not silently move the story to another country.

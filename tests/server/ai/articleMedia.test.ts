@@ -358,6 +358,36 @@ describe('article media finalization', () => {
     expect(result.articleImageCredit?.kind).toBe('ai')
   })
 
+  it('illustrates an invented story scene nobody photographed, but leaves a real article slot empty', async () => {
+    vi.mocked(findStockImage).mockResolvedValue(null)
+    vi.mocked(generateImage).mockResolvedValue({ url: 'https://images.test/ai', width: 1200, height: 800 } as never)
+    const object = () => ({
+      ...draft(),
+      coverImage: aiCover(),
+      content: '<h2>Nádraží</h2>[[IMAGE1]]',
+      images: [{ type: 'photo' as const, query: 'Vsetin railway station', caption: 'Nádraží ve Vsetíně.' }],
+    })
+
+    const plain = await finalizeArticle(object(), 'en', { allowGeneratedImages: true })
+    expect(plain.content).not.toContain('<img')
+
+    vi.mocked(generateImage).mockClear()
+    vi.mocked(generateImage).mockResolvedValueOnce({
+      url: 'https://images.test/cover',
+      width: 1200,
+      height: 800,
+    } as never)
+    vi.mocked(generateImage).mockResolvedValueOnce({
+      url: 'https://images.test/scene',
+      width: 1200,
+      height: 800,
+    } as never)
+    await finalizeArticle(object(), 'en', { allowGeneratedImages: true, illustrative: true })
+    expect(vi.mocked(generateImage).mock.calls.map((call) => call[0])).toContainEqual(
+      expect.stringMatching(/Vsetin railway station.*No people/),
+    )
+  })
+
   it('uses a labelled subject portrait when a specific event query has no licensed match', async () => {
     vi.mocked(findStockImage).mockResolvedValueOnce(null).mockResolvedValueOnce(hit('babis-portrait'))
     const object = {
