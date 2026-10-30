@@ -163,7 +163,7 @@
             class="mt-1.5 space-y-1 text-xs leading-5 text-muted"
           >
             <li v-for="(issue, index) in run.review.issues" :key="index">
-              <span class="font-medium text-highlighted">{{ issueLabel(issue.code) }}:</span> {{ issue.note }}
+              <span class="font-medium text-highlighted">{{ issueLabel(issue.code) }}:</span> {{ issueNote(issue) }}
             </li>
           </ul>
 
@@ -187,7 +187,7 @@
 </template>
 
 <script setup lang="ts">
-import type { GenerationRun } from '~~/shared/utils/articleGeneration'
+import type { GenerationReviewIssue, GenerationRun } from '~~/shared/utils/articleGeneration'
 
 const { run, words, authorName } = defineProps<{
   run: GenerationRun
@@ -265,6 +265,8 @@ const mediaItems = computed(() => {
 
 const issueLabel = (code: string) =>
   te(`articles.editor.ai.run.issue.${code}`) ? t(`articles.editor.ai.run.issue.${code}`) : code
+const issueNote = ({ key, params, note }: GenerationReviewIssue) =>
+  key && te(`articles.editor.ai.run.note.${key}`) ? t(`articles.editor.ai.run.note.${key}`, params ?? {}) : note
 
 const missingModuleLabels = computed(() =>
   (run.missingModules ?? [])

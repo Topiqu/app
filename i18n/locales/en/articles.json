@@ -695,6 +695,24 @@
             "assignment_mismatch": "Assignment mismatch",
             "broken_structure": "Broken structure"
           },
+          "note": {
+            "module": {
+              "answer": "Add the requested direct answer.",
+              "takeaways": "Add at least two key takeaways.",
+              "faq": "Add the requested FAQ.",
+              "poll": "Add exactly one requested poll.",
+              "images": "Add the requested images to the body.",
+              "table": "Add the requested table.",
+              "youtube": "Embed the YouTube video found by research."
+            },
+            "repeatedTableSubjects": "The table repeats rows for: {subjects}. Use one row per subject.",
+            "storyList": "The story contains a list. Retell it as narration in which the protagonist weighs the options and acts.",
+            "correctClaim": "Correct or remove this claim: {claim}",
+            "verificationIncomplete": "Fact verification did not finish. Check the facts before publishing.",
+            "rejectedWithoutNote": "The review rejected the draft without a specific instruction.",
+            "reviewUnavailable": "The automated review did not finish.",
+            "uncheckedRevision": "The revised draft could not be checked. Review it before publishing."
+          },
           "busy": "Another article is being generated. Wait for it to finish or stop it first."
         },
         "topicPlaceholderStory": "Tell your story: what happened, when, how long it took and how it ended. The AI keeps to the facts you give.",

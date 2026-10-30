@@ -1,3 +1,4 @@
+import type { Language } from '~~/generated/zenstack/models'
 import type { GenerationReviewStage } from '~~/shared/utils/articleGeneration'
 
 import { z } from 'zod'
@@ -35,7 +36,19 @@ export const editorialReviewSchema = z.object({
     .describe('At most 6 issues, the most serious first'),
 })
 
-export type EditorialReview = (typeof editorialReviewSchema)['_output']
+/** System-written notes stay English for the reviser; the editor shows `key` translated instead. */
+export type ReviewNoteKey =
+  | `module.${string}`
+  | 'repeatedTableSubjects'
+  | 'storyList'
+  | 'correctClaim'
+  | 'verificationIncomplete'
+  | 'rejectedWithoutNote'
+  | 'reviewUnavailable'
+  | 'uncheckedRevision'
+type ReviewOutput = (typeof editorialReviewSchema)['_output']
+export type ReviewIssue = ReviewOutput['issues'][number] & { key?: ReviewNoteKey; params?: Record<string, string> }
+export type EditorialReview = Omit<ReviewOutput, 'issues'> & { issues: ReviewIssue[] }
 
 /** The author's own experience is testimony no web search can confirm; external facts stay leads. */
 export const AUTHOR_ACCOUNT_RULE = `
@@ -74,6 +87,8 @@ type ReviewContext = {
   factsChecked?: boolean
   /** The author asked for this in the editor, so an invented illustrative narrative is allowed. */
   illustrative?: boolean
+  /** The editor's interface language, for notes a person reads. */
+  noteLanguage?: Language
   onProgress?: (stage: GenerationReviewStage) => void
 }
 
@@ -183,7 +198,8 @@ export const reviewArticle = async (draft: ReviewDraft, context: ReviewContext) 
   const requested = new Set(context.modules ?? [])
   const requiredStructureIssues: EditorialReview['issues'] = []
   const requireModule = (module: string, delivered: boolean, note: string) => {
-    if (requested.has(module) && !delivered) requiredStructureIssues.push({ code: 'broken_structure', note })
+    if (requested.has(module) && !delivered)
+      requiredStructureIssues.push({ code: 'broken_structure', note, key: `module.${module}` })
   }
   requireModule('answer', !!draft.answer?.trim(), 'Add the requested direct-answer field.')
   requireModule('takeaways', (draft.keyTakeaways?.length ?? 0) >= 2, 'Add at least two requested key takeaways.')
@@ -210,13 +226,19 @@ export const reviewArticle = async (draft: ReviewDraft, context: ReviewContext) 
     requiredStructureIssues.push({
       code: 'broken_structure',
       note: 'The story body contains a list. Retell it as narration in which the protagonist weighs the options and acts.',
+      key: 'storyList',
     })
   const repeatedSubjects = repeatedTableSubjects(draft.content)
-  if (repeatedSubjects.length)
+  if (repeatedSubjects.length) {
+    const subjects = repeatedSubjects.join(', ').slice(0, 120)
     requiredStructureIssues.push({
       code: 'broken_structure',
-      note: `The table repeats first-column subjects (${repeatedSubjects.join(', ').slice(0, 120)}). Use one row per subject, combining its meanings, or give each row a genuinely distinct category.`,
+      note: `The table repeats first-column subjects (${subjects}). Use one row per subject, combining its meanings, or give each row a genuinely distinct category.`,
+      key: 'repeatedTableSubjects',
+      params: { subjects },
     })
+  }
+  const noteLanguage = context.noteLanguage && LANGUAGE_NAMES[context.noteLanguage]
 
   let verificationTokens = 0
   let verificationBrief: string | null = null
@@ -241,7 +263,7 @@ ${context.illustrative ? ILLUSTRATIVE_STORY : ''}
 Verify the factual premises of arguments and scenarios. Do not demand that a source has already published the author's comparison, value judgment or conditional conclusion; do not mark these as unsupported events. A hypothetical must not smuggle an unverified real-world action into its factual premises.
 Claims about rules currently in force (law, regulation, official requirements: deadlines, amounts, qualifications, penalties) must rest on text the source shows to be in force at the review date: a consolidated current version or a provision with a stated effective date that has passed. A draft, proposal, pending amendment, future version or a page marking changes ("after the amendment", struck/inserted wording) supports only claims about that proposal. If the in-force wording differs, the claim is CONTRADICTED; if no in-force text was found, it is UNSUPPORTED MATERIAL.
 For negative claims, search first-hand interviews for an explicit positive confirmation. Distinguish whether an event happened from whether its mechanism has been explained.
-Return one verdict per line: SUPPORTED, CONTRADICTED, UNSUPPORTED MATERIAL or NOT VERIFIED; the exact claim; the correction or finding; event/publication date; and the full supporting URL retrieved by web search on that same line. Use UNSUPPORTED MATERIAL only for unsupported concrete consequential assertions (invented quotes, confirmed character returns, dates, numbers). NOT VERIFIED is advisory for minor uncertainty. Reasonable qualified inferences from a source are SUPPORTED even without verbatim wording: a demo subject to change supports saying its depicted location may change. Do not demand proof of every possible absence or literal matching wording. Do not invent sources or fill gaps with model memory. Do not assess headline style.
+Return one verdict per line: SUPPORTED, CONTRADICTED, UNSUPPORTED MATERIAL or NOT VERIFIED; the exact claim; the correction or finding; event/publication date; and the full supporting URL retrieved by web search on that same line.${noteLanguage ? ` Keep the verdict keyword in English; write the correction or finding in ${noteLanguage}.` : ''} Use UNSUPPORTED MATERIAL only for unsupported concrete consequential assertions (invented quotes, confirmed character returns, dates, numbers). NOT VERIFIED is advisory for minor uncertainty. Reasonable qualified inferences from a source are SUPPORTED even without verbatim wording: a demo subject to change supports saying its depicted location may change. Do not demand proof of every possible absence or literal matching wording. Do not invent sources or fill gaps with model memory. Do not assess headline style.
 ${AUTHOR_ACCOUNT_VERIFICATION}${
         context.knowledgeBrief
           ? `
@@ -264,9 +286,12 @@ firstPartyKnowledge is the publisher's own material, dated per entry. A claim ab
     const contradicted = (verificationBrief ?? '')
       .split('\n')
       .filter((line) => /^\s*(?:[-*\d.)]+\s*)?CONTRADICTED\b/i.test(line.replaceAll('**', '')))
-    factualIssues = [...contradicted, ...unverified]
-      .slice(0, 6)
-      .map((line) => ({ code: 'unsupported_claim', note: `Remove or correct this claim: ${line}`.slice(0, 300) }))
+    factualIssues = [...contradicted, ...unverified].slice(0, 6).map((line) => ({
+      code: 'unsupported_claim',
+      note: `Remove or correct this claim: ${line}`.slice(0, 300),
+      key: 'correctClaim',
+      params: { claim: line.slice(0, 270) },
+    }))
     if (!verificationBrief || verification.finishReason === 'length') {
       return {
         review: {
@@ -276,6 +301,7 @@ firstPartyKnowledge is the publisher's own material, dated per entry. A claim ab
             {
               code: 'unsupported_claim' as const,
               note: 'Independent fact verification was incomplete or returned no supported evidence. Do not approve this draft.',
+              key: 'verificationIncomplete' as const,
             },
           ].slice(0, 6),
         },
@@ -330,7 +356,12 @@ ${
 - Externally verifiable factual premises stay within the research brief, the first-party knowledge or the author's first-hand account in the assignment; the latter two are authoritative only about the publisher's and the author's own case. Original reasoning from those premises follows the authorial policy above. An invented specific of the author's case (name, amount, date, duration, quote, decision) the account does not state is an unsupported claim. The article never presents the author's account as a model or hypothetical case. The draft never mentions internal documents or cites an entry marked internal. The independent verification takes precedence over the original brief where it corrects it. Reject CONTRADICTED and UNSUPPORTED MATERIAL claims still present. NOT VERIFIED alone is advisory, not a reason to reject reasonable qualified inferences or minor uncertainty. An old summary cannot be presented as the current state when a newer state was required but not established.
 - Wording sounds natural in the article language: concrete nouns and direct verbs, no inflated administrative phrasing or generic AI transitions.
 
-Do not fail a draft for personal style preferences, a short recap, mild repetition or minor uncertainty. Material factual errors, structural defects, substantive assignment mismatches, or a circular article that fails to develop its central topic require revision. Each issue must identify a substantive publishing defect and give a precise edit instruction. Set approved=false whenever issues is non-empty.
+${
+  noteLanguage
+    ? `Write every note in ${noteLanguage}, quoting the defective passage in the article's own language.
+`
+    : ''
+}Do not fail a draft for personal style preferences, a short recap, mild repetition or minor uncertainty. Material factual errors, structural defects, substantive assignment mismatches, or a circular article that fails to develop its central topic require revision. Each issue must identify a substantive publishing defect and give a precise edit instruction. Set approved=false whenever issues is non-empty.
     `.trim(),
     prompt:
       buildEditorialReviewPrompt(draft, context) +
@@ -343,7 +374,13 @@ Do not fail a draft for personal style preferences, a short recap, mild repetiti
   const editorialIssues =
     object.approved || object.issues.length
       ? object.issues.map((issue) => ({ ...issue, note: issue.note.slice(0, 300) }))
-      : [{ code: 'broken_structure' as const, note: 'The draft was rejected without a usable edit instruction.' }]
+      : [
+          {
+            code: 'broken_structure' as const,
+            note: 'The draft was rejected without a usable edit instruction.',
+            key: 'rejectedWithoutNote' as const,
+          },
+        ]
 
   // Style suggestions must not turn an otherwise usable generation into a paid failure.
   const blockingEditorialIssues = editorialIssues.filter((issue) => {

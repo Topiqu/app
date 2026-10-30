@@ -49,11 +49,19 @@ export interface GenerationResearchResult {
   youtube?: YoutubeOutcome
 }
 
+/** `key` names a translated note for system-written issues; `note` is the reviser's English instruction. */
+export interface GenerationReviewIssue {
+  code: string
+  note: string
+  key?: string
+  params?: Record<string, string>
+}
+
 export interface GenerationReview {
   approved: boolean
   revised: boolean
-  issues?: { code: string; note: string }[]
-  resolvedIssues?: { code: string; note: string }[]
+  issues?: GenerationReviewIssue[]
+  resolvedIssues?: GenerationReviewIssue[]
 }
 
 export interface ArticleGenerationBilling {

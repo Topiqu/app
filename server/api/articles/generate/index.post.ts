@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { randomUUID } from 'node:crypto'
 
 export default defineEventHandler(async (event) => {
-  const { translate: t } = await useServerI18n(event)
+  const { translate: t, locale } = await useServerI18n(event)
   const user = await getSessionUser(event)
 
   if (!user || !user.clientSiteId) {
@@ -228,6 +228,7 @@ export default defineEventHandler(async (event) => {
             fallbackWithoutResearch: options?.research.fallbackWithoutResearch,
             format: options?.format,
             language: options?.language,
+            noteLanguage: locale,
             modules: options?.modules,
             allowGeneratedImages: options?.allowGeneratedImages !== false,
             useKnowledge: options?.useKnowledge !== false,

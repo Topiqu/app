@@ -84,5 +84,5 @@ export const useServerI18n = async (
 ) => {
   const locale = opts.locale || getCookie(event, 'i18n_lang') || 'en'
 
-  return { translate: await getServerTranslator(locale, opts.messages) }
+  return { translate: await getServerTranslator(locale, opts.messages), locale: serverLocale(locale) }
 }

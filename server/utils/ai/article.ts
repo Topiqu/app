@@ -118,7 +118,13 @@ export const generateArticle = async (
       editorialReview = {
         approved: false,
         revised: false,
-        issues: [{ code: 'broken_structure', note: 'The automated editorial review did not complete.' }],
+        issues: [
+          {
+            code: 'broken_structure',
+            note: 'The automated editorial review did not complete.',
+            key: 'reviewUnavailable',
+          },
+        ],
       }
       await audit?.record('ARTICLE_GENERATION_FALLBACK', {
         stage: 'review',
@@ -171,6 +177,8 @@ export const streamArticle = async (
     allowGeneratedImages?: boolean
     useKnowledge?: boolean
     language?: Language
+    /** The editor's interface language, for review notes. */
+    noteLanguage?: Language
     format?: ArticleFormat
     modules?: readonly ArticleModule[]
     /** The article being regenerated, so it is never offered as its own link target. */
@@ -258,6 +266,7 @@ export const streamArticle = async (
       abortSignal: opts.abortSignal,
       verifyFacts: opts.research !== false,
       illustrative: true,
+      noteLanguage: opts.noteLanguage,
       onProgress,
     }
     draft.sources = filterResearchSources(draft.sources, groundingBrief)
@@ -342,7 +351,11 @@ export const streamArticle = async (
           ...editorialReview,
           approved: false,
           issues: [
-            { code: 'broken_structure', note: 'The revised draft could not be checked. Review it before publishing.' },
+            {
+              code: 'broken_structure',
+              note: 'The revised draft could not be checked. Review it before publishing.',
+              key: 'uncheckedRevision',
+            },
           ],
         }
       await reportCaughtError('Manual article revision or follow-up review failed; returning available draft', error, {

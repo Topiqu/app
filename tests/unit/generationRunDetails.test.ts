@@ -14,9 +14,13 @@ import {
 const translate = (key: string, params?: Record<string, string | number>) => {
   if (key === 'articles.editor.ai.run.research.sources') return `Nalezené zdroje: ${params?.count}`
   if (key === 'articles.editor.ai.run.review.waiting') return `waiting:${params?.seconds}`
+  if (key === 'articles.editor.ai.run.note.correctClaim') return `Opravte: ${params?.claim}`
   return key
 }
-mockNuxtImport('useI18n', () => () => ({ t: translate, te: () => false }))
+mockNuxtImport('useI18n', () => () => ({
+  t: translate,
+  te: (key: string) => key === 'articles.editor.ai.run.note.correctClaim',
+}))
 mockNuxtImport('useLocalePath', () => () => () => '/admin/knowledge')
 
 const global = { mocks: { $t: translate }, stubs: { AppMedia: true, UIcon: true } }
@@ -50,6 +54,33 @@ describe('generation report details', () => {
     }
     await toggle.trigger('click')
     expect(toggle.attributes('aria-expanded')).toBe('false')
+  })
+
+  it('shows system-written review notes in the interface language and model notes as written', async () => {
+    const run = reduceGenerationRun(
+      running(),
+      {
+        type: 'review',
+        review: {
+          approved: false,
+          revised: true,
+          issues: [
+            {
+              code: 'unsupported_claim',
+              note: 'Remove or correct this claim: CONTRADICTED …',
+              key: 'correctClaim',
+              params: { claim: 'CONTRADICTED: Karel Urban' },
+            },
+            { code: 'assignment_mismatch', note: 'Vyprávěč zní jako zpráva.' },
+          ],
+        },
+      },
+      Date.now(),
+    )
+    const wrapper = await mountSuspended(Run, { props: { run, words: 500 }, global })
+    expect(wrapper.text()).toContain('Opravte: CONTRADICTED: Karel Urban')
+    expect(wrapper.text()).not.toContain('Remove or correct this claim')
+    expect(wrapper.text()).toContain('Vyprávěč zní jako zpráva.')
   })
 
   it('updates review details only on real events while the waiting time keeps advancing', async () => {

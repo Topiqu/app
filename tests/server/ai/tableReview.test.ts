@@ -76,8 +76,18 @@ describe('story and video structure review', () => {
       { prompt: 'Příběh', researchBrief: null, verifyFacts: false, format: 'story' },
     )
     expect(result.review.issues).toContainEqual(
-      expect.objectContaining({ code: 'broken_structure', note: expect.stringContaining('list') }),
+      expect.objectContaining({ code: 'broken_structure', note: expect.stringContaining('list'), key: 'storyList' }),
     )
+  })
+
+  it('asks the copy desk for notes in the interface language only when one is given', async () => {
+    vi.stubGlobal('LANGUAGE_NAMES', { cs: 'Czech' })
+    const context = { prompt: 'Příběh', researchBrief: null, verifyFacts: false, format: 'story' }
+    await reviewArticle(story, { ...context, noteLanguage: 'cs' as const })
+    await reviewArticle(story, context)
+    const [localized, plain] = vi.mocked(generateText).mock.calls.map((call) => call[0].instructions as string)
+    expect(localized).toContain('Write every note in Czech')
+    expect(plain).not.toContain('Write every note in')
   })
 
   it('owes a requested video only when research verified one', async () => {
@@ -86,7 +96,11 @@ describe('story and video structure review', () => {
 
     const missing = await reviewArticle(story, { ...context, researchBrief: verifiedVideo })
     expect(missing.review.issues).toContainEqual(
-      expect.objectContaining({ code: 'broken_structure', note: expect.stringContaining('[[VIDEO1]]') }),
+      expect.objectContaining({
+        code: 'broken_structure',
+        note: expect.stringContaining('[[VIDEO1]]'),
+        key: 'module.youtube',
+      }),
     )
 
     const embedded = { ...story, content: `${story.content}[[VIDEO1]]`, videos: [{ url: 'https://youtu.be/abc' }] }

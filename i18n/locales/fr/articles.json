@@ -690,6 +690,24 @@
             "assignment_mismatch": "Non-respect de la consigne",
             "broken_structure": "Structure défaillante"
           },
+          "note": {
+            "module": {
+              "answer": "Ajoutez la réponse directe demandée.",
+              "takeaways": "Ajoutez au moins deux points clés.",
+              "faq": "Ajoutez la FAQ demandée.",
+              "poll": "Ajoutez exactement un sondage demandé.",
+              "images": "Ajoutez les images demandées dans le texte.",
+              "table": "Ajoutez le tableau demandé.",
+              "youtube": "Intégrez la vidéo YouTube trouvée par la recherche."
+            },
+            "repeatedTableSubjects": "Le tableau répète des lignes pour : {subjects}. Utilisez une ligne par élément.",
+            "storyList": "Le récit contient une liste. Racontez plutôt comment le protagoniste pèse les options et agit.",
+            "correctClaim": "Corrigez ou supprimez cette affirmation : {claim}",
+            "verificationIncomplete": "La vérification des faits n'a pas abouti. Vérifiez les faits avant de publier.",
+            "rejectedWithoutNote": "La relecture a rejeté le brouillon sans consigne précise.",
+            "reviewUnavailable": "La relecture automatique n'a pas abouti.",
+            "uncheckedRevision": "Le brouillon révisé n'a pas pu être vérifié. Relisez-le avant de publier."
+          },
           "busy": "Un autre article est en cours de génération. Attendez la fin ou arrêtez-le d’abord."
         },
         "topicPlaceholderStory": "Racontez votre histoire : ce qui s’est passé, quand, combien de temps cela a duré et comment cela s’est terminé. L’IA s’en tient aux faits que vous donnez.",

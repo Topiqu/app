@@ -695,6 +695,24 @@
             "assignment_mismatch": "Abweichung vom Auftrag",
             "broken_structure": "Fehlerhafte Struktur"
           },
+          "note": {
+            "module": {
+              "answer": "Ergänzen Sie die angeforderte direkte Antwort.",
+              "takeaways": "Ergänzen Sie mindestens zwei Kernaussagen.",
+              "faq": "Ergänzen Sie die angeforderten FAQ.",
+              "poll": "Ergänzen Sie genau eine angeforderte Umfrage.",
+              "images": "Fügen Sie die angeforderten Bilder in den Text ein.",
+              "table": "Ergänzen Sie die angeforderte Tabelle.",
+              "youtube": "Betten Sie das von der Recherche gefundene YouTube-Video ein."
+            },
+            "repeatedTableSubjects": "Die Tabelle wiederholt Zeilen für: {subjects}. Verwenden Sie eine Zeile pro Eintrag.",
+            "storyList": "Die Geschichte enthält eine Liste. Erzählen Sie stattdessen, wie die Hauptfigur die Optionen abwägt und handelt.",
+            "correctClaim": "Korrigieren oder entfernen Sie diese Aussage: {claim}",
+            "verificationIncomplete": "Die Faktenprüfung wurde nicht abgeschlossen. Prüfen Sie die Fakten vor der Veröffentlichung.",
+            "rejectedWithoutNote": "Die Prüfung hat den Entwurf ohne konkrete Anweisung abgelehnt.",
+            "reviewUnavailable": "Die automatische Prüfung wurde nicht abgeschlossen.",
+            "uncheckedRevision": "Der überarbeitete Entwurf konnte nicht geprüft werden. Prüfen Sie ihn vor der Veröffentlichung."
+          },
           "busy": "Gerade wird ein anderer Artikel generiert. Warten Sie, bis er fertig ist, oder stoppen Sie ihn zuerst."
         },
         "topicPlaceholderStory": "Erzählen Sie Ihre Geschichte: was geschah, wann, wie lange es dauerte und wie es ausging. Die KI hält sich an Ihre Angaben.",

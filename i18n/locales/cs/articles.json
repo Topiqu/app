@@ -690,6 +690,24 @@
             "assignment_mismatch": "Nesoulad se zadáním",
             "broken_structure": "Rozbitá struktura"
           },
+          "note": {
+            "module": {
+              "answer": "Doplňte požadovanou přímou odpověď.",
+              "takeaways": "Doplňte alespoň dvě hlavní myšlenky.",
+              "faq": "Doplňte požadované časté dotazy.",
+              "poll": "Doplňte právě jednu požadovanou anketu.",
+              "images": "Doplňte do textu požadované obrázky.",
+              "table": "Doplňte požadovanou tabulku.",
+              "youtube": "Vložte YouTube video, které našla rešerše."
+            },
+            "repeatedTableSubjects": "Tabulka opakuje řádky pro: {subjects}. Každá položka patří do jednoho řádku.",
+            "storyList": "Příběh obsahuje seznam. Převyprávějte ho tak, aby hlavní postava možnosti zvážila a jednala.",
+            "correctClaim": "Opravte nebo odstraňte toto tvrzení: {claim}",
+            "verificationIncomplete": "Ověření faktů nedoběhlo. Před publikací fakta zkontrolujte.",
+            "rejectedWithoutNote": "Kontrola koncept zamítla bez konkrétního pokynu.",
+            "reviewUnavailable": "Automatická kontrola nedoběhla.",
+            "uncheckedRevision": "Upravený koncept se nepodařilo zkontrolovat. Před publikací ho projděte."
+          },
           "busy": "Právě se generuje jiný článek. Počkejte, až doběhne, nebo ho nejdřív zastavte."
         },
         "topicPlaceholderStory": "Popište svůj příběh: co se stalo, kdy, jak dlouho to trvalo a jak to dopadlo. AI se drží faktů, které uvedete.",
