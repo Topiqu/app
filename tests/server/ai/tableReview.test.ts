@@ -62,12 +62,13 @@ describe('comparison table review', () => {
   })
 })
 
-describe('story structure review', () => {
+describe('story and video structure review', () => {
   const story = {
     title: 'Johnny Cage na vlakáči',
     perex: 'Co kdyby filmová hvězda zmeškala vlak ve Vsetíně?',
     content: '<h2>Nádraží</h2><p>Cage zaváhal.</p>',
   }
+  const verifiedVideo = 'Brief.\nVerified YouTube video (checked against YouTube oEmbed): https://youtu.be/abc'
 
   it('requires a story to narrate a choice instead of listing it, even if the copy desk approves', async () => {
     const result = await reviewArticle(
@@ -77,6 +78,19 @@ describe('story structure review', () => {
     expect(result.review.issues).toContainEqual(
       expect.objectContaining({ code: 'broken_structure', note: expect.stringContaining('list') }),
     )
+  })
+
+  it('owes a requested video only when research verified one', async () => {
+    const context = { prompt: 'Příběh', verifyFacts: false, format: 'story', modules: ['youtube'] }
+    expect((await reviewArticle(story, { ...context, researchBrief: 'Brief.' })).review.approved).toBe(true)
+
+    const missing = await reviewArticle(story, { ...context, researchBrief: verifiedVideo })
+    expect(missing.review.issues).toContainEqual(
+      expect.objectContaining({ code: 'broken_structure', note: expect.stringContaining('[[VIDEO1]]') }),
+    )
+
+    const embedded = { ...story, content: `${story.content}[[VIDEO1]]`, videos: [{ url: 'https://youtu.be/abc' }] }
+    expect((await reviewArticle(embedded, { ...context, researchBrief: verifiedVideo })).review.approved).toBe(true)
   })
 })
 

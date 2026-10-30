@@ -63,6 +63,7 @@ const RESEARCH_CONFIG = {
 const researchYoutube = async (
   prompt: string,
   abortSignal?: AbortSignal,
+  story = false,
 ): Promise<{ outcome: YoutubeOutcome; tokens: number }> => {
   const signal = abortSignal ? AbortSignal.any([abortSignal, AbortSignal.timeout(25_000)]) : AbortSignal.timeout(25_000)
 
@@ -70,7 +71,11 @@ const researchYoutube = async (
     const result = await generateText({
       model: aiModel('articleResearch'),
       providerOptions: aiReasoning('medium'),
-      instructions: `Search for existing, directly relevant YouTube videos about the topic. Prefer the official developer, publisher, manufacturer, institution or named subject's channel. Return up to three full youtube.com/watch or youtu.be URLs you actually opened, ordered by relevance; return NONE if no suitable video was retrieved. Never guess a video id or transform a channel/search URL into a watch URL.`,
+      instructions: `Search for existing, directly relevant YouTube videos about the topic. Prefer the official developer, publisher, manufacturer, institution or named subject's channel. Return up to three full youtube.com/watch or youtu.be URLs you actually opened, ordered by relevance; return NONE if no suitable video was retrieved. Never guess a video id or transform a channel/search URL into a watch URL.${
+        story
+          ? ' The topic is an invented story, so no video of its plot exists. Search for its real subject instead: the named character, franchise, person, place or institution.'
+          : ''
+      }`,
       prompt,
       maxOutputTokens: 250,
       tools: { web_search: aiWebSearchTool('articleResearch', 'low') as never },
@@ -154,7 +159,7 @@ export const researchTopic = async (
       tools: { web_search: aiWebSearchTool('articleResearch', researchConfig.searchContextSize) as never },
       abortSignal: researchSignal,
     })
-    const youtubeResearch = youtubeRequested ? researchYoutube(prompt, abortSignal) : Promise.resolve(null)
+    const youtubeResearch = youtubeRequested ? researchYoutube(prompt, abortSignal, story) : Promise.resolve(null)
     const [{ text, usage, sources, toolResults, finishReason }, youtube] = await Promise.all([
       mainResearch,
       youtubeResearch,

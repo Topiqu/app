@@ -57,6 +57,7 @@ type ReviewDraft = {
   images?: Array<{ query: string }>
   faq?: Array<{ question: string; answer: string }>
   polls?: Array<{ question: string; options: string[] }>
+  videos?: Array<{ url: string }>
   sources?: string[]
 }
 
@@ -198,6 +199,13 @@ export const reviewArticle = async (draft: ReviewDraft, context: ReviewContext) 
     'Add the requested body-image instructions and matching numbered slots.',
   )
   requireModule('table', /<table(?:\s|>)/i.test(draft.content), 'Add the requested comparison table.')
+  // Only research can supply a URL, so a video is owed only when the brief verified one.
+  if (/^Verified YouTube video\b/m.test(context.researchBrief ?? ''))
+    requireModule(
+      'youtube',
+      (draft.videos?.length ?? 0) === 1 && /\[\[VIDEO1\]\]/.test(draft.content),
+      'Add the verified YouTube video from the research brief and its [[VIDEO1]] slot.',
+    )
   if (context.format === 'story' && /<[ou]l(?:\s|>)/i.test(draft.content))
     requiredStructureIssues.push({
       code: 'broken_structure',
@@ -297,7 +305,8 @@ Approve only when all of these are true:
 - The article delivers a concrete reader benefit promised by its title and angle.
 - Check every named character, event and chronology across the entire object, including FAQ, polls and takeaways. Do not treat a character's mention, death in canon or appearance in another adaptation as a confirmed return. Unsupported returns, resurrection and merged continuities are substantive errors.
 - Explicitly distinguish a confirmed event from an undisclosed explanation of how it happened. Reject "not confirmed" or "developers have not explained whether" when the brief confirms it. An omission in the brief is not evidence that nobody has confirmed it.
-- Image and cover instructions are never an issue: media finalization selects, checks and deduplicates the actual assets.- A quotation, blockquote, number, date or named source that appears in neither the grounding material nor the assignment is invented_detail, naming the passage to remove. A quotation needs a speaker; a sentence styled as a quote without one is invented.
+- Image and cover instructions are never an issue: media finalization selects, checks and deduplicates the actual assets. Never report a missing YouTube video either: only research can supply one, and the system checks it.
+- A quotation, blockquote, number, date or named source that appears in neither the grounding material nor the assignment is invented_detail, naming the passage to remove. A quotation needs a speaker; a sentence styled as a quote without one is invented.
 - Concrete developer quotes and confirmations must be supported. Allow reasonable qualified summaries and uncertainty without requiring verbatim source wording; never invent facts to fill gaps.
 - Prefer paragraphs that add a fact, example, explanation or consequence; minor repetition is an editing suggestion, not a publication blocker.
 - In comparison tables, each first-column subject must be unique. Do not repeat a word or item in separate rows to describe different meanings; combine those meanings in one row or use genuinely distinct row categories.
