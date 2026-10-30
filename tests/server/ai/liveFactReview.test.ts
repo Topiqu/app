@@ -257,9 +257,9 @@ it('lets only an editor-requested story skip documentation of its plot', async (
   await reviewArticle(draft, { ...context, format: 'story' })
   const [manual, cron] = vi.mocked(generateStructuredText).mock.calls.map((call) => call[0].instructions as string)
 
-  expect(manual).toContain('never ask for its documentation')
+  expect(manual).toContain('Never ask for its documentation')
   expect(cron).toContain('An invented protagonist, scene or event is invented_detail')
-  expect(cron).not.toContain('never ask for its documentation')
+  expect(cron).not.toContain('Never ask for its documentation')
 })
 
 beforeEach(stubImports)

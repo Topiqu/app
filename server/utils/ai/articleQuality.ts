@@ -198,6 +198,11 @@ export const reviewArticle = async (draft: ReviewDraft, context: ReviewContext) 
     'Add the requested body-image instructions and matching numbered slots.',
   )
   requireModule('table', /<table(?:\s|>)/i.test(draft.content), 'Add the requested comparison table.')
+  if (context.format === 'story' && /<[ou]l(?:\s|>)/i.test(draft.content))
+    requiredStructureIssues.push({
+      code: 'broken_structure',
+      note: 'The story body contains a list. Retell it as narration in which the protagonist weighs the options and acts.',
+    })
   const repeatedSubjects = repeatedTableSubjects(draft.content)
   if (repeatedSubjects.length)
     requiredStructureIssues.push({
@@ -292,19 +297,22 @@ Approve only when all of these are true:
 - The article delivers a concrete reader benefit promised by its title and angle.
 - Check every named character, event and chronology across the entire object, including FAQ, polls and takeaways. Do not treat a character's mention, death in canon or appearance in another adaptation as a confirmed return. Unsupported returns, resurrection and merged continuities are substantive errors.
 - Explicitly distinguish a confirmed event from an undisclosed explanation of how it happened. Reject "not confirmed" or "developers have not explained whether" when the brief confirms it. An omission in the brief is not evidence that nobody has confirmed it.
-- Image and cover instructions are never an issue: media finalization selects, checks and deduplicates the actual assets.
-- A quotation, blockquote, number, date or named source that appears in neither the grounding material nor the assignment is invented_detail, naming the passage to remove. A quotation needs a speaker; a sentence styled as a quote without one is invented.
+- Image and cover instructions are never an issue: media finalization selects, checks and deduplicates the actual assets.- A quotation, blockquote, number, date or named source that appears in neither the grounding material nor the assignment is invented_detail, naming the passage to remove. A quotation needs a speaker; a sentence styled as a quote without one is invented.
 - Concrete developer quotes and confirmations must be supported. Allow reasonable qualified summaries and uncertainty without requiring verbatim source wording; never invent facts to fill gaps.
 - Prefer paragraphs that add a fact, example, explanation or consequence; minor repetition is an editing suggestion, not a publication blocker.
 - In comparison tables, each first-column subject must be unique. Do not repeat a word or item in separate rows to describe different meanings; combine those meanings in one row or use genuinely distinct row categories.
 - If several body sections merely restate the same claim or absence of confirmation, or the piece offers no substantive answer or argument, report missing_specifics with the repeated passages and a concrete replacement angle grounded in the brief. This is a failure to develop the topic, not minor stylistic repetition. A short recap or overlap with extraction fields alone is not this defect.
 ${
   context.illustrative
-    ? '- An illustrative story or scenario the assignment asks for is judged on its real-world premises, not on whether the narrated case is documented. Once the lead or perex frames it as illustrative, never ask for its documentation, for a disclaimer about evidence, or for the angle to be changed into a general explainer; if the draft turned the requested story into a list of what could happen, report missing_specifics asking for the narrative.'
+    ? '- An illustrative story or scenario the assignment asks for is judged on its real-world premises, not on whether the narrated case is documented. Never ask for its documentation, for a disclaimer about evidence, or for the angle to be changed into a general explainer; a body sentence explaining what is fictional and what is real is itself broken_structure. Dialogue of its invented or fictional characters is narration, not a quotation, and never invented_detail. If the draft turned the requested story into a list of what could happen, report missing_specifics asking for the narrative.'
     : context.format === 'story'
       ? '- A story must tell a case the grounding material documents. An invented protagonist, scene or event is invented_detail.'
       : ''
-}
+}${
+      context.format === 'story'
+        ? '\n- A story stays a narrative. Report as broken_structure, naming the passage: research attributed inside the narrative ("a study notes", "an article reported"), a definition or background recital that halts a scene, or a plot device (a phone, screen or profile) invented to carry a table or other module.'
+        : ''
+    }
 - Evaluate original reasoning on its stated premises and logic, not whether a source states the conclusion verbatim. Respect the requested controversy level and format: a sharp, supported contrast or a clearly conditional theory is useful content, not a factual defect. Do not demand bland neutrality as an edit.
 - Avoid excessive recaps, but allow a short useful summary. Dedicated perex, answer and key-takeaway fields may overlap by design.
 - Dates appear only when the date changes the fact. Phrases such as "for readers in September 2026" are stale framing unless that month creates a real deadline or condition.

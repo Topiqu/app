@@ -23,6 +23,18 @@ describe('editorial policy', () => {
     expect(editorialPolicy('analysis', 'LOW')).not.toContain('Never invent a protagonist')
   })
 
+  it('frames an illustrative story in the perex and lets its fictional characters talk', () => {
+    const policy = editorialPolicy('story', 'LOW', true)
+    expect(policy).toContain('the body never contains a sentence explaining what is fictional and what is real')
+    expect(policy).toContain('may speak in invented dialogue')
+    expect(policy).toContain("never put invented words in a real person's mouth")
+  })
+
+  it('makes a HIGH story carry its voice in the narrator', () => {
+    expect(editorialPolicy('story', 'HIGH', true)).toContain('A neutral, report-like retelling')
+    expect(editorialPolicy('story', 'LOW', true)).not.toContain('A neutral, report-like retelling')
+  })
+
   it('narrates a story in scenes instead of arguing a thesis', () => {
     expect(editorialPolicy('story', 'LOW')).toContain('sequence of scenes, in the past tense')
     expect(editorialPolicy('story', 'LOW')).not.toContain('central question or thesis')

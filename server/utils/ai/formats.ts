@@ -215,7 +215,18 @@ Never do these. They are what makes writing read as machine-made:
 - Never manufacture timeliness with phrases such as "for readers in [month/year]" or "at the time of writing". State a date only when it changes the fact, deadline or decision.
 - Never narrate the limits of the research with phrases such as "available sources do not confirm", "the exact extent must be assessed individually" or repeated instructions to verify the subject elsewhere. Narrow or omit the unsupported claim.
 - The body gets no second summary. Perex, direct answer and key takeaways already carry that job; do not repeat them as "verified facts", "practical recommendations" or a recap list in the content.
-- Every paragraph must add a distinct fact, named example, mechanism, comparison or consequence. If deleting a paragraph loses no information, delete it before returning the article.
+- Every paragraph must add a distinct fact, named example, mechanism, comparison or consequence — in a story, a new action, obstacle, decision or consequence. If deleting a paragraph loses no information or plot, delete it before returning the article.
+`.trim()
+
+/** Research-heavy prompts turned stories into fact sheets with a protagonist walking through them. */
+const STORY_CRAFT = `
+Story craft:
+- Write scenes, not a report: concrete action, physical detail and short exchanges of dialogue carry the plot. Vary rhythm; a one-line paragraph can land a beat.
+- Never use a bulleted or numbered list in the body. When the protagonist weighs options, narrate the hesitation and the choice in prose.
+- Research enters as what the protagonist sees, hears, knows or runs into. Never attribute it inside the narrative ("a study notes", "an article reported", "his profile says"); sources belong only in the "sources" array.
+- Use only the research a scene needs. Unused facts in the brief are expected; never stop the plot to define a word or recite background the reader can follow from context.
+- A requested table or video sits between scenes as a sidebar about the real subject, introduced by at most one plain sentence. Never invent a plot device (a phone, screen, poster or profile) to carry it, and never let it interrupt a scene.
+- Headings name what happens in the next scene, briefly. No headings about the article itself or its sources.
 `.trim()
 
 const moduleRules = (selected: readonly ArticleModule[]) => {
@@ -285,7 +296,7 @@ ${moduleRules(selected)}
 Extraction fields:
 ${extractionRules(selected)}
 They are in the article's language and every claim in them is also supported by the body.
-
+${format === 'story' ? `\n${STORY_CRAFT}\n` : ''}
 ${ANTI_FORMULA}
 `.trim()
 }

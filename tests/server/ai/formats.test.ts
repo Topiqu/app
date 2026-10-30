@@ -71,6 +71,16 @@ describe('formatRules', () => {
     expect(rules).toContain('Never split or paraphrase one fact to reach a count')
   })
 
+  it('keeps a story a narrative instead of a fact sheet with a protagonist', () => {
+    const rules = formatRules('story', null, ['table', 'youtube'])
+
+    expect(rules).toContain('Never use a bulleted or numbered list in the body')
+    expect(rules).toContain('Never attribute it inside the narrative')
+    expect(rules).toContain('Never invent a plot device')
+    expect(rules).toContain('in a story, a new action, obstacle, decision or consequence')
+    expect(formatRules('analysis')).not.toContain('Story craft')
+  })
+
   it('leaves the manual flow broad but makes optional blocks default to none', () => {
     const rules = formatRules()
 

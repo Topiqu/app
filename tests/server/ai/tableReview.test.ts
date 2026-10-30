@@ -62,4 +62,22 @@ describe('comparison table review', () => {
   })
 })
 
+describe('story structure review', () => {
+  const story = {
+    title: 'Johnny Cage na vlakáči',
+    perex: 'Co kdyby filmová hvězda zmeškala vlak ve Vsetíně?',
+    content: '<h2>Nádraží</h2><p>Cage zaváhal.</p>',
+  }
+
+  it('requires a story to narrate a choice instead of listing it, even if the copy desk approves', async () => {
+    const result = await reviewArticle(
+      { ...story, content: `${story.content}<ul><li>nastoupit</li><li>pomoct</li></ul>` },
+      { prompt: 'Příběh', researchBrief: null, verifyFacts: false, format: 'story' },
+    )
+    expect(result.review.issues).toContainEqual(
+      expect.objectContaining({ code: 'broken_structure', note: expect.stringContaining('list') }),
+    )
+  })
+})
+
 beforeEach(stubImports)
