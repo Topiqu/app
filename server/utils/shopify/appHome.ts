@@ -5,33 +5,53 @@ const SCRIPT = `
 const messages = JSON.parse(document.getElementById('topiqu-messages').textContent)
 const views = ['loading', 'failed', 'unlinked', 'linked']
 const byId = (id) => document.getElementById(id)
-const show = (view) => views.forEach((id) => { byId(id).hidden = id !== view })
+const params = new URLSearchParams(location.search)
+const show = (view) => {
+  views.forEach((id) => { byId(id).hidden = id !== view })
+  byId('billing').hidden = true
+}
 let waiting
 
+// One automatic trip to plan selection per browser session, re-armed once a plan is active, so a
+// declined selection cannot loop while a reinstall still asks again.
+const redirectKey = 'topiqu-plan-redirect:' + params.get('shop')
+let redirected = false
+const storage = (action) => { try { return action(sessionStorage) } catch { return null } }
+
 const render = (state) => {
+  if (state.subscribed) storage((store) => store.removeItem(redirectKey))
+  // The App Pricing welcome link appends plan_handle; the plan may not be readable yet.
+  if (
+    state.subscribed === false && state.pricingUrl && !params.has('plan_handle') && !redirected &&
+    storage((store) => store.getItem(redirectKey)) !== '1'
+  ) {
+    redirected = true
+    storage((store) => store.setItem(redirectKey, '1'))
+    open(state.pricingUrl, '_top')
+  }
   if (!state.linked) {
     byId('connect').setAttribute('href', state.linkUrl)
-    return show('unlinked')
+    show('unlinked')
+  } else {
+    clearInterval(waiting)
+    byId('project').textContent = state.project
+    byId('plan').textContent = state.plan
+    show('linked')
   }
-  clearInterval(waiting)
-  byId('project').textContent = state.project
-  byId('plan').textContent = state.plan
-  byId('plan-required').hidden = !state.needsPlan
   // Custom elements may override [hidden], so plain wrappers toggle visibility.
+  byId('billing').hidden = !state.pricingUrl
+  byId('plan-required').hidden = !state.needsPlan
   const pricing = byId('pricing')
-  byId('pricing-wrap').hidden = !state.pricingUrl
   if (state.pricingUrl) pricing.setAttribute('href', state.pricingUrl)
-  pricing.textContent = state.needsPlan ? messages.choosePlan : messages.managePlan
+  pricing.textContent = state.subscribed ? messages.managePlan : messages.choosePlan
   pricing.setAttribute('variant', state.needsPlan ? 'primary' : 'secondary')
-  show('linked')
 }
 
-const load = async (refresh) => {
+const load = async () => {
   try {
     const response = await fetch('/api/shopify/app/session', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (await shopify.idToken()) },
-      body: JSON.stringify({ refresh }),
+      headers: { Authorization: 'Bearer ' + (await shopify.idToken()) },
     })
     if (!response.ok) throw new Error(String(response.status))
     render(await response.json())
@@ -47,13 +67,12 @@ byId('connect').addEventListener('click', () => {
   const stop = Date.now() + 15 * 60_000
   waiting = setInterval(() => {
     if (Date.now() > stop) clearInterval(waiting)
-    else if (!document.hidden) load(false)
+    else if (!document.hidden) load()
   }, 5000)
 })
-byId('check').addEventListener('click', () => load(false))
-byId('retry').addEventListener('click', () => { show('loading'); load(false) })
-// The App Pricing welcome link appends plan_handle after a plan change.
-load(new URLSearchParams(location.search).has('plan_handle'))
+byId('check').addEventListener('click', load)
+byId('retry').addEventListener('click', () => { show('loading'); load() })
+load()
 `
 
 /** The App Home document Shopify embeds in the store admin. App Bridge must be the first script. */
@@ -84,6 +103,16 @@ export const renderShopifyAppHome = (input: {
   <s-section>
     <s-paragraph>${t('common.shopify.app.about')}</s-paragraph>
   </s-section>
+  <div id="billing" hidden>
+    <s-section>
+      <s-stack gap="base">
+        <div id="plan-required" hidden>
+          <s-banner tone="warning" heading="${t('common.shopify.app.planRequiredTitle')}">${t('common.shopify.app.planRequired')}</s-banner>
+        </div>
+        <div><s-button id="pricing" target="_top"></s-button></div>
+      </s-stack>
+    </s-section>
+  </div>
   <div id="loading">
     <s-section><s-spinner accessibilityLabel="${t('common.shopify.app.loading')}"></s-spinner></s-section>
   </div>
@@ -107,13 +136,9 @@ export const renderShopifyAppHome = (input: {
   <div id="linked" hidden>
     <s-section heading="${t('common.shopify.app.linkedTitle')}">
       <s-stack gap="base">
-        <div id="plan-required" hidden>
-          <s-banner tone="warning" heading="${t('common.shopify.app.planRequiredTitle')}">${t('common.shopify.app.planRequired')}</s-banner>
-        </div>
         <s-paragraph>${t('common.shopify.app.project')}: <s-text type="strong" id="project"></s-text></s-paragraph>
         <s-paragraph>${t('common.shopify.app.plan')}: <s-text type="strong" id="plan"></s-text></s-paragraph>
         <s-stack direction="inline" gap="base">
-          <div id="pricing-wrap" hidden><s-button id="pricing" target="_top"></s-button></div>
           <s-button href="${escapeHtml(input.openUrl)}" target="_blank">${t('common.shopify.app.open')}</s-button>
         </s-stack>
       </s-stack>

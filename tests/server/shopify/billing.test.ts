@@ -3,6 +3,7 @@ import { createError } from 'h3'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
+  fetchShopifySubscription,
   planFromShopifyHandle,
   rejectShopifyBilled,
   releaseShopifyBilling,
@@ -19,6 +20,8 @@ describe('Shopify App Pricing sync', () => {
   const syncPlanFeatures = vi.fn()
   const grantPlanArticleCredits = vi.fn()
   const fetchMock = vi.fn()
+  const shopifyGraphql = vi.fn()
+  const shopifyAccessToken = vi.fn(async () => 'admin-token')
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -56,6 +59,9 @@ describe('Shopify App Pricing sync', () => {
     vi.stubGlobal('syncPlanFeatures', syncPlanFeatures)
     vi.stubGlobal('grantPlanArticleCredits', grantPlanArticleCredits)
     vi.stubGlobal('createError', createError)
+    vi.stubGlobal('shopifyGraphql', shopifyGraphql)
+    vi.stubGlobal('shopifyAccessToken', shopifyAccessToken)
+    shopifyGraphql.mockRejectedValue(new Error('Admin API unavailable'))
   })
   afterEach(() => {
     vi.unstubAllGlobals()
@@ -68,10 +74,12 @@ describe('Shopify App Pricing sync', () => {
     expect(planFromShopifyHandle('pro-monthly')).toBe('PRO')
     expect(planFromShopifyHandle('professional')).toBeNull()
     expect(planFromShopifyHandle('test-plan')).toBeNull()
+    expect(planFromShopifyHandle('Pro annual')).toBe('PRO')
+    expect(planFromShopifyHandle('Premium')).toBe('PREMIUM')
   })
 
   it('applies the active plan, its billing cycle and the cycle allowance', async () => {
-    await syncShopifyPlan('connection-1')
+    expect(await syncShopifyPlan('connection-1')).toMatchObject({ handles: ['pro'], annual: false })
     const [request] = fetchMock.mock.calls[0]!
     expect(request).toBe('https://partners.shopify.com/123/api/2026-07/graphql.json')
     expect(JSON.parse(fetchMock.mock.calls[0]![1].body).variables).toEqual({
@@ -94,7 +102,7 @@ describe('Shopify App Pricing sync', () => {
     expect(grantPlanArticleCredits).toHaveBeenCalledWith(expect.anything(), {
       clientSiteId: 'site-1',
       plan: 'PRO',
-      idempotencyKey: 'shopify:store.myshopify.com:2026-10-01T00:00:00Z:PRO',
+      idempotencyKey: 'shopify:store.myshopify.com:2026-10-31T00:00:00.000Z:PRO',
       reason: 'PRO included articles',
       periodStart: new Date('2026-10-01T00:00:00Z'),
       periodEnd: new Date('2026-10-31T00:00:00Z'),
@@ -112,12 +120,85 @@ describe('Shopify App Pricing sync', () => {
     expect(grantPlanArticleCredits).not.toHaveBeenCalled()
   })
 
-  it('never downgrades on a Partner API failure', async () => {
+  it('never downgrades when neither the Partner nor the Admin API answers', async () => {
     connection!.planHandle = 'pro'
     partnerOk = false
     await expect(syncShopifyPlan('connection-1')).rejects.toThrow()
+    expect(shopifyAccessToken).toHaveBeenCalledWith('connection-1')
     expect(siteUpdate).not.toHaveBeenCalled()
     expect(connectionUpdate).not.toHaveBeenCalled()
+  })
+
+  // The Partner API answers only for public apps, so an app under review reads the store's Admin API.
+  it('falls back to the Admin API subscription when the Partner API fails', async () => {
+    partnerOk = false
+    shopifyGraphql.mockResolvedValue({
+      currentAppInstallation: {
+        activeSubscriptions: [
+          {
+            name: 'Premium',
+            status: 'ACTIVE',
+            createdAt: '2026-09-01T00:00:00Z',
+            trialDays: 0,
+            currentPeriodEnd: '2026-11-15T00:00:00Z',
+            lineItems: [{ plan: { pricingDetails: { interval: 'EVERY_30_DAYS', planHandle: null } } }],
+          },
+        ],
+      },
+    })
+    await syncShopifyPlan('connection-1')
+    expect(shopifyGraphql).toHaveBeenCalledWith(
+      'store.myshopify.com',
+      'admin-token',
+      expect.stringContaining('currentAppInstallation'),
+    )
+    expect(siteUpdate).toHaveBeenCalledWith({
+      where: { id: 'site-1' },
+      data: expect.objectContaining({
+        plan: 'PREMIUM',
+        billingPlan: 'MONTHLY',
+        nextBillingAt: new Date('2026-11-15T00:00:00Z'),
+      }),
+    })
+    expect(grantPlanArticleCredits).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        idempotencyKey: 'shopify:store.myshopify.com:2026-11-15T00:00:00.000Z:PREMIUM',
+        periodStart: new Date('2026-10-16T00:00:00Z'),
+        periodEnd: new Date('2026-11-15T00:00:00Z'),
+      }),
+    )
+  })
+
+  it('reads an Admin API trial and an empty installation without the Partner API', async () => {
+    vi.stubEnv('SHOPIFY_PARTNER_API_TOKEN', '')
+    shopifyGraphql.mockResolvedValue({
+      currentAppInstallation: {
+        activeSubscriptions: [
+          {
+            name: 'Pro',
+            status: 'ACTIVE',
+            createdAt: new Date().toISOString(),
+            trialDays: 7,
+            currentPeriodEnd: null,
+            lineItems: [{ plan: { pricingDetails: { interval: 'ANNUAL', planHandle: 'pro-annual' } } }],
+          },
+        ],
+      },
+    })
+    const subscription = await fetchShopifySubscription({
+      shop: 'store.myshopify.com',
+      shopGid: 'gid://shopify/Shop/1',
+      accessToken: async () => 'installation-token',
+    })
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(subscription).toMatchObject({ handles: ['pro-annual', 'Pro'], annual: true, cycle: null })
+    expect(subscription!.trialEndsAt!.getTime()).toBeGreaterThan(Date.now() + 6 * 86_400_000)
+
+    shopifyGraphql.mockResolvedValue({ currentAppInstallation: { activeSubscriptions: [] } })
+    expect(
+      await fetchShopifySubscription({ shop: 'store.myshopify.com', shopGid: 'gid', accessToken: async () => 'token' }),
+    ).toBeNull()
   })
 
   it('skips Stripe-billed projects and recent checks unless forced', async () => {

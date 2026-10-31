@@ -1,5 +1,7 @@
 import type { H3Event } from 'h3'
 
+import { decryptShopifyToken } from './security'
+
 const SHOP_QUERY = 'query TopiquShop { shop { id name primaryDomain { url } } }'
 
 /** Exchanges an App Bridge ID token for expiring offline tokens plus the store identity. */
@@ -22,18 +24,31 @@ export const exchangeShopifySession = async (shop: string, idToken: string) => {
   }
 }
 
-/** A pending installation whose tokens can still seed a connection. */
+/** A pending installation whose tokens can still seed a connection, with a usable Admin API token. */
 export const pendingShopifyInstallation = async (shop: string, idToken: string) => {
   const existing = await prisma.shopifyInstallation.findUnique({
     where: { shop },
-    select: { id: true, refreshTokenExpiresAt: true, grantedScopes: true },
+    select: {
+      id: true,
+      shopGid: true,
+      encryptedAccessToken: true,
+      accessTokenExpiresAt: true,
+      refreshTokenExpiresAt: true,
+      grantedScopes: true,
+    },
   })
+  // Installation tokens are never refreshed; the open App Home re-exchanges instead.
   if (
     existing &&
+    existing.accessTokenExpiresAt.getTime() > Date.now() + 60_000 &&
     existing.refreshTokenExpiresAt.getTime() > Date.now() + 3_600_000 &&
     shopifyGrantsContent(existing.grantedScopes)
   )
-    return existing.id
+    return {
+      id: existing.id,
+      shopGid: existing.shopGid,
+      accessToken: decryptShopifyToken(existing.encryptedAccessToken),
+    }
   const fields = await exchangeShopifySession(shop, idToken)
   const saved = await prisma.shopifyInstallation.upsert({
     where: { shop },
@@ -41,7 +56,7 @@ export const pendingShopifyInstallation = async (shop: string, idToken: string) 
     update: fields,
     select: { id: true },
   })
-  return saved.id
+  return { id: saved.id, shopGid: fields.shopGid, accessToken: decryptShopifyToken(fields.encryptedAccessToken) }
 }
 
 /** The installation the browser was sent to link, from the signed httpOnly cookie. */

@@ -2,7 +2,7 @@
 export default defineMonitoredTask({
   meta: { name: 'shopify-billing', description: 'Syncs Shopify App Pricing subscriptions to project plans' },
   async run() {
-    if (!shopifyBillingConfigured()) return { result: { synced: 0, failed: 0 } }
+    if (!shopifyConfigured()) return { result: { synced: 0, failed: 0 } }
     const connections = await prisma.shopifyConnection.findMany({
       where: { shopGid: { not: null }, clientSite: { billingProvider: 'SHOPIFY' } },
       select: { id: true, shop: true },

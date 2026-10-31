@@ -35,12 +35,12 @@ async function stubImports() {
     'shopifyGraphql',
     'shopifyTokenExchange',
   )
-  await stubNitroImports(import('../../../server/utils/shopify/billing'), 'syncShopifyPlan')
+  await stubNitroImports(import('../../../server/utils/shopify/billing'), 'syncShopifyPlan', 'fetchShopifySubscription')
 }
 
 await stubImports()
 
-const { syncShopifyPlan } = await import('../../../server/utils/shopify/billing')
+const { fetchShopifySubscription, syncShopifyPlan } = await import('../../../server/utils/shopify/billing')
 const { renderShopifyAppHome } = await import('../../../server/utils/shopify/appHome')
 const { signShopifyLink, verifyShopifyLink } = await import('../../../server/utils/shopify/security')
 const { shopifyGraphql, shopifyTokenExchange, ShopifyApiError } = await import('../../../server/utils/shopify/api')
@@ -53,6 +53,7 @@ vi.mock('../../../server/utils/shopify/api', async (original) => ({
 vi.mock('../../../server/utils/shopify/billing', async (original) => ({
   ...(await original<typeof import('../../../server/utils/shopify/billing')>()),
   syncShopifyPlan: vi.fn(async () => undefined),
+  fetchShopifySubscription: vi.fn(async () => null),
 }))
 
 const INSTALLATION_ID = '0d4c1b0e-6f0a-4a8e-9c1d-2b3a4c5d6e7f'
@@ -132,7 +133,16 @@ describe('Shopify App Home session', () => {
 
   it('stores an unlinked store as an encrypted installation and returns a signed link', async () => {
     const state = (await run()) as { linked: boolean; linkUrl: string }
-    expect(state.linked).toBe(false)
+    expect(state).toMatchObject({
+      linked: false,
+      subscribed: false,
+      needsPlan: true,
+      pricingUrl: 'https://admin.shopify.com/store/store/charges/topiqu/pricing_plans',
+    })
+    expect(fetchShopifySubscription).toHaveBeenCalledWith(
+      expect.objectContaining({ shop: 'store.myshopify.com', shopGid: 'gid://shopify/Shop/1' }),
+    )
+    expect(await vi.mocked(fetchShopifySubscription).mock.calls[0]![0].accessToken()).toBe('access-secret')
     expect(shopifyTokenExchange).toHaveBeenCalledWith('store.myshopify.com', expect.any(String))
     const saved = (installationUpsert.mock.calls[0] as never[])[0] as { create: Record<string, string> }
     expect(saved.create.encryptedAccessToken).not.toContain('access-secret')
@@ -140,6 +150,18 @@ describe('Shopify App Home session', () => {
     const code = new URL(state.linkUrl).searchParams.get('code')
     expect(state.linkUrl.startsWith('https://app.topiqu.com/api/shopify/link?')).toBe(true)
     expect(verifyShopifyLink(code)).toBe(INSTALLATION_ID)
+  })
+
+  it('lets an unlinked store with a plan manage it and never redirects on an unknown subscription', async () => {
+    vi.mocked(fetchShopifySubscription).mockResolvedValueOnce({
+      handles: ['pro'],
+      annual: false,
+      cycle: null,
+      trialEndsAt: null,
+    })
+    expect(await run()).toMatchObject({ linked: false, subscribed: true, needsPlan: false })
+    vi.mocked(fetchShopifySubscription).mockRejectedValueOnce(new Error('Shopify unavailable'))
+    expect(await run()).toMatchObject({ linked: false, subscribed: null, needsPlan: false })
   })
 
   it('treats a revoked connection as unlinked instead of silently reconnecting it', async () => {
@@ -166,6 +188,7 @@ describe('Shopify App Home session', () => {
       linked: true,
       project: 'Shop blog',
       plan: 'BASIC',
+      subscribed: null,
       needsPlan: true,
       pricingUrl: 'https://admin.shopify.com/store/store/charges/topiqu/pricing_plans',
     })
@@ -174,6 +197,9 @@ describe('Shopify App Home session', () => {
       data: expect.objectContaining({ status: 'CONNECTED', catalogRevision: { increment: 1 }, refreshLease: null }),
     })
     expect(syncShopifyPlan).toHaveBeenCalledWith('connection-1', { force: true })
+
+    vi.mocked(syncShopifyPlan).mockResolvedValueOnce(null)
+    expect(await run()).toMatchObject({ linked: true, subscribed: false, needsPlan: true })
   })
 
   it('leaves a healthy connection alone and hides Shopify pricing from Stripe customers', async () => {
@@ -185,7 +211,8 @@ describe('Shopify App Home session', () => {
       clientSiteId: 'site-1',
     }
     site = { name: 'Shop blog', plan: 'PRO', billingProvider: 'STRIPE' }
-    expect(await run()).toMatchObject({ linked: true, needsPlan: false, pricingUrl: null })
+    vi.mocked(syncShopifyPlan).mockResolvedValueOnce(undefined)
+    expect(await run()).toMatchObject({ linked: true, subscribed: null, needsPlan: false, pricingUrl: null })
     expect(shopifyTokenExchange).not.toHaveBeenCalled()
   })
 
