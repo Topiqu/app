@@ -1,5 +1,7 @@
 import type { BillingPlans, ClientPlan } from '~~/generated/zenstack/models'
 
+import { EXTRA_TRANSLATION_LANGUAGE_PRICE_USD } from '~~/shared/utils/translationLanguages'
+
 export type FeatureCode = 'AI' | 'SENTIMENT' | 'ARTICLE_CRONS' | 'SEARCH_CONSOLE'
 
 type FeatureReadDb = {
@@ -148,12 +150,17 @@ export const recalcFeatureBilling = async (
       where: billableFeatureWhere(clientSiteId, now),
       include: { feature: { select: { priceMonthly: true } } },
     })
+    // Stripe bills PRO/PREMIUM add-on languages itself; on CUSTOM they join the à-la-carte total.
+    const site = await tx.clientSite.findUnique({
+      where: { id: clientSiteId },
+      select: { extraTranslationLanguages: true },
+    })
+    const languages = Math.max(0, site?.extraTranslationLanguages ?? 0)
 
-    monthlyPayment = billableMonthlyTotal(
-      plan,
-      billingPlan,
-      billed.map((cf: { feature: { priceMonthly: number } }) => cf.feature.priceMonthly),
-    )
+    monthlyPayment = billableMonthlyTotal(plan, billingPlan, [
+      ...billed.map((cf: { feature: { priceMonthly: number } }) => cf.feature.priceMonthly),
+      ...Array.from({ length: languages }, () => EXTRA_TRANSLATION_LANGUAGE_PRICE_USD),
+    ])
   }
 
   const annualPayment = annualFromMonthly(monthlyPayment, billingPlan)

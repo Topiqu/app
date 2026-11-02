@@ -1,10 +1,10 @@
 import type { H3Event } from 'h3'
-import type { Language } from '~~/generated/zenstack/models'
+import type { UiLanguage } from '~~/generated/zenstack/models'
 
 type Messages = Record<string, unknown>
-const messageCache = new Map<Language, Promise<Messages>>()
+const messageCache = new Map<UiLanguage, Promise<Messages>>()
 
-const serverLocale = (locale: string): Language => LANGUAGE_OPTIONS.find((candidate) => candidate === locale) ?? 'en'
+const serverLocale = (locale: string): UiLanguage => uiLanguageOf(locale)
 
 const isPlainObject = (value: unknown): value is Messages =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -19,7 +19,7 @@ const deepMerge = (target: Messages, source: Messages) => {
   return target
 }
 
-const loadLocaleMessages = async (locale: Language): Promise<Messages> => {
+const loadLocaleMessages = async (locale: UiLanguage): Promise<Messages> => {
   const storage = useStorage('assets:i18n:locales')
   const keys = await storage.getKeys()
   const localeKeys = keys.filter((key) => key.startsWith(`${locale}:`) || key === `master_${locale}.json`)
@@ -33,7 +33,7 @@ const loadLocaleMessages = async (locale: Language): Promise<Messages> => {
   return merged
 }
 
-const getServerLocaleMessages = (locale: Language): Promise<Messages> => {
+const getServerLocaleMessages = (locale: UiLanguage): Promise<Messages> => {
   const cached = messageCache.get(locale)
   if (cached) return cached
   const pending = loadLocaleMessages(locale)

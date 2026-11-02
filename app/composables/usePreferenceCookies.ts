@@ -1,4 +1,4 @@
-import type { Language } from '~~/generated/zenstack/models'
+import type { UiLanguage } from '~~/generated/zenstack/models'
 
 export const usePreferenceCookies = () => {
   const url = useRequestURL()
@@ -10,7 +10,7 @@ export const usePreferenceCookies = () => {
     maxAge: 60 * 60 * 24 * 365,
   }
   return {
-    language: useCookie<Language | null>('topiqu-language', options),
+    language: useCookie<UiLanguage | null>('topiqu-language', options),
     theme: useCookie<'light' | 'dark' | null>('topiqu-theme', options),
   }
 }

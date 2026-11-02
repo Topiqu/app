@@ -200,7 +200,7 @@
       "bonusExpiry": "Bonus-Credits können verfallen; gekaufte Credits nicht.",
       "generationReservation": "Ein Artikel reserviert je nach Qualität 1, 2 oder 3 Credits. Prüfung und eine automatische Überarbeitung sind enthalten. Bei einem technischen Fehler wird die gesamte Reservierung freigegeben.",
       "neverExpires": "Tarif-Credits gelten für ihren Zeitraum. Gekaufte Credits verfallen nicht.",
-      "explanation": "Dein Tarif fügt monatlich Credits hinzu. Standard kostet 1, High 2 und Ultra 3 Credits pro Artikel inklusive Prüfung und einer automatischen Überarbeitung. Gekaufte Credits verfallen nicht und werden nach Tarif-Credits verbraucht.",
+      "explanation": "Gekaufte Credits verfallen nicht.",
       "reserved": "Vorübergehend reserviert",
       "reservedHint": "Je nach Qualität werden 1, 2 oder 3 Credits reserviert. Bei einem technischen Fehler wird der gesamte Betrag freigegeben.",
       "reasons": {
@@ -1322,8 +1322,8 @@
         "placeholder": "z. B. junge Erwachsene zwischen 18 und 25 Jahren, Spieleentwickler"
       },
       "language": {
-        "label": "Sprache",
-        "help": "Die Sprache, in der neue Artikel geschrieben werden."
+        "label": "Hauptsprache",
+        "help": "Standardsprache der Website und neuer Artikel."
       },
       "theme": {
         "label": "Markenfarbe",
@@ -1361,7 +1361,6 @@
         "releaseHour": "Veröffentlichungszeit",
         "interval": {
           "label": "Einmal alle",
-          "minimum": "Min. {hours} Std.",
           "help": "Mindestens {hours} Stunden Abstand.",
           "min": "Kürzester Abstand",
           "max": "Längster Abstand",
@@ -1370,7 +1369,8 @@
             "hours": "Stunden",
             "days": "Tage",
             "weeks": "Wochen"
-          }
+          },
+          "to": "bis"
         },
         "window": {
           "label": "Veröffentlichen zwischen",
@@ -1428,7 +1428,7 @@
           }
         },
         "targetLangs": {
-          "label": "Zielsprachen",
+          "label": "Übersetzungssprachen",
           "empty": "Für deine Hauptsprache sind keine weiteren Sprachen verfügbar."
         },
         "tokenWarning": "Die automatische Übersetzung erstellt für jeden veröffentlichten Artikel eine eigene Version pro Zielsprache."
@@ -1715,12 +1715,10 @@
       "pack12": "12 Credits",
       "pack25": "25 Credits",
       "bestValue": "Bestes Preis-Leistungs-Verhältnis",
-      "volumeDiscount": "{discount} % Mengenrabatt",
       "articles": "Credit | Credits",
       "taxExclusive": "zzgl. MwSt.",
       "buy": "Kaufen",
       "buyPack": "{count} Credits kaufen",
-      "purchaseHint": "Credits sind sofort verfügbar und verfallen nicht. Ein Artikel kostet je nach Qualität 1, 2 oder 3 Credits inklusive Prüfung und einer automatischen Überarbeitung.",
       "neverExpires": "Verfällt nie",
       "upgradeToPremium": "Zu PREMIUM wechseln"
     },
@@ -1817,7 +1815,30 @@
         "open": "Topiqu öffnen"
       }
     },
-    "statHint": "Was „{label}“ bedeutet"
+    "statHint": "Was „{label}“ bedeutet",
+    "translationLanguages": {
+      "count": "{selected} / {limit} Sprachen",
+      "paused": "Pausiert",
+      "pausedTitle": "Einige Sprachen sind pausiert",
+      "pausedDesc": "Die zuletzt gewählte Sprache überschreitet das Kontingent Ihres Plans und wird nicht übersetzt. Entfernen Sie sie oder buchen Sie eine Zusatzsprache. | Die zuletzt gewählten {n} Sprachen überschreiten das Kontingent Ihres Plans und werden nicht übersetzt. Entfernen Sie sie oder buchen Sie Zusatzsprachen.",
+      "buy": "Sprache hinzubuchen · {price}/Monat",
+      "freePlan": "Übersetzungen sind in Pro und Premium enthalten.",
+      "customPlan": "{limit} im Plan",
+      "allowance": "{included} im Plan · {extra} zusätzlich",
+      "dialogTitle": "Zusätzliche Übersetzungssprachen",
+      "dialogDesc": "Ihr Plan enthält {included}. Jede Zusatzsprache kostet {price} pro Monat und wird als separates Abonnement abgerechnet.",
+      "extraLabel": "Zusatzsprachen",
+      "total": "{total} pro Monat",
+      "proration": "Änderungen werden für den laufenden Abrechnungszeitraum anteilig verrechnet.",
+      "confirm": "Bestätigen",
+      "updated": "Übersetzungssprachen aktualisiert",
+      "notIncluded": "Diese Sprache gehört nicht zu Ihren Übersetzungssprachen.",
+      "overLimit": "Ihr Plan deckt nicht so viele Übersetzungssprachen ab.",
+      "planRequired": "Zusatzsprachen erfordern ein aktives, bezahltes Pro- oder Premium-Abonnement.",
+      "limitReached": "Sie nutzen alle Sprachen Ihres Plans. Entfernen Sie eine, um eine andere zu wählen.",
+      "limitReachedBuy": "Alle Sprachen Ihres Plans sind belegt. Klicken Sie auf eine weitere Sprache, um sie hinzuzubuchen.",
+      "locked": "Nicht im Plan: für {price} pro Monat hinzubuchen."
+    }
   },
   "error": {
     "generic": "Etwas ist schiefgelaufen. Bitte versuche es erneut."

@@ -31,12 +31,15 @@ const {
   slug,
   translations = [],
   translating = false,
+  allowed,
 } = defineProps<{
   source: Language
   /** Source slug — the editor resolves the article by it, `lang` picks the tab. */
   slug: string
   translations?: { language: string; status: string; translationStartedAt?: string | Date | null }[]
   translating?: boolean
+  /** The site's paid translation languages; existing translations stay reachable either way. */
+  allowed?: readonly Language[]
 }>()
 
 const emit = defineEmits<{ translate: [language: Language] }>()
@@ -48,7 +51,11 @@ const ATTENTION: TranslationStatus[] = ['FAILED', 'READY', 'STALE']
 
 const statusOf = (language: Language) =>
   translations.find((row) => row.language === language)?.status as TranslationStatus | undefined
-const targets = computed(() => LANGUAGE_OPTIONS.filter((language) => language !== source))
+const targets = computed(() =>
+  LANGUAGE_OPTIONS.filter(
+    (language) => language !== source && (!allowed || allowed.includes(language) || statusOf(language)),
+  ),
+)
 const existing = computed(() => targets.value.filter((language) => statusOf(language)))
 const inProgress = computed(
   () =>

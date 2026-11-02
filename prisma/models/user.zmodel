@@ -25,7 +25,7 @@ model User with Base {
     allowNotifs                   Boolean           @default(true)
     allowEmail                    Boolean           @default(true)
     lastLogin                     DateTime?         @default(now())
-    language                      Language          @default(en)
+    language                      UiLanguage        @default(en)
     sessions                      Session[]         @relation("UserSessions")
     accounts                      Account[]
     clientSiteId                  String?

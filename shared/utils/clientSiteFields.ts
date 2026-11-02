@@ -3,7 +3,8 @@ import type { ClientSite, SocialPlatform } from '~~/generated/zenstack/models'
 import type { PublicWidget } from './widgets'
 
 // A tenant changes `domain` only through the verified swap in `/api/domain/pending`.
-export const PRIVILEGED_CLIENT_SITE_FIELDS = ['plan', 'domain'] as const
+// `extraTranslationLanguages` mirrors Stripe on PRO/PREMIUM; operators set it by hand on CUSTOM.
+export const PRIVILEGED_CLIENT_SITE_FIELDS = ['plan', 'domain', 'extraTranslationLanguages'] as const
 
 export const TENANT_EDITABLE_CLIENT_SITE_FIELDS = [
   'name',
@@ -67,6 +68,7 @@ export const PUBLIC_CLIENT_SITE_FIELDS = [
   'bodyFontUrl',
   'keywords',
   'language',
+  'translationLanguages',
   'theme',
   'currency',
   'gtagId',

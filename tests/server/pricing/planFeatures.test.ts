@@ -240,9 +240,12 @@ describe('syncSeoAutopilot', () => {
 describe('recalcFeatureBilling', () => {
   const now = new Date('2026-08-07T00:00:00.000Z')
 
-  const makeTx = (billed: Array<{ feature: { priceMonthly: number } }> = []) => ({
+  const makeTx = (billed: Array<{ feature: { priceMonthly: number } }> = [], extraTranslationLanguages = 0) => ({
     clientFeature: { findMany: vi.fn(async () => billed) },
-    clientSite: { updateMany: vi.fn(async () => ({ count: 1 })) },
+    clientSite: {
+      findUnique: vi.fn(async () => ({ extraTranslationLanguages })),
+      updateMany: vi.fn(async () => ({ count: 1 })),
+    },
   })
 
   it('bills a CUSTOM tenant for every feature still switched on', async () => {
@@ -264,6 +267,15 @@ describe('recalcFeatureBilling', () => {
     expect(tx.clientSite.updateMany).toHaveBeenCalledWith({
       where: { id: 'cs1' },
       data: { monthlyPayment: 0, annualPayment: 0 },
+    })
+  })
+
+  it('adds CUSTOM extra translation languages to the à-la-carte total', async () => {
+    const tx = makeTx([{ feature: { priceMonthly: 20 } }], 2)
+
+    expect(await recalcFeatureBilling(tx as any, 'cs1', 'CUSTOM', 'MONTHLY', now)).toEqual({
+      monthlyPayment: 38,
+      annualPayment: 456,
     })
   })
 

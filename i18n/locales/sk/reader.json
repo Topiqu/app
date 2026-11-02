@@ -1,0 +1,473 @@
+{
+  "articles": {
+    "aiDisclosure": {
+      "ASSIST": "Vytvorené s pomocou AI",
+      "FULL": "Vytvorené AI"
+    },
+    "articleCard": {
+      "author": "Autor článku",
+      "imageAlt": "Náhľad článku"
+    },
+    "articlesCount": "Zatiaľ žiadne články | {count} článok | {count} články | {count} článkov",
+    "columns": {
+      "imageUrl": "Obrázok",
+      "sources": "Zdroje",
+      "status": "Stav"
+    },
+    "comments": {
+      "addComment": "Pridať komentár",
+      "addGif": "Pridať GIF",
+      "addReaction": "Pridať reakciu",
+      "banExpirationLabel": "Vypršanie banu (voliteľné):",
+      "banExpires": "do {0}",
+      "banFailed": "Zabanovanie zlyhalo",
+      "banModalTitle": "Zabanovať používateľa",
+      "banReason": "Dôvod banu: {0}",
+      "banReasonPlaceholder": "Dôvod banu...",
+      "banReasonPrompt": "Zadajte dôvod banu (bude odoslaný používateľovi):",
+      "banSuccess": "Používateľ zabanovaný",
+      "banUser": "Zabanovať používateľa",
+      "bannedUser": "Zabanovaný používateľ",
+      "bannedUserComment": "[Komentár od zabanovaného používateľa]",
+      "characterLimitReached": "Dosiahnutý limit znakov!",
+      "clearGifCategory": "Zrušiť výber kategórie GIF",
+      "commentAdded": "Komentár pridaný",
+      "commentPlaceholder": "Napíšte svoj komentár...",
+      "commentsDisabled": "Komentovanie tohto článku nie je povolené",
+      "commentsDisabledSuccess": "sú zakázané",
+      "commentsEnabled": "sú povolené",
+      "deleteComment": "Zmazať",
+      "deleteCommentAdmin": "Zmazať (admin)",
+      "deleteModalTitle": "Zmazať komentár",
+      "deleteReasonPlaceholder": "Dôvod zmazania...",
+      "deletedComment": "[Tento komentár bol zmazaný]",
+      "errorLoadingComments": "Nepodarilo sa načítať komentáre: {0}",
+      "gifCategories": "Kategórie",
+      "gifResults": "Výsledky GIF",
+      "likedByPublication": "Páči sa redakcii {0}",
+      "loadEarlierContext": "Načítať predchádzajúci kontext vlákna",
+      "loadMoreComments": "Načítať ďalšie komentáre",
+      "loadMoreReplies": "Načítať ďalšie odpovede",
+      "noComments": "Žiadne komentáre",
+      "reactionFailed": "Nepodarilo sa pridať reakciu",
+      "removeGif": "Odobrať GIF",
+      "reply": "Odpovedať",
+      "replySubmitted": "Odpoveď odoslaná",
+      "replyingTo": "Odpovedáte na: {0}",
+      "reportComment": "Nahlásiť komentár",
+      "reportDescription": "Napíšte moderátorom blogu, čo je s komentárom v neporiadku. Autor vaše hlásenie neuvidí.",
+      "reportReason": "Dôvod nahlásenia",
+      "submitReply": "Odoslať odpoveď",
+      "title": "Komentáre",
+      "toggleSuccess": "Komentáre {0}",
+      "trendingGifs": "Populárne GIFy",
+      "unbanFailed": "Zrušenie banu zlyhalo",
+      "unbanSuccess": "Ban používateľa zrušený",
+      "unbanUser": "Zrušiť ban používateľa",
+      "unit": "0 komentárov | {count} komentár | {count} komentáre | {count} komentárov",
+      "yourComment": "Váš komentár"
+    },
+    "empty": {
+      "badge": "Už sa to chystá",
+      "message": "Vráťte sa čoskoro.",
+      "owner": {
+        "address": "Adresa blogu",
+        "adminCta": "Prejsť do administrácie",
+        "aiCta": "Vygenerovať prvý článok",
+        "badge": "Túto stránku vidíte len vy",
+        "checklistTitle": "Dokončite nastavenie blogu",
+        "message": "Návštevníci zatiaľ vidia stránku „Už sa to chystá“. Keď publikujete prvý článok, blog sa im otvorí.",
+        "previewBack": "Späť na váš prehľad",
+        "previewCta": "Zobraziť ako návštevník",
+        "previewing": "Takto teraz blog vidia návštevníci.",
+        "progress": "Hotovo {done} z {total}",
+        "title": "Blog je pripravený na prvý článok",
+        "writeCta": "Napísať prvý článok",
+        "writeSelfCta": "Napísať sám"
+      },
+      "title": "Zatiaľ tu nič nie je"
+    },
+    "faq": "Časté otázky",
+    "home": {
+      "browseArticles": "Prechádzať články",
+      "chooseTopic": "Vyberte si, čo vás zaujíma",
+      "clearFilters": "Zrušiť filtre",
+      "discussions": "Najnovšie diskusie",
+      "exploreTopics": "Preskúmať témy",
+      "feedError": "Články sa nepodarilo načítať.",
+      "latestArticles": "Nové články",
+      "latestStory": "Najnovší článok",
+      "loadError": "Blog sa nepodarilo načítať",
+      "loadErrorDescription": "Skúste stránku načítať znova.",
+      "noMatches": "Pre toto hľadanie sme nenašli žiadne články.",
+      "popular": "Čítané články",
+      "recommended": "Odporúčané čítanie",
+      "selectedTopic": "Téma: {topic}",
+      "series": "Seriály"
+    },
+    "image": {
+      "ai": "Ilustračný obrázok (AI)",
+      "aiBadge": "AI",
+      "illustration": "Ilustračný obrázok",
+      "illustrationBy": "Ilustračné foto: {author}",
+      "photoBy": "Foto: {author}"
+    },
+    "keyTakeaways": "Kľúčové body",
+    "likeNotOpenYet": "Lajkovať bude možné po publikovaní článku.",
+    "noResults": {
+      "message": "Ach jaj, cítim sa taký zbytočný..."
+    },
+    "poll": {
+      "hpTitle": "Najnovšia anketa",
+      "notOpenYet": "Hlasovanie sa otvorí po publikovaní článku.",
+      "yourVote": "Vaša voľba"
+    },
+    "readingTime": "{0} min čítania",
+    "relatedArticles": {
+      "title": "Súvisiace články"
+    },
+    "searchPlaceholder": "Hľadať články...",
+    "status": {
+      "archived": "Archivované",
+      "changeSuccess": "Stav zmenený na {0}",
+      "draft": "Koncept",
+      "published": "Publikované"
+    },
+    "tableOfContents": {
+      "title": "Obsah"
+    },
+    "tagsArticles": "Články so štítkom „{name}“",
+    "title": "Články",
+    "translations": {
+      "languageTabs": "Jazyk článku"
+    },
+    "userMenu": {
+      "companyLogoAlt": "Logo spoločnosti",
+      "noBio": "Žiadne bio",
+      "userDataError": "Chyba pri načítaní používateľských údajov"
+    },
+    "votes": "Hlasov"
+  },
+  "common": {
+    "actions": {
+      "back": "Späť",
+      "backToTop": "Späť nahor",
+      "cancel": "Zrušiť",
+      "copy": "Kopírovať",
+      "copyLink": "Kopírovať odkaz",
+      "copySuccess": "Úspešne skopírované",
+      "delete": "Zmazať",
+      "deleteNotification": "Zmazať oznámenie",
+      "edit": "Upraviť",
+      "hideDetails": "Skryť detaily",
+      "home": "Domov",
+      "like": "Lajknúť",
+      "more": "Viac",
+      "openMenu": "Otvoriť navigáciu",
+      "openNotifications": "Otvoriť oznámenia",
+      "pickDate": "Vybrať dátum",
+      "save": "Uložiť",
+      "send": "Odoslať",
+      "share": "Zdieľať",
+      "showDetails": "Zobraziť detaily",
+      "toggleComments": "Prepnúť komentáre",
+      "toggleTheme": "Prepnúť farebný režim",
+      "unlike": "Zrušiť lajk",
+      "view": "Zobraziť"
+    },
+    "advertisement": "Reklama",
+    "auth": {
+      "login": "Prihlásiť sa",
+      "loginPrompt": "Prihláste sa a získajte prístup k exkluzívnym funkciám a obsahu.",
+      "loginToComment": "Prihláste sa a pridajte komentár",
+      "logout": "Odhlásiť sa",
+      "register": "Registrovať sa",
+      "welcomeBack": "Vitajte späť"
+    },
+    "avatar": {
+      "alt": {
+        "company": "Logo spoločnosti",
+        "profile": "Profilový obrázok"
+      }
+    },
+    "breadcrumbs": "Navigačná cesta",
+    "cancelAction": "Zrušiť akciu",
+    "connection": {
+      "offline": "Ste offline",
+      "online": "Ste opäť online"
+    },
+    "consent": {
+      "accept": "Povoliť všetko",
+      "alwaysOn": "Vždy aktívne",
+      "analyticsDescription": "Pomáhajú merať návštevnosť a používanie webu vrátane zobrazení a zdieľaní článkov.",
+      "analyticsTitle": "Analytické cookies",
+      "banner": "Nevyhnutné cookies zabezpečujú fungovanie a bezpečnosť webu.",
+      "bannerAnalytics": "S vaším súhlasom meriame návštevnosť.",
+      "bannerMarketing": "S vaším súhlasom tiež zobrazujeme a meriame nepersonalizované reklamy.",
+      "customize": "Nastavenia cookies",
+      "internalAnalytics": "Štatistiky Topiqu",
+      "marketingDescription": "Umožňujú zobrazovať a vyhodnocovať nepersonalizované reklamy. Načítajú sa len s vaším súhlasom.",
+      "marketingTitle": "Marketingové a reklamné cookies",
+      "moreInfo": "Viac o cookies a súkromí",
+      "openSettings": "Nastavenia cookies",
+      "reject": "Odmietnuť voliteľné",
+      "save": "Uložiť nastavenia",
+      "services": "Používané služby: {names}",
+      "settingsDescription": "Vyberte, ktoré cookies povolíte. Nastavenia môžete kedykoľvek zmeniť cez odkaz v pätičke webu.",
+      "settingsTitle": "Nastavenia cookies",
+      "technicalDescription": "Zabezpečujú prihlásenie, bezpečnosť, voľbu jazyka a zapamätanie vašich nastavení cookies.",
+      "technicalTitle": "Nevyhnutné cookies",
+      "title": "Cookies na tomto webe"
+    },
+    "entry": {
+      "retry": "Skúsiť znova"
+    },
+    "errTypes": {
+      "badRequest": "Požiadavka nie je platná. Skontrolujte údaje a skúste to znova.",
+      "conflict": "Táto položka sa zmenila. Obnovte stránku a skúste to znova.",
+      "forbidden": "K tejto stránke nemáte oprávnenie.",
+      "gatewayTimeout": "Časový limit požiadavky vypršal. Skúste to, prosím, znova.",
+      "internalError": "Na našej strane sa niečo pokazilo. Skúste to, prosím, neskôr.",
+      "notAcceptable": "Odoslaný obsah nemožno prijať. Skontrolujte ho a skúste to znova.",
+      "notFound": "Požadovanú stránku sa nepodarilo nájsť.",
+      "server": "Server požiadavku nedokončil. Skúste to, prosím, neskôr.",
+      "serviceUnavailable": "Služba je dočasne nedostupná. Skúste to, prosím, neskôr.",
+      "tooManyRequests": "Príliš veľa požiadaviek. Chvíľu počkajte a skúste to znova.",
+      "unauthorized": "Ak chcete pokračovať, prihláste sa.",
+      "unprocessableEntity": "Niektoré údaje sa nepodarilo spracovať. Skontrolujte ich a skúste to znova."
+    },
+    "error": "Chyba pri načítaní údajov",
+    "errors": {
+      "blogNotFound": "Blog sa nenašiel.",
+      "tagNotFound": "Štítok sa nenašiel."
+    },
+    "labels": {
+      "shortcode": "Shortcode",
+      "title": "Názov"
+    },
+    "loading": "Načítava sa...",
+    "messages": {
+      "closeConfirmButton": "Áno, zavrieť",
+      "closeConfirmTitle": "Zavrieť dialóg?",
+      "deleteCancel": "Zrušiť",
+      "deleteConfirmText": "Túto akciu nemožno vrátiť späť.",
+      "deleteConfirmTitle": "Naozaj chcete zmazať?",
+      "deleteFailed": "Zmazanie zlyhalo",
+      "deleteSuccess": "Úspešne zmazané",
+      "idle": "Ticho po pešinke",
+      "idleTitle": "Hmm, nič sa nedeje.",
+      "loadFailedText": "Údaje sa nepodarilo načítať. Skúste to, prosím, znova.",
+      "loadFailedTitle": "Načítanie zlyhalo",
+      "operationFailed": "Operácia zlyhala",
+      "optimistic": {
+        "reverted": "Zmenu sa nepodarilo uložiť a bola vrátená.",
+        "saved": "Zmena bola uložená.",
+        "saving": "Ukladám zmenu…"
+      },
+      "reportFailed": "Nahlásenie zlyhalo",
+      "reportSuccess": "Úspešne nahlásené",
+      "retry": "Skúsiť znova",
+      "saveSuccess": "Úspešne uložené",
+      "statusChangeFailed": "Zmena stavu zlyhala",
+      "successGeneral": "Úspech",
+      "successGeneralTitle": "Operácia bola úspešná"
+    },
+    "no": "Nie",
+    "noItems": "Žiadne položky",
+    "noResults": "Žiadne výsledky",
+    "notifications": {
+      "deleteFailed": "Oznámenie sa nepodarilo zmazať: {message}",
+      "empty": "Žiadne nové oznámenia",
+      "loadFailed": "Oznámenia sa nepodarilo načítať: {message}",
+      "loginPrompt": "Prihláste sa a sledujte novinky a aktivity na platforme.",
+      "newNotification": "Nové oznámenie: {message}",
+      "pollingActive": "Oznámenia sú aktívne",
+      "pollingConnecting": "Overujeme aktualizácie oznámení",
+      "pollingPaused": "Oznámenia sú pozastavené",
+      "pollingRetrying": "Aktualizácie oznámení sú nedostupné. Pripojenie sa pokúsime obnoviť automaticky.",
+      "pollingSignIn": "Ak chcete dostávať aktualizácie oznámení, prihláste sa znova.",
+      "pollingUnavailable": "Aktualizácie oznámení sú pre tento web nedostupné. Skúste to znova neskôr."
+    },
+    "pagination": {
+      "next": "Ďalej"
+    },
+    "poweredBy": "Vytvorené pomocou",
+    "preferences": {
+      "footer": {
+        "links": "Odkazy v pätičke"
+      }
+    },
+    "search": "Hľadať...",
+    "setup": {
+      "steps": {
+        "article": {
+          "action": "Otvoriť editor",
+          "description": "V editore napíšte alebo vygenerujte článok a zvoľte Publikovať. Koncepty ani budúce publikácie sa nepočítajú.",
+          "title": "Publikujte prvý článok"
+        },
+        "branding": {
+          "action": "Doplniť popis blogu",
+          "description": "V časti Nastavenia → Branding vyplňte popis toho, čo na blogu publikujete.",
+          "title": "Doplňte popis blogu"
+        },
+        "domain": {
+          "action": "Otvoriť nastavenia domény",
+          "description": "Nastavte DNS záznamy pre {domain} a overte, že doména funguje.",
+          "title": "Overte vlastnú doménu"
+        },
+        "voice": {
+          "action": "Doplniť zameranie",
+          "description": "V časti Nastavenia → Obsah vyplňte, o čom má AI písať a pre koho.",
+          "title": "Doplňte zameranie a cieľovú skupinu"
+        }
+      }
+    },
+    "sortOptions": {
+      "mostInteresting": "Najzaujímavejšie",
+      "newest": "Najnovšie",
+      "oldest": "Najstaršie"
+    },
+    "user": {
+      "comments": "Komentáre",
+      "dislikes": "Nepáči sa",
+      "joined": "Pridal sa: {0}",
+      "language": "Jazyk rozhrania",
+      "likes": "Páči sa",
+      "notAvailable": "Nie je dostupné",
+      "viewProfile": "Zobraziť profil"
+    },
+    "yes": "Áno"
+  },
+  "emoji": {
+    "addCustom": "Pridať vlastné",
+    "addHint": "Názov doplníme zo súboru. Obrázok automaticky zmenšíme na maximálne 128 × 128 px.",
+    "addTitle": "Pridať nové emoji",
+    "closeConfirm": "Vo fronte čaká emoji: {count}. Zatvorením dialógu ich zahodíte.",
+    "commentPreview": "Náhľad v komentári",
+    "create": "Vytvoriť emoji",
+    "createFailed": "Pridanie emoji zlyhalo",
+    "createMany": "Pridať emoji ({count})",
+    "createManySuccess": "Pridané emoji: {count}",
+    "createSuccess": "Emoji {0} pridané",
+    "deleteAction": "Zmazať emoji",
+    "deleteAria": "Zmazať emoji {shortcode}",
+    "deleteConfirm": "Zmazaním emoji odstránite aj všetky jeho reakcie ({count}). Túto akciu nemožno vrátiť späť.",
+    "deleteFailed": "Zmazanie emoji zlyhalo",
+    "deleteSuccess": "Emoji zmazané",
+    "deleteTitle": "Zmazať :{shortcode}:?",
+    "dropHint": "PNG, JPG, WebP alebo GIF, maximálne 5 MB · funguje aj Ctrl+V",
+    "dropTitle": "Vyberte alebo sem presuňte obrázky",
+    "duplicateInQueue": "Tento názov je vo fronte dvakrát",
+    "duplicateShortcode": "Emoji s týmto názvom už existuje",
+    "fileTooLarge": "Súbor {name} je väčší ako 5 MB",
+    "invalidShortcode": "Použite 1–50 malých písmen bez diakritiky, číslic, pomlčiek alebo podčiarkovníkov",
+    "libraryCount": "Celkom: {count}",
+    "libraryTitle": "Knižnica emoji",
+    "loadFailed": "Emoji sa nepodarilo načítať",
+    "manage": "Vlastné emoji",
+    "nextPreview": "Ďalší náhľad emoji",
+    "noEmojisFound": "Nenašli sa žiadne emoji",
+    "noSearchResults": "Hľadaniu nezodpovedá žiadne emoji",
+    "previewAria": "Zobraziť náhľad emoji {shortcode}",
+    "previewAuthor": "Čitateľ Topiqu",
+    "previewComment": "Skvelý článok, vďaka zaň!",
+    "previewTime": "práve teraz",
+    "previousPreview": "Predchádzajúci náhľad emoji",
+    "queueTitle": "Pripravené na pridanie",
+    "reactionCount": "{count} reakcia | {count} reakcie | {count} reakcií",
+    "removeFromQueue": "Odobrať z frontu",
+    "searchPlaceholder": "Hľadať emoji…",
+    "shortcodeRequired": "Doplňte názov emoji",
+    "unsupportedFile": "Súbor {name} nemá podporovaný formát"
+  },
+  "error": {
+    "generic": "Niečo sa pokazilo. Skúste to, prosím, znova."
+  },
+  "feedback": {
+    "change": "Zmeniť názor",
+    "notOpenYet": "Hodnotiť bude možné po publikovaní článku.",
+    "placeholder": "Čo môžeme zlepšiť? (voliteľné)",
+    "question": "Bol tento článok užitočný?",
+    "recorded": "Váš názor nám pomáha zlepšovať obsah.",
+    "thankYou": "Vďaka za spätnú väzbu!",
+    "thanks_short": "Vďaka!"
+  },
+  "languages": {
+    "cs": "Čeština",
+    "de": "Nemčina",
+    "en": "Angličtina",
+    "es": "Španielčina",
+    "fr": "Francúzština",
+    "it": "Taliančina",
+    "nl": "Holandčina",
+    "pl": "Poľština",
+    "pt": "Portugalčina",
+    "sk": "Slovenčina"
+  },
+  "profile": {
+    "follow": "Sledovať",
+    "followers": "Sledujúci",
+    "following": "Sledované",
+    "messages": {
+      "followFailed": "Stav sledovania sa nepodarilo zmeniť.",
+      "followSuccess": "Teraz sledujete {0}",
+      "profileUpdateError": "Aktualizácia zlyhala"
+    },
+    "unfollow": "Prestať sledovať"
+  },
+  "seo": {
+    "author": {
+      "description": "Prečítajte si všetky odborné články a príspevky od autora {name}.",
+      "title": "{name} - Profil autora {'|'} Topiqu"
+    },
+    "tags": {
+      "description": "Prezrite si najnovšie články a analýzy na tému {name}.",
+      "title": "Téma: {name} {'|'} Topiqu"
+    }
+  },
+  "series": {
+    "continueReading": "Pokračovať v sérii",
+    "continueWith": "Pokračovať: {title}",
+    "current": "Práve čítate",
+    "finished": "Máte dočítané",
+    "hideList": "Skryť zoznam dielov",
+    "label": "Séria",
+    "next": "Ďalšia časť",
+    "nextPart": "Nasledujúca časť",
+    "part": "{count}. diel",
+    "parts": "0 dielov | {count} diel | {count} diely | {count} dielov",
+    "previous": "Predchádzajúca",
+    "readOf": "Prečítané {read} z {total}",
+    "showList": "Zobraziť celú sériu",
+    "start": "Začať 1. dielom"
+  },
+  "stats": {
+    "articleCount": "Publikované články",
+    "loading": "Načítavam údaje...",
+    "totalViews": {
+      "title": "Zobrazenia"
+    }
+  },
+  "widgets": {
+    "announcement": {
+      "close": "Zavrieť oznámenie",
+      "label": "Oznámenie"
+    },
+    "price": {
+      "label": "Kurzy a ceny",
+      "source": "Kurzy ECB, kryptomeny Coinbase · aktualizované"
+    },
+    "weather": {
+      "clear": "Jasno",
+      "cloudy": "Oblačno",
+      "fog": "Hmla",
+      "heavyRain": "Silný dážď",
+      "partlyCloudy": "Polojasno",
+      "rain": "Dážď",
+      "sleet": "Dážď so snehom",
+      "snow": "Sneh",
+      "source": "Údaje o počasí: MET Norway",
+      "thunder": "Búrky"
+    }
+  }
+}

@@ -9,6 +9,7 @@ async function stubImports() {
     'translationSelect',
     'nextTranslationVersion',
   )
+  await stubNitroImports(import('../../../server/utils/ai/translationQueue'), 'resolveTargetLanguages')
 }
 
 const observed = '2026-10-20T12:00:00.000Z'
@@ -67,7 +68,11 @@ const setup = async (
   const client = {
     $queryRaw: vi.fn(async () => [{ editVersion: article.editVersion }]),
     article: { findFirst: vi.fn(async () => ({ ...article })), findUnique: vi.fn(async () => ({ ...article })) },
-    clientSite: { findUnique: vi.fn().mockResolvedValue({ language: 'en', plan: 'PRO' }) },
+    clientSite: {
+      findUnique: vi
+        .fn()
+        .mockResolvedValue({ language: 'en', plan: 'PRO', extraTranslationLanguages: 0, translationLanguages: ['fr'] }),
+    },
     articleTranslation: translation,
   }
   const db = { ...client, $transaction: async (run: (tx: typeof client) => unknown) => run(client) }

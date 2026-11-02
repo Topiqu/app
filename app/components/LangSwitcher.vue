@@ -10,5 +10,5 @@
 <script setup lang="ts">
 const items = locales
 
-const language = defineModel<Language>('language', { get: (value) => value || items[0]!.value, required: true })
+const language = defineModel<UiLanguage>('language', { get: (value) => value || items[0]!.value, required: true })
 </script>

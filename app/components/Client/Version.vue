@@ -106,12 +106,9 @@
           </section>
 
           <section v-if="site?.billingProvider !== 'SHOPIFY'" aria-labelledby="article-packs-title">
-            <h3 id="article-packs-title" class="text-lg font-semibold tracking-tight text-highlighted">
+            <h3 id="article-packs-title" class="mb-3 text-lg font-semibold tracking-tight text-highlighted">
               {{ $t('common.wallet.topup') }}
             </h3>
-            <p class="mb-3 mt-1 text-sm leading-relaxed text-muted">
-              {{ $t('common.articlePacks.purchaseHint') }}
-            </p>
             <div
               class="divide-y divide-default overflow-hidden rounded-[var(--topiqu-surface-radius)] border border-default bg-default"
             >
@@ -132,11 +129,8 @@
                     </strong>
                     <span class="text-sm font-medium text-toned">{{ articleUnit(pack.articles) }}</span>
                   </div>
-                  <p v-if="pack.volumeDiscount" class="mt-1 text-xs text-muted">
-                    <strong v-if="pack.featured" class="font-semibold text-primary">
-                      {{ $t('common.articlePacks.bestValue') }} ·
-                    </strong>
-                    {{ $t('common.articlePacks.volumeDiscount', { discount: pack.volumeDiscount }) }}
+                  <p v-if="pack.featured" class="mt-1 text-xs font-semibold text-primary">
+                    {{ $t('common.articlePacks.bestValue') }}
                   </p>
                 </div>
 

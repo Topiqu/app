@@ -67,7 +67,10 @@
             :aria-label="$t('common.preferences.language.label')"
             :aria-describedby="languageHelpId"
             class="w-full shrink-0 sm:w-48"
-          />
+          >
+            <template #leading><LanguageFlag :language /></template>
+            <template #item-leading="{ item }"><LanguageFlag :language="item.value" /></template>
+          </USelect>
         </div>
 
         <div class="flex flex-col gap-2 p-5 sm:p-6">

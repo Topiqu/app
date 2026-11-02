@@ -1,4 +1,4 @@
-import type { Language, TenantScope } from '~~/generated/zenstack/models'
+import type { TenantScope, UiLanguage } from '~~/generated/zenstack/models'
 
 export type SessionRole = 'admin' | 'superadmin' | 'reader' | 'ai'
 
@@ -13,6 +13,6 @@ export interface SessionUser {
   scopes: TenantScope[]
   avatarUrl: string | null
   sessionId: string
-  language?: Language
+  language?: UiLanguage
   theme?: 'light' | 'dark'
 }

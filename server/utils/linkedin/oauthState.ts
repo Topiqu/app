@@ -37,7 +37,7 @@ export function verifyOAuthState(state: string | undefined): OAuthStatePayload |
       return null
     }
     // Signed or not, the locale ends up as a path segment — whitelist it.
-    return { ...payload, locale: isLanguage(payload.locale) ? payload.locale : 'en' }
+    return { ...payload, locale: uiLanguageOf(payload.locale) }
   } catch {
     return null
   }

@@ -1,17 +1,19 @@
 import type { Language } from '~~/generated/zenstack/models'
 
-const ALL_LANGUAGES: readonly Language[] = LANGUAGE_OPTIONS
+import { activeTranslationLanguages } from '~~/shared/utils/translationLanguages'
 
+/**
+ * Only the languages the plan pays for. An empty selection means no translations — it used to mean
+ * every language, which ten content languages would turn into nine free translations per article.
+ * The site's own language is always a target for an article written in another one.
+ */
 export const resolveTargetLanguages = (
-  clientSite: {
-    language: Language
-    translationLanguages: Language[]
-  },
+  clientSite: Parameters<typeof activeTranslationLanguages>[0],
   sourceLanguage: Language = clientSite.language,
-): Language[] => {
-  const configured = clientSite.translationLanguages.length ? clientSite.translationLanguages : ALL_LANGUAGES
-  return [...new Set([...configured, clientSite.language])].filter((language) => language !== sourceLanguage)
-}
+): Language[] =>
+  [...new Set([...activeTranslationLanguages(clientSite), clientSite.language])].filter(
+    (language) => language !== sourceLanguage,
+  )
 
 type QueueDb = {
   article?: Pick<DatabaseTransaction['article'], 'findUnique'>
@@ -37,6 +39,8 @@ export const syncArticleTranslationQueue = async (
     where: { id: clientSiteId },
     select: {
       language: true,
+      plan: true,
+      extraTranslationLanguages: true,
       translationMode: true,
       translationLanguages: true,
       features: { where: { isActive: true, feature: { code: 'AI' } }, select: { id: true }, take: 1 },

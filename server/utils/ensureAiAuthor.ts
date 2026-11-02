@@ -40,7 +40,7 @@ export async function ensureAiAuthor(clientSiteId: string, tx?: DatabaseTransact
         bio: '',
         avatarUrl: site.logoUrl || null,
         role: 'ai' as const,
-        language: site.language,
+        language: uiLanguageOf(site.language),
         clientSiteId,
         emailVerified: true,
         allowNotifs: false,

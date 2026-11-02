@@ -13,6 +13,8 @@ export default defineEventHandler(async (event) => {
       description: true,
       logoUrl: true,
       language: true,
+      translationLanguages: true,
+      extraTranslationLanguages: true,
       domain: true,
       domainVerified: true,
       pendingDomain: true,
@@ -76,6 +78,8 @@ export default defineEventHandler(async (event) => {
   const endsAt = clientSite.trialEndsAt?.toISOString() ?? null
   const daysLeft = state === 'ACTIVE' ? trialDaysLeft(clientSite) : 0
   const {
+    translationLanguages: _translationLanguages,
+    extraTranslationLanguages: _extraTranslationLanguages,
     stripeSubscriptionId,
     users,
     features,
@@ -197,6 +201,8 @@ export default defineEventHandler(async (event) => {
       channels,
     },
     aiUser: users[0] ?? null,
+    // The paid languages only: an article can be translated into these and the site's own.
+    translationLanguages: activeTranslationLanguages(clientSite),
     hasActiveSubscription: !!stripeSubscriptionId,
     trial: {
       state,

@@ -23,6 +23,7 @@ const revokeToBasic = async (
 
     if (changed.count) await syncPlanFeatures(tx, clientSiteId)
   })
+  await cancelTranslationLanguageSubscription(clientSiteId)
 }
 
 export default defineEventHandler(async (event) => {
@@ -44,6 +45,12 @@ export default defineEventHandler(async (event) => {
     const session = stripeEvent.data.object as Stripe.Checkout.Session
     const clientSiteId = session.client_reference_id ?? session.metadata?.clientSiteId
     if (!clientSiteId) return { received: true }
+
+    if (isTranslationLanguageSubscription(session.metadata)) {
+      const subscriptionId = typeof session.subscription === 'string' ? session.subscription : session.subscription?.id
+      if (subscriptionId) await syncTranslationLanguageSubscription(await stripe.subscriptions.retrieve(subscriptionId))
+      return { received: true }
+    }
 
     if (session.mode === 'subscription') {
       const subscriptionId = typeof session.subscription === 'string' ? session.subscription : session.subscription?.id
@@ -101,6 +108,10 @@ export default defineEventHandler(async (event) => {
     const previous = stripeEvent.data.previous_attributes as Partial<Stripe.Subscription> | undefined
     const clientSiteId = subscription.metadata?.clientSiteId
     if (!clientSiteId) return { received: true }
+    if (isTranslationLanguageSubscription(subscription.metadata)) {
+      await syncTranslationLanguageSubscription(subscription)
+      return { received: true }
+    }
 
     const currentPriceId = subscription.items.data[0]?.price.id ?? null
     const currentInterval = subscription.items.data[0]?.price.recurring?.interval
@@ -143,6 +154,10 @@ export default defineEventHandler(async (event) => {
     const subscription = stripeEvent.data.object as Stripe.Subscription
     const clientSiteId = subscription.metadata?.clientSiteId
     if (!clientSiteId) return { received: true }
+    if (isTranslationLanguageSubscription(subscription.metadata)) {
+      await syncTranslationLanguageSubscription(subscription)
+      return { received: true }
+    }
 
     await revokeToBasic(clientSiteId, subscription.id, { clearSubscription: true })
     return { received: true }
@@ -155,7 +170,7 @@ export default defineEventHandler(async (event) => {
 
     const subscription = await stripe.subscriptions.retrieve(subscriptionId)
     const clientSiteId = subscription.metadata?.clientSiteId
-    if (!clientSiteId) return { received: true }
+    if (!clientSiteId || isTranslationLanguageSubscription(subscription.metadata)) return { received: true }
 
     const price = subscription.items.data[0]?.price
     const derivedPlan =

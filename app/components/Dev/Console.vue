@@ -228,8 +228,8 @@ const activeView = computed(() => views.find((v) => v.id === view.value) ?? view
 const plans = ['BASIC', 'PRO', 'PREMIUM', 'CUSTOM'] as const
 
 const { locale, setLocale } = useI18n()
-const language = computed<Language>({
-  get: () => locale.value as Language,
+const language = computed<UiLanguage>({
+  get: () => uiLanguageOf(locale.value),
   set: (value) => setLocale(value),
 })
 

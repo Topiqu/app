@@ -173,6 +173,7 @@
             :slug="row.original.slug"
             :translations="row.original.translations"
             :translating="translatingArticleId === row.original.id"
+            :allowed="translationTargets"
             @translate="(language) => translateArticle(row.original, language)"
           />
         </template>
@@ -243,6 +244,7 @@
               :slug="article.slug"
               :translations="article.translations"
               :translating="translatingArticleId === article.id"
+              :allowed="translationTargets"
               @translate="(language) => translateArticle(article, language)"
             />
             <p class="text-xs text-muted">{{ formatTime(article.createdAt, 'shortDatetime') }}</p>
@@ -325,6 +327,9 @@ const tagsOpen = useState('dashboard-tags-open', () => false)
 const localePath = useLocalePath()
 const { data: clientSite } = await useClientSiteStatus()
 const sourceLanguage = (article: ArticleWithDetails): Language => article.language ?? clientSite.value?.language ?? 'en'
+const translationTargets = computed<Language[]>(() =>
+  clientSite.value ? [clientSite.value.language, ...(clientSite.value.translationLanguages ?? [])] : [],
+)
 const requestUrl = useRequestURL()
 const articleUrl = (slug: string, language?: Language) =>
   publicationUrl(

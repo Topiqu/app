@@ -32,6 +32,7 @@ export const downgradeExpiredTrial = async (clientSiteId: string, site?: TrialIn
   })
 
   if (!changed) return false
+  await cancelTranslationLanguageSubscription(clientSiteId)
 
   await logAction({
     action: 'TRIAL_EXPIRED',

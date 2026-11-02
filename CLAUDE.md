@@ -37,10 +37,11 @@
 
 ## i18n (Internationalization)
 
-- The platform supports `en`, `cs`, `de`, and `fr`.
-- `shared/siteSchemas.ts::LANGUAGE_OPTIONS` and `nuxt.config.ts::i18n.locales` define this supported
-  registry; keep every new user-facing key complete in all four locales. `AGENTS.md` §6 records
-  the resolution of its former two-language wording.
+- The interface supports `en`, `cs`, `de`, and `fr`; content (sites, articles, the public blog) additionally
+  `es`, `it`, `pl`, `sk`, `nl`, `pt`.
+- `shared/siteSchemas.ts::UI_LANGUAGE_OPTIONS` / `LANGUAGE_OPTIONS` and `nuxt.config.ts::i18n.locales` define
+  this registry; keep every new user-facing key complete in all four interface locales, and keys on public
+  pages also in each content locale's `reader.json`. `AGENTS.md` §6 has the details.
 - All hardcoded strings in templates **MUST** use translation keys (`$t('key')`). Never leave raw text.
 
 ## Code Style

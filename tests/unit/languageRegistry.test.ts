@@ -2,14 +2,23 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 
-import { LANGUAGE_OPTIONS } from '../../shared/siteSchemas'
 import { AUTH_SEGMENTS, LOCALIZED_SEGMENTS } from '../../shared/utils/routes'
-import { LANGUAGE_NAMES, LANGUAGE_TAGS, locales } from '../../shared/utils/language'
+import { LANGUAGE_OPTIONS, UI_LANGUAGE_OPTIONS } from '../../shared/siteSchemas'
+import {
+  contentLanguages,
+  LANGUAGE_NAMES,
+  LANGUAGE_NATIVE_NAMES,
+  LANGUAGE_TAGS,
+  locales,
+} from '../../shared/utils/language'
 
-// `LANGUAGE_OPTIONS` is the one list; every other place that enumerates languages is checked against it,
-// so adding a language fails here with a list of what is still missing.
+// Two lists: `LANGUAGE_OPTIONS` (content: sites, articles, the public blog) and `UI_LANGUAGE_OPTIONS` (the
+// whole interface). Every place that enumerates languages is checked against the right one, so adding a
+// language fails here with a list of what is still missing.
 const ROOT = process.cwd()
 const languages = [...LANGUAGE_OPTIONS].sort()
+const uiLanguages = [...UI_LANGUAGE_OPTIONS].sort()
+const contentOnly = LANGUAGE_OPTIONS.filter((language) => !uiLanguages.includes(language))
 const read = (path: string) => readFileSync(join(ROOT, path), 'utf8')
 const sorted = (values: Iterable<string>) => [...values].sort()
 
@@ -41,9 +50,10 @@ const localeEntries = [...blockAfter(i18nConfig, 'locales: [').matchAll(/code: '
 })
 
 describe('language registry', () => {
-  it('matches the Language enum in the schema', () => {
-    const values = blockAfter(read('prisma/models/base.zmodel'), 'enum Language {').match(/\w+/g)
-    expect(sorted(values ?? [])).toEqual(languages)
+  it('matches the Language and UiLanguage enums in the schema', () => {
+    const schema = read('prisma/models/base.zmodel')
+    expect(sorted(blockAfter(schema, 'enum Language {').match(/\w+/g) ?? [])).toEqual(languages)
+    expect(sorted(blockAfter(schema, 'enum UiLanguage {').match(/\w+/g) ?? [])).toEqual(uiLanguages)
   })
 
   it('registers every language as an i18n locale with its BCP 47 tag', () => {
@@ -51,13 +61,18 @@ describe('language registry', () => {
     for (const { code, tag } of localeEntries) expect(tag, code).toBe(LANGUAGE_TAGS[code as keyof typeof LANGUAGE_TAGS])
   })
 
-  it.each(LANGUAGE_OPTIONS)('loads exactly the message files that exist for %s', (language) => {
+  it.each(UI_LANGUAGE_OPTIONS)('loads exactly the message files that exist for %s', (language) => {
     const onDisk = readdirSync(join(ROOT, 'i18n/locales', language))
       .filter((file) => file.endsWith('.json'))
       .map((file) => `${language}/${file}`)
     const files = localeEntries.find((entry) => entry.code === language)?.files
     expect(files).toEqual(sorted([...onDisk, `master_${language}.json`]))
     for (const file of files ?? []) expect(existsSync(join(ROOT, 'i18n/locales', file)), file).toBe(true)
+  })
+
+  it.each(contentOnly)('loads only the reader subset for content-only %s', (language) => {
+    expect(localeEntries.find((entry) => entry.code === language)?.files).toEqual([`${language}/reader.json`])
+    expect(readdirSync(join(ROOT, 'i18n/locales', language))).toEqual(['reader.json'])
   })
 
   it('gives every localized page a path in every language', () => {
@@ -72,13 +87,16 @@ describe('language registry', () => {
     const tables = {
       LANGUAGE_TAGS,
       LANGUAGE_NAMES,
-      AUTH_SEGMENTS,
+      LANGUAGE_NATIVE_NAMES,
       ...Object.fromEntries(
         Object.entries(LOCALIZED_SEGMENTS).map(([kind, table]) => [`LOCALIZED_SEGMENTS.${kind}`, table]),
       ),
     }
     for (const [name, table] of Object.entries(tables)) expect(sorted(Object.keys(table)), name).toEqual(languages)
-    expect(sorted(locales.map((locale) => locale.value)), 'locales').toEqual(languages)
+    expect(sorted(contentLanguages.map((language) => language.value)), 'contentLanguages').toEqual(languages)
+    // Sign-in and the interface pickers exist only in the interface languages.
+    expect(sorted(Object.keys(AUTH_SEGMENTS)), 'AUTH_SEGMENTS').toEqual(uiLanguages)
+    expect(sorted(locales.map((locale) => locale.value)), 'locales').toEqual(uiLanguages)
   })
 
   it('defines number formats for every language', async () => {
@@ -88,18 +106,18 @@ describe('language registry', () => {
     expect(sorted(Object.keys(numberFormats))).toEqual(languages)
   })
 
-  it('ships message, master and email files for every language and nothing else', () => {
+  it('ships a message directory for every language, master and email files for the interface ones', () => {
     const directories = readdirSync(join(ROOT, 'i18n/locales'), { withFileTypes: true }).filter((entry) =>
       entry.isDirectory(),
     )
     expect(sorted(directories.map((entry) => entry.name))).toEqual(languages)
     expect(sorted(readdirSync(join(ROOT, 'i18n/locales')).filter((file) => file.startsWith('master_')))).toEqual(
-      languages.map((language) => `master_${language}.json`),
+      uiLanguages.map((language) => `master_${language}.json`),
     )
-    expect(sorted(readdirSync(join(ROOT, 'emails/locales')))).toEqual(languages.map((language) => `${language}.json`))
+    expect(sorted(readdirSync(join(ROOT, 'emails/locales')))).toEqual(uiLanguages.map((language) => `${language}.json`))
   })
 
-  it.each(LANGUAGE_OPTIONS)('names every language in %s', (language) => {
+  it.each(UI_LANGUAGE_OPTIONS)('names every language in %s', (language) => {
     const names = JSON.parse(read(`i18n/locales/${language}/languages.json`)).languages
     expect(sorted(Object.keys(names))).toEqual(languages)
   })

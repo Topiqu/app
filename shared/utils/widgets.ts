@@ -2,7 +2,7 @@ import type { Language } from './language'
 
 import { z } from './zod'
 import { isManagedDomain } from './domain'
-import { LanguageSchema } from '../siteSchemas'
+import { LANGUAGE_OPTIONS, LanguageSchema } from '../siteSchemas'
 
 export const MAX_WIDGETS = 20
 export const MAX_PER_SLOT = 3
@@ -184,7 +184,7 @@ const base = {
   id: z.string().optional(),
   slot: z.string(),
   active: z.boolean(),
-  languages: z.array(LanguageSchema).max(4),
+  languages: z.array(LanguageSchema).max(LANGUAGE_OPTIONS.length),
 }
 export const widgetInputSchema = z.discriminatedUnion('kind', [
   z.object({ ...base, kind: z.literal('ANNOUNCEMENT'), config: announcementConfigSchema }),

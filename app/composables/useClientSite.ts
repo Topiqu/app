@@ -4,6 +4,7 @@ export interface ClientSiteStatus {
   description: string | null
   logoUrl: string | null
   language: Language
+  translationLanguages: Language[]
   domain: string
   domainVerified: boolean
   pendingDomain: string | null

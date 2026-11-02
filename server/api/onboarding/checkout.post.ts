@@ -171,7 +171,8 @@ export default defineEventHandler(async (event) => {
           password: body.password,
           role: 'admin',
           clientSiteId: site.id,
-          language: body.language,
+          // The site may write in a content-only language; the account still needs an interface language.
+          language: uiLanguageOf(body.language),
           emailVerified: true,
           onboardingLoginToken: loginToken,
           onboardingLoginTokenExpiresAt: loginTokenExpiresAt,
@@ -238,7 +239,7 @@ export default defineEventHandler(async (event) => {
 
   const reqUrl = getRequestURL(event)
   const originUrl = process.env.APP_URL || `${reqUrl.protocol}//${fullSubdomain}`
-  const dashboardUrl = `${originUrl}${authPath(body.language)}?created=true&token=${loginToken}`
+  const dashboardUrl = `${originUrl}${authPath(uiLanguageOf(body.language))}?created=true&token=${loginToken}`
 
   if (!body.selectedPlan) {
     return { url: dashboardUrl }

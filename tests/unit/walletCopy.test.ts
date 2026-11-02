@@ -13,14 +13,15 @@ const values = (node: Messages): string[] =>
   Object.values(node).flatMap((child) => (typeof child === 'string' ? [child] : values(child as Messages)))
 
 describe('wallet copy', () => {
-  it.each(LOCALES)('%s calls the allowance credits and explains all quality prices', (locale) => {
+  // Quality prices are stated once, on the quality picker (`ArticleQuality.vue`), not repeated in billing.
+  it.each(LOCALES)('%s calls the allowance credits and prices each quality where it is chosen', (locale) => {
     const messages = common(locale)
     const leaked = [...values(messages.wallet), ...values(messages.articlePacks)].filter((value) =>
       /token/i.test(value),
     )
     expect(leaked).toEqual([])
     expect(messages.wallet.unit).toMatch(/credit|kredit|crédit/i)
-    expect(messages.wallet.explanation).toMatch(/1.*2.*3/)
+    expect(messages.preferences.articleQuality.cost).toContain('{count}')
     expect(messages.articlePacks.pack25).toMatch(/25.*(credit|kredit|crédit)/i)
   })
 

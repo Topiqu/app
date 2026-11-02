@@ -32,7 +32,7 @@ export default defineEventHandler(async (event) => {
     password: z.string().min(4).optional(),
     role: z.enum(['reader', 'admin', 'superadmin']).optional(),
     bio: z.string().max(BIO_MAX_LENGTH).nullable().optional(),
-    language: LanguageSchema.optional(),
+    language: UiLanguageSchema.optional(),
     theme: z.enum(['light', 'dark']).optional(),
     allowNotifs: z.boolean().optional(),
     allowEmail: z.boolean().optional(),

@@ -3,7 +3,7 @@ import { randomInt } from 'crypto'
 
 const schema = z.object({
   email: z.email(),
-  language: z.enum(LANGUAGE_OPTIONS).optional(),
+  language: z.enum(UI_LANGUAGE_OPTIONS).optional(),
   website: z.string().optional(),
   turnstileToken: z.string().optional(),
 })

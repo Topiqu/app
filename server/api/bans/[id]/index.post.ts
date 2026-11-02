@@ -82,7 +82,7 @@ export default defineEventHandler(async (event) => {
 
   if (comment.user.email && comment.user.allowEmail) {
     const cookie = getCookie(event, 'i18n_lang')
-    const lang = isLanguage(cookie) ? cookie : 'en'
+    const lang = uiLanguageOf(cookie)
     const banDuration = expiresAt
       ? new Date(expiresAt).toLocaleString(languageTag(lang))
       : { cs: 'trvale', en: 'permanently', de: 'dauerhaft', fr: 'définitivement' }[lang]

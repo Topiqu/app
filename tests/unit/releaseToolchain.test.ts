@@ -36,7 +36,7 @@ describe('release toolchain', () => {
         { route: '/auth/**', handler: '/application/auth.js' },
       ]
       await config.nitro!.hooks!['build:before']!({ options: { handlers } } as unknown as Nitro)
-      const expected = join(root, 'server/runtime/ipx.ts')
+      const expected = join(root, 'server/runtime/ipx.ts').replace(/\\/g, '/')
       expect(handlers.map(({ handler }) => handler)).toEqual([
         expected,
         expected,

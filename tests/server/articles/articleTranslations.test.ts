@@ -35,9 +35,13 @@ describe('editor article translations', () => {
     const db = {
       article: { findFirst: vi.fn().mockResolvedValue({ id: 'article-1', language: 'cs' }) },
       clientSite: {
-        findUnique: vi
-          .fn()
-          .mockResolvedValue({ language: 'cs', translationMode: 'HYBRID', translationLanguages: ['de'] }),
+        findUnique: vi.fn().mockResolvedValue({
+          language: 'cs',
+          plan: 'PRO',
+          extraTranslationLanguages: 0,
+          translationMode: 'HYBRID',
+          translationLanguages: ['de'],
+        }),
       },
       articleTranslation: { findMany },
     }

@@ -18,6 +18,7 @@ export const billingReturnUrl = async (
   origin: unknown,
   suppliedLocale?: unknown,
   accountLocale?: unknown,
+  tab: 'billing' | 'ai' = 'billing',
 ) => {
   const returnOrigin = await billingReturnOrigin(event, origin)
   if (suppliedLocale !== undefined && !isLanguage(suppliedLocale)) {
@@ -25,12 +26,11 @@ export const billingReturnUrl = async (
     throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
   }
   const cookieLocale = getCookie(event, 'i18n_lang')
-  const locale = isLanguage(suppliedLocale)
+  // Billing pages live in the interface; a content-only locale (es, it, …) is not one.
+  const locale = isUiLanguage(suppliedLocale)
     ? suppliedLocale
-    : isLanguage(cookieLocale)
+    : isUiLanguage(cookieLocale)
       ? cookieLocale
-      : isLanguage(accountLocale)
-        ? accountLocale
-        : 'en'
-  return `${returnOrigin}${homePath(locale)}/settings?tab=billing`
+      : uiLanguageOf(accountLocale)
+  return `${returnOrigin}${homePath(locale)}/settings?tab=${tab}`
 }

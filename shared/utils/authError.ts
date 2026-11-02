@@ -1,5 +1,5 @@
 import { authPath } from './routes'
-import { isLanguage } from './language'
+import { uiLanguageOf } from './language'
 
 // Better Auth redirects OAuth failures here with its own codes; only these map to a specific message.
 const codes: Record<string, string> = {
@@ -19,7 +19,7 @@ export function authErrorKey(error: unknown): string | undefined {
 }
 
 export function authErrorRedirect(error: unknown, locale: unknown): string {
-  const language = isLanguage(locale) ? locale : 'en'
+  const language = uiLanguageOf(locale)
   const path = authPath(language)
   if (!error) return path
   const code = typeof error === 'string' && Object.hasOwn(codes, error) ? codes[error] : 'OAuthCallback'

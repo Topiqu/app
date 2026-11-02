@@ -126,14 +126,25 @@
         <p class="text-xs text-muted">{{ $t('common.wallet.explanation') }}</p>
       </div>
 
+      <div v-if="!shopifyBilled && client.plan !== 'BASIC'" class="space-y-3">
+        <h3 class="text-lg font-semibold tracking-tight text-highlighted">
+          {{ $t('common.translationLanguages.dialogTitle') }}
+        </h3>
+        <FormClientTranslationLanguagesPurchase
+          :plan="client.plan"
+          :limit="client.translationLanguageLimit ?? 0"
+          :extra="client.extraTranslationLanguages ?? 0"
+          :canBuy="Boolean(client.canBuyTranslationLanguages)"
+          :currency="client.currency ?? 'EUR'"
+          @purchased="emit('refresh')"
+        />
+      </div>
+
       <div v-if="!shopifyBilled" class="space-y-4">
         <div>
           <h3 class="text-lg font-semibold tracking-tight text-highlighted">
             {{ $t('common.articlePacks.title') }}
           </h3>
-          <p class="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted">
-            {{ $t('common.articlePacks.purchaseHint') }}
-          </p>
         </div>
         <div
           class="divide-y divide-default overflow-hidden rounded-[var(--topiqu-surface-radius)] border border-default bg-default"
@@ -157,11 +168,8 @@
                   $t('common.articlePacks.articles', pack.articles)
                 }}</span>
               </div>
-              <p v-if="pack.volumeDiscount" class="mt-1.5 text-xs text-muted">
-                <strong v-if="pack.featured" class="font-semibold text-primary">
-                  {{ $t('common.articlePacks.bestValue') }} ·
-                </strong>
-                {{ $t('common.articlePacks.volumeDiscount', { discount: pack.volumeDiscount }) }}
+              <p v-if="pack.featured" class="mt-1.5 text-xs font-semibold text-primary">
+                {{ $t('common.articlePacks.bestValue') }}
               </p>
             </div>
 
@@ -372,6 +380,7 @@ const { client, rate } = defineProps<{
   client: ClientSite | null
   rate: number
 }>()
+const emit = defineEmits<{ refresh: [] }>()
 
 const toast = useToast()
 const { locale, tm, rt, t } = useI18n()

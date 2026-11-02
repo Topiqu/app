@@ -386,7 +386,7 @@ const steps = computed(() => [
 ])
 
 const languageOptions = computed(() =>
-  locales.map((language) => ({
+  contentLanguages.map((language) => ({
     ...language,
     label: $t(`languages.${language.value}`),
     code: language.value.toUpperCase(),

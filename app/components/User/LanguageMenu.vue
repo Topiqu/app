@@ -50,7 +50,7 @@ const saving = shallowRef(false)
 const current = computed(() => locales.find((item) => item.value === locale.value) ?? locales[0]!)
 
 // The account copy also decides the language of the user's emails, so signed-in choices are saved.
-async function select(language: Language) {
+async function select(language: UiLanguage) {
   if (saving.value) return
   const saveAccountLanguage = !!auth.value?.user && auth.value.user.language !== language
   if (language === locale.value && !saveAccountLanguage) return

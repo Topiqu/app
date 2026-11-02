@@ -27,7 +27,7 @@ export default defineEventHandler(async (event) => {
 
   const clientSite = await db.clientSite.findUnique({
     where: { id: user.clientSiteId },
-    select: { plan: true, language: true },
+    select: { plan: true, language: true, extraTranslationLanguages: true, translationLanguages: true },
   })
   if (!clientSite) throw createError({ statusCode: 404, message: t('common.errors.clientNotFound')! })
 
@@ -52,9 +52,13 @@ export default defineEventHandler(async (event) => {
   if (!article) throw createError({ statusCode: 404, message: t('common.errors.articleNotFound')! })
 
   const sourceLang = article.language
-  const targetLang = body.language ?? LANGUAGE_OPTIONS.find((candidate) => candidate !== sourceLang)
+  // A manual translation still spends a paid language: only the plan's languages (and the site's own) qualify.
+  const allowed = resolveTargetLanguages(clientSite, sourceLang)
+  const targetLang = body.language ?? allowed[0]
   if (!targetLang || targetLang === sourceLang)
     throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
+  if (!allowed.includes(targetLang))
+    throw createError({ statusCode: 403, message: t('common.translationLanguages.notIncluded')! })
 
   const conflict = () =>
     createError({

@@ -200,7 +200,7 @@
       "bonusExpiry": "Les crédits bonus peuvent expirer ; les crédits achetés n’expirent pas.",
       "generationReservation": "Chaque article réserve 1, 2 ou 3 crédits selon la qualité. La vérification et une révision automatique sont incluses. Un échec technique restitue toute la réservation.",
       "neverExpires": "Les crédits du forfait sont valables pour leur période. Les crédits achetés n’expirent pas.",
-      "explanation": "Votre forfait ajoute des crédits chaque mois. Standard coûte 1, High 2 et Ultra 3 crédits par article, vérification et une révision automatique incluses. Les crédits achetés n’expirent pas et sont utilisés après ceux du forfait.",
+      "explanation": "Les crédits achetés n’expirent pas.",
       "reserved": "Réservés temporairement",
       "reservedHint": "Chaque article réserve 1, 2 ou 3 crédits selon la qualité. Un échec technique restitue la totalité.",
       "reasons": {
@@ -1322,8 +1322,8 @@
         "placeholder": "p. ex. jeunes adultes de 18 à 25 ans, développeurs de jeux"
       },
       "language": {
-        "label": "Langue",
-        "help": "La langue dans laquelle les nouveaux articles sont rédigés."
+        "label": "Langue principale",
+        "help": "Langue par défaut du site et des nouveaux articles."
       },
       "theme": {
         "label": "Couleur de la marque",
@@ -1361,7 +1361,6 @@
         "releaseHour": "Heure de publication",
         "interval": {
           "label": "Une fois tous les",
-          "minimum": "Min. {hours} h",
           "help": "Au moins {hours} heures d’écart.",
           "min": "Écart le plus court",
           "max": "Écart le plus long",
@@ -1370,7 +1369,8 @@
             "hours": "heures",
             "days": "jours",
             "weeks": "semaines"
-          }
+          },
+          "to": "à"
         },
         "window": {
           "label": "Publier entre",
@@ -1428,7 +1428,7 @@
           }
         },
         "targetLangs": {
-          "label": "Langues cibles",
+          "label": "Langues de traduction",
           "empty": "Aucune autre langue n'est disponible pour votre langue principale."
         },
         "tokenWarning": "La traduction automatique crée une version distincte de chaque article publié pour chaque langue cible."
@@ -1715,12 +1715,10 @@
       "pack12": "12 crédits",
       "pack25": "25 crédits",
       "bestValue": "Meilleur rapport qualité-prix",
-      "volumeDiscount": "{discount} % de remise sur volume",
       "articles": "crédit | crédits",
       "taxExclusive": "hors TVA",
       "buy": "Acheter",
       "buyPack": "Acheter {count} crédits",
-      "purchaseHint": "Les crédits sont disponibles immédiatement et n’expirent pas. Chaque article coûte 1, 2 ou 3 crédits selon la qualité, vérification et une révision automatique incluses.",
       "neverExpires": "N'expire jamais",
       "upgradeToPremium": "Passer à PREMIUM"
     },
@@ -1817,7 +1815,30 @@
         "open": "Ouvrir Topiqu"
       }
     },
-    "statHint": "Ce que signifie « {label} »"
+    "statHint": "Ce que signifie « {label} »",
+    "translationLanguages": {
+      "count": "{selected} / {limit} langues",
+      "paused": "En pause",
+      "pausedTitle": "Certaines langues sont en pause",
+      "pausedDesc": "La dernière langue choisie dépasse le quota de votre offre et n’est pas traduite. Retirez-la ou ajoutez une langue supplémentaire. | Les {n} dernières langues choisies dépassent le quota de votre offre et ne sont pas traduites. Retirez-les ou ajoutez des langues supplémentaires.",
+      "buy": "Ajouter une langue · {price}/mois",
+      "freePlan": "Les traductions font partie des offres Pro et Premium.",
+      "customPlan": "{limit} dans votre offre",
+      "allowance": "{included} dans votre offre · {extra} en supplément",
+      "dialogTitle": "Langues de traduction supplémentaires",
+      "dialogDesc": "Votre offre en inclut {included}. Chaque langue supplémentaire coûte {price} par mois, facturée dans un abonnement séparé.",
+      "extraLabel": "Langues supplémentaires",
+      "total": "{total} par mois",
+      "proration": "Les changements sont calculés au prorata de la période de facturation en cours.",
+      "confirm": "Confirmer",
+      "updated": "Langues de traduction mises à jour",
+      "notIncluded": "Cette langue ne fait pas partie de vos langues de traduction.",
+      "overLimit": "Votre offre ne couvre pas autant de langues de traduction.",
+      "planRequired": "Les langues supplémentaires nécessitent un abonnement Pro ou Premium actif et payé.",
+      "limitReached": "Vous utilisez toutes les langues de votre offre. Retirez-en une pour en choisir une autre.",
+      "limitReachedBuy": "Toutes les langues de votre offre sont utilisées. Cliquez sur une autre langue pour l’ajouter.",
+      "locked": "Hors de votre offre : ajoutez-la pour {price} par mois."
+    }
   },
   "error": {
     "generic": "Une erreur s'est produite. Veuillez réessayer."

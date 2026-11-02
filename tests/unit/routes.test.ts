@@ -2,7 +2,7 @@ import { resolve } from 'node:path'
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
-import { LANGUAGE_OPTIONS } from '../../shared/siteSchemas'
+import { LANGUAGE_OPTIONS, UI_LANGUAGE_OPTIONS } from '../../shared/siteSchemas'
 import {
   articlePath,
   authPath,
@@ -40,7 +40,8 @@ describe('localized segments match nuxt.config', () => {
   })
 
   it('keeps the sign-in path aligned with nuxt.config', () => {
-    for (const locale of LANGUAGE_OPTIONS) {
+    // Content-only locales redirect sign-in to an interface language.
+    for (const locale of UI_LANGUAGE_OPTIONS) {
       const configured = configuredPath('autorizace', locale)
       expect(configured, `autorizace.${locale} missing from nuxt.config.ts`).toBeDefined()
       expect(configured!.split('/')[1]).toBe(AUTH_SEGMENTS[locale])
@@ -59,6 +60,13 @@ describe('public paths', () => {
     expect(articlePath('fr', 'nouveau')).toBe('/fr/articles/nouveau')
     expect(authPath('de')).toBe('/de/anmeldung')
     expect(authPath('fr')).toBe('/fr/connexion')
+  })
+
+  it('gives content-only locales their own public segments', () => {
+    expect(articlePath('es', 'nuevo')).toBe('/es/articulos/nuevo')
+    expect(articlePath('pt', 'novo')).toBe('/pt/artigos/novo')
+    expect(tagPath('pl', 'ai')).toBe('/pl/tagi/ai')
+    expect(parseArticlePath('/nl/artikelen/nieuw')).toEqual({ language: 'nl', slug: 'nieuw' })
   })
 
   it('encodes slugs so a diacritic or a slash cannot break out of the segment', () => {

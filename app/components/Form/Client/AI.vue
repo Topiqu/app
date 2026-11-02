@@ -189,24 +189,21 @@
               upwards
             />
           </div>
-
-          <div v-if="translationMode !== 'OFF'" class="flex min-w-0 flex-col gap-2">
-            <AppFormLabel :text="$t('common.preferences.translation.targetLangs.label')" />
-            <div v-if="targetLangOptions.length" class="flex flex-wrap gap-2">
-              <UButton
-                v-for="lang in targetLangOptions"
-                :key="lang"
-                color="neutral"
-                :variant="translationLanguages.includes(lang) ? 'soft' : 'outline'"
-                size="sm"
-                @click="toggleTargetLang(lang)"
-              >
-                {{ $t(`languages.${lang}`) }}
-              </UButton>
-            </div>
-            <p v-else class="text-xs text-muted">{{ $t('common.preferences.translation.targetLangs.empty') }}</p>
-          </div>
         </div>
+
+        <FormClientTranslationLanguages
+          v-if="translationMode !== 'OFF'"
+          class="mt-6"
+          :modelValue="props.translationLanguages"
+          :language="props.language"
+          :plan="props.plan"
+          :limit="props.translationLanguageLimit"
+          :extra="props.extraTranslationLanguages"
+          :canBuy="props.canBuyTranslationLanguages"
+          :currency="props.currency"
+          @update:modelValue="emit('update:translationLanguages', $event)"
+          @purchased="emit('refresh')"
+        />
 
         <div
           v-if="translationMode === 'AUTO' || translationMode === 'HYBRID'"
@@ -271,6 +268,9 @@ const props = defineProps<{
   language: string
   translationMode: 'OFF' | 'MANUAL' | 'AUTO' | 'HYBRID'
   translationLanguages: string[]
+  translationLanguageLimit: number
+  extraTranslationLanguages: number
+  canBuyTranslationLanguages: boolean
   discloseAiContent: boolean
   setupOnly?: boolean
 }>()
@@ -285,11 +285,10 @@ const emit = defineEmits<{
   'update:generationFrequency': [ReleaseFrequency]
   'update:translationMode': ['OFF' | 'MANUAL' | 'AUTO' | 'HYBRID']
   'update:translationLanguages': [string[]]
+  refresh: []
   'update:discloseAiContent': [boolean]
   'toggle:feature': [FeatureToggleRequest]
 }>()
-
-const SUPPORTED_LANGUAGES = LANGUAGE_OPTIONS
 
 const translationMode = computed({
   get: () => props.translationMode,
@@ -308,15 +307,6 @@ const translationModeOptions = computed(() =>
     label: t(`common.preferences.translation.mode.options.${value}`),
   })),
 )
-
-const targetLangOptions = computed(() => SUPPORTED_LANGUAGES.filter((lang) => lang !== props.language))
-
-const translationLanguages = computed(() => props.translationLanguages)
-
-const toggleTargetLang = (lang: string) => {
-  const current = props.translationLanguages
-  emit('update:translationLanguages', current.includes(lang) ? current.filter((l) => l !== lang) : [...current, lang])
-}
 
 const showAutoReleaseModal = shallowRef(false)
 

@@ -18,6 +18,9 @@ async function stubImports() {
     'planFromPriceId',
     'revokesPlan',
   )
+  await stubNitroImports(import('../../server/utils/translationLanguageBilling'), 'isTranslationLanguageSubscription')
+  vi.stubGlobal('syncTranslationLanguageSubscription', vi.fn())
+  vi.stubGlobal('cancelTranslationLanguageSubscription', vi.fn())
 }
 
 await stubImports()

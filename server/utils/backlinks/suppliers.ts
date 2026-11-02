@@ -6,6 +6,12 @@ const DEALER_QUERY: Record<Language, string> = {
   en: 'where to buy',
   de: 'händler',
   fr: 'revendeurs',
+  es: 'distribuidores',
+  it: 'rivenditori',
+  pl: 'dystrybutorzy',
+  sk: 'predajcovia',
+  nl: 'dealers',
+  pt: 'revendedores',
 }
 
 export const topBrands = async (clientSiteId: string, site: Pick<MatchSite, 'name'>, owned: readonly string[]) => {

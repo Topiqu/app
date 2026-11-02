@@ -58,7 +58,7 @@
           </details>
           <div class="grid gap-4 sm:grid-cols-2">
             <UFormField :label="$t('knowledge.feed.language')" :help="$t('knowledge.feed.languageHint')" required>
-              <USelect v-model="form.language" :items="locales" class="w-full">
+              <USelect v-model="form.language" :items="contentLanguages" class="w-full">
                 <template #leading><LanguageFlag :language="form.language" /></template>
                 <template #item-leading="{ item }"><LanguageFlag :language="item.value" /></template>
               </USelect>
@@ -180,7 +180,18 @@ const kindTabs = computed(() =>
   (['NOTE', 'FILE', 'URL', 'FEED'] as const).map((value) => ({ value, label: t(`knowledge.addKinds.${value}`) })),
 )
 // Only a starting point: Heureka feeds state no currency, so the author confirms it.
-const DEFAULT_CURRENCIES: Record<Language, string> = { cs: 'CZK', de: 'EUR', fr: 'EUR', en: 'USD' }
+const DEFAULT_CURRENCIES: Record<Language, string> = {
+  cs: 'CZK',
+  de: 'EUR',
+  fr: 'EUR',
+  en: 'USD',
+  es: 'EUR',
+  it: 'EUR',
+  pl: 'PLN',
+  sk: 'EUR',
+  nl: 'EUR',
+  pt: 'EUR',
+}
 const tenantLanguage: Language = isLanguage(clientSite?.language) ? clientSite.language : 'en'
 const webScopeItems = computed(() => [
   { value: 'PAGE', label: t('knowledge.web.page') },

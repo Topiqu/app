@@ -1,7 +1,7 @@
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { readdirSync, readFileSync } from 'node:fs'
 import { baseCompile } from '@intlify/message-compiler'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 
 import { LANGUAGE_OPTIONS } from '../../shared/siteSchemas'
 
@@ -18,7 +18,8 @@ const strings = (value: unknown, prefix: string, result: [string, string][] = []
 
 const messagesOf = (language: string) =>
   [...readdirSync(join(localeRoot, language)).map((file) => `${language}/${file}`), `master_${language}.json`]
-    .filter((file) => file.endsWith('.json'))
+    // Content-only locales (es, it, …) carry a reader subset and no master file.
+    .filter((file) => file.endsWith('.json') && existsSync(join(localeRoot, file)))
     .flatMap((file) => strings(JSON.parse(readFileSync(join(localeRoot, file), 'utf8')), file))
 
 const keyCount = (value: unknown): number =>
@@ -36,7 +37,7 @@ describe('i18n message syntax', () => {
     const files = [
       ...LANGUAGE_OPTIONS.flatMap((language) => readdirSync(join(localeRoot, language)).map((f) => `${language}/${f}`)),
       ...LANGUAGE_OPTIONS.map((language) => `master_${language}.json`),
-    ].filter((file) => file.endsWith('.json'))
+    ].filter((file) => file.endsWith('.json') && existsSync(join(localeRoot, file)))
     const duplicated = files.filter((file) => {
       const raw = readFileSync(join(localeRoot, file), 'utf8')
       // Whole string tokens in order, so an escaped `\":` inside a value is never read as a key.

@@ -1,0 +1,473 @@
+{
+  "articles": {
+    "aiDisclosure": {
+      "ASSIST": "Criado com assistência de IA",
+      "FULL": "Criado por IA"
+    },
+    "articleCard": {
+      "author": "Autor do artigo",
+      "imageAlt": "Pré-visualização do artigo"
+    },
+    "articlesCount": "Ainda sem artigos | {count} artigo | {count} artigos",
+    "columns": {
+      "imageUrl": "Imagem",
+      "sources": "Fontes",
+      "status": "Estado"
+    },
+    "comments": {
+      "addComment": "Adicionar comentário",
+      "addGif": "Adicionar GIF",
+      "addReaction": "Adicionar reação",
+      "banExpirationLabel": "Fim do bloqueio (opcional):",
+      "banExpires": "até {0}",
+      "banFailed": "Falha ao bloquear",
+      "banModalTitle": "Bloquear utilizador",
+      "banReason": "Motivo do bloqueio: {0}",
+      "banReasonPlaceholder": "Motivo do bloqueio...",
+      "banReasonPrompt": "Indique o motivo do bloqueio (será enviado ao utilizador):",
+      "banSuccess": "Utilizador bloqueado",
+      "banUser": "Bloquear utilizador",
+      "bannedUser": "Utilizador bloqueado",
+      "bannedUserComment": "[Comentário de utilizador bloqueado]",
+      "characterLimitReached": "Limite de caracteres atingido!",
+      "clearGifCategory": "Limpar categoria de GIF",
+      "commentAdded": "Comentário adicionado",
+      "commentPlaceholder": "Escreva o seu comentário...",
+      "commentsDisabled": "Não é permitido comentar este artigo",
+      "commentsDisabledSuccess": "estão desativados",
+      "commentsEnabled": "estão ativados",
+      "deleteComment": "Eliminar",
+      "deleteCommentAdmin": "Eliminar (administrador)",
+      "deleteModalTitle": "Eliminar comentário",
+      "deleteReasonPlaceholder": "Motivo da eliminação...",
+      "deletedComment": "[Este comentário foi eliminado]",
+      "errorLoadingComments": "Falha ao carregar os comentários: {0}",
+      "gifCategories": "Categorias",
+      "gifResults": "Resultados de GIF",
+      "likedByPublication": "Gostado por {0}",
+      "loadEarlierContext": "Carregar contexto anterior da conversa",
+      "loadMoreComments": "Carregar mais comentários",
+      "loadMoreReplies": "Carregar mais respostas",
+      "noComments": "Sem comentários",
+      "reactionFailed": "Falha ao adicionar reação",
+      "removeGif": "Remover GIF",
+      "reply": "Responder",
+      "replySubmitted": "Resposta enviada",
+      "replyingTo": "Em resposta a: {0}",
+      "reportComment": "Denunciar comentário",
+      "reportDescription": "Indique aos moderadores da publicação o que está errado neste comentário. O autor não verá a sua denúncia.",
+      "reportReason": "Motivo da denúncia",
+      "submitReply": "Enviar resposta",
+      "title": "Comentários",
+      "toggleSuccess": "Comentários {0}",
+      "trendingGifs": "GIFs em destaque",
+      "unbanFailed": "Falha ao desbloquear",
+      "unbanSuccess": "Utilizador desbloqueado",
+      "unbanUser": "Desbloquear utilizador",
+      "unit": "sem comentários | {count} comentário | {count} comentários",
+      "yourComment": "O seu comentário"
+    },
+    "empty": {
+      "badge": "Brevemente",
+      "message": "Volte em breve.",
+      "owner": {
+        "address": "Endereço do blogue",
+        "adminCta": "Ir para a administração",
+        "aiCta": "Gerar o primeiro artigo",
+        "badge": "Apenas visível para si",
+        "checklistTitle": "Concluir a configuração do blogue",
+        "message": "Os visitantes veem atualmente uma página \"brevemente\". Assim que publicar o primeiro artigo, o blogue fica aberto para eles.",
+        "previewBack": "Voltar à sua vista geral",
+        "previewCta": "Ver como visitante",
+        "previewing": "É assim que os visitantes veem o blogue neste momento.",
+        "progress": "{done} de {total} concluídos",
+        "title": "O seu blogue está pronto para o primeiro artigo",
+        "writeCta": "Escrever o primeiro artigo",
+        "writeSelfCta": "Escrever manualmente"
+      },
+      "title": "Ainda não há nada aqui"
+    },
+    "faq": "Perguntas frequentes",
+    "home": {
+      "browseArticles": "Explorar artigos",
+      "chooseTopic": "Encontre um tema do seu interesse",
+      "clearFilters": "Limpar filtros",
+      "discussions": "Discussões recentes",
+      "exploreTopics": "Explorar temas",
+      "feedError": "Não foi possível carregar os artigos.",
+      "latestArticles": "Artigos recentes",
+      "latestStory": "História mais recente",
+      "loadError": "Não foi possível carregar este blogue",
+      "loadErrorDescription": "Tente carregar a página novamente.",
+      "noMatches": "Nenhum artigo corresponde à pesquisa.",
+      "popular": "Artigos populares",
+      "recommended": "Leitura recomendada",
+      "selectedTopic": "Tema: {topic}",
+      "series": "Séries a acompanhar"
+    },
+    "image": {
+      "ai": "Imagem ilustrativa (IA)",
+      "aiBadge": "IA",
+      "illustration": "Imagem ilustrativa",
+      "illustrationBy": "Fotografia ilustrativa: {author}",
+      "photoBy": "Fotografia: {author}"
+    },
+    "keyTakeaways": "Pontos-chave",
+    "likeNotOpenYet": "Os gostos ficam disponíveis quando o artigo for publicado.",
+    "noResults": {
+      "message": "Oh não, sinto-me inútil..."
+    },
+    "poll": {
+      "hpTitle": "Sondagem do momento",
+      "notOpenYet": "A votação abre quando o artigo for publicado.",
+      "yourVote": "O seu voto"
+    },
+    "readingTime": "{0} min de leitura",
+    "relatedArticles": {
+      "title": "Artigos relacionados"
+    },
+    "searchPlaceholder": "Pesquisar artigos...",
+    "status": {
+      "archived": "Arquivado",
+      "changeSuccess": "Estado alterado para {0}",
+      "draft": "Rascunho",
+      "published": "Publicado"
+    },
+    "tableOfContents": {
+      "title": "Conteúdo"
+    },
+    "tagsArticles": "Artigos com a etiqueta “{name}”",
+    "title": "Artigos",
+    "translations": {
+      "languageTabs": "Idioma do artigo"
+    },
+    "userMenu": {
+      "companyLogoAlt": "Logótipo da empresa",
+      "noBio": "Sem biografia",
+      "userDataError": "Erro ao carregar os dados do utilizador"
+    },
+    "votes": "Votos"
+  },
+  "common": {
+    "actions": {
+      "back": "Voltar",
+      "backToTop": "Voltar ao topo",
+      "cancel": "Cancelar",
+      "copy": "Copiar",
+      "copyLink": "Copiar ligação",
+      "copySuccess": "Copiado com sucesso",
+      "delete": "Eliminar",
+      "deleteNotification": "Eliminar notificação",
+      "edit": "Editar",
+      "hideDetails": "Ocultar detalhes",
+      "home": "Início",
+      "like": "Gosto",
+      "more": "Mais",
+      "openMenu": "Abrir navegação",
+      "openNotifications": "Abrir notificações",
+      "pickDate": "Escolher uma data",
+      "save": "Guardar",
+      "send": "Enviar",
+      "share": "Partilhar",
+      "showDetails": "Mostrar detalhes",
+      "toggleComments": "Mostrar/ocultar comentários",
+      "toggleTheme": "Alternar modo de cor",
+      "unlike": "Remover gosto",
+      "view": "Ver"
+    },
+    "advertisement": "Publicidade",
+    "auth": {
+      "login": "Iniciar sessão",
+      "loginPrompt": "Inicie sessão para aceder a funcionalidades e conteúdos exclusivos.",
+      "loginToComment": "Inicie sessão para comentar",
+      "logout": "Terminar sessão",
+      "register": "Registar",
+      "welcomeBack": "Bem-vindo de volta"
+    },
+    "avatar": {
+      "alt": {
+        "company": "Logótipo da empresa",
+        "profile": "Fotografia de perfil"
+      }
+    },
+    "breadcrumbs": "Navegação estrutural",
+    "cancelAction": "Cancelar ação",
+    "connection": {
+      "offline": "Está offline",
+      "online": "Está novamente online"
+    },
+    "consent": {
+      "accept": "Permitir todos",
+      "alwaysOn": "Sempre ativos",
+      "analyticsDescription": "Ajudam a medir o tráfego e a utilização do site, incluindo visualizações e partilhas de artigos.",
+      "analyticsTitle": "Cookies analíticos",
+      "banner": "Os cookies essenciais mantêm este site a funcionar e seguro.",
+      "bannerAnalytics": "Com a sua autorização, medimos o tráfego do site.",
+      "bannerMarketing": "Com a sua autorização, também apresentamos e medimos anúncios não personalizados.",
+      "customize": "Definições de cookies",
+      "internalAnalytics": "Estatísticas Topiqu",
+      "marketingDescription": "Permitem apresentar e medir anúncios não personalizados. Estes serviços só são carregados com a sua autorização.",
+      "marketingTitle": "Cookies de marketing e publicidade",
+      "moreInfo": "Mais sobre cookies e privacidade",
+      "openSettings": "Definições de cookies",
+      "reject": "Rejeitar opcionais",
+      "save": "Guardar definições",
+      "services": "Serviços utilizados: {names}",
+      "settingsDescription": "Escolha os cookies que pretende permitir. Pode alterar as definições a qualquer momento através da ligação no rodapé do site.",
+      "settingsTitle": "Definições de cookies",
+      "technicalDescription": "Suportam o início de sessão, a segurança, a escolha de idioma e a memorização das definições de cookies.",
+      "technicalTitle": "Cookies essenciais",
+      "title": "Cookies neste site"
+    },
+    "entry": {
+      "retry": "Tentar novamente"
+    },
+    "errTypes": {
+      "badRequest": "O pedido é inválido. Verifique os dados e tente novamente.",
+      "conflict": "Este item foi alterado. Atualize a página e tente novamente.",
+      "forbidden": "Não tem permissão para aceder a esta página.",
+      "gatewayTimeout": "O pedido excedeu o tempo limite. Tente novamente.",
+      "internalError": "Ocorreu um erro do nosso lado. Tente novamente mais tarde.",
+      "notAcceptable": "O conteúdo enviado não pode ser aceite. Reveja-o e tente novamente.",
+      "notFound": "Não foi possível encontrar a página pedida.",
+      "server": "O servidor não conseguiu concluir o pedido. Tente novamente mais tarde.",
+      "serviceUnavailable": "O serviço está temporariamente indisponível. Tente novamente mais tarde.",
+      "tooManyRequests": "Demasiados pedidos. Aguarde um momento e tente novamente.",
+      "unauthorized": "Inicie sessão para continuar.",
+      "unprocessableEntity": "Não foi possível processar alguns dados. Reveja-os e tente novamente."
+    },
+    "error": "Erro ao carregar os dados",
+    "errors": {
+      "blogNotFound": "Blogue não encontrado.",
+      "tagNotFound": "Etiqueta não encontrada."
+    },
+    "labels": {
+      "shortcode": "Código curto",
+      "title": "Título"
+    },
+    "loading": "A carregar...",
+    "messages": {
+      "closeConfirmButton": "Sim, fechar",
+      "closeConfirmTitle": "Fechar a janela?",
+      "deleteCancel": "Cancelar",
+      "deleteConfirmText": "Esta ação não pode ser anulada.",
+      "deleteConfirmTitle": "Tem a certeza de que pretende eliminar?",
+      "deleteFailed": "Falha ao eliminar",
+      "deleteSuccess": "Eliminado com sucesso",
+      "idle": "Tudo calmo por aqui",
+      "idleTitle": "Hmm, não se passa nada.",
+      "loadFailedText": "Não foi possível carregar os dados. Tente novamente.",
+      "loadFailedTitle": "Falha ao carregar",
+      "operationFailed": "A operação falhou",
+      "optimistic": {
+        "reverted": "Não foi possível guardar a alteração, pelo que foi revertida.",
+        "saved": "Alteração guardada.",
+        "saving": "A guardar a alteração…"
+      },
+      "reportFailed": "Falha ao denunciar",
+      "reportSuccess": "Denúncia enviada",
+      "retry": "Tentar novamente",
+      "saveSuccess": "Guardado com sucesso",
+      "statusChangeFailed": "Falha ao alterar o estado",
+      "successGeneral": "Sucesso",
+      "successGeneralTitle": "A operação foi concluída com sucesso"
+    },
+    "no": "Não",
+    "noItems": "Sem itens",
+    "noResults": "Nenhum resultado encontrado",
+    "notifications": {
+      "deleteFailed": "Não foi possível eliminar a notificação: {message}",
+      "empty": "Sem notificações novas",
+      "loadFailed": "Não foi possível carregar as notificações: {message}",
+      "loginPrompt": "Inicie sessão para acompanhar as novidades e a atividade na plataforma.",
+      "newNotification": "Nova notificação: {message}",
+      "pollingActive": "As notificações estão ativas",
+      "pollingConnecting": "A verificar atualizações de notificações",
+      "pollingPaused": "As notificações estão em pausa",
+      "pollingRetrying": "As atualizações de notificações estão indisponíveis. Vamos tentar restabelecer a ligação automaticamente.",
+      "pollingSignIn": "Inicie sessão novamente para receber atualizações de notificações.",
+      "pollingUnavailable": "As atualizações de notificações estão indisponíveis neste site. Tente novamente mais tarde."
+    },
+    "pagination": {
+      "next": "Seguinte"
+    },
+    "poweredBy": "Criado com",
+    "preferences": {
+      "footer": {
+        "links": "Ligações do rodapé"
+      }
+    },
+    "search": "Pesquisar...",
+    "setup": {
+      "steps": {
+        "article": {
+          "action": "Abrir editor",
+          "description": "Escreva ou gere um artigo no editor e selecione Publicar. Os rascunhos e as publicações agendadas não contam.",
+          "title": "Publicar o primeiro artigo"
+        },
+        "branding": {
+          "action": "Adicionar descrição do blogue",
+          "description": "Em Definições → Marca, descreva o que publica no seu blogue.",
+          "title": "Adicionar descrição do blogue"
+        },
+        "domain": {
+          "action": "Abrir definições do domínio",
+          "description": "Configure os registos DNS de {domain} e verifique se o domínio funciona.",
+          "title": "Verificar o domínio personalizado"
+        },
+        "voice": {
+          "action": "Definir a orientação do conteúdo",
+          "description": "Em Definições → Conteúdo, indique sobre o que a IA deve escrever e para quem.",
+          "title": "Adicionar foco e público-alvo"
+        }
+      }
+    },
+    "sortOptions": {
+      "mostInteresting": "Mais interessantes",
+      "newest": "Mais recentes",
+      "oldest": "Mais antigos"
+    },
+    "user": {
+      "comments": "Comentários",
+      "dislikes": "Não gosto",
+      "joined": "Membro desde: {0}",
+      "language": "Idioma da interface",
+      "likes": "Gostos",
+      "notAvailable": "Não disponível",
+      "viewProfile": "Ver perfil"
+    },
+    "yes": "Sim"
+  },
+  "emoji": {
+    "addCustom": "Adicionar os seus",
+    "addHint": "Os nomes são preenchidos a partir dos nomes dos ficheiros. As imagens são redimensionadas automaticamente para um máximo de 128 × 128 px.",
+    "addTitle": "Adicionar novos emojis",
+    "closeConfirm": "Há {count} emojis à espera na fila. Ao fechar a janela, serão descartados.",
+    "commentPreview": "Pré-visualização do comentário",
+    "create": "Criar emoji",
+    "createFailed": "Falha ao adicionar emoji",
+    "createMany": "Adicionar emojis ({count})",
+    "createManySuccess": "Emojis adicionados: {count}",
+    "createSuccess": "Emoji {0} adicionado",
+    "deleteAction": "Eliminar emoji",
+    "deleteAria": "Eliminar emoji {shortcode}",
+    "deleteConfirm": "Eliminar este emoji também remove todas as suas reações ({count}). Esta ação não pode ser anulada.",
+    "deleteFailed": "Falha ao eliminar emoji",
+    "deleteSuccess": "Emoji eliminado",
+    "deleteTitle": "Eliminar :{shortcode}:?",
+    "dropHint": "PNG, JPG, WebP ou GIF, até 5 MB · Também pode usar Ctrl+V",
+    "dropTitle": "Escolha ou arraste imagens para aqui",
+    "duplicateInQueue": "Este nome aparece duas vezes na fila",
+    "duplicateShortcode": "Já existe um emoji com este nome",
+    "fileTooLarge": "O ficheiro {name} tem mais de 5 MB",
+    "invalidShortcode": "Utilize 1–50 letras minúsculas, números, hífenes ou sublinhados",
+    "libraryCount": "Total: {count}",
+    "libraryTitle": "Biblioteca de emojis",
+    "loadFailed": "Falha ao carregar emojis",
+    "manage": "Emojis personalizados",
+    "nextPreview": "Pré-visualização do emoji seguinte",
+    "noEmojisFound": "Nenhum emoji encontrado",
+    "noSearchResults": "Nenhum emoji corresponde à pesquisa",
+    "previewAria": "Pré-visualizar emoji {shortcode}",
+    "previewAuthor": "Leitor Topiqu",
+    "previewComment": "Ótimo artigo, obrigado pela partilha!",
+    "previewTime": "agora mesmo",
+    "previousPreview": "Pré-visualização do emoji anterior",
+    "queueTitle": "Prontos a adicionar",
+    "reactionCount": "Sem reações | {count} reação | {count} reações",
+    "removeFromQueue": "Remover da fila",
+    "searchPlaceholder": "Pesquisar emojis…",
+    "shortcodeRequired": "Introduza um nome para o emoji",
+    "unsupportedFile": "O ficheiro {name} tem um formato não suportado"
+  },
+  "error": {
+    "generic": "Ocorreu um erro. Tente novamente."
+  },
+  "feedback": {
+    "change": "Alterar resposta",
+    "notOpenYet": "A avaliação abre quando o artigo for publicado.",
+    "placeholder": "O que podemos melhorar? (opcional)",
+    "question": "Este artigo foi útil?",
+    "recorded": "A sua opinião ajuda-nos a melhorar o conteúdo.",
+    "thankYou": "Obrigado pelo seu feedback!",
+    "thanks_short": "Obrigado!"
+  },
+  "languages": {
+    "cs": "Checo",
+    "de": "Alemão",
+    "en": "Inglês",
+    "es": "Espanhol",
+    "fr": "Francês",
+    "it": "Italiano",
+    "nl": "Neerlandês",
+    "pl": "Polaco",
+    "pt": "Português",
+    "sk": "Eslovaco"
+  },
+  "profile": {
+    "follow": "Seguir",
+    "followers": "Seguidores",
+    "following": "A seguir",
+    "messages": {
+      "followFailed": "Não foi possível atualizar o estado de seguimento.",
+      "followSuccess": "Está agora a seguir {0}",
+      "profileUpdateError": "Falha na atualização"
+    },
+    "unfollow": "Deixar de seguir"
+  },
+  "seo": {
+    "author": {
+      "description": "Leia todos os artigos e publicações especializados escritos por {name}.",
+      "title": "{name} - Perfil do autor {'|'} Topiqu"
+    },
+    "tags": {
+      "description": "Explore os artigos e as perspetivas mais recentes sobre o tema {name}.",
+      "title": "Tema: {name} {'|'} Topiqu"
+    }
+  },
+  "series": {
+    "continueReading": "Continuar a ler a série",
+    "continueWith": "Continuar: {title}",
+    "current": "A ler agora",
+    "finished": "Leu tudo",
+    "hideList": "Ocultar lista da série",
+    "label": "Série",
+    "next": "Parte seguinte",
+    "nextPart": "Parte seguinte",
+    "part": "Parte {count}",
+    "parts": "sem partes | {count} parte | {count} partes",
+    "previous": "Anterior",
+    "readOf": "Lidas {read} de {total}",
+    "showList": "Mostrar série completa",
+    "start": "Começar pela parte 1"
+  },
+  "stats": {
+    "articleCount": "Artigos publicados",
+    "loading": "A carregar dados...",
+    "totalViews": {
+      "title": "Total de visualizações"
+    }
+  },
+  "widgets": {
+    "announcement": {
+      "close": "Fechar anúncio",
+      "label": "Anúncio"
+    },
+    "price": {
+      "label": "Câmbios e preços",
+      "source": "Câmbios: BCE, cripto: Coinbase · atualizado"
+    },
+    "weather": {
+      "clear": "Céu limpo",
+      "cloudy": "Nublado",
+      "fog": "Nevoeiro",
+      "heavyRain": "Chuva forte",
+      "partlyCloudy": "Parcialmente nublado",
+      "rain": "Chuva",
+      "sleet": "Chuva com neve",
+      "snow": "Neve",
+      "source": "Dados meteorológicos: MET Norway",
+      "thunder": "Trovoada"
+    }
+  }
+}

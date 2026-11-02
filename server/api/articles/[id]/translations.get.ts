@@ -14,7 +14,13 @@ export default defineEventHandler(async (event) => {
 
   const clientSite = await db.clientSite.findUnique({
     where: { id: user.clientSiteId! },
-    select: { language: true, translationMode: true, translationLanguages: true },
+    select: {
+      language: true,
+      plan: true,
+      extraTranslationLanguages: true,
+      translationMode: true,
+      translationLanguages: true,
+    },
   })
   if (!clientSite) throw createError({ statusCode: 404, message: t('common.errors.clientNotFound')! })
 

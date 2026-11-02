@@ -1,0 +1,473 @@
+{
+  "articles": {
+    "aiDisclosure": {
+      "ASSIST": "Gemaakt met hulp van AI",
+      "FULL": "Gemaakt door AI"
+    },
+    "articleCard": {
+      "author": "Auteur van het artikel",
+      "imageAlt": "Voorbeeld van het artikel"
+    },
+    "articlesCount": "Nog geen artikelen | {count} artikel | {count} artikelen",
+    "columns": {
+      "imageUrl": "Afbeelding",
+      "sources": "Bronnen",
+      "status": "Status"
+    },
+    "comments": {
+      "addComment": "Reactie toevoegen",
+      "addGif": "GIF toevoegen",
+      "addReaction": "Emoji-reactie toevoegen",
+      "banExpirationLabel": "Einde van de blokkering (optioneel):",
+      "banExpires": "tot {0}",
+      "banFailed": "Blokkeren mislukt",
+      "banModalTitle": "Gebruiker blokkeren",
+      "banReason": "Reden van blokkering: {0}",
+      "banReasonPlaceholder": "Reden van blokkering...",
+      "banReasonPrompt": "Geef de reden van de blokkering op (wordt naar de gebruiker gestuurd):",
+      "banSuccess": "Gebruiker geblokkeerd",
+      "banUser": "Gebruiker blokkeren",
+      "bannedUser": "Geblokkeerde gebruiker",
+      "bannedUserComment": "[Reactie van geblokkeerde gebruiker]",
+      "characterLimitReached": "Tekenlimiet bereikt!",
+      "clearGifCategory": "GIF-categorie wissen",
+      "commentAdded": "Reactie toegevoegd",
+      "commentPlaceholder": "Schrijf je reactie...",
+      "commentsDisabled": "Reageren op dit artikel is niet toegestaan",
+      "commentsDisabledSuccess": "zijn uitgeschakeld",
+      "commentsEnabled": "zijn ingeschakeld",
+      "deleteComment": "Verwijderen",
+      "deleteCommentAdmin": "Verwijderen (beheerder)",
+      "deleteModalTitle": "Reactie verwijderen",
+      "deleteReasonPlaceholder": "Reden van verwijdering...",
+      "deletedComment": "[Deze reactie is verwijderd]",
+      "errorLoadingComments": "Reacties laden mislukt: {0}",
+      "gifCategories": "Categorieën",
+      "gifResults": "GIF-resultaten",
+      "likedByPublication": "Geliket door {0}",
+      "loadEarlierContext": "Eerdere context van de discussie laden",
+      "loadMoreComments": "Meer reacties laden",
+      "loadMoreReplies": "Meer antwoorden laden",
+      "noComments": "Geen reacties",
+      "reactionFailed": "Emoji-reactie toevoegen mislukt",
+      "removeGif": "GIF verwijderen",
+      "reply": "Antwoorden",
+      "replySubmitted": "Antwoord verstuurd",
+      "replyingTo": "Antwoord op: {0}",
+      "reportComment": "Reactie melden",
+      "reportDescription": "Laat de moderators van de publicatie weten wat er mis is met deze reactie. De auteur ziet je melding niet.",
+      "reportReason": "Reden van melding",
+      "submitReply": "Antwoord versturen",
+      "title": "Reacties",
+      "toggleSuccess": "Reacties {0}",
+      "trendingGifs": "Populaire GIF's",
+      "unbanFailed": "Deblokkeren mislukt",
+      "unbanSuccess": "Gebruiker gedeblokkeerd",
+      "unbanUser": "Gebruiker deblokkeren",
+      "unit": "geen reacties | {count} reactie | {count} reacties",
+      "yourComment": "Je reactie"
+    },
+    "empty": {
+      "badge": "Binnenkort",
+      "message": "Kom snel nog eens terug.",
+      "owner": {
+        "address": "Blogadres",
+        "adminCta": "Naar beheer",
+        "aiCta": "Eerste artikel genereren",
+        "badge": "Alleen jij ziet dit",
+        "checklistTitle": "Rond de inrichting van de blog af",
+        "message": "Bezoekers zien nu een \"binnenkort\"-pagina. Zodra je het eerste artikel publiceert, gaat de blog voor hen open.",
+        "previewBack": "Terug naar je overzicht",
+        "previewCta": "Bekijken als bezoeker",
+        "previewing": "Zo zien bezoekers de blog op dit moment.",
+        "progress": "{done} van {total} klaar",
+        "title": "Je blog is klaar voor het eerste artikel",
+        "writeCta": "Eerste artikel schrijven",
+        "writeSelfCta": "Zelf schrijven"
+      },
+      "title": "Hier is nog niets"
+    },
+    "faq": "Veelgestelde vragen",
+    "home": {
+      "browseArticles": "Artikelen bekijken",
+      "chooseTopic": "Vind een onderwerp dat je interesseert",
+      "clearFilters": "Filters wissen",
+      "discussions": "Nieuwste discussies",
+      "exploreTopics": "Onderwerpen ontdekken",
+      "feedError": "De artikelen konden niet worden geladen.",
+      "latestArticles": "Nieuwste artikelen",
+      "latestStory": "Nieuwste verhaal",
+      "loadError": "Deze blog kon niet worden geladen",
+      "loadErrorDescription": "Probeer de pagina opnieuw te laden.",
+      "noMatches": "Geen artikelen gevonden voor je zoekopdracht.",
+      "popular": "Populaire artikelen",
+      "recommended": "Aanbevolen om te lezen",
+      "selectedTopic": "Onderwerp: {topic}",
+      "series": "Series om te volgen"
+    },
+    "image": {
+      "ai": "Illustratieve afbeelding (AI)",
+      "aiBadge": "AI",
+      "illustration": "Illustratieve afbeelding",
+      "illustrationBy": "Illustratieve foto: {author}",
+      "photoBy": "Foto: {author}"
+    },
+    "keyTakeaways": "Belangrijkste punten",
+    "likeNotOpenYet": "Liken kan zodra het artikel is gepubliceerd.",
+    "noResults": {
+      "message": "O nee, ik voel me nutteloos..."
+    },
+    "poll": {
+      "hpTitle": "Actuele peiling",
+      "notOpenYet": "Stemmen kan zodra het artikel is gepubliceerd.",
+      "yourVote": "Jouw stem"
+    },
+    "readingTime": "{0} min lezen",
+    "relatedArticles": {
+      "title": "Gerelateerde artikelen"
+    },
+    "searchPlaceholder": "Artikelen zoeken...",
+    "status": {
+      "archived": "Gearchiveerd",
+      "changeSuccess": "Status gewijzigd naar {0}",
+      "draft": "Concept",
+      "published": "Gepubliceerd"
+    },
+    "tableOfContents": {
+      "title": "Inhoud"
+    },
+    "tagsArticles": "Artikelen met tag “{name}”",
+    "title": "Artikelen",
+    "translations": {
+      "languageTabs": "Taal van het artikel"
+    },
+    "userMenu": {
+      "companyLogoAlt": "Bedrijfslogo",
+      "noBio": "Geen bio",
+      "userDataError": "Fout bij laden van gebruikersgegevens"
+    },
+    "votes": "Stemmen"
+  },
+  "common": {
+    "actions": {
+      "back": "Terug",
+      "backToTop": "Terug naar boven",
+      "cancel": "Annuleren",
+      "copy": "Kopiëren",
+      "copyLink": "Link kopiëren",
+      "copySuccess": "Gekopieerd",
+      "delete": "Verwijderen",
+      "deleteNotification": "Melding verwijderen",
+      "edit": "Bewerken",
+      "hideDetails": "Details verbergen",
+      "home": "Home",
+      "like": "Liken",
+      "more": "Meer",
+      "openMenu": "Navigatie openen",
+      "openNotifications": "Meldingen openen",
+      "pickDate": "Kies een datum",
+      "save": "Opslaan",
+      "send": "Versturen",
+      "share": "Delen",
+      "showDetails": "Details tonen",
+      "toggleComments": "Reacties aan/uit",
+      "toggleTheme": "Kleurmodus wisselen",
+      "unlike": "Like verwijderen",
+      "view": "Bekijken"
+    },
+    "advertisement": "Advertentie",
+    "auth": {
+      "login": "Inloggen",
+      "loginPrompt": "Log in voor toegang tot exclusieve functies en content.",
+      "loginToComment": "Log in om een reactie te plaatsen",
+      "logout": "Uitloggen",
+      "register": "Registreren",
+      "welcomeBack": "Welkom terug"
+    },
+    "avatar": {
+      "alt": {
+        "company": "Bedrijfslogo",
+        "profile": "Profielfoto"
+      }
+    },
+    "breadcrumbs": "Kruimelpad",
+    "cancelAction": "Actie annuleren",
+    "connection": {
+      "offline": "Je bent offline",
+      "online": "Je bent weer online"
+    },
+    "consent": {
+      "accept": "Alles toestaan",
+      "alwaysOn": "Altijd actief",
+      "analyticsDescription": "Helpen het verkeer en gebruik van de website te meten, inclusief weergaven en deelacties van artikelen.",
+      "analyticsTitle": "Analytische cookies",
+      "banner": "Essentiële cookies zorgen dat deze website werkt en veilig blijft.",
+      "bannerAnalytics": "Met je toestemming meten we het websiteverkeer.",
+      "bannerMarketing": "Met je toestemming tonen en meten we ook niet-gepersonaliseerde advertenties.",
+      "customize": "Cookie-instellingen",
+      "internalAnalytics": "Topiqu-statistieken",
+      "marketingDescription": "Hiermee kunnen niet-gepersonaliseerde advertenties worden getoond en gemeten. Deze diensten laden alleen met je toestemming.",
+      "marketingTitle": "Marketing- en advertentiecookies",
+      "moreInfo": "Meer over cookies en privacy",
+      "openSettings": "Cookie-instellingen",
+      "reject": "Optionele weigeren",
+      "save": "Instellingen opslaan",
+      "services": "Gebruikte diensten: {names}",
+      "settingsDescription": "Kies welke cookies je toestaat. Je kunt je instellingen altijd wijzigen via de link onderaan de website.",
+      "settingsTitle": "Cookie-instellingen",
+      "technicalDescription": "Ondersteunen inloggen, beveiliging, je taalkeuze en het onthouden van je cookie-instellingen.",
+      "technicalTitle": "Essentiële cookies",
+      "title": "Cookies op deze website"
+    },
+    "entry": {
+      "retry": "Opnieuw proberen"
+    },
+    "errTypes": {
+      "badRequest": "Het verzoek is ongeldig. Controleer de gegevens en probeer het opnieuw.",
+      "conflict": "Dit item is gewijzigd. Vernieuw de pagina en probeer het opnieuw.",
+      "forbidden": "Je hebt geen toegang tot deze pagina.",
+      "gatewayTimeout": "Er is een time-out opgetreden. Probeer het opnieuw.",
+      "internalError": "Er ging iets mis aan onze kant. Probeer het later opnieuw.",
+      "notAcceptable": "De verzonden inhoud kan niet worden geaccepteerd. Controleer deze en probeer het opnieuw.",
+      "notFound": "We konden de gevraagde pagina niet vinden.",
+      "server": "De server kon het verzoek niet voltooien. Probeer het later opnieuw.",
+      "serviceUnavailable": "De dienst is tijdelijk niet beschikbaar. Probeer het later opnieuw.",
+      "tooManyRequests": "Te veel verzoeken. Wacht even en probeer het opnieuw.",
+      "unauthorized": "Log in om verder te gaan.",
+      "unprocessableEntity": "Sommige gegevens konden niet worden verwerkt. Controleer ze en probeer het opnieuw."
+    },
+    "error": "Fout bij laden van gegevens",
+    "errors": {
+      "blogNotFound": "Blog niet gevonden.",
+      "tagNotFound": "Tag niet gevonden."
+    },
+    "labels": {
+      "shortcode": "Shortcode",
+      "title": "Titel"
+    },
+    "loading": "Laden...",
+    "messages": {
+      "closeConfirmButton": "Ja, sluiten",
+      "closeConfirmTitle": "Venster sluiten?",
+      "deleteCancel": "Annuleren",
+      "deleteConfirmText": "Deze actie kan niet ongedaan worden gemaakt.",
+      "deleteConfirmTitle": "Weet je zeker dat je dit wilt verwijderen?",
+      "deleteFailed": "Verwijderen mislukt",
+      "deleteSuccess": "Verwijderd",
+      "idle": "Het is hier rustig",
+      "idleTitle": "Hmm, er gebeurt hier niets.",
+      "loadFailedText": "We konden de gegevens niet laden. Probeer het opnieuw.",
+      "loadFailedTitle": "Laden mislukt",
+      "operationFailed": "Bewerking mislukt",
+      "optimistic": {
+        "reverted": "De wijziging kon niet worden opgeslagen en is teruggedraaid.",
+        "saved": "Wijziging opgeslagen.",
+        "saving": "Wijziging opslaan…"
+      },
+      "reportFailed": "Melden mislukt",
+      "reportSuccess": "Gemeld",
+      "retry": "Opnieuw proberen",
+      "saveSuccess": "Opgeslagen",
+      "statusChangeFailed": "Status wijzigen mislukt",
+      "successGeneral": "Gelukt",
+      "successGeneralTitle": "De bewerking is geslaagd"
+    },
+    "no": "Nee",
+    "noItems": "Geen items",
+    "noResults": "Geen resultaten gevonden",
+    "notifications": {
+      "deleteFailed": "Melding kon niet worden verwijderd: {message}",
+      "empty": "Geen nieuwe meldingen",
+      "loadFailed": "Meldingen konden niet worden geladen: {message}",
+      "loginPrompt": "Log in om nieuws en activiteit op het platform te volgen.",
+      "newNotification": "Nieuwe melding: {message}",
+      "pollingActive": "Meldingen zijn actief",
+      "pollingConnecting": "Updates van meldingen controleren",
+      "pollingPaused": "Meldingen zijn gepauzeerd",
+      "pollingRetrying": "Updates van meldingen zijn niet beschikbaar. We proberen automatisch opnieuw verbinding te maken.",
+      "pollingSignIn": "Log opnieuw in om updates van meldingen te ontvangen.",
+      "pollingUnavailable": "Updates van meldingen zijn niet beschikbaar voor deze site. Probeer het later opnieuw."
+    },
+    "pagination": {
+      "next": "Volgende"
+    },
+    "poweredBy": "Gemaakt met",
+    "preferences": {
+      "footer": {
+        "links": "Links in de footer"
+      }
+    },
+    "search": "Zoeken...",
+    "setup": {
+      "steps": {
+        "article": {
+          "action": "Editor openen",
+          "description": "Schrijf of genereer een artikel in de editor en kies daarna Publiceren. Concepten en geplande publicaties tellen niet mee.",
+          "title": "Publiceer je eerste artikel"
+        },
+        "branding": {
+          "action": "Blogbeschrijving toevoegen",
+          "description": "Beschrijf onder Instellingen → Branding wat je op je blog publiceert.",
+          "title": "Voeg een blogbeschrijving toe"
+        },
+        "domain": {
+          "action": "Domeininstellingen openen",
+          "description": "Stel de DNS-records voor {domain} in en controleer of het domein werkt.",
+          "title": "Verifieer je eigen domein"
+        },
+        "voice": {
+          "action": "Inhoudelijke richting bepalen",
+          "description": "Geef onder Instellingen → Content aan waarover AI moet schrijven en voor wie.",
+          "title": "Voeg je focus en doelgroep toe"
+        }
+      }
+    },
+    "sortOptions": {
+      "mostInteresting": "Interessantste",
+      "newest": "Nieuwste",
+      "oldest": "Oudste"
+    },
+    "user": {
+      "comments": "Reacties",
+      "dislikes": "Dislikes",
+      "joined": "Lid sinds: {0}",
+      "language": "Taal van de interface",
+      "likes": "Likes",
+      "notAvailable": "Niet beschikbaar",
+      "viewProfile": "Profiel bekijken"
+    },
+    "yes": "Ja"
+  },
+  "emoji": {
+    "addCustom": "Eigen toevoegen",
+    "addHint": "Namen worden ingevuld op basis van bestandsnamen. Afbeeldingen worden automatisch verkleind tot maximaal 128 × 128 px.",
+    "addTitle": "Nieuwe emoji's toevoegen",
+    "closeConfirm": "Er staan {count} emoji's in de wachtrij. Als je het venster sluit, gaan ze verloren.",
+    "commentPreview": "Voorbeeld van reactie",
+    "create": "Emoji maken",
+    "createFailed": "Emoji toevoegen mislukt",
+    "createMany": "Emoji's toevoegen ({count})",
+    "createManySuccess": "Emoji's toegevoegd: {count}",
+    "createSuccess": "Emoji {0} toegevoegd",
+    "deleteAction": "Emoji verwijderen",
+    "deleteAria": "Emoji {shortcode} verwijderen",
+    "deleteConfirm": "Als je deze emoji verwijdert, worden ook alle reacties ermee verwijderd ({count}). Dit kan niet ongedaan worden gemaakt.",
+    "deleteFailed": "Emoji verwijderen mislukt",
+    "deleteSuccess": "Emoji verwijderd",
+    "deleteTitle": ":{shortcode}: verwijderen?",
+    "dropHint": "PNG, JPG, WebP of GIF, tot 5 MB · Ctrl+V werkt ook",
+    "dropTitle": "Kies afbeeldingen of sleep ze hierheen",
+    "duplicateInQueue": "Deze naam staat twee keer in de wachtrij",
+    "duplicateShortcode": "Er bestaat al een emoji met deze naam",
+    "fileTooLarge": "Het bestand {name} is groter dan 5 MB",
+    "invalidShortcode": "Gebruik 1–50 kleine letters, cijfers, koppeltekens of underscores",
+    "libraryCount": "Totaal: {count}",
+    "libraryTitle": "Emojibibliotheek",
+    "loadFailed": "Emoji's laden mislukt",
+    "manage": "Eigen emoji's",
+    "nextPreview": "Volgend emojivoorbeeld",
+    "noEmojisFound": "Geen emoji's gevonden",
+    "noSearchResults": "Geen emoji's gevonden voor je zoekopdracht",
+    "previewAria": "Voorbeeld van emoji {shortcode}",
+    "previewAuthor": "Topiqu-lezer",
+    "previewComment": "Mooi artikel, bedankt voor het delen!",
+    "previewTime": "zojuist",
+    "previousPreview": "Vorig emojivoorbeeld",
+    "queueTitle": "Klaar om toe te voegen",
+    "reactionCount": "Geen reacties | {count} reactie | {count} reacties",
+    "removeFromQueue": "Uit wachtrij verwijderen",
+    "searchPlaceholder": "Emoji's zoeken…",
+    "shortcodeRequired": "Voer een naam voor de emoji in",
+    "unsupportedFile": "Het bestand {name} heeft een niet-ondersteund formaat"
+  },
+  "error": {
+    "generic": "Er ging iets mis. Probeer het opnieuw."
+  },
+  "feedback": {
+    "change": "Antwoord wijzigen",
+    "notOpenYet": "Beoordelen kan zodra het artikel is gepubliceerd.",
+    "placeholder": "Wat kunnen we verbeteren? (optioneel)",
+    "question": "Was dit artikel nuttig?",
+    "recorded": "Je mening helpt ons de inhoud te verbeteren.",
+    "thankYou": "Bedankt voor je feedback!",
+    "thanks_short": "Bedankt!"
+  },
+  "languages": {
+    "cs": "Tsjechisch",
+    "de": "Duits",
+    "en": "Engels",
+    "es": "Spaans",
+    "fr": "Frans",
+    "it": "Italiaans",
+    "nl": "Nederlands",
+    "pl": "Pools",
+    "pt": "Portugees",
+    "sk": "Slowaaks"
+  },
+  "profile": {
+    "follow": "Volgen",
+    "followers": "Volgers",
+    "following": "Volgend",
+    "messages": {
+      "followFailed": "De volgstatus kon niet worden bijgewerkt.",
+      "followSuccess": "Je volgt nu {0}",
+      "profileUpdateError": "Bijwerken mislukt"
+    },
+    "unfollow": "Ontvolgen"
+  },
+  "seo": {
+    "author": {
+      "description": "Lees alle deskundige artikelen en berichten van {name}.",
+      "title": "{name} - Auteursprofiel {'|'} Topiqu"
+    },
+    "tags": {
+      "description": "Bekijk de nieuwste artikelen en inzichten over het onderwerp {name}.",
+      "title": "Onderwerp: {name} {'|'} Topiqu"
+    }
+  },
+  "series": {
+    "continueReading": "Verder lezen in de serie",
+    "continueWith": "Verder: {title}",
+    "current": "Nu aan het lezen",
+    "finished": "Je hebt alles gelezen",
+    "hideList": "Lijst van de serie verbergen",
+    "label": "Serie",
+    "next": "Volgend deel",
+    "nextPart": "Volgend deel",
+    "part": "Deel {count}",
+    "parts": "geen delen | {count} deel | {count} delen",
+    "previous": "Vorige",
+    "readOf": "{read} van {total} gelezen",
+    "showList": "Hele serie tonen",
+    "start": "Begin bij deel 1"
+  },
+  "stats": {
+    "articleCount": "Gepubliceerde artikelen",
+    "loading": "Gegevens laden...",
+    "totalViews": {
+      "title": "Totaal aantal weergaven"
+    }
+  },
+  "widgets": {
+    "announcement": {
+      "close": "Aankondiging sluiten",
+      "label": "Aankondiging"
+    },
+    "price": {
+      "label": "Koersen en prijzen",
+      "source": "Koersen: ECB, crypto: Coinbase · bijgewerkt"
+    },
+    "weather": {
+      "clear": "Helder",
+      "cloudy": "Bewolkt",
+      "fog": "Mist",
+      "heavyRain": "Zware regen",
+      "partlyCloudy": "Half bewolkt",
+      "rain": "Regen",
+      "sleet": "Natte sneeuw",
+      "snow": "Sneeuw",
+      "source": "Weergegevens: MET Norway",
+      "thunder": "Onweer"
+    }
+  }
+}

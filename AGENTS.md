@@ -122,11 +122,16 @@ recursive deletion, broad globs, and commands whose resolved target has not been
 
 ## 6. Localization and copy
 
-- Supported locales are English (`en`), Czech (`cs`), German (`de`) and French (`fr`). Every new
+- Interface locales are English (`en`), Czech (`cs`), German (`de`) and French (`fr`). Every new
   user-facing string must be translated in all four.
+- Content-only locales (`es`, `it`, `pl`, `sk`, `nl`, `pt`, since 2026-11-01) serve the public blog
+  only: `i18n/locales/<code>/reader.json` holds the keys public pages use, everything else falls back.
+  A new key on a public page must also be translated there; `tests/unit/readerLocales.test.ts` lists
+  what is missing (`bun scripts/reader-i18n.ts --source` prints the English subset).
 - Locale authority conflict resolved on 2026-10-22: the former Czech/English-only instruction was
-  stale. `shared/siteSchemas.ts::LANGUAGE_OPTIONS`, `nuxt.config.ts::i18n.locales`, the locale files
-  and language-registry/completeness tests define the retained four-language contract. Keep
+  stale. `shared/siteSchemas.ts::UI_LANGUAGE_OPTIONS` (interface) and `LANGUAGE_OPTIONS` (content),
+  `nuxt.config.ts::i18n.locales`, the locale files and language-registry/completeness tests define the
+  retained four-language interface contract. Keep
   `README.md` and `CLAUDE.md` aligned with it; do not remove languages as cleanup.
 - Do not hardcode user-facing copy in Vue templates, composables, or route handlers when the project
   has an i18n surface for it.

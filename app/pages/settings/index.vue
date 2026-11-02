@@ -192,6 +192,9 @@
             :language="form.language"
             :translationMode="form.translationMode"
             :translationLanguages="form.translationLanguages"
+            :translationLanguageLimit="client?.translationLanguageLimit ?? 0"
+            :extraTranslationLanguages="client?.extraTranslationLanguages ?? 0"
+            :canBuyTranslationLanguages="Boolean(client?.canBuyTranslationLanguages) && can('BILLING_CHANGE')"
             :discloseAiContent="form.discloseAiContent"
             :features="features ?? []"
             :currency="client?.currency ?? 'EUR'"
@@ -211,6 +214,7 @@
             @update:generationFrequency="form.generationFrequency = $event"
             @update:translationMode="form.translationMode = $event"
             @update:translationLanguages="form.translationLanguages = $event"
+            @refresh="refresh()"
             @update:discloseAiContent="form.discloseAiContent = $event"
           />
           <FormClientPublicationChannels
@@ -222,7 +226,7 @@
         </section>
 
         <section v-if="showBilling" v-show="activeTab === 'billing'">
-          <FormClientBilling :client="client ?? null" :rate="rate" />
+          <FormClientBilling :client="client ?? null" :rate="rate" @refresh="refresh()" />
         </section>
         <section v-if="activeTab === 'widgets'"><LazyFormClientWidgets /></section>
         <section v-show="activeTab === 'members'"><LazySettingsMembers /></section>

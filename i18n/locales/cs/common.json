@@ -200,7 +200,7 @@
       "bonusExpiry": "Bonusové kredity mohou expirovat, dokoupené ne.",
       "generationReservation": "Článek rezervuje podle kvality 1, 2 nebo 3 kredity. Kontrola i jedna automatická oprava jsou v ceně. Při technické chybě se rezervace vrátí.",
       "neverExpires": "Kredity z tarifu platí pro dané období. Dokoupené kredity neexpirují.",
-      "explanation": "Tarif přidává kredity každý měsíc. Standard stojí 1, High 2 a Ultra 3 kredity za článek včetně kontroly a jedné automatické opravy. Dokoupené kredity neexpirují a čerpají se až po kreditech z tarifu.",
+      "explanation": "Dokoupené kredity neexpirují.",
       "reserved": "Dočasně rezervováno",
       "reservedHint": "Článek podle kvality rezervuje 1, 2 nebo 3 kredity. Při technické chybě se celá částka vrátí.",
       "reasons": {
@@ -1322,8 +1322,8 @@
         "placeholder": "Např. mladí dospělí 18–25 let, vývojáři her"
       },
       "language": {
-        "label": "Jazyk",
-        "help": "Jazyk, ve kterém vznikají nové články."
+        "label": "Hlavní jazyk",
+        "help": "Výchozí jazyk webu a nových článků."
       },
       "theme": {
         "label": "Barva značky",
@@ -1361,7 +1361,6 @@
         "releaseHour": "Čas vydání",
         "interval": {
           "label": "Jednou za",
-          "minimum": "Min. {hours} h",
           "help": "Minimálně {hours} hodin od sebe.",
           "min": "Nejkratší odstup",
           "max": "Nejdelší odstup",
@@ -1370,7 +1369,8 @@
             "hours": "hodin",
             "days": "dní",
             "weeks": "týdnů"
-          }
+          },
+          "to": "až"
         },
         "window": {
           "label": "Vydávat mezi",
@@ -1428,7 +1428,7 @@
           }
         },
         "targetLangs": {
-          "label": "Cílové jazyky",
+          "label": "Jazyky překladu",
           "empty": "Pro váš primární jazyk nejsou k dispozici žádné další jazyky."
         },
         "tokenWarning": "Automatický překlad vytvoří samostatnou jazykovou verzi každého publikovaného článku pro každý cílový jazyk."
@@ -1715,12 +1715,10 @@
       "pack12": "12 kreditů",
       "pack25": "25 kreditů",
       "bestValue": "Nejvýhodnější",
-      "volumeDiscount": "{discount} % množstevní sleva",
       "articles": "kredit | kredity | kreditů",
       "taxExclusive": "bez DPH",
       "buy": "Koupit",
       "buyPack": "Koupit balíček {count} kreditů",
-      "purchaseHint": "Kredity jsou dostupné hned a neexpirují. Článek stojí podle kvality 1, 2 nebo 3 kredity včetně kontroly a jedné automatické opravy.",
       "neverExpires": "Bez expirace",
       "upgradeToPremium": "Povýšit na PREMIUM"
     },
@@ -1817,7 +1815,30 @@
         "open": "Otevřít Topiqu"
       }
     },
-    "statHint": "Co znamená „{label}“"
+    "statHint": "Co znamená „{label}“",
+    "translationLanguages": {
+      "count": "{selected} / {limit} jazyků",
+      "paused": "Pozastaveno",
+      "pausedTitle": "Některé jazyky jsou pozastavené",
+      "pausedDesc": "Naposledy vybraný jazyk přesahuje limit vašeho plánu a nepřekládá se. Odeberte ho, nebo dokupte jazyk navíc. | Poslední {n} vybrané jazyky přesahují limit vašeho plánu a nepřekládají se. Odeberte je, nebo dokupte jazyky navíc. | Posledních {n} vybraných jazyků přesahuje limit vašeho plánu a nepřekládá se. Odeberte je, nebo dokupte jazyky navíc.",
+      "buy": "Dokoupit jazyk · {price}/měs.",
+      "freePlan": "Překlady jsou součástí plánů Pro a Premium.",
+      "customPlan": "{limit} v plánu",
+      "allowance": "{included} v plánu · {extra} dokoupeno",
+      "dialogTitle": "Jazyky překladu navíc",
+      "dialogDesc": "Váš plán obsahuje {included}. Každý jazyk navíc stojí {price} měsíčně a účtuje se jako samostatné předplatné.",
+      "extraLabel": "Jazyky navíc",
+      "total": "{total} měsíčně",
+      "proration": "Změna se poměrně promítne do aktuálního zúčtovacího období.",
+      "confirm": "Potvrdit",
+      "updated": "Jazyky překladu upraveny",
+      "notIncluded": "Tento jazyk nepatří mezi vaše jazyky překladu.",
+      "overLimit": "Váš plán nepokrývá tolik jazyků překladu.",
+      "planRequired": "Jazyky navíc vyžadují aktivní placené předplatné Pro nebo Premium.",
+      "limitReached": "Využili jste všechny jazyky ve svém plánu. Pro výběr jiného nejdřív některý odeberte.",
+      "limitReachedBuy": "Všechny jazyky z plánu jsou využité. Kliknutím na další jazyk ho dokoupíte.",
+      "locked": "Není v plánu: dokupte za {price} měsíčně."
+    }
   },
   "error": {
     "generic": "Něco se pokazilo. Zkuste to prosím znovu."

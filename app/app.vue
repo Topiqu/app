@@ -23,7 +23,7 @@
 </template>
 
 <script setup lang="ts">
-import { cs, de, en, fr } from '@nuxt/ui/locale'
+import { cs, de, en, es, fr, it, nl, pl, pt, sk } from '@nuxt/ui/locale'
 import manropeLatin from '@fontsource-variable/manrope/files/manrope-latin-wght-normal.woff2?url'
 
 const reqUrl = useRequestURL()
@@ -37,7 +37,7 @@ const i18nHead = useLocaleHead()
 const canonicalOrigin = useCanonicalOrigin()
 const { locale } = useI18n()
 const { data: auth } = useAuth()
-const uiLocales = { cs, de, en, fr }
+const uiLocales = { cs, de, en, fr, es, it, pl, sk, nl, pt }
 const uiLocale = computed(() => uiLocales[locale.value as keyof typeof uiLocales] ?? en)
 const isBrowserTest = Boolean(useRuntimeConfig().public.browserTest)
 
@@ -50,9 +50,17 @@ const consentLauncher = computed(() =>
     isForeignHost(clientSite?.id, auth.value?.user?.clientSiteId),
   ),
 )
+// A blog only has real alternates in the languages it publishes; the rest would be translated chrome around
+// the same articles.
+const siteLanguages = computed(() =>
+  clientSite ? new Set<string>([clientSite.language, ...(clientSite.translationLanguages ?? [])]) : null,
+)
+const isForeignAlternate = (hreflang: unknown) =>
+  typeof hreflang === 'string' && hreflang !== 'x-default' && !siteLanguages.value?.has(hreflang.split('-')[0]!)
 const i18nLinks = computed(() =>
   (i18nHead.value.link ?? [])
     .filter((link) => !(isArticleRoute.value && link.rel === 'alternate'))
+    .filter((link) => !(siteLanguages.value && link.rel === 'alternate' && isForeignAlternate(link.hreflang)))
     .map((link) =>
       typeof link.href === 'string' ? { ...link, href: toAbsoluteUrl(link.href, canonicalOrigin) } : link,
     ),

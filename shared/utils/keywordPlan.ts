@@ -13,20 +13,33 @@ const COUNTRIES = {
   GB: 2826,
   AU: 2036,
   IE: 2372,
+  ES: 2724,
+  IT: 2380,
+  PL: 2616,
+  SK: 2703,
+  NL: 2528,
+  PT: 2620,
 } as const
 
 export type KeywordCountry = keyof typeof COUNTRIES
 export type KeywordMarket = KeywordCountry | 'GLOBAL'
 
 /**
- * Countries where DataForSEO has data in the article language, home market first. Slovakia is missing on
- * purpose: Labs only knows Slovak there, so Czech has no second market.
+ * Countries where DataForSEO has data in the article language, home market first. Slovakia is missing from
+ * Czech on purpose: Labs only knows Slovak there, so Czech has no second market. The newer languages
+ * start with their home market only: `es` and `pt` are the European variants (`LANGUAGE_TAGS`).
  */
 export const LANGUAGE_MARKETS = {
   cs: ['CZ'],
   de: ['DE', 'AT', 'CH', 'GLOBAL'],
   fr: ['FR', 'BE', 'CH', 'CA', 'GLOBAL'],
   en: ['US', 'GB', 'CA', 'AU', 'IE', 'GLOBAL'],
+  es: ['ES'],
+  it: ['IT'],
+  pl: ['PL'],
+  sk: ['SK'],
+  nl: ['NL'],
+  pt: ['PT'],
 } as const satisfies Record<Language, readonly KeywordMarket[]>
 
 export const keywordMarketsFor = (language: Language): readonly KeywordMarket[] => LANGUAGE_MARKETS[language]

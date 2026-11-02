@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
   const shop = normalizeShopifyShop(query.shop)
   if (!shop || !shopifyConfigured()) return sendRedirect(event, shopifyOrigin())
   const locale = typeof query.locale === 'string' ? query.locale.slice(0, 2).toLowerCase() : ''
-  const lang = isLanguage(locale) ? locale : 'en'
+  const lang = uiLanguageOf(locale)
   const nonce = randomBytes(16).toString('base64')
   const { translate } = await useServerI18n(event, { locale: lang })
   setHeader(event, 'Content-Type', 'text/html; charset=utf-8')

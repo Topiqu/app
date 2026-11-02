@@ -1,5 +1,5 @@
-import type { SocialPlatform } from '~~/generated/zenstack/models'
 import type { ClientSiteUpdateArgs } from '~~/generated/zenstack/input'
+import type { Language, SocialPlatform } from '~~/generated/zenstack/models'
 
 import equal from 'fast-deep-equal'
 import { randomBytes } from 'crypto'
@@ -121,6 +121,19 @@ export default defineEventHandler(async (event) => {
     // A changed rhythm starts over from now rather than from a slot the old rules picked.
     data.nextReleaseAt = schedule ? nextRelease(schedule, {}) : null
   }
+  if (data.translationLanguages !== undefined) {
+    const selected = [...new Set(data.translationLanguages as Language[])]
+    const previous = new Set(clientSite.translationLanguages)
+    const limit = translationLanguageLimit({
+      plan: data.plan ?? clientSite.plan,
+      extraTranslationLanguages: data.extraTranslationLanguages ?? clientSite.extraTranslationLanguages,
+    })
+    // Removing or reordering stays possible after a downgrade left the selection above the allowance.
+    const onlyShrinks = selected.every((language) => previous.has(language))
+    if (selected.length > limit && !onlyShrinks)
+      throw createError({ statusCode: 403, message: t('common.translationLanguages.overLimit')! })
+    data.translationLanguages = selected
+  }
   const domainChanged = typeof data.domain === 'string' && data.domain !== clientSite.domain
   if (domainChanged) Object.assign(data, domainVerificationDefaults(data.domain, randomBytes(24).toString('base64url')))
 
@@ -211,6 +224,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const planChanged = data.plan !== undefined && data.plan !== clientSite.plan
+  const languagesBilled = data.extraTranslationLanguages !== undefined
   const updateArgs = {
     where: { id },
     data,
@@ -222,13 +236,16 @@ export default defineEventHandler(async (event) => {
 
   // A plan column without matching ClientFeature rows is not a valid committed state. Keep the
   // superadmin plan write and entitlement synchronization behind the same tenant-row lock.
-  const updatedSite = planChanged
-    ? await serializableTransaction(async (tx) => {
-        const site = await tx.clientSite.update(updateArgs)
-        await syncPlanFeatures(tx, id)
-        return site
-      })
-    : await db.clientSite.update(updateArgs)
+  const updatedSite =
+    planChanged || languagesBilled
+      ? await serializableTransaction(async (tx) => {
+          const site = await tx.clientSite.update(updateArgs)
+          if (planChanged) await syncPlanFeatures(tx, id)
+          else await recalcFeatureBilling(tx, id, site.plan, site.billingPlan)
+          return site
+        })
+      : await db.clientSite.update(updateArgs)
+  if (planChanged && updatedSite.plan === 'BASIC') await cancelTranslationLanguageSubscription(id)
 
   if (domainChanged) {
     await logAction({

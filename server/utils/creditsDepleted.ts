@@ -1,5 +1,3 @@
-import type { Language } from '~~/generated/zenstack/models'
-
 /**
  * Emails a scheduled tenant's owners and billing members that its articles ran out. Once per
  * depletion: the key names the newest grant, so only a top-up re-arms it. Sent before the audit
@@ -33,7 +31,7 @@ export const notifyCreditsDepleted = async (clientSiteId: string) => {
   const origin = import.meta.dev ? 'http://localhost:3000' : `https://${site.domain}`
   const recipients = site.tenantMemberships.map(({ user }) => user)
   for (const user of recipients) {
-    const lang: Language = isLanguage(user.language) ? user.language : 'en'
+    const lang = uiLanguageOf(user.language)
     await sendEmail({
       to: user.email,
       lang,

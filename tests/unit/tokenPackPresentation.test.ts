@@ -28,12 +28,6 @@ describe('buildArticlePackViews', () => {
     expect(buildArticlePackViews(translate, 'en-US').map((v) => v.articles)).toEqual([5, 12, 25])
   })
 
-  it('calculates honest volume discounts against the entry pack unit price', () => {
-    const views = buildArticlePackViews(translate, 'en-US')
-
-    expect(views.map((view) => view.volumeDiscount)).toEqual([0, 30, 50])
-  })
-
   it('formats price for the active locale', () => {
     const [pack] = buildArticlePackViews(translate, 'cs-CZ')
 

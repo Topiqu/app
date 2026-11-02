@@ -19,45 +19,34 @@
       <template v-if="frequency === 'INTERVAL'">
         <UFormField
           :label="$t('common.preferences.releaseSchedule.interval.label')"
-          :hint="$t('common.preferences.releaseSchedule.interval.minimum', { hours: MIN_INTERVAL_HOURS })"
+          :help="$t('common.preferences.releaseSchedule.interval.help', { hours: MIN_INTERVAL_HOURS })"
         >
-          <div
-            class="rounded-(--ui-radius) bg-default ring ring-inset ring-accented focus-within:ring-2 focus-within:ring-primary"
-          >
-            <UFieldGroup class="w-full">
-              <UInputNumber
-                v-model="intervalMin"
-                :min="unitMin"
-                :max="unitMax"
-                :increment="false"
-                :decrement="false"
-                variant="none"
-                :ui="{ base: 'h-10' }"
-                class="min-w-0 flex-1"
-                :aria-label="$t('common.preferences.releaseSchedule.interval.min')"
-              />
-              <span class="flex items-center text-sm text-muted" aria-hidden="true">–</span>
-              <UInputNumber
-                v-model="intervalMax"
-                :min="intervalMin"
-                :max="unitMax"
-                :increment="false"
-                :decrement="false"
-                variant="none"
-                :ui="{ base: 'h-10' }"
-                class="min-w-0 flex-1"
-                :aria-label="$t('common.preferences.releaseSchedule.interval.max')"
-              />
-              <div class="w-28 shrink-0 border-l border-default">
-                <USelect
-                  v-model="unit"
-                  :items="unitOptions"
-                  variant="none"
-                  class="w-full"
-                  :aria-label="$t('common.preferences.releaseSchedule.interval.unit')"
-                />
-              </div>
-            </UFieldGroup>
+          <div class="flex flex-wrap items-center gap-2">
+            <UInputNumber
+              v-model="intervalMin"
+              :min="unitMin"
+              :max="unitMax"
+              :increment="false"
+              :decrement="false"
+              class="w-16"
+              :aria-label="$t('common.preferences.releaseSchedule.interval.min')"
+            />
+            <span class="text-sm text-muted">{{ $t('common.preferences.releaseSchedule.interval.to') }}</span>
+            <UInputNumber
+              v-model="intervalMax"
+              :min="intervalMin"
+              :max="unitMax"
+              :increment="false"
+              :decrement="false"
+              class="w-16"
+              :aria-label="$t('common.preferences.releaseSchedule.interval.max')"
+            />
+            <USelect
+              v-model="unit"
+              :items="unitOptions"
+              class="w-28"
+              :aria-label="$t('common.preferences.releaseSchedule.interval.unit')"
+            />
           </div>
         </UFormField>
         <UFormField :label="$t('common.preferences.releaseSchedule.window.label')">
@@ -100,8 +89,8 @@
             v-for="day in weekdays"
             :key="day.value"
             square
-            color="neutral"
-            :variant="schedule.releaseDays.includes(day.value) ? 'soft' : 'outline'"
+            :color="schedule.releaseDays.includes(day.value) ? 'primary' : 'neutral'"
+            :variant="schedule.releaseDays.includes(day.value) ? 'solid' : 'outline'"
             class="w-full min-w-0"
             :aria-pressed="schedule.releaseDays.includes(day.value)"
             :aria-label="day.name"

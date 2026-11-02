@@ -22,7 +22,12 @@ const makeDb = (
   } | null,
   existing: Array<{ language: string; id?: string; status?: string; updatedAt?: Date }> = [],
 ) => ({
-  clientSite: { findUnique: vi.fn(async () => clientSite && { features: [{ id: 'f1' }], ...clientSite }) },
+  clientSite: {
+    findUnique: vi.fn(
+      async () =>
+        clientSite && { features: [{ id: 'f1' }], plan: 'PREMIUM', extraTranslationLanguages: 0, ...clientSite },
+    ),
+  },
   articleTranslation: {
     findMany: vi.fn(async () => existing),
     createMany: vi.fn(async () => ({ count: 0 })),
@@ -31,20 +36,40 @@ const makeDb = (
 })
 
 describe('resolveTargetLanguages', () => {
-  it('treats an empty config as "every supported language", not "none"', () => {
-    expect(resolveTargetLanguages({ language: 'cs', translationLanguages: [] })).toEqual(['en', 'de', 'fr'])
-    expect(resolveTargetLanguages({ language: 'en', translationLanguages: [] })).toEqual(['cs', 'de', 'fr'])
-    expect(resolveTargetLanguages({ language: 'de', translationLanguages: [] })).toEqual(['en', 'cs', 'fr'])
+  const pro = { plan: 'PRO' as const, extraTranslationLanguages: 0 }
+
+  // With ten content languages, "empty means all" would hand out nine free translations per article.
+  it('treats an empty config as "none"', () => {
+    expect(resolveTargetLanguages({ ...pro, language: 'cs', translationLanguages: [] })).toEqual([])
   })
 
   it('honours an explicit config', () => {
-    expect(resolveTargetLanguages({ language: 'cs', translationLanguages: ['en'] })).toEqual(['en'])
-    expect(resolveTargetLanguages({ language: 'en', translationLanguages: ['cs'] }, 'cs')).toEqual(['en'])
+    expect(resolveTargetLanguages({ ...pro, language: 'cs', translationLanguages: ['en'] })).toEqual(['en'])
+    expect(resolveTargetLanguages({ ...pro, language: 'en', translationLanguages: ['cs'] }, 'cs')).toEqual(['en'])
   })
 
   it('never targets the site’s own primary language', () => {
-    expect(resolveTargetLanguages({ language: 'cs', translationLanguages: ['cs'] })).toEqual([])
-    expect(resolveTargetLanguages({ language: 'cs', translationLanguages: ['cs', 'en'] })).toEqual(['en'])
+    expect(resolveTargetLanguages({ ...pro, language: 'cs', translationLanguages: ['cs'] })).toEqual([])
+    expect(resolveTargetLanguages({ ...pro, language: 'cs', translationLanguages: ['cs', 'en'] })).toEqual(['en'])
+  })
+
+  it('translates only the languages the plan pays for', () => {
+    expect(resolveTargetLanguages({ ...pro, language: 'cs', translationLanguages: ['en', 'de', 'es'] })).toEqual([
+      'en',
+      'de',
+    ])
+    expect(
+      resolveTargetLanguages({
+        ...pro,
+        extraTranslationLanguages: 1,
+        language: 'cs',
+        translationLanguages: ['en', 'de', 'es'],
+      }),
+    ).toEqual(['en', 'de', 'es'])
+  })
+
+  it('still targets the site language for an article written in another one', () => {
+    expect(resolveTargetLanguages({ ...pro, language: 'cs', translationLanguages: [] }, 'es')).toEqual(['cs'])
   })
 })
 
@@ -64,8 +89,8 @@ describe('syncArticleTranslationQueue', () => {
     expect(db.articleTranslation.createMany).not.toHaveBeenCalled()
   })
 
-  it('enqueues PENDING rows for missing target languages (empty config = all others)', async () => {
-    const db = makeDb({ language: 'cs', translationMode: 'AUTO', translationLanguages: [] })
+  it('enqueues PENDING rows for missing target languages', async () => {
+    const db = makeDb({ language: 'cs', translationMode: 'AUTO', translationLanguages: ['en', 'de', 'fr'] })
     await syncArticleTranslationQueue(db as any, 'a1', 'cs1')
     expect(db.articleTranslation.createMany).toHaveBeenCalledWith({
       data: ['en', 'de', 'fr'].map((language) => ({
@@ -87,7 +112,7 @@ describe('syncArticleTranslationQueue', () => {
 
   it('marks existing translations STALE only when content changed', async () => {
     const observed = new Date('2090-01-01T00:00:00Z')
-    const db = makeDb({ language: 'cs', translationMode: 'HYBRID', translationLanguages: [] }, [
+    const db = makeDb({ language: 'cs', translationMode: 'HYBRID', translationLanguages: ['en'] }, [
       { id: 'translation-1', language: 'en', status: 'PUBLISHED', updatedAt: observed },
     ])
     await syncArticleTranslationQueue(db as any, 'a1', 'cs1', { contentChanged: true })

@@ -13,6 +13,12 @@ async function stubImports() {
     'planFromPriceId',
     'revokesPlan',
   )
+  await stubNitroImports(
+    import('../../../server/utils/translationLanguageBilling'),
+    'isTranslationLanguageSubscription',
+  )
+  vi.stubGlobal('syncTranslationLanguageSubscription', vi.fn())
+  vi.stubGlobal('cancelTranslationLanguageSubscription', vi.fn())
 }
 
 const stripe = new Stripe('sk_test_dummy')

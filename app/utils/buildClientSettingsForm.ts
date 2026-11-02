@@ -26,6 +26,8 @@ export interface ClientSite extends Omit<
   linkedinCompanies?: { linkedinOrgId: string }[]
   articlesRemaining?: number
   articleWallet?: { balance: number; reserved: number; available: number } | null
+  translationLanguageLimit?: number
+  canBuyTranslationLanguages?: boolean
 }
 
 export interface ClientSettingsForm extends PublicationChannelSettings, ReleaseScheduleSettings {

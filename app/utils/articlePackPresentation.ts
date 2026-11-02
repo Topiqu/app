@@ -4,7 +4,6 @@ export interface ArticlePackView {
   articles: number
   featured: boolean
   price: string
-  volumeDiscount: number
 }
 
 export const PACK_PRESENTATION: Record<string, { label?: string; featured?: boolean }> = {
@@ -18,22 +17,14 @@ export const buildArticlePackViews = (
   locale: string,
   packs: ArticlePack[] = ARTICLE_PACK_LIST,
 ): ArticlePackView[] => {
-  const baseline = packs[0]
-  const baselinePricePerArticle = baseline ? baseline.priceUsd / baseline.articles : 0
-
   return packs.map((pack) => {
     const presentation = PACK_PRESENTATION[pack.id]
-    const pricePerArticle = pack.articles > 0 ? pack.priceUsd / pack.articles : 0
     return {
       id: pack.id,
       name: presentation?.label ? translate(presentation.label) : pack.name,
       articles: pack.articles,
       featured: presentation?.featured ?? false,
       price: formatArticlePackPrice(pack, locale),
-      volumeDiscount:
-        baselinePricePerArticle > 0
-          ? Math.max(0, Math.round(((1 - pricePerArticle / baselinePricePerArticle) * 100) / 5) * 5)
-          : 0,
     }
   })
 }

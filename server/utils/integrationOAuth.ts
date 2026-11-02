@@ -108,7 +108,7 @@ export const createIntegrationTicket = async (
     sourceSessionId: actor.sessionId,
     tenantId: target,
     origin,
-    locale: isLanguage(locale) ? locale : isLanguage(cookieLocale) ? cookieLocale : (actor.language ?? 'en'),
+    locale: isUiLanguage(locale) ? locale : isUiLanguage(cookieLocale) ? cookieLocale : uiLanguageOf(actor.language),
     platformAdmin,
   }
   await prisma.verification.create({

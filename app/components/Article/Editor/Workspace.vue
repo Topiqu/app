@@ -591,12 +591,12 @@ watch(
   },
   { immediate: true },
 )
-const newLanguageDrafts = reactive<Record<Language, ReturnType<typeof translationDraft>>>({
-  cs: translationDraft(),
-  en: translationDraft(),
-  de: translationDraft(),
-  fr: translationDraft(),
-})
+const newLanguageDrafts = reactive(
+  Object.fromEntries(LANGUAGE_OPTIONS.map((language) => [language, translationDraft()])) as Record<
+    Language,
+    ReturnType<typeof translationDraft>
+  >,
+)
 const selectedSeries = shallowRef<ArticleSeriesSelection | null>(null)
 const articleTags = shallowRef<string[]>([])
 const optimizedImageUrl = shallowRef('')

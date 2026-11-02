@@ -31,7 +31,21 @@ enum TenantScope {
     CONTENT_MODERATE
 }
 
+/// Content languages: sites, articles, translations. The interface speaks `UiLanguage` only.
 enum Language {
+    cs
+    en
+    de
+    fr
+    es
+    it
+    pl
+    sk
+    nl
+    pt
+}
+
+enum UiLanguage {
     cs
     en
     de

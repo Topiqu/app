@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
   setHeader(event, 'Referrer-Policy', 'no-referrer')
   const origin = shopifyOrigin()
   const locale = getCookie(event, 'i18n_lang')
-  const settingsUrl = `${origin}/${isLanguage(locale) ? locale : 'en'}/settings?tab=integrations`
+  const settingsUrl = `${origin}/${uiLanguageOf(locale)}/settings?tab=integrations`
   const { code } = getQuery(event)
   const installationId = verifyShopifyLink(code)
   const installation = installationId

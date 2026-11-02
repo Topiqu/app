@@ -112,6 +112,10 @@ export default defineEventHandler(async (event) => {
         aiControversyLevel: clientSite.aiControversyLevel,
         translationMode: clientSite.translationMode,
         translationLanguages: clientSite.translationLanguages,
+        extraTranslationLanguages: clientSite.extraTranslationLanguages,
+        translationLanguageLimit: translationLanguageLimit(clientSite),
+        canBuyTranslationLanguages:
+          (clientSite.plan === 'PRO' || clientSite.plan === 'PREMIUM') && clientSite.billingProvider === 'STRIPE',
         discloseAiContent: clientSite.discloseAiContent,
         aiUser: clientSite.users[0]
           ? {
