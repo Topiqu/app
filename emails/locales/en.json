@@ -84,5 +84,14 @@
     "safe": "Everything already published, scheduled or saved as a draft stays exactly as it is.",
     "button": "Top up credits",
     "footer": "We send this once per top-up, so it will not fill your inbox."
+  },
+  "articleHeld": {
+    "subject": "An article on {tenantName} is waiting for you",
+    "preview": "The autopilot held one article back. Review it in a minute.",
+    "greeting": "An article is waiting for your review",
+    "intro": "The autopilot finished “<i>{articleTitle}</i>” for <b>{tenantName}</b> but did not publish it.",
+    "reason": "The editorial check found something it could not fix safely on its own. The editor shows exactly what, and you can publish the article as is with one click.",
+    "button": "Review the article",
+    "footer": "Your other scheduled articles continue as planned."
   }
 }

@@ -794,6 +794,7 @@
       "commentReported": "Comment reported",
       "newFollower": "{user} started following you.",
       "articlePublished": "Your article \"{0}\" has been successfully published!",
+      "articleHeld": "The autopilot held back \"{0}\". Review it in the editor.",
       "newArticleFromFollowed": "{0} published a new article: {1}",
       "pollingActive": "Notifications are active",
       "pollingPaused": "Notifications are paused",

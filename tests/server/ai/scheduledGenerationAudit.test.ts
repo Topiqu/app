@@ -143,6 +143,8 @@ const setup = async (
   vi.stubGlobal('mediaRightsSnapshotItems', () => [])
   vi.stubGlobal('sanitizeHtml', (html: string) => html)
   vi.stubGlobal('toDatabaseJson', (value: unknown) => value)
+  const notifyHeld = vi.fn().mockResolvedValue({ sent: 1 })
+  vi.stubGlobal('notifyArticleHeld', notifyHeld)
   vi.stubGlobal('stampHeadingIds', (html: string) => html)
   vi.stubGlobal('syncArticlePolls', async (_db, _id, content) => content)
   vi.stubGlobal('syncArticleTranslationQueue', async () => {
@@ -157,6 +159,7 @@ const setup = async (
     reservation,
     writer,
     createArticle,
+    notifyHeld,
   }
 }
 
@@ -165,7 +168,7 @@ describe('autopilot release hold', () => {
   const tip = { code: 'hedging', note: 'Delete the advice to check elsewhere.', blocking: false }
 
   it('keeps a held article as a draft that names the blocking findings', async () => {
-    const { run, createArticle, writer } = await setup(undefined, null, 'STANDARD', {
+    const { run, createArticle, writer, notifyHeld } = await setup(undefined, null, 'STANDARD', {
       autoRelease: true,
       editorialReview: { approved: false, issues: [blocking, tip] },
     })
@@ -174,16 +177,18 @@ describe('autopilot release hold', () => {
       status: 'draft',
       releaseHold: { reasons: ['review'], issues: [{ code: blocking.code, note: blocking.note }] },
     })
+    expect(notifyHeld).toHaveBeenCalledWith('tenant-1', expect.objectContaining({ id: 'article-1' }))
     // Review notes are written in the site's interface language.
     expect(writer).toHaveBeenCalledWith('tenant-1', expect.any(String), expect.objectContaining({ noteLanguage: 'cs' }))
   })
 
   it('publishes an approved article despite non-blocking tips', async () => {
-    const { run, createArticle } = await setup(undefined, null, 'STANDARD', {
+    const { run, createArticle, notifyHeld } = await setup(undefined, null, 'STANDARD', {
       autoRelease: true,
       editorialReview: { approved: true, issues: [tip] },
     })
     await run()
+    expect(notifyHeld).not.toHaveBeenCalled()
     expect(createArticle.mock.calls[0]![0].data).toMatchObject({ status: 'published', releaseHold: undefined })
   })
 

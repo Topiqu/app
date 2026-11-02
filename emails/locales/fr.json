@@ -84,5 +84,14 @@
     "safe": "Tout ce qui est déjà publié, planifié ou enregistré en brouillon reste inchangé.",
     "button": "Recharger des crédits",
     "footer": "Nous n’envoyons ce message qu’une fois par recharge, il n’encombrera pas votre boîte."
+  },
+  "articleHeld": {
+    "subject": "Un article de {tenantName} vous attend",
+    "preview": "Le pilote automatique a retenu un article. La vérification ne prend qu’un instant.",
+    "greeting": "Un article attend votre relecture",
+    "intro": "Le pilote automatique a terminé « <i>{articleTitle}</i> » pour <b>{tenantName}</b> sans le publier.",
+    "reason": "La relecture a trouvé un point qu’elle ne pouvait pas corriger seule sans risque. L’éditeur indique précisément lequel, et vous pouvez publier l’article tel quel en un clic.",
+    "button": "Relire l’article",
+    "footer": "Vos autres articles programmés continuent comme prévu."
   }
 }

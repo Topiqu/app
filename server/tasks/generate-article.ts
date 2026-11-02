@@ -477,6 +477,7 @@ Respond ONLY in valid JSON (schema required).
             const article = await ctx.article.create({
               select: {
                 id: true,
+                slug: true,
                 title: true,
                 content: true,
                 userId: true,
@@ -681,6 +682,11 @@ Respond ONLY in valid JSON (schema required).
         await enqueueArticleWebhook('ARTICLE_PUBLISHED', { id: article.id, clientSiteId })
         await announceArticle(article.id, clientSiteId)
       } else {
+        // A held article must reach a person the same day, or its slot passes in silence.
+        if (releaseHold)
+          await notifyArticleHeld(clientSiteId, article).catch((error) =>
+            reportCaughtError('Held article notification failed', error, { clientSiteId, articleId: article.id }),
+          )
         await logAction({
           action: 'CRON_ARTICLE_SAVED_AS_DRAFT',
           userId: article.userId,

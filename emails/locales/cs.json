@@ -84,5 +84,14 @@
     "safe": "Vše, co už je publikované, naplánované nebo uložené jako koncept, zůstává beze změny.",
     "button": "Doplnit kredity",
     "footer": "Tento e-mail posíláme jen jednou za každé doplnění, schránku vám nezaplní."
+  },
+  "articleHeld": {
+    "subject": "Na webu {tenantName} na vás čeká článek",
+    "preview": "Autopilot jeden článek pozdržel. Kontrola zabere chvilku.",
+    "greeting": "Článek čeká na vaši kontrolu",
+    "intro": "Autopilot dopsal článek „<i>{articleTitle}</i>“ pro <b>{tenantName}</b>, ale nevydal ho.",
+    "reason": "Redakční kontrola našla něco, co sama bezpečně neopravila. Editor ukáže přesně co, a článek můžete jedním klikem vydat i tak.",
+    "button": "Zkontrolovat článek",
+    "footer": "Ostatní plánované články pokračují podle rozvrhu."
   }
 }

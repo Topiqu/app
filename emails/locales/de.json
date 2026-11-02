@@ -84,5 +84,14 @@
     "safe": "Alles, was bereits veröffentlicht, geplant oder als Entwurf gespeichert ist, bleibt unverändert.",
     "button": "Credits aufladen",
     "footer": "Wir senden diese E-Mail nur einmal pro Aufladung, Ihr Postfach bleibt also übersichtlich."
+  },
+  "articleHeld": {
+    "subject": "Ein Artikel auf {tenantName} wartet auf Sie",
+    "preview": "Der Autopilot hat einen Artikel zurückgehalten. Die Prüfung dauert nur kurz.",
+    "greeting": "Ein Artikel wartet auf Ihre Prüfung",
+    "intro": "Der Autopilot hat „<i>{articleTitle}</i>“ für <b>{tenantName}</b> fertiggestellt, aber nicht veröffentlicht.",
+    "reason": "Die redaktionelle Prüfung hat etwas gefunden, das sie nicht sicher selbst beheben konnte. Der Editor zeigt genau was, und Sie können den Artikel mit einem Klick trotzdem veröffentlichen.",
+    "button": "Artikel prüfen",
+    "footer": "Ihre anderen geplanten Artikel laufen wie geplant weiter."
   }
 }

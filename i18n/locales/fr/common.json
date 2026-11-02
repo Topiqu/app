@@ -794,6 +794,7 @@
       "commentReported": "Commentaire signalé",
       "newFollower": "{user} vous suit désormais.",
       "articlePublished": "Votre article « {0} » a été publié !",
+      "articleHeld": "Le pilote automatique a retenu « {0} ». Relisez-le dans l’éditeur.",
       "newArticleFromFollowed": "{0} a publié un nouvel article : {1}",
       "pollingActive": "Les notifications sont actives",
       "pollingPaused": "Les notifications sont en pause",

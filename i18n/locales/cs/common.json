@@ -730,6 +730,7 @@
       "commentReported": "Komentář nahlášen",
       "newFollower": "{user} vás začal sledovat.",
       "articlePublished": "Váš článek „{0}“ byl úspěšně publikován!",
+      "articleHeld": "Autopilot pozdržel článek „{0}“. Zkontrolujte ho v editoru.",
       "newArticleFromFollowed": "{0} publikoval nový článek: {1}",
       "pollingActive": "Notifikace jsou aktivní",
       "pollingPaused": "Notifikace jsou pozastavené",

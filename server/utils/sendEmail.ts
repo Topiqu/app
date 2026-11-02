@@ -154,6 +154,7 @@ export const sendEmail = async ({ event, to, template, data, lang: forcedLang, a
     tenantInvitation: ['greeting', 'intro', 'community', 'followers', 'website', 'access', 'button', 'expiration'],
     tenantMemberRemoved: ['greeting', 'intro', 'removedBy', 'removedAt', 'otherTenants', 'contact'],
     creditsDepleted: ['greeting', 'intro', 'paused', 'safe'],
+    articleHeld: ['greeting', 'intro', 'reason'],
   }
   const textParts = (textKeys[template] || ['intro'])
     .map((key) => translate(`${template}.${key}`, enrichedData))
@@ -161,6 +162,7 @@ export const sendEmail = async ({ event, to, template, data, lang: forcedLang, a
   if (template === 'verificationCode') textParts.splice(2, 0, data.verificationCode || '')
   if (data.commentUrl) textParts.push(data.commentUrl)
   if (data.topUpUrl) textParts.push(`${translate(`${template}.button`, enrichedData)}: ${data.topUpUrl}`)
+  if (data.reviewUrl) textParts.push(`${translate(`${template}.button`, enrichedData)}: ${data.reviewUrl}`)
   if (data.unsubscribeUrl)
     textParts.push(`${translate(`${template}.unsubscribe.text`, enrichedData)} ${data.unsubscribeUrl}`)
   const textBody = textParts
