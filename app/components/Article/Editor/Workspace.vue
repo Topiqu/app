@@ -220,6 +220,16 @@
       </template>
     </UAlert>
 
+    <ArticleEditorReleaseHold
+      v-if="
+        !isNew && tr.isSource && article?.releaseHold && editedArticle.status === 'draft' && !editedArticle.releaseAt
+      "
+      class="mb-6"
+      :hold="article.releaseHold"
+      :pending="submitting"
+      @publish="requestPublish"
+    />
+
     <UAlert
       v-if="!tr.isSource && tr.pending === 'translate'"
       class="mb-6"

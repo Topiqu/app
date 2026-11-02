@@ -187,7 +187,7 @@
 </template>
 
 <script setup lang="ts">
-import type { GenerationReviewIssue, GenerationRun } from '~~/shared/utils/articleGeneration'
+import type { GenerationRun } from '~~/shared/utils/articleGeneration'
 
 const { run, words, authorName } = defineProps<{
   run: GenerationRun
@@ -196,7 +196,7 @@ const { run, words, authorName } = defineProps<{
 }>()
 const emit = defineEmits<{ stop: []; retry: []; dismiss: [] }>()
 
-const { t, te } = useI18n()
+const { t } = useI18n()
 const localePath = useLocalePath()
 const headingId = useId()
 const { now, pause, resume } = useNow({
@@ -263,10 +263,7 @@ const mediaItems = computed(() => {
   return items
 })
 
-const issueLabel = (code: string) =>
-  te(`articles.editor.ai.run.issue.${code}`) ? t(`articles.editor.ai.run.issue.${code}`) : code
-const issueNote = ({ key, params, note }: GenerationReviewIssue) =>
-  key && te(`articles.editor.ai.run.note.${key}`) ? t(`articles.editor.ai.run.note.${key}`, params ?? {}) : note
+const { issueLabel, issueNote } = useReviewIssueText()
 
 const missingModuleLabels = computed(() =>
   (run.missingModules ?? [])

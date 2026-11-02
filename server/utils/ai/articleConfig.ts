@@ -3,6 +3,8 @@ import type { Language } from '~~/generated/zenstack/models'
 import { z } from 'zod'
 import { Output } from 'ai'
 
+import { articleWriterId } from './modelRegistry'
+
 const imageInstruction = z.object({
   type: z
     .enum(['photo', 'stock', 'generate'])
@@ -22,12 +24,14 @@ export const articleSchema = z.object({
   title: z
     .string()
     .min(optimizationCriteria.titleCharacters.minimum)
-    .max(optimizationCriteria.titleCharacters.maximum)
+    // Headroom on purpose: strict structured output enforces maxLength while decoding, which cut titles and
+    // perexes mid-word. The prompt still asks for the SEO range; `applyFormat` trims the perex to it.
+    .max(optimizationCriteria.titleCharacters.maximum + 35)
     .describe('Engaging article title within the SEO character range'),
   perex: z
     .string()
     .min(optimizationCriteria.excerptCharacters.minimum)
-    .max(optimizationCriteria.excerptCharacters.maximum)
+    .max(optimizationCriteria.excerptCharacters.maximum + 90)
     .describe('One- or two-sentence meta description within the SEO character range'),
   content: z
     .string()
@@ -406,7 +410,7 @@ export const buildArticleConfig = async (
       knowledgeSelected: knowledge?.used.reduce((sum, entry) => sum + entry.chunkIds.length, 0) ?? 0,
     },
     config: {
-      model: aiModel('articleWriter'),
+      model: aiModel('articleWriter', articleWriterId(writingQuality)),
       providerOptions: aiReasoning(ARTICLE_QUALITY_EFFORT[writingQuality]),
       maxOutputTokens: 8000,
       instructions,

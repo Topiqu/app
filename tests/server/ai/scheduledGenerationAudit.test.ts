@@ -54,6 +54,7 @@ const setup = async (
   failure?: 'reservation' | 'author' | 'generation' | 'persistence' | 'publication' | 'settlement',
   communityInsight: JsonValue = null,
   articleQuality = 'STANDARD',
+  options: { autoRelease?: boolean; editorialReview?: unknown } = {},
 ) => {
   const log = vi.fn().mockResolvedValue({})
   const client = {
@@ -62,7 +63,7 @@ const setup = async (
     articles: [],
     users: [{ id: 'author-1' }],
     keywords: [],
-    autoRelease: failure === 'publication',
+    autoRelease: options.autoRelease ?? failure === 'publication',
     publishToWeb: true,
     aiSeriesEnabled: false,
     communityInsight,
@@ -78,7 +79,7 @@ const setup = async (
     keyTakeaways: [],
     faq: [],
     articleImageUrl: 'https://images.test/cover',
-    editorialReview: { approved: true },
+    editorialReview: options.editorialReview ?? { approved: true },
     research: { status: 'skipped' },
     usage: { totalTokens: 42 },
   }
@@ -141,6 +142,7 @@ const setup = async (
   }))
   vi.stubGlobal('mediaRightsSnapshotItems', () => [])
   vi.stubGlobal('sanitizeHtml', (html: string) => html)
+  vi.stubGlobal('toDatabaseJson', (value: unknown) => value)
   vi.stubGlobal('stampHeadingIds', (html: string) => html)
   vi.stubGlobal('syncArticlePolls', async (_db, _id, content) => content)
   vi.stubGlobal('syncArticleTranslationQueue', async () => {
@@ -157,6 +159,42 @@ const setup = async (
     createArticle,
   }
 }
+
+describe('autopilot release hold', () => {
+  const blocking = { code: 'missing_specifics', note: 'Name at least one change the title promises.', blocking: true }
+  const tip = { code: 'hedging', note: 'Delete the advice to check elsewhere.', blocking: false }
+
+  it('keeps a held article as a draft that names the blocking findings', async () => {
+    const { run, createArticle, writer } = await setup(undefined, null, 'STANDARD', {
+      autoRelease: true,
+      editorialReview: { approved: false, issues: [blocking, tip] },
+    })
+    await expect(run()).resolves.toMatchObject({ status: 'draft' })
+    expect(createArticle.mock.calls[0]![0].data).toMatchObject({
+      status: 'draft',
+      releaseHold: { reasons: ['review'], issues: [{ code: blocking.code, note: blocking.note }] },
+    })
+    // Review notes are written in the site's interface language.
+    expect(writer).toHaveBeenCalledWith('tenant-1', expect.any(String), expect.objectContaining({ noteLanguage: 'cs' }))
+  })
+
+  it('publishes an approved article despite non-blocking tips', async () => {
+    const { run, createArticle } = await setup(undefined, null, 'STANDARD', {
+      autoRelease: true,
+      editorialReview: { approved: true, issues: [tip] },
+    })
+    await run()
+    expect(createArticle.mock.calls[0]![0].data).toMatchObject({ status: 'published', releaseHold: undefined })
+  })
+
+  it('records no hold when the autopilot is not publishing', async () => {
+    const { run, createArticle } = await setup(undefined, null, 'STANDARD', {
+      editorialReview: { approved: false, issues: [blocking] },
+    })
+    await run()
+    expect(createArticle.mock.calls[0]![0].data.releaseHold).toBeUndefined()
+  })
+})
 
 describe('scheduled generation audit', () => {
   it('uses the last validated community suggestion retained by a failed historical insight refresh', async () => {
@@ -181,12 +219,12 @@ describe('scheduled generation audit', () => {
   })
 
   it.each([
-    ['STANDARD', 'high', 1],
-    ['HIGH', 'xhigh', 2],
-    ['ULTRA', 'max', 3],
+    ['STANDARD', 'gpt-6-luna', 1],
+    ['HIGH', 'gpt-6.1-terra', 2],
+    ['ULTRA', 'gpt-6.1-sol', 3],
   ] as const)(
     'uses the editorial author and saved %s quality for a scheduled article',
-    async (quality, effort, amount) => {
+    async (quality, writerModel, amount) => {
       const { run, writer, createArticle, reservation } = await setup(undefined, null, quality)
       await expect(run()).resolves.toMatchObject({ status: 'draft', articleId: 'article-1' })
       expect(writer).toHaveBeenCalledWith(
@@ -199,8 +237,8 @@ describe('scheduled generation audit', () => {
       )
       expect(reservation.mock.calls[0]?.[3].metadata).toMatchObject({
         articleQuality: quality,
-        writerModel: 'gpt-6-luna',
-        writerEffort: effort,
+        writerModel,
+        writerEffort: 'high',
         creditsRequired: amount,
       })
       expect(reservation.mock.calls[0]?.[3].amount).toBe(amount)

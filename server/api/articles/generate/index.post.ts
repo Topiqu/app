@@ -1,6 +1,8 @@
 import { z } from 'zod'
 import { randomUUID } from 'node:crypto'
 
+import { articleWriterId } from '../../../utils/ai/modelRegistry'
+
 export default defineEventHandler(async (event) => {
   const { translate: t, locale } = await useServerI18n(event)
   const user = await getSessionUser(event)
@@ -123,7 +125,7 @@ export default defineEventHandler(async (event) => {
     researchDepth: options?.research.enabled ? options.research.depth : null,
     allowGeneratedImages: options?.allowGeneratedImages !== false,
     useKnowledge: options?.useKnowledge !== false,
-    models: { research: aiModelId('articleResearch'), writer: aiModelId('articleWriter') },
+    models: { research: aiModelId('articleResearch'), writer: articleWriterId(articleQuality) },
     writerEffort: ARTICLE_QUALITY_EFFORT[articleQuality],
   }
 

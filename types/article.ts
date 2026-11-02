@@ -1,4 +1,5 @@
 import type { Language } from '../shared/utils/language'
+import type { ReleaseHold } from '../shared/utils/articleGeneration'
 import type { Article as _Article, ArticleStatus, AIInvolvement } from '../generated/zenstack/models'
 //
 export type ArticleBase = _Article & {
@@ -44,6 +45,8 @@ export type ArticleWithDetails = {
   totalWords?: number | null
   views: number
   releaseAt: Date | string | null
+  /** Admin-only: why the autopilot kept this finished article as a draft. */
+  releaseHold?: ReleaseHold | null
   status: ArticleStatus
   allowedComments?: boolean
   aiInvolvement: AIInvolvement

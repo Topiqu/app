@@ -17,6 +17,7 @@ async function stubImports() {
   await stubNitroImports(import('../../../server/utils/ai/articleUsage'), 'withArticleUsageStage')
   await stubNitroImports(import('../../../server/utils/articleGenerationAudit'), 'auditArticleStep')
   await stubNitroImports(import('../../../server/utils/ai/formats'), 'formatRules', 'selectedModulesFor')
+  await stubNitroImports(import('../../../server/utils/ai/modelRegistry'), 'articleWriterId')
 }
 
 await stubImports()
@@ -45,26 +46,26 @@ const effortOf = (config: { providerOptions: { openai: { reasoningEffort: string
   config.providerOptions.openai.reasoningEffort
 
 describe('article quality configuration', () => {
-  it.each(ARTICLE_QUALITY_LEVELS)('writes %s with Luna at its own reasoning effort', async (quality) => {
+  const WRITERS = { STANDARD: 'gpt-6-luna', HIGH: 'gpt-6.1-terra', ULTRA: 'gpt-6.1-sol' } as const
+
+  it.each(ARTICLE_QUALITY_LEVELS)('writes %s with its own model', async (quality) => {
     const model = setup(quality)
     const { config } = await buildArticleConfig('site-1', 'A useful article', { research: false })
-    expect(model).toHaveBeenCalledWith('articleWriter')
+    expect(model).toHaveBeenCalledWith('articleWriter', WRITERS[quality])
     expect(config.model).toBe('selected-writer')
     expect(effortOf(config)).toBe(ARTICLE_QUALITY_EFFORT[quality])
   })
 
   it('keeps the quality captured at the start of a run when settings change during research', async () => {
-    setup('STANDARD')
-    const { config } = await buildArticleConfig('site-1', 'A useful article', {
-      research: false,
-      articleQuality: 'ULTRA',
-    })
-    expect(effortOf(config)).toBe('max')
+    const model = setup('STANDARD')
+    await buildArticleConfig('site-1', 'A useful article', { research: false, articleQuality: 'ULTRA' })
+    expect(model).toHaveBeenCalledWith('articleWriter', 'gpt-6.1-sol')
   })
 
   it('defaults older settings to Standard', async () => {
-    setup(undefined)
+    const model = setup(undefined)
     const { config } = await buildArticleConfig('site-1', 'A useful article', { research: false })
+    expect(model).toHaveBeenCalledWith('articleWriter', 'gpt-6-luna')
     expect(effortOf(config)).toBe('high')
   })
 })

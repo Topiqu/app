@@ -1,3 +1,5 @@
+import { fitText, optimizationScoringConfig } from '../../../shared/utils/articleOptimization'
+
 /** The broad editorial shape, chosen before the article is written. */
 export type ArticleFormat = 'news' | 'analysis' | 'guide' | 'comparison' | 'opinion' | 'story'
 export type ArticleModule = 'answer' | 'takeaways' | 'faq' | 'poll' | 'table' | 'images' | 'youtube'
@@ -302,6 +304,7 @@ ${ANTI_FORMULA}
 }
 
 type Formattable = {
+  perex?: string
   answer?: string
   keyTakeaways?: string[]
   faq?: { question: string; answer: string }[]
@@ -310,18 +313,20 @@ type Formattable = {
   videos?: unknown[]
 }
 
-/** Hard boundary for structured modules; the prompt is guidance, this is enforcement. */
+/** Hard boundary for structured modules and the perex length; the prompt is guidance, this is enforcement. */
 export const applyFormat = <T extends Formattable>(
   object: T,
   format?: ArticleFormat,
   modules?: readonly ArticleModule[],
 ): T => {
-  if (!format) return object
+  const { maximum } = optimizationScoringConfig.criteria.excerptCharacters
+  const fitted = object.perex === undefined ? object : { ...object, perex: fitText(object.perex, maximum) }
+  if (!format) return fitted
   const selected = selectedModulesFor(format, modules)
   const has = (module: ArticleModule) => selected.includes(module)
 
   return {
-    ...object,
+    ...fitted,
     answer: has('answer') ? object.answer : '',
     keyTakeaways: has('takeaways') ? object.keyTakeaways : [],
     faq: has('faq') ? object.faq : [],

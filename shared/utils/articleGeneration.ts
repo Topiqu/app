@@ -55,6 +55,8 @@ export interface GenerationReviewIssue {
   note: string
   key?: string
   params?: Record<string, string>
+  /** Holds the article back; the rest are edits the revision applies. Absent on runs saved before. */
+  blocking?: boolean
 }
 
 export interface GenerationReview {
@@ -62,6 +64,31 @@ export interface GenerationReview {
   revised: boolean
   issues?: GenerationReviewIssue[]
   resolvedIssues?: GenerationReviewIssue[]
+}
+
+/** Why the autopilot left a finished article as a draft instead of publishing it. */
+export type ReleaseHoldReason = 'review' | 'research' | 'media' | 'cover'
+export interface ReleaseHold {
+  reasons: ReleaseHoldReason[]
+  /** The blocking review findings, when the review is a reason. */
+  issues: GenerationReviewIssue[]
+}
+
+export const releaseHoldOf = (input: {
+  review: GenerationReview | null
+  researchApproved: boolean
+  mediaApproved: boolean
+  coverApproved: boolean
+}): ReleaseHold => {
+  const reasons: ReleaseHoldReason[] = []
+  if (input.review?.approved !== true) reasons.push('review')
+  if (!input.researchApproved) reasons.push('research')
+  if (!input.mediaApproved) reasons.push('media')
+  if (!input.coverApproved) reasons.push('cover')
+  const issues = (input.review?.issues ?? [])
+    .filter((issue) => issue.blocking)
+    .map(({ code, note, key, params }) => ({ code, note, key, params }))
+  return { reasons, issues }
 }
 
 export interface ArticleGenerationBilling {
@@ -263,7 +290,8 @@ export const generationSteps = (run: GenerationRun, words: number): GenerationSt
       id: 'review',
       state: 'warning',
       detail: review.revised ? 'review.revisedIssues' : 'review.issues',
-      params: { count: review.issues?.length ?? 0 },
+      // Runs saved before blocking existed count every issue.
+      params: { count: review.issues?.filter((issue) => issue.blocking !== false).length ?? 0 },
     })
   else
     steps.push({

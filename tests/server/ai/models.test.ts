@@ -4,6 +4,7 @@ import { generateText, Output } from 'ai'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { stubNitroImports } from '../../helpers/nitroImports'
+import { articleWriterId } from '../../../server/utils/ai/modelRegistry'
 import { ARTICLE_QUALITY_EFFORT } from '../../../shared/utils/articleQuality'
 
 async function stubImports() {
@@ -176,12 +177,12 @@ describe('AI model integration', () => {
   })
 
   it.each([
-    ['STANDARD', 24_000],
-    ['HIGH', 40_000],
-    ['ULTRA', 72_000],
-  ] as const)('writes %s with Luna at its effort and matching thinking headroom', async (quality, maxTokens) => {
+    ['STANDARD', 'gpt-6-luna'],
+    ['HIGH', 'gpt-6.1-terra'],
+    ['ULTRA', 'gpt-6.1-sol'],
+  ] as const)('writes %s with its own writer at its effort and matching thinking headroom', async (quality, writer) => {
     const result = await generateText({
-      model: aiModel('articleWriter'),
+      model: aiModel('articleWriter', articleWriterId(quality)),
       prompt: 'Write an article title.',
       output: Output.object({ schema: z.object({ title: z.string() }) }),
       maxOutputTokens: 8000,
@@ -190,8 +191,8 @@ describe('AI model integration', () => {
     expect(requests).toHaveLength(1)
     expect(requests[0]?.url).toBe('https://api.openai.com/v1/responses')
     expect(requests[0]?.body).toMatchObject({
-      model: 'gpt-6-luna',
-      max_output_tokens: maxTokens,
+      model: writer,
+      max_output_tokens: 24_000,
       reasoning: { effort: ARTICLE_QUALITY_EFFORT[quality] },
       text: { format: { type: 'json_schema', strict: true } },
     })

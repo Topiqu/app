@@ -704,7 +704,6 @@
             "storyList": "Le récit contient une liste. Racontez plutôt comment le protagoniste pèse les options et agit.",
             "correctClaim": "Corrigez ou supprimez cette affirmation : {claim}",
             "verificationIncomplete": "La vérification des faits n'a pas abouti. Vérifiez les faits avant de publier.",
-            "rejectedWithoutNote": "La relecture a rejeté le brouillon sans consigne précise.",
             "reviewUnavailable": "La relecture automatique n'a pas abouti.",
             "uncheckedRevision": "Le brouillon révisé n'a pas pu être vérifié. Relisez-le avant de publier."
           },
@@ -1074,6 +1073,17 @@
         "published": "Publié",
         "scheduled": "Les articles programmés sont envoyés à Shopify comme brouillon. Publiez-les là-bas une fois en ligne.",
         "sendOnly": "Envoyer à Shopify"
+      },
+      "releaseHold": {
+        "title": "Le pilote automatique n'a pas publié cet article",
+        "description": "L'article est prêt, mais la publication automatique a été bloquée par :",
+        "reason": {
+          "review": "La relecture a trouvé un problème que la révision n'a pas corrigé.",
+          "research": "L'actualité n'a pas de sources de recherche vérifiées.",
+          "media": "Les droits d'utilisation de certaines images ne sont pas clairs.",
+          "cover": "Il manque une image de couverture."
+        },
+        "publish": "Publier quand même"
       }
     },
     "image": {

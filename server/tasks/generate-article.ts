@@ -1,5 +1,9 @@
 import { randomUUID } from 'node:crypto'
 
+import { uiLanguageOf } from '../../shared/utils/language'
+import { articleWriterId } from '../utils/ai/modelRegistry'
+import { releaseHoldOf } from '../../shared/utils/articleGeneration'
+
 type ScheduledClient = Awaited<ReturnType<typeof loadGenerationCandidates>>[number]
 type GeneratedArticle = Awaited<ReturnType<typeof generateArticle>>
 
@@ -348,6 +352,8 @@ Respond ONLY in valid JSON (schema required).
           variant: topic?.variant,
           modules: cronModules,
           editorialReview: true,
+          // Read in the editor by the site's team, who work in the site's language when it is a UI one.
+          noteLanguage: uiLanguageOf(client.language),
           requireClearRights: client.autoRelease && client.publishToWeb,
           audit,
         }))
@@ -452,6 +458,11 @@ Respond ONLY in valid JSON (schema required).
       // Generation runs ahead of the slot; `publish-check` releases the draft when the slot arrives.
       // A slot already behind us (a slow run, a cron outage) publishes now instead.
       const releaseAt = releasable && slot > new Date() ? slot : null
+      // Shown in the editor, so a held draft says why it was not published.
+      const releaseHold =
+        client.autoRelease && client.publishToWeb && !releasable
+          ? releaseHoldOf({ review: generated.editorialReview, researchApproved, mediaApproved, coverApproved })
+          : null
       const status = releasable && !releaseAt ? 'published' : 'draft'
 
       stage = 'persistence'
@@ -506,6 +517,7 @@ Respond ONLY in valid JSON (schema required).
                 totalWords: metrics.totalWords,
                 savedAmount: metrics.savedAmount,
                 savedTimeMinutes: metrics.savedTimeMinutes,
+                releaseHold: releaseHold ? toDatabaseJson(releaseHold) : undefined,
               },
             })
 
@@ -719,7 +731,7 @@ Respond ONLY in valid JSON (schema required).
         articleQuality,
         creditsRequired,
         creditPolicyVersion: ARTICLE_CREDIT_POLICY_VERSION,
-        writerModel: aiModelId('articleWriter'),
+        writerModel: articleWriterId(articleQuality),
         writerEffort: ARTICLE_QUALITY_EFFORT[articleQuality],
       },
       shouldCharge: (result) => result?.status !== 'failed',

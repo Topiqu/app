@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
+import { fitText } from '../../../shared/utils/articleOptimization'
 import {
   allowedModulesFor,
   ARTICLE_FORMATS,
@@ -139,5 +140,31 @@ describe('applyFormat', () => {
 
   it('is a passthrough without a format', () => {
     expect(applyFormat(full, undefined)).toEqual(full)
+  })
+
+  it('trims an overlong perex without splitting a word', () => {
+    const perex =
+      'Beim Stadtpendeln entscheiden Strecke, Kaufpreis und Regeln. Der Vergleich zeigt, wann E-Scooter oder Pedelec im Alltag besser passen und welche Kosten mitgedacht werden müssen.'
+    const fitted = applyFormat({ ...full, perex }, 'comparison').perex
+    expect(fitted.length).toBeLessThanOrEqual(160)
+    expect(fitted).toMatch(/ Kosten…$/)
+  })
+})
+
+describe('fitText', () => {
+  it('keeps text within the limit untouched', () => {
+    expect(fitText('A short perex.', 160)).toBe('A short perex.')
+  })
+
+  it('cuts at the last sentence end when it keeps most of the text', () => {
+    expect(fitText('First sentence is long enough here. Second one runs on and on.', 50)).toBe(
+      'First sentence is long enough here.',
+    )
+  })
+
+  it('falls back to a word boundary with an ellipsis when no sentence ends late enough', () => {
+    const fitted = fitText('One long sentence without any stop that keeps going well past the limit', 30)
+    expect(fitted).toBe('One long sentence without any…')
+    expect(fitted.length).toBeLessThanOrEqual(30)
   })
 })

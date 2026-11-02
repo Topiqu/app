@@ -26,11 +26,12 @@ const thinkingHeadroom = (provider: AiProvider): LanguageModelMiddleware => ({
   },
 })
 
-export const aiModel = (task: AiTask) => {
+/** `modelId` swaps the model within the task's provider, e.g. the article writer per quality. */
+export const aiModel = (task: AiTask, modelId: string = aiModelId(task)) => {
   const provider = aiModelProvider(task)
   return wrapLanguageModel({
-    model: provider === 'anthropic' ? anthropic(aiModelId(task)) : openAi.responses(aiModelId(task)),
-    middleware: [thinkingHeadroom(provider), articleLanguageUsage(task, provider, aiModelId(task))],
+    model: provider === 'anthropic' ? anthropic(modelId) : openAi.responses(modelId),
+    middleware: [thinkingHeadroom(provider), articleLanguageUsage(task, provider, modelId)],
   })
 }
 

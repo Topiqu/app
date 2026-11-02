@@ -57,17 +57,22 @@ const setup = async (failure: 'plan' | 'lookup' | 'reservation' | 'session', art
 
 describe('manual generation preflight audit', () => {
   it.each([
-    ['STANDARD', 'high', 1],
-    ['HIGH', 'xhigh', 2],
-    ['ULTRA', 'max', 3],
-  ] as const)('reserves the saved %s price before starting provider work', async (quality, effort, amount) => {
+    ['STANDARD', 'gpt-6-luna', 1],
+    ['HIGH', 'gpt-6.1-terra', 2],
+    ['ULTRA', 'gpt-6.1-sol', 3],
+  ] as const)('reserves the saved %s price before starting provider work', async (quality, writer, amount) => {
     const { run, reserve, settle } = await setup('session', quality)
     await expect(run()).rejects.toThrow('Recovery session unavailable')
     expect(reserve).toHaveBeenCalledWith(
       'tenant-1',
       'MANUAL_ARTICLE',
       expect.any(String),
-      expect.objectContaining({ articleQuality: quality, writerEffort: effort, creditsRequired: amount }),
+      expect.objectContaining({
+        articleQuality: quality,
+        models: expect.objectContaining({ writer }),
+        writerEffort: 'high',
+        creditsRequired: amount,
+      }),
       amount,
     )
     expect(settle).toHaveBeenCalledWith(expect.objectContaining({ reserved: amount }), false, expect.anything())

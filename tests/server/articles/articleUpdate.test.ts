@@ -231,6 +231,21 @@ describe('article updates', () => {
     expect(update).not.toHaveBeenCalled()
   })
 
+  it('never lets a client write the autopilot hold', async () => {
+    const { run, update } = await setup({ title: 'Edited', releaseHold: { reasons: [], issues: [] } })
+    await run()
+    expect(update.mock.calls[0]![0].data).not.toHaveProperty('releaseHold')
+  })
+
+  it('clears the autopilot hold once a person schedules the article', async () => {
+    const { run, update } = await setup({
+      status: 'published',
+      releaseAt: new Date(Date.now() + 86_400_000).toISOString(),
+    })
+    await run()
+    expect(update.mock.calls[0]![0].data.releaseHold).toBe(DbNull)
+  })
+
   it('clears the old publication schedule when hiding a published article', async () => {
     const releaseAt = new Date('2025-01-01T12:00:00Z')
     const { run, update } = await setup(

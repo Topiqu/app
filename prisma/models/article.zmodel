@@ -95,6 +95,9 @@ model Article with Base, Ownable {
     articleSeries    ArticleSeries?    @relation(fields: [articleSeriesId], references: [id], onDelete: SetNull)
     seriesOrder      Int?              @default(0)
     releaseAt        DateTime?
+    /// Why the autopilot kept this finished article as a draft (`ReleaseHold` in shared/utils/articleGeneration.ts).
+    /// Cleared on publication. NULL for every article the autopilot did not hold.
+    releaseHold      Json?
     allowedComments  Boolean           @default(true)
     tags             ArticleTag[]
     comments         Comment[]

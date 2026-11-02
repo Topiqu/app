@@ -40,6 +40,19 @@ export const optimizationRuleIds = [
 
 type RuleId = (typeof optimizationRuleIds)[number]
 
+/** Shortens text to `max` at its last sentence end, else at a word boundary with an ellipsis. Never splits a word. */
+export const fitText = (text: string, max: number) => {
+  const value = text.trim().replace(/\s+/g, ' ')
+  if (value.length <= max) return value
+  const window = value.slice(0, max)
+  const lastEnd = [...window.matchAll(/[.!?…](?=\s|$)/g)].at(-1)?.index
+  if (lastEnd !== undefined && lastEnd + 1 >= max / 2) return window.slice(0, lastEnd + 1)
+  const cut = value.slice(0, max - 1)
+  // A word that ends exactly at the cut is complete; keep it.
+  const space = value[max - 1] === ' ' ? cut.length : cut.lastIndexOf(' ')
+  return `${(space > 0 ? cut.slice(0, space) : cut).replace(/[\s,;:–—-]+$/, '')}…`
+}
+
 export const optimizationScoringConfig = {
   substantialContent: { minimumProseWords: 120 },
   criteria: {

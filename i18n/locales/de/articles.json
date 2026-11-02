@@ -709,7 +709,6 @@
             "storyList": "Die Geschichte enthält eine Liste. Erzählen Sie stattdessen, wie die Hauptfigur die Optionen abwägt und handelt.",
             "correctClaim": "Korrigieren oder entfernen Sie diese Aussage: {claim}",
             "verificationIncomplete": "Die Faktenprüfung wurde nicht abgeschlossen. Prüfen Sie die Fakten vor der Veröffentlichung.",
-            "rejectedWithoutNote": "Die Prüfung hat den Entwurf ohne konkrete Anweisung abgelehnt.",
             "reviewUnavailable": "Die automatische Prüfung wurde nicht abgeschlossen.",
             "uncheckedRevision": "Der überarbeitete Entwurf konnte nicht geprüft werden. Prüfen Sie ihn vor der Veröffentlichung."
           },
@@ -1079,6 +1078,17 @@
         "published": "Veröffentlicht",
         "scheduled": "Geplante Artikel werden als Entwurf an Shopify gesendet. Veröffentlichen Sie sie dort, sobald sie erscheinen.",
         "sendOnly": "An Shopify senden"
+      },
+      "releaseHold": {
+        "title": "Der Autopilot hat diesen Artikel zurückgehalten",
+        "description": "Der Artikel ist fertig, die automatische Veröffentlichung wurde aber gestoppt wegen:",
+        "reason": {
+          "review": "Die redaktionelle Prüfung fand ein Problem, das die Überarbeitung nicht behoben hat.",
+          "research": "Die Nachricht hat keine geprüften Recherchequellen.",
+          "media": "Bei einigen Bildern sind die Nutzungsrechte unklar.",
+          "cover": "Es fehlt ein Titelbild."
+        },
+        "publish": "Trotzdem veröffentlichen"
       }
     },
     "image": {

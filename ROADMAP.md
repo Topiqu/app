@@ -1,14 +1,14 @@
 # Roadmap
 
-## AI articles — current scope (18 October 2026)
+## AI articles — current scope (1 November 2026)
 
-All article writing, including an automatic revision, uses [GPT-6 Luna](https://developers.openai.com/api/docs/models/gpt-6-luna) through the existing writer task. The saved publication setting controls reasoning effort and the fixed credit price:
+Article writing, including the automatic revision, picks the writer by the saved publication quality, all at effort `high`. The quality also sets the fixed credit price:
 
-| Quality            | Writer effort | Credits per article |
-| ------------------ | ------------- | ------------------- |
-| Standard (default) | `high`        | 1                   |
-| High               | `xhigh`       | 2                   |
-| Ultra              | `max`         | 3                   |
+| Quality            | Writer                                                                       | Credits per article |
+| ------------------ | ---------------------------------------------------------------------------- | ------------------- |
+| Standard (default) | [GPT-6 Luna](https://developers.openai.com/api/docs/models/gpt-6-luna)       | 1                   |
+| High               | [GPT-6.1 Terra](https://developers.openai.com/api/docs/models/gpt-6.1-terra) | 2                   |
+| Ultra              | [GPT-6.1 Sol](https://developers.openai.com/api/docs/models/gpt-6.1-sol)     | 3                   |
 
 The price includes the existing research, review and one automatic full revision. Manual and scheduled generation capture the selected quality before reserving credits; changing settings during a run does not change its price or effort. Technical failures return the reservation. An explicit stop charges only when useful text has been saved for recovery.
 

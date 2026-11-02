@@ -1,9 +1,12 @@
+import type { ArticleQuality } from '~~/shared/utils/articleQuality'
 import type { AiVisibilityProvider } from '~~/generated/zenstack/models'
 
 export type AiProvider = 'openai' | 'anthropic'
 
 const HAIKU = { provider: 'anthropic', id: 'claude-haiku-5-5' } as const
 const LUNA = { provider: 'openai', id: 'gpt-6-luna' } as const
+const TERRA = { provider: 'openai', id: 'gpt-6.1-terra' } as const
+const SOL = { provider: 'openai', id: 'gpt-6.1-sol' } as const
 
 export const AI_MODELS = {
   topicSelection: HAIKU,
@@ -48,6 +51,18 @@ export const AI_IMAGE_MODELS = {
 export const AI_EMBEDDING_MODELS = {
   knowledge: { provider: 'openai', id: 'text-embedding-3-small', dimensions: 1536 },
 } as const satisfies Record<string, { provider: AiProvider; id: string; dimensions: number }>
+
+/**
+ * The article writer (and its automatic revision) per saved quality. Kept on OpenAI so the claim check and copy
+ * desk (Anthropic) stay an independent model family. `articleWriter` above is the default for other copy tasks.
+ */
+export const ARTICLE_WRITERS = {
+  STANDARD: LUNA,
+  HIGH: TERRA,
+  ULTRA: SOL,
+} as const satisfies Record<ArticleQuality, { provider: 'openai'; id: string }>
+
+export const articleWriterId = (quality: ArticleQuality): string => ARTICLE_WRITERS[quality].id
 
 export type AiTask = keyof typeof AI_MODELS
 export type AiImageTask = keyof typeof AI_IMAGE_MODELS

@@ -44,10 +44,9 @@ describe('article copy desk', () => {
 
   it('turns review findings into direct revision instructions', () => {
     const review = editorialReviewSchema.parse({
-      approved: false,
-      issues: [{ code: 'stale_framing', note: 'Delete the artificial September 2026 framing.' }],
+      issues: [{ code: 'stale_framing', note: 'Delete the artificial September 2026 framing.', blocking: false }],
     })
-    const prompt = buildRevisionPrompt('Explain compatibility.', draft, review)
+    const prompt = buildRevisionPrompt('Explain compatibility.', draft, { approved: true, ...review })
 
     expect(prompt).toContain('stale_framing')
     expect(prompt).toContain('Delete the artificial September 2026 framing.')
@@ -68,8 +67,9 @@ describe('article copy desk', () => {
     const issue = {
       code: 'assignment_mismatch',
       note: 'The title replaces the requested argument with a civility lecture. Restore the assigned stance.',
+      blocking: true,
     }
-    const review = editorialReviewSchema.parse({ approved: false, issues: [issue] })
+    const review = { approved: false, ...editorialReviewSchema.parse({ issues: [issue] }) }
 
     expect(buildRevisionPrompt('Write an aggressive political opinion.', draft, review)).toContain(
       `assignment_mismatch: ${issue.note}`,
@@ -77,9 +77,9 @@ describe('article copy desk', () => {
   })
 
   it('accepts a verbose review, whose caps the provider does not enforce', () => {
-    const issue = { code: 'missing_specifics', note: 'Name the passage. '.repeat(30) }
+    const issue = { code: 'missing_specifics', note: 'Name the passage. '.repeat(30), blocking: false }
 
-    expect(editorialReviewSchema.safeParse({ approved: false, issues: Array(8).fill(issue) }).success).toBe(true)
+    expect(editorialReviewSchema.safeParse({ issues: Array(8).fill(issue) }).success).toBe(true)
   })
 })
 

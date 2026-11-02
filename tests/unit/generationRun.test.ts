@@ -6,6 +6,7 @@ import {
   generationSteps,
   missingArticleModules,
   reduceGenerationRun,
+  releaseHoldOf,
   startGenerationRun,
   type GenerationEvent,
   type GenerationRun,
@@ -67,6 +68,51 @@ describe('generation run', () => {
       detail: 'review.revisedIssues',
       params: { count: 1 },
     })
+  })
+
+  it('counts only blocking issues as left for manual review', () => {
+    const run = play(start(), [
+      {
+        type: 'review',
+        review: {
+          approved: false,
+          revised: true,
+          issues: [
+            { code: 'invented_detail', note: 'x', blocking: true },
+            { code: 'hedging', note: 'y', blocking: false },
+          ],
+        },
+      },
+    ])
+    expect(step(run, 'review')).toMatchObject({ state: 'warning', params: { count: 1 } })
+  })
+
+  it('names every reason the autopilot held an article and only its blocking findings', () => {
+    const hold = releaseHoldOf({
+      review: {
+        approved: false,
+        revised: true,
+        issues: [
+          { code: 'missing_specifics', note: 'Name a change.', blocking: true },
+          { code: 'hedging', note: 'Tip.', blocking: false },
+        ],
+      },
+      researchApproved: true,
+      mediaApproved: false,
+      coverApproved: false,
+    })
+    expect(hold).toEqual({
+      reasons: ['review', 'media', 'cover'],
+      issues: [{ code: 'missing_specifics', note: 'Name a change.', key: undefined, params: undefined }],
+    })
+    expect(
+      releaseHoldOf({
+        review: { approved: true, revised: false },
+        researchApproved: false,
+        mediaApproved: true,
+        coverApproved: true,
+      }).reasons,
+    ).toEqual(['research'])
   })
 
   it('shows the actual review stage and records only received progress as activity', () => {

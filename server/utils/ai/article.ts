@@ -19,6 +19,8 @@ export const generateArticle = async (
     requireClearRights?: boolean
     audit?: ArticleGenerationAudit
     articleQuality?: ArticleQuality
+    /** Language of review notes a person reads in the editor. */
+    noteLanguage?: Language
   },
 ) => {
   const {
@@ -47,82 +49,43 @@ export const generateArticle = async (
   )
   let object = first.output
   let editorialTokens = 0
-  let editorialReview: (EditorialReview & { revised: boolean; verification?: string[] }) | null = null
+  let editorialReview: EditorialOutcome | null = null
 
   if (opts?.editorialReview) {
-    const verification: string[] = []
     try {
-      const context = {
+      const pass = await editorialPass(object, {
+        clientSiteId,
         prompt,
-        researchBrief,
-        knowledgeBrief,
-        editorialDirection,
-        format: opts.format,
-        modules: opts.modules,
-        verifyFacts: opts.research !== false,
-      }
-      const initial = await auditArticleStep(
+        config,
+        groundingBrief,
         audit,
-        'review',
-        () => reviewArticle(object, context),
-        (result) => ({
-          approved: result.review.approved,
-          issueCodes: result.review.issues.map((issue) => issue.code),
-          tokens: result.usage.totalTokens ?? 0,
-        }),
-        { pass: 1 },
-      )
-      if (initial.verificationBrief)
-        groundingBrief = [groundingBrief, initial.verificationBrief].filter(Boolean).join('\n')
-      editorialTokens += initial.usage.totalTokens ?? 0
-      if (initial.verdicts) verification.push(initial.verdicts)
-      editorialReview = { ...initial.review, revised: false, verification }
-
-      if (!initial.review.approved) {
-        const revision = await auditArticleStep(
-          audit,
-          'revision',
-          () =>
-            generateText({
-              ...config,
-              instructions:
-                config.instructions +
-                '\nIndependent verification supersedes conflicting original research:\n' +
-                (revisionEvidence(initial.verificationBrief) ?? ''),
-              prompt: buildRevisionPrompt(prompt, object, initial.review, initial.verificationBrief),
-            }),
-          (result) => ({ tokens: result.usage.totalTokens ?? 0 }),
-        )
-        editorialTokens += revision.usage.totalTokens ?? 0
-        object = revision.output
-
-        const checked = await auditArticleStep(
-          audit,
-          'review',
-          () => reviewArticle(object, context),
-          (result) => ({
-            approved: result.review.approved,
-            issueCodes: result.review.issues.map((issue) => issue.code),
-            tokens: result.usage.totalTokens ?? 0,
-          }),
-          { pass: 2 },
-        )
-        if (checked.verificationBrief)
-          groundingBrief = [groundingBrief, checked.verificationBrief].filter(Boolean).join('\n')
-        editorialTokens += checked.usage.totalTokens ?? 0
-        if (checked.verdicts) verification.push(checked.verdicts)
-        editorialReview = { ...checked.review, revised: true, verification }
-      }
+        context: {
+          prompt,
+          researchBrief,
+          knowledgeBrief,
+          editorialDirection,
+          format: opts.format,
+          modules: opts.modules,
+          verifyFacts: opts.research !== false,
+          noteLanguage: opts.noteLanguage,
+        },
+      })
+      object = pass.draft
+      groundingBrief = pass.groundingBrief
+      editorialTokens = pass.tokens
+      editorialReview = pass.review
     } catch (error) {
       await reportCaughtError('Article editorial review failed', error, { clientSiteId })
       editorialReview = {
         approved: false,
         revised: false,
+        checkedAfterRevision: false,
         issues: [
           {
             code: 'broken_structure',
             note: 'The automated editorial review did not complete.',
             key: 'reviewUnavailable',
+            blocking: true,
           },
         ],
       }
@@ -165,6 +128,137 @@ export const generateArticle = async (
     editorialReview,
   }
 }
+
+type EditorialOutcome = EditorialReview & {
+  revised: boolean
+  /** False when the revised text was not checked again; the article is then held. */
+  checkedAfterRevision: boolean
+  resolvedIssues?: ReviewIssue[]
+  verification?: string[]
+}
+
+/**
+ * One editorial pass for the editor and the autopilot: review, revise with every finding, then confirm
+ * the revision fixed them. Only a blocking finding left over holds the article.
+ */
+const editorialPass = async (
+  draft: ArticleObject,
+  input: {
+    clientSiteId: string
+    prompt: string
+    config: Awaited<ReturnType<typeof buildArticleConfig>>['config']
+    groundingBrief: string | null
+    context: ReviewContext
+    audit?: ArticleGenerationAudit
+    abortSignal?: AbortSignal
+  },
+) => {
+  const { audit, context, abortSignal } = input
+  const first = await auditArticleStep(
+    audit,
+    'review',
+    () => reviewArticle(draft, context),
+    (result) => ({
+      approved: result.review.approved,
+      issueCodes: result.review.issues.map((issue) => issue.code),
+      blockingCodes: result.review.issues.filter((issue) => issue.blocking).map((issue) => issue.code),
+      tokens: result.usage.totalTokens ?? 0,
+    }),
+    { pass: 1 },
+  )
+  const groundingBrief = [input.groundingBrief, first.verificationBrief].filter(Boolean).join('\n') || null
+  const verification = first.verdicts ? [first.verdicts] : []
+  let tokens = first.usage.totalTokens ?? 0
+  const unrevised = (): EditorialOutcome => ({
+    ...first.review,
+    revised: false,
+    checkedAfterRevision: true,
+    verification,
+  })
+  // Rewriting cannot finish a verification, so that finding alone is no reason to pay for a revision.
+  const edits = first.review.issues.filter((issue) => issue.key !== 'verificationIncomplete')
+  if (!edits.length) return { draft, review: unrevised(), groundingBrief, tokens }
+
+  let revised: ArticleObject | null = null
+  try {
+    context.onProgress?.('revising')
+    const revision = await auditArticleStep(
+      audit,
+      'revision',
+      () =>
+        generateText({
+          ...input.config,
+          instructions:
+            input.config.instructions +
+            '\nIndependent verification supersedes conflicting original research:\n' +
+            (revisionEvidence(first.verificationBrief) ?? ''),
+          prompt: buildRevisionPrompt(input.prompt, draft, { ...first.review, issues: edits }, first.verificationBrief),
+          abortSignal: abortSignal
+            ? AbortSignal.any([abortSignal, AbortSignal.timeout(REVISION_TIMEOUT_MS)])
+            : AbortSignal.timeout(REVISION_TIMEOUT_MS),
+        }),
+      (result) => ({ tokens: result.usage.totalTokens ?? 0 }),
+    )
+    tokens += revision.usage.totalTokens ?? 0
+    revision.output.sources = filterResearchSources(revision.output.sources, groundingBrief)
+    const output = revision.output
+    revised = output
+    // No second web verification: each live pass samples different claims, so a revision never converges.
+    const checked = await auditArticleStep(
+      audit,
+      'review',
+      () => recheckRevision(output, draft, first.review.issues, { ...context, researchBrief: groundingBrief }),
+      (result) => ({
+        approved: result.review.approved,
+        issueCodes: result.review.issues.map((issue) => issue.code),
+        blockingCodes: result.review.issues.filter((issue) => issue.blocking).map((issue) => issue.code),
+        resolved: result.resolvedIssues.length,
+        tokens: result.usage.totalTokens ?? 0,
+      }),
+      { pass: 2 },
+    )
+    tokens += checked.usage.totalTokens ?? 0
+    const review: EditorialOutcome = {
+      ...checked.review,
+      revised: true,
+      checkedAfterRevision: true,
+      resolvedIssues: checked.resolvedIssues,
+      verification,
+    }
+    return { draft: output, review, groundingBrief, tokens }
+  } catch (error) {
+    if (abortSignal?.aborted) throw error
+    await audit?.record('ARTICLE_GENERATION_FALLBACK', {
+      stage: audit.stageForError(error) ?? 'revision',
+      reason: 'revision_or_review_unavailable',
+      outcome: 'available_draft',
+    })
+    await reportCaughtError('Article revision or its check failed; returning the available draft', error, {
+      clientSiteId: input.clientSiteId,
+    })
+    // Only edits were pending, so the reviewed original is publishable as it stands.
+    if (first.review.approved || !revised) return { draft, review: unrevised(), groundingBrief, tokens }
+    // The revision probably fixed the blockers, but nothing confirmed it: keep it and hold the article.
+    const review: EditorialOutcome = {
+      approved: false,
+      revised: true,
+      checkedAfterRevision: false,
+      issues: [
+        {
+          code: 'broken_structure',
+          note: 'The revised draft could not be checked. Review it before publishing.',
+          key: 'uncheckedRevision',
+          blocking: true,
+        },
+      ],
+      verification,
+    }
+    return { draft: revised, review, groundingBrief, tokens }
+  }
+}
+
+// A revision rewrites the whole article, so it needs about as long as the draft; 90 s left no margin.
+const REVISION_TIMEOUT_MS = 300_000
 
 export const streamArticle = async (
   clientSiteId: string,
@@ -247,122 +341,34 @@ export const streamArticle = async (
   }
 
   let editorialTokens = 0
-  let editorialReview:
-    | (EditorialReview & {
-        revised: boolean
-        checkedAfterRevision: boolean
-        resolvedIssues?: EditorialReview['issues']
-        verification?: string[]
-      })
-    | null = null
+  let editorialReview: EditorialOutcome | null = null
   const review = async (draft: ArticleObject, onProgress?: (stage: GenerationReviewStage) => void) => {
-    const context = {
-      prompt,
-      researchBrief,
-      knowledgeBrief,
-      editorialDirection,
-      format: opts.format,
-      modules: opts.modules,
-      abortSignal: opts.abortSignal,
-      verifyFacts: opts.research !== false,
-      illustrative: true,
-      noteLanguage: opts.noteLanguage,
-      onProgress,
-    }
     draft.sources = filterResearchSources(draft.sources, groundingBrief)
-    const first = await auditArticleStep(
+    const pass = await editorialPass(draft, {
+      clientSiteId,
+      prompt,
+      config,
+      groundingBrief,
       audit,
-      'review',
-      () => reviewArticle(draft, context),
-      (result) => ({
-        approved: result.review.approved,
-        issueCodes: result.review.issues.map((issue) => issue.code),
-        tokens: result.usage.totalTokens ?? 0,
-      }),
-      { pass: 1 },
-    )
-    if (first.verificationBrief) groundingBrief = [groundingBrief, first.verificationBrief].filter(Boolean).join('\n')
-    editorialTokens += first.usage.totalTokens ?? 0
-    const verification = first.verdicts ? [first.verdicts] : []
-    editorialReview = { ...first.review, revised: false, checkedAfterRevision: true, verification }
-    if (first.review.approved) return draft
-    let revisedDraft = draft
-    try {
-      onProgress?.('revising')
-      const revision = await auditArticleStep(
-        audit,
-        'revision',
-        () =>
-          generateText({
-            ...config,
-            instructions:
-              config.instructions +
-              '\nIndependent verification supersedes conflicting original research:\n' +
-              (revisionEvidence(first.verificationBrief) ?? ''),
-            prompt: buildRevisionPrompt(prompt, draft, first.review, first.verificationBrief),
-            abortSignal: opts.abortSignal
-              ? AbortSignal.any([opts.abortSignal, AbortSignal.timeout(90_000)])
-              : AbortSignal.timeout(90_000),
-          }),
-        (result) => ({ tokens: result.usage.totalTokens ?? 0 }),
-      )
-      editorialTokens += revision.usage.totalTokens ?? 0
-      revision.output.sources = filterResearchSources(revision.output.sources, groundingBrief)
-      revisedDraft = revision.output
-      // A completed rewrite is not an approval. Keep its status honest if the follow-up fails.
-      editorialReview = { ...first.review, revised: true, checkedAfterRevision: false, verification }
-      // Recheck substance and the supplied factual premises without another full web-search pass.
-      const checked = await auditArticleStep(
-        audit,
-        'review',
-        () =>
-          reviewArticle(revisedDraft, {
-            ...context,
-            researchBrief: groundingBrief,
-            verifyFacts: false,
-            factsChecked: !!first.verificationBrief,
-            onProgress: () => onProgress?.('rechecking'),
-          }),
-        (result) => ({
-          approved: result.review.approved,
-          issueCodes: result.review.issues.map((issue) => issue.code),
-          tokens: result.usage.totalTokens ?? 0,
-        }),
-        { pass: 2 },
-      )
-      editorialTokens += checked.usage.totalTokens ?? 0
-      editorialReview = {
-        ...checked.review,
-        revised: true,
-        checkedAfterRevision: true,
-        resolvedIssues: checked.review.approved ? first.review.issues : [],
-        verification,
-      }
-      return revisedDraft
-    } catch (error) {
-      if (opts.abortSignal?.aborted) throw error
-      await audit?.record('ARTICLE_GENERATION_FALLBACK', {
-        stage: audit.stageForError(error) ?? 'revision',
-        reason: 'revision_or_review_unavailable',
-        outcome: 'available_draft',
-      })
-      if (editorialReview.revised)
-        editorialReview = {
-          ...editorialReview,
-          approved: false,
-          issues: [
-            {
-              code: 'broken_structure',
-              note: 'The revised draft could not be checked. Review it before publishing.',
-              key: 'uncheckedRevision',
-            },
-          ],
-        }
-      await reportCaughtError('Manual article revision or follow-up review failed; returning available draft', error, {
-        clientSiteId,
-      })
-      return revisedDraft
-    }
+      abortSignal: opts.abortSignal,
+      context: {
+        prompt,
+        researchBrief,
+        knowledgeBrief,
+        editorialDirection,
+        format: opts.format,
+        modules: opts.modules,
+        abortSignal: opts.abortSignal,
+        verifyFacts: opts.research !== false,
+        illustrative: true,
+        noteLanguage: opts.noteLanguage,
+        onProgress,
+      },
+    })
+    groundingBrief = pass.groundingBrief
+    editorialTokens += pass.tokens
+    editorialReview = pass.review
+    return pass.draft
   }
   return {
     result,

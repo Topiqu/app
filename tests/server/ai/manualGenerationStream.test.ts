@@ -25,7 +25,10 @@ describe('manual article generation stream', () => {
 
   it('never sends a provider error message to the author', () => {
     const status = readFileSync(resolve(process.cwd(), 'server/api/articles/generations/[id]/status.get.ts'), 'utf8')
-    const recoverable = readFileSync(resolve(process.cwd(), 'server/api/articles/generations/recoverable.get.ts'), 'utf8')
+    const recoverable = readFileSync(
+      resolve(process.cwd(), 'server/api/articles/generations/recoverable.get.ts'),
+      'utf8',
+    )
     expect(endpoint).not.toMatch(/type: 'error',\s*message: error/)
     expect(endpoint).not.toMatch(/: error\?\.message \|\| t\(/)
     expect(status).not.toContain('failureReason')
@@ -161,7 +164,9 @@ describe('manual article generation stream', () => {
     expect(endpoint).toContain('const creditsRequired = articleCreditCost(articleQuality)')
     expect(endpoint).toContain('creditPolicyVersion: ARTICLE_CREDIT_POLICY_VERSION')
     expect(endpoint).toContain('researchDepth: options?.research.enabled ? options.research.depth : null')
-    expect(endpoint).toContain("models: { research: aiModelId('articleResearch'), writer: aiModelId('articleWriter') }")
+    expect(endpoint).toContain(
+      "models: { research: aiModelId('articleResearch'), writer: articleWriterId(articleQuality) }",
+    )
     expect(endpoint).toContain('writerEffort: ARTICLE_QUALITY_EFFORT[articleQuality]')
     expect(endpoint).toMatch(/generation = await streamArticle\(clientSiteId, prompt, \{\s+articleQuality,/)
     // Completed and aborted both bill, so both have to be attributable.
@@ -177,7 +182,8 @@ describe('manual article generation stream', () => {
   it('uses the same constraints for generation and deterministic optimization', () => {
     expect(articleConfig).toContain('articleGenerationOptimizationInstructions()')
     expect(articleConfig).toContain('.min(optimizationCriteria.titleCharacters.minimum)')
-    expect(articleConfig).toContain('.max(optimizationCriteria.excerptCharacters.maximum)')
+    // The schema leaves headroom because strict decoding cut text mid-word; applyFormat enforces the maximum.
+    expect(articleConfig).toContain('.max(optimizationCriteria.excerptCharacters.maximum + 90)')
     expect(articleMedia).toContain("buildImageHtml(registered, registered.kind === 'ai' ? img.caption : '', labels)")
   })
 
@@ -215,8 +221,11 @@ describe('manual article generation stream', () => {
   it('checks revised copy before reporting its review and proceeding to media finalization', () => {
     expect(endpoint).toContain("send(controller, { type: 'review', review: generation.editorialReview })")
     const streamImplementation = articleGenerator.slice(articleGenerator.indexOf('export const streamArticle'))
-    expect(streamImplementation.match(/reviewArticle\(/g)).toHaveLength(2)
-    expect(streamImplementation).toContain('...checked.review')
-    expect(streamImplementation).toContain('checkedAfterRevision: true')
+    expect(streamImplementation).toContain('editorialPass(draft')
+    // One full review; the revision is only checked against its findings, never reviewed afresh.
+    expect(articleGenerator.match(/reviewArticle\(/g)).toHaveLength(1)
+    expect(articleGenerator).toContain('recheckRevision(')
+    expect(articleGenerator).toContain('...checked.review')
+    expect(articleGenerator).toContain('checkedAfterRevision: true')
   })
 })

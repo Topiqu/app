@@ -704,7 +704,6 @@
             "storyList": "Příběh obsahuje seznam. Převyprávějte ho tak, aby hlavní postava možnosti zvážila a jednala.",
             "correctClaim": "Opravte nebo odstraňte toto tvrzení: {claim}",
             "verificationIncomplete": "Ověření faktů nedoběhlo. Před publikací fakta zkontrolujte.",
-            "rejectedWithoutNote": "Kontrola koncept zamítla bez konkrétního pokynu.",
             "reviewUnavailable": "Automatická kontrola nedoběhla.",
             "uncheckedRevision": "Upravený koncept se nepodařilo zkontrolovat. Před publikací ho projděte."
           },
@@ -1074,6 +1073,17 @@
         "published": "Publikováno",
         "scheduled": "Naplánované články se do Shopify odešlou jako koncept. Publikujte je tam, až vyjdou.",
         "sendOnly": "Odeslat do Shopify"
+      },
+      "releaseHold": {
+        "title": "Autopilot tento článek nevydal",
+        "description": "Článek je hotový, ale automatické vydání zastavilo:",
+        "reason": {
+          "review": "Redakční kontrola našla problém, který revize neopravila.",
+          "research": "Zpráva nemá ověřené zdroje z rešerše.",
+          "media": "Některé obrázky nemají vyjasněná práva.",
+          "cover": "Chybí titulní obrázek."
+        },
+        "publish": "Publikovat i tak"
       }
     },
     "image": {

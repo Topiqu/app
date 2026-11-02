@@ -67,6 +67,7 @@ async function stubImports() {
     import('../../../server/utils/ai/articleQuality'),
     'buildRevisionPrompt',
     'reviewArticle',
+    'recheckRevision',
     'revisionEvidence',
     'AUTHOR_ACCOUNT_RULE',
   )
@@ -108,10 +109,13 @@ const draft = {
   sources: [],
 }
 const rejected = {
-  approved: false,
-  issues: [{ code: 'unsupported_claim', note: 'Remove the unsupported claim about returning characters.' }],
+  issues: [
+    { code: 'unsupported_claim', note: 'Remove the unsupported claim about returning characters.', blocking: true },
+  ],
 }
-const approved = { approved: true, issues: [] }
+const approved = { issues: [] }
+const fixed = { findings: [{ id: 1, resolved: true }], introduced: [] }
+const unfixed = { findings: [{ id: 1, resolved: false }], introduced: [] }
 const response = (object: unknown, totalTokens: number) => ({ output: object, usage: { totalTokens } })
 
 beforeEach(() => {
@@ -133,7 +137,7 @@ describe('manual editorial review', () => {
     vi.mocked(generateStructuredText)
       .mockResolvedValueOnce(response(rejected, 10) as never)
       .mockResolvedValueOnce(response(revision, 20) as never)
-      .mockResolvedValueOnce(response(approved, 5) as never)
+      .mockResolvedValueOnce(response(fixed, 5) as never)
     const generation = await streamArticle('site', 'Write a report', { research: false })
     const progress = vi.fn()
     expect(await generation.review(draft, progress)).toEqual(revision)
@@ -152,11 +156,11 @@ describe('manual editorial review', () => {
 
   it('does not approve a rewrite that still repeats the absence of confirmation', async () => {
     const emptyAngle = {
-      approved: false,
       issues: [
         {
           code: 'missing_specifics',
           note: 'Three sections repeat that no connection is confirmed; compare the documented positions instead.',
+          blocking: true,
         },
       ],
     }
@@ -164,7 +168,7 @@ describe('manual editorial review', () => {
     vi.mocked(generateStructuredText)
       .mockResolvedValueOnce(response(emptyAngle, 10) as never)
       .mockResolvedValueOnce(response(revision, 20) as never)
-      .mockResolvedValueOnce(response(emptyAngle, 5) as never)
+      .mockResolvedValueOnce(response(unfixed, 5) as never)
     const generation = await streamArticle('site', 'Compare the two positions', {
       research: false,
       format: 'comparison',
@@ -220,16 +224,19 @@ describe('manual editorial review', () => {
       .mockResolvedValueOnce(
         response(
           {
-            approved: false,
             issues: [
-              { code: 'missing_specifics', note: 'Replace the repeated caveats with a comparison of who decides.' },
+              {
+                code: 'missing_specifics',
+                note: 'Replace the repeated caveats with a comparison of who decides.',
+                blocking: true,
+              },
             ],
           },
           10,
         ) as never,
       )
       .mockResolvedValueOnce(response(revision, 20) as never)
-      .mockResolvedValueOnce(response(approved, 5) as never)
+      .mockResolvedValueOnce(response(fixed, 5) as never)
     const generation = await streamArticle('site', 'Compare decision-making', { format: 'comparison', modules: [] })
 
     const progress = vi.fn()
@@ -271,11 +278,11 @@ describe('manual editorial review', () => {
         aiToneOfVoice: tone,
       } as never)
       const mismatch = {
-        approved: false,
         issues: [
           {
             code: 'assignment_mismatch',
             note: 'The title lectures the author about insults. Restore the requested political argument and tone.',
+            blocking: true,
           },
         ],
       }
@@ -284,7 +291,7 @@ describe('manual editorial review', () => {
       vi.mocked(generateStructuredText)
         .mockResolvedValueOnce(response(mismatch, 10) as never)
         .mockResolvedValueOnce(response(revision, 20) as never)
-        .mockResolvedValueOnce(response(approved, 5) as never)
+        .mockResolvedValueOnce(response(fixed, 5) as never)
       const generation = await streamArticle('site', 'Jebat komouše', {
         research: false,
         format,
@@ -311,11 +318,11 @@ describe('manual editorial review', () => {
 
   it('keeps an assignment mismatch blocking after the single revision', async () => {
     const mismatch = {
-      approved: false,
       issues: [
         {
           code: 'assignment_mismatch',
           note: 'Replace the unsolicited nonviolence lesson with the requested argument.',
+          blocking: true,
         },
       ],
     }
@@ -323,7 +330,7 @@ describe('manual editorial review', () => {
     vi.mocked(generateStructuredText)
       .mockResolvedValueOnce(response(mismatch, 10) as never)
       .mockResolvedValueOnce(response(moralizing, 20) as never)
-      .mockResolvedValueOnce(response(mismatch, 5) as never)
+      .mockResolvedValueOnce(response(unfixed, 5) as never)
     const generation = await streamArticle('site', 'Fuck communism', {
       research: false,
       format: 'opinion',
@@ -351,6 +358,82 @@ describe('manual editorial review', () => {
     expect(await generation.review(draft)).toEqual(draft)
     expect(generation.editorialReview).toMatchObject({ approved: false, revised: false })
     expect(generation.editorialTokens).toBe(10)
+  })
+
+  it('revises non-blocking edits but never holds the article for them', async () => {
+    const edits = {
+      issues: [
+        { code: 'missing_specifics', note: 'Add the fine tiers from the brief to the cost section.', blocking: false },
+        { code: 'hedging', note: 'Delete the sentence telling readers to check elsewhere.', blocking: true },
+      ],
+    }
+    const revision = { ...draft, title: 'Fines up to 2 million' }
+    vi.mocked(generateStructuredText)
+      .mockResolvedValueOnce(response(edits, 10) as never)
+      .mockResolvedValueOnce(response(revision, 20) as never)
+      .mockResolvedValueOnce(response({ findings: [], introduced: [] }, 5) as never)
+    const generation = await streamArticle('site', 'Write a guide', { research: false })
+
+    expect(await generation.review(draft)).toEqual(revision)
+    // Hedging never blocks, whatever the copy desk says; unresolved edits stay as tips.
+    expect(generation.editorialReview).toMatchObject({ approved: true, revised: true })
+    expect(generation.editorialReview?.issues.every((issue) => !issue.blocking)).toBe(true)
+  })
+
+  it('keeps the reviewed original publishable when only edits were pending and the revision fails', async () => {
+    const edits = {
+      issues: [{ code: 'missing_specifics', note: 'Add the subsidy cap from the brief.', blocking: false }],
+    }
+    vi.mocked(generateStructuredText)
+      .mockResolvedValueOnce(response(edits, 10) as never)
+      .mockRejectedValueOnce(new Error('revision unavailable'))
+    vi.stubGlobal('reportCaughtError', vi.fn())
+    const generation = await streamArticle('site', 'Write a guide', { research: false })
+
+    expect(await generation.review(draft)).toEqual(draft)
+    expect(generation.editorialReview).toMatchObject({ approved: true, revised: false })
+  })
+
+  it('holds a revision that adds an ungrounded specific', async () => {
+    const revision = { ...draft, content: '<p>The fine is 7 million.</p>' }
+    vi.mocked(generateStructuredText)
+      .mockResolvedValueOnce(response(rejected, 10) as never)
+      .mockResolvedValueOnce(response(revision, 20) as never)
+      .mockResolvedValueOnce(
+        response(
+          { findings: [{ id: 1, resolved: true }], introduced: [{ note: 'Remove "7 million"; no source.' }] },
+          5,
+        ) as never,
+      )
+    const generation = await streamArticle('site', 'Write a report', { research: false })
+
+    await generation.review(draft)
+    expect(generation.editorialReview).toMatchObject({
+      approved: false,
+      issues: [{ code: 'invented_detail', blocking: true }],
+      resolvedIssues: rejected.issues,
+    })
+  })
+
+  it('holds without a paid revision when only the verification failed', async () => {
+    const source = 'https://example.test/positions'
+    vi.stubGlobal('aiWebSearchTool', () => ({}))
+    vi.mocked(generatePlainText)
+      .mockResolvedValueOnce({
+        text: `The organizations describe different policies. ${source}`,
+        sources: [{ sourceType: 'url', url: source }],
+        usage: { totalTokens: 4 },
+      } as never)
+      .mockResolvedValue({ text: '', sources: [], usage: { totalTokens: 7 }, finishReason: 'length' } as never)
+    const generation = await streamArticle('site', 'Compare decision-making', { format: 'comparison', modules: [] })
+
+    expect((await generation.review({ ...draft, sources: [source] })).content).toBe(draft.content)
+    expect(generateStructuredText).not.toHaveBeenCalled()
+    expect(generation.editorialReview).toMatchObject({
+      approved: false,
+      revised: false,
+      issues: [{ key: 'verificationIncomplete', blocking: true }],
+    })
   })
 
   it('does not rewrite an approved draft', async () => {

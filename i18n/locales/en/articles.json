@@ -709,7 +709,6 @@
             "storyList": "The story contains a list. Retell it as narration in which the protagonist weighs the options and acts.",
             "correctClaim": "Correct or remove this claim: {claim}",
             "verificationIncomplete": "Fact verification did not finish. Check the facts before publishing.",
-            "rejectedWithoutNote": "The review rejected the draft without a specific instruction.",
             "reviewUnavailable": "The automated review did not finish.",
             "uncheckedRevision": "The revised draft could not be checked. Review it before publishing."
           },
@@ -1079,6 +1078,17 @@
         "published": "Published",
         "scheduled": "Scheduled articles are sent to Shopify as a draft. Publish them there once they go live.",
         "sendOnly": "Send to Shopify"
+      },
+      "releaseHold": {
+        "title": "The autopilot held this article back",
+        "description": "The article is finished, but automatic publishing stopped because of:",
+        "reason": {
+          "review": "The editorial check found a problem the revision did not fix.",
+          "research": "The news piece has no verified research sources.",
+          "media": "Some images have unclear usage rights.",
+          "cover": "There is no cover image."
+        },
+        "publish": "Publish anyway"
       }
     },
     "image": {

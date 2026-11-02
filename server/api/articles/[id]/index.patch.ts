@@ -33,6 +33,8 @@ export default defineEventHandler(async (event): Promise<{ success: true; editVe
       ? undefined
       : z.object({ fingerprint: z.string(), acknowledged: z.literal(true) }).parse(rawBody.mediaRightsReview)
   delete rawBody.mediaRightsReview
+  // Server-owned: the autopilot writes it, publication clears it.
+  delete rawBody.releaseHold
   if (typeof rawBody.title === 'string' && !rawBody.title.trim())
     throw createError({ statusCode: 400, message: t('common.messages.articleTitleRequired')! })
   if (typeof rawBody.content === 'string' && !rawBody.content.trim()) rawBody.content = '<p></p>'
@@ -177,6 +179,7 @@ export default defineEventHandler(async (event): Promise<{ success: true; editVe
   if (previousArticle.aiInvolvement === 'FULL' && data.content && data.content !== previousArticle.content) {
     data.aiInvolvement = 'ASSIST'
   }
+  if (body.status === ArticleStatus.published || body.releaseAt) data.releaseHold = DbNull
   // Server-owned: edits before the first publication are not modifications any reader saw.
   delete data.contentUpdatedAt
   const textChanged = changesReaderText(previousArticle, data)
