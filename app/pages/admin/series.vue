@@ -4,7 +4,7 @@
       <h1 class="text-2xl font-bold text-highlighted">{{ $t('series.overview') }}</h1>
       <p class="mt-1 text-sm text-muted">{{ $t('series.overviewDescription') }}</p>
     </header>
-    <div class="flex flex-col gap-3 sm:flex-row">
+    <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
       <UInput
         v-model="search"
         icon="mdi:magnify"
@@ -18,12 +18,17 @@
         :aria-label="$t('articles.columns.status')"
         class="w-full sm:w-48"
       />
-      <USelect
-        v-model="sort"
-        :items="sortItems"
-        :aria-label="$t('common.labels.sortBy')"
-        class="w-full sm:ml-auto sm:w-48"
-      />
+      <div class="flex min-w-0 items-center gap-3 sm:ml-auto">
+        <UButton icon="mdi:plus" class="shrink-0" @click="createOpen = true">
+          {{ $t('series.createAction') }}
+        </UButton>
+        <USelect
+          v-model="sort"
+          :items="sortItems"
+          :aria-label="$t('common.labels.sortBy')"
+          class="min-w-0 flex-1 sm:w-48 sm:flex-none"
+        />
+      </div>
     </div>
     <UProgress v-if="pending" />
     <UAlert v-if="error" color="error" :title="$t('common.messages.loadFailedText')">
@@ -74,6 +79,7 @@
         </li>
       </ul>
     </UCard>
+    <SeriesCreate v-model:open="createOpen" @created="onCreated" />
   </div>
 </template>
 
@@ -84,7 +90,14 @@ const localePath = useLocalePath()
 const search = shallowRef('')
 const status = shallowRef('all')
 const sort = shallowRef('name')
+const createOpen = shallowRef(false)
 const { data: allSeries, pending, error, refresh } = await useFetch('/api/series', { default: emptyAsyncDataList })
+const onCreated = async () => {
+  search.value = ''
+  status.value = 'all'
+  sort.value = 'newest'
+  await refresh()
+}
 const statusItems = computed(() => [
   { label: $t('series.allParts'), value: 'all' },
   ...['published', 'draft', 'archived'].map((value) => ({ label: $t(`articles.status.${value}`), value })),

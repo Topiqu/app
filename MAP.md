@@ -706,7 +706,14 @@ migration is required before startup. Published replacements keep their live bod
 and status while running; abandoned leases expire after 30 minutes. Completed manual
 translations remain `READY` for explicit approval. Comments reconcile canonical thread snapshots after mutations and
 poll only while visible. Public series ordinals count published, released episodes;
-`/admin/series` owns the management overview. The owner-only settings danger zone
+`/admin/series` owns the management overview. Its `Series/Create.vue` modal uses
+`Series/ArticlePicker.vue` and `GET /api/series/articles` to search and paginate standalone
+articles the member can edit, keeping the ordered selection across searches. `POST /api/series`
+validates `shared/seriesSchemas.ts` and creates the series with up to 100 selected parts in one
+enhanced-client transaction. Each assignment rechecks tenant, author permission and unassigned
+state; any unavailable part rolls back creation. Existing series are never reassigned by this flow.
+Creation invalidates the public feed and client article queries, then refreshes the overview.
+The owner-only settings danger zone
 uses retained-data deactivation; permanent deletion remains platform maintenance.
 
 - `app/app.config.ts` is the central Nuxt UI visual configuration; `app/assets/styles/main.css` contains global semantic tokens, locally bundled variable fonts, reading typography, and reduced-motion behavior.
