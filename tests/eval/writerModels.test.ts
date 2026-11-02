@@ -126,7 +126,7 @@ const ranking = z.object({
   explanation: z.string(),
 })
 
-type Usage = { task: string; model: string; uncached: number; cached: number; output: number }
+type Usage = { task: string; stage?: string; model: string; uncached: number; cached: number; output: number }
 let usage: Usage[] = []
 const cost = (rows: Usage[]) =>
   rows.reduce((sum, row) => {
@@ -187,6 +187,11 @@ const write = async (item: Case, tier: ArticleQuality) => {
     sources: generation.research?.sourceCount ?? null,
     costUsd: Number(cost(usage).toFixed(4)),
     writerCostUsd: Number(cost(usage.filter((row) => row.task === 'articleWriter')).toFixed(4)),
+    // The streamed draft runs outside any audited stage; the revision, its edits and removal run inside one.
+    draftCostUsd: Number(cost(usage.filter((row) => row.task === 'articleWriter' && !row.stage)).toFixed(4)),
+    revisionCostUsd: Number(cost(usage.filter((row) => row.stage === 'revision')).toFixed(4)),
+    revisionMode: review?.revisionMode ?? null,
+    removalPass: review?.removalPass ?? false,
     final: { title: final.title, perex: final.perex, content: final.content },
   }
 }
@@ -232,6 +237,7 @@ describe.skipIf(process.env.AI_EVAL !== '1' || process.env.WRITER_EVAL !== '1')(
     vi.stubGlobal('recordAiUsage', async (_site: string, _tokens: number, _action: string, meta: any) => {
       usage.push({
         task: meta.task,
+        stage: meta.stage,
         model: meta.model,
         uncached: meta.uncachedInputTokens ?? meta.inputTokens ?? 0,
         cached: meta.cachedInputTokens ?? 0,

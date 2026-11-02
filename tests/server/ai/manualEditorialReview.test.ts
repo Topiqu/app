@@ -66,6 +66,11 @@ async function stubImports() {
   await stubNitroImports(
     import('../../../server/utils/ai/articleQuality'),
     'buildRevisionPrompt',
+    'buildEditPrompt',
+    'buildRemovalPrompt',
+    'revisionEditsSchema',
+    'applyRevisionEdits',
+    'isRemovable',
     'reviewArticle',
     'recheckRevision',
     'revisionEvidence',
@@ -117,6 +122,18 @@ const approved = { issues: [] }
 const fixed = { findings: [{ id: 1, resolved: true }], introduced: [] }
 const unfixed = { findings: [{ id: 1, resolved: false }], introduced: [] }
 const response = (object: unknown, totalTokens: number) => ({ output: object, usage: { totalTokens } })
+/** The edit list the reviser returns for a revised draft; only a reversed stance gets a full rewrite. */
+const asEdits = (revision: Partial<typeof draft>) => ({
+  edits:
+    revision.content && revision.content !== draft.content
+      ? [{ find: draft.content, replace: revision.content, insertAfter: false }]
+      : [],
+  title: revision.title && revision.title !== draft.title ? revision.title : null,
+  perex: null,
+  answer: null,
+  keyTakeaways: null,
+  faq: null,
+})
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -136,7 +153,7 @@ describe('manual editorial review', () => {
     const revision = { ...draft, title: 'Ciri leads The Witcher 4' }
     vi.mocked(generateStructuredText)
       .mockResolvedValueOnce(response(rejected, 10) as never)
-      .mockResolvedValueOnce(response(revision, 20) as never)
+      .mockResolvedValueOnce(response(asEdits(revision), 20) as never)
       .mockResolvedValueOnce(response(fixed, 5) as never)
     const generation = await streamArticle('site', 'Write a report', { research: false })
     const progress = vi.fn()
@@ -167,7 +184,7 @@ describe('manual editorial review', () => {
     const revision = { ...draft, content: '<h2>No announcement</h2><p>No connection is confirmed.</p>' }
     vi.mocked(generateStructuredText)
       .mockResolvedValueOnce(response(emptyAngle, 10) as never)
-      .mockResolvedValueOnce(response(revision, 20) as never)
+      .mockResolvedValueOnce(response(asEdits(revision), 20) as never)
       .mockResolvedValueOnce(response(unfixed, 5) as never)
     const generation = await streamArticle('site', 'Compare the two positions', {
       research: false,
@@ -193,7 +210,7 @@ describe('manual editorial review', () => {
     const revision = { ...draft, title: 'A concrete comparison' }
     vi.mocked(generateStructuredText)
       .mockResolvedValueOnce(response(rejected, 10) as never)
-      .mockResolvedValueOnce(response(revision, 20) as never)
+      .mockResolvedValueOnce(response(asEdits(revision), 20) as never)
       .mockRejectedValueOnce(new Error('review unavailable'))
     vi.stubGlobal('reportCaughtError', vi.fn())
     const generation = await streamArticle('site', 'Compare the two positions', { research: false })
@@ -219,7 +236,7 @@ describe('manual editorial review', () => {
         sources: [{ sourceType: 'url', url: correction }],
         usage: { totalTokens: 7 },
       } as never)
-    const revision = { ...draft, title: 'Two conflicting ways to decide', sources: [correction] }
+    const revision = { ...draft, title: 'Two conflicting ways to decide' }
     vi.mocked(generateStructuredText)
       .mockResolvedValueOnce(
         response(
@@ -235,12 +252,12 @@ describe('manual editorial review', () => {
           10,
         ) as never,
       )
-      .mockResolvedValueOnce(response(revision, 20) as never)
+      .mockResolvedValueOnce(response(asEdits(revision), 20) as never)
       .mockResolvedValueOnce(response(fixed, 5) as never)
     const generation = await streamArticle('site', 'Compare decision-making', { format: 'comparison', modules: [] })
 
     const progress = vi.fn()
-    expect(await generation.review({ ...draft, sources: [source] }, progress)).toEqual(revision)
+    expect((await generation.review({ ...draft, sources: [source] }, progress)).title).toBe(revision.title)
     expect(progress.mock.calls.map(([stage]) => stage)).toEqual(['verifying', 'checking', 'revising', 'rechecking'])
     expect(generatePlainText).toHaveBeenCalledTimes(2)
     expect(vi.mocked(generateStructuredText).mock.calls[2]![0].prompt).toContain(correction)
@@ -370,7 +387,7 @@ describe('manual editorial review', () => {
     const revision = { ...draft, title: 'Fines up to 2 million' }
     vi.mocked(generateStructuredText)
       .mockResolvedValueOnce(response(edits, 10) as never)
-      .mockResolvedValueOnce(response(revision, 20) as never)
+      .mockResolvedValueOnce(response(asEdits(revision), 20) as never)
       .mockResolvedValueOnce(response({ findings: [], introduced: [] }, 5) as never)
     const generation = await streamArticle('site', 'Write a guide', { research: false })
 
@@ -394,25 +411,89 @@ describe('manual editorial review', () => {
     expect(generation.editorialReview).toMatchObject({ approved: true, revised: false })
   })
 
-  it('holds a revision that adds an ungrounded specific', async () => {
-    const revision = { ...draft, content: '<p>The fine is 7 million.</p>' }
+  describe('a revision that adds an ungrounded specific', () => {
+    const revision = { ...draft, content: '<p>The fine is up to 7 million.</p>' }
+    const added = response(
+      { findings: [{ id: 1, resolved: true }], introduced: [{ note: 'Remove "up to 7 million"; no source.' }] },
+      5,
+    )
+    const removal = (find: string, replace: string) =>
+      response({ ...asEdits({}), edits: [{ find, replace, insertAfter: false }] }, 3)
+
+    it('deletes it in a second, removal-only pass and then publishes', async () => {
+      vi.mocked(generateStructuredText)
+        .mockResolvedValueOnce(response(rejected, 10) as never)
+        .mockResolvedValueOnce(response(asEdits(revision), 20) as never)
+        .mockResolvedValueOnce(added as never)
+        .mockResolvedValueOnce(removal('<p>The fine is up to 7 million.</p>', '') as never)
+        .mockResolvedValueOnce(response(fixed, 2) as never)
+      const generation = await streamArticle('site', 'Write a report', { research: false })
+
+      expect((await generation.review(draft)).content).toBe('')
+      expect(generation.editorialReview).toMatchObject({ approved: true, removalPass: true, revisionMode: 'edits' })
+      expect(generation.editorialTokens).toBe(40)
+      // The removal pass runs on the cheap copy-desk model, never the writer.
+      expect(vi.mocked(generateStructuredText).mock.calls[3]![0].prompt).toContain('Remove from the article')
+    })
+
+    it('stays held when the "removal" would add words', async () => {
+      vi.stubGlobal('reportCaughtError', vi.fn())
+      vi.mocked(generateStructuredText)
+        .mockResolvedValueOnce(response(rejected, 10) as never)
+        .mockResolvedValueOnce(response(asEdits(revision), 20) as never)
+        .mockResolvedValueOnce(added as never)
+        .mockResolvedValueOnce(removal('up to 7 million', 'several million') as never)
+      const generation = await streamArticle('site', 'Write a report', { research: false })
+
+      expect((await generation.review(draft)).content).toBe(revision.content)
+      expect(generation.editorialReview).toMatchObject({
+        approved: false,
+        issues: [{ code: 'invented_detail', blocking: true }],
+        resolvedIssues: rejected.issues,
+      })
+      expect(generateStructuredText).toHaveBeenCalledTimes(4)
+    })
+  })
+
+  it('falls back to a full rewrite when an edit quotes text that is not in the draft', async () => {
+    const rewrite = { ...draft, title: 'Rewritten after a failed edit' }
     vi.mocked(generateStructuredText)
       .mockResolvedValueOnce(response(rejected, 10) as never)
-      .mockResolvedValueOnce(response(revision, 20) as never)
       .mockResolvedValueOnce(
         response(
-          { findings: [{ id: 1, resolved: true }], introduced: [{ note: 'Remove "7 million"; no source.' }] },
-          5,
+          { ...asEdits({}), edits: [{ find: 'Not in the draft', replace: 'x', insertAfter: false }] },
+          4,
         ) as never,
       )
+      .mockResolvedValueOnce(response(rewrite, 20) as never)
+      .mockResolvedValueOnce(response(fixed, 5) as never)
+    const generation = await streamArticle('site', 'Write a report', { research: false })
+
+    expect((await generation.review(draft)).title).toBe(rewrite.title)
+    expect(generation.editorialReview).toMatchObject({ approved: true, revisionMode: 'rewrite' })
+    expect(vi.mocked(generateStructuredText).mock.calls[2]![0].prompt).toContain('complete replacement object')
+    expect(vi.mocked(generateStructuredText).mock.calls[2]![0].providerOptions).toEqual(
+      vi.mocked(streamText).mock.calls.at(-1)![0].providerOptions,
+    )
+    // The recheck of a rewrite compares both drafts; an edit list would send only the changes.
+    expect(vi.mocked(generateStructuredText).mock.calls[3]![0].prompt).toContain('originalDraft')
+  })
+
+  it('rechecks an edit list against the changed passages only', async () => {
+    const revision = { ...draft, content: '<h2>Ciri</h2><p>A corrected draft.</p>' }
+    vi.mocked(generateStructuredText)
+      .mockResolvedValueOnce(response(rejected, 10) as never)
+      .mockResolvedValueOnce(response(asEdits(revision), 20) as never)
+      .mockResolvedValueOnce(response(fixed, 5) as never)
     const generation = await streamArticle('site', 'Write a report', { research: false })
 
     await generation.review(draft)
-    expect(generation.editorialReview).toMatchObject({
-      approved: false,
-      issues: [{ code: 'invented_detail', blocking: true }],
-      resolvedIssues: rejected.issues,
-    })
+    const recheck = JSON.parse(vi.mocked(generateStructuredText).mock.calls[2]![0].prompt as string)
+    expect(recheck.changes).toEqual([{ before: draft.content, after: revision.content }])
+    expect(recheck).not.toHaveProperty('originalDraft')
+    // Edits think at medium effort; the writer and a full rewrite keep the quality tier's effort.
+    const { aiReasoning } = await import('../../../server/utils/ai/reasoning')
+    expect(vi.mocked(generateStructuredText).mock.calls[1]![0].providerOptions).toEqual(aiReasoning('medium'))
   })
 
   it('holds without a paid revision when only the verification failed', async () => {

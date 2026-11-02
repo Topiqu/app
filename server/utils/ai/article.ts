@@ -1,7 +1,7 @@
 import type { Language } from '~~/generated/zenstack/models'
 import type { GenerationReviewStage } from '~~/shared/utils/articleGeneration'
 
-import { generateText, streamText } from 'ai'
+import { generateText, Output, streamText } from 'ai'
 
 export const generateArticle = async (
   clientSiteId: string,
@@ -135,24 +135,89 @@ type EditorialOutcome = EditorialReview & {
   checkedAfterRevision: boolean
   resolvedIssues?: ReviewIssue[]
   verification?: string[]
+  /** How the revision was made: an edit list, a full rewrite, plus a delete-only second pass. */
+  revisionMode?: 'edits' | 'rewrite'
+  removalPass?: boolean
+}
+
+type EditorialPassInput = {
+  clientSiteId: string
+  prompt: string
+  config: Awaited<ReturnType<typeof buildArticleConfig>>['config']
+  groundingBrief: string | null
+  context: ReviewContext
+  audit?: ArticleGenerationAudit
+  abortSignal?: AbortSignal
+}
+
+const withTimeout = (signal: AbortSignal | undefined, ms: number) =>
+  signal ? AbortSignal.any([signal, AbortSignal.timeout(ms)]) : AbortSignal.timeout(ms)
+
+/**
+ * The revision: an edit list by default, a full rewrite only when the whole piece must change (a reversed
+ * stance) or the edits cannot be applied. `changes` is set for edits, so the recheck reads only new text.
+ */
+const reviseDraft = async (
+  draft: ArticleObject,
+  review: EditorialReview,
+  verificationBrief: string | null,
+  groundingBrief: string | null,
+  input: EditorialPassInput,
+) => {
+  const { audit, config } = input
+  const instructions =
+    config.instructions +
+    '\nIndependent verification supersedes conflicting original research:\n' +
+    (revisionEvidence(verificationBrief) ?? '')
+  let tokens = 0
+  if (!review.issues.some((issue) => issue.code === 'assignment_mismatch')) {
+    const edited = await auditArticleStep(
+      audit,
+      'revision',
+      () =>
+        generateText({
+          ...config,
+          instructions,
+          prompt: buildEditPrompt(input.prompt, draft, review, verificationBrief),
+          // Targeted edits need less thinking than writing; reasoning bills as output, at $10/MTok on Sol.
+          providerOptions: aiReasoning('medium'),
+          output: Output.object({ schema: revisionEditsSchema }),
+          abortSignal: withTimeout(input.abortSignal, REVISION_TIMEOUT_MS),
+        }),
+      (result) => ({ mode: 'edits', edits: result.output.edits.length, tokens: result.usage.totalTokens ?? 0 }),
+    )
+    tokens += edited.usage.totalTokens ?? 0
+    const applied = applyRevisionEdits(draft, edited.output)
+    if (applied.ok) return { draft: applied.draft, changes: applied.changes, mode: 'edits' as const, tokens }
+    await audit?.record('ARTICLE_GENERATION_FALLBACK', {
+      stage: 'revision',
+      reason: `revision_edits_${applied.reason}`,
+      outcome: 'rewrite',
+    })
+  }
+  const rewritten = await auditArticleStep(
+    audit,
+    'revision',
+    () =>
+      generateText({
+        ...config,
+        instructions,
+        prompt: buildRevisionPrompt(input.prompt, draft, review, verificationBrief),
+        abortSignal: withTimeout(input.abortSignal, REVISION_TIMEOUT_MS),
+      }),
+    (result) => ({ mode: 'rewrite', tokens: result.usage.totalTokens ?? 0 }),
+  )
+  tokens += rewritten.usage.totalTokens ?? 0
+  rewritten.output.sources = filterResearchSources(rewritten.output.sources, groundingBrief)
+  return { draft: rewritten.output, changes: undefined, mode: 'rewrite' as const, tokens }
 }
 
 /**
- * One editorial pass for the editor and the autopilot: review, revise with every finding, then confirm
- * the revision fixed them. Only a blocking finding left over holds the article.
+ * One editorial pass for the editor and the autopilot: review, revise with every finding, confirm the
+ * revision fixed them, and if only removable specifics still block, delete them. Only a blocking finding
+ * left after that holds the article.
  */
-const editorialPass = async (
-  draft: ArticleObject,
-  input: {
-    clientSiteId: string
-    prompt: string
-    config: Awaited<ReturnType<typeof buildArticleConfig>>['config']
-    groundingBrief: string | null
-    context: ReviewContext
-    audit?: ArticleGenerationAudit
-    abortSignal?: AbortSignal
-  },
-) => {
+const editorialPass = async (draft: ArticleObject, input: EditorialPassInput) => {
   const { audit, context, abortSignal } = input
   const first = await auditArticleStep(
     audit,
@@ -178,36 +243,18 @@ const editorialPass = async (
   // Rewriting cannot finish a verification, so that finding alone is no reason to pay for a revision.
   const edits = first.review.issues.filter((issue) => issue.key !== 'verificationIncomplete')
   if (!edits.length) return { draft, review: unrevised(), groundingBrief, tokens }
-
-  let revised: ArticleObject | null = null
-  try {
-    context.onProgress?.('revising')
-    const revision = await auditArticleStep(
-      audit,
-      'revision',
-      () =>
-        generateText({
-          ...input.config,
-          instructions:
-            input.config.instructions +
-            '\nIndependent verification supersedes conflicting original research:\n' +
-            (revisionEvidence(first.verificationBrief) ?? ''),
-          prompt: buildRevisionPrompt(input.prompt, draft, { ...first.review, issues: edits }, first.verificationBrief),
-          abortSignal: abortSignal
-            ? AbortSignal.any([abortSignal, AbortSignal.timeout(REVISION_TIMEOUT_MS)])
-            : AbortSignal.timeout(REVISION_TIMEOUT_MS),
-        }),
-      (result) => ({ tokens: result.usage.totalTokens ?? 0 }),
-    )
-    tokens += revision.usage.totalTokens ?? 0
-    revision.output.sources = filterResearchSources(revision.output.sources, groundingBrief)
-    const output = revision.output
-    revised = output
-    // No second web verification: each live pass samples different claims, so a revision never converges.
-    const checked = await auditArticleStep(
+  const recheckContext = { ...context, researchBrief: groundingBrief }
+  const recheck = (
+    revised: ArticleObject,
+    original: ArticleObject,
+    issues: ReviewIssue[],
+    changes?: RevisionChange[],
+    pass = 2,
+  ) =>
+    auditArticleStep(
       audit,
       'review',
-      () => recheckRevision(output, draft, first.review.issues, { ...context, researchBrief: groundingBrief }),
+      () => recheckRevision(revised, original, issues, recheckContext, changes),
       (result) => ({
         approved: result.review.approved,
         issueCodes: result.review.issues.map((issue) => issue.code),
@@ -215,17 +262,83 @@ const editorialPass = async (
         resolved: result.resolvedIssues.length,
         tokens: result.usage.totalTokens ?? 0,
       }),
-      { pass: 2 },
+      { pass },
     )
+
+  let revised: ArticleObject | null = null
+  try {
+    context.onProgress?.('revising')
+    const revision = await reviseDraft(
+      draft,
+      { ...first.review, issues: edits },
+      first.verificationBrief,
+      groundingBrief,
+      input,
+    )
+    tokens += revision.tokens
+    revised = revision.draft
+    const checked = await recheck(revision.draft, draft, first.review.issues, revision.changes)
     tokens += checked.usage.totalTokens ?? 0
-    const review: EditorialOutcome = {
+    let review: EditorialOutcome = {
       ...checked.review,
       revised: true,
       checkedAfterRevision: true,
       resolvedIssues: checked.resolvedIssues,
       verification,
+      revisionMode: revision.mode,
     }
-    return { draft: output, review, groundingBrief, tokens }
+
+    const blocking = checked.review.issues.filter((issue) => issue.blocking)
+    if (blocking.length && blocking.every(isRemovable)) {
+      const base = revision.draft
+      try {
+        context.onProgress?.('revising')
+        const removal = await auditArticleStep(
+          audit,
+          'revision',
+          () =>
+            generateText({
+              model: aiModel('articleEditor'),
+              maxOutputTokens: 4000,
+              providerOptions: aiReasoning('medium'),
+              prompt: buildRemovalPrompt(base, blocking),
+              output: Output.object({ schema: revisionEditsSchema }),
+              abortSignal: withTimeout(abortSignal, 120_000),
+            }),
+          (result) => ({ mode: 'removal', edits: result.output.edits.length, tokens: result.usage.totalTokens ?? 0 }),
+        )
+        tokens += removal.usage.totalTokens ?? 0
+        // Code, not the model, guarantees the pass only deleted, so it cannot add a new error.
+        const applied = applyRevisionEdits(base, removal.output, { removalOnly: true })
+        if (applied.ok) {
+          const second = await recheck(applied.draft, base, blocking, applied.changes, 3)
+          tokens += second.usage.totalTokens ?? 0
+          if (second.review.approved) {
+            const tips = checked.review.issues.filter((issue) => !issue.blocking)
+            const issues = [...second.review.issues, ...tips].slice(0, 6)
+            revised = applied.draft
+            review = {
+              ...review,
+              issues,
+              approved: !issues.some((issue) => issue.blocking),
+              resolvedIssues: [...checked.resolvedIssues, ...second.resolvedIssues],
+              removalPass: true,
+            }
+          }
+        } else
+          await audit?.record('ARTICLE_GENERATION_FALLBACK', {
+            stage: 'revision',
+            reason: `removal_${applied.reason}`,
+            outcome: 'held',
+          })
+      } catch (error) {
+        if (abortSignal?.aborted) throw error
+        await reportCaughtError('Removal pass failed; keeping the checked revision', error, {
+          clientSiteId: input.clientSiteId,
+        })
+      }
+    }
+    return { draft: revised, review, groundingBrief, tokens }
   } catch (error) {
     if (abortSignal?.aborted) throw error
     await audit?.record('ARTICLE_GENERATION_FALLBACK', {

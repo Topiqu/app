@@ -71,6 +71,11 @@ export async function stubArticlePipeline() {
   await stubNitroImports(
     import('../../server/utils/ai/articleQuality'),
     'buildRevisionPrompt',
+    'buildEditPrompt',
+    'buildRemovalPrompt',
+    'revisionEditsSchema',
+    'applyRevisionEdits',
+    'isRemovable',
     'reviewArticle',
     'recheckRevision',
     'revisionEvidence',
