@@ -189,6 +189,19 @@
               upwards
             />
           </div>
+          <div v-if="translationMode === 'AUTO' || translationMode === 'HYBRID'" class="flex min-w-0 flex-col gap-2">
+            <AppFormLabel :text="$t('common.preferences.translation.selection.label')" />
+            <USelectMenu
+              v-model="translationSelection"
+              valueKey="value"
+              labelKey="label"
+              :items="translationSelectionOptions"
+              upwards
+            />
+            <p class="text-xs leading-5 text-muted">
+              {{ $t(`common.preferences.translation.selection.help.${translationSelection}`) }}
+            </p>
+          </div>
         </div>
 
         <FormClientTranslationLanguages
@@ -300,6 +313,14 @@ const generationFrequency = computed<ReleaseFrequency>({
 })
 const releaseSchedule = defineModel<ReleaseScheduleSettings>('releaseSchedule', { required: true })
 const articleQuality = defineModel<ArticleQuality>('articleQuality', { required: true })
+const translationSelection = defineModel<'SMART' | 'ALL'>('translationSelection', { required: true })
+
+const translationSelectionOptions = computed(() =>
+  (['SMART', 'ALL'] as const).map((value) => ({
+    value,
+    label: t(`common.preferences.translation.selection.options.${value}`),
+  })),
+)
 
 const translationModeOptions = computed(() =>
   (['OFF', 'MANUAL', 'AUTO', 'HYBRID'] as const).map((value) => ({

@@ -9,7 +9,7 @@ async function stubImports() {
 
 await stubImports()
 
-const { maskContentBlocks, rebuildContent } = await import('../../../server/utils/ai/translate')
+const { localPassagesRule, maskContentBlocks, rebuildContent } = await import('../../../server/utils/ai/translate')
 
 const optionsAttr = (opts: Array<{ id: string; label: string }>) => JSON.stringify(opts).replace(/"/g, '&quot;')
 
@@ -146,6 +146,18 @@ describe('rebuildContent', () => {
     expect(verbatim).toHaveLength(0)
     expect(images).toHaveLength(0)
     expect(rebuildContent(masked, verbatim, polls, images)).toContain('<h1>Title</h1>')
+  })
+})
+
+describe('localPassagesRule', () => {
+  it('adds nothing for an article that suits the market', () => {
+    expect(localPassagesRule([])).toBe('')
+  })
+
+  it('lists the passages and forbids substituting facts from another country', () => {
+    const rule = localPassagesRule(['Nová zelená úsporám', 'ceny v Kč'])
+    expect(rule).toContain('"Nová zelená úsporám"; "ceny v Kč"')
+    expect(rule).toContain('Never replace them with laws, prices, subsidies or institutions of another country.')
   })
 })
 

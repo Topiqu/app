@@ -1428,11 +1428,22 @@
             "HYBRID": "Hybridně (přeložit, podržet ke kontrole)"
           }
         },
+        "selection": {
+          "label": "Které články překládat",
+          "options": {
+            "SMART": "Chytrý výběr",
+            "ALL": "Přeložit vše"
+          },
+          "help": {
+            "SMART": "Články o místních zákonech, daních nebo službách se nepřekládají. Přeložit je můžete ručně.",
+            "ALL": "Přeloží se každý publikovaný článek."
+          }
+        },
         "targetLangs": {
           "label": "Jazyky překladu",
           "empty": "Pro váš primární jazyk nejsou k dispozici žádné další jazyky."
         },
-        "tokenWarning": "Automatický překlad vytvoří samostatnou jazykovou verzi každého publikovaného článku pro každý cílový jazyk."
+        "tokenWarning": "Automatický překlad vytvoří samostatnou verzi článku pro každý cílový jazyk, do kterého se přeloží."
       },
       "articleQuality": {
         "title": "Kvalita článků",

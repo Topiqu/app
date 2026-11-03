@@ -1428,11 +1428,22 @@
             "HYBRID": "Hybride (traduire et attendre une validation)"
           }
         },
+        "selection": {
+          "label": "Articles à traduire",
+          "options": {
+            "SMART": "Sélection intelligente",
+            "ALL": "Tout traduire"
+          },
+          "help": {
+            "SMART": "Les articles sur les lois, impôts ou services locaux ne sont pas traduits. Vous pouvez les traduire manuellement.",
+            "ALL": "Chaque article publié est traduit."
+          }
+        },
         "targetLangs": {
           "label": "Langues de traduction",
           "empty": "Aucune autre langue n'est disponible pour votre langue principale."
         },
-        "tokenWarning": "La traduction automatique crée une version distincte de chaque article publié pour chaque langue cible."
+        "tokenWarning": "La traduction automatique crée une version distincte d'un article pour chaque langue cible dans laquelle il est traduit."
       },
       "articleQuality": {
         "title": "Qualité des articles",

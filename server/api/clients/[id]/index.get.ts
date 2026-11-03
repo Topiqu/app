@@ -112,6 +112,7 @@ export default defineEventHandler(async (event) => {
         aiControversyLevel: clientSite.aiControversyLevel,
         translationMode: clientSite.translationMode,
         translationLanguages: clientSite.translationLanguages,
+        translationSelection: clientSite.translationSelection,
         extraTranslationLanguages: clientSite.extraTranslationLanguages,
         translationLanguageLimit: translationLanguageLimit(clientSite),
         canBuyTranslationLanguages:

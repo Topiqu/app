@@ -210,6 +210,7 @@ model ClientSite with Base {
     theme                Theme               @default(blue)
     translationMode      TranslationMode     @default(OFF)
     translationLanguages Language[]
+    translationSelection TranslationSelection @default(SMART)
     /// Bought beyond the plan's included translation languages: Stripe add-on quantity, operator-set on CUSTOM.
     extraTranslationLanguages Int            @default(0)
     /// A separate subscription: a second item on the plan subscription locks plan changes in the Customer Portal.

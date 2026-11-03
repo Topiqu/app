@@ -246,6 +246,12 @@ export default defineEventHandler(async (event) => {
         })
       : await db.clientSite.update(updateArgs)
   if (planChanged && updatedSite.plan === 'BASIC') await cancelTranslationLanguageSubscription(id)
+  // "Translate everything" covers what smart selection held back; the queue drains it as usual.
+  if (updatedSite.translationSelection === 'ALL' && clientSite.translationSelection !== 'ALL')
+    await db.articleTranslation.updateMany({
+      where: { clientSiteId: id, status: 'SKIPPED' },
+      data: { status: 'PENDING', updatedAt: new Date() },
+    })
 
   if (domainChanged) {
     await logAction({

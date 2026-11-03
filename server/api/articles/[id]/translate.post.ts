@@ -68,8 +68,11 @@ export default defineEventHandler(async (event) => {
     })
   let existing = await db.articleTranslation.findUnique({
     where: { articleId_language: { articleId: article.id, language: targetLang } },
-    select: { id: true, updatedAt: true, status: true, translationStartedAt: true },
+    select: { id: true, updatedAt: true, status: true, translationStartedAt: true, marketFit: true },
   })
+  // A person asked for this translation, so it is never judged again; an ADAPT note still applies.
+  const fit = readMarketFit(existing?.marketFit)
+  const localPassages = fit?.verdict === 'ADAPT' ? fit.localPassages : []
   if (existing) {
     if (existing.status === 'TRANSLATING' || existing.translationStartedAt) throw conflict()
     if (!body.replace) throw conflict()
@@ -132,11 +135,12 @@ export default defineEventHandler(async (event) => {
       updatedAt: new Date(backgroundTranslation.updatedAt!),
       status: backgroundTranslation.status,
       translationStartedAt: claimedAt,
+      marketFit: existing?.marketFit ?? null,
     }
   }
 
   const translate = async () => {
-    const { usage, slug: baseSlug, ...translated } = await generateTranslation(article, targetLang)
+    const { usage, slug: baseSlug, ...translated } = await generateTranslation(article, targetLang, localPassages)
 
     try {
       await recordAiUsage(

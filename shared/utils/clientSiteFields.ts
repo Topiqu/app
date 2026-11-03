@@ -39,6 +39,7 @@ export const TENANT_EDITABLE_CLIENT_SITE_FIELDS = [
   'aiControversyLevel',
   'translationMode',
   'translationLanguages',
+  'translationSelection',
   'discloseAiContent',
   'commentsEnabled',
   'commentGifsEnabled',

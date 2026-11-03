@@ -171,6 +171,7 @@
           </UAlert>
           <LazyFormClientAI
             v-model:releaseSchedule="releaseScheduleModel"
+            v-model:translationSelection="form.translationSelection"
             :clientId="clientId ?? ''"
             :username="form.aiUser.username"
             :bio="form.aiUser.bio"

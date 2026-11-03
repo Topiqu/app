@@ -14,6 +14,7 @@ export const translationSelect = {
   status: true,
   source: true,
   error: true,
+  marketFit: true,
   translatedAt: true,
   translationStartedAt: true,
   updatedAt: true,

@@ -1428,11 +1428,22 @@
             "HYBRID": "Hybrid (translate, hold for review)"
           }
         },
+        "selection": {
+          "label": "Which articles to translate",
+          "options": {
+            "SMART": "Smart selection",
+            "ALL": "Translate everything"
+          },
+          "help": {
+            "SMART": "Articles about local laws, taxes or services are not translated. You can still translate them by hand.",
+            "ALL": "Every published article is translated."
+          }
+        },
         "targetLangs": {
           "label": "Translation languages",
           "empty": "No other languages available for your primary language."
         },
-        "tokenWarning": "Automatic translation creates a separate version of every published article for each target language."
+        "tokenWarning": "Automatic translation creates a separate version of an article for each target language it is translated into."
       },
       "articleQuality": {
         "title": "Article quality",

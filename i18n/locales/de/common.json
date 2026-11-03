@@ -1428,11 +1428,22 @@
             "HYBRID": "Hybrid (übersetzen und zur Prüfung zurückhalten)"
           }
         },
+        "selection": {
+          "label": "Welche Artikel übersetzt werden",
+          "options": {
+            "SMART": "Intelligente Auswahl",
+            "ALL": "Alles übersetzen"
+          },
+          "help": {
+            "SMART": "Artikel über lokale Gesetze, Steuern oder Dienstleistungen werden nicht übersetzt. Sie können sie manuell übersetzen.",
+            "ALL": "Jeder veröffentlichte Artikel wird übersetzt."
+          }
+        },
         "targetLangs": {
           "label": "Übersetzungssprachen",
           "empty": "Für deine Hauptsprache sind keine weiteren Sprachen verfügbar."
         },
-        "tokenWarning": "Die automatische Übersetzung erstellt für jeden veröffentlichten Artikel eine eigene Version pro Zielsprache."
+        "tokenWarning": "Die automatische Übersetzung erstellt für jede Zielsprache, in die ein Artikel übersetzt wird, eine eigene Version."
       },
       "articleQuality": {
         "title": "Artikelqualität",

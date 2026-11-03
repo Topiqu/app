@@ -85,7 +85,8 @@
         "READY": "Awaiting review",
         "PUBLISHED": "Published",
         "FAILED": "Failed",
-        "STALE": "Source changed"
+        "STALE": "Source changed",
+        "SKIPPED": "Not for this market"
       },
       "source": {
         "AI": "Machine translated",
@@ -98,7 +99,8 @@
         "FAILED": "The last translation attempt failed. Try again.",
         "STALE": "The source article changed; this translation will be regenerated.",
         "READY": "This translation has no body yet.",
-        "PUBLISHED": "This translation has no body yet."
+        "PUBLISHED": "This translation has no body yet.",
+        "SKIPPED": "Smart selection did not translate this article because it only concerns the source market. You can still translate it."
       },
       "fields": {
         "title": "Title",
@@ -109,7 +111,8 @@
         "approve": "Approve & publish",
         "translate": "Translate now",
         "retranslate": "Translate again",
-        "discard": "Discard"
+        "discard": "Discard",
+        "translateAnyway": "Translate anyway"
       },
       "discardTitle": "Discard this translation?",
       "discardMessage": "The translated text will be deleted. The article itself is not affected, and it can be translated again later.",
@@ -118,7 +121,11 @@
         "translated": "Translation generated",
         "discarded": "Translation discarded"
       },
-      "viewLive": "View live page"
+      "viewLive": "View live page",
+      "marketFit": {
+        "adaptedTitle": "Adapted for this market",
+        "adaptedText": "These passages only apply to the source country; check them before publishing."
+      }
     },
     "explore": "Explore articles",
     "openArticle": "Open article",
