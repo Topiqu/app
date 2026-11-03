@@ -244,9 +244,7 @@ export const useArticleGenerationStore = defineStore('articleGeneration', () => 
       const session = await $fetch<ResumedSession, '/api/articles/generations/:id/status'>(
         `/api/articles/generations/${id}/status` as '/api/articles/generations/:id/status',
       ).catch((error) =>
-        error?.statusCode === 404
-          ? ({ status: 'FAILED', recoverableSnapshot: null } as const)
-          : null,
+        error?.statusCode === 404 ? ({ status: 'FAILED', recoverableSnapshot: null } as const) : null,
       )
       // Cleared, stopped or replaced by a new run while the request was out.
       if (run.value?.status !== 'running' || sessionId.value !== id) return

@@ -6,6 +6,7 @@ import { afterAll, afterEach, describe, expect, it, vi } from 'vitest'
 
 import { createDatabaseClient } from '../../../server/utils/database'
 import { isUniqueViolation } from '../../../server/utils/databaseError'
+import { canSeeUnreleasedArticle, isArticleLive } from '../../../server/utils/articleViewerAccess'
 
 const url = process.env.TEST_DATABASE_URL
 const enabled = !!url && /test/i.test(new URL(url).pathname) && url !== process.env.DATABASE_URL
@@ -121,6 +122,8 @@ describe.skipIf(!enabled)('reader identity uniqueness on PostgreSQL', () => {
     vi.stubGlobal('ipKey', () => 'test-ip')
     vi.stubGlobal('consumeRateLimit', async () => true)
     vi.stubGlobal('isUniqueViolation', isUniqueViolation)
+    vi.stubGlobal('canSeeUnreleasedArticle', canSeeUnreleasedArticle)
+    vi.stubGlobal('isArticleLive', isArticleLive)
     vi.stubGlobal('useServerI18n', async () => ({ translate: (key: string) => key }))
     vi.stubGlobal('reportCaughtError', vi.fn())
     let body: unknown = { isHelpful: false, reason: 'Needs examples', platform: 'OTHER' }

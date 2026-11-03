@@ -57,7 +57,13 @@ describe('casting a poll vote', () => {
     db.pollOption.findFirst.mockResolvedValue(optionOf())
     expect(await castVote({} as never)).toEqual({ pollResult: 'option-1', voteCounts: { 'option-1': 2 } })
     expect(db.pollResult.create).toHaveBeenCalledWith({
-      data: { articleId: 'article-1', pollId: 'poll-1', optionId: 'option-1', userId: null, sessionId: 'anonymous-session' },
+      data: {
+        articleId: 'article-1',
+        pollId: 'poll-1',
+        optionId: 'option-1',
+        userId: null,
+        sessionId: 'anonymous-session',
+      },
     })
   })
 
@@ -80,7 +86,10 @@ describe('casting a poll vote', () => {
     ['a scheduled article', { releaseAt: tomorrow() }],
   ])('reveals nothing about %s to a reader who cannot see it', async (_, overrides) => {
     db.pollOption.findFirst.mockResolvedValue(optionOf(overrides))
-    await expect(castVote({} as never)).rejects.toMatchObject({ statusCode: 404, message: 'common.errors.articleNotFound' })
+    await expect(castVote({} as never)).rejects.toMatchObject({
+      statusCode: 404,
+      message: 'common.errors.articleNotFound',
+    })
     expect(db.pollResult.create).not.toHaveBeenCalled()
   })
 
