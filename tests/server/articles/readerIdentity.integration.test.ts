@@ -30,11 +30,15 @@ const fixture = async () => {
   await db!.clientSite.create({
     data: { id: clientSiteId, name: `identity-${clientSiteId}`, domain: `${clientSiteId}.test` },
   })
-  await db!.user.create({ data: { id: userId, email: `${userId}@example.invalid`, username: `identity-${userId}` } })
+  const authorId = randomUUID()
+  users.push(authorId)
+  for (const id of [userId, authorId])
+    await db!.user.create({ data: { id, email: `${id}@example.invalid`, username: `identity-${id}` } })
   const article = await db!.article.create({
     data: {
       clientSiteId,
-      userId,
+      // The reader is not the author: an author previewing an unreleased article is told why, not 404.
+      userId: authorId,
       slug: randomUUID(),
       language: 'en',
       title: 'Identity test',
