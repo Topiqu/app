@@ -83,7 +83,9 @@ describe('buildTopicPrompt', () => {
     expect(prompt).toContain('guide, guide, analysis')
     expect(prompt).toContain('three most recent')
     expect(prompt).toContain('guide / checklist / faq')
-    expect(prompt).toContain('select at least one useful module')
+    expect(prompt).toContain('select at least one that serves the topic')
+    // Media is added in code, so the picker's variety pressure cannot remove it.
+    expect(prompt).toContain('Body images and a video are added')
   })
 
   it('frames Search Console as optional enrichment', () => {

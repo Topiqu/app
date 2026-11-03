@@ -196,6 +196,16 @@ export const selectedModulesFor = (format: ArticleFormat, modules?: readonly Art
   ...new Set(modules ?? ARTICLE_FORMATS[format].defaultModules),
 ]
 
+/**
+ * The autopilot always illustrates the body and asks for a video whenever research runs; the writer embeds
+ * one only with a real URL from that research. Left to the topic picker, neither was ever chosen.
+ */
+export const autopilotModules = (format: ArticleFormat, picked: readonly ArticleModule[], researched: boolean) => {
+  const allowed = new Set(allowedModulesFor(format))
+  const media: ArticleModule[] = researched ? ['images', 'youtube'] : ['images']
+  return [...new Set([...picked, ...media.filter((module) => allowed.has(module))])]
+}
+
 /** The picker sees both broad formats and the structures/modules it can deliberately rotate. */
 export const formatMenu = () =>
   ARTICLE_FORMAT_NAMES.map((name) => {

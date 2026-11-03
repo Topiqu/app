@@ -127,6 +127,7 @@ const setup = async (
     })),
   )
   vi.stubGlobal('selectedModulesFor', () => [])
+  vi.stubGlobal('autopilotModules', (_format: string, picked: string[]) => picked)
   vi.stubGlobal('researchRequest', () => false)
   const writer = vi.fn(async () => {
     if (failure === 'generation') throw new Error('Writer unavailable')

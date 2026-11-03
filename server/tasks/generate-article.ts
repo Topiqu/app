@@ -296,7 +296,11 @@ The headline is a lead, not a source. Every fact comes from the research; leave 
         : ''
 
       const cronFormat = topic?.format ?? 'news'
-      const cronModules = topic ? selectedModulesFor(topic.format, topic.modules) : selectedModulesFor(cronFormat)
+      const cronModules = autopilotModules(
+        cronFormat,
+        topic ? selectedModulesFor(topic.format, topic.modules) : selectedModulesFor(cronFormat),
+        topic ? researchRequest(topic) !== false : false,
+      )
 
       // If selection failed we fall back to the previous behaviour — the writer picks the topic
       // itself from the same rules — rather than skipping the client's run entirely.

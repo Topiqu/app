@@ -35,6 +35,8 @@ describe('generate-article cron row', () => {
 
   it('applies the scheduled media policy and reports requested versus delivered modules', () => {
     expect(task).toContain('selectedModulesFor(topic.format, topic.modules)')
+    // Images and a researched video are added in code; the topic picker never chose them.
+    expect(task).toContain('autopilotModules(')
     expect(task).toMatch(/modules:\s*cronModules/)
     expect(task).toContain('requestedModules: cronModules')
     expect(task).toContain('missingModules')
