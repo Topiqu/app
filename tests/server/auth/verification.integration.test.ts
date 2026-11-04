@@ -9,6 +9,7 @@ import type { UserCreateArgs } from '../../../generated/zenstack/input'
 import { stubNitroImports } from '../../helpers/nitroImports'
 
 async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/disposableEmails'), 'isDisposableEmail')
   await stubNitroImports(import('../../../server/utils/metrics'), 'articleTextMetrics')
   await stubNitroImports(import('../../../server/utils/database'), 'createDatabaseClient')
   await stubNitroImports(

@@ -7,6 +7,7 @@ export default defineEventHandler(async (event) => {
     signInSchema.extend({ username: z.string().trim().min(3).max(50), email: emailVerificationEmailSchema }).parse,
   )
   const { username, email, password } = body
+  if (isDisposableEmail(email)) throw createError({ statusCode: 400, message: t('common.auth.disposableEmail')! })
 
   if (!(await allowEmailVerificationRequest(event, email, 'issue')))
     throw createError({ statusCode: 429, message: t('common.errors.tooManyRequests')! })

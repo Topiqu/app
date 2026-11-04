@@ -328,6 +328,8 @@ const DISPOSABLE_DOMAINS = new Set([
   'teleworm.com',
   'teleworm.us',
   'tempalias.com',
+  'temp-mail.org',
+  'temp-mail.io',
   'tempemail.biz',
   'tempemail.com',
   'tempemail.net',
@@ -439,7 +441,8 @@ const DISPOSABLE_DOMAINS = new Set([
 ])
 
 export const isDisposableEmail = (email: string): boolean => {
-  const domain = email.toLowerCase().split('@')[1]?.trim()
+  const domain = email.toLowerCase().split('@')[1]?.trim().replace(/\.$/, '')
   if (!domain) return false
-  return DISPOSABLE_DOMAINS.has(domain)
+  const labels = domain.split('.')
+  return labels.some((_, index) => DISPOSABLE_DOMAINS.has(labels.slice(index).join('.')))
 }

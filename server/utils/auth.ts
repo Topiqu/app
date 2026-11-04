@@ -236,6 +236,7 @@ const createAuth = (customOrigin?: string, customTenantId?: string) =>
           // Only OAuth creates users here; registration has its own endpoint.
           before: async (user) => {
             if (!user.emailVerified) throw reject('FORBIDDEN', 'oauth_email_unverified')
+            if (isDisposableEmail(user.email)) throw reject('FORBIDDEN', 'disposable_email')
             return { data: { ...user, name: await uniqueUsername(user.name, user.email) } }
           },
         },

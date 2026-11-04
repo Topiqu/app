@@ -8,6 +8,7 @@ const codes: Record<string, string> = {
   email_not_verified: 'email_not_verified',
   email_not_found: 'oauth_email_unverified',
   oauth_email_unverified: 'oauth_email_unverified',
+  disposable_email: 'disposable_email',
 }
 
 export function authErrorKey(error: unknown): string | undefined {
@@ -15,6 +16,7 @@ export function authErrorKey(error: unknown): string | undefined {
   if (error === 'oauth_local_account_unverified' || error === 'email_not_verified')
     return 'common.auth.localEmailUnverified'
   if (error === 'oauth_email_unverified') return 'common.auth.providerEmailUnverified'
+  if (error === 'disposable_email') return 'common.auth.disposableEmail'
   return 'common.auth.oauthFailed'
 }
 

@@ -18,6 +18,7 @@ describe('client auth errors', () => {
   it.each([
     ['account_not_linked', 'common.auth.localEmailUnverified'],
     ['email_not_found', 'common.auth.providerEmailUnverified'],
+    ['disposable_email', 'common.auth.disposableEmail'],
     ['account_deactivated', 'common.auth.oauthFailed'],
     ['constructor', 'common.auth.oauthFailed'],
   ])('maps the Better Auth code %s to %s', (code, key) => {
