@@ -82,66 +82,6 @@
             @update:bodyFontUrl="emit('update:bodyFontUrl', $event)"
           />
         </section>
-
-        <section
-          class="@container min-w-0 space-y-4 rounded-(--topiqu-surface-radius) border border-default p-4 sm:p-5"
-        >
-          <div class="flex flex-wrap items-center justify-between gap-3">
-            <span data-branding-section="socials" class="text-lg font-semibold text-highlighted">
-              {{ $t('common.preferences.socials.label') }}
-            </span>
-            <UDropdownMenu :items="availableSocialItems">
-              <UButton
-                color="neutral"
-                variant="soft"
-                size="sm"
-                icon="mdi:plus"
-                :label="$t('common.preferences.branding.addSocial')"
-              />
-            </UDropdownMenu>
-          </div>
-
-          <div v-if="localSocials.length" class="divide-y divide-default">
-            <div
-              v-for="(social, index) in localSocials"
-              :key="social.platform"
-              class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 py-3 first:pt-0 last:pb-0 @sm:grid-cols-[7rem_minmax(0,1fr)_auto]"
-            >
-              <div class="col-span-2 flex min-w-0 items-center gap-2 @sm:col-span-1">
-                <UIcon size="18" :name="platformIcons[social.platform]" class="shrink-0 text-muted" />
-                <span class="text-sm font-medium text-highlighted">{{
-                  $t(`common.preferences.socials.platforms.${social.platform}`)
-                }}</span>
-              </div>
-              <UFormField
-                :label="$t(`common.preferences.socials.platforms.${social.platform}`)"
-                :ui="{ wrapper: 'sr-only', container: 'mt-0' }"
-                :error="!isValidUrl(social.url) ? $t('common.messages.invalidUrlShort') : undefined"
-                class="min-w-0"
-              >
-                <UInput
-                  v-model="localSocials[index]!.url"
-                  :placeholder="platformPlaceholders[social.platform]"
-                  :maxLength="255"
-                  class="w-full"
-                  @blur="normalizeUrl(index)"
-                />
-              </UFormField>
-              <UButton
-                color="neutral"
-                variant="ghost"
-                size="sm"
-                square
-                icon="mdi:trash-can-outline"
-                :aria-label="`${$t('common.actions.delete')}: ${$t(`common.preferences.socials.platforms.${social.platform}`)}`"
-                @click="removeSocial(index)"
-              />
-            </div>
-          </div>
-
-          <UEmpty v-else size="sm" :description="$t('common.preferences.socials.noSocials')" />
-        </section>
-        <slot name="after" />
       </div>
       <aside class="order-first min-w-0 xl:order-last xl:sticky xl:top-6">
         <FormClientBrandingPreview
@@ -159,6 +99,65 @@
           :plan
         />
       </aside>
+    </div>
+    <div class="flex min-w-0 max-w-2xl flex-col gap-6">
+      <section class="@container min-w-0 space-y-4 rounded-(--topiqu-surface-radius) border border-default p-4 sm:p-5">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <span data-branding-section="socials" class="text-lg font-semibold text-highlighted">
+            {{ $t('common.preferences.socials.label') }}
+          </span>
+          <UDropdownMenu :items="availableSocialItems">
+            <UButton
+              color="neutral"
+              variant="soft"
+              size="sm"
+              icon="mdi:plus"
+              :label="$t('common.preferences.branding.addSocial')"
+            />
+          </UDropdownMenu>
+        </div>
+
+        <div v-if="localSocials.length" class="divide-y divide-default">
+          <div
+            v-for="(social, index) in localSocials"
+            :key="social.platform"
+            class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 py-3 first:pt-0 last:pb-0 @sm:grid-cols-[7rem_minmax(0,1fr)_auto]"
+          >
+            <div class="col-span-2 flex min-w-0 items-center gap-2 @sm:col-span-1">
+              <UIcon size="18" :name="platformIcons[social.platform]" class="shrink-0 text-muted" />
+              <span class="text-sm font-medium text-highlighted">{{
+                $t(`common.preferences.socials.platforms.${social.platform}`)
+              }}</span>
+            </div>
+            <UFormField
+              :label="$t(`common.preferences.socials.platforms.${social.platform}`)"
+              :ui="{ wrapper: 'sr-only', container: 'mt-0' }"
+              :error="!isValidUrl(social.url) ? $t('common.messages.invalidUrlShort') : undefined"
+              class="min-w-0"
+            >
+              <UInput
+                v-model="localSocials[index]!.url"
+                :placeholder="platformPlaceholders[social.platform]"
+                :maxLength="255"
+                class="w-full"
+                @blur="normalizeUrl(index)"
+              />
+            </UFormField>
+            <UButton
+              color="neutral"
+              variant="ghost"
+              size="sm"
+              square
+              icon="mdi:trash-can-outline"
+              :aria-label="`${$t('common.actions.delete')}: ${$t(`common.preferences.socials.platforms.${social.platform}`)}`"
+              @click="removeSocial(index)"
+            />
+          </div>
+        </div>
+
+        <UEmpty v-else size="sm" :description="$t('common.preferences.socials.noSocials')" />
+      </section>
+      <slot name="after" />
     </div>
   </div>
 </template>
