@@ -30,6 +30,11 @@ against a recent production backup in an isolated environment.
 
 ## Integration connection smoke checks
 
+The Stripe account operator can use [the release checklist](stripe-release-checklist.md).
+The [AI allowances and CUSTOM billing policy](ai-economics-proposal.md) describes
+the implemented per-blog limits, explicit top-ups and managed seat billing. The
+working tree still requires an operator-controlled production rollout.
+
 Keep `AUTH_ORIGIN` at the central auth origin. LinkedIn's configured redirect URI
 (`APP_URL`-derived) and Search Console's configured redirect URI must have that same
 origin. An inconsistent configuration fails closed instead of moving provider state
@@ -51,6 +56,46 @@ unit/security tests, which use synthetic exchanges.
 Check Stripe portal, subscription and article-pack returns in all supported locales,
 including a custom domain. Return destinations are same-origin and locale-prefixed;
 unsupported supplied locales are rejected.
+
+The Stripe webhook endpoint must receive `customer.subscription.updated`,
+`customer.subscription.paused`, `customer.subscription.resumed` and
+`customer.subscription.deleted`, in addition to its existing Checkout and invoice events.
+Pause/resume events reconcile the provider's current subscription, so delayed events cannot
+restore an obsolete status. A paused trial loses paid entitlements; a resumed active subscription
+restores them. Confirm delivery in Stripe before relying on these transitions in production.
+
+Managed Topiqu subdomains are free on every plan, including during and after a trial. Changing one
+does not require a card, contact Stripe or create a Cloudflare Custom Hostname.
+Custom-domain connections require payment history on a non-Basic plan, CUSTOM/non-Basic PERMANENT, a non-Basic
+plan without trial provenance, or an unexpired card attached to the tenant's Stripe customer.
+A former trial manually changed to PRO/PREMIUM still needs payment history or a card.
+A free Premium trial alone is not
+enough. The existing Pro-or-higher requirement for custom hostnames still applies. Verify a
+card-less trial, a paid tenant, a saved card, a billing outage and cancellation/disconnection.
+Billing errors must block a new change without hiding cleanup of an existing connection.
+
+When a trial/subscription transition commits BASIC, the same transaction switches a custom
+domain to a free managed address and cancels pending custom activation. The next custom-host
+request reads current database state; a stale cache cannot keep serving the former blog.
+The minute `domain-cleanup` task then retries Cloudflare/Dokploy cleanup using the retained
+resource IDs and per-connection lease. This separates immediate application access revocation
+from provider availability. Manually adopted resources are never deleted automatically: the
+connection retains its IDs and reports `ADOPTION_REQUIRED` for operator cleanup. Card-less
+trial expiry is detected by the existing ten-minute `trial-expiry` sweep, while Stripe-owned
+subscriptions follow the provider webhook lifecycle. No claim is made that a remote provider
+deletes resources synchronously with a plan change.
+
+Blog count is unlimited; the creation rate limit remains. Team seats belong to each blog:
+BASIC 1, PRO 2, PREMIUM 3, including its owner. Pending invitations reserve a seat for seven
+days; accepting or resending rechecks capacity under the same row lock as billing changes.
+After a downgrade, the owner and oldest eligible members retain access. Other memberships
+remain visible as paused and resume after an upgrade or an earlier member is removed.
+Managed CUSTOM starts with three paid seats; buying capacity requires an explicit
+Stripe price preview and confirmation. Invitations never charge. Legacy CUSTOM
+contracts keep their individually configured terms. Additional blogs start BASIC
+without another trial. See the billing policy for the exact catalog and migration requirements.
+Before release, test parallel invitations and acceptance after a downgrade against the isolated
+PostgreSQL test database, plus owner access and recovery after upgrading.
 
 ## Article recovery and sessions
 
