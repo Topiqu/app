@@ -171,7 +171,8 @@ const document = {
       },
       post: {
         operationId: 'createArticle',
-        'x-required-scopes': ['WRITE'], 'x-conditional-scopes': [publishScope],
+        'x-required-scopes': ['WRITE'],
+        'x-conditional-scopes': [publishScope],
         summary: 'Create an article',
         description:
           'Needs the WRITE scope; publishing or scheduling also PUBLISH. The article is authored by the member who created the key.',
@@ -212,7 +213,8 @@ const document = {
       },
       patch: {
         operationId: 'updateArticle',
-        'x-required-scopes': ['WRITE'], 'x-conditional-scopes': [publishScope],
+        'x-required-scopes': ['WRITE'],
+        'x-conditional-scopes': [publishScope],
         summary: 'Update an article',
         description:
           'Needs the WRITE scope; changing `status` or `releaseAt` also PUBLISH. Send `expectedVersion` (the `editVersion` you read) to get a 409 instead of overwriting a newer edit; without it the update is last-write-wins.',
