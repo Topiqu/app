@@ -13,7 +13,7 @@ export const researchWebsite = async (id: string, clientSiteId: string, sourceUr
   assertWebsiteModel()
   const started = Date.now()
   const response = await generateText({
-    model: aiModel('websiteImport'),
+    model: aiModel('websiteImport', undefined, clientSiteId),
     providerOptions,
     maxRetries: 0,
     maxOutputTokens: WEBSITE_IMPORT_LIMITS.researchOutputTokens,
@@ -76,7 +76,7 @@ export const analyzeWebsite = async (
   assertWebsiteModel()
   const started = Date.now()
   const response = await generateText({
-    model: aiModel('websiteImport'),
+    model: aiModel('websiteImport', undefined, clientSiteId),
     providerOptions,
     maxRetries: 0,
     maxOutputTokens: WEBSITE_IMPORT_LIMITS.extractionOutputTokens,

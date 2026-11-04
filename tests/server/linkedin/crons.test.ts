@@ -2,9 +2,11 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { stubAiFunding } from '../../helpers/aiFunding'
 import { stubNitroImports } from '../../helpers/nitroImports'
 
 async function stubImports() {
+  stubAiFunding()
   await stubNitroImports(import('../../../server/utils/concurrency'), 'mapLimit')
   await stubNitroImports(import('../../../server/utils/linkedin/policy'), 'checkPolicyAndScore')
   await stubNitroImports(

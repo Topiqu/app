@@ -8,6 +8,18 @@ import { articleWriterId } from '../../../server/utils/ai/modelRegistry'
 import { ARTICLE_QUALITY_EFFORT } from '../../../shared/utils/articleQuality'
 
 async function stubImports() {
+  await stubNitroImports(
+    import('../../../server/utils/ai/spend'),
+    'aiLanguageSpend',
+    'aiImageSpend',
+    'aiEmbeddingSpend',
+  )
+  vi.stubGlobal('reserveAiAllowance', async (clientSiteId: string, _kind: string, reserved: number) => ({
+    id: 'funded-fixture',
+    clientSiteId,
+    reserved,
+  }))
+  vi.stubGlobal('settleAiAllowance', vi.fn().mockResolvedValue(undefined))
   await stubNitroImports(import('../../../server/utils/aiUsage'), 'recordAiUsage')
   await stubNitroImports(
     import('../../../server/utils/ai/articleUsage'),
@@ -27,7 +39,8 @@ async function stubImports() {
 await stubImports()
 
 const { aiReasoning } = await import('../../../server/utils/ai/reasoning')
-const { aiModel, aiWebSearchTool } = await import('../../../server/utils/ai/models')
+const { aiModel: fundedModel, aiWebSearchTool } = await import('../../../server/utils/ai/models')
+const aiModel: typeof fundedModel = (task, model) => fundedModel(task, model, 'model-fixture')
 
 const { requests } = vi.hoisted(() => ({ requests: [] as { url: string; body: Record<string, any> }[] }))
 
@@ -265,14 +278,14 @@ describe('AI model integration', () => {
     })
   })
 
-  it('keeps the provider default limit when a caller does not specify an answer budget', async () => {
+  it('bounds an otherwise unspecified provider output for the shared AI budget', async () => {
     await generateText({
       model: aiModel('textEdit'),
       prompt: 'Improve a sentence.',
       providerOptions: aiReasoning('medium'),
     })
 
-    expect(requests[0]?.body).not.toHaveProperty('max_output_tokens')
+    expect(requests[0]?.body).toHaveProperty('max_output_tokens', 32768)
   })
 
   it('keeps the ChatGPT visibility probe on OpenAI Responses with OpenAI web search', async () => {

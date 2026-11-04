@@ -6,6 +6,18 @@ import { emptyWebsiteValues } from '../../../shared/utils/websiteImport'
 
 async function stubImports() {
   await stubNitroImports(
+    import('../../../server/utils/ai/spend'),
+    'aiLanguageSpend',
+    'aiImageSpend',
+    'aiEmbeddingSpend',
+  )
+  vi.stubGlobal('reserveAiAllowance', async (clientSiteId: string, _kind: string, reserved: number) => ({
+    id: 'website-funding',
+    clientSiteId,
+    reserved,
+  }))
+  vi.stubGlobal('settleAiAllowance', vi.fn().mockResolvedValue(undefined))
+  await stubNitroImports(
     import('../../../server/utils/ai/articleUsage'),
     'articleEmbeddingUsage',
     'articleImageUsage',

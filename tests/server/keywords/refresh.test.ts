@@ -5,10 +5,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { DatabaseClient } from '../../../server/utils/database'
 
+import { stubAiFunding } from '../../helpers/aiFunding'
 import { stubNitroImports } from '../../helpers/nitroImports'
 import { keywordLocation } from '../../../shared/utils/keywordPlan'
 
 async function stubImports() {
+  stubAiFunding()
   await stubNitroImports(import('../../../server/utils/keywords/serp'), 'serpSignals')
   await stubNitroImports(import('../../../server/utils/ai/reasoning'), 'aiReasoning')
   await stubNitroImports(import('../../../server/utils/planFeatures'), 'activeFeatureFilter')
@@ -269,9 +271,9 @@ describe('suggestions', () => {
 })
 
 describe('credit reservation and limits', () => {
-  it('allows Premium 25 preparations monthly and Custom 15', () => {
+  it('allows Premium and managed Custom 25 preparations monthly', () => {
     expect(refreshAllowance('PREMIUM')).toEqual({ allowed: true, monthly: 25 })
-    expect(refreshAllowance('CUSTOM')).toEqual({ allowed: true, monthly: 15 })
+    expect(refreshAllowance('CUSTOM')).toEqual({ allowed: true, monthly: 25 })
     expect(refreshAllowance('PRO')).toEqual({ allowed: false, monthly: 0 })
   })
   it('queues a suggestion with a reserved credit under a tenant lock', async () => {

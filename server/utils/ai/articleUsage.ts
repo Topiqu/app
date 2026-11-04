@@ -4,6 +4,8 @@ import type { EmbeddingModelMiddleware, ImageModelMiddleware, LanguageModelMiddl
 import { randomUUID } from 'node:crypto'
 import { AsyncLocalStorage } from 'node:async_hooks'
 
+import { withAiSpend } from './spend'
+
 type Context = {
   attemptId: string
   clientSiteId: string
@@ -17,7 +19,8 @@ type Context = {
 const context = new AsyncLocalStorage<Context>()
 
 /** Request-local attribution also survives concurrent sites, images and a streaming writer. */
-export const withArticleUsage = <T>(value: Context, run: () => T): T => context.run(value, run)
+export const withArticleUsage = <T>(value: Context, run: () => T): T =>
+  withAiSpend(value.clientSiteId, () => context.run(value, run), value.operationId)
 
 export const bindArticleUsage =
   <Args extends unknown[], Result>(value: Context | ((...args: Args) => Context), run: (...args: Args) => Result) =>

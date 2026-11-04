@@ -1,5 +1,7 @@
 import type { ClientPlan } from '~~/generated/zenstack/models'
 
+import { aiAllowanceErrorCode } from '~~/shared/utils/aiAllowanceError'
+
 const TRANSLATION_PLANS: ClientPlan[] = ['PRO', 'PREMIUM', 'CUSTOM']
 const BATCH_SIZE = 10
 
@@ -33,6 +35,7 @@ export default defineMonitoredTask({
       where: {
         status: { in: ['PENDING', 'STALE'] },
         deletedAt: null,
+        OR: [{ aiRetryAt: null }, { aiRetryAt: { lte: now } }],
         article: { status: 'published', deletedAt: null },
         clientSite: {
           deletedAt: null,
@@ -116,7 +119,13 @@ export default defineMonitoredTask({
       }
 
       try {
-        const { usage, slug: baseSlug, ...translated } = await generateTranslation(row.article, row.language)
+        const {
+          usage,
+          slug: baseSlug,
+          ...translated
+        } = await withAiAllowance(row.clientSiteId, 'TRANSLATION', () =>
+          withAiSpend(row.clientSiteId, () => generateTranslation(row.article, row.language)),
+        )
 
         await recordAiUsage(row.clientSiteId, usage.totalTokens || 0, 'TRANSLATE_ARTICLE', {
           articleId: row.article.id,
@@ -172,6 +181,7 @@ export default defineMonitoredTask({
               model: aiModelId('translation'),
               usage: toDatabaseJson(usage),
               error: null,
+              aiRetryAt: null,
               translatedAt: new Date(),
               translationStartedAt: null,
               updatedAt: nextTranslationVersion(claimedAt),
@@ -226,6 +236,22 @@ export default defineMonitoredTask({
           })
         }
       } catch (error: unknown) {
+        if (['AI_ALLOWANCE_EXHAUSTED', 'AI_PLAN_REQUIRED'].includes(aiAllowanceErrorCode(error) ?? '')) {
+          const allowance = await getAiAllowance(row.clientSiteId)
+          const nextPeriod = allowance.renewsAt ? new Date(allowance.renewsAt) : new Date(now.getTime() + 86400000)
+          await prisma.articleTranslation.updateMany({
+            where: { id, status: 'TRANSLATING', updatedAt: claimedAt },
+            data: {
+              status: 'PENDING',
+              translationStartedAt: null,
+              error: 'AI_ALLOWANCE_EXHAUSTED',
+              aiRetryAt: nextPeriod > now ? nextPeriod : new Date(now.getTime() + 3600000),
+              updatedAt: nextTranslationVersion(claimedAt),
+            },
+          })
+          skipped++
+          continue
+        }
         const message = error instanceof Error ? error.message.slice(0, 1000) : 'Translation failed'
         await prisma.articleTranslation.updateMany({
           where: { id, status: 'TRANSLATING', updatedAt: claimedAt },

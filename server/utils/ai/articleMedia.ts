@@ -1,5 +1,7 @@
 import type { Language } from '~~/generated/zenstack/models'
 
+import { isAiAllowanceError } from '~~/shared/utils/aiAllowanceError'
+
 type FinalizeImage = { slot: number; html: string }
 
 // Library pictures looked at per search; past that the slot falls back as if nothing matched.
@@ -96,6 +98,7 @@ export const finalizeArticle = async (
       )
       return { url, width, height, storageKey, mimeType, sizeBytes, contentHash }
     } catch (error) {
+      if (isAiAllowanceError(error)) throw error
       await reportCaughtError('Article image generation failed', error, { prompt })
       return null
     }

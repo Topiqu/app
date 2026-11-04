@@ -100,7 +100,7 @@ export const parseGoogleResult = (result: GoogleResponse) => {
     text: (candidate?.content?.parts ?? []).flatMap((part) => (part.text ? [part.text] : [])).join('\n'),
     sources,
     searchedWeb: Boolean(metadata?.webSearchQueries?.length || metadata?.groundingChunks?.length),
-    usage: result.usageMetadata ?? {},
+    usage: { ...result.usageMetadata, searchQueries: metadata?.webSearchQueries?.length ?? null },
     totalTokens: result.usageMetadata?.totalTokenCount ?? 0,
   }
 }

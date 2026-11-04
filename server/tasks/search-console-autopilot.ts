@@ -109,7 +109,7 @@ export default defineMonitoredTask({
         }
 
         if (candidate.action === 'CTR_OPTIMIZATION') {
-          const generated = await generateCtrOptimization(article, signal)
+          const generated = await withAiSpend(connection.clientSiteId, () => generateCtrOptimization(article, signal))
           if (!generated.tokens) continue
           await recordAiUsage(connection.clientSiteId, generated.tokens, 'SEO_AUTOPILOT_CTR_TOKENS', {
             usage: generated.usage,
@@ -137,7 +137,7 @@ export default defineMonitoredTask({
             },
           })
         } else {
-          const generated = await generateContentRefresh(article, signal)
+          const generated = await withAiSpend(connection.clientSiteId, () => generateContentRefresh(article, signal))
           if (!generated.tokens) continue
           const addition = sanitizeHtml(
             `<section data-topiqu-seo-refresh="true"><h2>${generated.result.heading}</h2>${generated.result.contentHtml}</section>`,

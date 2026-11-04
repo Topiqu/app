@@ -1,6 +1,8 @@
 import { randomUUID } from 'node:crypto'
 import { generateImage as generateImg } from 'ai'
 
+import { withAiSpend } from './spend'
+
 const IMAGE_EXTENSIONS: Record<string, string> = {
   'image/webp': 'webp',
   'image/png': 'png',
@@ -35,12 +37,15 @@ export const generateImage = async (
     ? AbortSignal.any([abortSignal, AbortSignal.timeout(45_000)])
     : AbortSignal.timeout(45_000)
 
-  const output = await generateImg({
-    model: aiImageModel('articleImage'),
-    prompt: articleImagePrompt(prompt),
-    providerOptions: { openai: { quality: 'medium' } },
-    abortSignal: imageSignal,
-  })
+  const run = () =>
+    generateImg({
+      model: aiImageModel('articleImage'),
+      size: '1024x1024',
+      prompt: articleImagePrompt(prompt),
+      providerOptions: { openai: { quality: 'medium' } },
+      abortSignal: imageSignal,
+    })
+  const output = await (clientSiteId ? withAiSpend(clientSiteId, run) : run())
 
   const optimized = await optimizeGeneratedImage(output.image.uint8Array)
   const filename =

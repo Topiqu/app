@@ -4,6 +4,7 @@ import { z } from 'zod'
 import * as cheerio from 'cheerio'
 import { generateText, Output } from 'ai'
 import { isTag, isText, type AnyNode, type Text } from 'domhandler'
+import { isAiAllowanceError } from '~~/shared/utils/aiAllowanceError'
 
 export const MAX_ARTICLE_LINKS = 3
 const CANDIDATE_POOL = 200
@@ -184,6 +185,7 @@ export const linkArticle = async (
       tokens: usage.totalTokens ?? 0,
     }
   } catch (error) {
+    if (isAiAllowanceError(error)) throw error
     await step?.fail(error)
     if (abortSignal?.aborted) throw error
     await audit?.record('ARTICLE_GENERATION_FALLBACK', {

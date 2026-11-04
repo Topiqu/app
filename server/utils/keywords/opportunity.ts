@@ -92,7 +92,7 @@ export const assessOpportunities = async (
 ) => {
   if (!candidates.length) return { accepted: [], expansions: [], covered: [] }
   const result = await generateText({
-    model: aiModel('keywordOpportunity'),
+    model: aiModel('keywordOpportunity', undefined, site.id),
     maxOutputTokens: 3000 + candidates.length * 180,
     providerOptions: aiReasoning('medium'),
     instructions: RULES,

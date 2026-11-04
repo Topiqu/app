@@ -38,12 +38,16 @@ export const findSuppliers = async (site: MatchSite & { keywordMarket?: string |
   const market = keywordLocation(site.language, site.keywordMarket)
   const serps = await Promise.allSettled(
     brands.map(({ brand }) =>
-      dataForSeo<{ items: SerpItem[] | null }>('/serp/google/organic/live/advanced', {
-        keyword: `${brand} ${DEALER_QUERY[site.language]}`,
-        location_code: market.serpLocationCode,
-        language_code: market.languageCode,
-        depth: 10,
-      }),
+      dataForSeo<{ items: SerpItem[] | null }>(
+        '/serp/google/organic/live/advanced',
+        {
+          keyword: `${brand} ${DEALER_QUERY[site.language]}`,
+          location_code: market.serpLocationCode,
+          language_code: market.languageCode,
+          depth: 10,
+        },
+        site.id,
+      ),
     ),
   )
   if (serps.every((outcome) => outcome.status === 'rejected')) throw (serps[0] as PromiseRejectedResult).reason

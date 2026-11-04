@@ -78,12 +78,16 @@ export const fetchNews = async (
   let cost = 0
   const settled = await Promise.allSettled(
     queries.map(async (keyword) => {
-      const serp = await dataForSeo<{ items: NewsSerpItem[] | null }>('/serp/google/news/live/advanced', {
-        keyword,
-        location_code: market.serpLocationCode,
-        language_code: market.languageCode,
-        depth: 10,
-      })
+      const serp = await dataForSeo<{ items: NewsSerpItem[] | null }>(
+        '/serp/google/news/live/advanced',
+        {
+          keyword,
+          location_code: market.serpLocationCode,
+          language_code: market.languageCode,
+          depth: 10,
+        },
+        site.id,
+      )
       cost += serp.cost
       return serp.result?.items ?? []
     }),

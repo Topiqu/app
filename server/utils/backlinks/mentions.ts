@@ -38,12 +38,16 @@ type Candidate = {
   ambiguous: boolean
 }
 
-const search = (keyword: string) =>
-  dataForSeo<{ items: Citation[] | null }>('/content_analysis/search/live', {
-    keyword: keyword.toLocaleLowerCase(),
-    search_mode: 'one_per_domain',
-    limit: SEARCH_LIMIT,
-  })
+const search = (keyword: string, clientSiteId: string) =>
+  dataForSeo<{ items: Citation[] | null }>(
+    '/content_analysis/search/live',
+    {
+      keyword: keyword.toLocaleLowerCase(),
+      search_mode: 'one_per_domain',
+      limit: SEARCH_LIMIT,
+    },
+    clientSiteId,
+  )
 
 const candidates = (items: Citation[] | null | undefined, term: string, ambiguous: boolean, owned: string[]) =>
   (items ?? []).flatMap((item): Candidate[] => {
@@ -76,7 +80,7 @@ export const findMentions = async (site: MatchSite, owned: string[]) => {
   const terms = [...owned.map((host) => ({ term: host, ambiguous: false }))]
   if (name.length >= 3 && !owned.some((host) => mentionsTerm(host, name))) terms.push({ term: name, ambiguous: true })
 
-  const searches = await Promise.allSettled(terms.map(({ term }) => search(term)))
+  const searches = await Promise.allSettled(terms.map(({ term }) => search(term, site.id)))
   if (searches.every((outcome) => outcome.status === 'rejected')) throw (searches[0] as PromiseRejectedResult).reason
   let costUsd = 0
   const byUrl = new Map<string, Candidate>()

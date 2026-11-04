@@ -264,12 +264,16 @@ export const draftContentEdit = async (
   article: PreparedArticle,
   market: ReturnType<typeof keywordLocation>,
 ) => {
-  const serp = await dataForSeo<{ items: Parameters<typeof serpSignals>[0] }>('/serp/google/organic/live/advanced', {
-    keyword: action.keyword,
-    location_code: market.serpLocationCode,
-    language_code: market.languageCode,
-    depth: 10,
-  })
+  const serp = await dataForSeo<{ items: Parameters<typeof serpSignals>[0] }>(
+    '/serp/google/organic/live/advanced',
+    {
+      keyword: action.keyword,
+      location_code: market.serpLocationCode,
+      language_code: market.languageCode,
+      depth: 10,
+    },
+    action.clientSiteId,
+  )
   const signals = serpSignals(serp.result?.items)
   if (!signals.organic.length) throw new Error('No current search results available for this update')
   const need = action.angle ? `${action.keyword}: ${action.angle}` : action.keyword
@@ -278,7 +282,7 @@ export const draftContentEdit = async (
 
   const sections = articleSections(article.content)
   const result = await generateText({
-    model: aiModel('articleWriter'),
+    model: aiModel('articleWriter', undefined, action.clientSiteId),
     maxOutputTokens: 8000,
     abortSignal: AbortSignal.timeout(120_000),
     providerOptions: aiReasoning('high'),
@@ -381,7 +385,11 @@ export const processQueuedActions = async (now = new Date()) => {
       })
       if (!reserved.count) throw new Error('The reserved article credit expired; prepare the update again')
       const market = keywordLocation(action.clientSite.language, action.clientSite.keywordMarket)
-      drafted = await draftContentEdit(action, action.article, market)
+      drafted = await withAiSpend(
+        action.clientSiteId,
+        () => draftContentEdit(action, action.article, market),
+        operation.id,
+      )
       await prisma.$transaction(async (tx) => {
         await tx.$queryRaw`SELECT "id" FROM "ClientSite" WHERE "id" = ${action.clientSiteId} FOR UPDATE`
         const credit = await tx.articleCreditOperation.findFirst({
@@ -479,6 +487,7 @@ export const measureContentActions = async (now = new Date()) => {
           language_code: market.languageCode,
           depth: 30,
         },
+        action.clientSiteId,
       )
       const found = blogPosition(
         serp.result?.items?.filter((item) =>

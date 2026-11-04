@@ -66,7 +66,7 @@ export const seedVisibilityPrompts = async (clientSiteId: string) => {
     ...comments.map((row, index) => `C${index + 1}: ${JSON.stringify(row.content.slice(0, 300))}`),
   ]
   const { output: object, usage } = await generateText({
-    model: aiModel('visibilityPrompts'),
+    model: aiModel('visibilityPrompts', undefined, clientSiteId),
     providerOptions: aiReasoning('medium'),
     maxOutputTokens: 1500,
     output: Output.object({ schema }),

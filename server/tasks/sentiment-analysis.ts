@@ -59,7 +59,9 @@ export default defineMonitoredTask({
       }
       const clientSiteId = comment.article.clientSite.id
       try {
-        const { object, usage } = await detectSentiment(comment.content, comment.article.clientSite.plan)
+        const { object, usage } = await withAiSpend(clientSiteId, () =>
+          detectSentiment(comment.content, comment.article.clientSite.plan),
+        )
         // Usage belongs to the completed provider call even when an edit/deletion makes its result stale.
         await recordAiUsage(clientSiteId, usage.totalTokens ?? 0, 'SENTIMENT_ANALYSIS', { usage, commentId: id })
         const saved = await prisma.$transaction(async (tx) => {

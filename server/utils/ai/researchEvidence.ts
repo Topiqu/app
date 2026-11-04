@@ -1,4 +1,5 @@
 import { generateText } from 'ai'
+import { isAiAllowanceError } from '~~/shared/utils/aiAllowanceError'
 
 export const extractResearchUrls = (text: string) =>
   (text.replace(/(?<!^)(https?:\/\/)/g, ' $1').match(/https?:\/\/[^\s)\]}>,`"'<>*]+/g) ?? []).map((url) =>
@@ -102,6 +103,7 @@ const researchYoutube = async (
     }
     return { outcome: { status: 'rejected' }, tokens }
   } catch (error) {
+    if (isAiAllowanceError(error)) throw error
     if (abortSignal?.aborted) throw error
     return { outcome: { status: 'failed' }, tokens: 0 }
   }
@@ -191,6 +193,7 @@ export const researchTopic = async (
     }
   } catch (error) {
     // Stop means stop. Only the research-specific timeout degrades to an ungrounded article.
+    if (isAiAllowanceError(error)) throw error
     if (abortSignal?.aborted) throw error
     if (!fallbackWithoutResearch) throw error
 

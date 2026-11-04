@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { generateText, Output } from 'ai'
+import { isAiAllowanceError } from '~~/shared/utils/aiAllowanceError'
 
 // The API rejects bigger images; Openverse originals are regularly multi-megabyte scans.
 const MAX_BYTES = 4_000_000
@@ -65,6 +66,7 @@ Respect the country and local setting established by the article and query. Reje
     })
     return { depicts: output.depicts }
   } catch (error) {
+    if (isAiAllowanceError(error)) throw error
     return { depicts: false, failure: (error as Error).message }
   }
 }

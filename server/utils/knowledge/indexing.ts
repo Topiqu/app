@@ -67,7 +67,7 @@ export const indexKnowledgeSource = async (id: string) => {
     await heartbeat({ ...source, ...ownership })
     const chunks = chunkKnowledge(source.title, source.content)
     const { embeddings, usage } = await embedMany({
-      model: aiEmbeddingModel('knowledge'),
+      model: aiEmbeddingModel('knowledge', source.clientSiteId),
       values: chunks,
       maxParallelCalls: 2,
       abortSignal: AbortSignal.timeout(120_000),
@@ -235,7 +235,7 @@ const upsertProducts = (
 const embedProducts = async (source: FeedSource, batch: readonly FeedProduct[], model: string) => {
   await heartbeat(source)
   const { embeddings, usage } = await embedMany({
-    model: aiEmbeddingModel('knowledge'),
+    model: aiEmbeddingModel('knowledge', source.clientSiteId),
     values: batch.map((product) => product.text),
     maxParallelCalls: 2,
     abortSignal: AbortSignal.timeout(120_000),

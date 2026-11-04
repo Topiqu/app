@@ -27,7 +27,7 @@ const mentionSchema = z.object({ keep: z.array(z.number().int().min(1)) })
 export const mentionsBusiness = async (site: MatchSite, items: { title: string; snippet: string }[]) => {
   if (!items.length) return []
   const result = await generateText({
-    model: aiModel('backlinkMatch'),
+    model: aiModel('backlinkMatch', undefined, site.id),
     maxOutputTokens: Math.max(400, items.length * 8),
     providerOptions: aiReasoning('medium'),
     instructions: MENTION_RULES,
@@ -67,7 +67,7 @@ export type SupplierResult = { title: string; url: string; description: string }
 export const supplierPages = async (site: MatchSite, brands: { brand: string; results: SupplierResult[] }[]) => {
   if (!brands.length) return []
   const result = await generateText({
-    model: aiModel('backlinkMatch'),
+    model: aiModel('backlinkMatch', undefined, site.id),
     maxOutputTokens: 300 + brands.length * 60,
     providerOptions: aiReasoning('medium'),
     instructions: SUPPLIER_RULES,

@@ -139,12 +139,16 @@ export const checkDueRanks = async (now = new Date()) => {
         }
         const market = keywordLocation(cluster.clientSite.language, cluster.clientSite.keywordMarket)
         try {
-          const serp = await dataForSeo<{ items: RankItem[] | null }>('/serp/google/organic/live/advanced', {
-            keyword: cluster.keyword,
-            location_code: market.serpLocationCode,
-            language_code: market.languageCode,
-            depth: RANK_DEPTH,
-          })
+          const serp = await dataForSeo<{ items: RankItem[] | null }>(
+            '/serp/google/organic/live/advanced',
+            {
+              keyword: cluster.keyword,
+              location_code: market.serpLocationCode,
+              language_code: market.languageCode,
+              depth: RANK_DEPTH,
+            },
+            cluster.clientSiteId,
+          )
           const found = blogPosition(serp.result?.items, cluster.clientSite.domain)
           const matchesArticle = (url: string | null | undefined) =>
             isArticleUrl(url, cluster.clientSite.domain, cluster.article!.language, cluster.article!.slug)

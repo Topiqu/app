@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { throwAiAllowanceMessage } from '~~/server/utils/ai/allowanceError'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
@@ -25,11 +26,15 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 429, message: t('common.errors.tooManyRequests')! })
 
   if (action === 'questions') {
-    const { questions, usage } = await briefQuestions(prompt, format)
+    const { questions, usage } = await withAiAllowance(user.clientSiteId, 'EDIT', () =>
+      withAiSpend(user.clientSiteId, () => briefQuestions(prompt, format)),
+    ).catch((error) => throwAiAllowanceMessage(error, t('common.aiAllowance.exhausted')!))
     await recordAiUsage(user.clientSiteId, usage.totalTokens ?? 0, 'ENHANCE_PROMPT', { usage, action }, event)
     return { questions }
   }
-  const { text, usage } = await enhancePrompt(prompt, action)
+  const { text, usage } = await withAiAllowance(user.clientSiteId, 'EDIT', () =>
+    withAiSpend(user.clientSiteId, () => enhancePrompt(prompt, action)),
+  ).catch((error) => throwAiAllowanceMessage(error, t('common.aiAllowance.exhausted')!))
   await recordAiUsage(user.clientSiteId, usage.totalTokens ?? 0, 'ENHANCE_PROMPT', { usage, action }, event)
   return { prompt: text }
 })

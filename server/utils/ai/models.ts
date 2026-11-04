@@ -27,24 +27,31 @@ const thinkingHeadroom = (provider: AiProvider): LanguageModelMiddleware => ({
 })
 
 /** `modelId` swaps the model within the task's provider, e.g. the article writer per quality. */
-export const aiModel = (task: AiTask, modelId: string = aiModelId(task)) => {
+export const aiModel = (task: AiTask, modelId: string = aiModelId(task), clientSiteId?: string) => {
   const provider = aiModelProvider(task)
   return wrapLanguageModel({
     model: provider === 'anthropic' ? anthropic(modelId) : openAi.responses(modelId),
-    middleware: [thinkingHeadroom(provider), articleLanguageUsage(task, provider, modelId)],
+    middleware: [
+      thinkingHeadroom(provider),
+      aiLanguageSpend(task, modelId, clientSiteId),
+      articleLanguageUsage(task, provider, modelId),
+    ],
   })
 }
 
 export const aiImageModel = (task: AiImageTask) =>
   wrapImageModel({
     model: openAi.image(aiImageModelId(task)),
-    middleware: articleImageUsage(task, 'openai', aiImageModelId(task)),
+    middleware: [aiImageSpend(task, aiImageModelId(task)), articleImageUsage(task, 'openai', aiImageModelId(task))],
   })
 
-export const aiEmbeddingModel = (task: AiEmbeddingTask) =>
+export const aiEmbeddingModel = (task: AiEmbeddingTask, clientSiteId?: string) =>
   wrapEmbeddingModel({
     model: openAi.embedding(aiEmbeddingModelId(task)),
-    middleware: articleEmbeddingUsage(task, 'openai', aiEmbeddingModelId(task)),
+    middleware: [
+      aiEmbeddingSpend(task, aiEmbeddingModelId(task), clientSiteId),
+      articleEmbeddingUsage(task, 'openai', aiEmbeddingModelId(task)),
+    ],
   })
 
 type SearchDepth = 'low' | 'medium' | 'high'

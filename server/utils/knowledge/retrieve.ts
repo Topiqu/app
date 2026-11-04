@@ -2,6 +2,7 @@ import type { KnowledgeProductAvailability } from '~~/generated/zenstack/models'
 
 import { z } from 'zod'
 import { embed, generateText, Output } from 'ai'
+import { isAiAllowanceError } from '~~/shared/utils/aiAllowanceError'
 import { isKnowledgeStale, knowledgeAsOf, KNOWLEDGE_STALE_MONTHS } from '~~/shared/utils/knowledge'
 
 import { toPgVector } from './indexing'
@@ -221,9 +222,14 @@ const selectionSchema = z.object({
 })
 
 /** Ranks never say "unrelated", so a model gate decides whether any excerpt belongs in the article at all. */
-const selectRelevant = async (topic: string, shortlist: readonly KnowledgeCandidate[], abortSignal?: AbortSignal) => {
+const selectRelevant = async (
+  clientSiteId: string,
+  topic: string,
+  shortlist: readonly KnowledgeCandidate[],
+  abortSignal?: AbortSignal,
+) => {
   const { output: object, usage } = await generateText({
-    model: aiModel('knowledgeSelect'),
+    model: aiModel('knowledgeSelect', undefined, clientSiteId),
     output: Output.object({ schema: selectionSchema }),
     maxOutputTokens: 600,
     providerOptions: aiReasoning('medium'),
@@ -273,7 +279,7 @@ export const retrieveKnowledge = async (
 
   try {
     const { embedding, usage } = await embed({
-      model: aiEmbeddingModel('knowledge'),
+      model: aiEmbeddingModel('knowledge', clientSiteId),
       value: topic,
       abortSignal: abortSignal
         ? AbortSignal.any([abortSignal, AbortSignal.timeout(10_000)])
@@ -284,7 +290,7 @@ export const retrieveKnowledge = async (
     )
     if (!shortlist.length) return { ...EMPTY, tokens: usage.tokens }
 
-    const { selected, tokens } = await selectRelevant(topic, shortlist, abortSignal)
+    const { selected, tokens } = await selectRelevant(clientSiteId, topic, shortlist, abortSignal)
     const used = knowledgeUsage(selected)
     // A statistics write must never cost the article its grounding.
     if (track && used.length)
@@ -308,6 +314,7 @@ export const retrieveKnowledge = async (
       })),
     }
   } catch (error) {
+    if (isAiAllowanceError(error)) throw error
     if (abortSignal?.aborted) throw error
     // Same contract as live research: an outage degrades to an article without first-party grounding.
     await reportCaughtError('Knowledge retrieval failed, continuing without it', error, { clientSiteId })

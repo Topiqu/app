@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { type ClientPlan, Language } from '~~/generated/zenstack/models'
+import { throwAiAllowanceMessage } from '~~/server/utils/ai/allowanceError'
 
 const TRANSLATION_PLANS: ClientPlan[] = ['PRO', 'PREMIUM', 'CUSTOM']
 export default defineEventHandler(async (event) => {
@@ -136,7 +137,13 @@ export default defineEventHandler(async (event) => {
   }
 
   const translate = async () => {
-    const { usage, slug: baseSlug, ...translated } = await generateTranslation(article, targetLang)
+    const {
+      usage,
+      slug: baseSlug,
+      ...translated
+    } = await withAiAllowance(user.clientSiteId, 'TRANSLATION', () =>
+      withAiSpend(user.clientSiteId, () => generateTranslation(article, targetLang)),
+    ).catch((error) => throwAiAllowanceMessage(error, t('common.aiAllowance.exhausted')!))
 
     try {
       await recordAiUsage(

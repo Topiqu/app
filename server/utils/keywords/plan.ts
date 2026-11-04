@@ -248,7 +248,7 @@ const seedSchema = z.object({
  */
 const deriveSeeds = async (site: PlanSite, titles: string[]) => {
   const result = await generateText({
-    model: aiModel('keywordSeeds'),
+    model: aiModel('keywordSeeds', undefined, site.id),
     maxOutputTokens: 600,
     providerOptions: aiReasoning('medium'),
     instructions:
@@ -318,14 +318,18 @@ export const refreshKeywordPlan = async (site: PlanSite, now = new Date()) => {
         result,
         results,
         cost: spent,
-      } = await dataForSeo<LabsResult>('/dataforseo_labs/google/keyword_suggestions/live', {
-        keyword: seed,
-        // No location is Labs' worldwide answer for a GLOBAL market.
-        ...(market.labsLocationCode ? { location_code: market.labsLocationCode } : {}),
-        language_code: market.languageCode,
-        include_seed_keyword: true,
-        limit: SUGGESTIONS_PER_SEED,
-      })
+      } = await dataForSeo<LabsResult>(
+        '/dataforseo_labs/google/keyword_suggestions/live',
+        {
+          keyword: seed,
+          // No location is Labs' worldwide answer for a GLOBAL market.
+          ...(market.labsLocationCode ? { location_code: market.labsLocationCode } : {}),
+          language_code: market.languageCode,
+          include_seed_keyword: true,
+          limit: SUGGESTIONS_PER_SEED,
+        },
+        site.id,
+      )
       cost += spent
       return ideasFromLabs(results ?? (result ? [result] : []), seed)
     }),
@@ -406,12 +410,16 @@ export const refreshKeywordPlan = async (site: PlanSite, now = new Date()) => {
       ...(await Promise.all(
         scoped.slice(offset, offset + 5).map(async (cluster) => {
           try {
-            const serp = await dataForSeo<{ items: SerpItem[] | null }>('/serp/google/organic/live/advanced', {
-              keyword: cluster.keyword,
-              location_code: market.serpLocationCode,
-              language_code: market.languageCode,
-              depth: 10,
-            })
+            const serp = await dataForSeo<{ items: SerpItem[] | null }>(
+              '/serp/google/organic/live/advanced',
+              {
+                keyword: cluster.keyword,
+                location_code: market.serpLocationCode,
+                language_code: market.languageCode,
+                depth: 10,
+              },
+              site.id,
+            )
             cost += serp.cost
             return serpSignals(serp.result?.items)
           } catch (error) {

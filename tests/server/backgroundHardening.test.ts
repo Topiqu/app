@@ -1,9 +1,11 @@
 // @vitest-environment node
 import { afterEach, describe, expect, it, vi, beforeEach } from 'vitest'
 
+import { stubAiFunding } from '../helpers/aiFunding'
 import { stubNitroImports } from '../helpers/nitroImports'
 
 async function stubImports() {
+  stubAiFunding()
   await stubNitroImports(import('../../server/utils/ai/translationRow'), 'nextTranslationVersion')
 }
 

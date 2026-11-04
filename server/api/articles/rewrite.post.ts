@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { throwAiAllowanceMessage } from '~~/server/utils/ai/allowanceError'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
@@ -41,7 +42,9 @@ export default defineEventHandler(async (event) => {
     const blocks = input.blocks.map(sanitizeInlineText)
     if (blocks.some((html) => !html.replace(/<[^>]*>/g, '').trim()))
       throw createError({ statusCode: 400, message: t('articles.editor.aiEdit.unsupported')! })
-    const result = await rewriteDocumentBlocks(blocks, input.instruction)
+    const result = await withAiAllowance(user.clientSiteId, 'EDIT', () =>
+      withAiSpend(user.clientSiteId, () => rewriteDocumentBlocks(blocks, input.instruction)),
+    ).catch((error) => throwAiAllowanceMessage(error, t('common.aiAllowance.exhausted')!))
     await recordAiUsage(
       user.clientSiteId,
       result.usage.totalTokens ?? 0,
@@ -52,7 +55,9 @@ export default defineEventHandler(async (event) => {
     return { blocks: result.blocks }
   }
 
-  const result = await rewritePassage(sanitizePassage(input.html), input.action, input.instruction)
+  const result = await withAiAllowance(user.clientSiteId, 'EDIT', () =>
+    withAiSpend(user.clientSiteId, () => rewritePassage(sanitizePassage(input.html), input.action, input.instruction)),
+  ).catch((error) => throwAiAllowanceMessage(error, t('common.aiAllowance.exhausted')!))
   await recordAiUsage(
     user.clientSiteId,
     result.usage.totalTokens ?? 0,

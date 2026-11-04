@@ -11,6 +11,7 @@ import { stubNitroImports } from '../../helpers/nitroImports'
 import { articleRevisionSnapshot } from '../../../shared/utils/articleRevision'
 
 async function stubImports() {
+  await stubNitroImports(import('../../../server/utils/teamSeats'), 'hasTeamSeat')
   await stubNitroImports(
     import('../../../server/utils/ai/translationRow'),
     'nextTranslationVersion',

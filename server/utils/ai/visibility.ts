@@ -160,7 +160,9 @@ export const runVisibilityPrompt = async (promptId: string, actorId?: string) =>
   const outcomes = await Promise.all(
     runs.map(async ({ runId, ...provider }) => {
       try {
-        const result = await runVisibilityProvider(provider, prompt.text)
+        const result = await withAiAllowance(prompt.clientSiteId, 'VISIBILITY', () =>
+          withAiSpend(prompt.clientSiteId, () => runVisibilityProvider(provider, prompt.text, prompt.clientSiteId)),
+        )
         const rows = citationRows(result.sources, prompt.clientSite.domain)
         await prisma.$transaction(async (tx) => {
           await tx.aiVisibilityRun.update({

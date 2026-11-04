@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
     include: {
       company: {
         include: {
-          clientSite: { select: { communityInsight: true, aiToneOfVoice: true, audience: true } },
+          clientSite: { select: { id: true, communityInsight: true, aiToneOfVoice: true, audience: true } },
         },
       },
     },
@@ -23,7 +23,9 @@ export default defineEventHandler(async (event) => {
       if (!claimed.count) continue
 
       const { communityInsight, aiToneOfVoice, audience } = task.company.clientSite
-      const text = await generateContentForTask(task.topic, { tone: aiToneOfVoice, audience }, communityInsight)
+      const text = await withAiSpend(task.company.clientSite.id, () =>
+        generateContentForTask(task.topic, { tone: aiToneOfVoice, audience }, communityInsight),
+      )
       const { score, flags } = checkPolicyAndScore(text)
 
       const draft = await prisma.draftPost.create({

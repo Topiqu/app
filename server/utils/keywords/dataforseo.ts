@@ -1,5 +1,7 @@
 import { $fetch } from 'ofetch'
 
+import { reserveAiSpend, settleAiSpend } from '../ai/spend'
+
 /**
  * Outside production every call goes to the free sandbox, which returns dummy data in the real shape,
  * so development never spends credit. `DATAFORSEO_SANDBOX=0|1` overrides that.
@@ -20,14 +22,30 @@ interface DataForSeoResponse<T> {
 }
 
 /** Labs may return seed data and suggestions as separate results in the same task. */
-export const dataForSeo = async <T>(path: string, task: Record<string, unknown>) => {
+export const dataForSeo = async <T>(path: string, task: Record<string, unknown>, clientSiteId?: string) => {
+  const origin = baseUrl()
+  const reservation =
+    origin === 'https://api.dataforseo.com/v3'
+      ? await reserveAiSpend('dataforseo', 'search', 200_000, clientSiteId)
+      : null
   const auth = Buffer.from(`${process.env.DATAFORSEO_LOGIN}:${process.env.DATAFORSEO_PASSWORD}`).toString('base64')
-  const response = await $fetch<DataForSeoResponse<T>>(`${baseUrl()}${path}`, {
-    method: 'POST',
-    headers: { Authorization: `Basic ${auth}` },
-    body: [task],
-    timeout: 60_000,
-  })
+  let response: DataForSeoResponse<T>
+  try {
+    response = await $fetch<DataForSeoResponse<T>>(`${origin}${path}`, {
+      method: 'POST',
+      headers: { Authorization: `Basic ${auth}` },
+      body: [task],
+      timeout: 60_000,
+    })
+  } catch (error) {
+    if (reservation) await settleAiSpend(reservation, null)
+    throw error
+  }
+  if (reservation)
+    await settleAiSpend(
+      reservation,
+      typeof response.cost === 'number' && response.cost >= 0 ? Math.ceil(response.cost * 1_000_000) : null,
+    )
   const result = response.tasks?.[0]
   // 20000 is DataForSEO's OK; anything else at either level means no usable data.
   if (response.status_code !== 20000 || result?.status_code !== 20000)

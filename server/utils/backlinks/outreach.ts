@@ -36,7 +36,7 @@ export const draftOutreach = async (site: MatchSite, target: OutreachTarget, use
       ? `The shop sells products of the brand "${String(target.evidence.brand ?? '')}" and asks to be listed among its retailers.`
       : `The page mentions the business ("${String(target.evidence.snippet ?? target.evidence.term ?? '')}") without linking to it.`
   const result = await generateText({
-    model: aiModel('backlinkOutreach'),
+    model: aiModel('backlinkOutreach', undefined, site.id),
     maxOutputTokens: 800,
     providerOptions: aiReasoning('medium'),
     instructions: RULES,

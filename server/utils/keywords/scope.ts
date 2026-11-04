@@ -45,7 +45,7 @@ const scopeSchema = z.object({
 export const inScope = async (site: ScopeSite, items: string[], usageAction: string) => {
   if (!items.length) return []
   const result = await generateText({
-    model: aiModel('topicScope'),
+    model: aiModel('topicScope', undefined, site.id),
     maxOutputTokens: Math.max(400, items.length * 8),
     providerOptions: aiReasoning('medium'),
     instructions: SCOPE_RULES,

@@ -56,7 +56,7 @@ const postJson = async <T>(
     body: JSON.stringify(body),
     signal: AbortSignal.timeout(60_000),
   })
-  if (!response.ok) throw new Error(`${provider} returned ${response.status}: ${(await response.text()).slice(0, 500)}`)
+  if (!response.ok) throw new Error(`${provider} returned ${response.status}`)
   return (await response.json()) as T
 }
 
@@ -160,7 +160,7 @@ const runMistral = async (config: VisibilityProviderConfig, prompt: string): Pro
   return { provider: config.provider, model: config.model, ...parsed, text: requireText('Mistral', parsed.text) }
 }
 
-export const runVisibilityProvider = (config: VisibilityProviderConfig, prompt: string) => {
+const runProvider = (config: VisibilityProviderConfig, prompt: string) => {
   switch (config.provider) {
     case 'OPENAI':
       return runOpenAi(config, prompt)
@@ -174,6 +174,72 @@ export const runVisibilityProvider = (config: VisibilityProviderConfig, prompt: 
       return runResponsesProvider(config, prompt, 'Meta Model API', 'https://api.meta.ai/v1/responses')
     case 'MISTRAL':
       return runMistral(config, prompt)
+  }
+}
+
+/** Providers without a verified itemized price retain the conservative per-response reservation.
+ * This is explicitly an estimate, never reported as the provider's billed cost. */
+export const visibilityCostMicros = (result: VisibilityProviderResult): number | null => {
+  const usage = result.usage
+  if (result.provider === 'XAI' && typeof usage.cost_usd === 'number' && usage.cost_usd >= 0)
+    return Math.ceil(usage.cost_usd * 1_000_000)
+  if (result.provider === 'ANTHROPIC') {
+    const input = usage.input_tokens
+    const output = usage.output_tokens
+    const search = usage.server_tool_use as { web_search_requests?: number } | undefined
+    if (typeof input === 'number' && typeof output === 'number' && typeof search?.web_search_requests === 'number')
+      return aiTextCostMicros(result.model, input, output) + search.web_search_requests * 10_000
+  }
+  if (result.provider === 'GOOGLE') {
+    const input = usage.promptTokenCount
+    const output = usage.candidatesTokenCount
+    const thinking = usage.thoughtsTokenCount ?? 0
+    if (
+      typeof input === 'number' &&
+      typeof output === 'number' &&
+      typeof thinking === 'number' &&
+      typeof usage.searchQueries === 'number'
+    ) {
+      // Standard rates after the introductory promotion; do not assume a free account-wide search pool.
+      return Math.ceil(input * 1.5 + (output + thinking) * 7.5 + usage.searchQueries * 14_000)
+    }
+  }
+  return null
+}
+
+export const runVisibilityProvider = async (
+  config: VisibilityProviderConfig,
+  prompt: string,
+  clientSiteId?: string,
+) => {
+  // OpenAI already passes through the funded AI SDK middleware.
+  if (config.provider === 'OPENAI') return runProvider(config, prompt)
+  const reservation = await reserveAiAllowance(aiSpendSiteId(clientSiteId), 'BUDGET', 500_000, {
+    task: 'visibility',
+    provider: config.provider,
+    model: config.model,
+    maximumEstimated: true,
+    priceVersion: AI_PRICE_VERSION,
+  })
+  let result: VisibilityProviderResult
+  try {
+    result = await runProvider(config, prompt)
+  } catch (error) {
+    await settleAiAllowance(reservation, null).catch((failure) =>
+      reportCaughtError('Visibility spend settlement failed', failure, { clientSiteId }),
+    )
+    throw error
+  }
+  const cost = visibilityCostMicros(result)
+  await settleAiAllowance(reservation, cost).catch((error) =>
+    reportCaughtError('Visibility spend settlement failed', error, { clientSiteId }),
+  )
+  return {
+    ...result,
+    usage: {
+      ...result.usage,
+      topiquCost: { micros: cost ?? reservation.reserved, estimated: cost === null, priceVersion: AI_PRICE_VERSION },
+    },
   }
 }
 

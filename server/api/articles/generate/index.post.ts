@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { randomUUID } from 'node:crypto'
+import { aiAllowanceErrorCode } from '~~/shared/utils/aiAllowanceError'
 
 import { articleWriterId } from '../../../utils/ai/modelRegistry'
 
@@ -485,11 +486,14 @@ export default defineEventHandler(async (event) => {
             })
             send(controller, {
               type: 'error',
-              message: timedOutStage
-                ? timedOutStage === 'writer_idle'
-                  ? t('articles.editor.ai.writerIdleError')
-                  : t('articles.editor.ai.writerDeadlineError')
-                : t('articles.editor.aiContentFailed'),
+              message:
+                aiAllowanceErrorCode(error) === 'AI_ALLOWANCE_EXHAUSTED'
+                  ? t('common.aiAllowance.exhausted')
+                  : timedOutStage
+                    ? timedOutStage === 'writer_idle'
+                      ? t('articles.editor.ai.writerIdleError')
+                      : t('articles.editor.ai.writerDeadlineError')
+                    : t('articles.editor.aiContentFailed'),
               stage: failedStage,
               // A failed run always releases its held article below.
               creditReturned: true,

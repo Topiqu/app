@@ -1,4 +1,6 @@
 import { z } from 'zod'
+import { aiAllowanceErrorCode } from '~~/shared/utils/aiAllowanceError'
+import { throwAiAllowanceMessage } from '~~/server/utils/ai/allowanceError'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
@@ -32,8 +34,9 @@ export default defineEventHandler(async (event) => {
 
   let checked: Awaited<ReturnType<typeof runArticleFactCheck>>
   try {
-    checked = await runArticleFactCheck({ ...input, sources }, inspected)
+    checked = await withAiSpend(user.clientSiteId, () => runArticleFactCheck({ ...input, sources }, inspected))
   } catch (error) {
+    if (aiAllowanceErrorCode(error)) throwAiAllowanceMessage(error, t('common.aiAllowance.exhausted')!)
     console.error('Article fact-check provider failed', error)
     throw createError({ statusCode: 503, message: 'AI service is temporarily unavailable' })
   }

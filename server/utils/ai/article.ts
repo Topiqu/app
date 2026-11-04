@@ -2,6 +2,7 @@ import type { Language } from '~~/generated/zenstack/models'
 import type { GenerationReviewStage } from '~~/shared/utils/articleGeneration'
 
 import { generateText, Output, streamText } from 'ai'
+import { isAiAllowanceError } from '~~/shared/utils/aiAllowanceError'
 
 export const generateArticle = async (
   clientSiteId: string,
@@ -75,6 +76,7 @@ export const generateArticle = async (
       editorialTokens = pass.tokens
       editorialReview = pass.review
     } catch (error) {
+      if (isAiAllowanceError(error)) throw error
       await reportCaughtError('Article editorial review failed', error, { clientSiteId })
       editorialReview = {
         approved: false,
@@ -332,6 +334,7 @@ const editorialPass = async (draft: ArticleObject, input: EditorialPassInput) =>
             outcome: 'held',
           })
       } catch (error) {
+        if (isAiAllowanceError(error)) throw error
         if (abortSignal?.aborted) throw error
         await reportCaughtError('Removal pass failed; keeping the checked revision', error, {
           clientSiteId: input.clientSiteId,
@@ -340,6 +343,7 @@ const editorialPass = async (draft: ArticleObject, input: EditorialPassInput) =>
     }
     return { draft: revised, review, groundingBrief, tokens }
   } catch (error) {
+    if (isAiAllowanceError(error)) throw error
     if (abortSignal?.aborted) throw error
     await audit?.record('ARTICLE_GENERATION_FALLBACK', {
       stage: audit.stageForError(error) ?? 'revision',
