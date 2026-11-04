@@ -338,6 +338,43 @@ describe('checking a revision', () => {
     const result = await recheckRevision(draft, draft, issues.slice(0, 1), context)
     expect(result.review.approved).toBe(false)
   })
+
+  it('reports why each finding stays open, for the generation audit', async () => {
+    recheck({
+      findings: [
+        { id: 1, resolved: false, reason: 'The fine is still stated as 5 million.' },
+        { id: 2, resolved: true, reason: '' },
+      ],
+      introduced: [{ note: 'Remove the new "30 days"; no source.' }],
+    })
+    const result = await recheckRevision(draft, draft, issues.slice(0, 2), context)
+    expect(result.unresolved).toEqual([{ code: 'unsupported_claim', reason: 'The fine is still stated as 5 million.' }])
+    expect(result.introduced).toEqual([
+      { code: 'invented_detail', note: 'Remove the new "30 days"; no source.', blocking: true },
+    ])
+  })
+
+  it('accepts a narrowed or removed claim even when its note asked for more research', async () => {
+    recheck({ findings: [{ id: 1, resolved: true, reason: '' }], introduced: [] })
+    await recheckRevision(draft, draft, issues.slice(0, 1), context)
+    const { instructions } = vi.mocked(generateStructuredText).mock.calls[0]![0]
+    expect(instructions).toContain('even when its note also asked to verify, research or add specifics')
+    expect(instructions).toContain('is not a quotation')
+  })
+})
+
+it('asks the fact-check and the copy desk to narrow or delete, never to research', async () => {
+  vi.mocked(generatePlainText).mockResolvedValue({
+    text: `SUPPORTED: Ciri is the protagonist. ${url}`,
+    sources: [{ sourceType: 'url', url }],
+    usage: { totalTokens: 30 },
+  } as never)
+  await reviewArticle(draft, context)
+  const verifier = vi.mocked(generatePlainText).mock.calls[0]![0].instructions as string
+  const copyDesk = vi.mocked(generateStructuredText).mock.calls[0]![0].instructions as string
+  expect(verifier).toContain('never ask the writer to verify, research or add specifics')
+  expect(copyDesk).toContain('never ask the reviser to verify, research or add specifics')
+  expect(copyDesk).toContain('are not a quotation and never invented_detail')
 })
 
 beforeEach(stubImports)

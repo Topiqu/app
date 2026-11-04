@@ -94,6 +94,7 @@ describe('article updates', () => {
     vi.stubGlobal('announceArticle', vi.fn())
     vi.stubGlobal('articlePublicPaths', async () => [])
 
+    vi.stubGlobal('updateArticle', (await import('../../../server/utils/articleWrite')).updateArticle)
     const handler = (await import('../../../server/api/articles/[id]/index.patch')).default
     return { run: () => handler({} as never), update, query, tx, transaction, syncPolls }
   }

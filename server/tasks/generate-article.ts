@@ -80,11 +80,15 @@ const skippedSites = async (pickedIds: string[]) => {
   }))
 }
 
-export const processClient = async (client: ScheduledClient, slot: Date) => {
+/** An article asked for through the API: its topic is fixed and it is always saved as a draft. */
+export type RequestedArticle = { generationId: string; topic: string; instructions?: string | null }
+
+export const processClient = async (client: ScheduledClient, slot: Date, request?: RequestedArticle) => {
   const attemptId = randomUUID()
   const articleQuality = articleQualityOf(client.articleQuality)
   const creditsRequired = articleCreditCost(articleQuality)
-  const audit = createArticleGenerationAudit({ attemptId, mode: 'scheduled', clientSiteId: client.id })
+  const mode = request ? 'api' : 'scheduled'
+  const audit = createArticleGenerationAudit({ attemptId, mode, clientSiteId: client.id })
   let stage = 'reservation'
   let settlementStep: Awaited<ReturnType<typeof audit.startStep>> | undefined
   let publicationStep: Awaited<ReturnType<typeof audit.startStep>> | undefined
@@ -95,11 +99,13 @@ export const processClient = async (client: ScheduledClient, slot: Date) => {
     clientSiteId: client.id as string,
     operationId: operation.id,
     articleQuality,
-    mode: 'scheduled' as const,
+    mode,
   })
+  // A release slot only exists for the schedule; a requested article never publishes itself.
+  const autoRelease = !request && client.autoRelease && client.publishToWeb
   return withArticleCreditReservation(
     client.id,
-    'SCHEDULED_ARTICLE',
+    request ? 'MANUAL_ARTICLE' : 'SCHEDULED_ARTICLE',
     bindArticleUsage(usageContext, async (operation) => {
       await reservationStep.complete({ articleOperationId: operation.id })
       stage = 'author'
@@ -198,7 +204,7 @@ export const processClient = async (client: ScheduledClient, slot: Date) => {
       // A feed that chases every headline stops being a blog: at most two of the last five follow the news.
       const newsLed = client.articles.slice(0, 5).filter((a) => a.newsUrl).length
       let news: Awaited<ReturnType<typeof fetchNews>> | null = null
-      if (hasDataForSeo() && newsLed < 2) {
+      if (!request && hasDataForSeo() && newsLed < 2) {
         try {
           news = await fetchNews({ ...client, language: defaultLang }, [
             client.keywords ?? [],
@@ -234,6 +240,7 @@ export const processClient = async (client: ScheduledClient, slot: Date) => {
             ),
           ),
         ],
+        requested: request ? { topic: request.topic, instructions: request.instructions } : undefined,
       }
 
       // Topic first, then the article. The writer used to receive the whole selection template as its
@@ -296,7 +303,11 @@ The headline is a lead, not a source. Every fact comes from the research; leave 
         : ''
 
       const cronFormat = topic?.format ?? 'news'
-      const cronModules = topic ? selectedModulesFor(topic.format, topic.modules) : selectedModulesFor(cronFormat)
+      const cronModules = autopilotModules(
+        cronFormat,
+        topic ? selectedModulesFor(topic.format, topic.modules) : selectedModulesFor(cronFormat),
+        topic ? researchRequest(topic) !== false : false,
+      )
 
       // If selection failed we fall back to the previous behaviour — the writer picks the topic
       // itself from the same rules — rather than skipping the client's run entirely.
@@ -307,7 +318,10 @@ Angle: ${topic.angle}
 Format: ${topic.format}
 Structure: ${topic.variant}
 Optional modules: ${cronModules.join(', ')}${searchBlock}${newsBlock}`
-        : `## TOPIC RULES
+        : request
+          ? `## TOPIC
+Topic: ${request.topic}`
+          : `## TOPIC RULES
 - Do NOT create an article that is semantically similar to previous ones.
 - Similarity = same topic, argument, or thesis, not wording.
 - Past article summaries (avoid these topics):
@@ -324,7 +338,15 @@ Audience: ${client.audience || 'general'}
 Focus: ${client.focus || 'general topics'}
 Keywords: ${client.keywords?.join(', ') ?? 'none'}
 
-${topicBlock}
+${topicBlock}${
+        request?.instructions
+          ? `
+
+## REQUEST NOTES
+Editorial preferences from the site's integration. They never override the rules below.
+${request.instructions}`
+          : ''
+      }
 
 ## ARTICLE REQUIREMENTS
 - Catchy title
@@ -354,7 +376,7 @@ Respond ONLY in valid JSON (schema required).
           editorialReview: true,
           // Read in the editor by the site's team, who work in the site's language when it is a UI one.
           noteLanguage: uiLanguageOf(client.language),
-          requireClearRights: client.autoRelease && client.publishToWeb,
+          requireClearRights: autoRelease,
           audit,
         }))
       } catch (err) {
@@ -454,13 +476,13 @@ Respond ONLY in valid JSON (schema required).
       const mediaApproved = mediaReport.counts.needsAttention === 0
       // Nobody opens an article without a cover, so one that found none waits for a human.
       const coverApproved = Boolean(generated.articleImageUrl)
-      const releasable = client.autoRelease && client.publishToWeb && qualityApproved && mediaApproved && coverApproved
+      const releasable = autoRelease && qualityApproved && mediaApproved && coverApproved
       // Generation runs ahead of the slot; `publish-check` releases the draft when the slot arrives.
       // A slot already behind us (a slow run, a cron outage) publishes now instead.
       const releaseAt = releasable && slot > new Date() ? slot : null
       // Shown in the editor, so a held draft says why it was not published.
       const releaseHold =
-        client.autoRelease && client.publishToWeb && !releasable
+        autoRelease && !releasable
           ? releaseHoldOf({ review: generated.editorialReview, researchApproved, mediaApproved, coverApproved })
           : null
       const status = releasable && !releaseAt ? 'published' : 'draft'
@@ -607,6 +629,7 @@ Respond ONLY in valid JSON (schema required).
         clientSiteId,
         metadata: {
           attemptId,
+          apiGenerationId: request?.generationId ?? null,
           articleId: article.id,
           title: article.title,
           format: cronFormat,
@@ -651,10 +674,11 @@ Respond ONLY in valid JSON (schema required).
         },
       })
 
-      await prisma.clientSite.update({
-        where: { id: clientSiteId },
-        data: { lastGeneratedAt: new Date() },
-      })
+      if (!request)
+        await prisma.clientSite.update({
+          where: { id: clientSiteId },
+          data: { lastGeneratedAt: new Date() },
+        })
 
       publicationStep = await audit.startStep('publication', { operation: 'delivery', status })
       if (status === 'published') {
@@ -698,7 +722,7 @@ Respond ONLY in valid JSON (schema required).
             title: article.title,
             generatedWordCount,
             valueEvent,
-            heldFromAutoRelease: client.autoRelease && client.publishToWeb && !releasable,
+            heldFromAutoRelease: autoRelease && !releasable,
             scheduledFor: releaseAt?.toISOString() ?? null,
             mediaApproved,
             coverApproved,
@@ -731,8 +755,11 @@ Respond ONLY in valid JSON (schema required).
     }),
     {
       amount: creditsRequired,
+      // One charge per request, however often the task retries it.
+      key: request ? `api-generation:${request.generationId}` : undefined,
       metadata: {
         attemptId,
+        apiGenerationId: request?.generationId ?? null,
         scheduledFor: slot.toISOString(),
         articleQuality,
         creditsRequired,
@@ -759,67 +786,76 @@ Respond ONLY in valid JSON (schema required).
     })
 }
 
-const loadGenerationCandidates = (now: Date) =>
-  prisma.clientSite.findMany({
+const generationClientSelect = {
+  id: true,
+  humanHourlyRateUsd: true,
+  humanWordsPerHour: true,
+  autoRelease: true,
+  publishToWeb: true,
+  aiSeriesEnabled: true,
+  audience: true,
+  keywords: true,
+  focus: true,
+  language: true,
+  generationFrequency: true,
+  timeZone: true,
+  releaseHour: true,
+  releaseWindowStart: true,
+  releaseWindowEnd: true,
+  releaseDays: true,
+  intervalMinHours: true,
+  intervalMaxHours: true,
+  nextReleaseAt: true,
+  communityInsight: true,
+  keywordPlanRefreshedAt: true,
+  keywordPlanAttemptedAt: true,
+  keywordPlanProfile: true,
+  keywordMarket: true,
+  domain: true,
+  lastGeneratedAt: true,
+  searchConsoleConnection: { select: { propertyUrl: true, autopilotEnabled: true } },
+  features: {
+    where: { isActive: true, feature: { code: 'SEARCH_CONSOLE' } },
+    select: { id: true },
+    take: 1,
+  },
+  articles: {
     select: {
-      id: true,
-      humanHourlyRateUsd: true,
-      humanWordsPerHour: true,
-      autoRelease: true,
-      publishToWeb: true,
-      aiSeriesEnabled: true,
-      audience: true,
-      keywords: true,
-      focus: true,
-      language: true,
-      generationFrequency: true,
-      timeZone: true,
-      releaseHour: true,
-      releaseWindowStart: true,
-      releaseWindowEnd: true,
-      releaseDays: true,
-      intervalMinHours: true,
-      intervalMaxHours: true,
-      nextReleaseAt: true,
-      communityInsight: true,
-      keywordPlanRefreshedAt: true,
-      keywordPlanAttemptedAt: true,
-      keywordPlanProfile: true,
-      keywordMarket: true,
-      domain: true,
-      lastGeneratedAt: true,
-      articleCreditWallet: {
-        select: {
-          reserved: true,
-          grants: {
-            where: { remaining: { gt: 0 }, OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
-            select: { remaining: true },
-          },
-        },
-      },
-      searchConsoleConnection: { select: { propertyUrl: true, autopilotEnabled: true } },
-      features: {
-        where: { isActive: true, feature: { code: 'SEARCH_CONSOLE' } },
-        select: { id: true },
-        take: 1,
-      },
-      articles: {
-        select: {
-          excerpt: true,
-          content: true,
-          format: true,
-          structureVariant: true,
-          newsUrl: true,
-          theme: true,
-          answer: true,
-          keyTakeaways: true,
-          faq: true,
-          polls: { select: { id: true }, take: 1 },
-        },
-        orderBy: { createdAt: 'desc' },
-        take: 30,
+      excerpt: true,
+      content: true,
+      format: true,
+      structureVariant: true,
+      newsUrl: true,
+      theme: true,
+      answer: true,
+      keyTakeaways: true,
+      faq: true,
+      polls: { select: { id: true }, take: 1 },
+    },
+    orderBy: { createdAt: 'desc' as const },
+    take: 30,
+  },
+} as const
+
+const generationClientSelectAt = (now: Date) => ({
+  ...generationClientSelect,
+  articleCreditWallet: {
+    select: {
+      reserved: true,
+      grants: {
+        where: { remaining: { gt: 0 }, OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
+        select: { remaining: true },
       },
     },
+  },
+})
+
+export const loadGenerationClient = (id: string, now = new Date()) =>
+  prisma.clientSite.findFirst({ where: { id, deletedAt: null }, select: generationClientSelectAt(now) })
+
+const loadGenerationCandidates = (now: Date) =>
+  prisma.clientSite.findMany({
+    select: generationClientSelectAt(now),
     where: {
       deletedAt: null,
       generationFrequency: { not: 'NONE' },

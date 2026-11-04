@@ -199,7 +199,17 @@ export const translationSchema = z.object({
  * embed integrity (ids never reach the model). The caller logs the returned `usage`
  * via `recordAiUsage`.
  */
-export const generateTranslation = async (article: TranslatableArticle, targetLang: Language) => {
+/** Foreign laws, prices or subsidies cannot be verified here, so the rule forbids substituting them. */
+export const localPassagesRule = (passages: string[]) =>
+  passages.length
+    ? `- These passages only apply to the source article's country: ${passages.map((passage) => `"${passage}"`).join('; ')}. Keep them accurate: generalise them where the point holds elsewhere, otherwise say plainly that they describe the situation in that country. Never replace them with laws, prices, subsidies or institutions of another country.`
+    : ''
+
+export const generateTranslation = async (
+  article: TranslatableArticle,
+  targetLang: Language,
+  localPassages: string[] = [],
+) => {
   const targetName = LANGUAGE_NAMES[targetLang]
   const { masked, verbatim, polls, images, attrs } = maskContentBlocks(article.content)
 
@@ -215,6 +225,7 @@ export const generateTranslation = async (article: TranslatableArticle, targetLa
     - For attrs: return them in the SAME order; these are human-readable attribute texts (link titles, aria-labels) — translate each into ${targetName}.
     - For keyTakeaways and faq: return the SAME number of entries in the SAME order. Never add an entry the source does not have — an empty array stays empty.
     - Produce natural, fluent ${targetName} while preserving the original tone and meaning.
+    ${localPassagesRule(localPassages)}
   `.trim()
 
   const sourceFaq = readFaq(article.faq)

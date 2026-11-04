@@ -35,11 +35,16 @@ async function stubImports() {
   await stubNitroImports(import('../../../server/utils/ai/insight'), 'insightSchema')
   await stubNitroImports(import('../../../server/utils/planFeatures'), 'activeFeatureFilter')
   await stubNitroImports(import('../../../server/utils/community'), 'readCommunityInsight')
-  await stubNitroImports(import('../../../server/utils/ai/articleQuality'), 'AUTHOR_ACCOUNT_RULE')
+  await stubNitroImports(
+    import('../../../server/utils/ai/articleQuality'),
+    'AUTHOR_ACCOUNT_RULE',
+    'SOURCE_CONFLICT_RULE',
+  )
   await stubNitroImports(import('../../../server/utils/knowledge/retrieve'), 'retrieveKnowledge')
   await stubNitroImports(import('../../../server/utils/databaseJson'), 'toDatabaseJson')
   await stubNitroImports(import('../../../server/utils/articleGenerationAudit'), 'auditArticleStep')
   await stubNitroImports(import('../../../server/utils/sanitize'), 'escapeHtml')
+  await stubNitroImports(import('../../../shared/utils/articleTranslations'), 'MARKET_FIT_VERDICTS')
 }
 
 await stubImports()
@@ -49,6 +54,7 @@ const { insightSchema } = await import('../../../server/utils/ai/insight')
 const { articleSchema } = await import('../../../server/utils/ai/articleConfig')
 const { translationSchema } = await import('../../../server/utils/ai/translate')
 const { articleSeriesDecisionSchema } = await import('../../../server/utils/ai/articleSeries')
+const { marketFitSchema } = await import('../../../server/utils/ai/marketFit')
 
 type JsonSchemaNode = {
   type?: string
@@ -98,6 +104,7 @@ describe('OpenAI strict structured-output compatibility', () => {
     ['insightSchema', insightSchema],
     ['topicSchema', topicSchema],
     ['articleSeriesDecisionSchema', articleSeriesDecisionSchema],
+    ['marketFitSchema', marketFitSchema],
   ])('%s converts to a strict-safe JSON schema', (_name, schema) => {
     const jsonSchema = zodSchema(schema).jsonSchema as JsonSchemaNode
 

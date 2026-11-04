@@ -128,6 +128,7 @@ describe.skipIf(!enabled)('article version history on PostgreSQL', () => {
     vi.stubGlobal('enqueueArticleWebhook', vi.fn())
     vi.stubGlobal('announceArticle', vi.fn())
     vi.stubGlobal('isUniqueViolation', () => false)
+    vi.stubGlobal('updateArticle', (await import('../../../server/utils/articleWrite')).updateArticle)
     return (await import('../../../server/api/articles/[id]/index.patch')).default
   }
 

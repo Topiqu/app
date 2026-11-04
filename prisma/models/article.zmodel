@@ -35,6 +35,12 @@ enum TranslationStatus {
     PUBLISHED
     FAILED
     STALE
+    SKIPPED
+}
+
+enum TranslationSelection {
+    SMART
+    ALL
 }
 
 enum TranslationSource {
@@ -200,6 +206,8 @@ model ArticleTranslation with Base {
     translatedAt DateTime?
     translationStartedAt DateTime?
     aiRetryAt    DateTime? @omit
+    /// `MarketFit` (shared/utils/articleTranslations.ts): whether the article suits the target market.
+    marketFit    Json?
     mediaUsages  ArticleMediaUsage[]
     @@unique([articleId, language])
     @@unique([slug, clientSiteId, language])

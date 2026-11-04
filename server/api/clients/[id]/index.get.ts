@@ -115,6 +115,7 @@ export default defineEventHandler(async (event) => {
         aiControversyLevel: clientSite.aiControversyLevel,
         translationMode: clientSite.translationMode,
         translationLanguages: clientSite.translationLanguages,
+        translationSelection: clientSite.translationSelection,
         extraTranslationLanguages: clientSite.extraTranslationLanguages,
         translationLanguageLimit: translationLanguageLimit(clientSite),
         canBuyTranslationLanguages:
@@ -139,6 +140,5 @@ export default defineEventHandler(async (event) => {
     ...integrations,
     ...billing,
     ...ai,
-    ...(hasTenantScope(membership, 'API_KEY_CONTROL') ? { apiKey: clientSite.apiKey } : {}),
   }
 })

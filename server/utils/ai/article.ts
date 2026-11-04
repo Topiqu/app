@@ -156,8 +156,8 @@ const withTimeout = (signal: AbortSignal | undefined, ms: number) =>
   signal ? AbortSignal.any([signal, AbortSignal.timeout(ms)]) : AbortSignal.timeout(ms)
 
 /**
- * The revision: an edit list by default, a full rewrite only when the whole piece must change (a reversed
- * stance) or the edits cannot be applied. `changes` is set for edits, so the recheck reads only new text.
+ * The revision: an edit list by default, a full rewrite only when the whole piece must change (a blocking
+ * reversed stance) or the edits cannot be applied. `changes` is set for edits, so the recheck reads only new text.
  */
 const reviseDraft = async (
   draft: ArticleObject,
@@ -172,7 +172,8 @@ const reviseDraft = async (
     '\nIndependent verification supersedes conflicting original research:\n' +
     (revisionEvidence(verificationBrief) ?? '')
   let tokens = 0
-  if (!review.issues.some((issue) => issue.code === 'assignment_mismatch')) {
+  // A non-blocking tone note does not justify a rewrite, which can invent specifics in untouched text.
+  if (!review.issues.some((issue) => issue.code === 'assignment_mismatch' && issue.blocking)) {
     const edited = await auditArticleStep(
       audit,
       'revision',
@@ -186,7 +187,7 @@ const reviseDraft = async (
           output: Output.object({ schema: revisionEditsSchema }),
           abortSignal: withTimeout(input.abortSignal, REVISION_TIMEOUT_MS),
         }),
-      (result) => ({ mode: 'edits', edits: result.output.edits.length, tokens: result.usage.totalTokens ?? 0 }),
+      (result) => ({ revisionMode: 'edits', edits: result.output.edits.length, tokens: result.usage.totalTokens ?? 0 }),
     )
     tokens += edited.usage.totalTokens ?? 0
     const applied = applyRevisionEdits(draft, edited.output)
@@ -207,7 +208,7 @@ const reviseDraft = async (
         prompt: buildRevisionPrompt(input.prompt, draft, review, verificationBrief),
         abortSignal: withTimeout(input.abortSignal, REVISION_TIMEOUT_MS),
       }),
-    (result) => ({ mode: 'rewrite', tokens: result.usage.totalTokens ?? 0 }),
+    (result) => ({ revisionMode: 'rewrite', tokens: result.usage.totalTokens ?? 0 }),
   )
   tokens += rewritten.usage.totalTokens ?? 0
   rewritten.output.sources = filterResearchSources(rewritten.output.sources, groundingBrief)
@@ -262,6 +263,7 @@ const editorialPass = async (draft: ArticleObject, input: EditorialPassInput) =>
         issueCodes: result.review.issues.map((issue) => issue.code),
         blockingCodes: result.review.issues.filter((issue) => issue.blocking).map((issue) => issue.code),
         resolved: result.resolvedIssues.length,
+        unresolved: result.unresolved,
         tokens: result.usage.totalTokens ?? 0,
       }),
       { pass },
@@ -307,7 +309,11 @@ const editorialPass = async (draft: ArticleObject, input: EditorialPassInput) =>
               output: Output.object({ schema: revisionEditsSchema }),
               abortSignal: withTimeout(abortSignal, 120_000),
             }),
-          (result) => ({ mode: 'removal', edits: result.output.edits.length, tokens: result.usage.totalTokens ?? 0 }),
+          (result) => ({
+            revisionMode: 'removal',
+            edits: result.output.edits.length,
+            tokens: result.usage.totalTokens ?? 0,
+          }),
         )
         tokens += removal.usage.totalTokens ?? 0
         // Code, not the model, guarantees the pass only deleted, so it cannot add a new error.
@@ -315,7 +321,12 @@ const editorialPass = async (draft: ArticleObject, input: EditorialPassInput) =>
         if (applied.ok) {
           const second = await recheck(applied.draft, base, blocking, applied.changes, 3)
           tokens += second.usage.totalTokens ?? 0
-          if (second.review.approved) {
+          // A deletion that cleared some findings and added nothing is kept even while another finding
+          // still holds the article: the person reviewing it then sees only what is really left.
+          const stillBlocking = second.review.issues.filter((issue) => issue.blocking).length
+          const improved =
+            second.resolvedIssues.length > 0 && !second.introduced.length && stillBlocking < blocking.length
+          if (second.review.approved || improved) {
             const tips = checked.review.issues.filter((issue) => !issue.blocking)
             const issues = [...second.review.issues, ...tips].slice(0, 6)
             revised = applied.draft

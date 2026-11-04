@@ -85,7 +85,8 @@
         "READY": "En attente de validation",
         "PUBLISHED": "Publié",
         "FAILED": "Échec",
-        "STALE": "Source modifiée"
+        "STALE": "Source modifiée",
+        "SKIPPED": "Pas pour ce marché"
       },
       "source": {
         "AI": "Traduit automatiquement",
@@ -98,7 +99,8 @@
         "FAILED": "La dernière tentative de traduction a échoué. Réessayez.",
         "STALE": "L'article source a changé ; cette traduction sera régénérée.",
         "READY": "Cette traduction ne contient pas encore de texte.",
-        "PUBLISHED": "Cette traduction ne contient pas encore de texte."
+        "PUBLISHED": "Cette traduction ne contient pas encore de texte.",
+        "SKIPPED": "La sélection intelligente n'a pas traduit cet article, car il ne concerne que le marché d'origine. Vous pouvez quand même le traduire."
       },
       "fields": {
         "title": "Titre",
@@ -109,7 +111,8 @@
         "approve": "Valider et publier",
         "translate": "Traduire maintenant",
         "retranslate": "Retraduire",
-        "discard": "Ignorer"
+        "discard": "Ignorer",
+        "translateAnyway": "Traduire quand même"
       },
       "discardTitle": "Ignorer cette traduction ?",
       "discardMessage": "Le texte traduit sera supprimé. L'article lui-même ne sera pas modifié et pourra être retraduit plus tard.",
@@ -118,7 +121,11 @@
         "translated": "Traduction générée",
         "discarded": "Traduction ignorée"
       },
-      "viewLive": "Voir la page publiée"
+      "viewLive": "Voir la page publiée",
+      "marketFit": {
+        "adaptedTitle": "Adapté à ce marché",
+        "adaptedText": "Ces passages ne valent que pour le pays d'origine ; vérifiez-les avant de publier."
+      }
     },
     "explore": "Explorer les articles",
     "openArticle": "Ouvrir l'article",

@@ -132,6 +132,12 @@ describe('author first-hand account', () => {
     expect(quality).toContain('${AUTHOR_ACCOUNT_VERIFICATION}')
     expect(quality).toContain('never invent names of people, officials or companies, amounts, exact dates')
   })
+
+  it('makes the writer and the reviser resolve conflicting outlets instead of listing them', () => {
+    expect(article).toContain('${SOURCE_CONFLICT_RULE}')
+    expect(quality).toContain('${SOURCE_CONFLICT_RULE}\n${AUTHORIAL_REASONING}')
+    expect(quality).toContain('Never list which outlet says what.')
+  })
 })
 
 beforeEach(stubImports)

@@ -31,6 +31,7 @@ const {
   parseExternalTagFilter,
   requireExternalClient,
 } = await import('../../../server/utils/externalApi')
+const { hashApiKey, requireApiKey } = await import('../../../server/utils/apiKeys')
 
 // Nuxt's Vite transform imports this composable directly; a global stub alone cannot replace it.
 mockNuxtImport('useRuntimeConfig', () => () => ({ public: { baseDomain: 'platform.invalid' } }))
@@ -81,12 +82,14 @@ const fixture = async () => {
         domainVerified: true,
         language: 'cs',
         plan: 'PRO',
-        ...(id === clientSiteId ? { apiKey } : {}),
         ...(id === deletedSiteId ? { deletedAt: new Date() } : {}),
       },
     })
   const user = await db!.user.create({
     data: { id: userId, email: `${userId}@example.invalid`, username: userId, role: 'admin', clientSiteId },
+  })
+  await db!.apiKey.create({
+    data: { clientSiteId, name: 'Test', prefix: apiKey.slice(0, 11), hash: hashApiKey(apiKey), scopes: ['READ'] },
   })
   const visibleTag = await db!.tag.create({ data: { clientSiteId, slug: 'visible-tag', name: 'Visible tag' } })
   const hiddenTag = await db!.tag.create({ data: { clientSiteId, slug: 'hidden-tag', name: 'Hidden tag' } })
@@ -180,6 +183,8 @@ const fixture = async () => {
     vi.stubGlobal('setResponseHeader', vi.fn())
     vi.stubGlobal('getHeader', () => apiKey)
     vi.stubGlobal('requireExternalClient', requireExternalClient)
+    vi.stubGlobal('requireApiKey', requireApiKey)
+    vi.stubGlobal('consumeRateLimit', async () => true)
     vi.stubGlobal('parseExternalTagFilter', parseExternalTagFilter)
     vi.stubGlobal('externalArticleWhere', externalArticleWhere)
     vi.stubGlobal('externalArticleSelect', externalArticleSelect)
@@ -189,7 +194,7 @@ const fixture = async () => {
     vi.stubGlobal('serializeExternalArticleV1', serializeExternalArticleV1)
     vi.stubGlobal('prisma', db)
     const route = (await routes[kind]()).default
-    return route({ path: `/md/${path}` } as never)
+    return route({ path: `/md/${path}`, context: {} } as never)
   }
   return {
     clientSiteId,

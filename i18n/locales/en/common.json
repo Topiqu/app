@@ -505,7 +505,9 @@
         "ARTICLE_PUBLISHED": "Article published",
         "ARTICLE_UPDATED": "Published article updated",
         "ARTICLE_UNPUBLISHED": "Article unpublished",
-        "ARTICLE_DELETED": "Article deleted"
+        "ARTICLE_DELETED": "Article deleted",
+        "GENERATION_SUCCEEDED": "Requested article written",
+        "GENERATION_FAILED": "Requested article failed"
       },
       "add": "Add webhook",
       "empty": "No webhooks yet.",
@@ -591,7 +593,7 @@
       "developerTitle": "API and WordPress",
       "developerDescription": "Tools for custom development and publishing workflows outside the external services catalog.",
       "apiBenefitOne": "Connect a custom app, automation, or editorial workflow.",
-      "apiBenefitTwo": "Regenerate the single secure access key whenever needed.",
+      "apiBenefitTwo": "Give each integration its own key with only the permissions it needs.",
       "wordpressTitle": "WordPress plugin",
       "wordpressComingSoon": "Coming soon.",
       "wordpressDescription": "Topiqu Sync imports published articles as native WordPress posts.",
@@ -1173,20 +1175,43 @@
       "annualy": "Yearly",
       "api": {
         "title": "API Access",
-        "description": "Generate a secure API key to access endpoints programmatically.",
-        "generate": "Generate Key",
-        "generateSuccess": "API key generated successfully",
-        "generateFailed": "The API key could not be generated",
-        "regenerateTitle": "Regenerate API key?",
-        "regenerateWarning": "The current key will be revoked immediately. Any application using it will stop working until you replace it with the new key.",
-        "regenerateConfirm": "Revoke and regenerate",
-        "label": "Your API Key",
-        "revoke": "Revoke & Regenerate",
-        "copy": "Copy API Key",
+        "description": "Create keys for your apps and automations. Each key gets only the permissions you choose, and Topiqu stores only a fingerprint of it.",
+        "generate": "Create key",
+        "generateFailed": "The API key could not be created",
+        "label": "API key",
+        "createdTitle": "Key “{name}” created",
+        "shownOnce": "Copy it now. Topiqu keeps only a fingerprint and cannot show the key again.",
+        "name": "Name",
+        "nameHint": "Where the key is used, e.g. “WordPress” or “Make”",
+        "scopes": "Permissions",
+        "scope": {
+          "READ": {
+            "label": "Read",
+            "description": "Published articles, tags and site details."
+          },
+          "WRITE": {
+            "label": "Write",
+            "description": "Create and edit drafts. Also reads drafts."
+          },
+          "PUBLISH": {
+            "label": "Publish",
+            "description": "Publish, unpublish and schedule articles."
+          },
+          "GENERATE": {
+            "label": "Generate",
+            "description": "Ask the AI to write an article. Uses article credits."
+          }
+        },
+        "empty": "No API keys yet.",
+        "limit": "You have reached the limit of {max} keys. Revoke one to create another.",
+        "lastUsed": "Last used",
+        "neverUsed": "Not used yet",
+        "revoke": "Revoke",
+        "revokeTitle": "Revoke “{name}”?",
+        "revokeWarning": "Apps using this key stop working immediately. This cannot be undone.",
+        "copy": "Copy API key",
         "copied": "Copied",
-        "show": "Show API Key",
-        "hide": "Hide API Key",
-        "warning": "Keep this key secret. Do not share it in client-side code or public repositories."
+        "warning": "Keep keys secret. Do not put them in client-side code or public repositories. A key acts for the member who created it and never with more permissions than they have."
       },
       "messages": {
         "noClientId": "Missing client ID"
@@ -1466,11 +1491,22 @@
             "HYBRID": "Hybrid (translate, hold for review)"
           }
         },
+        "selection": {
+          "label": "Which articles to translate",
+          "options": {
+            "SMART": "Smart selection",
+            "ALL": "Translate everything"
+          },
+          "help": {
+            "SMART": "Articles about local laws, taxes or services are not translated. You can still translate them by hand.",
+            "ALL": "Every published article is translated."
+          }
+        },
         "targetLangs": {
           "label": "Translation languages",
           "empty": "No other languages available for your primary language."
         },
-        "tokenWarning": "Automatic translation creates a separate version of every published article for each target language."
+        "tokenWarning": "Automatic translation creates a separate version of an article for each target language it is translated into."
       },
       "articleQuality": {
         "title": "Article quality",

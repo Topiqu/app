@@ -1,5 +1,5 @@
 import { createError } from 'h3'
-import { afterEach, describe, expect, it, vi, beforeEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { stubNitroImports } from '../helpers/nitroImports'
 
@@ -11,45 +11,59 @@ await stubImports()
 
 const { externalArticleWhere, flattenExternalArticle, parseExternalTagFilter, requireExternalClient } =
   await import('../../server/utils/externalApi')
+const { hashApiKey, requireApiKey } = await import('../../server/utils/apiKeys')
 
 describe('external API authentication', () => {
   afterEach(() => vi.unstubAllGlobals())
 
-  const setup = (
-    headers: Record<string, string | undefined> = {},
-    client: { id: string } | null = { id: 'tenant-1' },
-  ) => {
+  const setup = (headers: Record<string, string | undefined> = {}, key: object | null = {}) => {
     const getHeader = vi.fn((_event: unknown, name: string) => ({ 'x-api-key': 'tenant-key', ...headers })[name])
-    const findFirst = vi.fn().mockResolvedValue(client)
+    const findUnique = vi.fn().mockResolvedValue(
+      key && {
+        id: 'key-1',
+        scopes: ['READ'],
+        createdById: null,
+        revokedAt: null,
+        deletedAt: null,
+        lastUsedAt: new Date(),
+        clientSite: { id: 'tenant-1', plan: 'BASIC', deletedAt: null },
+        ...key,
+      },
+    )
     vi.stubGlobal('setResponseHeader', vi.fn())
     vi.stubGlobal('createError', createError)
     vi.stubGlobal('getHeader', getHeader)
-    vi.stubGlobal('prisma', { clientSite: { findFirst } })
-    return { run: () => requireExternalClient({} as never), getHeader, findFirst }
+    vi.stubGlobal('consumeRateLimit', vi.fn().mockResolvedValue(true))
+    vi.stubGlobal('prisma', { apiKey: { findUnique } })
+    vi.stubGlobal('requireApiKey', requireApiKey)
+    return { run: () => requireExternalClient({ context: {} } as never), getHeader, findUnique }
   }
 
   it.each([undefined, 'Topiqu-Sync/1.0.0', 'External-Sync/1.0'])(
     'authenticates API consumers equally (user agent: %s)',
     async (userAgent) => {
-      const { run, getHeader, findFirst } = setup({ 'user-agent': userAgent })
+      const { run, getHeader, findUnique } = setup({ 'user-agent': userAgent })
       await expect(run()).resolves.toEqual({ id: 'tenant-1' })
       expect(getHeader).toHaveBeenCalledOnce()
-      expect(getHeader).toHaveBeenCalledWith({}, 'x-api-key')
-      expect(findFirst).toHaveBeenCalledWith(
-        expect.objectContaining({ where: { apiKey: 'tenant-key', deletedAt: null } }),
-      )
+      expect(getHeader).toHaveBeenCalledWith(expect.anything(), 'x-api-key')
+      expect(findUnique).toHaveBeenCalledWith(expect.objectContaining({ where: { hash: hashApiKey('tenant-key') } }))
     },
   )
 
   it('still rejects missing API keys before querying the tenant', async () => {
-    const { run, findFirst } = setup({ 'x-api-key': undefined })
+    const { run, findUnique } = setup({ 'x-api-key': undefined })
     await expect(run()).rejects.toMatchObject({ statusCode: 401 })
-    expect(findFirst).not.toHaveBeenCalled()
+    expect(findUnique).not.toHaveBeenCalled()
   })
 
   it('still rejects invalid API keys', async () => {
     const { run } = setup({}, null)
     await expect(run()).rejects.toMatchObject({ statusCode: 401 })
+  })
+
+  it('accepts migrated read-only keys on read routes', async () => {
+    const { run } = setup({}, { scopes: ['READ'], createdById: null })
+    await expect(run()).resolves.toEqual({ id: 'tenant-1' })
   })
 })
 

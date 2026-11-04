@@ -141,7 +141,7 @@ describe.skipIf(!enabled)('subscription invoice allowances on PostgreSQL', () =>
     await deliver('invoice.payment_succeeded', f.invoice)
     expect(
       await db!.articleCreditGrant.findMany({ where: { clientSiteId: f.site.id }, select: { amount: true } }),
-    ).toEqual([{ amount: 50 }])
+    ).toEqual([{ amount: 100 }])
   })
 
   it('binds a paid subscription and grants once when both invoice events precede checkout', async () => {
@@ -156,7 +156,7 @@ describe.skipIf(!enabled)('subscription invoice allowances on PostgreSQL', () =>
     })
     expect(
       await db!.articleCreditGrant.findMany({ where: { clientSiteId: f.site.id }, select: { amount: true } }),
-    ).toEqual([{ amount: 50 }])
+    ).toEqual([{ amount: 100 }])
     expect(await db!.clientSite.findUniqueOrThrow({ where: { id: f.site.id } })).toMatchObject({
       plan: 'PREMIUM',
       stripeSubscriptionId: f.subscription.id,
@@ -179,7 +179,7 @@ describe.skipIf(!enabled)('subscription invoice allowances on PostgreSQL', () =>
       data: { stripeCustomerId: f.subscription.customer as string },
     })
     await deliver('invoice.paid', f.invoice)
-    expect((await db!.articleCreditWallet.findUniqueOrThrow({ where: { id: f.site.id } })).balance).toBe(50)
+    expect((await db!.articleCreditWallet.findUniqueOrThrow({ where: { id: f.site.id } })).balance).toBe(100)
   })
 
   it('does not replace a newer subscription with an older active invoice', async () => {

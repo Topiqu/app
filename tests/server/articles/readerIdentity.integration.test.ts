@@ -34,11 +34,15 @@ const fixture = async () => {
   await db!.clientSite.create({
     data: { id: clientSiteId, name: `identity-${clientSiteId}`, domain: `${clientSiteId}.test` },
   })
-  await db!.user.create({ data: { id: userId, email: `${userId}@example.invalid`, username: `identity-${userId}` } })
+  const authorId = randomUUID()
+  users.push(authorId)
+  for (const id of [userId, authorId])
+    await db!.user.create({ data: { id, email: `${id}@example.invalid`, username: `identity-${id}` } })
   const article = await db!.article.create({
     data: {
       clientSiteId,
-      userId,
+      // The reader is not the author: an author previewing an unreleased article is told why, not 404.
+      userId: authorId,
       slug: randomUUID(),
       language: 'en',
       title: 'Identity test',
@@ -126,6 +130,8 @@ describe.skipIf(!enabled)('reader identity uniqueness on PostgreSQL', () => {
     vi.stubGlobal('ipKey', () => 'test-ip')
     vi.stubGlobal('consumeRateLimit', async () => true)
     vi.stubGlobal('isUniqueViolation', isUniqueViolation)
+    vi.stubGlobal('canSeeUnreleasedArticle', canSeeUnreleasedArticle)
+    vi.stubGlobal('isArticleLive', isArticleLive)
     vi.stubGlobal('useServerI18n', async () => ({ translate: (key: string) => key }))
     vi.stubGlobal('reportCaughtError', vi.fn())
     let body: unknown = { isHelpful: false, reason: 'Needs examples', platform: 'OTHER' }
@@ -173,10 +179,10 @@ describe.skipIf(!enabled)('reader identity uniqueness on PostgreSQL', () => {
         const results = await Promise.allSettled([run(), run()])
         for (const result of results) {
           expect(result.status).toBe('rejected')
-          // The signed-in fixture is the author, who may preview but cannot engage yet.
+          // Both fixtures are readers; an unreleased article remains undiscoverable.
           if (result.status === 'rejected')
             expect(result.reason).toMatchObject({
-              statusCode: identity === 'signed-in' && kind !== 'share' ? 409 : 404,
+              statusCode: 404,
             })
         }
         expect(await db!.articleReaction.count({ where: { articleId } })).toBe(0)

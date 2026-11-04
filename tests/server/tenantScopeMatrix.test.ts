@@ -46,7 +46,8 @@ const routes: [file: string, scope: Scope, body?: Record<string, unknown>][] = [
   ['stripe/subscribe.post', 'BILLING_CHANGE', { plan: 'PRO' }],
   ['clients/[id]/features.patch', 'BILLING_CHANGE', { code: 'AI', enabled: true }],
   ['clients/end-trial.post', 'BILLING_CHANGE'],
-  ['clients/[id]/api-key.post', 'API_KEY_CONTROL'],
+  ['api-keys/index.post', 'API_KEY_CONTROL', { name: 'CI', scopes: [] }],
+  ['api-keys/[id].delete', 'API_KEY_CONTROL'],
   ['ai-visibility/prompts/[id].delete', 'AI_USE'],
   ['ai-visibility/prompts/index.post', 'AI_USE', { prompt: 'best coffee' }],
   ['keyword-plan/[id].patch', 'AI_USE', { status: 'PINNED' }],
@@ -141,6 +142,7 @@ const run = async (file: string, scope: Scope, body: Record<string, unknown> = {
   vi.stubGlobal('isCoverImageUrl', () => true)
 
   await stubNitroImports(import('../../server/utils/linkedin/access'), 'requirePublicationDraft')
+  await stubNitroImports(import('../../server/utils/articleWrite'), 'createArticle', 'updateArticle')
   const { default: handler } = (await handlers[`../../server/api/${file}.ts`]!()) as {
     default: (event: unknown) => Promise<unknown>
   }

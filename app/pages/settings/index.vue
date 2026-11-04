@@ -127,9 +127,6 @@
         <FormClientIntegrationsCatalog
           v-show="activeTab === 'integrations'"
           :clientSiteId="client?.id ?? ''"
-          :apiKey="form.apiKey"
-          :apiVisible="apiVisible"
-          :apiCopied="apiCopied"
           :allowGtag="form.allowGtag"
           :gtagId="form.gtagId"
           :gamNetworkCode="form.gamNetworkCode"
@@ -142,9 +139,6 @@
           @update:gamNetworkCode="form.gamNetworkCode = $event"
           @update:linkedinMode="form.linkedinMode = $event"
           @update:linkedinType="form.linkedinCompanyType = $event"
-          @generateApiKey="generateApiKey"
-          @toggleApi="apiVisible = !apiVisible"
-          @copyApi="copyApi(form.apiKey)"
           @save="savePreferences"
         />
 
@@ -171,6 +165,7 @@
           </UAlert>
           <LazyFormClientAI
             v-model:releaseSchedule="releaseScheduleModel"
+            v-model:translationSelection="form.translationSelection"
             :clientId="clientId ?? ''"
             :username="form.aiUser.username"
             :bio="form.aiUser.bio"
@@ -249,9 +244,6 @@ const { data: auth } = useAuth()
 const route = useRoute()
 const router = useRouter()
 const localePath = useLocalePath()
-const { copy: copyApi, copied: apiCopied } = useClipboard({ legacy: true })
-const confirm = useConfirm()
-const apiVisible = shallowRef(false)
 const isSaving = shallowRef(false)
 
 const clientId = computed(() => auth.value?.user.clientSiteId)
@@ -363,31 +355,5 @@ const resetForm = () => {
   const edited = structuredClone(toRaw(form.value))
   form.value = structuredClone(toRaw(pristine.value))
   discardChanges(() => (form.value = edited))
-}
-
-const generateApiKey = async () => {
-  if (!clientId.value) return
-  if (form.value.apiKey) {
-    const confirmed = await confirm({
-      title: $t('common.preferences.api.regenerateTitle'),
-      message: $t('common.preferences.api.regenerateWarning'),
-      icon: 'mdi:key-remove',
-      confirmText: $t('common.preferences.api.regenerateConfirm'),
-      cancelText: $t('common.messages.deleteCancel'),
-      variant: 'danger',
-    })
-    if (!confirmed) return
-  }
-  try {
-    const res = await $fetch<{ apiKey: string }, '/api/clients/:id/api-key'>(
-      `/api/clients/${clientId.value}/api-key` as '/api/clients/:id/api-key',
-      { method: 'POST' },
-    )
-    form.value.apiKey = res.apiKey
-    pristine.value.apiKey = res.apiKey
-    toast.add({ color: 'success', title: $t('common.preferences.api.generateSuccess') })
-  } catch {
-    toast.add({ color: 'error', title: $t('common.preferences.api.generateFailed') })
-  }
 }
 </script>

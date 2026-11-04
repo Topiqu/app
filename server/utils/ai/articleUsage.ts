@@ -11,7 +11,7 @@ type Context = {
   clientSiteId: string
   operationId: string
   articleQuality: ArticleQuality
-  mode: 'manual' | 'scheduled'
+  mode: 'manual' | 'scheduled' | 'api'
   userId?: string
   stage?: string
 }

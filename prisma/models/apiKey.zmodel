@@ -1,0 +1,75 @@
+import "./base"
+import "./client"
+import "./user"
+
+/// What an external API key may do. Write scopes are also capped by the creating member's tenant scopes.
+enum ApiKeyScope {
+    READ
+    WRITE
+    PUBLISH
+    GENERATE
+}
+
+enum ApiGenerationStatus {
+    QUEUED
+    RUNNING
+    SUCCEEDED
+    FAILED
+}
+
+/// A tenant credential for the external API. Only the SHA-256 of the key is stored; the key is shown once.
+model ApiKey with Base {
+    clientSiteId String
+    clientSite   ClientSite          @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    name         String              @length(1, 80)
+    /// The first characters of the key, so members can tell keys apart without seeing them.
+    prefix       String
+    hash         String              @unique @omit
+    scopes       ApiKeyScope[]
+    /// The member the key acts for. Keys migrated from the single legacy key have none and stay read-only.
+    createdById  String?
+    createdBy    User?               @relation(fields: [createdById], references: [id], onDelete: SetNull)
+    lastUsedAt   DateTime?
+    revokedAt    DateTime?
+    idempotency  ApiIdempotencyKey[]
+    generations  ApiGeneration[]
+
+    @@index([clientSiteId])
+    @@allow('read', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
+    @@allow('create, update', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
+}
+
+/// The stored response of a write sent with an `Idempotency-Key`; a retry with the same key replays it.
+model ApiIdempotencyKey {
+    id          String   @id @default(uuid())
+    apiKeyId    String
+    apiKey      ApiKey   @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+    key         String   @length(1, 255)
+    requestHash String
+    /// NULL while the first request is still running.
+    statusCode  Int?
+    response    Json?
+    createdAt   DateTime @default(now())
+
+    @@unique([apiKeyId, key])
+    @@index([createdAt])
+}
+
+/// An article requested through `POST /api/v1/articles/generate`, written by the `api-generations` task.
+model ApiGeneration with Base {
+    clientSiteId String
+    clientSite   ClientSite          @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    apiKeyId     String?
+    apiKey       ApiKey?             @relation(fields: [apiKeyId], references: [id], onDelete: SetNull)
+    topic        String              @length(3, 500)
+    instructions String?             @length(0, 2000)
+    status       ApiGenerationStatus @default(QUEUED)
+    articleId    String?
+    error        String?             @length(0, 500)
+    startedAt    DateTime?
+    finishedAt   DateTime?
+
+    @@index([status, createdAt])
+    @@index([clientSiteId, createdAt])
+    @@allow('read', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
+}

@@ -35,6 +35,8 @@ describe('generate-article cron row', () => {
 
   it('applies the scheduled media policy and reports requested versus delivered modules', () => {
     expect(task).toContain('selectedModulesFor(topic.format, topic.modules)')
+    // Images and a researched video are added in code; the topic picker never chose them.
+    expect(task).toContain('autopilotModules(')
     expect(task).toMatch(/modules:\s*cronModules/)
     expect(task).toContain('requestedModules: cronModules')
     expect(task).toContain('missingModules')
@@ -66,16 +68,18 @@ describe('generate-article cron row', () => {
     expect(task).toContain('generated.editorialReview?.approved === true')
     expect(task).toContain("generated.research?.status === 'completed'")
     expect(task).toContain('generated.research?.sourceCount > 0')
+    // A requested (API) article never auto-releases: it has no slot and is always a draft.
+    expect(task).toContain('const autoRelease = !request && client.autoRelease && client.publishToWeb')
     expect(task).toMatch(
-      /const releasable =\s+client\.autoRelease &&\s+client\.publishToWeb &&\s+qualityApproved &&\s+mediaApproved &&\s+coverApproved\n/,
+      /const releasable =\s+autoRelease &&\s+qualityApproved &&\s+mediaApproved &&\s+coverApproved\n/,
     )
     expect(task).toContain("const status = releasable && !releaseAt ? 'published' : 'draft'")
     expect(task).toContain('const coverApproved = Boolean(generated.articleImageUrl)')
     expect(task).toContain('mediaReport.counts.needsAttention === 0')
     // Nobody confirms image rights before an auto-publish, so media is chosen to need no confirmation.
-    expect(task).toContain('requireClearRights: client.autoRelease && client.publishToWeb')
+    expect(task).toContain('requireClearRights: autoRelease')
     // Every failed gate counts as a hold, not only the editorial review.
-    expect(task).toContain('heldFromAutoRelease: client.autoRelease && client.publishToWeb && !releasable')
+    expect(task).toContain('heldFromAutoRelease: autoRelease && !releasable')
   })
 
   it('reports active cron features whose stored frequency still disables scheduling', () => {

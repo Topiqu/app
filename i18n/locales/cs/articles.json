@@ -85,7 +85,8 @@
         "READY": "Čeká na kontrolu",
         "PUBLISHED": "Publikováno",
         "FAILED": "Selhalo",
-        "STALE": "Zdroj se změnil"
+        "STALE": "Zdroj se změnil",
+        "SKIPPED": "Nehodí se pro trh"
       },
       "source": {
         "AI": "Strojový překlad",
@@ -98,7 +99,8 @@
         "FAILED": "Poslední pokus o překlad selhal. Zkus to znovu.",
         "STALE": "Zdrojový článek se změnil, překlad se vygeneruje znovu.",
         "READY": "Tento překlad zatím nemá obsah.",
-        "PUBLISHED": "Tento překlad zatím nemá obsah."
+        "PUBLISHED": "Tento překlad zatím nemá obsah.",
+        "SKIPPED": "Chytrý výběr tento článek nepřeložil, protože se týká jen zdrojového trhu. Přeložit ho můžete i tak."
       },
       "fields": {
         "title": "Titulek",
@@ -109,7 +111,8 @@
         "approve": "Schválit a publikovat",
         "translate": "Přeložit teď",
         "retranslate": "Přeložit znovu",
-        "discard": "Zahodit"
+        "discard": "Zahodit",
+        "translateAnyway": "Přeložit přesto"
       },
       "discardTitle": "Zahodit tento překlad?",
       "discardMessage": "Přeložený text se smaže. Samotného článku se to nedotkne a překlad lze kdykoli vygenerovat znovu.",
@@ -118,7 +121,11 @@
         "translated": "Překlad vygenerován",
         "discarded": "Překlad zahozen"
       },
-      "viewLive": "Zobrazit živou stránku"
+      "viewLive": "Zobrazit živou stránku",
+      "marketFit": {
+        "adaptedTitle": "Upraveno pro tento trh",
+        "adaptedText": "Tyto pasáže platí jen pro zdrojovou zemi; před publikací je zkontrolujte."
+      }
     },
     "explore": "Prozkoumat články",
     "openArticle": "Otevřít článek",

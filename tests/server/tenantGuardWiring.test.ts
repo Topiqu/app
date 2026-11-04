@@ -3,8 +3,9 @@ import { join, relative, resolve } from 'node:path'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 
 const API = resolve(process.cwd(), 'server/api')
+// `createArticle` / `updateArticle` check the tenant scope inside; `requireApiKey` scopes an API request to its key's tenant.
 const GUARD =
-  /requireTenantScope|requireTenantMember|requireArticleAccess|hasTenantScope|requireDomainAccess|requireShopifyAccess|requireWebhookAccess|requireKnowledgeAccess|requirePublicationDraft|resolveAiUser|createIntegrationTicket|requireIntegrationActor/
+  /createArticle|updateArticle|requireApiKey|requireTenantScope|requireTenantMember|requireArticleAccess|hasTenantScope|requireDomainAccess|requireShopifyAccess|requireWebhookAccess|requireKnowledgeAccess|requirePublicationDraft|resolveAiUser|createIntegrationTicket|requireIntegrationActor/
 
 // Routes that write without a tenant scope, each for a reason that is not "nobody checked".
 const exempt: Record<string, string> = {

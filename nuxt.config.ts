@@ -159,7 +159,7 @@ export default defineNuxtConfig({
     scheduledTasks:
       IS_PROD && !IS_BROWSER_TEST
         ? {
-            '* * * * *': ['webhook-deliver', 'website-import', 'domain-cleanup'],
+            '* * * * *': ['webhook-deliver', 'website-import', 'domain-cleanup', 'api-generations'],
             '*/15 * * * *': ['generate-article'],
             '*/30 * * * *': ['sentiment-analysis'],
             '0 * * * *': ['community-insights'],

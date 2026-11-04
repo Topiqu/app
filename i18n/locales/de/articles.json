@@ -85,7 +85,8 @@
         "READY": "Wartet auf Prüfung",
         "PUBLISHED": "Veröffentlicht",
         "FAILED": "Fehlgeschlagen",
-        "STALE": "Quelle geändert"
+        "STALE": "Quelle geändert",
+        "SKIPPED": "Nicht für diesen Markt"
       },
       "source": {
         "AI": "Maschinell übersetzt",
@@ -98,7 +99,8 @@
         "FAILED": "Der letzte Übersetzungsversuch ist fehlgeschlagen. Versuche es erneut.",
         "STALE": "Der Ausgangsartikel wurde geändert; diese Übersetzung wird neu erstellt.",
         "READY": "Diese Übersetzung hat noch keinen Text.",
-        "PUBLISHED": "Diese Übersetzung hat noch keinen Text."
+        "PUBLISHED": "Diese Übersetzung hat noch keinen Text.",
+        "SKIPPED": "Die intelligente Auswahl hat diesen Artikel nicht übersetzt, weil er nur den Ausgangsmarkt betrifft. Sie können ihn trotzdem übersetzen."
       },
       "fields": {
         "title": "Titel",
@@ -109,7 +111,8 @@
         "approve": "Freigeben und veröffentlichen",
         "translate": "Jetzt übersetzen",
         "retranslate": "Erneut übersetzen",
-        "discard": "Verwerfen"
+        "discard": "Verwerfen",
+        "translateAnyway": "Trotzdem übersetzen"
       },
       "discardTitle": "Diese Übersetzung verwerfen?",
       "discardMessage": "Der übersetzte Text wird gelöscht. Der Artikel selbst bleibt unverändert und kann später erneut übersetzt werden.",
@@ -118,7 +121,11 @@
         "translated": "Übersetzung erstellt",
         "discarded": "Übersetzung verworfen"
       },
-      "viewLive": "Veröffentlichte Seite ansehen"
+      "viewLive": "Veröffentlichte Seite ansehen",
+      "marketFit": {
+        "adaptedTitle": "An diesen Markt angepasst",
+        "adaptedText": "Diese Passagen gelten nur für das Ausgangsland; prüfen Sie sie vor der Veröffentlichung."
+      }
     },
     "explore": "Artikel entdecken",
     "openArticle": "Artikel öffnen",

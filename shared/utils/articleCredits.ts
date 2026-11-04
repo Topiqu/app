@@ -15,9 +15,9 @@ export const affordableArticleCount = (credits: number, quality: unknown): numbe
   Number.isFinite(credits) ? Math.max(0, Math.floor(credits / articleCreditCost(quality))) : 0
 
 export const PLAN_ARTICLE_CREDITS = {
-  PRO: 30,
-  PREMIUM: 50,
-  CUSTOM: 50,
+  PRO: 50,
+  PREMIUM: 100,
+  CUSTOM: 100,
 } as const
 
 export type ArticleCreditPlan = keyof typeof PLAN_ARTICLE_CREDITS

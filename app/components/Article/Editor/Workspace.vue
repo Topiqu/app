@@ -151,7 +151,9 @@
             {{
               $t(
                 !tr.hasBody
-                  ? 'articles.translations.actions.translate'
+                  ? tr.active?.status === 'SKIPPED'
+                    ? 'articles.translations.actions.translateAnyway'
+                    : 'articles.translations.actions.translate'
                   : tr.active?.status === 'PUBLISHED'
                     ? 'articles.saveChanges'
                     : 'articles.translations.actions.approve',
@@ -251,8 +253,28 @@
       variant="soft"
       icon="mdi:translate"
       :title="$t(`articles.translations.status.${tr.active?.status ?? 'MISSING'}`)"
-      :description="$t(`articles.translations.empty.${tr.active?.status ?? 'MISSING'}`)"
-    />
+    >
+      <template #description>
+        <p>{{ $t(`articles.translations.empty.${tr.active?.status ?? 'MISSING'}`) }}</p>
+        <p v-if="tr.active?.status === 'SKIPPED' && marketFit?.reason" class="mt-1 italic">{{ marketFit.reason }}</p>
+      </template>
+    </UAlert>
+
+    <UAlert
+      v-if="!tr.isSource && tr.hasBody && marketFit?.verdict === 'ADAPT' && marketFit.localPassages.length"
+      class="mb-6"
+      color="info"
+      variant="soft"
+      icon="mdi:map-marker-outline"
+      :title="$t('articles.translations.marketFit.adaptedTitle')"
+    >
+      <template #description>
+        <p>{{ $t('articles.translations.marketFit.adaptedText') }}</p>
+        <ul class="mt-1 list-disc ps-5">
+          <li v-for="passage in marketFit.localPassages" :key="passage">{{ passage }}</li>
+        </ul>
+      </template>
+    </UAlert>
 
     <UAlert
       v-if="!isNew && tr.error"
@@ -781,6 +803,7 @@ const translationBadgeColor = computed(() => {
   if (status === 'FAILED') return 'error' as const
   return 'neutral' as const
 })
+const marketFit = computed(() => readMarketFit(tr.active?.marketFit))
 const activeSlug = computed(() => (tr.isSource ? editedArticle.value.slug : (tr.active?.slug ?? '')))
 const bodyEditable = computed(() => tr.isSource || tr.hasBody)
 // Summary and FAQ follow the selected language just like the title and body.

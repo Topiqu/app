@@ -17,9 +17,9 @@ describe('articleSlug', () => {
 })
 
 describe('slug changes keep old links working', () => {
-  const patch = read('server/api/articles/[id]/index.patch.ts')
+  const patch = read('server/utils/articleWrite.ts')
   const get = read('server/api/articles/[id]/index.get.ts')
-  const create = read('server/api/articles/index.post.ts')
+  const create = read('server/utils/articleWrite.ts')
   const page = read('app/pages/clanky/[slug].vue')
 
   it('records the previous slug only for an article readers could have seen', () => {

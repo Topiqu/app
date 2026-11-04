@@ -39,6 +39,7 @@ export const TENANT_EDITABLE_CLIENT_SITE_FIELDS = [
   'aiControversyLevel',
   'translationMode',
   'translationLanguages',
+  'translationSelection',
   'discloseAiContent',
   'commentsEnabled',
   'commentGifsEnabled',
@@ -81,7 +82,6 @@ export const PUBLIC_CLIENT_SITE_FIELDS = [
 ] as const
 
 export const CLIENT_SITE_SECRET_FIELDS = [
-  'apiKey',
   'stripeCustomerId',
   'stripeSubscriptionId',
   'stripePriceId',

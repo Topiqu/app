@@ -6,6 +6,8 @@ enum WebhookEvent {
     ARTICLE_UPDATED
     ARTICLE_UNPUBLISHED
     ARTICLE_DELETED
+    GENERATION_SUCCEEDED
+    GENERATION_FAILED
 }
 
 enum WebhookDeliveryStatus {

@@ -12,7 +12,7 @@
       :title="summary"
     >
       <span class="uppercase">{{ source }}</span>
-      <span v-if="existing.length" class="text-muted">+{{ existing.length }}</span>
+      <span v-if="translated.length" class="text-muted">+{{ translated.length }}</span>
       <span v-if="attention" class="size-1.5 rounded-full" :class="translationStatusDot(attention)" />
     </UButton>
     <template #item-leading="{ item }">
@@ -57,6 +57,7 @@ const targets = computed(() =>
   ),
 )
 const existing = computed(() => targets.value.filter((language) => statusOf(language)))
+const translated = computed(() => existing.value.filter((language) => statusOf(language) !== 'SKIPPED'))
 const inProgress = computed(
   () =>
     translating ||
@@ -68,7 +69,7 @@ const attention = computed(() =>
 const summary = computed(() =>
   [
     `${$t('articles.translations.languageTabs')}: ${source.toUpperCase()}`,
-    existing.value.length ? `+${existing.value.length}` : '',
+    translated.value.length ? `+${translated.value.length}` : '',
     attention.value ? $t(`articles.translations.status.${attention.value}`) : '',
   ]
     .filter(Boolean)

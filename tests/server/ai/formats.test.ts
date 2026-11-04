@@ -6,6 +6,7 @@ import {
   ARTICLE_FORMATS,
   ARTICLE_FORMAT_NAMES,
   applyFormat,
+  autopilotModules,
   formatMenu,
   formatRules,
   isArticleFormat,
@@ -148,6 +149,21 @@ describe('applyFormat', () => {
     const fitted = applyFormat({ ...full, perex }, 'comparison').perex
     expect(fitted.length).toBeLessThanOrEqual(160)
     expect(fitted).toMatch(/ Kosten…$/)
+  })
+})
+
+describe('autopilotModules', () => {
+  it('always illustrates the body and adds a video only when research can find one', () => {
+    expect(autopilotModules('guide', ['answer', 'faq'], true)).toEqual(['answer', 'faq', 'images', 'youtube'])
+    expect(autopilotModules('guide', ['answer', 'faq'], false)).toEqual(['answer', 'faq', 'images'])
+  })
+
+  it('adds media only where the format allows it and never duplicates a pick', () => {
+    for (const format of ARTICLE_FORMAT_NAMES)
+      expect(autopilotModules(format, [], true).every((module) => allowedModulesFor(format).includes(module))).toBe(
+        true,
+      )
+    expect(autopilotModules('opinion', ['poll', 'images'], true)).toEqual(['poll', 'images', 'youtube'])
   })
 })
 

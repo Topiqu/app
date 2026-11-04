@@ -83,7 +83,9 @@ describe('buildTopicPrompt', () => {
     expect(prompt).toContain('guide, guide, analysis')
     expect(prompt).toContain('three most recent')
     expect(prompt).toContain('guide / checklist / faq')
-    expect(prompt).toContain('select at least one useful module')
+    expect(prompt).toContain('select at least one that serves the topic')
+    // Media is added in code, so the picker's variety pressure cannot remove it.
+    expect(prompt).toContain('Body images and a video are added')
   })
 
   it('frames Search Console as optional enrichment', () => {
@@ -270,3 +272,21 @@ describe('unattended stories', () => {
 })
 
 beforeEach(stubImports)
+
+describe('requested topics', () => {
+  beforeEach(stubImports)
+
+  it('keeps the requested subject in front of the picker', () => {
+    const prompt = buildTopicPrompt({
+      ...INPUT,
+      requested: { topic: 'Zazimování zahradního jezírka', instructions: 'Pro začátečníky' },
+    })
+    expect(prompt).toContain('## REQUESTED TOPIC')
+    expect(prompt).toContain('Subject: Zazimování zahradního jezírka')
+    expect(prompt).toContain('Editorial preferences: Pro začátečníky')
+  })
+
+  it('leaves scheduled picks unchanged', () => {
+    expect(buildTopicPrompt(INPUT)).not.toContain('REQUESTED TOPIC')
+  })
+})

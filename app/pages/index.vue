@@ -93,6 +93,7 @@
             :pending="leadReactionPending"
             iconOnly
             variant="overlay"
+            size="sm"
             @toggle="toggleLeadLike"
           />
           <UButton

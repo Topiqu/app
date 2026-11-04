@@ -37,8 +37,8 @@ describe('plan article grants', () => {
   afterEach(() => vi.unstubAllGlobals())
 
   it.each([
-    ['PRO', 30],
-    ['PREMIUM', 50],
+    ['PRO', 50],
+    ['PREMIUM', 100],
   ])('credits a new %s period with %i articles', async (plan, amount) => {
     const tx = makeTx()
     await grantPlanArticleCredits(tx as unknown as DatabaseTransaction, { ...input, plan: String(plan) })
@@ -62,11 +62,11 @@ describe('plan article grants', () => {
     })
   })
 
-  it('adds only 20 articles when upgrading a current Pro allowance to Premium', async () => {
-    const tx = makeTx(30)
+  it('adds only 50 articles when upgrading a current Pro allowance to Premium', async () => {
+    const tx = makeTx(50)
     await grantPlanArticleCredits(tx as unknown as DatabaseTransaction, { ...input, plan: 'PREMIUM' })
     expect(tx.articleCreditGrant.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({ amount: 20, remaining: 20, expiresAt: periodEnd }),
+      data: expect.objectContaining({ amount: 50, remaining: 50, expiresAt: periodEnd }),
     })
   })
 
@@ -93,7 +93,7 @@ describe('plan article grants', () => {
   })
 
   it('keeps granted articles after a downgrade', async () => {
-    const tx = makeTx(50)
+    const tx = makeTx(100)
     await grantPlanArticleCredits(tx as unknown as DatabaseTransaction, input)
     expect(tx.articleCreditGrant.create).not.toHaveBeenCalled()
     expect(tx.articleCreditWallet.update).not.toHaveBeenCalled()

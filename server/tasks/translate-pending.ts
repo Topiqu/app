@@ -58,6 +58,7 @@ export default defineMonitoredTask({
           processed: 0,
           failed: 0,
           skipped: 0,
+          held: 0,
           total: 0,
           queuedButIneligible: queued,
           timestamp: now.toISOString(),
@@ -68,6 +69,7 @@ export default defineMonitoredTask({
     let processed = 0
     let failed = 0
     let skipped = 0
+    let held = 0
 
     for (const { id, updatedAt } of candidates) {
       const claimedAt = nextTranslationVersion(updatedAt)
@@ -88,10 +90,13 @@ export default defineMonitoredTask({
           id: true,
           language: true,
           clientSiteId: true,
+          content: true,
+          marketFit: true,
           article: {
             select: {
               id: true,
               editVersion: true,
+              language: true,
               title: true,
               excerpt: true,
               content: true,
@@ -100,7 +105,7 @@ export default defineMonitoredTask({
               faq: true,
             },
           },
-          clientSite: { select: { translationMode: true, publishToWeb: true } },
+          clientSite: { select: { translationMode: true, publishToWeb: true, translationSelection: true } },
         },
       })
 
@@ -119,12 +124,43 @@ export default defineMonitoredTask({
       }
 
       try {
+        // Only a first translation is judged: once a language has text, the decision was already made.
+        const smart = row.clientSite.translationSelection === 'SMART'
+        let fit = readMarketFit(row.marketFit)
+        if (smart && !fit && !row.content) {
+          fit = await assessMarketFit(row.article, row.language, row.clientSiteId).catch(async (error: unknown) => {
+            if (aiAllowanceErrorCode(error)) throw error
+            await reportCaughtError('Market fit assessment failed; translating anyway', error, {
+              clientSiteId: row.clientSiteId,
+              articleId: row.article.id,
+              translationId: id,
+            })
+            return null
+          })
+        }
+        if (smart && fit?.verdict === 'SKIP') {
+          await prisma.articleTranslation.updateMany({
+            where: { id, status: 'TRANSLATING', updatedAt: claimedAt },
+            data: {
+              status: 'SKIPPED',
+              marketFit: toDatabaseJson(fit),
+              translationStartedAt: null,
+              error: null,
+              updatedAt: nextTranslationVersion(claimedAt),
+            },
+          })
+          held++
+          continue
+        }
+
+        const passages = fit?.verdict === 'ADAPT' ? fit.localPassages : []
+
         const {
           usage,
           slug: baseSlug,
           ...translated
         } = await withAiAllowance(row.clientSiteId, 'TRANSLATION', () =>
-          withAiSpend(row.clientSiteId, () => generateTranslation(row.article, row.language)),
+          withAiSpend(row.clientSiteId, () => generateTranslation(row.article, row.language, passages)),
         )
 
         await recordAiUsage(row.clientSiteId, usage.totalTokens || 0, 'TRANSLATE_ARTICLE', {
@@ -180,6 +216,7 @@ export default defineMonitoredTask({
               source: 'AI',
               model: aiModelId('translation'),
               usage: toDatabaseJson(usage),
+              ...(fit ? { marketFit: toDatabaseJson(fit) } : {}),
               error: null,
               aiRetryAt: null,
               translatedAt: new Date(),
@@ -276,6 +313,6 @@ export default defineMonitoredTask({
       }
     }
 
-    return { result: { processed, failed, skipped, total: candidates.length, timestamp: now.toISOString() } }
+    return { result: { processed, failed, skipped, held, total: candidates.length, timestamp: now.toISOString() } }
   },
 })

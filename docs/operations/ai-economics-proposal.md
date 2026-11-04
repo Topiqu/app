@@ -20,9 +20,9 @@ daily. A paid period or explicit pack purchase is required to add paid capacity.
 | Plan           |         Monthly | Annual, paid upfront | Team seats, including owner | Articles/month |
 | -------------- | --------------: | -------------------: | --------------------------: | -------------: |
 | BASIC          |            Free |                 Free |                           1 |              0 |
-| PRO            |          USD 49 |           USD 470.40 |                           2 |             30 |
-| PREMIUM        |          USD 99 |           USD 950.40 |                           3 |             50 |
-| Managed CUSTOM | USD 199 minimum | USD 1,910.40 minimum |                   3 minimum |             50 |
+| PRO            |          USD 49 |           USD 470.40 |                           2 |             50 |
+| PREMIUM        |          USD 99 |           USD 950.40 |                           3 |            100 |
+| Managed CUSTOM | USD 199 minimum | USD 1,910.40 minimum |                   3 minimum |            100 |
 
 CUSTOM is USD 159 including the owner plus USD 20 for each additional paid seat.
 The minimum is three seats, so the actual minimum charge is USD 199, not USD 200.

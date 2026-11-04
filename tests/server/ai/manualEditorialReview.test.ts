@@ -75,6 +75,7 @@ async function stubImports() {
     'recheckRevision',
     'revisionEvidence',
     'AUTHOR_ACCOUNT_RULE',
+    'SOURCE_CONFLICT_RULE',
   )
   await stubNitroImports(import('../../../server/utils/knowledge/retrieve'), 'retrieveKnowledge')
   await stubNitroImports(import('../../../server/utils/ai/articleConfig'), 'buildArticleConfig')
@@ -133,6 +134,7 @@ const asEdits = (revision: Partial<typeof draft>) => ({
   answer: null,
   keyTakeaways: null,
   faq: null,
+  sources: revision.sources ?? null,
 })
 
 beforeEach(() => {
@@ -453,6 +455,74 @@ describe('manual editorial review', () => {
       })
       expect(generateStructuredText).toHaveBeenCalledTimes(4)
     })
+  })
+
+  it('keeps a deletion that cleared one finding while another still holds the article', async () => {
+    vi.stubGlobal('reportCaughtError', vi.fn())
+    const revision = { ...draft, content: '<p>The office approves it in 30 days.</p><p>Bring the drawing.</p>' }
+    vi.mocked(generateStructuredText)
+      .mockResolvedValueOnce(response(rejected, 10) as never)
+      .mockResolvedValueOnce(response(asEdits(revision), 20) as never)
+      .mockResolvedValueOnce(
+        response(
+          {
+            findings: [{ id: 1, resolved: false, reason: 'The claim is reworded, not removed.' }],
+            introduced: [{ note: 'Remove "in 30 days"; no source.' }],
+          },
+          5,
+        ) as never,
+      )
+      .mockResolvedValueOnce(
+        response(
+          {
+            ...asEdits({}),
+            edits: [{ find: '<p>The office approves it in 30 days.</p>', replace: '', insertAfter: false }],
+          },
+          3,
+        ) as never,
+      )
+      .mockResolvedValueOnce(
+        response(
+          {
+            findings: [
+              { id: 1, resolved: true, reason: '' },
+              { id: 2, resolved: false, reason: 'Still claims characters return.' },
+            ],
+            introduced: [],
+          },
+          2,
+        ) as never,
+      )
+    const generation = await streamArticle('site', 'Write a report', { research: false })
+
+    expect((await generation.review(draft)).content).toBe('<p>Bring the drawing.</p>')
+    expect(generation.editorialReview).toMatchObject({
+      approved: false,
+      removalPass: true,
+      issues: [{ code: 'unsupported_claim', blocking: true }],
+    })
+    expect(generation.editorialReview?.issues).toHaveLength(1)
+  })
+
+  it('revises with targeted edits when the only stance note is not blocking', async () => {
+    const review = {
+      issues: [
+        { code: 'assignment_mismatch', note: 'The tone could be a little sharper.', blocking: false },
+        ...rejected.issues,
+      ],
+    }
+    const revision = { ...draft, content: '<p>A corrected draft.</p>' }
+    vi.mocked(generateStructuredText)
+      .mockResolvedValueOnce(response(review, 10) as never)
+      .mockResolvedValueOnce(response(asEdits(revision), 20) as never)
+      .mockResolvedValueOnce(
+        response({ findings: [{ id: 2, resolved: true, reason: '' }], introduced: [] }, 5) as never,
+      )
+    const generation = await streamArticle('site', 'Write a report', { research: false })
+
+    expect((await generation.review(draft)).content).toBe(revision.content)
+    expect(generation.editorialReview).toMatchObject({ approved: true, revisionMode: 'edits' })
+    expect(vi.mocked(generateStructuredText).mock.calls[1]![0].prompt).not.toContain('complete replacement object')
   })
 
   it('falls back to a full rewrite when an edit quotes text that is not in the draft', async () => {

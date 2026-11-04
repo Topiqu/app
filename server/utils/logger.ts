@@ -1,3 +1,5 @@
+import { $fetch } from 'ofetch'
+
 import { logLevelEnabled, sanitizeLogContext, sanitizeLogText, type LogLevel } from './logging'
 
 type LogContext = Record<string, unknown>

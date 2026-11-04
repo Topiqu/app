@@ -505,7 +505,9 @@
         "ARTICLE_PUBLISHED": "Artikel veröffentlicht",
         "ARTICLE_UPDATED": "Veröffentlichter Artikel geändert",
         "ARTICLE_UNPUBLISHED": "Veröffentlichung zurückgezogen",
-        "ARTICLE_DELETED": "Artikel gelöscht"
+        "ARTICLE_DELETED": "Artikel gelöscht",
+        "GENERATION_SUCCEEDED": "Angeforderter Artikel geschrieben",
+        "GENERATION_FAILED": "Angeforderter Artikel fehlgeschlagen"
       },
       "add": "Webhook hinzufügen",
       "empty": "Noch keine Webhooks.",
@@ -591,7 +593,7 @@
       "developerTitle": "API und WordPress",
       "developerDescription": "Werkzeuge für eigene Entwicklungen und Veröffentlichungsabläufe außerhalb des Katalogs externer Dienste.",
       "apiBenefitOne": "Verbinde eine eigene App, Automatisierung oder einen Redaktionsablauf.",
-      "apiBenefitTwo": "Erstelle den einzigen sicheren Zugriffsschlüssel bei Bedarf neu.",
+      "apiBenefitTwo": "Gib jeder Integration einen eigenen Schlüssel mit nur den nötigen Berechtigungen.",
       "wordpressTitle": "WordPress-Plugin",
       "wordpressComingSoon": "Demnächst verfügbar.",
       "wordpressDescription": "Topiqu Sync importiert veröffentlichte Artikel als native WordPress-Beiträge.",
@@ -1173,20 +1175,43 @@
       "annualy": "Jährlich",
       "api": {
         "title": "API-Zugriff",
-        "description": "Erstelle einen sicheren API-Schlüssel für den programmgesteuerten Zugriff auf Endpunkte.",
+        "description": "Erstelle Schlüssel für deine Apps und Automatisierungen. Jeder Schlüssel erhält nur die gewählten Berechtigungen, und Topiqu speichert nur einen Fingerabdruck davon.",
         "generate": "Schlüssel erstellen",
-        "generateSuccess": "API-Schlüssel erfolgreich erstellt",
         "generateFailed": "Der API-Schlüssel konnte nicht erstellt werden",
-        "regenerateTitle": "API-Schlüssel neu erstellen?",
-        "regenerateWarning": "Der aktuelle Schlüssel wird sofort widerrufen. Alle Anwendungen, die ihn verwenden, funktionieren erst wieder, wenn du ihn durch den neuen Schlüssel ersetzt.",
-        "regenerateConfirm": "Widerrufen und neu erstellen",
-        "label": "Dein API-Schlüssel",
-        "revoke": "Widerrufen und neu erstellen",
+        "label": "API-Schlüssel",
+        "createdTitle": "Schlüssel „{name}“ erstellt",
+        "shownOnce": "Kopiere ihn jetzt. Topiqu speichert nur einen Fingerabdruck und kann den Schlüssel nicht erneut anzeigen.",
+        "name": "Name",
+        "nameHint": "Wo der Schlüssel verwendet wird, z. B. „WordPress“ oder „Make“",
+        "scopes": "Berechtigungen",
+        "scope": {
+          "READ": {
+            "label": "Lesen",
+            "description": "Veröffentlichte Artikel, Tags und Website-Angaben."
+          },
+          "WRITE": {
+            "label": "Schreiben",
+            "description": "Entwürfe erstellen und bearbeiten. Liest auch Entwürfe."
+          },
+          "PUBLISH": {
+            "label": "Veröffentlichen",
+            "description": "Artikel veröffentlichen, zurückziehen und planen."
+          },
+          "GENERATE": {
+            "label": "Generieren",
+            "description": "Einen Artikel von der KI schreiben lassen. Verbraucht Artikel-Credits."
+          }
+        },
+        "empty": "Noch keine API-Schlüssel.",
+        "limit": "Du hast das Limit von {max} Schlüsseln erreicht. Widerrufe einen, um einen neuen zu erstellen.",
+        "lastUsed": "Zuletzt verwendet",
+        "neverUsed": "Noch nicht verwendet",
+        "revoke": "Widerrufen",
+        "revokeTitle": "„{name}“ widerrufen?",
+        "revokeWarning": "Apps mit diesem Schlüssel funktionieren sofort nicht mehr. Das lässt sich nicht rückgängig machen.",
         "copy": "API-Schlüssel kopieren",
         "copied": "Kopiert",
-        "show": "API-Schlüssel anzeigen",
-        "hide": "API-Schlüssel ausblenden",
-        "warning": "Halte diesen Schlüssel geheim. Teile ihn nicht in clientseitigem Code oder öffentlichen Repositories."
+        "warning": "Halte Schlüssel geheim. Verwende sie nicht in clientseitigem Code oder öffentlichen Repositories. Ein Schlüssel handelt für das Mitglied, das ihn erstellt hat, und nie mit mehr Rechten als dieses."
       },
       "messages": {
         "noClientId": "Kunden-ID fehlt"
@@ -1466,11 +1491,22 @@
             "HYBRID": "Hybrid (übersetzen und zur Prüfung zurückhalten)"
           }
         },
+        "selection": {
+          "label": "Welche Artikel übersetzt werden",
+          "options": {
+            "SMART": "Intelligente Auswahl",
+            "ALL": "Alles übersetzen"
+          },
+          "help": {
+            "SMART": "Artikel über lokale Gesetze, Steuern oder Dienstleistungen werden nicht übersetzt. Sie können sie manuell übersetzen.",
+            "ALL": "Jeder veröffentlichte Artikel wird übersetzt."
+          }
+        },
         "targetLangs": {
           "label": "Übersetzungssprachen",
           "empty": "Für deine Hauptsprache sind keine weiteren Sprachen verfügbar."
         },
-        "tokenWarning": "Die automatische Übersetzung erstellt für jeden veröffentlichten Artikel eine eigene Version pro Zielsprache."
+        "tokenWarning": "Die automatische Übersetzung erstellt für jede Zielsprache, in die ein Artikel übersetzt wird, eine eigene Version."
       },
       "articleQuality": {
         "title": "Artikelqualität",

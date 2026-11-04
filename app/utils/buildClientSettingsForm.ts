@@ -18,7 +18,6 @@ export interface ClientSite extends Omit<
     ARTICLE_CRONS?: boolean
   } | null
   socials: { platform: SocialPlatform; url: string }[]
-  apiKey: string | null
   aiUser: { username: string; bio: string; avatarUrl: string } | null
   aiToneOfVoice: string | null
   aiControversyLevel: string | null
@@ -53,7 +52,6 @@ export interface ClientSettingsForm extends PublicationChannelSettings, ReleaseS
   aiControversyLevel: string
   gtagId: string
   gamNetworkCode: string
-  apiKey: string
   autoRelease: boolean
   commentsEnabled: boolean
   commentGifsEnabled: boolean
@@ -62,6 +60,7 @@ export interface ClientSettingsForm extends PublicationChannelSettings, ReleaseS
   generationFrequency: 'DAILY' | 'WEEKLY' | 'INTERVAL' | 'NONE'
   translationMode: 'OFF' | 'MANUAL' | 'AUTO' | 'HYBRID'
   translationLanguages: string[]
+  translationSelection: 'SMART' | 'ALL'
   discloseAiContent: boolean
   allowGtag: boolean
   linkedinMode: 'HitL' | 'FullAuto'
@@ -91,7 +90,6 @@ const emptyForm = (): ClientSettingsForm => ({
   aiControversyLevel: '',
   gtagId: '',
   gamNetworkCode: '',
-  apiKey: '',
   autoRelease: false,
   commentsEnabled: true,
   commentGifsEnabled: true,
@@ -102,6 +100,7 @@ const emptyForm = (): ClientSettingsForm => ({
   ...releaseScheduleSettings(),
   translationMode: 'OFF',
   translationLanguages: [],
+  translationSelection: 'SMART',
   discloseAiContent: false,
   allowGtag: false,
   linkedinMode: 'HitL',
@@ -152,7 +151,6 @@ export function buildClientSettingsForm(client?: ClientSite | null): ClientSetti
     bodyFontUrl: client.bodyFontUrl ?? '',
     keywords: client.keywords ?? [],
     socials: client.socials ?? [],
-    apiKey: client.apiKey ?? '',
     aiUser: {
       username: client.aiUser?.username ?? defaultAiAuthorName(client.name ?? '', client.language),
       bio: client.aiUser?.bio ?? '',
@@ -173,6 +171,7 @@ export function buildClientSettingsForm(client?: ClientSite | null): ClientSetti
     ...releaseScheduleSettings(client),
     translationMode: client.translationMode ?? 'OFF',
     translationLanguages: client.translationLanguages ?? [],
+    translationSelection: client.translationSelection ?? 'SMART',
     discloseAiContent: client.discloseAiContent ?? false,
     allowGtag: client.allowGtag ?? false,
     linkedinMode: li?.mode ?? 'HitL',
