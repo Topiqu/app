@@ -1,18 +1,22 @@
 import type { H3Event } from 'h3'
 
 /** Taken by another tenant's live domain, or by an old domain that still redirects to its blog. */
-export const isDomainTaken = async (domain: string, exceptClientSiteId?: string) => {
+export const isDomainTaken = async (
+  domain: string,
+  exceptClientSiteId?: string,
+  db: Pick<DatabaseTransaction, 'clientSite' | 'domainRedirect' | 'domainConnection'> = prisma,
+) => {
   const host = normalizeDomain(domain)
   const [site, redirect, connection] = await Promise.all([
-    prisma.clientSite.findFirst({
+    db.clientSite.findFirst({
       where: { domain: host, ...(exceptClientSiteId ? { id: { not: exceptClientSiteId } } : {}) },
       select: { id: true },
     }),
-    prisma.domainRedirect.findFirst({
+    db.domainRedirect.findFirst({
       where: { host, ...(exceptClientSiteId ? { clientSiteId: { not: exceptClientSiteId } } : {}) },
       select: { id: true },
     }),
-    prisma.domainConnection.findFirst({
+    db.domainConnection.findFirst({
       where: {
         host,
         state: { not: 'DISCONNECTED' },

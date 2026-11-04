@@ -92,6 +92,9 @@ export default defineEventHandler(async (event) => {
         currency: clientSite.currency,
         annualPayment: clientSite.annualPayment,
         monthlyPayment: clientSite.monthlyPayment,
+        monthlyPaymentCents: clientSite.monthlyPaymentCents,
+        annualPaymentCents: clientSite.annualPaymentCents,
+        paidTeamSeats: clientSite.paidTeamSeats,
         firstPaidAt: clientSite.firstPaidAt,
         nextBillingAt: clientSite.nextBillingAt,
         lastInvoicedAt: clientSite.lastInvoicedAt,
@@ -115,7 +118,10 @@ export default defineEventHandler(async (event) => {
         extraTranslationLanguages: clientSite.extraTranslationLanguages,
         translationLanguageLimit: translationLanguageLimit(clientSite),
         canBuyTranslationLanguages:
-          (clientSite.plan === 'PRO' || clientSite.plan === 'PREMIUM') && clientSite.billingProvider === 'STRIPE',
+          (clientSite.plan === 'PRO' ||
+            clientSite.plan === 'PREMIUM' ||
+            (clientSite.plan === 'CUSTOM' && clientSite.paidTeamSeats != null)) &&
+          clientSite.billingProvider === 'STRIPE',
         discloseAiContent: clientSite.discloseAiContent,
         aiUser: clientSite.users[0]
           ? {

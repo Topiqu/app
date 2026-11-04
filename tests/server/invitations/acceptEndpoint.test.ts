@@ -22,6 +22,7 @@ const loadHandler = async (user: { id: string; email: string; sessionId: string;
   const transaction = vi.fn(async (run: (tx: unknown) => unknown) => run(tx))
   vi.stubGlobal('defineEventHandler', (handler: unknown) => handler)
   vi.stubGlobal('createError', createError)
+  vi.stubGlobal('requireTeamSeatCapacity', vi.fn())
   vi.stubGlobal('useServerI18n', async () => ({ translate: (key: string) => key }))
   vi.stubGlobal('getRouterParam', () => 'raw-token')
   vi.stubGlobal('readValidatedBody', async () => ({ action: 'accept' }))
@@ -86,5 +87,15 @@ describe('POST /api/invitations/:token', () => {
     await expect(handler({} as never)).rejects.toMatchObject({ statusCode: 409 })
     expect(tx.tenantMembership.upsert).not.toHaveBeenCalled()
     expect(tx.session.updateMany).not.toHaveBeenCalled()
+  })
+  it('does not consume an invitation when the blog no longer has a seat available', async () => {
+    const { handler, tx } = await loadHandler({ id: 'member-1', email: invitation.email, sessionId: 'session-1' })
+    vi.stubGlobal(
+      'requireTeamSeatCapacity',
+      vi.fn().mockRejectedValue(createError({ statusCode: 403, data: { code: 'TEAM_SEAT_LIMIT' } })),
+    )
+    await expect(handler({} as never)).rejects.toMatchObject({ statusCode: 403, data: { code: 'TEAM_SEAT_LIMIT' } })
+    expect(tx.tenantInvitation.updateMany).not.toHaveBeenCalled()
+    expect(tx.tenantMembership.upsert).not.toHaveBeenCalled()
   })
 })

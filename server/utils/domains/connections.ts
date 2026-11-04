@@ -1,5 +1,7 @@
 import { randomBytes, randomUUID } from 'node:crypto'
 
+import { canConnectCustomDomain, domainBillingSelect } from './billing'
+
 export const domainConnectionPublicSelect = {
   id: true,
   host: true,
@@ -140,6 +142,7 @@ export const reconcileDomainConnection = async (id: string, expectedClientSiteId
       const site = await prisma.clientSite.findUniqueOrThrow({
         where: { id: connection.clientSiteId },
         select: {
+          ...domainBillingSelect,
           domain: true,
           pendingDomain: true,
           pendingDomainToken: true,
@@ -178,8 +181,13 @@ export const reconcileDomainConnection = async (id: string, expectedClientSiteId
         await save({ cleanupRequestedAt: new Date(), state: 'DISCONNECTING' })
         return { ready: false, state: 'DISCONNECTING' }
       }
-      if (site.plan === 'BASIC') {
-        await save({ errorCode: 'PLAN_REQUIRED', checkedAt: new Date() })
+      const billingAllowed = pending && !current ? await canConnectCustomDomain(site) : true
+      if (billingAllowed === null) {
+        await save({ errorCode: 'BILLING_UNAVAILABLE', checkedAt: new Date() })
+        return { ready: false, state: connection.state, transient: true }
+      }
+      if (site.plan === 'BASIC' || !billingAllowed) {
+        await save({ errorCode: site.plan === 'BASIC' ? 'PLAN_REQUIRED' : 'PAYMENT_REQUIRED', checkedAt: new Date() })
         return { ready: false, state: 'PLAN_REQUIRED' }
       }
       const dns = await checkDomainDns(connection.host, connection.challenge)
@@ -311,7 +319,7 @@ export const reconcileDomainConnection = async (id: string, expectedClientSiteId
 // The address switch is already committed; keep cleanup retryable if another worker holds the lease.
 export const attemptDomainCleanup = async (id: string, clientSiteId: string) => {
   try {
-    await reconcileDomainConnection(id, clientSiteId, true)
+    return await reconcileDomainConnection(id, clientSiteId, true)
   } catch (error) {
     if (!(error instanceof DomainProviderError && error.code === 'BUSY'))
       await reportCaughtError('Domain cleanup attempt failed', new Error('DOMAIN_CLEANUP_FAILED'), { connectionId: id })
@@ -347,5 +355,17 @@ const cleanupDomainProviders = async (connection: Awaited<ReturnType<typeof load
       if (!(error instanceof DomainProviderError && error.httpStatus === 404)) throw error
     }
     await prisma.domainConnection.update({ where: { id: connection.id }, data: { certificateId: null } })
+  }
+  // Adopted resources are not ours to delete. Retain their IDs and show the
+  // existing administrator-review state instead of claiming cleanup succeeded.
+  if (connection.cloudflareId && !connection.cloudflareManaged) {
+    const cf = await cloudflareDomain('GET', connection.cloudflareId)
+    if (cf) throw new DomainProviderError('ADOPTION_REQUIRED')
+    await prisma.domainConnection.update({ where: { id: connection.id }, data: { cloudflareId: null } })
+  }
+  if (connection.dokployId && !connection.dokployManaged) {
+    if (await findDokployDomain(connection.host, connection.dokployId))
+      throw new DomainProviderError('ADOPTION_REQUIRED')
+    await prisma.domainConnection.update({ where: { id: connection.id }, data: { dokployId: null } })
   }
 }

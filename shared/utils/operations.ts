@@ -23,6 +23,7 @@ export const monitoredTaskIntervals = {
   'publish-check': 10,
   'trial-expiry': 10,
   'domain-reverification': 60,
+  'domain-cleanup': 1,
 } as const
 
 export type TaskStatus = 'unknown' | 'running' | 'succeeded' | 'degraded' | 'failed'

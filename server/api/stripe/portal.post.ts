@@ -37,6 +37,7 @@ export default defineEventHandler(async (event) => {
   const portalSession = await stripe.billingPortal.sessions.create({
     customer: clientSite.stripeCustomerId,
     return_url: returnUrl,
+    ...(process.env.STRIPE_PORTAL_CONFIGURATION ? { configuration: process.env.STRIPE_PORTAL_CONFIGURATION } : {}),
   })
 
   return { url: portalSession.url }

@@ -17,6 +17,7 @@ export const affordableArticleCount = (credits: number, quality: unknown): numbe
 export const PLAN_ARTICLE_CREDITS = {
   PRO: 30,
   PREMIUM: 50,
+  CUSTOM: 50,
 } as const
 
 export type ArticleCreditPlan = keyof typeof PLAN_ARTICLE_CREDITS

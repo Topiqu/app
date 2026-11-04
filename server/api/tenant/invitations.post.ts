@@ -6,21 +6,24 @@ export default defineEventHandler(async (event) => {
   const { user, membership } = await requireTenantScope(event, 'MEMBER_CONTROL')
   const body = await readValidatedBody(event, bodySchema.parse)
   const email = invitationEmail(body.email)
-  const existingUser = await prisma.user.findFirst({
-    where: { email: { equals: email, mode: 'insensitive' }, deletedAt: null },
-    select: { id: true },
-  })
-  if (
-    existingUser &&
-    (await prisma.tenantMembership.findUnique({
-      where: { clientSiteId_userId: { clientSiteId: membership.clientSiteId, userId: existingUser.id } },
-    }))
-  )
-    throw createError({ statusCode: 409, message: 'User is already a member' })
-
   const token = invitationToken()
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
   await prisma.$transaction(async (tx) => {
+    await requireTeamSeatCapacity(tx, membership.clientSiteId, { email })
+    const existingUser = await tx.user.findFirst({
+      where: { email: { equals: email, mode: 'insensitive' }, deletedAt: null },
+      select: { id: true },
+    })
+    if (
+      existingUser &&
+      (await tx.tenantMembership.findUnique({
+        where: {
+          clientSiteId_userId: { clientSiteId: membership.clientSiteId, userId: existingUser.id },
+          deletedAt: null,
+        },
+      }))
+    )
+      throw createError({ statusCode: 409, message: 'User is already a member' })
     await tx.tenantInvitation.updateMany({
       where: { clientSiteId: membership.clientSiteId, email, acceptedAt: null, revokedAt: null },
       data: { revokedAt: new Date() },

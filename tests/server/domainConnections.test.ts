@@ -86,6 +86,25 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals())
 
 describe('domain connection lifecycle', () => {
+  it('does not provision a pending custom hostname for a card-less trial', async () => {
+    site.mockResolvedValue({
+      id: 's1',
+      domain: 'old.topiqu.com',
+      pendingDomain: row().host,
+      pendingDomainToken: row().challenge,
+      plan: 'PREMIUM',
+      firstPaidAt: null,
+      trialStartedAt: new Date(),
+      stripeCustomerId: null,
+    })
+    await expect(reconcileDomainConnection('c1')).resolves.toMatchObject({ ready: false, state: 'PLAN_REQUIRED' })
+    expect(mocks.cf).not.toHaveBeenCalled()
+    expect(mocks.find).not.toHaveBeenCalled()
+    expect(updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ errorCode: 'PAYMENT_REQUIRED' }) }),
+    )
+  })
+
   it('persists Cloudflare records and their history across certificate checks', async () => {
     const previous = { type: 'TXT', name: '_acme.example.com', value: 'previous' }
     record.mockResolvedValue({ ...row(), validationRecords: [previous] })
@@ -196,8 +215,11 @@ describe('domain connection lifecycle', () => {
       cloudflareManaged: false,
       dokployManaged: false,
     })
-    await expect(reconcileDomainConnection('c1')).resolves.toMatchObject({ state: 'DISCONNECTED' })
-    expect(mocks.cf).not.toHaveBeenCalled()
+    await expect(reconcileDomainConnection('c1')).resolves.toMatchObject({ ready: false })
+    expect(mocks.cf).toHaveBeenCalledExactlyOnceWith('GET', 'cf1')
+    expect(updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ errorCode: 'ADOPTION_REQUIRED' }) }),
+    )
     expect(mocks.find).not.toHaveBeenCalled()
     expect(mocks.dokploy).not.toHaveBeenCalled()
   })

@@ -6,12 +6,16 @@ export default defineEventHandler(async (event) => {
     where: { clientSiteId_userId: { clientSiteId, userId: user.id } },
     select: {
       id: true,
+      role: true,
+      clientSiteId: true,
       deletedAt: true,
-      clientSite: { select: { domain: true, domainVerified: true, deletedAt: true } },
+      clientSite: { select: { domain: true, domainVerified: true, deletedAt: true, plan: true } },
     },
   })
   if (!membership || membership.deletedAt || membership.clientSite.deletedAt)
     throw createError({ statusCode: 403, message: 'Tenant membership required' })
+  if (!(await hasTeamSeat(prisma, membership, membership.clientSite.plan)))
+    throw createError({ statusCode: 403, message: 'Team seat limit reached', data: { code: 'TEAM_SEAT_LIMIT' } })
   const session = await prisma.session.findFirst({
     where: { id: user.sessionId, userId: user.id },
     select: { clientSiteId: true },

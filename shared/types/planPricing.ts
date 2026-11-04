@@ -1,4 +1,4 @@
-export type SubscribablePlan = 'PRO' | 'PREMIUM'
+export type SubscribablePlan = 'PRO' | 'PREMIUM' | 'CUSTOM'
 export type BillingInterval = 'month' | 'year'
 
 export interface PlanPrice {

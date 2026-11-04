@@ -45,7 +45,7 @@ describe('isSubscribablePlan', () => {
     expect(isSubscribablePlan(plan)).toBe(true)
   })
 
-  it.each(['BASIC', 'CUSTOM', '', undefined, null, 42])('rejects %s', (value) => {
+  it.each(['BASIC', '', undefined, null, 42])('rejects %s', (value) => {
     expect(isSubscribablePlan(value)).toBe(false)
   })
 })
@@ -79,7 +79,11 @@ describe('revokesPlan', () => {
     expect(revokesPlan('past_due')).toBe(false)
   })
 
-  it.each(['active', 'trialing', 'incomplete', 'paused'] as const)('keeps the plan on %s', (status) => {
+  it('revokes a trial paused because no payment method was provided', () => {
+    expect(revokesPlan('paused')).toBe(true)
+  })
+
+  it.each(['active', 'trialing', 'incomplete'] as const)('keeps the plan on %s', (status) => {
     expect(revokesPlan(status)).toBe(false)
   })
 })

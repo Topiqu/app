@@ -5,6 +5,8 @@ import { afterEach, describe, expect, it, vi, beforeEach } from 'vitest'
 import { stubNitroImports } from '../helpers/nitroImports'
 
 async function stubImports() {
+  vi.stubGlobal('withBillingLease', (_id: string, work: (leaseId: string) => Promise<unknown>) => work('fixture-lease'))
+  vi.stubGlobal('assertBillingLease', vi.fn().mockResolvedValue(undefined))
   await stubNitroImports(import('../../server/utils/imageAnalysis'), 'analyzeImage', 'IMAGE_MODERATION_POLICY_VERSION')
   await stubNitroImports(import('../../server/utils/databaseJson'), 'toDatabaseJson')
   await stubNitroImports(import('../../server/utils/mediaLibrary'), 'storageKeyFromMediaUrl')
@@ -16,11 +18,15 @@ async function stubImports() {
     'isSubscribablePlan',
     'marksFirstPayment',
     'planFromPriceId',
+    'primaryPlanItem',
+    'subscriptionPlan',
+    'managedCustomSeats',
     'revokesPlan',
   )
   await stubNitroImports(import('../../server/utils/translationLanguageBilling'), 'isTranslationLanguageSubscription')
   vi.stubGlobal('syncTranslationLanguageSubscription', vi.fn())
   vi.stubGlobal('cancelTranslationLanguageSubscription', vi.fn())
+  vi.stubGlobal('creditInvoiceAiBudget', vi.fn())
 }
 
 await stubImports()
@@ -172,13 +178,56 @@ describe('password reset consumption', () => {
 })
 
 describe('Stripe subscription reconciliation', () => {
+  beforeEach(() => vi.stubEnv('STRIPE_WEBHOOK_SECRET', 'whsec_synthetic_reconciliation'))
+  it.each([
+    ['customer.subscription.paused', 'paused', 'BASIC'],
+    ['customer.subscription.resumed', 'active', 'PREMIUM'],
+    // A delayed pause event must not override a subsequently resumed subscription.
+    ['customer.subscription.paused', 'active', 'PREMIUM'],
+  ])('reconciles %s using the current %s provider state', async (type, status, plan) => {
+    setup()
+    vi.stubGlobal('readRawBody', async () => 'signed mock event')
+    vi.stubGlobal('getHeader', () => 'mock signature')
+    const retrieve = vi.fn().mockResolvedValue({
+      id: 'subscription',
+      status,
+      metadata: { clientSiteId: 'tenant', plan: 'PREMIUM' },
+      items: { data: [{ price: { id: 'fixture-premium', recurring: { interval: 'month' } } }] },
+    })
+    vi.stubGlobal('useStripe', () => ({
+      webhooks: { constructEventAsync: async () => ({ type, data: { object: { id: 'subscription' } } }) },
+      subscriptions: { retrieve },
+    }))
+    const updateMany = vi.fn().mockResolvedValue({ count: 1 })
+    const sync = vi.fn()
+    vi.stubGlobal('serializableTransaction', async (fn: (tx: unknown) => unknown) => fn({ clientSite: { updateMany } }))
+    vi.stubGlobal('syncPlanFeatures', sync)
+    const { default: route } = await import('../../server/api/stripe/webhook')
+    await route({} as never)
+    expect(retrieve).toHaveBeenCalledWith('subscription')
+    expect(updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ stripeSubscriptionId: 'subscription', billingProvider: 'STRIPE' }),
+        data: expect.objectContaining({ plan }),
+      }),
+    )
+    if (type === 'customer.subscription.resumed') {
+      expect(updateMany).toHaveBeenCalledWith({
+        where: { id: 'tenant', stripeSubscriptionId: 'subscription', firstPaidAt: null },
+        data: { firstPaidAt: expect.any(Date) },
+      })
+      expect(updateMany.mock.calls[0]![0].data).not.toHaveProperty('firstPaidAt')
+    }
+    expect(sync).toHaveBeenCalledWith(expect.anything(), 'tenant')
+  })
+
   it('does not revoke a new subscription when a deletion of the old subscription arrives', async () => {
     setup()
     vi.stubGlobal('readRawBody', async () => 'signed mock event')
     vi.stubGlobal('getHeader', () => 'mock signature')
     vi.stubGlobal('useStripe', () => ({
       webhooks: {
-        constructEvent: () => ({
+        constructEventAsync: async () => ({
           type: 'customer.subscription.deleted',
           data: { object: { id: 'old', metadata: { clientSiteId: 'tenant' } } },
         }),
@@ -195,6 +244,50 @@ describe('Stripe subscription reconciliation', () => {
     )
     expect(sync).not.toHaveBeenCalled()
   })
+
+  it.each([null, new Date('2025-01-01T00:00:00Z')])(
+    'preserves the first-payment date across resumed event replays, starting with %s',
+    async (initial) => {
+      setup()
+      let firstPaidAt: Date | null = initial
+      const updateMany = vi.fn(
+        async ({ where, data }: { where: { firstPaidAt?: null }; data: { firstPaidAt?: Date } }) => {
+          if (where.firstPaidAt === null && firstPaidAt !== null) return { count: 0 }
+          if (data.firstPaidAt) firstPaidAt = data.firstPaidAt
+          return { count: 1 }
+        },
+      )
+      vi.stubGlobal('readRawBody', async () => 'signed mock event')
+      vi.stubGlobal('getHeader', () => 'mock signature')
+      vi.stubGlobal('useStripe', () => ({
+        webhooks: {
+          constructEventAsync: async () => ({
+            type: 'customer.subscription.resumed',
+            data: { object: { id: 'subscription' } },
+          }),
+        },
+        subscriptions: {
+          retrieve: async () => ({
+            id: 'subscription',
+            status: 'active',
+            metadata: { clientSiteId: 'tenant', plan: 'PREMIUM' },
+            items: { data: [{ price: { id: 'fixture-premium', recurring: { interval: 'month' } } }] },
+          }),
+        },
+      }))
+      vi.stubGlobal('serializableTransaction', async (fn: (tx: unknown) => unknown) =>
+        fn({ clientSite: { updateMany } }),
+      )
+      vi.stubGlobal('syncPlanFeatures', vi.fn())
+      const { default: route } = await import('../../server/api/stripe/webhook')
+      await route({} as never)
+      expect(firstPaidAt).toBeInstanceOf(Date)
+      const beforeReplay = firstPaidAt
+      await route({} as never)
+      expect(firstPaidAt).toBe(beforeReplay)
+      if (initial) expect(firstPaidAt).toBe(initial)
+    },
+  )
 })
 
 beforeEach(stubImports)

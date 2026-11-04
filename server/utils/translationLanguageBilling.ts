@@ -47,6 +47,7 @@ export const cancelTranslationLanguageSubscription = async (clientSiteId: string
   } catch (error) {
     // Already gone in Stripe; the local mirror below is what matters.
     await reportCaughtError('Translation language add-on cancellation failed', error, { clientSiteId })
+    if (!(error && typeof error === 'object' && 'code' in error && error.code === 'resource_missing')) throw error
   }
   await prisma.clientSite.updateMany({
     where: { id: clientSiteId, languageSubscriptionId: site.languageSubscriptionId },

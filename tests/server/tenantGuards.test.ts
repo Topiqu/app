@@ -29,6 +29,7 @@ const stub = (
       },
   )
   vi.stubGlobal('createError', createError)
+  vi.stubGlobal('hasTeamSeat', vi.fn().mockResolvedValue(true))
   vi.stubGlobal('requireUser', async () => user)
   vi.stubGlobal('prisma', {
     tenantMembership: { findUnique },
@@ -43,6 +44,14 @@ beforeEach(() => vi.unstubAllGlobals())
 afterEach(() => vi.unstubAllGlobals())
 
 describe('requireTenantMember', () => {
+  it('rejects a membership whose team seat is inactive after a downgrade', async () => {
+    stub(member, { role: 'MEMBER', scopes: ['BILLING_CHANGE'] })
+    vi.stubGlobal('hasTeamSeat', vi.fn().mockResolvedValue(false))
+    await expect(requireTenantMember(event)).rejects.toMatchObject({
+      statusCode: 403,
+      data: { code: 'TEAM_SEAT_LIMIT' },
+    })
+  })
   it('rejects an otherwise active member of a deactivated tenant', async () => {
     stub(member, { role: 'OWNER', scopes: [], clientSite: { deletedAt: new Date() } })
     await expect(requireTenantMember(event)).rejects.toMatchObject({ statusCode: 403 })

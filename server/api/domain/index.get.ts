@@ -1,8 +1,16 @@
+import { canConnectCustomDomain, domainBillingSelect } from '../../utils/domains/billing'
+
 export default defineEventHandler(async (event) => {
   const { db, clientSiteId } = await requireDomainAccess(event)
   const site = await db.clientSite.findUnique({
     where: { id: clientSiteId },
-    select: { domain: true, plan: true, pendingDomain: true, pendingDomainToken: true, domainVerificationToken: true },
+    select: {
+      ...domainBillingSelect,
+      domain: true,
+      pendingDomain: true,
+      pendingDomainToken: true,
+      domainVerificationToken: true,
+    },
   })
   if (!site) throw createError({ statusCode: 404, message: 'Client site not found' })
   const connections = await db.domainConnection.findMany({
@@ -22,6 +30,7 @@ export default defineEventHandler(async (event) => {
       ? domainDnsRecords(site.domain, site.domainVerificationToken)
       : null,
     canUseCustomDomain: site.plan !== 'BASIC',
+    canConnectCustomDomain: await canConnectCustomDomain(site),
     pending:
       site.pendingDomain && site.pendingDomainToken
         ? domainDnsRecords(site.pendingDomain, site.pendingDomainToken)

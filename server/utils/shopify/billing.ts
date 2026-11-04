@@ -197,6 +197,7 @@ export const syncShopifyPlan = async (
         plan,
         billingPlan: annual ? 'ANNUAL' : 'MONTHLY',
         nextBillingAt: cycle?.end ?? trialEndsAt,
+        paidThrough: cycle?.end ?? trialEndsAt,
         // Shopify owns the trial and renewal lifecycle, like a card-backed Stripe trial.
         firstPaidAt: site.firstPaidAt ?? now,
       },

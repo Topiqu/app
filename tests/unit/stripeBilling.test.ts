@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { planFromPriceId } from '../../server/utils/stripeWebhook'
 import { ARTICLE_PACKS, getArticlePack } from '../../shared/utils/articlePacks'
@@ -27,6 +27,7 @@ describe('planFromPriceId', () => {
   afterEach(() => {
     delete process.env.STRIPE_PRICE_PRO
     delete process.env.STRIPE_PRICE_PREMIUM
+    vi.unstubAllEnvs()
   })
 
   it('reverse-maps configured price IDs to plans', () => {
@@ -38,5 +39,15 @@ describe('planFromPriceId', () => {
     expect(planFromPriceId('price_unknown')).toBeNull()
     expect(planFromPriceId(null)).toBeNull()
     expect(planFromPriceId(undefined)).toBeNull()
+  })
+
+  it('recognizes retired prices without offering them as the current plan price', () => {
+    vi.stubEnv('STRIPE_LEGACY_PRICE_PRO_IDS', 'price_pro_old_month, price_pro_old_year ')
+    vi.stubEnv('STRIPE_LEGACY_PRICE_PREMIUM_IDS', 'price_premium_old')
+    expect(planFromPriceId('price_pro_old_month')).toBe('PRO')
+    expect(planFromPriceId('price_pro_old_year')).toBe('PRO')
+    expect(planFromPriceId('price_premium_old')).toBe('PREMIUM')
+    expect(planFromPriceId('price_pro_old')).toBeNull()
+    expect(process.env.STRIPE_PRICE_PRO).toBe('price_pro_123')
   })
 })

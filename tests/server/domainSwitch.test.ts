@@ -73,14 +73,24 @@ const verify = async () => {
 }
 
 describe('domain switch verification', () => {
-  it('activates a free managed subdomain without external DNS or a paid plan', async () => {
-    findSite.mockResolvedValue(site({ plan: 'BASIC', pendingDomain: 'fallback.topiqu.com' }))
-    await expect(verify()).resolves.toEqual({ verified: true, domain: 'fallback.topiqu.com' })
+  it.each(['BASIC', 'PRO', 'PREMIUM'])(
+    'activates a free managed subdomain on %s without DNS or a card',
+    async (plan) => {
+      findSite.mockResolvedValue(site({ plan, pendingDomain: 'fallback.topiqu.com' }))
+      await expect(verify()).resolves.toEqual({ verified: true, domain: 'fallback.topiqu.com' })
+      expect(checkDomainDns).not.toHaveBeenCalled()
+      expect(tx.clientSite.updateMany.mock.calls[0]![0].data).toMatchObject({
+        domainVerificationToken: null,
+        domainVerified: true,
+      })
+    },
+  )
+
+  it('rechecks payment before activating a custom hostname for a trial', async () => {
+    findSite.mockResolvedValue(site({ plan: 'PREMIUM', trialStartedAt: new Date(), firstPaidAt: null }))
+    await expect(verify()).rejects.toMatchObject({ statusCode: 403, data: { code: 'paymentRequired' } })
+    expect(tx.clientSite.updateMany).not.toHaveBeenCalled()
     expect(checkDomainDns).not.toHaveBeenCalled()
-    expect(tx.clientSite.updateMany.mock.calls[0]![0].data).toMatchObject({
-      domainVerificationToken: null,
-      domainVerified: true,
-    })
   })
 
   it.each(['admin.topiqu.com', 'app.topiqu.com', 'nested.blog.topiqu.com', 'topiqu.com'])(
@@ -103,7 +113,12 @@ describe('domain switch verification', () => {
     await expect(verify()).resolves.toEqual({ verified: true, domain: PENDING })
 
     const update = tx.clientSite.updateMany.mock.calls[0]![0]
-    expect(update.where).toEqual({ id: 's1', pendingDomain: PENDING, pendingDomainToken: 'token' })
+    expect(update.where).toEqual({
+      id: 's1',
+      pendingDomain: PENDING,
+      pendingDomainToken: 'token',
+      plan: { not: 'BASIC' },
+    })
     expect(update.data).toMatchObject({
       domain: PENDING,
       pendingDomain: null,

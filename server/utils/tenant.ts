@@ -44,23 +44,24 @@ export const tenantByHost = async (event: H3Event) => {
 export const tenantHostKey = (hostname: string) => `tenant:host:${hostname}`
 export const domainRedirectKey = (hostname: string) => `domain:redirect:${hostname}`
 
-/** For hooks that fire on every request, where one indexed read per asset is still waste. */
+/** Memoize only within a request: both custom-host retirement and restoration of
+ * its managed fallback must be visible without waiting for a shared-cache TTL. */
 export const cachedTenantByHost = async (event: H3Event) => {
   const hostname = tenantHostname(event)
-  return hostname ? cached(tenantHostKey(hostname), 300, () => loadTenant(hostname)) : null
+  if (!hostname) return null
+  return (event.context.topiquTenant ??= loadTenant(hostname)) as ReturnType<typeof loadTenant>
 }
 
 /** The domain an old host should 301 to, if the blog it belonged to is still served. */
-export const domainRedirectTarget = (hostname: string) =>
-  cached(domainRedirectKey(hostname), 300, async () => {
-    const redirect = await prisma.domainRedirect.findUnique({
-      where: { host: hostname },
-      select: { clientSite: { select: { domain: true, domainVerified: true, deletedAt: true } } },
-    })
-    const site = redirect?.clientSite
-    if (!site || site.deletedAt || (!site.domainVerified && !isManagedDomain(site.domain))) return null
-    return site.domain
+export const domainRedirectTarget = async (hostname: string) => {
+  const redirect = await prisma.domainRedirect.findUnique({
+    where: { host: hostname },
+    select: { clientSite: { select: { domain: true, domainVerified: true, deletedAt: true } } },
   })
+  const site = redirect?.clientSite
+  if (!site || site.deletedAt || (!site.domainVerified && !isManagedDomain(site.domain))) return null
+  return site.domain
+}
 
 export type Tenant = NonNullable<Awaited<ReturnType<typeof tenantByHost>>>
 

@@ -1,14 +1,12 @@
 import { z } from 'zod'
 import { randomBytes } from 'node:crypto'
 
-const MAX_OWNED_BASIC_TENANTS = 3
-
 const schema = z.object({
   name: z.string().trim().min(1).max(80),
   subdomain: z.string().trim().toLowerCase().optional().default(''),
   domain: z.string().trim().toLowerCase().optional(),
   domainType: z.enum(['SUBDOMAIN', 'CUSTOM']).default('SUBDOMAIN'),
-  selectedPlan: z.enum(['BASIC', 'PRO', 'PREMIUM']).default('BASIC'),
+  selectedPlan: z.enum(['BASIC', 'PRO', 'PREMIUM', 'CUSTOM']).default('BASIC'),
   language: LanguageSchema,
   theme: z.enum(ThemeSchema.options).default('indigo'),
 })
@@ -50,21 +48,6 @@ export default defineEventHandler(async (event) => {
     select: { id: true },
   })
   if (!session) throw createError({ statusCode: 401, message: 'Active session required' })
-
-  const ownedBasicCount = await prisma.tenantMembership.count({
-    where: {
-      userId: user.id,
-      role: 'OWNER',
-      deletedAt: null,
-      clientSite: { plan: 'BASIC', deletedAt: null },
-    },
-  })
-  if (body.selectedPlan === 'BASIC' && ownedBasicCount >= MAX_OWNED_BASIC_TENANTS)
-    throw createError({
-      statusCode: 403,
-      message: 'Basic blog limit reached',
-      data: { code: 'TENANT_LIMIT_REACHED', limit: MAX_OWNED_BASIC_TENANTS },
-    })
 
   const [domainConflict, nameConflict] = await Promise.all([
     isDomainTaken(domain),

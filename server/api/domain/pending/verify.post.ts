@@ -1,3 +1,5 @@
+import { domainBillingSelect, requireCustomDomainBilling } from '../../../utils/domains/billing'
+
 export default defineEventHandler(async (event) => {
   const { user, db, clientSiteId } = await requireDomainAccess(event)
   if (!(await consumeRateLimit(`domain-switch:${clientSiteId}`, 5, 600)))
@@ -5,7 +7,13 @@ export default defineEventHandler(async (event) => {
 
   const site = await db.clientSite.findUnique({
     where: { id: clientSiteId },
-    select: { domain: true, plan: true, pendingDomain: true, pendingDomainToken: true, pendingDomainRequestedAt: true },
+    select: {
+      ...domainBillingSelect,
+      domain: true,
+      pendingDomain: true,
+      pendingDomainToken: true,
+      pendingDomainRequestedAt: true,
+    },
   })
   if (!site?.pendingDomain || !site.pendingDomainToken)
     throw createError({ statusCode: 409, message: 'No domain change is pending' })
@@ -14,6 +22,7 @@ export default defineEventHandler(async (event) => {
   // Plan or ownership may have changed since the request.
   if (domainError(pending, { allowCustom: site.plan !== 'BASIC' }))
     throw createError({ statusCode: 403, message: 'Custom domains require the Pro plan', data: { code: 'plan' } })
+  if (!managed) await requireCustomDomainBilling(site)
   if (await isDomainTaken(pending, clientSiteId))
     throw createError({ statusCode: 409, message: 'Domain already taken', data: { code: 'taken' } })
 
@@ -37,7 +46,12 @@ export default defineEventHandler(async (event) => {
     // System-scoped: redirect rows have no tenant write policy; only this proven swap creates them.
     await prisma.$transaction(async (tx) => {
       const swapped = await tx.clientSite.updateMany({
-        where: { id: clientSiteId, pendingDomain: pending, pendingDomainToken: site.pendingDomainToken },
+        where: {
+          id: clientSiteId,
+          pendingDomain: pending,
+          pendingDomainToken: site.pendingDomainToken,
+          ...(!managed ? { plan: { not: 'BASIC' as const } } : {}),
+        },
         data: {
           domain: pending,
           pendingDomain: null,

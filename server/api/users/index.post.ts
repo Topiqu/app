@@ -19,10 +19,14 @@ export default defineEventHandler(async (event) => {
   if (existingUser) throw createError({ statusCode: 409, message: t('common.errors.alreadyExists')! })
   if (!existingClientSite) throw createError({ statusCode: 404, message: t('common.errors.blogNotFound')! })
 
-  const newUser = await saveUserWithLogging(event, { username, email, password, role, clientSiteId })
-  if (role === 'admin')
-    await prisma.tenantMembership.create({
-      data: { clientSiteId, userId: newUser.id, role: 'MEMBER', scopes: [...TENANT_SCOPES] },
-    })
+  const newUser = await prisma.$transaction(async (tx) => {
+    if (role === 'admin') await requireTeamSeatCapacity(tx, clientSiteId)
+    const created = await saveUserWithLogging(event, { username, email, password, role, clientSiteId }, false, tx)
+    if (role === 'admin')
+      await tx.tenantMembership.create({
+        data: { clientSiteId, userId: created.id, role: 'MEMBER', scopes: [...TENANT_SCOPES] },
+      })
+    return created
+  })
   return newUser
 })

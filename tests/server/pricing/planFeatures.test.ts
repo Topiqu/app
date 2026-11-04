@@ -266,7 +266,7 @@ describe('recalcFeatureBilling', () => {
     expect(tx.clientFeature.findMany).not.toHaveBeenCalled()
     expect(tx.clientSite.updateMany).toHaveBeenCalledWith({
       where: { id: 'cs1' },
-      data: { monthlyPayment: 0, annualPayment: 0 },
+      data: { monthlyPayment: 0, annualPayment: 0, monthlyPaymentCents: null, annualPaymentCents: null },
     })
   })
 
@@ -291,6 +291,8 @@ describe('recalcFeatureBilling', () => {
 
 describe('syncPlanFeatures lock order', () => {
   it('locks ClientSite through Prisma before reading or writing ClientFeature', async () => {
+    const retire = vi.fn()
+    vi.stubGlobal('retireUnpaidCustomDomains', retire)
     const calls: string[] = []
     const tx = {
       clientSite: {
@@ -316,12 +318,14 @@ describe('syncPlanFeatures lock order', () => {
     }
 
     await syncPlanFeatures(tx as any, 'cs1')
+    expect(retire).toHaveBeenCalledWith(tx, 'cs1')
+    vi.unstubAllGlobals()
 
     expect(calls.slice(0, 2)).toEqual(['clientSite.update', 'clientFeature.findMany'])
     expect(tx.clientSite.update).toHaveBeenCalledWith({
       where: { id: 'cs1' },
       data: { updatedAt: expect.any(Date) },
-      select: { plan: true, billingPlan: true },
+      select: { plan: true, billingPlan: true, paidTeamSeats: true },
     })
   })
 })

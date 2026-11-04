@@ -34,11 +34,16 @@ export const initialTenant = async (userId: string, preferredTenantId?: string):
     prisma.user.findUnique({ where: { id: userId }, select: { clientSiteId: true } }),
     prisma.tenantMembership.findMany({
       where: { userId, deletedAt: null, clientSite: { deletedAt: null } },
-      select: { clientSiteId: true },
+      select: { id: true, role: true, clientSiteId: true, clientSite: { select: { plan: true } } },
       orderBy: { createdAt: 'asc' },
     }),
   ])
-  const ids = memberships.map((membership) => membership.clientSiteId)
+  const eligible = await Promise.all(
+    memberships.map(async (membership) =>
+      (await hasTeamSeat(prisma, membership, membership.clientSite.plan)) ? membership.clientSiteId : null,
+    ),
+  )
+  const ids = eligible.filter((id): id is string => id !== null)
 
   if (preferredTenantId) return ids.includes(preferredTenantId) ? preferredTenantId : null
   return [lastSession?.clientSiteId, user?.clientSiteId].find((id) => id && ids.includes(id)) ?? ids[0] ?? null
@@ -68,14 +73,22 @@ export const toSessionUser = async (
   const membership = session.clientSiteId
     ? await prisma.tenantMembership.findUnique({
         where: { clientSiteId_userId: { clientSiteId: session.clientSiteId, userId: user.id } },
-        select: { deletedAt: true, role: true, scopes: true, clientSite: { select: { plan: true, deletedAt: true } } },
+        select: {
+          id: true,
+          clientSiteId: true,
+          deletedAt: true,
+          role: true,
+          scopes: true,
+          clientSite: { select: { plan: true, deletedAt: true } },
+        },
       })
     : null
   const active =
     membership !== null &&
     membership.deletedAt === null &&
     membership.clientSite.deletedAt === null &&
-    (!hostTenantId || session.clientSiteId === hostTenantId)
+    (!hostTenantId || session.clientSiteId === hostTenantId) &&
+    (await hasTeamSeat(prisma, membership, membership.clientSite.plan))
   const superadmin = user.role === 'superadmin' && !hostTenantId
   if (session.clientSiteId && !active)
     await prisma.session.update({ where: { id: session.id }, data: { clientSiteId: null } })

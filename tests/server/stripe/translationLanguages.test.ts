@@ -53,6 +53,23 @@ describe('syncTranslationLanguageSubscription', () => {
   })
 })
 
+describe('cancelTranslationLanguageSubscription', () => {
+  it.each(['PRO', 'PREMIUM', 'CUSTOM'])(
+    'preserves a current %s blog add-on after an older plan event',
+    async (plan) => {
+      const cancel = vi.fn()
+      vi.stubGlobal('prisma', {
+        clientSite: { findUnique: async () => ({ plan, languageSubscriptionId: 'sub_current_addon' }), updateMany },
+      })
+      vi.stubGlobal('useStripe', () => ({ subscriptions: { cancel } }))
+      const { cancelTranslationLanguageSubscription } = await import('../../../server/utils/translationLanguageBilling')
+      await cancelTranslationLanguageSubscription(SITE)
+      expect(cancel).not.toHaveBeenCalled()
+      expect(updateMany).not.toHaveBeenCalled()
+    },
+  )
+})
+
 describe('POST /api/stripe/translation-languages', () => {
   const stripe = {
     subscriptions: {

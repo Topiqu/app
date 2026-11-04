@@ -39,9 +39,11 @@ export default defineEventHandler(async (event) => {
       data: { code: 'INVITATION_EMAIL_MISMATCH', invitedEmail: invitation.email, currentEmail: user.email },
     })
   await prisma.$transaction(async (tx) => {
+    await requireTeamSeatCapacity(tx, invitation.clientSiteId, { invitationId: invitation.id, userId: user.id })
     const consumed = await tx.tenantInvitation.updateMany({
       where: {
         id: invitation.id,
+        tokenHash: invitationTokenHash(token),
         acceptedAt: null,
         revokedAt: null,
         expiresAt: { gt: new Date() },

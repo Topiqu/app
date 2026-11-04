@@ -44,11 +44,13 @@ export const requireTenantMember = async (event: H3Event, clientSiteId?: string)
       role: true,
       scopes: true,
       deletedAt: true,
-      clientSite: { select: { deletedAt: true } },
+      clientSite: { select: { deletedAt: true, plan: true } },
     },
   })
   if (!membership || membership.deletedAt || membership.clientSite.deletedAt)
     throw createError({ statusCode: 403, message: 'Tenant membership required' })
+  if (!(await hasTeamSeat(prisma, membership, membership.clientSite.plan)))
+    throw createError({ statusCode: 403, message: 'Team seat limit reached', data: { code: 'TEAM_SEAT_LIMIT' } })
   return { user, membership }
 }
 

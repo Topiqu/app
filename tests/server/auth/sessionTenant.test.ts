@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi, beforeEach } from 'vitest'
 import { stubNitroImports } from '../../helpers/nitroImports'
 
 async function stubImports() {
+  vi.stubGlobal('hasTeamSeat', vi.fn().mockResolvedValue(true))
   await stubNitroImports(import('../../../server/utils/ip'), 'clientIp')
   await stubNitroImports(import('../../../server/utils/tenantMembership'), 'TENANT_SCOPES')
 }
@@ -25,7 +26,9 @@ describe('login tenant selection', () => {
       session: { findFirst: vi.fn().mockResolvedValue(last ? { clientSiteId: last } : null) },
       user: { findUnique: vi.fn().mockResolvedValue({ clientSiteId: home }) },
       tenantMembership: {
-        findMany: vi.fn().mockResolvedValue(available.map((clientSiteId) => ({ clientSiteId }))),
+        findMany: vi
+          .fn()
+          .mockResolvedValue(available.map((clientSiteId) => ({ clientSiteId, clientSite: { plan: 'PRO' } }))),
       },
     })
 
@@ -74,6 +77,17 @@ describe('session user', () => {
     stub({ deletedAt: null, role: 'OWNER', scopes: [], clientSite: { plan: 'PRO' } })
     const session = await toSessionUser(user, { id: 's1', clientSiteId: 'site' })
     expect(session.scopes).toEqual([...TENANT_SCOPES])
+  })
+
+  it('removes administrative context for a member beyond the current plan limit', async () => {
+    const update = stub({ deletedAt: null, role: 'MEMBER', scopes: ['ARTICLE_WRITE'], clientSite: { plan: 'BASIC' } })
+    vi.stubGlobal('hasTeamSeat', vi.fn().mockResolvedValue(false))
+    expect(await toSessionUser(user, { id: 's1', clientSiteId: 'site' })).toMatchObject({
+      role: 'reader',
+      clientSiteId: '',
+      scopes: [],
+    })
+    expect(update).toHaveBeenCalledWith({ where: { id: 's1' }, data: { clientSiteId: null } })
   })
 
   it('includes account preferences in every host-scoped session', async () => {

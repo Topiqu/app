@@ -112,7 +112,7 @@ describe('tenant boundary wiring', () => {
 
     expect(endpoint).toContain("plan: 'BASIC'")
     expect(endpoint).toContain("role: 'OWNER'")
-    expect(endpoint).toContain('MAX_OWNED_BASIC_TENANTS = 3')
+    expect(endpoint).not.toContain('MAX_OWNED_BASIC_TENANTS')
     expect(endpoint).toContain('tx.session.update')
     expect(endpoint).not.toContain('stripe')
     expect(createDialog).toMatch(/\$fetch(?:<[^\n]+>)?\(\s*'\/api\/tenant'/)

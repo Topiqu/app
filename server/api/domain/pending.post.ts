@@ -1,6 +1,8 @@
 import { z } from 'zod'
 import { randomBytes } from 'node:crypto'
 
+import { domainBillingSelect, requireCustomDomainBilling } from '../../utils/domains/billing'
+
 export default defineEventHandler(async (event) => {
   const { user, db, clientSiteId } = await requireDomainAccess(event)
   if (!(await consumeRateLimit(`domain-request:${clientSiteId}`, 10, 600)))
@@ -10,7 +12,7 @@ export default defineEventHandler(async (event) => {
 
   const site = await db.clientSite.findUnique({
     where: { id: clientSiteId },
-    select: { domain: true, plan: true, pendingDomain: true },
+    select: { ...domainBillingSelect, domain: true, pendingDomain: true },
   })
   if (!site) throw createError({ statusCode: 404, message: 'Client site not found' })
   if (site.pendingDomain)
@@ -19,6 +21,7 @@ export default defineEventHandler(async (event) => {
   const reason = domainError(domain, { allowCustom: site.plan !== 'BASIC' })
   if (reason || domain === site.domain)
     throw createError({ statusCode: 400, message: 'Invalid domain', data: { code: reason ?? 'unchanged' } })
+  if (!isManagedDomain(domain)) await requireCustomDomainBilling(site)
   if (await isDomainTaken(domain, clientSiteId))
     throw createError({ statusCode: 409, message: 'Domain already taken', data: { code: 'taken' } })
 
@@ -28,7 +31,12 @@ export default defineEventHandler(async (event) => {
   try {
     await prisma.$transaction(async (tx) => {
       const updated = await tx.clientSite.updateMany({
-        where: { id: clientSiteId, pendingDomain: null, domain: site.domain },
+        where: {
+          id: clientSiteId,
+          pendingDomain: null,
+          domain: site.domain,
+          ...(!isManagedDomain(domain) ? { plan: { not: 'BASIC' as const } } : {}),
+        },
         data: { pendingDomain: domain, pendingDomainToken: token, pendingDomainRequestedAt: new Date() },
       })
       if (!updated.count) throw new DomainProviderError('BUSY')

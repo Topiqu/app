@@ -1,5 +1,6 @@
 import type { BillingPlans, ClientPlan } from '~~/generated/zenstack/models'
 
+import { customPriceCents } from '~~/shared/utils/billingCatalog'
 import { EXTRA_TRANSLATION_LANGUAGE_PRICE_USD } from '~~/shared/utils/translationLanguages'
 
 export type FeatureCode = 'AI' | 'SENTIMENT' | 'ARTICLE_CRONS' | 'SEARCH_CONSOLE'
@@ -10,25 +11,10 @@ type FeatureReadDb = {
   }
 }
 
-type FeatureSyncDb = {
-  clientFeature: {
-    count: (args: any) => Promise<any>
-    findMany: (args: any) => Promise<any[]>
-    upsert: (args: any) => Promise<unknown>
-    updateMany: (args: any) => Promise<unknown>
-  }
-  feature: {
-    findMany: (args: any) => Promise<any[]>
-  }
-  clientSite: {
-    findUnique: (args: any) => Promise<any>
-    update: (args: any) => Promise<any>
-    updateMany: (args: any) => Promise<unknown>
-  }
-  searchConsoleConnection: {
-    updateMany: (args: any) => Promise<unknown>
-  }
-}
+type FeatureSyncDb = Pick<
+  DatabaseTransaction,
+  'clientFeature' | 'feature' | 'clientSite' | 'searchConsoleConnection' | 'domainConnection' | 'domainRedirect'
+>
 
 export const FEATURE_CODES: FeatureCode[] = ['AI', 'SENTIMENT', 'ARTICLE_CRONS', 'SEARCH_CONSOLE']
 export const FEATURE_MIN_BILLING_DAYS = 30
@@ -153,9 +139,17 @@ export const recalcFeatureBilling = async (
     // Stripe bills PRO/PREMIUM add-on languages itself; on CUSTOM they join the à-la-carte total.
     const site = await tx.clientSite.findUnique({
       where: { id: clientSiteId },
-      select: { extraTranslationLanguages: true },
+      select: { extraTranslationLanguages: true, paidTeamSeats: true },
     })
     const languages = Math.max(0, site?.extraTranslationLanguages ?? 0)
+
+    if (site?.paidTeamSeats != null) {
+      const monthlyPaymentCents = customPriceCents(site.paidTeamSeats, 'month')
+      const annualPaymentCents = customPriceCents(site.paidTeamSeats, 'year')
+      // Legacy whole-dollar fields are retained for existing operator contracts only.
+      await tx.clientSite.updateMany({ where: { id: clientSiteId }, data: { monthlyPaymentCents, annualPaymentCents } })
+      return { monthlyPayment: monthlyPaymentCents / 100, annualPayment: annualPaymentCents / 100 }
+    }
 
     monthlyPayment = billableMonthlyTotal(plan, billingPlan, [
       ...billed.map((cf: { feature: { priceMonthly: number } }) => cf.feature.priceMonthly),
@@ -167,7 +161,7 @@ export const recalcFeatureBilling = async (
 
   await tx.clientSite.updateMany({
     where: { id: clientSiteId },
-    data: { monthlyPayment, annualPayment },
+    data: { monthlyPayment, annualPayment, monthlyPaymentCents: null, annualPaymentCents: null },
   })
 
   return { monthlyPayment, annualPayment }
@@ -180,7 +174,7 @@ export const syncPlanFeatures = async (tx: FeatureSyncDb, clientSiteId: string) 
   const site = await tx.clientSite.update({
     where: { id: clientSiteId },
     data: { updatedAt: new Date() },
-    select: { plan: true, billingPlan: true },
+    select: { plan: true, billingPlan: true, paidTeamSeats: true },
   })
   const plan = site.plan as ClientPlan
 
@@ -191,7 +185,10 @@ export const syncPlanFeatures = async (tx: FeatureSyncDb, clientSiteId: string) 
     })
     .then((rows) => rows.map((row: { feature: { code: string } }) => row.feature.code as FeatureCode))
 
-  const { activate, deactivate } = planFeatureSync(plan, active)
+  const { activate, deactivate } = planFeatureSync(
+    plan === 'CUSTOM' && site.paidTeamSeats != null ? 'PREMIUM' : plan,
+    active,
+  )
 
   if (activate.length || deactivate.length) {
     const now = new Date()
@@ -237,6 +234,7 @@ export const syncPlanFeatures = async (tx: FeatureSyncDb, clientSiteId: string) 
   await syncGenerationSchedule(tx, clientSiteId, nextActive)
   await syncSeoAutopilot(tx, clientSiteId, nextActive)
   await recalcFeatureBilling(tx, clientSiteId, plan, site.billingPlan)
+  if (plan === 'BASIC') await retireUnpaidCustomDomains(tx, clientSiteId)
 
   return nextActive
 }
