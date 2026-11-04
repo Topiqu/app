@@ -29,7 +29,7 @@
     <WebsiteImportPanel
       v-if="can('TENANT_SETTINGS') && (activeTab === 'content' || route.query.websiteImport)"
       :disabled="isDirty"
-      @applied="refresh()"
+      @applied="refreshPreferences"
     />
 
     <div class="flex flex-col md:flex-row gap-6 md:gap-10">
@@ -226,7 +226,7 @@
         </section>
 
         <section v-if="showBilling" v-show="activeTab === 'billing'">
-          <FormClientBilling :client="client ?? null" :rate="rate" @refresh="refresh()" />
+          <FormClientBilling :client="client ?? null" :rate="rate" @refresh="refreshPreferences" />
         </section>
         <section v-if="activeTab === 'widgets'"><LazyFormClientWidgets /></section>
         <section v-show="activeTab === 'members'"><LazySettingsMembers /></section>
@@ -291,7 +291,7 @@ const releaseScheduleDirty = computed(
 const onFontStored = async (field: 'headingFontUrl' | 'bodyFontUrl', url: string) => {
   form.value[field] = url
   pristine.value[field] = url
-  await refreshClientSite()
+  await refreshPreferences()
 }
 
 useSeoMeta({ title: () => `${client.value?.name ?? ''} - ${$t('common.preferences.title')}` })
@@ -335,6 +335,8 @@ const activeTab = computed<string>({
 })
 
 const { pending: featurePending, toggle: toggleFeature } = useClientFeatures(client, refresh)
+const { invalidateClientFeatures } = useCacheInvalidation()
+const refreshPreferences = () => Promise.all([refresh(), invalidateClientFeatures()])
 
 const savePreferences = async () => {
   if (!clientId.value) return toast.add({ color: 'error', title: $t('common.preferences.messages.noClientId') })
@@ -346,12 +348,7 @@ const savePreferences = async () => {
     })
     toast.add({ color: 'success', title: $t('common.messages.saveSuccess'), description: client.value?.name })
     // The publication surface reads the tenant from its own cached entry, which this PATCH just made stale.
-    await Promise.all([
-      refresh(),
-      refreshClientSite(),
-      refreshClientSiteStatus(),
-      refreshNuxtData(`shopify-status-${clientId.value}`),
-    ])
+    await Promise.all([refreshPreferences(), refreshNuxtData(`shopify-status-${clientId.value}`)])
     form.value = buildClientSettingsForm(client.value)
     pristine.value = buildClientSettingsForm(client.value)
   } catch (e: any) {

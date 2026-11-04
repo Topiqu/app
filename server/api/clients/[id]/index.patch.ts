@@ -242,7 +242,7 @@ export default defineEventHandler(async (event) => {
           const site = await tx.clientSite.update(updateArgs)
           if (planChanged) await syncPlanFeatures(tx, id)
           else await recalcFeatureBilling(tx, id, site.plan, site.billingPlan)
-          return site
+          return planChanged ? tx.clientSite.findUniqueOrThrow({ where: { id }, include: updateArgs.include }) : site
         })
       : await db.clientSite.update(updateArgs)
   if (planChanged && updatedSite.plan === 'BASIC') await cancelTranslationLanguageSubscription(id)

@@ -91,7 +91,9 @@ describe('tenant branding stays current after a save', () => {
     expect(header).toContain('await useLiveClientSite()')
     expect(header).not.toContain('await useClientSite()')
     expect(header).toContain('logoSrc = computed(() => clientSite.value?.logoUrl || null)')
-    expect(settings).toContain('refreshClientSite()')
+    expect(settings).toContain('refreshPreferences()')
+    expect(settings).toContain('invalidateClientFeatures()')
+    expect(source('app/composables/useCacheInvalidation.ts')).toContain('refreshClientSite()')
   })
 
   it('updates the publication theme and custom font styles from the live tenant entry', () => {
@@ -108,13 +110,15 @@ describe('tagline in publication metadata', () => {
 
   it('backs an empty description with the tagline rather than the platform boilerplate', () => {
     for (const key of ['description', 'ogDescription']) {
-      expect(app).toContain(`${key}: () => clientSite?.description || clientSite?.tagline ||`)
+      expect(app.replace(/\s+/g, ' ')).toContain(
+        `${key}: () => liveClientSite.value?.description || liveClientSite.value?.tagline ||`,
+      )
     }
-    expect(app).toContain('description: clientSite.description || clientSite.tagline')
+    expect(app).toContain('description: liveClientSite.value.description || liveClientSite.value.tagline')
   })
 
   it('carries the tagline into og:title but leaves <title> as the bare name', () => {
-    expect(app).toContain('ogTitle: () => brandTitle(clientSite?.name, clientSite?.tagline)')
-    expect(app).toContain("title: () => clientSite?.name || 'Topiqu',")
+    expect(app).toContain('ogTitle: () => brandTitle(liveClientSite.value?.name, liveClientSite.value?.tagline)')
+    expect(app).toContain("title: () => liveClientSite.value?.name || 'Topiqu',")
   })
 })

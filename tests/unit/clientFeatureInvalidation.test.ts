@@ -20,6 +20,11 @@ describe('feature cache invalidation', () => {
       queryKeys.clients.all,
       queryKeys.visibility.all,
       queryKeys.stats.all,
+      queryKeys.keywordPlan.list,
+      queryKeys.contentActions.list,
+      queryKeys.backlinks.list,
+      queryKeys.domain.status,
+      queryKeys.articles.lists,
     ])
   })
 })

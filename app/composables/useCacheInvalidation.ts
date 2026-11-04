@@ -17,6 +17,11 @@ export const useCacheInvalidation = () => {
       invalidateClients(),
       queryCache.invalidateQueries({ key: queryKeys.visibility.all }),
       invalidateStats(),
+      queryCache.invalidateQueries({ key: queryKeys.keywordPlan.list }),
+      queryCache.invalidateQueries({ key: queryKeys.contentActions.list }),
+      queryCache.invalidateQueries({ key: queryKeys.backlinks.list }),
+      queryCache.invalidateQueries({ key: queryKeys.domain.status }),
+      invalidateArticleLists(),
     ])
 
   return {

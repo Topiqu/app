@@ -31,7 +31,6 @@ const route = useRoute()
 const { active: isWidgetPagePreview } = useWidgetPagePreview()
 useWidgetPagePreviewBridge()
 useHead(() => ({ meta: isWidgetPagePreview.value ? [{ name: 'robots', content: 'noindex, nofollow' }] : [] }))
-const clientSite = await useClientSite()
 const liveClientSite = await useLiveClientSite()
 const i18nHead = useLocaleHead()
 const canonicalOrigin = useCanonicalOrigin()
@@ -47,13 +46,15 @@ const consentLauncher = computed(() =>
   consentLauncherFor(
     auth.value?.user?.role,
     isPublicationSurface.value,
-    isForeignHost(clientSite?.id, auth.value?.user?.clientSiteId),
+    isForeignHost(liveClientSite.value?.id, auth.value?.user?.clientSiteId),
   ),
 )
 // A blog only has real alternates in the languages it publishes; the rest would be translated chrome around
 // the same articles.
 const siteLanguages = computed(() =>
-  clientSite ? new Set<string>([clientSite.language, ...(clientSite.translationLanguages ?? [])]) : null,
+  liveClientSite.value
+    ? new Set<string>([liveClientSite.value.language, ...(liveClientSite.value.translationLanguages ?? [])])
+    : null,
 )
 const isForeignAlternate = (hreflang: unknown) =>
   typeof hreflang === 'string' && hreflang !== 'x-default' && !siteLanguages.value?.has(hreflang.split('-')[0]!)
@@ -79,12 +80,14 @@ const brandGradient = computed(() =>
 const loadingColor = computed(() => (brandGradient.value ? gradientCss(brandGradient.value) : computedThemeColor.value))
 
 useSeoMeta({
-  title: () => clientSite?.name || 'Topiqu',
-  description: () => clientSite?.description || clientSite?.tagline || 'Moderní blogovací platforma',
-  author: () => clientSite?.name || 'Topiqu',
-  ogTitle: () => brandTitle(clientSite?.name, clientSite?.tagline) || 'Topiqu',
-  ogDescription: () => clientSite?.description || clientSite?.tagline || 'Moderní blogovací platforma',
-  ogLocale: () => languageTag(clientSite?.language).replace('-', '_'),
+  title: () => liveClientSite.value?.name || 'Topiqu',
+  description: () =>
+    liveClientSite.value?.description || liveClientSite.value?.tagline || 'Moderní blogovací platforma',
+  author: () => liveClientSite.value?.name || 'Topiqu',
+  ogTitle: () => brandTitle(liveClientSite.value?.name, liveClientSite.value?.tagline) || 'Topiqu',
+  ogDescription: () =>
+    liveClientSite.value?.description || liveClientSite.value?.tagline || 'Moderní blogovací platforma',
+  ogLocale: () => languageTag(liveClientSite.value?.language).replace('-', '_'),
   ogImageWidth: 1200,
   ogImageHeight: 600,
   twitterImageWidth: 1200,
@@ -92,14 +95,14 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
-const targetLogoUrl = clientSite?.logoUrl || `${reqUrl.origin}/app-logo.png`
+const targetLogoUrl = computed(() => liveClientSite.value?.logoUrl || `${reqUrl.origin}/app-logo.png`)
 
-if (clientSite) {
+if (liveClientSite.value) {
   defineOgImage('ClientSite', {
-    title: clientSite.name,
-    description: clientSite.description || clientSite.tagline || '',
-    siteName: clientSite.name,
-    siteLogo: targetLogoUrl,
+    title: liveClientSite.value.name,
+    description: liveClientSite.value.description || liveClientSite.value.tagline || '',
+    siteName: liveClientSite.value.name,
+    siteLogo: targetLogoUrl.value,
     themeColor: computedThemeColor.value,
     brandGradient: brandGradient.value ? gradientCss(brandGradient.value) : undefined,
     domain: reqUrl.host,
@@ -131,12 +134,12 @@ useHead(() => ({
       href: liveClientSite.value?.faviconUrl || liveClientSite.value?.logoUrl || '/favicon.ico?v=20260908',
     },
     ...(liveClientSite.value ? [] : [{ rel: 'apple-touch-icon' as const, href: '/apple-touch-icon.png' }]),
-    ...(clientSite
+    ...(liveClientSite.value
       ? [
           {
             rel: 'alternate' as const,
             type: 'application/rss+xml',
-            title: clientSite.name,
+            title: liveClientSite.value.name,
             href: `${canonicalOrigin}/rss.xml`,
           },
         ]
@@ -146,10 +149,10 @@ useHead(() => ({
     ...(i18nHead.value.meta || []),
     {
       name: 'keywords',
-      content: Array.isArray(clientSite?.keywords)
-        ? clientSite.keywords.join(', ')
-        : typeof clientSite?.keywords === 'string'
-          ? clientSite.keywords
+      content: Array.isArray(liveClientSite.value?.keywords)
+        ? liveClientSite.value.keywords.join(', ')
+        : typeof liveClientSite.value?.keywords === 'string'
+          ? liveClientSite.value.keywords
           : 'blog, ai, platforma',
     },
     { name: 'theme-color', content: computedThemeColor.value },
@@ -160,15 +163,17 @@ useHead(() => ({
 // locale-aware `@id`s off the (per-tenant) site config — redefining them here detached
 // `WebPage.isPartOf` from the WebSite node it pointed at. No explicit `url` either: passing one
 // splits the identity into a second node.
-if (clientSite) {
-  useSchemaOrg([
-    defineOrganization({
-      name: clientSite.name,
-      logo: targetLogoUrl,
-      ...(clientSite.description ? { description: clientSite.description } : {}),
-      // Ties the blog to accounts the engine already has an entity for.
-      sameAs: clientSite.socials?.map((social) => social.url) ?? [],
-    }),
-  ])
+if (liveClientSite.value) {
+  useSchemaOrg(
+    computed(() => [
+      defineOrganization({
+        name: liveClientSite.value?.name,
+        logo: targetLogoUrl.value,
+        ...(liveClientSite.value?.description ? { description: liveClientSite.value.description } : {}),
+        // Ties the blog to accounts the engine already has an entity for.
+        sameAs: liveClientSite.value?.socials?.map((social) => social.url) ?? [],
+      }),
+    ]),
+  )
 }
 </script>
