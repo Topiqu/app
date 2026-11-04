@@ -9,7 +9,8 @@ async function stubImports() {
 
 await stubImports()
 
-const { hasArticleAdminAccess, isArticleLive, sessionTenantId } = await import('../../../server/utils/articleViewerAccess')
+const { hasArticleAdminAccess, isArticleLive, sessionTenantId } =
+  await import('../../../server/utils/articleViewerAccess')
 
 afterEach(() => {
   vi.unstubAllGlobals()

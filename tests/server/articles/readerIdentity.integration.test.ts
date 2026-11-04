@@ -2,10 +2,11 @@
 import { createError } from 'h3'
 import { randomUUID } from 'node:crypto'
 import { PolicyPlugin } from '@zenstackhq/plugin-policy'
-import { afterAll, afterEach, describe, expect, it, vi } from 'vitest'
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createDatabaseClient } from '../../../server/utils/database'
 import { isUniqueViolation } from '../../../server/utils/databaseError'
+import { canSeeUnreleasedArticle, isArticleLive } from '../../../server/utils/articleViewerAccess'
 
 const url = process.env.TEST_DATABASE_URL
 const enabled = !!url && /test/i.test(new URL(url).pathname) && url !== process.env.DATABASE_URL
@@ -13,6 +14,10 @@ const db = enabled ? createDatabaseClient(url) : null
 const sites: string[] = []
 const users: string[] = []
 afterEach(() => vi.unstubAllGlobals())
+beforeEach(() => {
+  vi.stubGlobal('canSeeUnreleasedArticle', canSeeUnreleasedArticle)
+  vi.stubGlobal('isArticleLive', isArticleLive)
+})
 
 afterAll(async () => {
   if (!db) return
@@ -168,7 +173,11 @@ describe.skipIf(!enabled)('reader identity uniqueness on PostgreSQL', () => {
         const results = await Promise.allSettled([run(), run()])
         for (const result of results) {
           expect(result.status).toBe('rejected')
-          if (result.status === 'rejected') expect(result.reason).toMatchObject({ statusCode: 404 })
+          // The signed-in fixture is the author, who may preview but cannot engage yet.
+          if (result.status === 'rejected')
+            expect(result.reason).toMatchObject({
+              statusCode: identity === 'signed-in' && kind !== 'share' ? 409 : 404,
+            })
         }
         expect(await db!.articleReaction.count({ where: { articleId } })).toBe(0)
         expect(await db!.articleFeedback.count({ where: { articleId } })).toBe(0)

@@ -10,6 +10,6 @@ export default defineNuxtRouteMiddleware((to) => {
 
   const { data } = useAuth()
   const target = uiLanguageOf(data.value?.user?.language, uiLanguageOf(usePreferenceCookies().language.value))
-  const path = name ? useLocalePath()({ name, params: to.params, query: to.query, hash: to.hash }, target) : ''
+  const path = name ? useLocalePath()({ path: to.path, query: to.query, hash: to.hash }, target) : ''
   return navigateTo(path || homePath(target), { replace: true })
 })
