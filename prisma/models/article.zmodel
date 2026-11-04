@@ -199,6 +199,7 @@ model ArticleTranslation with Base {
     error        String?           @length(0, 1000)
     translatedAt DateTime?
     translationStartedAt DateTime?
+    aiRetryAt    DateTime? @omit
     mediaUsages  ArticleMediaUsage[]
     @@unique([articleId, language])
     @@unique([slug, clientSiteId, language])

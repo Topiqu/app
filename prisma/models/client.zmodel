@@ -204,6 +204,19 @@ model ClientSite with Base {
     stripeCustomerId     String?
     stripeSubscriptionId String?
     stripePriceId        String?
+    /// Null retains the existing individually contracted CUSTOM plan.
+    paidTeamSeats        Int?
+    billingLeaseId       String? @omit
+    billingLeaseUntil    DateTime? @omit
+    billingCheckoutId   String? @omit
+    paidThrough         DateTime? @omit
+    monthlyPaymentCents  Int?
+    annualPaymentCents   Int?
+    aiBudgetMonthlyMicros Int?
+    aiBudgetDebtMicros    Int @default(0)
+    aiAllowanceGrants    AiAllowanceGrant[]
+    aiAllowanceInvoices AiAllowanceInvoice[]
+    aiUsageReservations  AiUsageReservation[]
     currency             String?             @default('USD')
     lastPaidAt           DateTime?           @default(now())
     language             Language            @default(en)
