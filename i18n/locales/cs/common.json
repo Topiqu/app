@@ -1,5 +1,41 @@
 {
   "common": {
+    "aiAllowance": {
+      "exhausted": "Blog vyčerpal AI limit. Počkejte na obnovení nebo výslovně dokupte spotřebu ve Fakturaci. Nic navíc se neúčtuje automaticky.",
+      "title": "AI spotřeba tohoto blogu",
+      "policy": "Spotřebu sdílí tým tohoto blogu. Po vyčerpání se nová práce pozastaví do obnovení nebo výslovného dokoupení. Nic navíc se neúčtuje automaticky.",
+      "inactive": "AI je pozastavena, dokud blog nemá aktivní tarif s AI.",
+      "kinds": {
+        "BUDGET": "Sdílená AI kapacita",
+        "TRANSLATION": "Překlady článků",
+        "EDIT": "Krátké úpravy AI",
+        "VISIBILITY": "Odpovědi pro AI viditelnost"
+      },
+      "remaining": "Zbývá {remaining} z {total}",
+      "renews": "Zahrnutá spotřeba se obnoví {date}.",
+      "trialEnds": "Zkušební spotřeba končí {date}.",
+      "sharedBudget": "Články, obrázky, rešerše a další AI nástroje sdílí jednu kapacitu. Počty operací jsou maximální limity; práce zároveň potřebuje dostatek sdílené kapacity. Pokud poskytovatel nevrátí přesnou spotřebu, náklady rezervujeme konzervativně.",
+      "packs": "Dokoupit AI spotřebu",
+      "packContents": "{translations} překladů · {edits} úprav · {checks} odpovědí pro viditelnost",
+      "packBudget": "Přidá {percent} % AI kapacity zahrnuté v tomto období",
+      "extraCapacity": "Obsahuje dodatečnou sdílenou AI kapacitu",
+      "purchasePolicy": "Jednorázová platba bez daně. Zakoupená spotřeba neexpiruje a automaticky se neobnovuje. Je oddělená od balíčků článků; vyžaduje aktivní tarif s AI."
+    },
+    "customBilling": {
+      "title": "Kapacita týmu CUSTOM",
+      "policy": "Majitel se počítá. Minimum jsou 3 místa: základ 159 USD + 20 USD za každé další místo, celkem 199 USD měsíčně. Roční platba je o 20 % levnější. Pozvánky nic automaticky neúčtují.",
+      "seats": "Placená místa včetně majitele",
+      "preview": "Zkontrolovat cenu",
+      "recurring": "Nová opakovaná cena: {amount} / {period}, před daní a slevami",
+      "due": "K úhradě nyní: {amount}",
+      "decrease": "Nevyužitá místa se odeberou nyní. Nižší cena platí od obnovení; současné období se nevrací. Před snížením odeberte nepotřebné pozvánky nebo členy.",
+      "confirmPolicy": "Potvrzením schvalujete tuto změnu předplatného a uvedenou platbu. Nová kapacita bude dostupná po úspěšné úhradě.",
+      "confirm": "Potvrdit změnu předplatného",
+      "pending": "Platba vyžaduje pozornost. Nová místa budou dostupná po dokončení platby ve Stripe.",
+      "inUse": "Nejprve odeberte nepotřebné pozvánky nebo členy týmu.",
+      "retry": "Předplatné nebo nabídka se mohly změnit. Zkontrolujte cenu znovu.",
+      "start": "CUSTOM začíná se 3 placenými místy včetně majitele. Další kapacitu lze dokoupit po aktivaci."
+    },
     "websiteImport": {
       "title": "Nastavení z webu při založení blogu",
       "description": "Na pozadí připravíme nastavení blogu a podklady do znalostní báze. Před použitím návrhy zkontrolujete.",
@@ -353,6 +389,8 @@
       "planRequired": "Vlastní doména je součástí plánu Pro.",
       "failed": "Změna domény selhala.",
       "errors": {
+        "paymentRequired": "Pro připojení vlastní domény přejděte na placený plán nebo přidejte platební kartu přes fakturaci. Subdomény Topiqu zůstávají zdarma, během trialu i po něm.",
+        "billingUnavailable": "Platební údaje se nepodařilo ověřit. Zkuste to znovu; současná doména zůstává připojená.",
         "invalid": "Zadejte platnou doménu, například blog.example.com.",
         "reserved": "Tato doména patří Topiqu.",
         "plan": "Vlastní doména je součástí plánu Pro.",
@@ -1576,6 +1614,10 @@
       "dontListPlaceholder": "Například: levný, záruka, spam"
     },
     "members": {
+      "seats": "Tým: {used} z {limit} míst · {reserved} čekajících pozvánek",
+      "seatPolicy": "Majitel zabírá jedno místo. Pozvánky rezervují místo na sedm dní. Po snížení tarifu zůstane přístup majiteli a nejstarším členům; navýšením tarifu se ostatním přístup obnoví.",
+      "seatLimit": "Tento blog nemá volná místa v týmu. Zvyšte jeho tarif nebo odeberte člena či čekající pozvánku.",
+      "seatInactive": "Přístup pozastaven kvůli limitu tarifu",
       "title": "Členové",
       "description": "Správa přístupu a oprávnění k webu.",
       "invite": "Pozvat člena",
@@ -1674,7 +1716,6 @@
       "createAndPay": "Vytvořit a přejít k platbě",
       "created": "Blog byl vytvořen",
       "checkoutFailed": "Blog byl vytvořen v tarifu Basic, ale platbu se nepodařilo otevřít. Tarif můžete aktivovat v nastavení.",
-      "limitReached": "Dosáhli jste limitu tří vlastních Basic blogů.",
       "subdomainTaken": "Tato subdoména už není dostupná.",
       "domainTaken": "Tato doména už je připojená k jinému blogu.",
       "nameTaken": "Blog s tímto názvem už existuje.",

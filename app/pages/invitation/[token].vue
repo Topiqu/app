@@ -93,7 +93,12 @@ const respond = async (action: 'accept' | 'decline') => {
     const code = cause?.data?.data?.code
     toast.add({
       color: 'error',
-      title: code ? $t(`common.invitation.errors.${code}`) : $t('common.messages.operationFailed'),
+      title:
+        code === 'TEAM_SEAT_LIMIT'
+          ? $t('common.members.seatLimit')
+          : code
+            ? $t(`common.invitation.errors.${code}`)
+            : $t('common.messages.operationFailed'),
     })
   } finally {
     busy.value = false

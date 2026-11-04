@@ -20,6 +20,7 @@ test('domain setup exposes provider records and clears private certificate mater
       json: {
         domain: 'fixture.topiqu.com',
         canUseCustomDomain: true,
+        canConnectCustomDomain: true,
         currentVerification: null,
         pending: {
           domain: host,
@@ -96,6 +97,7 @@ test('a legacy disconnect can be completed without stale adoption errors', async
       json: {
         domain: 'fixture.topiqu.com',
         canUseCustomDomain: true,
+        canConnectCustomDomain: true,
         currentVerification: null,
         pending: null,
         connections: complete
@@ -160,6 +162,7 @@ test('domain progress preserves DNS history and separates activation from addres
       json: {
         domain: active ? host : 'fixture.topiqu.com',
         canUseCustomDomain: true,
+        canConnectCustomDomain: true,
         pending: active ? null : dns,
         currentVerification: active ? dns : null,
         connections: [

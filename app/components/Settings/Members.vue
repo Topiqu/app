@@ -15,6 +15,15 @@
       </UButton>
     </header>
 
+    <UAlert
+      v-if="data?.seats && data.seats.limit !== null"
+      color="neutral"
+      variant="subtle"
+      :title="$t('common.members.seats', data.seats)"
+      :description="$t('common.members.seatPolicy')"
+    />
+    <UAlert v-if="seatError" color="error" :title="$t('common.members.seatLimit')" />
+
     <UForm
       v-if="showInvite"
       class="space-y-5 rounded-(--topiqu-surface-radius) border border-default bg-elevated/50 p-5"
@@ -101,6 +110,9 @@
                 </span>
               </div>
               <div class="mt-1 truncate text-xs text-neutral-500">{{ member.user.email }}</div>
+              <UBadge v-if="member.seatActive === false" color="warning" variant="subtle" class="mt-2">{{
+                $t('common.members.seatInactive')
+              }}</UBadge>
               <div class="mt-2 text-xs text-neutral-400">
                 {{ $t('common.members.joined') }} <NuxtTime :datetime="member.createdAt" dateStyle="medium" />
               </div>
@@ -231,6 +243,7 @@ type Member = {
   role: 'OWNER' | 'MEMBER'
   scopes: Scope[]
   createdAt: string
+  seatActive: boolean
   user: {
     id: string
     username: string
@@ -259,17 +272,22 @@ const scopeItems = computed(() =>
   })),
 )
 const filters = ['all', 'owners', 'members'] as const
+const { data: auth } = useAuth()
 const { data, refresh: refreshMembers } = await useFetch<{
   members: Member[]
   invitations: Invitation[]
   currentMembershipId: string
   canControl: boolean
-}>('/api/tenant/members')
+  seats: { limit: number | null; used: number; reserved: number }
+}>('/api/tenant/members', {
+  key: computed(() => `tenant-members:${auth.value?.user.id}:${auth.value?.user.clientSiteId}`),
+})
 const refresh = () => Promise.all([refreshMembers(), refreshClientSiteStatus()])
 const email = shallowRef('')
 const selected = ref<Scope[]>(['ARTICLE_WRITE'])
 const showInvite = shallowRef(false)
 const busy = shallowRef(false)
+const seatError = shallowRef(false)
 const removingId = shallowRef<string>()
 const pendingMemberIds = ref(new Set<string>())
 const revokingIds = ref(new Set<string>())
@@ -315,6 +333,7 @@ const canEdit = (member: Member) =>
   !!data.value?.canControl && member.role !== 'OWNER' && member.id !== data.value.currentMembershipId
 const invite = async () => {
   busy.value = true
+  seatError.value = false
   try {
     await $fetch<unknown, '/api/tenant/invitations'>('/api/tenant/invitations', {
       method: 'POST',
@@ -324,10 +343,18 @@ const invite = async () => {
     showInvite.value = false
     await refresh()
     toast.add({ color: 'success', title: $t('common.members.sent') })
+  } catch (error) {
+    if (isTeamSeatError(error)) seatError.value = true
+    else toast.add({ color: 'error', title: $t('common.messages.operationFailed') })
   } finally {
     busy.value = false
   }
 }
+const isTeamSeatError = (error: unknown) =>
+  typeof error === 'object' &&
+  error !== null &&
+  'data' in error &&
+  (error.data as { data?: { code?: string } } | undefined)?.data?.code === 'TEAM_SEAT_LIMIT'
 const toggle = async (member: Member, scope: Scope) => {
   if (pendingMemberIds.value.has(member.id)) return
   const previous = [...member.scopes]
@@ -381,7 +408,7 @@ const remove = async (member: Member) => {
     await $fetch<unknown, '/api/tenant/members/:id'>(`/api/tenant/members/${member.id}` as '/api/tenant/members/:id', {
       method: 'DELETE',
     })
-    await refreshClientSiteStatus()
+    await refresh()
     optimisticStatus.saved()
     toast.add({
       color: 'success',
@@ -416,7 +443,7 @@ const revoke = async (id: string) => {
       `/api/tenant/invitations/${id}` as '/api/tenant/invitations/:id',
       { method: 'DELETE' },
     )
-    await refreshClientSiteStatus()
+    await refresh()
     optimisticStatus.saved()
   } catch (error: any) {
     data.value.invitations.splice(index, 0, invitation)
@@ -439,7 +466,12 @@ const resend = async (id: string) => {
     await refresh()
     toast.add({ color: 'success', title: $t('common.members.sent') })
   } catch (error: any) {
-    toast.add({ color: 'error', title: fetchErrorMessage(error, t('common.messages.operationFailed')) })
+    toast.add({
+      color: 'error',
+      title: isTeamSeatError(error)
+        ? t('common.members.seatLimit')
+        : fetchErrorMessage(error, t('common.messages.operationFailed')),
+    })
   } finally {
     const pending = new Set(resendingIds.value)
     pending.delete(id)

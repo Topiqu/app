@@ -107,7 +107,7 @@
             <UButton
               v-if="pendingManaged || (pendingConnection?.state === 'READY' && !pendingConnection.errorCode)"
               :loading="busy === 'verify'"
-              :disabled="!!busy"
+              :disabled="!!busy || (!pendingManaged && !data.canConnectCustomDomain)"
               @click="verify"
             >
               {{ $t(pendingManaged ? 'common.domain.activateSubdomain' : 'common.domain.verify') }}
@@ -131,13 +131,37 @@
               <UInput v-model="domain" class="w-full" :placeholder="`my-blog.${baseDomain}`" />
             </UFormField>
           </div>
-          <UButton type="submit" :loading="busy === 'request'" :disabled="!domain.trim() || !!busy">
+          <UButton
+            type="submit"
+            :loading="busy === 'request'"
+            :disabled="!domain.trim() || !!busy || !requestedDomainAllowed"
+          >
             {{ $t('common.domain.continue') }}
           </UButton>
           <UButton color="neutral" variant="ghost" :disabled="!!busy" @click="changeOpen = false">{{
             $t('common.domain.cancel')
           }}</UButton>
         </form>
+        <UAlert
+          v-if="data?.canUseCustomDomain && !data.canConnectCustomDomain"
+          color="neutral"
+          variant="soft"
+          :title="
+            $t(
+              data?.canConnectCustomDomain === null
+                ? 'common.domain.errors.billingUnavailable'
+                : 'common.domain.errors.paymentRequired',
+            )
+          "
+          :actions="[
+            data?.canConnectCustomDomain === null
+              ? { label: $t('common.messages.retry'), onClick: () => refetch() }
+              : {
+                  label: $t('common.preferences.tabs.billing'),
+                  to: localePath({ name: 'settings', query: { tab: 'billing' } }),
+                },
+          ]"
+        />
         <p v-if="!data?.canUseCustomDomain" class="text-sm text-muted">{{ $t('common.domain.planRequired') }}</p>
       </div>
     </UCard>
@@ -153,6 +177,7 @@ interface DnsRecords {
 interface DomainStatus {
   domain: string
   canUseCustomDomain: boolean
+  canConnectCustomDomain: boolean | null
   pending: DnsRecords | null
   currentVerification: DnsRecords | null
   connections: Array<{
@@ -172,6 +197,7 @@ const { t } = useI18n()
 const baseDomain = useRuntimeConfig().public.baseDomain
 const pendingManaged = computed(() => !!data.value?.pending && isManagedDomain(data.value.pending.domain, baseDomain))
 const route = useRoute()
+const localePath = useLocalePath()
 const confirm = useConfirm()
 const headingId = useId()
 const requestFetch = useRequestFetch()
@@ -182,6 +208,9 @@ const { data, isPending, refetch } = useQuery({
 })
 
 const domain = shallowRef('')
+const requestedDomainAllowed = computed(
+  () => isManagedDomain(domain.value, baseDomain) || data.value?.canConnectCustomDomain === true,
+)
 const changeOpen = shallowRef(false)
 const openChange = () => {
   switchedTo.value = ''
@@ -217,7 +246,7 @@ const records = computed(() => {
 })
 
 const errorCode = (cause: unknown) => (cause as { data?: { data?: { code?: string } } })?.data?.data?.code
-const ERROR_CODES = ['invalid', 'reserved', 'plan', 'taken', 'unchanged']
+const ERROR_CODES = ['invalid', 'reserved', 'plan', 'taken', 'unchanged', 'paymentRequired', 'billingUnavailable']
 
 const run = async (key: NonNullable<typeof busy.value>, task: () => Promise<void>) => {
   busy.value = key

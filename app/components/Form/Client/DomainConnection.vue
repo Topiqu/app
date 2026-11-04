@@ -245,6 +245,8 @@ const guidance = computed(() =>
 )
 const errorMessage = (code: string) => {
   if (code === 'PLAN_REQUIRED') return t('common.domain.errors.plan')
+  if (code === 'BILLING_UNAVAILABLE') return t('common.domain.errors.billingUnavailable')
+  if (code === 'PAYMENT_REQUIRED') return t('common.domain.errors.paymentRequired')
   const known = [
     'ADOPTION_REQUIRED',
     'CONFIGURATION',

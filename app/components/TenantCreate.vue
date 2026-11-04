@@ -80,6 +80,7 @@
             </button>
           </div>
 
+          <p v-if="form.plan === 'CUSTOM'" class="text-sm text-muted">{{ $t('common.customBilling.start') }}</p>
           <div v-if="form.plan !== 'BASIC'" class="rounded-xl border border-default bg-muted/40 p-4">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
@@ -415,7 +416,11 @@ const selectedDomain = computed(() => (usesCustomDomain.value ? form.customDomai
 
 const { data: planPricing, refresh: refreshPlanPricing } = await useLazyFetch<PlanPricing>('/api/stripe/plans', {
   immediate: false,
-  default: createAsyncDataDefault({ PRO: { month: null, year: null }, PREMIUM: { month: null, year: null } }),
+  default: createAsyncDataDefault({
+    PRO: { month: null, year: null },
+    PREMIUM: { month: null, year: null },
+    CUSTOM: { month: null, year: null },
+  }),
 })
 
 const formatMinorAmount = (price: PlanPrice | null) => {
@@ -434,7 +439,7 @@ const planOptions = computed(() => [
     description: $t('common.tenant.basicDescription'),
     icon: 'mdi:feather',
   },
-  ...(shopifyInstall.value ? [] : (['PRO', 'PREMIUM'] as const)).map((plan) => ({
+  ...(shopifyInstall.value ? [] : (['PRO', 'PREMIUM', 'CUSTOM'] as const)).map((plan) => ({
     value: plan,
     label: `${plan} · ${formatMinorAmount(planPricing.value?.[plan]?.[form.interval] ?? null)}`,
     description: $t(`admin.upgrade.${plan === 'PRO' ? 'toPro' : 'toPremium'}.description`),
@@ -640,17 +645,15 @@ const createTenant = async () => {
 
     const code = error?.data?.data?.code
     const key =
-      code === 'TENANT_LIMIT_REACHED'
-        ? 'limitReached'
-        : code === 'SUBDOMAIN_TAKEN'
-          ? 'subdomainTaken'
-          : code === 'DOMAIN_TAKEN'
-            ? 'domainTaken'
-            : code === 'NAME_TAKEN'
-              ? 'nameTaken'
-              : code === 'RATE_LIMITED'
-                ? 'rateLimited'
-                : 'failed'
+      code === 'SUBDOMAIN_TAKEN'
+        ? 'subdomainTaken'
+        : code === 'DOMAIN_TAKEN'
+          ? 'domainTaken'
+          : code === 'NAME_TAKEN'
+            ? 'nameTaken'
+            : code === 'RATE_LIMITED'
+              ? 'rateLimited'
+              : 'failed'
     toast.add({ color: 'error', title: $t(`common.tenant.${key}`) })
     if (code === 'SUBDOMAIN_TAKEN' || code === 'DOMAIN_TAKEN') {
       availability.value = 'unavailable'

@@ -1,5 +1,41 @@
 {
   "common": {
+    "aiAllowance": {
+      "exhausted": "This blog has used its AI allowance. Wait for renewal or explicitly purchase more usage in Billing. Nothing extra is charged automatically.",
+      "title": "AI usage for this blog",
+      "policy": "Usage is shared by this blog’s team. At the limit, new work pauses until renewal or an explicit top-up. No automatic overage charges.",
+      "inactive": "AI is paused until this blog has an active AI plan.",
+      "kinds": {
+        "BUDGET": "Shared AI capacity",
+        "TRANSLATION": "Article translations",
+        "EDIT": "Short AI edits",
+        "VISIBILITY": "AI visibility responses"
+      },
+      "remaining": "{remaining} of {total} remaining",
+      "renews": "Included usage renews on {date}.",
+      "trialEnds": "The trial allowance ends on {date}.",
+      "sharedBudget": "Articles, images, research and other AI tools share the same capacity. Operation counts are maximum allowances; work also needs enough shared capacity. Some provider costs are reserved conservatively when exact usage is unavailable.",
+      "packs": "Add AI usage",
+      "packContents": "{translations} translations · {edits} edits · {checks} visibility responses",
+      "packBudget": "Adds {percent}% of this period’s included AI capacity",
+      "extraCapacity": "Includes additional shared AI capacity",
+      "purchasePolicy": "One-time payment, before tax. Purchased usage does not expire and does not renew. It is separate from article packs; an active AI plan is required."
+    },
+    "customBilling": {
+      "title": "CUSTOM team capacity",
+      "policy": "Includes the owner. Minimum 3 seats: $159 base + $20 per additional seat, $199/month in total. Annual billing is 20% less. Invitations never charge automatically.",
+      "seats": "Paid seats including the owner",
+      "preview": "Review price",
+      "recurring": "New recurring price: {amount} / {period}, before tax and discounts",
+      "due": "Due now: {amount}",
+      "decrease": "Unused seats are removed now. The lower price starts at renewal; the current period is not refunded. Remove unused invitations or members before reducing capacity.",
+      "confirmPolicy": "Confirming authorizes this subscription change and the payment shown above. Additional capacity becomes available after payment succeeds.",
+      "confirm": "Confirm subscription change",
+      "pending": "Payment needs attention. Finish the Stripe payment before the new seats become available.",
+      "inUse": "Remove unused invitations or members before reducing the seat count.",
+      "retry": "Your subscription or quote may have changed. Review the price again.",
+      "start": "CUSTOM starts with 3 paid seats including the owner. Additional capacity can be purchased after activation."
+    },
     "websiteImport": {
       "title": "Website settings from onboarding",
       "description": "We can prepare your blog settings and knowledge sources in the background. Review the suggestions before using them.",
@@ -353,6 +389,8 @@
       "planRequired": "A custom domain is part of the Pro plan.",
       "failed": "The domain change failed.",
       "errors": {
+        "paymentRequired": "To connect a custom domain, choose a paid plan or add a payment card through billing. Topiqu subdomains remain free, including during and after the trial.",
+        "billingUnavailable": "Payment details could not be checked. Try again; your current domain stays connected.",
         "invalid": "Enter a valid domain, for example blog.example.com.",
         "reserved": "This domain belongs to Topiqu.",
         "plan": "A custom domain is part of the Pro plan.",
@@ -1576,6 +1614,10 @@
       "dontListPlaceholder": "For example: cheap, guarantee, spam"
     },
     "members": {
+      "seats": "Team: {used} of {limit} seats · {reserved} pending invitations",
+      "seatPolicy": "The owner counts as one seat. Invitations reserve seats for seven days. After a downgrade, the owner and earliest members keep access; upgrading restores the remaining memberships.",
+      "seatLimit": "This blog has no team seats available. Upgrade its plan or remove a member or pending invitation.",
+      "seatInactive": "Access paused by plan limit",
       "title": "Members",
       "description": "Manage tenant access and permissions.",
       "invite": "Invite member",
@@ -1674,7 +1716,6 @@
       "createAndPay": "Create and continue to payment",
       "created": "Blog created",
       "checkoutFailed": "The blog was created on Basic, but checkout could not be opened. You can activate a plan in settings.",
-      "limitReached": "You have reached the limit of three owned Basic blogs.",
       "subdomainTaken": "This subdomain is no longer available.",
       "domainTaken": "This domain is already connected to another blog.",
       "nameTaken": "A blog with this name already exists.",

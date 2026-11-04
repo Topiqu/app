@@ -1,5 +1,41 @@
 {
   "common": {
+    "aiAllowance": {
+      "exhausted": "Ce blog a épuisé son allocation IA. Attendez le renouvellement ou achetez explicitement de l’utilisation dans Facturation. Aucun supplément n’est facturé automatiquement.",
+      "title": "Utilisation de l’IA de ce blog",
+      "policy": "L’équipe de ce blog partage l’utilisation. À la limite, les nouvelles tâches sont suspendues jusqu’au renouvellement ou à un achat explicite. Aucun dépassement facturé automatiquement.",
+      "inactive": "L’IA est suspendue tant que ce blog n’a pas de forfait IA actif.",
+      "kinds": {
+        "BUDGET": "Capacité IA partagée",
+        "TRANSLATION": "Traductions d’articles",
+        "EDIT": "Retouches IA courtes",
+        "VISIBILITY": "Réponses de visibilité IA"
+      },
+      "remaining": "{remaining} sur {total} restantes",
+      "renews": "L’utilisation incluse se renouvelle le {date}.",
+      "trialEnds": "L’allocation d’essai se termine le {date}.",
+      "sharedBudget": "Les articles, images, recherches et autres outils IA partagent la même capacité. Les nombres sont des plafonds ; les tâches nécessitent aussi une capacité partagée suffisante. Sans données exactes du fournisseur, les coûts sont réservés de façon prudente.",
+      "packs": "Ajouter de l’utilisation IA",
+      "packContents": "{translations} traductions · {edits} retouches · {checks} réponses de visibilité",
+      "packBudget": "Ajoute {percent}% de la capacité IA incluse pour cette période",
+      "extraCapacity": "Comprend de la capacité IA partagée supplémentaire",
+      "purchasePolicy": "Paiement unique, hors taxes. L’utilisation achetée n’expire pas et ne se renouvelle pas automatiquement. Elle est distincte des packs d’articles ; un forfait IA actif est requis."
+    },
+    "customBilling": {
+      "title": "Capacité de l’équipe CUSTOM",
+      "policy": "Le propriétaire est inclus. Minimum de 3 places : base de 159 USD + 20 USD par place supplémentaire, soit 199 USD/mois. Le paiement annuel est 20 % moins cher. Les invitations ne déclenchent aucun paiement automatique.",
+      "seats": "Places payées, propriétaire inclus",
+      "preview": "Vérifier le prix",
+      "recurring": "Nouveau prix récurrent : {amount} / {period}, hors taxes et réductions",
+      "due": "À payer maintenant : {amount}",
+      "decrease": "Les places inutilisées sont retirées maintenant. Le prix inférieur s’applique au renouvellement ; la période actuelle n’est pas remboursée. Retirez d’abord les invitations ou membres inutilisés.",
+      "confirmPolicy": "La confirmation autorise ce changement d’abonnement et le paiement affiché. La capacité supplémentaire devient disponible après paiement réussi.",
+      "confirm": "Confirmer le changement d’abonnement",
+      "pending": "Le paiement nécessite votre attention. Terminez le paiement Stripe avant que les nouvelles places soient disponibles.",
+      "inUse": "Retirez d’abord les invitations ou membres inutilisés.",
+      "retry": "Votre abonnement ou devis a pu changer. Vérifiez à nouveau le prix.",
+      "start": "CUSTOM commence avec 3 places payées, propriétaire inclus. La capacité supplémentaire peut être achetée après l’activation."
+    },
     "websiteImport": {
       "title": "Réglages du site issus de l’inscription",
       "description": "Nous préparons les réglages du blog et les sources de connaissances en arrière-plan. Vérifiez les suggestions avant de les utiliser.",
@@ -353,6 +389,8 @@
       "planRequired": "Le domaine personnalisé fait partie de l’offre Pro.",
       "failed": "Le changement de domaine a échoué.",
       "errors": {
+        "paymentRequired": "Pour connecter un domaine personnalisé, choisissez une offre payante ou ajoutez une carte de paiement dans la facturation. Les sous-domaines Topiqu restent gratuits pendant et après l’essai.",
+        "billingUnavailable": "Impossible de vérifier les informations de paiement. Réessayez ; votre domaine actuel reste connecté.",
         "invalid": "Saisissez un domaine valide, par exemple blog.example.com.",
         "reserved": "Ce domaine appartient à Topiqu.",
         "plan": "Le domaine personnalisé fait partie de l’offre Pro.",
@@ -1576,6 +1614,10 @@
       "dontListPlaceholder": "Par exemple : bon marché, garantie, spam"
     },
     "members": {
+      "seats": "Équipe : {used} sur {limit} places · {reserved} invitations en attente",
+      "seatPolicy": "Le propriétaire occupe une place. Les invitations réservent des places pendant sept jours. Après une baisse d’offre, le propriétaire et les membres les plus anciens gardent l’accès ; une mise à niveau rétablit les autres accès.",
+      "seatLimit": "Ce blog n’a plus de places disponibles. Changez d’offre ou retirez un membre ou une invitation en attente.",
+      "seatInactive": "Accès suspendu par la limite de l’offre",
       "title": "Membres",
       "description": "Gérez les accès et les autorisations des membres.",
       "invite": "Inviter un membre",
@@ -1674,7 +1716,6 @@
       "createAndPay": "Créer et passer au paiement",
       "created": "Blog créé",
       "checkoutFailed": "Le blog a été créé avec Basic, mais le paiement n'a pas pu être ouvert. Vous pouvez activer une offre dans les paramètres.",
-      "limitReached": "Vous avez atteint la limite de trois blogs Basic dont vous êtes propriétaire.",
       "subdomainTaken": "Ce sous-domaine n'est plus disponible.",
       "domainTaken": "Ce domaine est déjà connecté à un autre blog.",
       "nameTaken": "Un blog portant ce nom existe déjà.",

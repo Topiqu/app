@@ -76,7 +76,7 @@
       </div>
     </div>
 
-    <div v-if="(client?.monthlyPayment ?? 0) > 0" class="grid gap-4 sm:grid-cols-2">
+    <div v-if="monthlyUsd > 0" class="grid gap-4 sm:grid-cols-2">
       <div
         class="rounded-(--topiqu-surface-radius) border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-neutral-900"
       >
@@ -203,6 +203,20 @@
         </UButton>
       </div>
     </div>
+
+    <FormClientAiUsage
+      v-if="client && client.plan !== 'BASIC'"
+      :key="client.id"
+      :clientSiteId="client.id"
+      :canBuy="!shopifyBilled"
+    />
+    <FormClientCustomSeats
+      v-if="
+        !shopifyBilled && client?.stripeSubscriptionId && (client.plan !== 'CUSTOM' || client.paidTeamSeats != null)
+      "
+      :paidSeats="client.paidTeamSeats ?? null"
+      @changed="emit('refresh')"
+    />
 
     <section
       v-if="upgradeTarget"
@@ -413,6 +427,7 @@ const { data: planPricing } = await useLazyFetch<PlanPricing>('/api/stripe/plans
   default: createAsyncDataDefault({
     PRO: { month: null, year: null },
     PREMIUM: { month: null, year: null },
+    CUSTOM: { month: null, year: null },
   }),
 })
 const upsellKey = computed(() => (upgradeTarget.value === 'PREMIUM' ? 'toPremium' : 'toPro'))
@@ -513,25 +528,33 @@ const invoiceStatusClass = (status: BillingInvoiceStatus | null) => {
 }
 
 const formatSavings = computed(() => {
-  if (!client?.monthlyPayment) return ''
+  if (!monthlyUsd.value) return ''
 
-  const savingsUsd = Math.round(client.monthlyPayment * 12 * 0.2)
+  const savingsUsd =
+    client?.annualPaymentCents != null
+      ? (Math.round(monthlyUsd.value * 1200) - client.annualPaymentCents) / 100
+      : Math.round(monthlyUsd.value * 12 * 0.2)
 
-  return new Intl.NumberFormat(languageTag(client.language), {
+  return new Intl.NumberFormat(languageTag(client?.language), {
     style: 'currency',
-    currency: client.currency ?? 'USD',
+    currency: client?.currency ?? 'USD',
     currencyDisplay: 'narrowSymbol',
-    minimumFractionDigits: client.currency === 'CZK' ? 0 : 2,
+    minimumFractionDigits: client?.currency === 'CZK' ? 0 : 2,
   }).format(savingsUsd * rate)
 })
 
+const monthlyUsd = computed(() =>
+  client?.monthlyPaymentCents != null ? client.monthlyPaymentCents / 100 : (client?.monthlyPayment ?? 0),
+)
+
 const formatPrice = (type: 'monthly' | 'annual') => {
-  const monthlyUsd = client?.monthlyPayment ?? 0
-  if (monthlyUsd === 0) return '–'
+  if (monthlyUsd.value === 0) return '–'
 
-  let amountUsd = type === 'monthly' ? monthlyUsd : monthlyUsd * 12
+  let amountUsd = type === 'monthly' ? monthlyUsd.value : monthlyUsd.value * 12
 
-  if (type === 'annual' && client?.billingPlan === 'ANNUAL') {
+  if (type === 'annual' && client?.annualPaymentCents != null) {
+    amountUsd = client.annualPaymentCents / 100
+  } else if (type === 'annual' && client?.billingPlan === 'ANNUAL') {
     amountUsd = Math.round(amountUsd * 0.8)
   }
 
