@@ -53,6 +53,7 @@ describe('article creation tags', () => {
     vi.stubGlobal('logAction', async () => {})
     vi.stubGlobal('getIp', () => '127.0.0.1')
     vi.stubGlobal('prisma', { clientSite: { findUnique: vi.fn().mockResolvedValue({ language: 'en' }) } })
+    vi.stubGlobal('createArticle', (await import('../../../server/utils/articleWrite')).createArticle)
     const handler = (await import('../../../server/api/articles/index.post')).default
     return { run: () => handler({} as never), create, update, findMany, body }
   }

@@ -141,6 +141,7 @@ const run = async (file: string, scope: Scope, body: Record<string, unknown> = {
   vi.stubGlobal('isCoverImageUrl', () => true)
 
   await stubNitroImports(import('../../server/utils/linkedin/access'), 'requirePublicationDraft')
+  await stubNitroImports(import('../../server/utils/articleWrite'), 'createArticle', 'updateArticle')
   const { default: handler } = (await handlers[`../../server/api/${file}.ts`]!()) as {
     default: (event: unknown) => Promise<unknown>
   }

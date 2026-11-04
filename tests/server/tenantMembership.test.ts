@@ -162,8 +162,8 @@ describe('tenant boundary wiring', () => {
   })
 
   it('keeps scheduled and published article states mutually exclusive', () => {
-    const create = source('server/api/articles/index.post.ts')
-    const update = source('server/api/articles/[id]/index.patch.ts')
+    const create = source('server/utils/articleWrite.ts')
+    const update = source('server/utils/articleWrite.ts')
     expect(create).toContain("body.status = 'draft'")
     expect(create).toContain("body.status === 'published') body.releaseAt = null")
     expect(update).toContain('body.status = ArticleStatus.draft')
@@ -171,14 +171,15 @@ describe('tenant boundary wiring', () => {
   })
 
   it('attributes fully generated manual articles to the configured AI author', () => {
-    const create = source('server/api/articles/index.post.ts')
+    const create = source('server/utils/articleWrite.ts')
     expect(create).toContain("body.aiInvolvement === 'FULL'")
     expect(create).toContain('await ensureAiAuthor(user.clientSiteId!)')
     expect(create).toContain('userId: aiAuthor?.id ?? user.id')
   })
 
   it('creates articles from an explicit field list and writes cover credit after insertion', () => {
-    const create = source('server/api/articles/index.post.ts')
+    const write = source('server/utils/articleWrite.ts')
+    const create = write.slice(write.indexOf('export const createArticle'), write.indexOf('export const updateArticle'))
     expect(create).not.toContain('...body,')
     expect(create).toContain('imageCredit: DbNull')
     expect(create).toContain('data: { imageCredit: body.imageCredit }')
