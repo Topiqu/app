@@ -58,7 +58,6 @@ describe('public client site read projection', () => {
 
   it('never exposes credentials, billing identifiers or quota internals', () => {
     for (const field of [
-      'apiKey',
       'stripeCustomerId',
       'stripeSubscriptionId',
       'stripePriceId',

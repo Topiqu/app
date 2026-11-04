@@ -272,3 +272,21 @@ describe('unattended stories', () => {
 })
 
 beforeEach(stubImports)
+
+describe('requested topics', () => {
+  beforeEach(stubImports)
+
+  it('keeps the requested subject in front of the picker', () => {
+    const prompt = buildTopicPrompt({
+      ...INPUT,
+      requested: { topic: 'Zazimování zahradního jezírka', instructions: 'Pro začátečníky' },
+    })
+    expect(prompt).toContain('## REQUESTED TOPIC')
+    expect(prompt).toContain('Subject: Zazimování zahradního jezírka')
+    expect(prompt).toContain('Editorial preferences: Pro začátečníky')
+  })
+
+  it('leaves scheduled picks unchanged', () => {
+    expect(buildTopicPrompt(INPUT)).not.toContain('REQUESTED TOPIC')
+  })
+})

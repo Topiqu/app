@@ -467,7 +467,9 @@
         "ARTICLE_PUBLISHED": "Article publié",
         "ARTICLE_UPDATED": "Article publié modifié",
         "ARTICLE_UNPUBLISHED": "Article dépublié",
-        "ARTICLE_DELETED": "Article supprimé"
+        "ARTICLE_DELETED": "Article supprimé",
+        "GENERATION_SUCCEEDED": "Article demandé rédigé",
+        "GENERATION_FAILED": "Échec de l'article demandé"
       },
       "add": "Ajouter un webhook",
       "empty": "Aucun webhook pour l’instant.",
@@ -553,7 +555,7 @@
       "developerTitle": "API et WordPress",
       "developerDescription": "Outils pour les développements personnalisés et les processus de publication hors du catalogue de services externes.",
       "apiBenefitOne": "Connectez une application, une automatisation ou un processus éditorial personnalisé.",
-      "apiBenefitTwo": "Régénérez la clé d'accès sécurisée unique lorsque vous en avez besoin.",
+      "apiBenefitTwo": "Donnez à chaque intégration sa propre clé, avec uniquement les autorisations nécessaires.",
       "wordpressTitle": "Extension WordPress",
       "wordpressComingSoon": "Bientôt disponible.",
       "wordpressDescription": "Topiqu Sync importe les articles publiés en tant que publications WordPress natives.",
@@ -1134,21 +1136,44 @@
       "annuallyTitle": "Prix annuel",
       "annualy": "Annuel",
       "api": {
-        "title": "Accès à l'API",
-        "description": "Générez une clé API sécurisée pour accéder aux points de terminaison par programmation.",
-        "generate": "Générer une clé",
-        "generateSuccess": "Clé API générée",
-        "generateFailed": "Impossible de générer la clé API",
-        "regenerateTitle": "Régénérer la clé API ?",
-        "regenerateWarning": "La clé actuelle sera immédiatement révoquée. Toute application qui l'utilise cessera de fonctionner jusqu'à ce que vous la remplaciez.",
-        "regenerateConfirm": "Révoquer et régénérer",
-        "label": "Votre clé API",
-        "revoke": "Révoquer et régénérer",
+        "title": "Accès API",
+        "description": "Créez des clés pour vos applications et automatisations. Chaque clé n'obtient que les autorisations choisies, et Topiqu n'en conserve qu'une empreinte.",
+        "generate": "Créer une clé",
+        "generateFailed": "La clé API n'a pas pu être créée",
+        "label": "Clé API",
+        "createdTitle": "Clé « {name} » créée",
+        "shownOnce": "Copiez-la maintenant. Topiqu n'en garde qu'une empreinte et ne peut plus l'afficher.",
+        "name": "Nom",
+        "nameHint": "Où la clé est utilisée, par ex. « WordPress » ou « Make »",
+        "scopes": "Autorisations",
+        "scope": {
+          "READ": {
+            "label": "Lecture",
+            "description": "Articles publiés, tags et informations du site."
+          },
+          "WRITE": {
+            "label": "Écriture",
+            "description": "Créer et modifier des brouillons. Lit aussi les brouillons."
+          },
+          "PUBLISH": {
+            "label": "Publication",
+            "description": "Publier, dépublier et programmer des articles."
+          },
+          "GENERATE": {
+            "label": "Génération",
+            "description": "Demander un article à l'IA. Consomme des crédits d'articles."
+          }
+        },
+        "empty": "Aucune clé API pour le moment.",
+        "limit": "Vous avez atteint la limite de {max} clés. Révoquez-en une pour en créer une autre.",
+        "lastUsed": "Dernière utilisation",
+        "neverUsed": "Jamais utilisée",
+        "revoke": "Révoquer",
+        "revokeTitle": "Révoquer « {name} » ?",
+        "revokeWarning": "Les applications qui utilisent cette clé cessent immédiatement de fonctionner. Action irréversible.",
         "copy": "Copier la clé API",
-        "copied": "Copié",
-        "show": "Afficher la clé API",
-        "hide": "Masquer la clé API",
-        "warning": "Gardez cette clé secrète. Ne l'incluez pas dans du code côté client ni dans des dépôts publics."
+        "copied": "Copiée",
+        "warning": "Gardez vos clés secrètes. Ne les placez pas dans du code côté client ni dans des dépôts publics. Une clé agit pour le membre qui l'a créée, jamais avec plus d'autorisations que lui."
       },
       "messages": {
         "noClientId": "Identifiant du client manquant"

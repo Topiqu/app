@@ -21,6 +21,12 @@ export type TenantAccess = {
 }
 
 export const requireTenantMember = async (event: H3Event, clientSiteId?: string): Promise<TenantAccess> => {
+  const delegated = event.context?.apiKeyMembership
+  if (delegated) {
+    if (clientSiteId && clientSiteId !== delegated.clientSiteId)
+      throw createError({ statusCode: 403, message: 'Tenant membership required' })
+    return { user: await requireUser(event), membership: delegated }
+  }
   const user = await requireUser(event)
   const tenantId = clientSiteId ?? user.clientSiteId
   if (user.role === 'superadmin')

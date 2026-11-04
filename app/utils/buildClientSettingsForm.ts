@@ -18,7 +18,6 @@ export interface ClientSite extends Omit<
     ARTICLE_CRONS?: boolean
   } | null
   socials: { platform: SocialPlatform; url: string }[]
-  apiKey: string | null
   aiUser: { username: string; bio: string; avatarUrl: string } | null
   aiToneOfVoice: string | null
   aiControversyLevel: string | null
@@ -53,7 +52,6 @@ export interface ClientSettingsForm extends PublicationChannelSettings, ReleaseS
   aiControversyLevel: string
   gtagId: string
   gamNetworkCode: string
-  apiKey: string
   autoRelease: boolean
   commentsEnabled: boolean
   commentGifsEnabled: boolean
@@ -92,7 +90,6 @@ const emptyForm = (): ClientSettingsForm => ({
   aiControversyLevel: '',
   gtagId: '',
   gamNetworkCode: '',
-  apiKey: '',
   autoRelease: false,
   commentsEnabled: true,
   commentGifsEnabled: true,
@@ -154,7 +151,6 @@ export function buildClientSettingsForm(client?: ClientSite | null): ClientSetti
     bodyFontUrl: client.bodyFontUrl ?? '',
     keywords: client.keywords ?? [],
     socials: client.socials ?? [],
-    apiKey: client.apiKey ?? '',
     aiUser: {
       username: client.aiUser?.username ?? defaultAiAuthorName(client.name ?? '', client.language),
       bio: client.aiUser?.bio ?? '',

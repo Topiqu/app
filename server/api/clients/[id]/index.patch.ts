@@ -39,7 +39,6 @@ export default defineEventHandler(async (event) => {
   const {
     socials,
     aiUser,
-    apiKey: _apiKey,
     linkedinMode,
     linkedinCompanyType: _linkedinCompanyType,
     accentColor,

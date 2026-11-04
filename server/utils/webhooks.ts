@@ -46,7 +46,7 @@ export const webhookRetryAt = (attempts: number, now: Date) => {
 
 type ArticleRef = { id: string; clientSiteId: string; slug?: string | null; language?: string | null }
 
-const articleData = async (event: WebhookEventCode, ref: ArticleRef) => {
+const articleData = async (event: ArticleWebhookEvent, ref: ArticleRef) => {
   if (event === 'ARTICLE_UNPUBLISHED' || event === 'ARTICLE_DELETED')
     return { article: { id: ref.id, slug: ref.slug ?? null, language: ref.language ?? null } }
 
@@ -62,12 +62,11 @@ const articleData = async (event: WebhookEventCode, ref: ArticleRef) => {
   }
 }
 
-/** Best-effort like follower notifications: a failure is logged and never fails the article write. */
-export const enqueueArticleWebhook = async (event: WebhookEventCode, ref: ArticleRef) => {
+const enqueueWebhook = async (event: WebhookEventCode, clientSiteId: string, load: () => Promise<object | null>) => {
   try {
     const webhooks = await prisma.webhook.findMany({
       where: {
-        clientSiteId: ref.clientSiteId,
+        clientSiteId,
         active: true,
         deletedAt: null,
         events: { has: event },
@@ -76,13 +75,13 @@ export const enqueueArticleWebhook = async (event: WebhookEventCode, ref: Articl
       select: { id: true },
     })
     if (!webhooks.length) return
-    const data = await articleData(event, ref)
+    const data = await load()
     if (!data) return
     const payload = JSON.parse(
       JSON.stringify({ type: webhookEventType(event), createdAt: new Date().toISOString(), data }),
     )
     await prisma.webhookDelivery.createMany({
-      data: webhooks.map((webhook) => ({ webhookId: webhook.id, clientSiteId: ref.clientSiteId, event, payload })),
+      data: webhooks.map((webhook) => ({ webhookId: webhook.id, clientSiteId, event, payload })),
     })
     // The task retries whatever this first attempt leaves behind.
     deliverDueWebhooks().catch((error) => console.error('[webhooks] Immediate delivery failed:', error))
@@ -90,6 +89,30 @@ export const enqueueArticleWebhook = async (event: WebhookEventCode, ref: Articl
     console.error('[webhooks] Enqueue failed:', error)
   }
 }
+
+/** Best-effort like follower notifications: a failure is logged and never fails the article write. */
+export const enqueueArticleWebhook = (event: ArticleWebhookEvent, ref: ArticleRef) =>
+  enqueueWebhook(event, ref.clientSiteId, () => articleData(event, ref))
+
+/** The outcome of `POST /api/v1/articles/generate`. A finished article is a draft, so only its identity is sent. */
+export const enqueueGenerationWebhook = (
+  event: 'GENERATION_SUCCEEDED' | 'GENERATION_FAILED',
+  generation: { id: string; clientSiteId: string },
+) =>
+  enqueueWebhook(event, generation.clientSiteId, async () => {
+    const row = await prisma.apiGeneration.findFirst({
+      where: { id: generation.id, clientSiteId: generation.clientSiteId },
+      select: API_GENERATION_VIEW,
+    })
+    if (!row) return null
+    const article = row.articleId
+      ? await prisma.article.findFirst({
+          where: { id: row.articleId, clientSiteId: generation.clientSiteId },
+          select: { id: true, title: true, slug: true, status: true, language: true, editVersion: true },
+        })
+      : null
+    return { generation: serializeApiGeneration(row), article }
+  })
 
 const errorText = (error: unknown) => (error instanceof Error ? error.message : String(error)).slice(0, 500)
 

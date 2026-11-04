@@ -62,11 +62,67 @@ const articleProperties = {
   availableTranslations: { type: 'array', items: translation },
 }
 
+// `apiKey` security schemes cannot carry scopes in OpenAPI, so operations state them in vendor extensions.
+const apiKeyScopes = {
+  READ: 'Published articles, tags and site details. Every key has it.',
+  WRITE: 'Create and edit drafts; read drafts.',
+  PUBLISH: 'Publish, unpublish and schedule articles.',
+  GENERATE: 'Request AI-written articles; uses article credits.',
+}
+const publishScope = {
+  scope: 'PUBLISH',
+  when: 'The request sets `status` or `releaseAt` (creating a draft needs only WRITE).',
+}
+
 const errorResponses = {
   '400': { $ref: '#/components/responses/BadRequest' },
   '401': { $ref: '#/components/responses/Unauthorized' },
+  '403': { $ref: '#/components/responses/Forbidden' },
   '429': { $ref: '#/components/responses/RateLimited' },
   '500': { $ref: '#/components/responses/ServerError' },
+}
+
+const idempotencyKey = (required: boolean) => ({
+  name: 'Idempotency-Key',
+  in: 'header',
+  required,
+  description:
+    'A unique value per logical request. A retry with the same key and body within 24 hours returns the stored response (with `Idempotent-Replayed: true`) instead of running again.',
+  schema: { type: 'string', maxLength: 255 },
+})
+
+const writeErrors = {
+  '404': { $ref: '#/components/responses/NotFound' },
+  '409': { $ref: '#/components/responses/Conflict' },
+  '422': { $ref: '#/components/responses/IdempotencyMismatch' },
+}
+
+const tagSlugs = {
+  type: 'array',
+  maxItems: 30,
+  items: { type: 'string', maxLength: 64 },
+  description: 'Slugs of existing tags of the site. The list replaces the article tags.',
+}
+const mediaRightsReview = {
+  type: 'object',
+  required: ['fingerprint', 'acknowledged'],
+  properties: { fingerprint: { type: 'string' }, acknowledged: { const: true } },
+  description:
+    'Send it back after a 409 `MEDIA_RIGHTS_REVIEW_REQUIRED` to confirm the media rights the response listed (its `data.report.fingerprint`).',
+}
+const writableArticle = {
+  title: { type: 'string', minLength: 1, maxLength: 255 },
+  content: { type: 'string', maxLength: 500000, description: 'HTML. It is sanitized like editor content.' },
+  excerpt: nullableString,
+  slug: { type: 'string', maxLength: 100, description: 'Normalized; derived from the title when omitted.' },
+  tags: tagSlugs,
+  status: { type: 'string', enum: ['draft', 'published'], description: 'Needs the PUBLISH scope.' },
+  releaseAt: {
+    oneOf: [dateTime, { type: 'null' }],
+    description: 'Schedules publication; needs the PUBLISH scope.',
+  },
+  allowedComments: { type: 'boolean' },
+  mediaRightsReview,
 }
 
 const document = {
@@ -75,16 +131,21 @@ const document = {
     title: 'Topiqu External API',
     version: '1.0.0',
     description:
-      'Read-only API for retrieving published Topiqu articles. Clients must ignore unknown response fields so v1 can evolve compatibly.',
+      'API for reading published Topiqu articles and, with write scopes, creating, editing, publishing and generating them. Each key has scopes (READ, WRITE, PUBLISH, GENERATE) and acts for the member who created it, never with more rights than that member has. Requests are limited to 120 per minute per key. Clients must ignore unknown response fields so v1 can evolve compatibly.',
     contact: { name: 'Topiqu support', url: 'https://topiqu.com' },
   },
   servers: [{ url: 'https://app.topiqu.com/api/v1', description: 'Production' }],
-  tags: [{ name: 'Articles', description: 'Published article content belonging to the authenticated site.' }],
+  tags: [
+    { name: 'Articles', description: 'Article content belonging to the authenticated site.' },
+    { name: 'Generations', description: 'Articles written by Topiqu on request. Each one uses article credits.' },
+  ],
   security: [{ ApiKeyAuth: [] }],
+  'x-api-key-scopes': apiKeyScopes,
   paths: {
     '/articles': {
       get: {
         operationId: 'listArticles',
+        'x-required-scopes': ['READ'],
         summary: 'List published articles',
         description: 'Returns published articles newest first. Multiple tag slugs use AND semantics.',
         tags: ['Articles'],
@@ -108,11 +169,35 @@ const document = {
           ...errorResponses,
         },
       },
+      post: {
+        operationId: 'createArticle',
+        'x-required-scopes': ['WRITE'], 'x-conditional-scopes': [publishScope],
+        summary: 'Create an article',
+        description:
+          'Needs the WRITE scope; publishing or scheduling also PUBLISH. The article is authored by the member who created the key.',
+        tags: ['Articles'],
+        parameters: [idempotencyKey(false)],
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/ArticleCreate' } } },
+        },
+        responses: {
+          '201': {
+            description: 'The created article.',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/OwnedArticleResponse' } } },
+          },
+          ...writeErrors,
+          ...errorResponses,
+        },
+      },
     },
     '/articles/{id}': {
       get: {
         operationId: 'getArticle',
-        summary: 'Get a published article',
+        'x-required-scopes': ['READ'],
+        summary: 'Get an article',
+        description:
+          'Published articles for any key. A key with the WRITE scope also reads drafts and gets `status`, `editVersion` and `releaseAt`.',
         tags: ['Articles'],
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
         responses: {
@@ -120,6 +205,70 @@ const document = {
             description: 'The published article.',
             headers: { 'X-API-Version': { schema: { type: 'string' } } },
             content: { 'application/json': { schema: { $ref: '#/components/schemas/ArticleResponse' } } },
+          },
+          '404': { $ref: '#/components/responses/NotFound' },
+          ...errorResponses,
+        },
+      },
+      patch: {
+        operationId: 'updateArticle',
+        'x-required-scopes': ['WRITE'], 'x-conditional-scopes': [publishScope],
+        summary: 'Update an article',
+        description:
+          'Needs the WRITE scope; changing `status` or `releaseAt` also PUBLISH. Send `expectedVersion` (the `editVersion` you read) to get a 409 instead of overwriting a newer edit; without it the update is last-write-wins.',
+        tags: ['Articles'],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }, idempotencyKey(false)],
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/ArticleUpdate' } } },
+        },
+        responses: {
+          '200': {
+            description: 'The updated article.',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/OwnedArticleResponse' } } },
+          },
+          ...writeErrors,
+          ...errorResponses,
+        },
+      },
+    },
+    '/articles/generate': {
+      post: {
+        operationId: 'generateArticle',
+        'x-required-scopes': ['GENERATE'],
+        summary: 'Request an AI-written article',
+        description:
+          'Needs the GENERATE scope. Queues the article and returns at once; Topiqu researches and writes it as a draft, then sends the `generation.succeeded` or `generation.failed` webhook. Uses the article credits of one article at the site quality. At most 5 requests can be queued or running per site.',
+        tags: ['Generations'],
+        parameters: [idempotencyKey(true)],
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/GenerationRequest' } } },
+        },
+        responses: {
+          '202': {
+            description: 'The queued request.',
+            headers: { Location: { schema: { type: 'string' }, description: 'Status URL of the request.' } },
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/GenerationResponse' } } },
+          },
+          '402': { $ref: '#/components/responses/InsufficientCredits' },
+          ...writeErrors,
+          ...errorResponses,
+        },
+      },
+    },
+    '/generations/{id}': {
+      get: {
+        operationId: 'getGeneration',
+        'x-required-scopes': ['GENERATE'],
+        summary: 'Get a generation request',
+        description: 'Needs the GENERATE scope.',
+        tags: ['Generations'],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        responses: {
+          '200': {
+            description: 'The request and, once written, its draft article ID.',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/GenerationResponse' } } },
           },
           '404': { $ref: '#/components/responses/NotFound' },
           ...errorResponses,
@@ -133,7 +282,8 @@ const document = {
         type: 'apiKey',
         in: 'header',
         name: 'x-api-key',
-        description: 'Site API key created in Topiqu settings.',
+        description:
+          'API key created in Topiqu settings (Integrations). It is shown once; Topiqu stores only its SHA-256 hash.',
       },
     },
     schemas: {
@@ -185,6 +335,72 @@ const document = {
         required: ['data'],
         properties: { data: { $ref: '#/components/schemas/Article' } },
       },
+      OwnedArticle: {
+        allOf: [
+          { $ref: '#/components/schemas/Article' },
+          {
+            type: 'object',
+            required: ['status', 'editVersion', 'releaseAt'],
+            properties: {
+              status: { type: 'string', enum: ['draft', 'published', 'archived'] },
+              editVersion: { type: 'integer', minimum: 0 },
+              releaseAt: { oneOf: [dateTime, { type: 'null' }] },
+            },
+          },
+        ],
+      },
+      OwnedArticleResponse: {
+        type: 'object',
+        required: ['data'],
+        properties: { data: { $ref: '#/components/schemas/OwnedArticle' } },
+      },
+      ArticleCreate: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['title'],
+        properties: {
+          ...writableArticle,
+          language: { type: 'string', description: 'Content language; the site language when omitted.' },
+        },
+      },
+      ArticleUpdate: {
+        type: 'object',
+        additionalProperties: false,
+        minProperties: 1,
+        properties: { ...writableArticle, expectedVersion: { type: 'integer', minimum: 0 } },
+      },
+      GenerationRequest: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['topic'],
+        properties: {
+          topic: { type: 'string', minLength: 3, maxLength: 500, description: 'The subject to write about.' },
+          instructions: {
+            type: 'string',
+            maxLength: 2000,
+            description: 'Editorial preferences, e.g. audience or angle. They never override Topiqu quality rules.',
+          },
+        },
+      },
+      Generation: {
+        type: 'object',
+        required: ['id', 'topic', 'status', 'articleId', 'error', 'createdAt', 'startedAt', 'finishedAt'],
+        properties: {
+          id: { type: 'string' },
+          topic: { type: 'string' },
+          status: { type: 'string', enum: ['queued', 'running', 'succeeded', 'failed'] },
+          articleId: { ...nullableString, description: 'The draft article once the request succeeded.' },
+          error: nullableString,
+          createdAt: dateTime,
+          startedAt: { oneOf: [dateTime, { type: 'null' }] },
+          finishedAt: { oneOf: [dateTime, { type: 'null' }] },
+        },
+      },
+      GenerationResponse: {
+        type: 'object',
+        required: ['data'],
+        properties: { data: { $ref: '#/components/schemas/Generation' } },
+      },
       Error: {
         type: 'object',
         required: ['statusCode', 'message'],
@@ -195,7 +411,11 @@ const document = {
       [
         ['BadRequest', 400, 'Invalid request'],
         ['Unauthorized', 401, 'Missing or invalid API key'],
-        ['NotFound', 404, 'Article not found'],
+        ['InsufficientCredits', 402, 'Insufficient article credits'],
+        ['Forbidden', 403, 'The key or its member lacks the required scope'],
+        ['NotFound', 404, 'Not found'],
+        ['Conflict', 409, 'Edit conflict, media rights review required, or the same Idempotency-Key is still running'],
+        ['IdempotencyMismatch', 422, 'The Idempotency-Key was used for a different request'],
         ['RateLimited', 429, 'Rate limit exceeded'],
         ['ServerError', 500, 'Unexpected server error'],
       ].map(([name, statusCode, description]) => [

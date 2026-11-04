@@ -34,6 +34,9 @@ export const queryKeys = {
   webhooks: {
     all: ['webhooks'] as const,
   },
+  apiKeys: {
+    all: ['api-keys'] as const,
+  },
   domain: {
     status: ['domain'] as const,
   },

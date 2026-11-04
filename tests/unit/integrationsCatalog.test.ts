@@ -31,18 +31,20 @@ describe('settings integrations catalog', () => {
     expect(catalog).not.toContain("$t('common.integrationsCatalog.wordpressBenefitOne')")
   })
 
-  it('groups integrations by their minimum plan and keeps API actions beside the input', () => {
+  it('groups integrations by their minimum plan and shows API keys only once', () => {
     const catalog = source('app/components/Form/Client/IntegrationsCatalog.vue')
     const settings = source('app/pages/settings/index.vue')
+    const keys = source('app/components/Form/Client/ApiKeys.vue')
 
     expect(catalog).toContain("id: 'pro'")
     expect(catalog).toContain("id: 'premium'")
-    expect(catalog).toContain('data-api-key-row')
-    expect(catalog).toContain('data-api-key-actions')
+    expect(catalog).toContain('<FormClientApiKeys')
     expect(catalog).not.toContain('<template #trailing>')
     expect(catalog).not.toContain('class="absolute right-2')
-    expect(settings).toContain("$t('common.preferences.api.regenerateWarning')")
-    expect(settings).toContain("variant: 'danger'")
+    // The settings payload no longer carries a key; a new one lives in component state until the page closes.
+    expect(settings).not.toContain('apiKey')
+    expect(keys).toContain("$t('common.preferences.api.shownOnce')")
+    expect(keys).toContain("variant: 'danger'")
   })
 
   it('gives Google Ad Manager its own card instead of hiding it in the Analytics dialog', () => {

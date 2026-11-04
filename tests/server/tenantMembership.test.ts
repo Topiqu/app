@@ -93,7 +93,10 @@ describe('tenant boundary wiring', () => {
 
   it('projects tenant secrets only behind their matching scopes', () => {
     const endpoint = source('server/api/clients/[id]/index.get.ts')
-    expect(endpoint).toContain("hasTenantScope(membership, 'API_KEY_CONTROL')")
+    // API keys are never part of the settings payload: only their hashes are stored.
+    expect(endpoint).not.toContain('apiKey')
+    for (const route of ['index.get.ts', 'index.post.ts', '[id].delete.ts'])
+      expect(source(`server/api/api-keys/${route}`)).toContain("requireTenantScope(event, 'API_KEY_CONTROL')")
     expect(endpoint).toContain("hasTenantScope(membership, 'BILLING_CHANGE')")
     expect(endpoint).toContain("hasTenantScope(membership, 'INTEGRATION_CONTROL')")
     expect(endpoint).toContain("hasTenantScope(membership, 'AI_USE')")

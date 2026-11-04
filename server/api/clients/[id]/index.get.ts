@@ -134,6 +134,5 @@ export default defineEventHandler(async (event) => {
     ...integrations,
     ...billing,
     ...ai,
-    ...(hasTenantScope(membership, 'API_KEY_CONTROL') ? { apiKey: clientSite.apiKey } : {}),
   }
 })

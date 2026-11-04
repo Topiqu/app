@@ -69,27 +69,5 @@ export const flattenExternalArticle = <
   }
 }
 
-export const requireExternalClient = async (event: H3Event) => {
-  setResponseHeader(event, 'Cache-Control', 'private, no-store')
-  setResponseHeader(event, 'Vary', 'x-api-key')
-
-  const apiKey = getHeader(event, 'x-api-key')?.trim()
-
-  if (!apiKey) throw createError({ statusCode: 401, message: 'Missing API Key' })
-
-  const clientSite = await prisma.clientSite.findFirst({
-    where: { apiKey, deletedAt: null },
-    select: {
-      id: true,
-      name: true,
-      domain: true,
-      description: true,
-      logoUrl: true,
-      language: true,
-      theme: true,
-    },
-  })
-
-  if (!clientSite) throw createError({ statusCode: 401, message: 'Invalid API Key' })
-  return clientSite
-}
+/** Read routes: any live key with the READ scope. */
+export const requireExternalClient = async (event: H3Event) => (await requireApiKey(event, 'READ')).site

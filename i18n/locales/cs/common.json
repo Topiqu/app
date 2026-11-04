@@ -467,7 +467,9 @@
         "ARTICLE_PUBLISHED": "Článek publikován",
         "ARTICLE_UPDATED": "Publikovaný článek upraven",
         "ARTICLE_UNPUBLISHED": "Článek stažen z publikace",
-        "ARTICLE_DELETED": "Článek smazán"
+        "ARTICLE_DELETED": "Článek smazán",
+        "GENERATION_SUCCEEDED": "Zadaný článek je napsaný",
+        "GENERATION_FAILED": "Zadaný článek se nepodařilo napsat"
       },
       "add": "Přidat webhook",
       "empty": "Zatím žádné webhooky.",
@@ -553,7 +555,7 @@
       "developerTitle": "API a WordPress",
       "developerDescription": "Nástroje pro vlastní vývoj a publikační workflow mimo katalog externích služeb.",
       "apiBenefitOne": "Napojíte vlastní aplikaci, automatizaci nebo redakční workflow.",
-      "apiBenefitTwo": "Jeden zabezpečený klíč lze kdykoliv nově vygenerovat.",
+      "apiBenefitTwo": "Každá integrace má vlastní klíč jen s oprávněními, která potřebuje.",
       "wordpressTitle": "WordPress plugin",
       "wordpressComingSoon": "Zatím chystáme.",
       "wordpressDescription": "Topiqu Sync importuje publikované články jako nativní WordPress příspěvky.",
@@ -1134,21 +1136,44 @@
       "annuallyTitle": "Roční cena",
       "annualy": "Ročně",
       "api": {
-        "title": "API přístup",
-        "description": "Vygenerujte si bezpečný API klíč pro programatický přístup k endpointům.",
-        "generate": "Vygenerovat klíč",
-        "generateSuccess": "API klíč byl úspěšně vygenerován",
-        "generateFailed": "API klíč se nepodařilo vygenerovat",
-        "regenerateTitle": "Přegenerovat API klíč?",
-        "regenerateWarning": "Současný klíč bude okamžitě zneplatněn. Všechny aplikace, které jej používají, přestanou fungovat, dokud do nich nevložíte nový klíč.",
-        "regenerateConfirm": "Zneplatnit a přegenerovat",
-        "label": "Váš API klíč",
-        "revoke": "Zneplatnit a přegenerovat",
+        "title": "Přístup k API",
+        "description": "Vytvořte klíče pro své aplikace a automatizace. Každý klíč dostane jen oprávnění, která zvolíte, a Topiqu si z něj ukládá jen otisk.",
+        "generate": "Vytvořit klíč",
+        "generateFailed": "API klíč se nepodařilo vytvořit",
+        "label": "API klíč",
+        "createdTitle": "Klíč „{name}“ je vytvořený",
+        "shownOnce": "Zkopírujte si ho hned. Topiqu si ukládá jen otisk a klíč už znovu zobrazit nemůže.",
+        "name": "Název",
+        "nameHint": "Kde se klíč používá, např. „WordPress“ nebo „Make“",
+        "scopes": "Oprávnění",
+        "scope": {
+          "READ": {
+            "label": "Čtení",
+            "description": "Publikované články, štítky a údaje o webu."
+          },
+          "WRITE": {
+            "label": "Zápis",
+            "description": "Vytváření a úpravy konceptů. Čte i koncepty."
+          },
+          "PUBLISH": {
+            "label": "Publikace",
+            "description": "Publikování, stažení a plánování článků."
+          },
+          "GENERATE": {
+            "label": "Generování",
+            "description": "Zadání článku AI. Čerpá kredity na články."
+          }
+        },
+        "empty": "Zatím nemáte žádný API klíč.",
+        "limit": "Dosáhli jste limitu {max} klíčů. Pro nový klíč nejdřív jeden zneplatněte.",
+        "lastUsed": "Naposledy použit",
+        "neverUsed": "Zatím nepoužit",
+        "revoke": "Zneplatnit",
+        "revokeTitle": "Zneplatnit „{name}“?",
+        "revokeWarning": "Aplikace, které klíč používají, okamžitě přestanou fungovat. Nelze to vrátit.",
         "copy": "Kopírovat API klíč",
         "copied": "Zkopírováno",
-        "show": "Zobrazit API klíč",
-        "hide": "Skrýt API klíč",
-        "warning": "Tento klíč držte v tajnosti. Nesdílejte jej v klientském kódu ani veřejných repozitářích."
+        "warning": "Klíče držte v tajnosti. Nedávejte je do klientského kódu ani do veřejných repozitářů. Klíč jedná za člena, který ho vytvořil, a nikdy nemá víc oprávnění než on."
       },
       "messages": {
         "noClientId": "Chybí ID klienta"

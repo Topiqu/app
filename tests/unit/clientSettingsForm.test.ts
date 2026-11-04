@@ -22,7 +22,6 @@ const baseClient = (overrides: Partial<ClientSite> = {}): ClientSite =>
     faviconUrl: 'https://cdn/favicon.png',
     typographyPreset: 'EDITORIAL',
     socials: [{ platform: 'X', url: 'https://x.com/acme' }],
-    apiKey: 'sk_test',
     aiUser: { username: 'bot', bio: 'bio', avatarUrl: 'https://cdn/av.png' },
     aiToneOfVoice: 'friendly',
     aiControversyLevel: 'low',
@@ -81,7 +80,7 @@ describe('buildClientSettingsForm', () => {
     expect(form.linkedinCompanyType).toBe('pages')
     expect(form.keywords).toEqual([])
     expect(form.socials).toEqual([])
-    expect(form.apiKey).toBe('')
+    expect(form).not.toHaveProperty('apiKey')
     expect(form.aiUser).toEqual({ username: '', bio: '', avatarUrl: '', optimizedAvatarUrl: '' })
     expect(buildClientSettingsForm(undefined)).toEqual(form)
   })
@@ -99,7 +98,6 @@ describe('buildClientSettingsForm', () => {
       logoUrl: 'https://cdn/logo.png',
       faviconUrl: 'https://cdn/favicon.png',
       typographyPreset: 'EDITORIAL',
-      apiKey: 'sk_test',
       aiToneOfVoice: 'friendly',
       aiControversyLevel: 'low',
       gtagId: 'G-123',

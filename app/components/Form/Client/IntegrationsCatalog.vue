@@ -123,64 +123,7 @@
                 </li>
               </ul>
             </div>
-            <div v-if="!apiKey">
-              <UButton
-                color="neutral"
-                variant="soft"
-                icon="mdi:plus"
-                :label="$t('common.preferences.api.generate')"
-                :disabled="!section.available"
-                @click="$emit('generateApiKey')"
-              />
-            </div>
-            <div v-else class="max-w-3xl space-y-3">
-              <UFormField :label="$t('common.preferences.api.title')">
-                <div class="flex items-center gap-2" data-api-key-row>
-                  <UInput
-                    class="min-w-0 flex-1"
-                    :modelValue="apiKey"
-                    :type="apiVisible ? 'text' : 'password'"
-                    readonly
-                  />
-                  <div class="flex shrink-0 items-center gap-1" data-api-key-actions>
-                    <UButton
-                      square
-                      size="sm"
-                      color="neutral"
-                      variant="soft"
-                      :icon="apiVisible ? 'mdi:eye-off-outline' : 'mdi:eye-outline'"
-                      :aria-label="apiVisible ? $t('common.preferences.api.hide') : $t('common.preferences.api.show')"
-                      :disabled="!section.available"
-                      @click="$emit('toggleApi')"
-                    />
-                    <UButton
-                      square
-                      size="sm"
-                      color="neutral"
-                      variant="soft"
-                      :icon="apiCopied ? 'mdi:check' : 'mdi:content-copy'"
-                      :aria-label="apiCopied ? $t('common.preferences.api.copied') : $t('common.preferences.api.copy')"
-                      :disabled="!section.available"
-                      @click="$emit('copyApi')"
-                    />
-                  </div>
-                </div>
-              </UFormField>
-              <p class="flex items-start gap-2 text-xs text-muted">
-                <UIcon name="mdi:shield-alert-outline" class="mt-0.5 size-4 shrink-0" />{{
-                  $t('common.preferences.api.warning')
-                }}
-              </p>
-              <UButton
-                size="sm"
-                color="neutral"
-                variant="soft"
-                icon="mdi:refresh"
-                :label="$t('common.preferences.api.revoke')"
-                :disabled="!section.available"
-                @click="$emit('generateApiKey')"
-              />
-            </div>
+            <FormClientApiKeys :available="section.available" />
           </div>
 
           <template v-else>
@@ -393,9 +336,6 @@
 <script setup lang="ts">
 const props = defineProps<{
   clientSiteId: string
-  apiKey: string
-  apiVisible: boolean
-  apiCopied: boolean
   allowGtag: boolean
   gtagId: string
   gamNetworkCode: string
@@ -413,9 +353,6 @@ defineEmits<{
   'update:gamNetworkCode': [value: string]
   'update:linkedinMode': [value: 'HitL' | 'FullAuto']
   'update:linkedinType': [value: 'pages' | 'personal']
-  generateApiKey: []
-  toggleApi: []
-  copyApi: []
   save: []
 }>()
 

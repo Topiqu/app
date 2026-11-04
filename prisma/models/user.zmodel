@@ -8,6 +8,7 @@ import "./log"
 import "./media"
 import "./knowledge"
 import "./generation"
+import "./apiKey"
 
 model User with Base {
     username                      String            @unique @length(3, 50, "Uživatelské jméno musí mít 3–50 znaků")
@@ -46,6 +47,7 @@ model User with Base {
     bans                          UserBan[]         @relation("BannedUser")
     bansIssued                    UserBan[]         @relation("BannedBy")
     logs                          Log[]             @relation("LogToUser")
+    apiKeys                       ApiKey[]
     mediaAssets                   MediaAsset[]      @relation("MediaAssetCreator")
     mediaRightsConfirmations      MediaAsset[]      @relation("MediaRightsConfirmer")
     mediaPublicationConfirmations MediaRightsPublicationSnapshot[] @relation("MediaPublicationConfirmer")

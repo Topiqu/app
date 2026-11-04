@@ -19,6 +19,7 @@ import "./keywordPlan"
 import "./backlink"
 import "./widget"
 import "./websiteImport"
+import "./apiKey"
 
 enum GenerationFrequency {
     NONE
@@ -167,6 +168,8 @@ model ClientSite with Base {
     /// Claim and cooldown of paid discovery.
     backlinksAttemptedAt DateTime?
     webhookDeliveries    WebhookDelivery[]
+    apiKeys              ApiKey[]
+    apiGenerations       ApiGeneration[]
     aiSeriesEnabled      Boolean             @default(false)
     articleQuality       ArticleQuality      @default(STANDARD)
     keywords             Json?
@@ -175,7 +178,6 @@ model ClientSite with Base {
     humanHourlyRateUsd   Int                 @default(35)
     humanWordsPerHour    Int                 @default(400)
     gtagId               String?
-    apiKey               String?
     gamNetworkCode       String?
     allowGtag            Boolean?
     allowShapes          Boolean             @default(false)

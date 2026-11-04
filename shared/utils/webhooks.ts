@@ -3,8 +3,11 @@ export const WEBHOOK_EVENTS = [
   'ARTICLE_UPDATED',
   'ARTICLE_UNPUBLISHED',
   'ARTICLE_DELETED',
+  'GENERATION_SUCCEEDED',
+  'GENERATION_FAILED',
 ] as const
 export type WebhookEventCode = (typeof WEBHOOK_EVENTS)[number]
+export type ArticleWebhookEvent = Extract<WebhookEventCode, `ARTICLE_${string}`>
 
 export const MAX_WEBHOOKS = 5
 
