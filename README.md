@@ -27,9 +27,15 @@
 - 🔎 **SEO & AI visibility** — search insights, citation monitoring and content opportunities.
 - 💬 **Community** — comments, follows and reader notifications.
 - 💳 **Billing** — Stripe subscriptions and article packs.
+- 👥 **Teams** — unlimited blogs with separate subscriptions; BASIC, PRO and PREMIUM include 1, 2 and 3 team seats per blog, counting the owner. Managed CUSTOM starts at three purchased seats; existing individual contracts retain their terms. Additional blogs are BASIC without another trial.
 - 🔐 **Access & localization** — tenant access policies, OTP / 2FA and English, Czech, German and French.
 
 ## Quick start
+
+Contributions target `dev`; see [CONTRIBUTING.md](CONTRIBUTING.md),
+[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md), [SECURITY.md](SECURITY.md) and [CHANGELOG.md](CHANGELOG.md).
+The project's original code is licensed under [GNU AGPL v3 only](LICENSE); third-party material and
+files with their own notices retain their respective licenses.
 
 **Requirements:** Bun **1.4.4**, Node **24.21.0** and Docker. Bun is pinned in [package.json](./package.json), Docker and CI; Node is pinned in [.node-version](./.node-version) for Nuxt compilation, Vue type checking and browser tests.
 
@@ -217,7 +223,7 @@ Docker deployments apply pending database migrations automatically before starti
 <details>
 <summary><strong>Docker and runtime details</strong></summary>
 
-The Dockerfile uses the same pinned Bun version and installs from the frozen lockfile. Building an image never connects to or migrates a database and takes no database credentials. `BUN_OPTIONS=--smol` applies only to the Nuxt build command to reduce build memory; the runtime image retains Bun's normal defaults. The final image contains `.output`, including an isolated migration CLI traced from the existing locked Prisma dependency, the schema generated from ZModel and committed SQL history. It runs as the unprivileged `bun` user. Its entrypoint runs `prisma migrate deploy` with Bun, then replaces itself with `server/index.mjs` only after success. No packages are installed at startup. CI applies migrations to its disposable database before the production browser smoke tests.
+The Dockerfile uses the same pinned Bun version and installs from the frozen lockfile. Building an image never connects to or migrates a database and takes no database credentials. Nuxt compilation uses the pinned Node compiler with a 4 GiB V8 heap; installation, generation, migration and the released server use Bun. Node stays out of the runtime image, which retains Bun's normal defaults. The final image contains `.output`, including an isolated migration CLI traced from the existing locked Prisma dependency, the schema generated from ZModel and committed SQL history. It runs as the unprivileged `bun` user. Its entrypoint runs `prisma migrate deploy` with Bun, then replaces itself with `server/index.mjs` only after success. No packages are installed at startup. CI applies migrations to its disposable database before the production browser smoke tests.
 
 Nuxt UI detects used components to limit generated theme CSS. Global CSS is inlined in SSR HTML; do not strip remaining stylesheet links indiscriminately, because lazy components can own additional styles. Nitro precompresses static assets with gzip so the origin can serve them without runtime compression; CDN Brotli is independent. Related articles retain SSR markup and hydrate when visible. Release smoke checks cover SSR styles, gzip negotiation and immutable hashed assets.
 
@@ -259,7 +265,7 @@ Application logs are single-line JSON records. `LOG_LEVEL` defaults to `info` (`
 
 Custom-domain provisioning configuration, migration order and operational limitations are documented in [Custom domains](./docs/custom-domains.md).
 
-Operations, workflow rollout and field-performance measurement are documented in [Production workflows](./docs/operations/production-workflows.md). Database recovery rehearsals are described in [Backup and restore](./docs/operations/backup-restore.md).
+Operations, workflow rollout and field-performance measurement are documented in [Production workflows](./docs/operations/production-workflows.md). Database recovery rehearsals are described in [Backup and restore](./docs/operations/backup-restore.md). The account operator can follow [Stripe release checks](./docs/operations/stripe-release-checklist.md), the prepared [catalog/webhook rollout](./docs/operations/stripe-catalog-rollout.md) and the [2026-11-04 deployment handoff](./docs/operations/2026-11-04-release.md) with the exact runtime environment changes. [AI allowances and CUSTOM billing](./docs/operations/ai-economics-proposal.md) documents the per-blog limits, explicit top-ups, CUSTOM pricing and remaining measurement limits.
 
 - 🗺️ [Architecture](./MAP.md) — source layout, data flows and implementation details.
 - 📐 [Project conventions](./CLAUDE.md) — coding standards and contribution rules.
