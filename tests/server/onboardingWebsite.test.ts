@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { createError } from 'h3'
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { stubNitroImports } from '../helpers/nitroImports'
 
@@ -32,9 +32,14 @@ const transaction = vi.fn(async (run) =>
     clientSite: { create: mocks.createSite },
     tenantMembership: { create: vi.fn() },
     websiteImport: { create: mocks.createImport },
+    onboardingRequest: { update: vi.fn() },
   }),
 )
-const signup = (websiteUrl?: string, websiteImportConsentVersion?: number) =>
+const signup = (
+  websiteUrl?: string,
+  websiteImportConsentVersion?: number,
+  billing: { selectedPlan?: 'PRO' | 'PREMIUM'; billingInterval?: 'month' | 'year' } = {},
+) =>
   handler({
     body: {
       siteName: 'Firma',
@@ -46,6 +51,7 @@ const signup = (websiteUrl?: string, websiteImportConsentVersion?: number) =>
       verifiedToken: 'verified',
       websiteUrl,
       websiteImportConsentVersion,
+      ...billing,
     },
   } as never)
 
@@ -68,18 +74,50 @@ beforeAll(async () => {
   vi.stubGlobal('ensureAiAuthor', vi.fn().mockResolvedValue({ id: 'default-ai' }))
   vi.stubGlobal('TENANT_SCOPES', ['TENANT_SETTINGS'])
   vi.stubGlobal('getRequestURL', () => new URL('https://app.topiqu.com/api/onboarding/checkout'))
+  vi.stubGlobal(
+    'withOnboardingRequest',
+    (_event: unknown, _body: unknown, run: (attempt: unknown) => Promise<unknown>) =>
+      run({ id: 'request-1', loginToken: 'synthetic-login-token', clientSiteId: null }),
+  )
+  vi.stubGlobal('assertOnboardingRequest', vi.fn())
+  vi.stubGlobal('finishOnboardingCheckout', async (attempt: { loginToken: string }) => ({
+    url: `https://app.example.test/en/auth?created=true&token=${attempt.loginToken}`,
+  }))
+  vi.stubGlobal('reportCaughtError', vi.fn())
   handler = (await import('../../server/api/onboarding/checkout.post')).default
 })
 afterAll(() => vi.unstubAllGlobals())
+afterEach(() => vi.unstubAllEnvs())
 beforeEach(() => {
   vi.clearAllMocks()
   mocks.verified.mockReturnValue(true)
   mocks.createSite.mockImplementation(async ({ data }) => ({ id: 'site-1', ...data }))
   mocks.createImport.mockResolvedValue({ id: 'import-1' })
   mocks.saveUser.mockResolvedValue({ id: 'user-1' })
+  vi.stubGlobal('getConfiguredPlanPrice', vi.fn())
 })
 
 describe('company website at signup', () => {
+  it('preserves the monthly dashboard fallback when Stripe is not configured', async () => {
+    vi.stubEnv('STRIPE_SK', '')
+    const result = await signup(undefined, undefined, { selectedPlan: 'PRO', billingInterval: 'month' })
+    expect(mocks.createSite).toHaveBeenCalledOnce()
+    expect(getConfiguredPlanPrice).not.toHaveBeenCalled()
+    expect(result.url).toContain('created=true&token=')
+  })
+
+  it.each(['month', 'year'] as const)('rejects a mismatched %s offer before creating an account', async (interval) => {
+    vi.stubEnv('STRIPE_SK', 'sk_test_fixture')
+    vi.mocked(getConfiguredPlanPrice).mockResolvedValue(null)
+    await expect(
+      signup(undefined, undefined, { selectedPlan: 'PRO', billingInterval: interval }),
+    ).rejects.toMatchObject({
+      statusCode: 503,
+    })
+    expect(mocks.createSite).not.toHaveBeenCalled()
+    expect(transaction).not.toHaveBeenCalled()
+  })
+
   it('passes the original password to the shared writer so the mutation plugin hashes it exactly once', async () => {
     await signup()
     expect(mocks.saveUser).toHaveBeenCalledWith(

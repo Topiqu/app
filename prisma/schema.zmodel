@@ -23,6 +23,7 @@ import "./models/backlink"
 import "./models/widget"
 import "./models/operations"
 import "./models/websiteImport"
+import "./models/onboarding"
 
 datasource db {
     provider  = "postgresql"

@@ -19,6 +19,7 @@ import "./keywordPlan"
 import "./backlink"
 import "./widget"
 import "./websiteImport"
+import "./onboarding"
 
 enum GenerationFrequency {
     NONE
@@ -217,6 +218,7 @@ model ClientSite with Base {
     aiAllowanceGrants    AiAllowanceGrant[]
     aiAllowanceInvoices AiAllowanceInvoice[]
     aiUsageReservations  AiUsageReservation[]
+    onboardingRequest OnboardingRequest?
     currency             String?             @default('USD')
     lastPaidAt           DateTime?           @default(now())
     language             Language            @default(en)

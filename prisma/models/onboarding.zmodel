@@ -1,0 +1,28 @@
+import "./client"
+import "./user"
+
+/// Durable signup recovery. Never stores a password, verification proof or a bearer URL.
+model OnboardingRequest {
+    id String @id @default(uuid())
+    identityHash String @unique @omit
+    keyHash String @unique @omit
+    fingerprint String @omit
+    clientSiteId String? @unique
+    clientSite ClientSite? @relation(fields: [clientSiteId], references: [id], onDelete: Restrict)
+    userId String? @unique
+    user User? @relation(fields: [userId], references: [id], onDelete: Restrict)
+    returnUrl String? @omit
+    priceId String? @omit
+    memberPriceId String? @omit
+    trial Boolean @default(false)
+    trialEndsAt DateTime?
+    customerStartedAt DateTime?
+    checkoutStartedAt DateTime?
+    stripeCheckoutId String? @omit
+    completedAt DateTime?
+    leaseId String? @omit
+    leaseUntil DateTime? @omit
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    @@deny('all', true)
+}

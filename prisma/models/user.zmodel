@@ -8,6 +8,7 @@ import "./log"
 import "./media"
 import "./knowledge"
 import "./generation"
+import "./onboarding"
 
 model User with Base {
     username                      String            @unique @length(3, 50, "Uživatelské jméno musí mít 3–50 znaků")
@@ -52,6 +53,7 @@ model User with Base {
     articleGenerationSessions     ArticleGenerationSession[]
     knowledgeSources              KnowledgeSource[] @relation("KnowledgeSourceCreator")
     approvals                     Approval[]
+    onboardingRequest OnboardingRequest?
     tenantMemberships             TenantMembership[]
     tenantInvitations             TenantInvitation[] @relation("InvitationSender")
     @@allow('read', true)
