@@ -74,6 +74,19 @@ describe('visibility prompt row', () => {
 
     expect(wrapper.find('a[href*="ai=1"]').exists()).toBe(false)
   })
+
+  it('keeps row actions separate from the disclosure, including when details are expanded', async () => {
+    const wrapper = await mountRow({})
+    const trigger = wrapper.get('button[aria-expanded]')
+    await wrapper.get('button[aria-label="Check now"]').trigger('click')
+    expect(wrapper.emitted('run')).toHaveLength(1)
+    expect(trigger.attributes('aria-expanded')).toBe('false')
+    await trigger.trigger('click')
+    expect(trigger.attributes('aria-expanded')).toBe('true')
+    await wrapper.get('button[aria-label="Check now"]').trigger('click')
+    expect(wrapper.emitted('run')).toHaveLength(2)
+    expect(trigger.attributes('aria-expanded')).toBe('true')
+  })
 })
 
 const cluster = (volume: number, difficulty: number | null = 10) => ({

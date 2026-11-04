@@ -1,6 +1,6 @@
 <template>
-  <div class="flex min-w-0 items-start gap-1 py-1">
-    <UCollapsible v-model:open="open" class="min-w-0 flex-1">
+  <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-1 py-1">
+    <UCollapsible v-model:open="open" class="contents" :ui="{ content: 'col-span-2 row-start-2' }">
       <UButton
         type="button"
         color="neutral"
@@ -126,7 +126,7 @@
       </template>
     </UCollapsible>
 
-    <div class="flex shrink-0 items-center gap-1 pt-0.5">
+    <div class="col-start-2 row-start-1 flex shrink-0 items-center gap-1">
       <UButton
         v-if="opportunityAction"
         :to="opportunityAction.to"
