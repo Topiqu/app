@@ -35,7 +35,11 @@ async function stubImports() {
   await stubNitroImports(import('../../../server/utils/ai/insight'), 'insightSchema')
   await stubNitroImports(import('../../../server/utils/planFeatures'), 'activeFeatureFilter')
   await stubNitroImports(import('../../../server/utils/community'), 'readCommunityInsight')
-  await stubNitroImports(import('../../../server/utils/ai/articleQuality'), 'AUTHOR_ACCOUNT_RULE')
+  await stubNitroImports(
+    import('../../../server/utils/ai/articleQuality'),
+    'AUTHOR_ACCOUNT_RULE',
+    'SOURCE_CONFLICT_RULE',
+  )
   await stubNitroImports(import('../../../server/utils/knowledge/retrieve'), 'retrieveKnowledge')
   await stubNitroImports(import('../../../server/utils/databaseJson'), 'toDatabaseJson')
   await stubNitroImports(import('../../../server/utils/articleGenerationAudit'), 'auditArticleStep')

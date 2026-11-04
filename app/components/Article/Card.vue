@@ -74,6 +74,7 @@
                 :pending="reactionPending"
                 iconOnly
                 variant="overlay"
+                size="sm"
                 @toggle="toggleReaction"
               />
               <UButton

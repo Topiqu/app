@@ -1,7 +1,7 @@
 <template>
   <UButton
     type="button"
-    size="sm"
+    :size
     :icon="liked ? 'mdi:heart' : 'mdi:heart-outline'"
     :color="liked ? 'error' : 'neutral'"
     :variant="variant ?? 'ghost'"
@@ -28,12 +28,14 @@ const {
   pending = false,
   iconOnly = false,
   closed = false,
+  size = 'md',
 } = defineProps<{
   liked: boolean
   likes: number
   pending?: boolean
   iconOnly?: boolean
   variant?: ButtonProps['variant']
+  size?: ButtonProps['size']
   /** A draft or a scheduled article: likes open with publication. */
   closed?: boolean
 }>()

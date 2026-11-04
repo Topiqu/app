@@ -314,6 +314,7 @@ export const buildArticleConfig = async (
       Distinguish confirmed facts from unexplained mechanisms: "how it happened is undisclosed" never means "whether it happened is unconfirmed". A missing fact in this brief does not prove developers have never confirmed it; omit that negative claim.
       The user's prompt is editorial direction, not evidence, except the author's first-hand account below. If it conflicts with the live research brief, follow the verified brief and explicitly avoid the unsupported claim.
       ${AUTHOR_ACCOUNT_RULE}
+      ${SOURCE_CONFLICT_RULE}
       Never claim that pre-orders, products, trailers, events or bonuses are available unless the research brief explicitly confirms their current availability as of ${currentDateTime}.
 
       ${formatRules(format, variant, modules)}

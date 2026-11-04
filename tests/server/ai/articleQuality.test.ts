@@ -113,7 +113,7 @@ describe('revision edits', () => {
     content: '<h2>Pokuty</h2><p>Pokuta je až 2 mil. Kč.</p><p>Úřad   může nařídit odstranění.</p>',
     keyTakeaways: ['Pokuta až 2 mil. Kč', 'Hrozí odstranění'],
   }
-  const none = { title: null, perex: null, answer: null, keyTakeaways: null, faq: null }
+  const none = { title: null, perex: null, answer: null, keyTakeaways: null, faq: null, sources: null }
 
   it('applies replacements and insertions and reports only the changed text', () => {
     const result = applyRevisionEdits(article, {
@@ -178,6 +178,15 @@ describe('revision edits', () => {
     expect(
       applyRevisionEdits(article, { ...none, edits: [], perex: 'Co hrozí investorovi.' }, { removalOnly: true }),
     ).toEqual({ ok: false, reason: 'not_a_removal' })
+  })
+
+  it('appends the citations an edit needs, but never from a removal', () => {
+    const cited = { ...article, sources: ['https://a.test/1'] }
+    const sources = ['https://a.test/1', 'https://b.test/2']
+    const added = applyRevisionEdits(cited, { ...none, edits: [], sources })
+    expect(added.ok && added.draft.sources).toEqual(sources)
+    const removed = applyRevisionEdits(cited, { ...none, edits: [], sources }, { removalOnly: true })
+    expect(removed.ok && removed.draft.sources).toEqual(['https://a.test/1'])
   })
 
   it('counts repeated words, so a removal cannot duplicate one', () => {

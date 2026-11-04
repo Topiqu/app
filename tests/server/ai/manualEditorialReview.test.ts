@@ -75,6 +75,7 @@ async function stubImports() {
     'recheckRevision',
     'revisionEvidence',
     'AUTHOR_ACCOUNT_RULE',
+    'SOURCE_CONFLICT_RULE',
   )
   await stubNitroImports(import('../../../server/utils/knowledge/retrieve'), 'retrieveKnowledge')
   await stubNitroImports(import('../../../server/utils/ai/articleConfig'), 'buildArticleConfig')
@@ -133,6 +134,7 @@ const asEdits = (revision: Partial<typeof draft>) => ({
   answer: null,
   keyTakeaways: null,
   faq: null,
+  sources: revision.sources ?? null,
 })
 
 beforeEach(() => {
