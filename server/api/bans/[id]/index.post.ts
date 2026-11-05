@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
       userId: true,
       content: true,
       article: { select: { clientSiteId: true } },
-      user: { select: { id: true, language: true, email: true, username: true, allowEmail: true } },
+      user: { select: { id: true, language: true, email: true, username: true, allowEmail: true, deletedAt: true } },
     },
   })
   if (!comment) throw createError({ statusCode: 404, message: t('common.errors.commentNotFound')! })
@@ -80,7 +80,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  if (comment.user.email && comment.user.allowEmail) {
+  if (comment.user.email && comment.user.allowEmail && !comment.user.deletedAt) {
     const cookie = getCookie(event, 'i18n_lang')
     const lang = uiLanguageOf(cookie)
     const banDuration = expiresAt

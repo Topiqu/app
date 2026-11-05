@@ -24,6 +24,9 @@ const exempt: Record<string, string> = {
   'users/verify-totp.post.ts': 'own account',
   'users/send-verification.post.ts': 'own account',
   'users/unsubscribe.post.ts': 'signed unsubscribe link',
+  'users/deletion.post.ts': 'own account only, proven by password, 2FA or mailbox',
+  'users/deletion/confirm.post.ts': 'signed mailbox link',
+  'users/deletion/restore.post.ts': 'signed mailbox link',
   'sessions/ping.post.ts': 'own session',
   'sessions/[sessionId].delete.ts': 'own session',
   'sessions/others.delete.ts':

@@ -93,5 +93,44 @@
     "reason": "Redakční kontrola našla něco, co sama bezpečně neopravila. Editor ukáže přesně co, a článek můžete jedním klikem vydat i tak.",
     "button": "Zkontrolovat článek",
     "footer": "Ostatní plánované články pokračují podle rozvrhu."
+  },
+  "accountDeletionConfirm": {
+    "subject": "Potvrďte smazání účtu Topiqu",
+    "greeting": "Potvrďte smazání účtu",
+    "intro": "Dobrý den, {userName}, někdo požádal o smazání tohoto účtu Topiqu. Pokud chcete pokračovat, potvrďte to do jedné hodiny.",
+    "button": "Zkontrolovat a potvrdit",
+    "note": "Pokud jste to nebyli vy, tento e-mail ignorujte a nic se nezmění."
+  },
+  "accountDeletionScheduled": {
+    "subject": "Váš účet Topiqu bude smazán {deletionDate}",
+    "greeting": "Účet je naplánovaný ke smazání",
+    "intro": "Dobrý den, {userName}, váš účet je deaktivovaný a {deletionDate} bude trvale anonymizován.",
+    "button": "Obnovit účet",
+    "note": "Pokud jste to nebyli vy, účet obnovte a změňte si heslo."
+  },
+  "accountDeletionReminder": {
+    "subject": "Váš účet Topiqu bude smazán {deletionDate}",
+    "greeting": "Účet bude brzy smazán",
+    "intro": "Dobrý den, {userName}, váš účet bude {deletionDate} trvale anonymizován. Potom už ho nepůjde obnovit.",
+    "button": "Obnovit účet",
+    "note": "Pokud ho chcete opravdu smazat, nemusíte nic dělat."
+  },
+  "accountDeletionRestored": {
+    "subject": "Váš účet Topiqu byl obnoven",
+    "greeting": "Účet je obnovený",
+    "intro": "Dobrý den, {userName}, váš účet je znovu aktivní a můžete se přihlásit.",
+    "note": "Předplatné, které mezitím skončilo, můžete obnovit v nastavení blogu."
+  },
+  "accountDeletionBlogClosing": {
+    "subject": "{tenantName} se {deletionDate} uzavře",
+    "greeting": "{tenantName} se uzavře",
+    "intro": "Dobrý den, {userName}, vlastník blogu {tenantName} smazal svůj účet, takže se blog {deletionDate} uzavře.",
+    "note": "Do té doby si uložte vše, co potřebujete. Pokud se uzavření zruší, dáme vám vědět."
+  },
+  "accountDeletionBlogKept": {
+    "subject": "{tenantName} zůstává otevřený",
+    "greeting": "{tenantName} zůstává otevřený",
+    "intro": "Dobrý den, {userName}, vlastník blogu {tenantName} si obnovil účet, takže se blog neuzavře.",
+    "note": "Pro vás se nic dalšího nemění."
   }
 }

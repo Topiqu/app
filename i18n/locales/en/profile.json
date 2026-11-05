@@ -3,6 +3,7 @@
     "id": "User ID",
     "title": "My Profile",
     "exportToPDF": "Export Profile to PDF",
+    "exportToJson": "Export my data as JSON",
     "security": "Account Security",
     "health": "Account Health",
     "disable2FA": "Disable 2FA",
@@ -48,9 +49,9 @@
     "bioNotFound": "No bio provided",
     "userInformation": "User information",
     "data": "User Profile Data",
-    "pdfExportHeader": "GDPR-Compliant Export",
-    "gdprCompliance": "GDPR Compliance",
-    "gdprText": "This document provides a summary of the profile and account data stored with your account. For a complete machine-readable export or questions about data processing, contact our support team at support{'@'}topiqu.com.",
+    "pdfExportHeader": "Account data summary",
+    "gdprCompliance": "Data export",
+    "gdprText": "This document summarises the profile and account data stored with your account. For a complete machine-readable export, use Export my data as JSON in your profile. For questions about data processing, contact support{'@'}topiqu.com.",
     "generatedOn": "Generated automatically by Topiqu on {0}.",
     "roleLabel": "Role",
     "emailVerifiedLabel": "Email Verified",
@@ -78,9 +79,6 @@
     "sessionOrigin": "Signed in through: {domain}",
     "sessionOriginUnknown": "Domain not recorded",
     "domainLogoutDescription": "Signing out ends this session. Other custom domains have separate sessions and stay signed in. Topiqu subdomains share a session. Revoke other sessions to sign out everywhere else.",
-    "deactivateAccount": "Deactivate account",
-    "deactivateAccountConfirmTitle": "Deactivate account?",
-    "deactivateAccountConfirmText": "Your account will be deactivated and you will be signed out. This action cannot be easily undone. Do you want to continue?",
     "messages": {
       "profileUpdateSuccess": "Profile updated",
       "profileUpdateError": "Update failed",
@@ -114,7 +112,6 @@
     },
     "publicProfile": "Public profile",
     "dangerZone": "Danger zone",
-    "deactivateAccountDescription": "Your account is hidden and you are signed out. Restoring it requires support.",
     "showQR": "Show QR code",
     "hideQR": "Hide QR code",
     "securityEvents": "Security activity",
@@ -136,6 +133,41 @@
     "notificationsDescription": "Where we may reach you. Both can be turned off at any time.",
     "statsTitle": "Overview",
     "healthDescription": "A summary of your account security. Use the action on a failing check to jump straight to it.",
-    "sessionsDescription": "Active sessions across Topiqu and connected sites."
+    "sessionsDescription": "Active sessions across Topiqu and connected sites.",
+    "deleteAccount": {
+      "action": "Delete account",
+      "title": "Delete your account?",
+      "description": "Your account is deactivated right away. You can restore it for {days} days, then it is permanently anonymised.",
+      "panel": "Your account is deactivated right away and permanently anonymised after a period in which you can still restore it.",
+      "consequences": {
+        "signOut": "You are signed out on every device and cannot sign in.",
+        "removed": "Your profile, sessions, connected sign-ins, API keys, drafts, reactions and follows are removed. Your comments lose their text.",
+        "articles": "Articles you wrote on other blogs stay published without your name.",
+        "kept": "We keep what the law or security requires, such as invoices and security records."
+      },
+      "blogs": {
+        "title": "Blogs you own",
+        "description": "These blogs close together with your account after {days} days. Restoring the account keeps them open.",
+        "subscription": "Its subscription will not renew and ends at the end of the paid period.",
+        "shopify": "This blog is billed through Shopify. Uninstall the Topiqu app in Shopify to stop that billing.",
+        "members": "We will let the other members know: {count}.",
+        "confirm": "Type {domain} to confirm"
+      },
+      "emailConfirm": "Type your email {email} to confirm",
+      "password": "Current password",
+      "emailProof": "Your account has no password, so we will email you a link to confirm.",
+      "totp": "Two-factor code",
+      "submit": "Delete my account",
+      "scheduled": "Your account will be deleted on {date}. We emailed you a link that restores it until then.",
+      "confirmationSent": "We emailed a confirmation link to {email}. Your account stays active until you confirm.",
+      "errors": {
+        "email": "The email does not match your account.",
+        "blogs": "Type the full domain of every blog you own.",
+        "password": "The password is not correct.",
+        "totp": "The two-factor code is not correct.",
+        "contracted": "One of your blogs has an individual contract. Contact support to end it first.",
+        "billingChange": "One of your blogs has a pending plan change. Cancel it in billing, then try again."
+      }
+    }
   }
 }

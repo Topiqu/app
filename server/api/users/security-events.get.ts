@@ -1,14 +1,5 @@
 // The audit log records far more than the account owner needs to see; this is the subset that
 // tells them "is someone else in my account" — logins, revoked devices, credential and role changes.
-const SECURITY_ACTIONS = [
-  'SESSION_CREATE',
-  'SESSION_REVOKE',
-  'SESSIONS_REVOKE_OTHERS',
-  'PASSWORD_CHANGE',
-  'PASSWORD_SET',
-  'ROLE_CHANGE',
-]
-
 const EVENT_LIMIT = 20
 
 export default defineEventHandler(async (event) => {
@@ -20,7 +11,7 @@ export default defineEventHandler(async (event) => {
   // query narrow rather than being the isolation itself.
   const db = await getEnhancedPrisma(user)
   const logs = await db.log.findMany({
-    where: { userId: user.id, action: { in: SECURITY_ACTIONS } },
+    where: { userId: user.id, action: { in: SECURITY_EVENT_ACTIONS } },
     orderBy: { createdAt: 'desc' },
     take: EVENT_LIMIT,
     select: { id: true, action: true, createdAt: true, ip: true, metadata: true },

@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
   const [user, next, tenant, owner] = await Promise.all([
     prisma.user.findUnique({
       where: { id: target.userId },
-      select: { clientSiteId: true, email: true, language: true },
+      select: { clientSiteId: true, email: true, language: true, deletedAt: true },
     }),
     prisma.tenantMembership.findFirst({
       where: { userId: target.userId, id: { not: target.id }, deletedAt: null },
@@ -49,7 +49,7 @@ export default defineEventHandler(async (event) => {
     ip: getIp(event),
     metadata: { membershipId: id, targetUserId: target.userId, scopes: target.scopes },
   })
-  if (user?.email) {
+  if (user?.email && !user.deletedAt) {
     try {
       const locale = languageTag(user.language)
       await sendEmail({

@@ -233,6 +233,7 @@ const totpDigits = computed<string[]>({
 const credentialErrors: Record<string, string> = {
   email_not_verified: 'common.errors.emailNotVerified',
   rate_limited: 'common.errors.tooManyRequests',
+  account_deletion_pending: 'common.auth.accountDeletionPending',
 }
 
 const signInWithCredentials = async (

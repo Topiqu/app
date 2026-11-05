@@ -93,5 +93,44 @@
     "reason": "Die redaktionelle Prüfung hat etwas gefunden, das sie nicht sicher selbst beheben konnte. Der Editor zeigt genau was, und Sie können den Artikel mit einem Klick trotzdem veröffentlichen.",
     "button": "Artikel prüfen",
     "footer": "Ihre anderen geplanten Artikel laufen wie geplant weiter."
+  },
+  "accountDeletionConfirm": {
+    "subject": "Löschung deines Topiqu-Kontos bestätigen",
+    "greeting": "Kontolöschung bestätigen",
+    "intro": "Hallo {userName}, jemand hat die Löschung dieses Topiqu-Kontos angefordert. Bestätige sie innerhalb einer Stunde, um fortzufahren.",
+    "button": "Prüfen und bestätigen",
+    "note": "Warst du das nicht, ignoriere diese E-Mail. Es ändert sich nichts."
+  },
+  "accountDeletionScheduled": {
+    "subject": "Dein Topiqu-Konto wird am {deletionDate} gelöscht",
+    "greeting": "Dein Konto ist zur Löschung vorgemerkt",
+    "intro": "Hallo {userName}, dein Konto ist deaktiviert und wird am {deletionDate} dauerhaft anonymisiert.",
+    "button": "Konto wiederherstellen",
+    "note": "Warst du das nicht, stelle das Konto wieder her und ändere dein Passwort."
+  },
+  "accountDeletionReminder": {
+    "subject": "Dein Topiqu-Konto wird am {deletionDate} gelöscht",
+    "greeting": "Dein Konto wird bald gelöscht",
+    "intro": "Hallo {userName}, dein Konto wird am {deletionDate} dauerhaft anonymisiert. Danach kann es nicht wiederhergestellt werden.",
+    "button": "Konto wiederherstellen",
+    "note": "Soll es gelöscht werden, musst du nichts tun."
+  },
+  "accountDeletionRestored": {
+    "subject": "Dein Topiqu-Konto wurde wiederhergestellt",
+    "greeting": "Dein Konto ist wiederhergestellt",
+    "intro": "Hallo {userName}, dein Konto ist wieder aktiv und du kannst dich anmelden.",
+    "note": "Abos, die inzwischen ausgelaufen sind, kannst du in den Blog-Einstellungen erneuern."
+  },
+  "accountDeletionBlogClosing": {
+    "subject": "{tenantName} wird am {deletionDate} geschlossen",
+    "greeting": "{tenantName} wird geschlossen",
+    "intro": "Hallo {userName}, der Inhaber von {tenantName} hat sein Konto gelöscht, daher wird der Blog am {deletionDate} geschlossen.",
+    "note": "Sichere bis dahin alles, was du brauchst. Wird die Schließung aufgehoben, informieren wir dich."
+  },
+  "accountDeletionBlogKept": {
+    "subject": "{tenantName} bleibt geöffnet",
+    "greeting": "{tenantName} bleibt geöffnet",
+    "intro": "Hallo {userName}, der Inhaber von {tenantName} hat sein Konto wiederhergestellt, der Blog wird also nicht geschlossen.",
+    "note": "Für dich ändert sich sonst nichts."
   }
 }

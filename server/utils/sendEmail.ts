@@ -155,6 +155,12 @@ export const sendEmail = async ({ event, to, template, data, lang: forcedLang, a
     tenantMemberRemoved: ['greeting', 'intro', 'removedBy', 'removedAt', 'otherTenants', 'contact'],
     creditsDepleted: ['greeting', 'intro', 'paused', 'safe'],
     articleHeld: ['greeting', 'intro', 'reason'],
+    accountDeletionConfirm: ['greeting', 'intro', 'note'],
+    accountDeletionScheduled: ['greeting', 'intro', 'note'],
+    accountDeletionReminder: ['greeting', 'intro', 'note'],
+    accountDeletionRestored: ['greeting', 'intro', 'note'],
+    accountDeletionBlogClosing: ['greeting', 'intro', 'note'],
+    accountDeletionBlogKept: ['greeting', 'intro', 'note'],
   }
   const textParts = (textKeys[template] || ['intro'])
     .map((key) => translate(`${template}.${key}`, enrichedData))
@@ -163,6 +169,7 @@ export const sendEmail = async ({ event, to, template, data, lang: forcedLang, a
   if (data.commentUrl) textParts.push(data.commentUrl)
   if (data.topUpUrl) textParts.push(`${translate(`${template}.button`, enrichedData)}: ${data.topUpUrl}`)
   if (data.reviewUrl) textParts.push(`${translate(`${template}.button`, enrichedData)}: ${data.reviewUrl}`)
+  if (data.actionUrl) textParts.push(`${translate(`${template}.button`, enrichedData)}: ${data.actionUrl}`)
   if (data.unsubscribeUrl)
     textParts.push(`${translate(`${template}.unsubscribe.text`, enrichedData)} ${data.unsubscribeUrl}`)
   const textBody = textParts

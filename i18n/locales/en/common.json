@@ -817,7 +817,6 @@
       "invalidTotp": "Invalid TOTP code",
       "passwordChangeFailed": "Password change failed",
       "reauthRequired": "For your security, sign in again and then retry.",
-      "ownerCannotDeactivate": "You own a blog, so this account cannot be deactivated. Deactivate the blog first.",
       "roleChangeForbidden": "Changing role is not allowed",
       "featureNotInPlan": "This feature is not available on your plan",
       "aiRequired": "Enable AI first",
@@ -965,7 +964,8 @@
       "totpFailed": "Two-factor verification failed",
       "enterCode": "Enter verification code",
       "logout": "Log out",
-      "welcomeBack": "Welcome back"
+      "welcomeBack": "Welcome back",
+      "accountDeletionPending": "This account is scheduled for deletion. We emailed you a link to restore it."
     },
     "upload": {
       "rejected": "Image not accepted",
@@ -1916,6 +1916,25 @@
       "limitReached": "You have used all languages in your plan. Remove one to pick another.",
       "limitReachedBuy": "All languages in your plan are in use. Click another language to add it.",
       "locked": "Not in your plan: add it for {price} a month."
+    },
+    "accountDeletion": {
+      "invalid": "This link is not valid or has expired.",
+      "blogsChanged": "Your blogs changed since you asked. Start the deletion again in your profile.",
+      "restore": {
+        "title": "Restore your account",
+        "intro": "Your account is scheduled for deletion. Restore it to cancel the deletion and sign in again.",
+        "submit": "Restore my account",
+        "done": "Your account is restored and you can sign in.",
+        "billing": "Your account is restored, but we could not resume a subscription. Check the billing settings of your blog.",
+        "ended": "Your account is restored. A subscription ended in the meantime, so you can renew it in the blog settings."
+      },
+      "confirm": {
+        "title": "Confirm deleting your account",
+        "intro": "Your account will be deactivated right away and anonymised after the restore period. Blogs you own will close with it.",
+        "submit": "Delete my account",
+        "done": "Your account will be deleted on {date}. We emailed you a link that restores it until then."
+      },
+      "blogClosing": "This blog is closing, so its billing cannot change."
     }
   },
   "error": {

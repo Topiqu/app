@@ -17,6 +17,12 @@ export default defineEventHandler(async (event) => {
     select: { id: true, password: true, totpSecret: true, emailVerified: true },
   })
   const failure = credentialFailure(user, !!user?.password && (await argon.verify(user.password, password)))
+  if (failure === 'user_not_found' && (await pendingDeletionSignIn(email, password)))
+    throw createError({
+      statusCode: 403,
+      message: t('common.auth.accountDeletionPending')!,
+      data: { code: 'account_deletion_pending' },
+    })
   if (failure) {
     await logLoginFailure(event.node.req, email, failure, 'preflight')
     if (failure !== 'email_unverified')

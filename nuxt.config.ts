@@ -182,7 +182,7 @@ export default defineNuxtConfig({
             '0 6 * * *': ['backlink-discovery'],
             '30 6 * * *': ['backlink-check'],
             '*/10 * * * *': ['publish-check', 'trial-expiry'],
-            '10 * * * *': ['domain-reverification'],
+            '10 * * * *': ['domain-reverification', 'account-deletion'],
           }
         : undefined,
     preset: 'bun',

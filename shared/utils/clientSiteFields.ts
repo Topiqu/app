@@ -85,6 +85,8 @@ export const CLIENT_SITE_SECRET_FIELDS = [
   'stripeCustomerId',
   'stripeSubscriptionId',
   'stripePriceId',
+  'closingAt',
+  'closingSubscriptionIds',
   'monthlyPayment',
   'annualPayment',
   'monthlyPaymentCents',

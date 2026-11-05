@@ -817,7 +817,6 @@
       "invalidTotp": "Ungültiger TOTP-Code",
       "passwordChangeFailed": "Passwortänderung fehlgeschlagen",
       "reauthRequired": "Melden Sie sich aus Sicherheitsgründen erneut an und versuchen Sie es dann noch einmal.",
-      "ownerCannotDeactivate": "Sie besitzen einen Blog, daher kann dieses Konto nicht deaktiviert werden. Deaktivieren Sie zuerst den Blog.",
       "roleChangeForbidden": "Die Rolle darf nicht geändert werden",
       "featureNotInPlan": "Diese Funktion ist in deinem Tarif nicht verfügbar",
       "aiRequired": "Aktiviere zuerst die KI",
@@ -965,7 +964,8 @@
       "totpFailed": "Zwei-Faktor-Bestätigung fehlgeschlagen",
       "enterCode": "Bestätigungscode eingeben",
       "logout": "Abmelden",
-      "welcomeBack": "Willkommen zurück"
+      "welcomeBack": "Willkommen zurück",
+      "accountDeletionPending": "Dieses Konto ist zur Löschung vorgemerkt. Wir haben dir einen Link zur Wiederherstellung geschickt."
     },
     "upload": {
       "rejected": "Bild nicht angenommen",
@@ -1916,6 +1916,25 @@
       "limitReached": "Sie nutzen alle Sprachen Ihres Plans. Entfernen Sie eine, um eine andere zu wählen.",
       "limitReachedBuy": "Alle Sprachen Ihres Plans sind belegt. Klicken Sie auf eine weitere Sprache, um sie hinzuzubuchen.",
       "locked": "Nicht im Plan: für {price} pro Monat hinzubuchen."
+    },
+    "accountDeletion": {
+      "invalid": "Dieser Link ist ungültig oder abgelaufen.",
+      "blogsChanged": "Deine Blogs haben sich seit der Anfrage geändert. Starte die Löschung erneut im Profil.",
+      "restore": {
+        "title": "Konto wiederherstellen",
+        "intro": "Dein Konto ist zur Löschung vorgemerkt. Stelle es wieder her, um die Löschung abzubrechen und dich wieder anzumelden.",
+        "submit": "Konto wiederherstellen",
+        "done": "Dein Konto ist wiederhergestellt und du kannst dich anmelden.",
+        "billing": "Dein Konto ist wiederhergestellt, aber ein Abo konnte nicht fortgesetzt werden. Prüfe die Abrechnung in den Blog-Einstellungen.",
+        "ended": "Dein Konto ist wiederhergestellt. Ein Abo ist inzwischen ausgelaufen, du kannst es in den Blog-Einstellungen erneuern."
+      },
+      "confirm": {
+        "title": "Kontolöschung bestätigen",
+        "intro": "Dein Konto wird sofort deaktiviert und nach der Wiederherstellungsfrist anonymisiert. Deine Blogs werden zusammen mit ihm geschlossen.",
+        "submit": "Mein Konto löschen",
+        "done": "Dein Konto wird am {date} gelöscht. Wir haben dir einen Link geschickt, mit dem du es bis dahin wiederherstellen kannst."
+      },
+      "blogClosing": "Dieser Blog wird geschlossen, seine Abrechnung kann daher nicht geändert werden."
     }
   },
   "error": {

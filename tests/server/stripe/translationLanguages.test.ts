@@ -85,6 +85,7 @@ describe('POST /api/stripe/translation-languages', () => {
     vi.stubEnv('STRIPE_PRICE_TRANSLATION_LANGUAGE', 'price_lang')
     await stubNitroImports(import('../../../shared/utils/translationLanguages'), 'MAX_TRANSLATION_LANGUAGES')
     await stubNitroImports(import('../../../server/utils/translationLanguageBilling'), 'TRANSLATION_LANGUAGES_KIND')
+    vi.stubGlobal('assertBlogNotClosing', vi.fn())
     vi.stubGlobal('defineEventHandler', (handler: unknown) => handler)
     vi.stubGlobal('createError', createError)
     vi.stubGlobal('useServerI18n', async () => ({ translate: (key: string) => key }))

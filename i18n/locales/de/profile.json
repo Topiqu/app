@@ -3,6 +3,7 @@
     "id": "Benutzer-ID",
     "title": "Mein Profil",
     "exportToPDF": "Profil als PDF exportieren",
+    "exportToJson": "Meine Daten als JSON exportieren",
     "security": "Kontosicherheit",
     "health": "Kontostatus",
     "disable2FA": "2FA deaktivieren",
@@ -48,9 +49,9 @@
     "bioNotFound": "Keine Biografie angegeben",
     "userInformation": "Benutzerinformationen",
     "data": "Profildaten",
-    "pdfExportHeader": "DSGVO-konformer Export",
-    "gdprCompliance": "DSGVO-Konformität",
-    "gdprText": "Dieses Dokument enthält eine Zusammenfassung der Profil- und Kontodaten, die für dein Konto gespeichert sind. Für einen vollständigen maschinenlesbaren Export oder Fragen zur Datenverarbeitung kontaktiere unser Supportteam unter support{'@'}topiqu.com.",
+    "pdfExportHeader": "Übersicht der Kontodaten",
+    "gdprCompliance": "Datenexport",
+    "gdprText": "Dieses Dokument enthält eine Zusammenfassung der Profil- und Kontodaten, die für dein Konto gespeichert sind. Einen vollständigen maschinenlesbaren Export erhältst du im Profil über Meine Daten als JSON exportieren. Fragen zur Datenverarbeitung beantwortet support{'@'}topiqu.com.",
     "generatedOn": "Automatisch erstellt von Topiqu am {0}.",
     "roleLabel": "Rolle",
     "emailVerifiedLabel": "E-Mail bestätigt",
@@ -78,9 +79,6 @@
     "sessionOrigin": "Angemeldet über: {domain}",
     "sessionOriginUnknown": "Domain nicht erfasst",
     "domainLogoutDescription": "Beim Abmelden endet diese Sitzung. Andere eigene Domains haben separate Sitzungen und bleiben angemeldet. Topiqu-Subdomains teilen eine Sitzung. Melde die anderen Sitzungen ab, um überall sonst abgemeldet zu werden.",
-    "deactivateAccount": "Konto deaktivieren",
-    "deactivateAccountConfirmTitle": "Konto deaktivieren?",
-    "deactivateAccountConfirmText": "Dein Konto wird deaktiviert und du wirst abgemeldet. Diese Aktion lässt sich nicht einfach rückgängig machen. Möchtest du fortfahren?",
     "messages": {
       "profileUpdateSuccess": "Profil aktualisiert",
       "profileUpdateError": "Aktualisierung fehlgeschlagen",
@@ -114,7 +112,6 @@
     },
     "publicProfile": "Öffentliches Profil",
     "dangerZone": "Gefahrenbereich",
-    "deactivateAccountDescription": "Dein Konto wird ausgeblendet und du wirst abgemeldet. Zur Wiederherstellung musst du den Support kontaktieren.",
     "showQR": "QR-Code anzeigen",
     "hideQR": "QR-Code ausblenden",
     "securityEvents": "Sicherheitsaktivität",
@@ -136,6 +133,41 @@
     "notificationsDescription": "Wie wir dich erreichen können. Beide Optionen lassen sich jederzeit deaktivieren.",
     "statsTitle": "Übersicht",
     "healthDescription": "Eine Übersicht über die Sicherheit deines Kontos. Mit der Aktion bei einer fehlgeschlagenen Prüfung gelangst du direkt dorthin.",
-    "sessionsDescription": "Aktive Sitzungen auf Topiqu und verbundenen Websites."
+    "sessionsDescription": "Aktive Sitzungen auf Topiqu und verbundenen Websites.",
+    "deleteAccount": {
+      "action": "Konto löschen",
+      "title": "Konto löschen?",
+      "description": "Dein Konto wird sofort deaktiviert. {days} Tage lang kannst du es wiederherstellen, danach wird es dauerhaft anonymisiert.",
+      "panel": "Dein Konto wird sofort deaktiviert und nach einer Frist, in der du es noch wiederherstellen kannst, dauerhaft anonymisiert.",
+      "consequences": {
+        "signOut": "Du wirst auf allen Geräten abgemeldet und kannst dich nicht anmelden.",
+        "removed": "Profil, Sitzungen, verknüpfte Anmeldungen, API-Schlüssel, Entwürfe, Reaktionen und Follows werden entfernt. Deine Kommentare verlieren ihren Text.",
+        "articles": "Artikel, die du auf anderen Blogs geschrieben hast, bleiben ohne deinen Namen veröffentlicht.",
+        "kept": "Wir behalten nur, was Gesetz oder Sicherheit verlangen, etwa Rechnungen und Sicherheitsdaten."
+      },
+      "blogs": {
+        "title": "Deine Blogs",
+        "description": "Diese Blogs werden nach {days} Tagen zusammen mit deinem Konto geschlossen. Stellst du das Konto wieder her, bleiben sie geöffnet.",
+        "subscription": "Das Abo verlängert sich nicht und endet mit dem bezahlten Zeitraum.",
+        "shopify": "Dieser Blog wird über Shopify abgerechnet. Deinstalliere die Topiqu-App in Shopify, um die Abrechnung zu beenden.",
+        "members": "Wir informieren die anderen Mitglieder: {count}.",
+        "confirm": "Gib zur Bestätigung {domain} ein"
+      },
+      "emailConfirm": "Gib zur Bestätigung deine E-Mail {email} ein",
+      "password": "Aktuelles Passwort",
+      "emailProof": "Dein Konto hat kein Passwort, daher senden wir dir einen Bestätigungslink per E-Mail.",
+      "totp": "Zwei-Faktor-Code",
+      "submit": "Mein Konto löschen",
+      "scheduled": "Dein Konto wird am {date} gelöscht. Wir haben dir einen Link geschickt, mit dem du es bis dahin wiederherstellen kannst.",
+      "confirmationSent": "Wir haben einen Bestätigungslink an {email} geschickt. Bis zur Bestätigung bleibt dein Konto aktiv.",
+      "errors": {
+        "email": "Die E-Mail passt nicht zu deinem Konto.",
+        "blogs": "Gib die vollständige Domain jedes deiner Blogs ein.",
+        "password": "Das Passwort ist nicht korrekt.",
+        "totp": "Der Zwei-Faktor-Code ist nicht korrekt.",
+        "contracted": "Einer deiner Blogs hat einen individuellen Vertrag. Beende ihn zuerst über den Support.",
+        "billingChange": "Einer deiner Blogs hat eine geplante Tarifänderung. Brich sie in der Abrechnung ab und versuche es erneut."
+      }
+    }
   }
 }

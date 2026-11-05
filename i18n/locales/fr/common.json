@@ -817,7 +817,6 @@
       "invalidTotp": "Code TOTP invalide",
       "passwordChangeFailed": "Échec du changement de mot de passe",
       "reauthRequired": "Par sécurité, reconnectez-vous puis réessayez.",
-      "ownerCannotDeactivate": "Vous êtes propriétaire d’un blog, ce compte ne peut donc pas être désactivé. Désactivez d’abord le blog.",
       "roleChangeForbidden": "Le changement de rôle n'est pas autorisé",
       "featureNotInPlan": "Cette fonctionnalité n'est pas disponible avec votre offre",
       "aiRequired": "Activez d'abord l'IA",
@@ -965,7 +964,8 @@
       "totpFailed": "Échec de la vérification à deux facteurs",
       "enterCode": "Saisir le code de vérification",
       "logout": "Se déconnecter",
-      "welcomeBack": "Bon retour"
+      "welcomeBack": "Bon retour",
+      "accountDeletionPending": "Ce compte est programmé pour suppression. Nous vous avons envoyé un lien pour le restaurer."
     },
     "upload": {
       "rejected": "Image refusée",
@@ -1916,6 +1916,25 @@
       "limitReached": "Vous utilisez toutes les langues de votre offre. Retirez-en une pour en choisir une autre.",
       "limitReachedBuy": "Toutes les langues de votre offre sont utilisées. Cliquez sur une autre langue pour l’ajouter.",
       "locked": "Hors de votre offre : ajoutez-la pour {price} par mois."
+    },
+    "accountDeletion": {
+      "invalid": "Ce lien n'est pas valide ou a expiré.",
+      "blogsChanged": "Vos blogs ont changé depuis votre demande. Relancez la suppression dans votre profil.",
+      "restore": {
+        "title": "Restaurer votre compte",
+        "intro": "Votre compte est programmé pour suppression. Restaurez-le pour annuler la suppression et vous reconnecter.",
+        "submit": "Restaurer mon compte",
+        "done": "Votre compte est restauré et vous pouvez vous connecter.",
+        "billing": "Votre compte est restauré, mais un abonnement n'a pas pu reprendre. Vérifiez la facturation dans les paramètres du blog.",
+        "ended": "Votre compte est restauré. Un abonnement est arrivé à terme entre-temps : vous pouvez le renouveler dans les paramètres du blog."
+      },
+      "confirm": {
+        "title": "Confirmez la suppression du compte",
+        "intro": "Votre compte est désactivé immédiatement et anonymisé après la période de restauration. Les blogs que vous possédez fermeront avec lui.",
+        "submit": "Supprimer mon compte",
+        "done": "Votre compte sera supprimé le {date}. Nous vous avons envoyé un lien pour le restaurer d'ici là."
+      },
+      "blogClosing": "Ce blog est en cours de fermeture : sa facturation ne peut pas être modifiée."
     }
   },
   "error": {

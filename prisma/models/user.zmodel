@@ -23,6 +23,11 @@ model User with Base {
     totpTempSecret                String?           @omit
     onboardingLoginToken          String?           @omit
     onboardingLoginTokenExpiresAt DateTime?
+    /// Self-service deletion: deactivated and restorable until `deletionScheduledFor`, then anonymised.
+    deletionRequestedAt           DateTime?         @omit
+    deletionScheduledFor          DateTime?         @omit
+    deletionReminderSentAt        DateTime?         @omit
+    anonymizedAt                  DateTime?         @omit
     emailVerified                 Boolean           @default(false)
     allowNotifs                   Boolean           @default(true)
     allowEmail                    Boolean           @default(true)
@@ -65,6 +70,7 @@ model User with Base {
     @@allow('update', auth().role == 'admin' && role == 'ai' && clientSiteId == auth().clientSiteId)
     @@allow('all', auth().role == 'superadmin')
     @@index([username, email, role, language, allowNotifs])
+    @@index([deletionScheduledFor])
 }
 
 model TenantMembership with Base {
@@ -136,6 +142,7 @@ model Account with Base {
     refreshTokenExpiresAt DateTime?
     scope                 String?
     password              String?   @omit
+    @@allow('read', auth().id == userId)
     @@unique([providerId, accountId])
     @@index([userId])
 }

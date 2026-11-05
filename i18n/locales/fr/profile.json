@@ -3,6 +3,7 @@
     "id": "Identifiant utilisateur",
     "title": "Mon profil",
     "exportToPDF": "Exporter le profil en PDF",
+    "exportToJson": "Exporter mes données en JSON",
     "security": "Sécurité du compte",
     "health": "État du compte",
     "disable2FA": "Désactiver la 2FA",
@@ -48,9 +49,9 @@
     "bioNotFound": "Aucune biographie renseignée",
     "userInformation": "Informations utilisateur",
     "data": "Données du profil",
-    "pdfExportHeader": "Exportation conforme au RGPD",
-    "gdprCompliance": "Conformité au RGPD",
-    "gdprText": "Ce document résume les données de profil et de compte conservées avec votre compte. Pour obtenir une exportation complète lisible par machine ou poser des questions sur le traitement des données, contactez notre équipe d'assistance à support{'@'}topiqu.com.",
+    "pdfExportHeader": "Résumé des données du compte",
+    "gdprCompliance": "Export des données",
+    "gdprText": "Ce document résume les données de profil et de compte conservées avec votre compte. Pour un export complet lisible par machine, utilisez Exporter mes données en JSON dans votre profil. Pour toute question sur le traitement des données, contactez support{'@'}topiqu.com.",
     "generatedOn": "Généré automatiquement par Topiqu le {0}.",
     "roleLabel": "Rôle",
     "emailVerifiedLabel": "E-mail vérifié",
@@ -78,9 +79,6 @@
     "sessionOrigin": "Connexion via : {domain}",
     "sessionOriginUnknown": "Domaine non enregistré",
     "domainLogoutDescription": "La déconnexion ferme cette session. Les autres domaines personnalisés ont des sessions distinctes qui restent ouvertes. Les sous-domaines Topiqu partagent une session. Révoquez les autres sessions pour vous déconnecter partout ailleurs.",
-    "deactivateAccount": "Désactiver le compte",
-    "deactivateAccountConfirmTitle": "Désactiver le compte ?",
-    "deactivateAccountConfirmText": "Votre compte sera désactivé et vous serez déconnecté. Cette action ne peut pas être facilement annulée. Voulez-vous continuer ?",
     "messages": {
       "profileUpdateSuccess": "Profil mis à jour",
       "profileUpdateError": "Échec de la mise à jour",
@@ -106,10 +104,14 @@
       "noBans": "Aucune suspension",
       "bans": "Nombre de suspensions : {count}"
     },
-    "tabs": { "profile": "Profil", "security": "Sécurité", "notifications": "Notifications", "activity": "Activité" },
+    "tabs": {
+      "profile": "Profil",
+      "security": "Sécurité",
+      "notifications": "Notifications",
+      "activity": "Activité"
+    },
     "publicProfile": "Profil public",
     "dangerZone": "Zone sensible",
-    "deactivateAccountDescription": "Votre compte est masqué et vous êtes déconnecté. Contactez l'assistance pour le rétablir.",
     "showQR": "Afficher le code QR",
     "hideQR": "Masquer le code QR",
     "securityEvents": "Activité de sécurité",
@@ -131,6 +133,41 @@
     "notificationsDescription": "Comment nous pouvons vous joindre. Les deux options peuvent être désactivées à tout moment.",
     "statsTitle": "Vue d'ensemble",
     "healthDescription": "Résumé de la sécurité de votre compte. Utilisez l'action d'un contrôle échoué pour y accéder directement.",
-    "sessionsDescription": "Sessions actives sur Topiqu et les sites connectés."
+    "sessionsDescription": "Sessions actives sur Topiqu et les sites connectés.",
+    "deleteAccount": {
+      "action": "Supprimer le compte",
+      "title": "Supprimer votre compte ?",
+      "description": "Votre compte est désactivé immédiatement. Vous pouvez le restaurer pendant {days} jours, puis il est définitivement anonymisé.",
+      "panel": "Votre compte est désactivé immédiatement et définitivement anonymisé après une période pendant laquelle vous pouvez encore le restaurer.",
+      "consequences": {
+        "signOut": "Vous êtes déconnecté sur tous vos appareils et ne pouvez plus vous connecter.",
+        "removed": "Votre profil, vos sessions, connexions liées, clés API, brouillons, réactions et abonnements sont supprimés. Vos commentaires perdent leur texte.",
+        "articles": "Les articles écrits sur d'autres blogs restent publiés sans votre nom.",
+        "kept": "Nous conservons ce que la loi ou la sécurité exige, comme les factures et les données de sécurité."
+      },
+      "blogs": {
+        "title": "Vos blogs",
+        "description": "Ces blogs fermeront avec votre compte après {days} jours. Restaurer le compte les garde ouverts.",
+        "subscription": "Son abonnement ne sera pas renouvelé et prendra fin à l'issue de la période payée.",
+        "shopify": "Ce blog est facturé via Shopify. Désinstallez l'application Topiqu dans Shopify pour arrêter cette facturation.",
+        "members": "Nous préviendrons les autres membres : {count}.",
+        "confirm": "Saisissez {domain} pour confirmer"
+      },
+      "emailConfirm": "Saisissez votre e-mail {email} pour confirmer",
+      "password": "Mot de passe actuel",
+      "emailProof": "Votre compte n'a pas de mot de passe : nous vous enverrons un lien de confirmation par e-mail.",
+      "totp": "Code à deux facteurs",
+      "submit": "Supprimer mon compte",
+      "scheduled": "Votre compte sera supprimé le {date}. Nous vous avons envoyé un lien pour le restaurer d'ici là.",
+      "confirmationSent": "Nous avons envoyé un lien de confirmation à {email}. Votre compte reste actif jusqu'à la confirmation.",
+      "errors": {
+        "email": "L'e-mail ne correspond pas à votre compte.",
+        "blogs": "Saisissez le domaine complet de chacun de vos blogs.",
+        "password": "Le mot de passe n'est pas correct.",
+        "totp": "Le code à deux facteurs n'est pas correct.",
+        "contracted": "L'un de vos blogs a un contrat individuel. Mettez-y d'abord fin via le support.",
+        "billingChange": "L'un de vos blogs a un changement d'offre programmé. Annulez-le dans la facturation, puis réessayez."
+      }
+    }
   }
 }

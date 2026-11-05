@@ -72,6 +72,7 @@ model KnowledgeSource with Base {
     productStages    KnowledgeProductStage[]
 
     @@allow('read', auth().role == 'superadmin' || auth().clientSiteId == clientSiteId)
+    @@allow('read', auth() != null && ((auth().id == createdById && clientSite.tenantMemberships?[userId == auth().id && deletedAt == null]) || clientSite.tenantMemberships?[userId == auth().id && role == 'OWNER' && deletedAt == null]))
     @@allow('all', auth().role == 'admin' && auth().clientSiteId == clientSiteId)
     @@index([clientSiteId, createdAt])
     @@index([websiteImportId])

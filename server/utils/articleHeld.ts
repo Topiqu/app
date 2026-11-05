@@ -15,7 +15,7 @@ export const notifyArticleHeld = async (clientSiteId: string, article: { id: str
         where: {
           deletedAt: null,
           OR: [{ role: 'OWNER' }, { scopes: { has: 'ARTICLE_PUBLISH' } }],
-          user: { emailVerified: true, role: { not: 'ai' } },
+          user: { emailVerified: true, role: { not: 'ai' }, deletedAt: null },
         },
         select: { user: { select: { id: true, email: true, language: true } } },
       },

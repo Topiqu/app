@@ -19,6 +19,7 @@ export default defineEventHandler(async (event) => {
   // clientSiteId is derived from the session; only a superadmin may act on another site.
   const clientSiteId = session.role === 'superadmin' && bodyClientSiteId ? bodyClientSiteId : session.clientSiteId
   if (session.role !== 'superadmin') await requireTenantScope(event, 'BILLING_CHANGE', clientSiteId)
+  if (clientSiteId) await assertBlogNotClosing(clientSiteId, 'This blog is closing')
   if (!clientSiteId || !origin) {
     throw createError({ statusCode: 400, message: 'Missing required fields' })
   }

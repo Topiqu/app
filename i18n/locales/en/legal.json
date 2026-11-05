@@ -77,19 +77,19 @@
           "icon": "mdi:database-search",
           "iconColor": "text-sky-500",
           "title": "1. What we process and why",
-          "content": "We process only the data the service needs:<ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>Account</strong> — name, email, password hash, settings and, if enabled, your two-factor key. Basis: contract.</li><li><strong>Content</strong> — articles, drafts, comments, media and Knowledge. Basis: contract.</li><li><strong>Payments</strong> — plan, transactions and invoices; card details are handled by Stripe. Basis: contract and accounting obligations.</li><li><strong>Security</strong> — IP address, device, approximate location, sessions and audit log. Basis: legitimate interest in protecting accounts and the service.</li><li><strong>Analytics and advertising</strong> — only with your consent, see Cookies.</li></ul>We do not sell your data or build advertising profiles from it."
+          "content": "We process data to provide, secure and operate the service:<ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>Account</strong> — name, email, password hash, settings and, if enabled, your two-factor key; if you sign in with Google or GitHub, also the identifier and profile data they share. Basis: contract.</li><li><strong>Content</strong> — articles, drafts, comments, media, Knowledge and website content you ask us to import. Basis: contract.</li><li><strong>Payments</strong> — plan, transactions and invoices; card details are handled by Stripe. Basis: contract and accounting obligations.</li><li><strong>Security</strong> — IP address, device, approximate location, sessions and audit log. Basis: legitimate interest in protecting accounts and the service.</li><li><strong>Operations and diagnostics</strong> — application logs and error reports, filtered to limit personal data. Basis: legitimate interest in running and fixing the service.</li><li><strong>Analytics and advertising</strong> — only with your consent, see Cookies.</li></ul>We do not sell your data or build advertising profiles from it.<p class='mt-3'>Account and payment data are needed to provide the service; without them we cannot create an account or manage a plan. Connections and analytics are optional. You must be at least 16 to create an account.</p><p class='mt-3'>Blogs on Topiqu are run by their owners. We are the controller for reader accounts and platform features such as comments, reactions, follows and statistics. Owners are responsible for the personal data they publish or add; where we process it on their behalf, we act as their processor.</p>"
         },
         {
           "icon": "mdi:robot-outline",
           "iconColor": "text-cyan-500",
           "title": "2. AI processing",
-          "content": "When you generate, translate or analyse content, and when Knowledge is indexed, we send the relevant text to AI model providers. Under their terms, inputs and outputs are not used to train models. AI makes no decisions with legal effects about you. Do not put confidential information or third parties’ personal data into prompts or Knowledge."
+          "content": "When you generate, translate or analyse content, and when Knowledge is indexed, we send the relevant text to AI model providers. We use provider terms and settings intended to exclude training on your inputs and outputs. AI makes no decisions with legal effects about you. Do not put confidential information or third parties’ personal data into prompts or Knowledge."
         },
         {
           "icon": "mdi:linkedin",
           "iconColor": "text-blue-600",
           "title": "3. LinkedIn connection",
-          "content": "If you connect LinkedIn, we store the profile or page identifier (URN) and encrypted access tokens, solely to publish on your behalf. For posts we publish, we keep only aggregate reaction and comment counts, not who reacted. We do not read your messages, contacts or feed, and we do not use the data for advertising or AI training. We keep tokens and the URN only while connected, and other LinkedIn data only within the limits of the LinkedIn API Terms. We keep tokens and the URN only while connected, and other LinkedIn data only within the limits of the LinkedIn API Terms. We keep tokens and the URN only while connected, and other LinkedIn data only within the limits of the LinkedIn API Terms. We keep tokens and the URN only while connected, and other LinkedIn data only within the limits of the LinkedIn API Terms. Disconnecting in settings deletes the tokens and URN; you can also revoke access directly on LinkedIn."
+          "content": "If you connect LinkedIn, we store the profile or page identifier (URN) and encrypted access tokens, solely to publish on your behalf. For posts we publish, we keep only aggregate reaction and comment counts, not who reacted. We do not read your messages, contacts or feed, and we do not use the data for advertising or AI training. We keep tokens and the URN only while connected, and other LinkedIn data only within the limits of the LinkedIn API Terms. Disconnecting in settings deletes the tokens and URN; you can also revoke access directly on LinkedIn."
         },
         {
           "icon": "mdi:google",
@@ -107,25 +107,25 @@
           "icon": "mdi:cookie",
           "iconColor": "text-amber-500",
           "title": "6. Cookies",
-          "content": "Essential cookies handle sign-in, security, language and storing your cookie choice for 180 days. Analytics cookies (Topiqu statistics for 30 days and, where enabled, Google Analytics 4) and Google Ad Manager advertising cookies (non-personalised ads only) run only with your consent. You can change your choice under Cookie settings in the site footer."
+          "content": "Essential cookies handle sign-in, security, language and storing your cookie choice for 180 days. Analytics cookies (Topiqu statistics for 30 days and, where enabled, Google Analytics 4) and Google advertising cookies (non-personalised ads only) run only with your consent. You can change your choice under Cookie settings in the site footer."
         },
         {
           "icon": "mdi:share-variant",
           "iconColor": "text-orange-500",
           "title": "7. Who receives data",
-          "content": "We share data only with processors bound by contracts under Art. 28 GDPR: Stripe (payments), AI model providers, LinkedIn (only when connected), Amazon Web Services (storage and email, EU), Cloudflare (CDN and security), technical monitoring providers and Google (analytics and advertising, only with consent). Some are based in the US; these transfers rely on the EU Standard Contractual Clauses or the EU–US Data Privacy Framework. We also disclose data where the law requires it."
+          "content": "We share data with service providers acting as processors or, where applicable, independent controllers, including: Stripe (payments), AI model providers, services you choose to connect or sign in with, hosting, storage and email providers, Cloudflare (CDN and security), technical monitoring providers and Google (analytics and advertising, only with consent). Some are based in the US; these transfers rely on safeguards such as the EU Standard Contractual Clauses or the EU–US Data Privacy Framework, with details available on request. We also disclose data where the law requires it."
         },
         {
           "icon": "mdi:timer-sand",
           "iconColor": "text-violet-500",
           "title": "8. How long we keep data",
-          "content": "Account and content for as long as the account exists; after it is closed we delete them without undue delay, and they leave backups as these rotate. Security records for as long as needed to protect accounts, accounting records for the period required by law, and analytics data only with consent."
+          "content": "Account and content for as long as the account exists. Deleting an account deactivates it at once, and you can restore it during a limited period shown when you delete it. We then anonymise your account data and close the blogs you own, except for what the law, security or legal claims require us to keep, such as invoices and security records. You can request erasure of other data, including that of a closed blog, at privacy&#64;topiqu.com. Data leaves backups as these rotate. We keep security and operational records, depending on their type and risk, for as long as needed to protect accounts and investigate incidents; accounting records for the period required by law; and analytics data for as long as needed for the statistics it supports."
         },
         {
           "icon": "mdi:account-check",
           "iconColor": "text-green-500",
           "title": "9. Your rights",
-          "content": "You have the right to access, rectify, erase, restrict and port your data, to object to processing based on legitimate interest, and to withdraw consent at any time. You can do most of this yourself in your profile (edit, export, delete account); otherwise write to privacy&#64;topiqu.com and we will reply within a month. You may lodge a complaint with the Czech Office for Personal Data Protection (www.uoou.cz) or your local supervisory authority."
+          "content": "You have the right to access, rectify, erase, restrict and port your data, to object to processing based on legitimate interest, and to withdraw consent at any time, without affecting earlier processing. You can do much of this yourself in your profile (edit, export, delete account); otherwise write to privacy&#64;topiqu.com and we will reply within the GDPR period, normally one month. You may lodge a complaint with the Czech Office for Personal Data Protection (www.uoou.cz) or your local supervisory authority."
         },
         {
           "icon": "mdi:office-building",

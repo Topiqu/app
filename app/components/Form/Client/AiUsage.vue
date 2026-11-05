@@ -104,7 +104,7 @@ const packCapacity = (amount: number) => {
 const buy = async (packId: AiUsagePackId) => {
   buying.value = packId
   try {
-    const result = await $fetch('/api/stripe/ai-usage-checkout', {
+    const result = await $fetch<{ url: string | null }, string>('/api/stripe/ai-usage-checkout', {
       method: 'POST',
       body: { packId, origin: window.location.origin, locale: locale.value },
     })

@@ -249,6 +249,7 @@ model ArticleView with Base {
     @@unique([articleId, sessionId, viewedOn])
     @@index([clientSiteId, viewedOn])
     @@allow('read', auth().role == 'admin' && clientSiteId == auth().clientSiteId)
+    @@allow('read', auth() != null && auth().id == userId)
 }
 
 model ArticleShare with Base {

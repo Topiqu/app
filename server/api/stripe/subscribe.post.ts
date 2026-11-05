@@ -28,6 +28,7 @@ export default defineEventHandler(async (event) => {
   if (user.role !== 'superadmin') await requireTenantScope(event, 'BILLING_CHANGE', user.clientSiteId)
 
   const clientSiteId = user.role === 'superadmin' && bodyClientSiteId ? bodyClientSiteId : user.clientSiteId
+  if (clientSiteId) await assertBlogNotClosing(clientSiteId, 'This blog is closing')
   if (!plan || !clientSiteId || !origin) {
     throw createError({ statusCode: 400, message: 'Missing required fields' })
   }

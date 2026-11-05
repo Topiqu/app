@@ -24,6 +24,7 @@ export const monitoredTaskIntervals = {
   'publish-check': 10,
   'trial-expiry': 10,
   'domain-reverification': 60,
+  'account-deletion': 60,
   'domain-cleanup': 1,
 } as const
 

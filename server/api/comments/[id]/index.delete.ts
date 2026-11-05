@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
       userId: true,
       content: true,
       articleId: true,
-      user: { select: { id: true, language: true, email: true, username: true, allowEmail: true } },
+      user: { select: { id: true, language: true, email: true, username: true, allowEmail: true, deletedAt: true } },
       article: { select: { clientSiteId: true } },
     },
   })
@@ -44,7 +44,7 @@ export default defineEventHandler(async (event) => {
     data: { deletedAt: new Date() },
   })
 
-  if (comment.user.email && isAdmin && !isOwner && comment.user.allowEmail) {
+  if (comment.user.email && isAdmin && !isOwner && comment.user.allowEmail && !comment.user.deletedAt) {
     try {
       await sendEmail({
         event,

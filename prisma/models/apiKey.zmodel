@@ -36,6 +36,7 @@ model ApiKey with Base {
 
     @@index([clientSiteId])
     @@allow('read', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
+    @@allow('read', auth() != null && auth().id == createdById)
     @@allow('create, update', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
 }
 

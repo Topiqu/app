@@ -14,6 +14,7 @@ export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
   const user = await requireUser(event, { clientSite: true })
   if (user.role !== 'superadmin') await requireTenantScope(event, 'BILLING_CHANGE', user.clientSiteId)
+  await assertBlogNotClosing(user.clientSiteId, t('common.accountDeletion.blogClosing')!)
   const { quantity, origin, locale } = await readValidatedBody(event, BodySchema.parse)
 
   const site = await prisma.clientSite.findUnique({

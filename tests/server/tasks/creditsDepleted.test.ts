@@ -48,7 +48,7 @@ describe('notifyCreditsDepleted', () => {
     expect(findSite.mock.calls[0]![0].select.tenantMemberships.where).toEqual({
       deletedAt: null,
       OR: [{ role: 'OWNER' }, { scopes: { has: 'BILLING_CHANGE' } }],
-      user: { emailVerified: true, role: { not: 'ai' } },
+      user: { emailVerified: true, role: { not: 'ai' }, deletedAt: null },
     })
   })
 

@@ -17,7 +17,7 @@ export const notifyCreditsDepleted = async (clientSiteId: string) => {
         where: {
           deletedAt: null,
           OR: [{ role: 'OWNER' }, { scopes: { has: 'BILLING_CHANGE' } }],
-          user: { emailVerified: true, role: { not: 'ai' } },
+          user: { emailVerified: true, role: { not: 'ai' }, deletedAt: null },
         },
         select: { user: { select: { id: true, email: true, language: true } } },
       },

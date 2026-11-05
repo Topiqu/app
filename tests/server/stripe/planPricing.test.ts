@@ -38,6 +38,7 @@ beforeEach(() => {
   retrieve.mockResolvedValue(validPrice())
   checkout.mockResolvedValue({ url: 'https://checkout.example.test/session' })
   portal.mockResolvedValue({ url: 'https://billing.example.test/session' })
+  vi.stubGlobal('assertBlogNotClosing', vi.fn())
   vi.stubGlobal('useStripe', () => ({
     prices: { retrieve },
     checkout: { sessions: { create: checkout } },

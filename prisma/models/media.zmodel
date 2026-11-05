@@ -58,6 +58,7 @@ model MediaAsset with Base {
     articleUsages      ArticleMediaUsage[]
 
     @@allow('read', auth().role == 'superadmin' || auth().clientSiteId == clientSiteId)
+    @@allow('read', auth() != null && (auth().id == createdById || clientSite.tenantMemberships?[userId == auth().id && role == 'OWNER' && deletedAt == null]))
     @@allow('all', auth().role == 'admin' && auth().clientSiteId == clientSiteId)
     @@index([clientSiteId, contentHash])
     @@index([clientSiteId, url])

@@ -58,6 +58,12 @@ const templates = [
   'tenantInvitation',
   'tenantMemberRemoved',
   'creditsDepleted',
+  'accountDeletionConfirm',
+  'accountDeletionScheduled',
+  'accountDeletionReminder',
+  'accountDeletionRestored',
+  'accountDeletionBlogClosing',
+  'accountDeletionBlogKept',
 ] as const
 const locales = ['en', 'cs', 'de', 'fr'] as const
 const cases = locales.flatMap((locale) => templates.map((template) => ({ locale, template })))
@@ -88,6 +94,8 @@ const data = {
   invitationUrl: 'https://example.com/invitation',
   topUpUrl: 'https://example.com/top-up',
   unsubscribeUrl: 'https://example.com/unsubscribe',
+  deletionDate: '5 December 2026',
+  actionUrl: 'https://example.com/account-deletion?action=restore&token=abc',
 }
 
 describe('transactional email rendering', () => {

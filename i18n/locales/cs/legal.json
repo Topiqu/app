@@ -77,19 +77,19 @@
           "icon": "mdi:database-search",
           "iconColor": "text-sky-500",
           "title": "1. Jaké údaje zpracováváme a proč",
-          "content": "Zpracováváme jen údaje potřebné k provozu služby:<ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>Účet</strong> — jméno, e-mail, otisk hesla, nastavení a případně klíč dvoufaktorového ověření. Základ: plnění smlouvy.</li><li><strong>Obsah</strong> — články, koncepty, komentáře, média a Znalosti. Základ: plnění smlouvy.</li><li><strong>Platby</strong> — tarif, transakce a faktury; údaje o kartě zpracovává Stripe. Základ: smlouva a účetní povinnost.</li><li><strong>Bezpečnost</strong> — IP adresa, zařízení, přibližná lokalita, relace a auditní log. Základ: oprávněný zájem na ochraně účtů a služby.</li><li><strong>Analytika a reklama</strong> — pouze s vaším souhlasem, viz Cookies.</li></ul>Údaje neprodáváme a nevytváříme z nich reklamní profily."
+          "content": "Údaje zpracováváme k poskytování, zabezpečení a provozu služby:<ul class='list-disc pl-5 mt-2 space-y-1'><li><strong>Účet</strong> — jméno, e-mail, otisk hesla, nastavení a případně klíč dvoufaktorového ověření; při přihlášení přes Google nebo GitHub také identifikátor a profilové údaje, které poskytnou. Základ: plnění smlouvy.</li><li><strong>Obsah</strong> — články, koncepty, komentáře, média, Znalosti a obsah webu, jehož import si vyžádáte. Základ: plnění smlouvy.</li><li><strong>Platby</strong> — tarif, transakce a faktury; údaje o kartě zpracovává Stripe. Základ: smlouva a účetní povinnost.</li><li><strong>Bezpečnost</strong> — IP adresa, zařízení, přibližná lokalita, relace a auditní log. Základ: oprávněný zájem na ochraně účtů a služby.</li><li><strong>Provoz a diagnostika</strong> — aplikační logy a hlášení chyb, filtrované tak, aby obsahovaly co nejméně osobních údajů. Základ: oprávněný zájem na provozu a opravách služby.</li><li><strong>Analytika a reklama</strong> — pouze s vaším souhlasem, viz Cookies.</li></ul>Údaje neprodáváme a nevytváříme z nich reklamní profily.<p class='mt-3'>Údaje o účtu a platbách jsou nezbytné k poskytování služby; bez nich nemůžeme založit účet ani spravovat tarif. Propojení a analytika jsou volitelné. Účet si můžete založit od 16 let.</p><p class='mt-3'>Blogy na Topiqu provozují jejich vlastníci. Za čtenářské účty a funkce platformy, jako jsou komentáře, reakce, sledování a statistiky, jsme správcem my. Vlastníci odpovídají za osobní údaje, které zveřejní nebo vloží; pokud je zpracováváme jejich jménem, jsme jejich zpracovatelem.</p>"
         },
         {
           "icon": "mdi:robot-outline",
           "iconColor": "text-cyan-500",
           "title": "2. Zpracování pomocí AI",
-          "content": "Při generování, překladu nebo analýze a při indexaci Znalostí posíláme příslušný text poskytovatelům AI modelů. Podle jejich podmínek se vstupy ani výstupy nepoužívají k trénování modelů. AI o vás nečiní rozhodnutí s právními účinky. Do promptů ani Znalostí nevkládejte důvěrné informace ani osobní údaje třetích osob."
+          "content": "Při generování, překladu nebo analýze a při indexaci Znalostí posíláme příslušný text poskytovatelům AI modelů. Používáme podmínky a nastavení poskytovatelů, jejichž cílem je vyloučit trénování na vašich vstupech a výstupech. AI o vás nečiní rozhodnutí s právními účinky. Do promptů ani Znalostí nevkládejte důvěrné informace ani osobní údaje třetích osob."
         },
         {
           "icon": "mdi:linkedin",
           "iconColor": "text-blue-600",
           "title": "3. Propojení s LinkedInem",
-          "content": "Pokud propojíte LinkedIn, ukládáme identifikátor profilu nebo stránky (URN) a šifrované přístupové tokeny, a to jen kvůli publikování vaším jménem. U příspěvků, které publikujeme, ukládáme pouze souhrnné počty reakcí a komentářů, ne kdo reagoval. Nečteme zprávy, kontakty ani feed a data nepoužíváme k reklamě ani k trénování AI. Tokeny a URN držíme jen po dobu propojení, ostatní data z LinkedInu jen v lhůtách podle podmínek LinkedIn API. Tokeny a URN držíme jen po dobu propojení, ostatní data z LinkedInu jen v lhůtách podle podmínek LinkedIn API. Tokeny a URN držíme jen po dobu propojení, ostatní data z LinkedInu jen v lhůtách podle podmínek LinkedIn API. Tokeny a URN držíme jen po dobu propojení, ostatní data z LinkedInu jen v lhůtách podle podmínek LinkedIn API. Zrušením propojení v nastavení se tokeny i URN smažou; přístup můžete odvolat i přímo na LinkedInu."
+          "content": "Pokud propojíte LinkedIn, ukládáme identifikátor profilu nebo stránky (URN) a šifrované přístupové tokeny, a to jen kvůli publikování vaším jménem. U příspěvků, které publikujeme, ukládáme pouze souhrnné počty reakcí a komentářů, ne kdo reagoval. Nečteme zprávy, kontakty ani feed a data nepoužíváme k reklamě ani k trénování AI. Tokeny a URN držíme jen po dobu propojení, ostatní data z LinkedInu jen v lhůtách podle podmínek LinkedIn API. Zrušením propojení v nastavení se tokeny i URN smažou; přístup můžete odvolat i přímo na LinkedInu."
         },
         {
           "icon": "mdi:google",
@@ -107,25 +107,25 @@
           "icon": "mdi:cookie",
           "iconColor": "text-amber-500",
           "title": "6. Cookies",
-          "content": "Nezbytné cookies zajišťují přihlášení, zabezpečení, jazyk a uložení vaší volby cookies na 180 dní. Analytické cookies (statistiky Topiqu na 30 dní, případně Google Analytics 4) a reklamní cookies Google Ad Manager (pouze nepersonalizované reklamy) se spustí jen s vaším souhlasem. Volbu změníte v Nastavení cookies v patičce webu."
+          "content": "Nezbytné cookies zajišťují přihlášení, zabezpečení, jazyk a uložení vaší volby cookies na 180 dní. Analytické cookies (statistiky Topiqu na 30 dní, případně Google Analytics 4) a reklamní cookies Googlu (pouze nepersonalizované reklamy) se spustí jen s vaším souhlasem. Volbu změníte v Nastavení cookies v patičce webu."
         },
         {
           "icon": "mdi:share-variant",
           "iconColor": "text-orange-500",
           "title": "7. Komu údaje předáváme",
-          "content": "Údaje zpřístupňujeme jen zpracovatelům vázaným smlouvou podle čl. 28 GDPR: Stripe (platby), poskytovatelům AI modelů, LinkedInu (jen při propojení), Amazon Web Services (úložiště a e-maily, EU), Cloudflare (CDN a bezpečnost), poskytovatelům technického monitoringu a Google (analytika a reklama, jen se souhlasem). Část z nich sídlí v USA; předání se opírají o standardní smluvní doložky EU nebo o EU–US Data Privacy Framework. Údaje poskytneme také tam, kde to ukládá zákon."
+          "content": "Údaje zpřístupňujeme poskytovatelům služeb, kteří jednají jako zpracovatelé nebo případně jako samostatní správci, mimo jiné: Stripe (platby), poskytovatelům AI modelů, službám, které si propojíte nebo přes které se přihlásíte, poskytovatelům hostingu, úložiště a e-mailů, Cloudflare (CDN a bezpečnost), poskytovatelům technického monitoringu a Google (analytika a reklama, jen se souhlasem). Část z nich sídlí v USA; předání se opírají o záruky, jako jsou standardní smluvní doložky EU nebo EU–US Data Privacy Framework, a podrobnosti sdělíme na vyžádání. Údaje poskytneme také tam, kde to ukládá zákon."
         },
         {
           "icon": "mdi:timer-sand",
           "iconColor": "text-violet-500",
           "title": "8. Jak dlouho údaje uchováváme",
-          "content": "Účet a obsah po dobu trvání účtu; po jeho zrušení je bez zbytečného odkladu smažeme a ze záloh zmizí při jejich rotaci. Bezpečnostní záznamy po dobu nutnou k ochraně účtů, účetní doklady po dobu danou zákonem a analytická data jen se souhlasem."
+          "content": "Účet a obsah po dobu trvání účtu. Smazáním se účet hned deaktivuje a po omezenou dobu, kterou uvidíte při mazání, ho můžete obnovit. Potom údaje účtu anonymizujeme a uzavřeme blogy, které vlastníte, kromě toho, co musíme uchovat kvůli zákonu, bezpečnosti nebo právním nárokům, například faktur a bezpečnostních záznamů. Výmaz dalších údajů, včetně údajů uzavřeného blogu, si můžete vyžádat na privacy&#64;topiqu.com. Ze záloh údaje zmizí při jejich rotaci. Bezpečnostní a provozní záznamy uchováváme podle jejich druhu a rizika po dobu nutnou k ochraně účtů a prošetření incidentů, účetní doklady po dobu danou zákonem a analytická data po dobu potřebnou pro statistiky, ke kterým slouží."
         },
         {
           "icon": "mdi:account-check",
           "iconColor": "text-green-500",
           "title": "9. Vaše práva",
-          "content": "Máte právo na přístup ke svým údajům, jejich opravu, výmaz, omezení zpracování a přenositelnost, právo vznést námitku proti zpracování na základě oprávněného zájmu a kdykoli odvolat souhlas. Většinu zvládnete sami v profilu (úprava, export, smazání účtu), jinak pište na privacy&#64;topiqu.com a odpovíme do měsíce. Stížnost můžete podat u Úřadu pro ochranu osobních údajů (www.uoou.cz)."
+          "content": "Máte právo na přístup ke svým údajům, jejich opravu, výmaz, omezení zpracování a přenositelnost, právo vznést námitku proti zpracování na základě oprávněného zájmu a kdykoli odvolat souhlas, aniž by tím bylo dotčeno předchozí zpracování. Mnohé zvládnete sami v profilu (úprava, export, smazání účtu), jinak pište na privacy&#64;topiqu.com a odpovíme ve lhůtě podle GDPR, obvykle do měsíce. Stížnost můžete podat u Úřadu pro ochranu osobních údajů (www.uoou.cz)."
         },
         {
           "icon": "mdi:office-building",

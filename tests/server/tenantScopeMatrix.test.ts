@@ -107,6 +107,7 @@ const run = async (file: string, scope: Scope, body: Record<string, unknown> = {
   vi.stubGlobal('createError', createError)
   vi.stubGlobal('useServerI18n', async () => ({ translate: (key: string) => key }))
   vi.stubGlobal('getSessionUser', async () => user)
+  vi.stubGlobal('assertBlogNotClosing', vi.fn())
   vi.stubGlobal('requireUser', async () => user)
   vi.stubGlobal('requireDb', async () => ({ user, db }))
   vi.stubGlobal('requireTenantScope', requireTenantScope)

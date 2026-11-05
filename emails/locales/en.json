@@ -93,5 +93,44 @@
     "reason": "The editorial check found something it could not fix safely on its own. The editor shows exactly what, and you can publish the article as is with one click.",
     "button": "Review the article",
     "footer": "Your other scheduled articles continue as planned."
+  },
+  "accountDeletionConfirm": {
+    "subject": "Confirm deleting your Topiqu account",
+    "greeting": "Confirm deleting your account",
+    "intro": "Hi {userName}, someone asked to delete this Topiqu account. Confirm it within one hour to continue.",
+    "button": "Review and confirm",
+    "note": "If this was not you, ignore this email and nothing will change."
+  },
+  "accountDeletionScheduled": {
+    "subject": "Your Topiqu account will be deleted on {deletionDate}",
+    "greeting": "Your account is scheduled for deletion",
+    "intro": "Hi {userName}, your account is deactivated and will be permanently anonymised on {deletionDate}.",
+    "button": "Restore my account",
+    "note": "If this was not you, restore the account and change your password."
+  },
+  "accountDeletionReminder": {
+    "subject": "Your Topiqu account will be deleted on {deletionDate}",
+    "greeting": "Your account will be deleted soon",
+    "intro": "Hi {userName}, your account will be permanently anonymised on {deletionDate}. After that it cannot be restored.",
+    "button": "Restore my account",
+    "note": "If you still want it deleted, you do not need to do anything."
+  },
+  "accountDeletionRestored": {
+    "subject": "Your Topiqu account was restored",
+    "greeting": "Your account is restored",
+    "intro": "Hi {userName}, your account is active again and you can sign in.",
+    "note": "Subscriptions that ended in the meantime can be renewed in your blog settings."
+  },
+  "accountDeletionBlogClosing": {
+    "subject": "{tenantName} will close on {deletionDate}",
+    "greeting": "{tenantName} will close",
+    "intro": "Hi {userName}, the owner of {tenantName} deleted their account, so the blog will close on {deletionDate}.",
+    "note": "Save anything you need before then. We will let you know if the closure is cancelled."
+  },
+  "accountDeletionBlogKept": {
+    "subject": "{tenantName} will stay open",
+    "greeting": "{tenantName} will stay open",
+    "intro": "Hi {userName}, the owner of {tenantName} restored their account, so the blog is no longer closing.",
+    "note": "Nothing else changes for you."
   }
 }

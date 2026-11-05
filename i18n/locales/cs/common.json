@@ -752,7 +752,6 @@
       "invalidTotp": "Neplatný TOTP kód",
       "passwordChangeFailed": "Změna hesla selhala",
       "reauthRequired": "Z bezpečnostních důvodů se znovu přihlaste a akci zopakujte.",
-      "ownerCannotDeactivate": "Vlastníte blog, takže účet nejde deaktivovat. Nejdřív deaktivujte blog.",
       "roleChangeForbidden": "Změna role není povolena",
       "featureNotInPlan": "Tato funkce není dostupná ve vašem tarifu",
       "aiRequired": "Nejdřív zapněte AI",
@@ -965,7 +964,8 @@
       "totpFailed": "Dvoufázové ověření selhalo",
       "enterCode": "Zadejte ověřovací kód",
       "logout": "Odhlásit se",
-      "welcomeBack": "Vítejte zpět"
+      "welcomeBack": "Vítejte zpět",
+      "accountDeletionPending": "Tento účet je naplánovaný ke smazání. Poslali jsme vám e-mail s odkazem na obnovení."
     },
     "upload": {
       "rejected": "Obrázek nelze použít",
@@ -1916,6 +1916,25 @@
       "limitReached": "Využili jste všechny jazyky ve svém plánu. Pro výběr jiného nejdřív některý odeberte.",
       "limitReachedBuy": "Všechny jazyky z plánu jsou využité. Kliknutím na další jazyk ho dokoupíte.",
       "locked": "Není v plánu: dokupte za {price} měsíčně."
+    },
+    "accountDeletion": {
+      "invalid": "Tento odkaz není platný nebo vypršel.",
+      "blogsChanged": "Vaše blogy se od žádosti změnily. Spusťte smazání znovu v profilu.",
+      "restore": {
+        "title": "Obnovit účet",
+        "intro": "Váš účet je naplánovaný ke smazání. Obnovením smazání zrušíte a znovu se přihlásíte.",
+        "submit": "Obnovit účet",
+        "done": "Účet je obnovený a můžete se přihlásit.",
+        "billing": "Účet je obnovený, ale předplatné se nám nepodařilo obnovit. Zkontrolujte platby v nastavení blogu.",
+        "ended": "Účet je obnovený. Předplatné mezitím skončilo, takže ho můžete obnovit v nastavení blogu."
+      },
+      "confirm": {
+        "title": "Potvrďte smazání účtu",
+        "intro": "Účet se hned deaktivuje a po lhůtě pro obnovení bude anonymizován. Blogy, které vlastníte, se uzavřou spolu s ním.",
+        "submit": "Smazat můj účet",
+        "done": "Účet bude smazán {date}. Poslali jsme vám e-mail s odkazem, kterým ho do té doby obnovíte."
+      },
+      "blogClosing": "Tento blog se uzavírá, takže jeho platby nejde měnit."
     }
   },
   "error": {

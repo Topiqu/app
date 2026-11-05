@@ -66,7 +66,9 @@ export default defineEventHandler(async (event) => {
     ? await db.comment.findFirst({
         where: { id: body.parentId, articleId: body.articleId, deletedAt: null },
         select: {
-          user: { select: { id: true, language: true, username: true, email: true, allowEmail: true } },
+          user: {
+            select: { id: true, language: true, username: true, email: true, allowEmail: true, deletedAt: true },
+          },
           content: true,
         },
       })
@@ -111,7 +113,7 @@ export default defineEventHandler(async (event) => {
 
     // One failed mailbox must not fail a comment that is already saved.
     const sent = await Promise.allSettled([
-      ...(parent?.user.allowEmail && parent.user.email
+      ...(parent?.user.allowEmail && parent.user.email && !parent.user.deletedAt
         ? [
             sendEmail({
               event,

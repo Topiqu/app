@@ -207,6 +207,10 @@ model ClientSite with Base {
     stripeCustomerId     String?
     stripeSubscriptionId String?
     stripePriceId        String?
+    /// Closes with its owner's account on this date; restoring the account cancels it.
+    closingAt            DateTime?           @omit
+    /// Subscriptions set to end because of the closure, resumed if the account is restored.
+    closingSubscriptionIds String[]          @default([]) @omit
     /// Null retains the existing individually contracted CUSTOM plan.
     paidTeamSeats        Int?
     billingLeaseId       String? @omit

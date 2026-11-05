@@ -93,5 +93,44 @@
     "reason": "La relecture a trouvé un point qu’elle ne pouvait pas corriger seule sans risque. L’éditeur indique précisément lequel, et vous pouvez publier l’article tel quel en un clic.",
     "button": "Relire l’article",
     "footer": "Vos autres articles programmés continuent comme prévu."
+  },
+  "accountDeletionConfirm": {
+    "subject": "Confirmez la suppression de votre compte Topiqu",
+    "greeting": "Confirmez la suppression du compte",
+    "intro": "Bonjour {userName}, quelqu'un a demandé la suppression de ce compte Topiqu. Confirmez dans l'heure pour continuer.",
+    "button": "Vérifier et confirmer",
+    "note": "Si ce n'était pas vous, ignorez cet e-mail : rien ne changera."
+  },
+  "accountDeletionScheduled": {
+    "subject": "Votre compte Topiqu sera supprimé le {deletionDate}",
+    "greeting": "Votre compte est programmé pour suppression",
+    "intro": "Bonjour {userName}, votre compte est désactivé et sera définitivement anonymisé le {deletionDate}.",
+    "button": "Restaurer mon compte",
+    "note": "Si ce n'était pas vous, restaurez le compte et changez votre mot de passe."
+  },
+  "accountDeletionReminder": {
+    "subject": "Votre compte Topiqu sera supprimé le {deletionDate}",
+    "greeting": "Votre compte sera bientôt supprimé",
+    "intro": "Bonjour {userName}, votre compte sera définitivement anonymisé le {deletionDate}. Il ne pourra plus être restauré ensuite.",
+    "button": "Restaurer mon compte",
+    "note": "Si vous souhaitez toujours le supprimer, vous n'avez rien à faire."
+  },
+  "accountDeletionRestored": {
+    "subject": "Votre compte Topiqu a été restauré",
+    "greeting": "Votre compte est restauré",
+    "intro": "Bonjour {userName}, votre compte est de nouveau actif et vous pouvez vous connecter.",
+    "note": "Les abonnements arrivés à terme entre-temps peuvent être renouvelés dans les paramètres du blog."
+  },
+  "accountDeletionBlogClosing": {
+    "subject": "{tenantName} fermera le {deletionDate}",
+    "greeting": "{tenantName} va fermer",
+    "intro": "Bonjour {userName}, le propriétaire de {tenantName} a supprimé son compte : le blog fermera donc le {deletionDate}.",
+    "note": "Enregistrez d'ici là tout ce dont vous avez besoin. Nous vous préviendrons si la fermeture est annulée."
+  },
+  "accountDeletionBlogKept": {
+    "subject": "{tenantName} reste ouvert",
+    "greeting": "{tenantName} reste ouvert",
+    "intro": "Bonjour {userName}, le propriétaire de {tenantName} a restauré son compte : le blog ne fermera donc pas.",
+    "note": "Rien d'autre ne change pour vous."
   }
 }

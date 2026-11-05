@@ -55,6 +55,7 @@ describe.skipIf(!enabled)('CUSTOM confirmed changes against the real Stripe sand
     vi.stubGlobal('prisma', db)
     vi.stubGlobal('defineEventHandler', (handler: unknown) => handler)
     vi.stubGlobal('createError', createError)
+    vi.stubGlobal('assertBlogNotClosing', vi.fn())
     vi.stubGlobal('useStripe', () => stripe)
     vi.stubGlobal('requireTenantScope', async () => ({
       user: { id: 'synthetic-owner' },

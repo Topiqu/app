@@ -6,21 +6,13 @@ export default defineEventHandler(async (event) => {
   const userId = getRouterParam(event, 'id')
   if (!userId) throw createError({ statusCode: 400, message: t('common.errors.missing')! })
 
-  const self = user.id === userId
-  if (!self && user.role !== 'superadmin')
+  // Deleting your own account goes through `POST /api/users/deletion`, which proves identity and can be undone.
+  if (user.id === userId || user.role !== 'superadmin')
     throw createError({ statusCode: 403, message: t('common.errors.forbidden')! })
 
   const db = await getEnhancedPrisma(user)
   const targetUser = await db.user.findFirst({ where: { id: userId, deletedAt: null }, select: { clientSiteId: true } })
   if (!targetUser) throw createError({ statusCode: 404, message: t('common.errors.userNotFound')! })
-
-  if (self) {
-    // Ownership cannot be transferred, so leaving would strand a live, possibly billed blog without an owner.
-    const owned = await prisma.tenantMembership.count({
-      where: { userId, role: 'OWNER', deletedAt: null, clientSite: { deletedAt: null } },
-    })
-    if (owned) throw createError({ statusCode: 409, message: t('common.errors.ownerCannotDeactivate')! })
-  }
 
   await db.user.update({ where: { id: userId }, data: { deletedAt: new Date() } })
   await db.session.deleteMany({ where: { userId } })

@@ -109,6 +109,8 @@ const credentials = {
           user,
           !!user?.password && (await argon.verify(user.password, parsed.data.password)),
         )
+        if (failure === 'user_not_found' && (await pendingDeletionSignIn(email, parsed.data.password)))
+          throw reject('FORBIDDEN', 'account_deletion_pending')
         if (failure) {
           await logLoginFailure(req, email, failure, 'authorize')
           throw failure === 'email_unverified'
@@ -244,7 +246,14 @@ const createAuth = (customOrigin?: string, customTenantId?: string) =>
       session: {
         create: {
           before: async (session, ctx) => {
-            const owner = await prisma.user.findUnique({ where: { id: session.userId }, select: { deletedAt: true } })
+            const owner = await prisma.user.findUnique({
+              where: { id: session.userId },
+              select: { deletedAt: true, deletionRequestedAt: true },
+            })
+            if (owner?.deletionRequestedAt) {
+              await offerAccountRestore(session.userId)
+              throw reject('FORBIDDEN', 'account_deletion_pending')
+            }
             if (!owner || owner.deletedAt) throw reject('FORBIDDEN', 'account_deactivated')
             const device = await sessionDevice(headerRecord(ctx?.headers ?? ctx?.request?.headers))
             return {

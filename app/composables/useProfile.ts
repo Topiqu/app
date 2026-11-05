@@ -22,7 +22,7 @@ export type Profile = Omit<Partial<User>, 'createdAt' | 'updatedAt' | 'deletedAt
 }
 
 export function useProfile() {
-  const { data: user, signOut } = useAuth()
+  const { data: user } = useAuth()
   const toast = useToast()
   const { t } = useI18n()
 
@@ -53,16 +53,8 @@ export function useProfile() {
   const changePassword = (oldPassword: string, newPassword: string) =>
     patchSelf({ password: newPassword, oldPass: oldPassword })
 
-  async function deactivateAccount() {
-    const id = user.value?.user?.id
-    if (!id) throw new Error('User not authenticated')
-    await $fetch<unknown, '/api/users/:id'>(`/api/users/${id}` as '/api/users/:id', { method: 'DELETE' })
-    await signOut()
-  }
-
   return {
     saveProfile,
     changePassword,
-    deactivateAccount,
   }
 }

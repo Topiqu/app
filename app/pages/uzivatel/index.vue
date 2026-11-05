@@ -6,17 +6,30 @@
       <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
         {{ $t('profile.title') }}
       </h1>
-      <UButton
-        square
-        size="sm"
-        color="neutral"
-        variant="soft"
-        icon="mdi:file-pdf-box"
-        :disabled="isLoading"
-        :aria-label="$t('profile.exportToPDF')"
-        :title="$t('profile.exportToPDF')"
-        @click="exportToPDF"
-      />
+      <div class="flex items-center gap-2">
+        <UButton
+          square
+          size="sm"
+          color="neutral"
+          variant="soft"
+          icon="mdi:code-json"
+          :disabled="isLoading"
+          :aria-label="$t('profile.exportToJson')"
+          :title="$t('profile.exportToJson')"
+          @click="downloadExport('/api/users/export', 'topiqu-account-export.json')"
+        />
+        <UButton
+          square
+          size="sm"
+          color="neutral"
+          variant="soft"
+          icon="mdi:file-pdf-box"
+          :disabled="isLoading"
+          :aria-label="$t('profile.exportToPDF')"
+          :title="$t('profile.exportToPDF')"
+          @click="downloadExport('/api/users/pdf', 'topiqu-profile.pdf')"
+        />
+      </div>
     </header>
 
     <div class="flex flex-col md:flex-row gap-6 md:gap-10">
@@ -217,16 +230,11 @@
             <UserSecurityEvents />
           </Panel>
 
-          <Panel danger :title="$t('profile.dangerZone')" :description="$t('profile.deactivateAccountDescription')">
-            <UButton
-              :disabled="isLoading"
-              color="error"
-              variant="soft"
-              icon="mdi:account-cancel-outline"
-              @click="confirmDeactivate"
-            >
-              {{ $t('profile.deactivateAccount') }}
-            </UButton>
+          <Panel danger :title="$t('profile.dangerZone')" :description="$t('profile.deleteAccount.panel')">
+            <UserDeleteAccount
+              :exporting="isLoading"
+              @export="downloadExport('/api/users/export', 'topiqu-account-export.json')"
+            />
           </Panel>
         </div>
 
@@ -285,7 +293,7 @@ const { data: user, signOut } = useAuth()
 const localePath = useLocalePath()
 if (!user.value) await navigateTo(localePath({ name: 'autorizace' }))
 
-const { saveProfile, changePassword, deactivateAccount } = useProfile()
+const { saveProfile, changePassword } = useProfile()
 const { locale } = useI18n()
 const { formatTime } = useTime()
 const { copy, copied } = useClipboard({ legacy: true })
@@ -293,7 +301,6 @@ const toast = useToast()
 const route = useRoute()
 const router = useRouter()
 const reducedMotion = usePreferredReducedMotion()
-const confirm = useConfirm()
 const oldPasswordId = useId()
 
 function setTab(tab: string) {
@@ -469,27 +476,10 @@ async function handleChangePassword() {
   }
 }
 
-async function confirmDeactivate() {
-  const answer = await confirm({
-    title: $t('profile.deactivateAccountConfirmTitle'),
-    message: $t('profile.deactivateAccountConfirmText'),
-    icon: 'mdi:alert-outline',
-    confirmText: $t('common.actions.confirm'),
-    cancelText: $t('common.actions.cancel'),
-    variant: 'danger',
-  })
-  if (!answer) return
-  try {
-    await deactivateAccount()
-  } catch (err) {
-    toast.add({ color: 'error', title: fetchErrorMessage(err, $t('common.messages.operationFailed')) })
-  }
-}
-
-async function exportToPDF() {
+async function downloadExport(path: string, filename: string) {
   isLoading.value = true
   try {
-    const response = await fetch('/api/users/pdf')
+    const response = await fetch(path)
     if (!response.ok) throw new Error($t('common.messages.operationFailed'))
     const blob = await response.blob()
     const url = URL.createObjectURL(blob)
@@ -497,7 +487,7 @@ async function exportToPDF() {
     const disposition = response.headers.get('Content-Disposition') || ''
     const encodedFilename = disposition.match(/filename\*=UTF-8''([^;]+)/i)?.[1]
     link.href = url
-    link.download = encodedFilename ? decodeURIComponent(encodedFilename) : 'topiqu-profile.pdf'
+    link.download = encodedFilename ? decodeURIComponent(encodedFilename) : filename
     document.body.appendChild(link)
     link.click()
     link.remove()

@@ -14,6 +14,7 @@ export default defineEventHandler(async (event) => {
   const { user, membership } = await requireTenantScope(event, 'BILLING_CHANGE')
   if (!(await consumeRateLimit(`billing-seats:${membership.clientSiteId}`, 10, 60)))
     throw createError({ statusCode: 429, message: 'Too many billing changes' })
+  await assertBlogNotClosing(membership.clientSiteId, 'This blog is closing')
   const body = await readValidatedBody(event, bodySchema.parse)
   return withBillingLease(membership.clientSiteId, async (leaseId) => {
     const site = await prisma.clientSite.findUniqueOrThrow({

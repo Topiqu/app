@@ -14,6 +14,8 @@ the [commit log](https://github.com/Topiqu/app/commits/main).
 - API writes: `POST /api/v1/articles` and `PATCH /api/v1/articles/:id`, drafts through `GET /api/v1/articles/:id` for `WRITE` keys, and `Idempotency-Key` replays for 24 hours.
 - API article generation: `POST /api/v1/articles/generate` queues a requested topic as a draft and `GET /api/v1/generations/:id` reports its status.
 - `generation.succeeded` and `generation.failed` webhooks.
+- Machine-readable account export in the profile: a JSON file with account data, content, activity and, for blog owners, their blogs' articles, media and Knowledge.
+- Account deletion in the profile: confirmed with the email, password, two-factor code and the domain of each owned blog, restorable for 30 days and then anonymised. Owned blogs close with the account, and their subscriptions end with the paid period.
 
 ### Changed
 
