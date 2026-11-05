@@ -28,6 +28,11 @@ FROM node:26.13.0-bookworm-slim AS compiler-node
 # pre-release
 FROM base AS prerelease
 
+# The copied Node compiler needs libatomic, which Bun's slim image does not include.
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    apt-get update -y && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends libatomic1
+
 COPY --from=install /temp/node_modules node_modules
 COPY . .
 COPY --from=compiler-node /usr/local/bin/node /opt/topiqu-node/bin/node
@@ -37,7 +42,7 @@ ENV NITRO_PRESET=bun
 ENV NUXT_TELEMETRY_DISABLED=1
 ENV PATH=/opt/topiqu-node/bin:${PATH}
 # Match CI's Nuxt compiler and bound its heap without changing Bun runtime defaults.
-RUN NODE_OPTIONS=--max-old-space-size=4096 bun run build && bun scripts/prepare-migrations.ts
+RUN node --version && NODE_OPTIONS=--max-old-space-size=4096 bun run build && bun scripts/prepare-migrations.ts
 
 # release
 FROM base AS release
