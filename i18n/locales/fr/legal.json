@@ -113,7 +113,7 @@
           "icon": "mdi:share-variant",
           "iconColor": "text-orange-500",
           "title": "7. Destinataires",
-          "content": "Nous ne partageons les données qu'avec des sous-traitants liés par un contrat au sens de l'art. 28 du RGPD : Stripe (paiements), des fournisseurs de modèles d'IA, LinkedIn (uniquement en cas de connexion), Amazon Web Services (stockage et e-mails, UE), Cloudflare (CDN et sécurité), Sentry (diagnostic d'erreurs) et Google (analyse et publicité, uniquement avec consentement). Certains sont établis aux États-Unis ; ces transferts reposent sur les clauses contractuelles types de l'UE ou le Data Privacy Framework UE–États-Unis. Nous communiquons aussi des données lorsque la loi l'exige."
+          "content": "Nous ne partageons les données qu'avec des sous-traitants liés par un contrat au sens de l'art. 28 du RGPD : Stripe (paiements), des fournisseurs de modèles d'IA, LinkedIn (uniquement en cas de connexion), Amazon Web Services (stockage et e-mails, UE), Cloudflare (CDN et sécurité), des fournisseurs de supervision technique et Google (analyse et publicité, uniquement avec consentement). Certains sont établis aux États-Unis ; ces transferts reposent sur les clauses contractuelles types de l'UE ou le Data Privacy Framework UE–États-Unis. Nous communiquons aussi des données lorsque la loi l'exige."
         },
         {
           "icon": "mdi:timer-sand",
@@ -134,7 +134,7 @@
           "content": "Le responsable est Vojtěch Benjamín Tomaník, IČO 24088765, République tchèque. L'adresse du siège figure au registre ARES (ares.gov.cz). Contact : privacy&#64;topiqu.com. Nous annonçons les modifications importantes de la présente politique par e-mail ou dans l'application."
         }
       ],
-      "updatedAt": "10 octobre 2026"
+      "updatedAt": "5 novembre 2026"
     }
   }
 }

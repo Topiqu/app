@@ -113,7 +113,7 @@
           "icon": "mdi:share-variant",
           "iconColor": "text-orange-500",
           "title": "7. Who receives data",
-          "content": "We share data only with processors bound by contracts under Art. 28 GDPR: Stripe (payments), AI model providers, LinkedIn (only when connected), Amazon Web Services (storage and email, EU), Cloudflare (CDN and security), Sentry (error diagnostics) and Google (analytics and advertising, only with consent). Some are based in the US; these transfers rely on the EU Standard Contractual Clauses or the EU–US Data Privacy Framework. We also disclose data where the law requires it."
+          "content": "We share data only with processors bound by contracts under Art. 28 GDPR: Stripe (payments), AI model providers, LinkedIn (only when connected), Amazon Web Services (storage and email, EU), Cloudflare (CDN and security), technical monitoring providers and Google (analytics and advertising, only with consent). Some are based in the US; these transfers rely on the EU Standard Contractual Clauses or the EU–US Data Privacy Framework. We also disclose data where the law requires it."
         },
         {
           "icon": "mdi:timer-sand",
@@ -134,7 +134,7 @@
           "content": "The controller is Vojtěch Benjamín Tomaník, company ID 24088765, Czech Republic. The registered address is listed in the ARES register (ares.gov.cz). Contact: privacy&#64;topiqu.com. We announce material changes to this policy by email or in the app."
         }
       ],
-      "updatedAt": "10 October 2026"
+      "updatedAt": "5 November 2026"
     }
   }
 }

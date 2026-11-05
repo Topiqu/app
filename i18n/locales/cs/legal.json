@@ -113,7 +113,7 @@
           "icon": "mdi:share-variant",
           "iconColor": "text-orange-500",
           "title": "7. Komu údaje předáváme",
-          "content": "Údaje zpřístupňujeme jen zpracovatelům vázaným smlouvou podle čl. 28 GDPR: Stripe (platby), poskytovatelům AI modelů, LinkedInu (jen při propojení), Amazon Web Services (úložiště a e-maily, EU), Cloudflare (CDN a bezpečnost), Sentry (diagnostika chyb) a Google (analytika a reklama, jen se souhlasem). Část z nich sídlí v USA; předání se opírají o standardní smluvní doložky EU nebo o EU–US Data Privacy Framework. Údaje poskytneme také tam, kde to ukládá zákon."
+          "content": "Údaje zpřístupňujeme jen zpracovatelům vázaným smlouvou podle čl. 28 GDPR: Stripe (platby), poskytovatelům AI modelů, LinkedInu (jen při propojení), Amazon Web Services (úložiště a e-maily, EU), Cloudflare (CDN a bezpečnost), poskytovatelům technického monitoringu a Google (analytika a reklama, jen se souhlasem). Část z nich sídlí v USA; předání se opírají o standardní smluvní doložky EU nebo o EU–US Data Privacy Framework. Údaje poskytneme také tam, kde to ukládá zákon."
         },
         {
           "icon": "mdi:timer-sand",
@@ -134,7 +134,7 @@
           "content": "Správcem je Vojtěch Benjamín Tomaník, IČO 24088765, Česká republika. Sídlo je uvedeno v registru ARES (ares.gov.cz). Kontakt: privacy&#64;topiqu.com. Podstatné změny těchto zásad oznámíme e-mailem nebo v aplikaci."
         }
       ],
-      "updatedAt": "10. 10. 2026"
+      "updatedAt": "5. 11. 2026"
     }
   }
 }

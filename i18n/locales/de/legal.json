@@ -113,7 +113,7 @@
           "icon": "mdi:share-variant",
           "iconColor": "text-orange-500",
           "title": "7. Empfänger",
-          "content": "Wir geben Daten nur an Auftragsverarbeiter mit Vertrag nach Art. 28 DSGVO weiter: Stripe (Zahlungen), Anbieter von KI-Modellen, LinkedIn (nur bei Verbindung), Amazon Web Services (Speicher und E-Mail, EU), Cloudflare (CDN und Sicherheit), Sentry (Fehlerdiagnose) und Google (Analyse und Werbung, nur mit Einwilligung). Einige sitzen in den USA; diese Übermittlungen stützen sich auf die EU-Standardvertragsklauseln oder das EU-US Data Privacy Framework. Daten geben wir auch heraus, wenn das Gesetz es verlangt."
+          "content": "Wir geben Daten nur an Auftragsverarbeiter mit Vertrag nach Art. 28 DSGVO weiter: Stripe (Zahlungen), Anbieter von KI-Modellen, LinkedIn (nur bei Verbindung), Amazon Web Services (Speicher und E-Mail, EU), Cloudflare (CDN und Sicherheit), Anbieter technischer Überwachung und Google (Analyse und Werbung, nur mit Einwilligung). Einige sitzen in den USA; diese Übermittlungen stützen sich auf die EU-Standardvertragsklauseln oder das EU-US Data Privacy Framework. Daten geben wir auch heraus, wenn das Gesetz es verlangt."
         },
         {
           "icon": "mdi:timer-sand",
@@ -134,7 +134,7 @@
           "content": "Verantwortlich ist Vojtěch Benjamín Tomaník, IČO 24088765, Tschechische Republik. Die Geschäftsanschrift steht im Register ARES (ares.gov.cz). Kontakt: privacy&#64;topiqu.com. Wesentliche Änderungen dieser Erklärung kündigen wir per E-Mail oder in der App an."
         }
       ],
-      "updatedAt": "10. Oktober 2026"
+      "updatedAt": "5. November 2026"
     }
   }
 }
