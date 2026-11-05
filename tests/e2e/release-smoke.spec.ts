@@ -35,6 +35,23 @@ test('IPX preserves image headers, conditional requests and host restrictions', 
   expect(denied.status()).toBe(403)
 })
 
+test('renders a signed runtime article OG image with the installed native renderer', async ({ request }) => {
+  const document = await request.get(articleUrl)
+  expect(document.status()).toBe(200)
+  const html = await document.text()
+  const meta = [...html.matchAll(/<meta\b[^>]*>/g)].find(([tag]) => /\bproperty="og:image"/.test(tag))?.[0]
+  const source = meta?.match(/\bcontent="([^"]+)"/)?.[1]
+  expect(source).toBeTruthy()
+  const imageUrl = new URL(source!.replaceAll('&amp;', '&'), articleUrl)
+  expect(imageUrl.pathname).toMatch(/^\/_og\/d\//)
+  const image = await request.get(new URL(imageUrl.pathname + imageUrl.search, articleUrl).href)
+  expect(image.status()).toBe(200)
+  expect(image.headers()['content-type']).toMatch(/^image\/(png|jpeg|webp)/)
+  const body = await image.body()
+  expect(body.byteLength).toBeGreaterThan(1024)
+  await test.info().attach('article-og-image', { body, contentType: image.headers()['content-type']! })
+})
+
 test('service-worker activation removes legacy private responses and never serves them offline', async ({ page }) => {
   await preparePage(page)
   await page.goto('http://localhost:4173/api/live')
