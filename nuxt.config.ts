@@ -2,6 +2,7 @@ import { fileURLToPath } from 'node:url'
 
 import { IMAGE_HOSTS } from './shared/utils/imageHosts'
 import { LOCALIZED_SEGMENTS } from './shared/utils/routes'
+import { linkNitroSelfReferences } from './scripts/linkNitroSelfReferences'
 import { AI_GROUNDING_TOKENS, ANSWER_ENGINE_BOTS } from './shared/utils/crawlers'
 import { MULTIPART_BODY_MAX_BYTES, REQUEST_BODY_MAX_BYTES } from './shared/utils/requestLimits'
 
@@ -149,6 +150,7 @@ export default defineNuxtConfig({
         nitro.options.entry = entry
         config.input = entry
       },
+      compiled: (nitro) => linkNitroSelfReferences(nitro.options.output.serverDir),
     },
     // Serve compressed assets at the origin without expensive build-time Brotli work.
     compressPublicAssets: { gzip: true, brotli: false },

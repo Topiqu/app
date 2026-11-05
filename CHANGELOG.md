@@ -23,6 +23,7 @@ the [commit log](https://github.com/Topiqu/app/commits/main).
 
 ### Fixed
 
+- Profile and article PDF exports work again in production.
 - Settings changes invalidate dependent topic plan, content action, statistics and domain caches.
 - Publication metadata follows saved settings without a full page reload.
 - Branding preview stops at the end of typography settings.

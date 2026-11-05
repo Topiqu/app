@@ -142,3 +142,17 @@ test('a signed-in session survives server rendering', async ({ request, baseURL 
   expect(profile.status(), 'SSR must see the session instead of redirecting to sign-in').toBe(200)
   expect(await profile.text()).toContain('reader@test.local')
 })
+
+// The route imports pdfkit at load, so a broken bundle answers 500 before any handler runs.
+test('profile PDF export renders in the production bundle', async ({ request, baseURL }) => {
+  const signIn = await request.post('/api/auth/sign-in/credentials', {
+    headers: { origin: baseURL! },
+    data: { email: 'reader@test.local', password: 'test1234' },
+  })
+  expect(signIn.ok(), 'credentials sign-in must open a session').toBe(true)
+
+  const pdf = await request.get('/api/users/pdf')
+  expect(pdf.status()).toBe(200)
+  expect(pdf.headers()['content-type']).toContain('application/pdf')
+  expect((await pdf.body()).subarray(0, 5).toString()).toBe('%PDF-')
+})
