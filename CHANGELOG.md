@@ -10,6 +10,14 @@ the [commit log](https://github.com/Topiqu/app/commits/main).
 - GNU AGPL v3 license, contributor and security policies, code ownership and contribution templates.
 - Payment or saved-card checks for custom domains; Topiqu subdomain changes stay free on all plans.
 - Per-blog team limits of 1 / 2 / 3 for Basic / Pro / Premium, including the owner, with reserved invitation seats and recoverable access after plan changes. Blog count is unlimited. Managed CUSTOM starts at $199/month for three members; existing individually contracted plans retain their terms.
+- Scoped API keys: up to 10 named keys per blog with `READ`, `WRITE`, `PUBLISH` and `GENERATE` scopes, last use and revocation in settings. A key never exceeds the permissions of the member who created it.
+- API writes: `POST /api/v1/articles` and `PATCH /api/v1/articles/:id`, drafts through `GET /api/v1/articles/:id` for `WRITE` keys, and `Idempotency-Key` replays for 24 hours.
+- API article generation: `POST /api/v1/articles/generate` queues a requested topic as a draft and `GET /api/v1/generations/:id` reports its status.
+- `generation.succeeded` and `generation.failed` webhooks.
+
+### Changed
+
+- API keys are stored only as hashes and shown once. Existing keys keep working with read-only access, and each key is limited to 120 requests per minute.
 
 ### Fixed
 
