@@ -37,7 +37,7 @@ Contributions target `dev`; see [CONTRIBUTING.md](CONTRIBUTING.md),
 The project's original code is licensed under [GNU AGPL v3 only](LICENSE); third-party material and
 files with their own notices retain their respective licenses.
 
-**Requirements:** Bun **1.4.4**, Node **24.21.0** and Docker. Bun is pinned in [package.json](./package.json), Docker and CI; Node is pinned in [.node-version](./.node-version) for Nuxt compilation, Vue type checking and browser tests.
+**Requirements:** Bun **1.4.4**, Node **26.13.0** and Docker. Bun is pinned in [package.json](./package.json), Docker and CI; Node is pinned in [.node-version](./.node-version) for Nuxt compilation, Vue type checking and browser tests.
 
 **1. Configure your environment**
 
@@ -88,7 +88,7 @@ ZenStack generates ignored schema metadata and TypeScript types in `generated/ze
 | **Data**            | ZenStack ORM 3 · PostgreSQL · pgvector |
 | **Editor**          | Tiptap 3 with custom extensions        |
 | **AI**              | AI SDK 7 · Claude Haiku 5.5 · OpenAI   |
-| **Runtime**         | Bun 1.4.4 · Node 24.21.0               |
+| **Runtime**         | Bun 1.4.4 · Node 26.13.0               |
 
 <details>
 <summary><strong>Integrations and tooling</strong></summary>
@@ -260,6 +260,9 @@ Nuxt compilation uses the Node version pinned in `.node-version` in CI and Docke
 </details>
 
 ## Documentation
+
+Dependency version holds and remaining upstream advisories are recorded in
+[Dependency compatibility](./docs/operations/2026-11-05-dependencies.md).
 
 Application logs are single-line JSON records. `LOG_LEVEL` defaults to `info` (`debug`, `info`, `warn`, `error`); successful reads are visible only at `debug`, while mutations, slow requests and failures remain visible at their normal levels. HTTP records include a server-generated `x-request-id`, host, protocol, query-free path, status, elapsed milliseconds and a failure reason. Notification authorization failures identify `AUTH_HOST_UNAVAILABLE` or `AUTH_HTTPS_REQUIRED`. Sensitive context is redacted before console/external delivery; Better Stack remains optional. See [Observability](./MAP.md#9-observability--errors-traces-and-document-metrics).
 

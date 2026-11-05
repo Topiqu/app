@@ -18,7 +18,7 @@
 - **State Management:** Pinia (`@pinia/nuxt`)
 - **i18n:** `@nuxtjs/i18n`
 - **Authentication:** Better Auth with the ZenStack adapter (`server/utils/auth.ts`)
-- **Database/ORM:** ZenStack ORM v3.9 (PostgreSQL dialect)
+- **Database/ORM:** ZenStack ORM v3.10 (PostgreSQL dialect)
 
 ## Documentation & Learning
 

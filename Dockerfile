@@ -23,7 +23,7 @@ RUN --mount=type=cache,id=topiqu-app-bun-${TARGETARCH},target=/root/.bun/install
     bun --bun install --shamefully-hoist --frozen-lockfile
 
 # Nuxt compiler only; installation, generation and the released server use Bun.
-FROM node:24.21.0-bookworm-slim AS compiler-node
+FROM node:26.13.0-bookworm-slim AS compiler-node
 
 # pre-release
 FROM base AS prerelease

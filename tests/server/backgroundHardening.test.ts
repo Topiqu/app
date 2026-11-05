@@ -10,6 +10,7 @@ async function stubImports() {
 }
 
 afterEach(() => {
+  vi.doUnmock('ofetch')
   vi.unstubAllGlobals()
   vi.unstubAllEnvs()
   vi.restoreAllMocks()
@@ -81,7 +82,7 @@ describe('background work recovery', () => {
       release = resolve
     })
     const fetch = vi.fn().mockReturnValue(stalled)
-    vi.stubGlobal('$fetch', fetch)
+    vi.doMock('ofetch', () => ({ $fetch: fetch }))
     const { logger } = await import('../../server/utils/logger')
     await logger.info('synthetic event')
     expect(fetch).toHaveBeenCalledTimes(1)

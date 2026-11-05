@@ -14,7 +14,7 @@ async function installedSizeLimiter() {
       export const getRequestHeader = (event, name) => event.node.req.headers[name]
       export const createError = error => Object.assign(new Error(error.statusMessage), error)
     `,
-    '#imports': 'export const useRuntimeConfig = () => ({})',
+    'nitropack/runtime': 'export const useRuntimeConfig = () => ({})',
     '../../nitro/context/index.js': `export const resolveSecurityRules = () => ({
       enabled: true,
       requestSizeLimiter: ${JSON.stringify({
