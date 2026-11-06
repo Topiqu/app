@@ -37,29 +37,41 @@
       "start": "CUSTOM beginnt mit 3 bezahlten Plätzen einschließlich Eigentümer. Weitere Kapazität kann nach der Aktivierung gekauft werden."
     },
     "websiteImport": {
-      "title": "Website-Einstellungen aus der Einrichtung",
-      "description": "Wir bereiten Blog-Einstellungen und Wissensquellen im Hintergrund vor. Prüfe die Vorschläge vor der Verwendung.",
+      "title": "Einstellungen aus Ihrer Website",
+      "start": {
+        "label": "Website-Adresse",
+        "placeholder": "firma.de",
+        "consent": "Ich bin einverstanden, dass KI die öffentlichen Inhalte dieser Website verarbeitet, um Blog-Einstellungen und Wissensquellen vorzubereiten. Ich prüfe alles vor der Verwendung.",
+        "submit": "Website laden",
+        "again": "Website erneut laden",
+        "retryHelp": "Die Vorbereitung konnte nicht abgeschlossen werden. Laden Sie die Website erneut oder ergänzen Sie die Angaben in den jeweiligen Einstellungen.",
+        "invalidUrl": "Geben Sie eine öffentliche Website-Adresse ein, zum Beispiel firma.de.",
+        "active": "Vorschläge aus der Website werden bereits vorbereitet oder warten auf Ihre Prüfung.",
+        "limit": "Das Limit zum Laden der Website ist erreicht. Bitte versuchen Sie es später erneut.",
+        "failed": "Die Website konnte nicht geladen werden. Bitte versuchen Sie es erneut."
+      },
+      "description": "Wir bereiten Blog-Einstellungen und Wissensquellen im Hintergrund vor. Prüfen Sie die Vorschläge vor der Verwendung.",
       "review": "Vorschläge prüfen",
       "open": "Fortschritt ansehen",
-      "reviewHelp": "Prüfe und bearbeite die Vorschläge. Übernimm ausgewählte Felder oder bestätige alles. Nicht ausgewählte Felder behalten ihre aktuellen Werte.",
+      "reviewHelp": "Prüfen und bearbeiten Sie die Vorschläge. Übernehmen Sie ausgewählte Felder oder bestätigen Sie alles. Nicht ausgewählte Felder behalten ihre aktuellen Werte.",
       "allCorrect": "Alles ist richtig",
       "applySelected": "Auswahl übernehmen",
       "skip": "Vorschläge überspringen",
-      "notFound": "Kein belegter Wert gefunden. Du kannst ihn später ergänzen.",
+      "notFound": "Kein belegter Wert gefunden. Sie können ihn später ergänzen.",
       "current": "Aktuell: {value}",
-      "saveFirst": "Speichere oder verwirf deine anderen Einstellungsänderungen, bevor du die Vorschläge übernimmst.",
-      "background": "Du kannst Topiqu weiter nutzen. Das Ergebnis bleibt hier verfügbar, sobald es bereit ist.",
-      "budgetWait": "Die Verarbeitung wartet und wird später fortgesetzt. Du kannst Topiqu weiter nutzen.",
-      "failedHelp": "Die Vorbereitung konnte nicht abgeschlossen werden. Du kannst die Angaben in den jeweiligen Einstellungen ergänzen.",
-      "knowledgeConsent": "Mit der Bestätigung von Wissensquellen erlaubst du ihre KI-Verarbeitung und Verwendung in öffentlichen Artikeln. Bestätige keine vertraulichen oder personenbezogenen Informationen.",
-      "conflict": "Seit dem Öffnen der Prüfung wurden Einstellungen geändert. Lade die Seite neu und prüfe die aktuellen Werte.",
-      "assetFailed": "Ein vorgeschlagenes Logo oder Favicon konnte nicht importiert werden. Wähle dieses Feld ab und übernimm die übrigen Vorschläge.",
-      "rateLimited": "Zu viele Versuche. Versuche es später erneut.",
+      "saveFirst": "Speichern oder verwerfen Sie Ihre anderen Einstellungsänderungen, bevor Sie die Vorschläge übernehmen.",
+      "background": "Sie können Topiqu weiter nutzen. Das Ergebnis bleibt hier verfügbar, sobald es bereit ist.",
+      "budgetWait": "Die Verarbeitung wartet und wird später fortgesetzt. Sie können Topiqu weiter nutzen.",
+      "failedHelp": "Die Vorbereitung konnte nicht abgeschlossen werden. Sie können die Angaben in den jeweiligen Einstellungen ergänzen.",
+      "knowledgeConsent": "Mit der Bestätigung von Wissensquellen erlauben Sie ihre KI-Verarbeitung und Verwendung in öffentlichen Artikeln. Bestätigen Sie keine vertraulichen oder personenbezogenen Informationen.",
+      "conflict": "Seit dem Öffnen der Prüfung wurden Einstellungen geändert. Laden Sie die Seite neu und prüfen Sie die aktuellen Werte.",
+      "assetFailed": "Ein vorgeschlagenes Logo oder Favicon konnte nicht importiert werden. Wählen Sie dieses Feld ab und übernehmen Sie die übrigen Vorschläge.",
+      "rateLimited": "Zu viele Versuche. Bitte versuchen Sie es später erneut.",
       "applied": "Website-Vorschläge geprüft",
       "status": {
         "PENDING": "Website-Vorbereitung wartet",
-        "PROCESSING": "Einstellungen aus deiner Website werden vorbereitet",
-        "READY": "Deine Website-Vorschläge sind bereit",
+        "PROCESSING": "Einstellungen aus Ihrer Website werden vorbereitet",
+        "READY": "Ihre Website-Vorschläge sind bereit",
         "REVIEWED": "Website-Vorschläge geprüft",
         "FAILED": "Website-Vorbereitung erfordert Aufmerksamkeit"
       },
@@ -77,9 +89,9 @@
       },
       "warnings": {
         "pageFailed": "Einige Seiten konnten nicht geladen werden. Die Vorschläge nutzen die übrigen Quellen.",
-        "knowledgeQuota": "Einige Seiten überschreiten dein Wissenslimit.",
-        "assetUnavailable": "Einige Markenmedien konnten nicht gelesen werden. Du kannst sie selbst hochladen.",
-        "analysisFailed": "Einige Inhaltsvorschläge konnten nicht vorbereitet werden. Prüfe die verfügbaren Werte."
+        "knowledgeQuota": "Einige Seiten überschreiten Ihr Wissenslimit.",
+        "assetUnavailable": "Einige Markenmedien konnten nicht gelesen werden. Sie können sie selbst hochladen.",
+        "analysisFailed": "Einige Inhaltsvorschläge konnten nicht vorbereitet werden. Prüfen Sie die verfügbaren Werte."
       }
     },
     "entry": {

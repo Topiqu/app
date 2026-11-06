@@ -37,7 +37,19 @@
       "start": "CUSTOM commence avec 3 places payées, propriétaire inclus. La capacité supplémentaire peut être achetée après l’activation."
     },
     "websiteImport": {
-      "title": "Réglages du site issus de l’inscription",
+      "title": "Réglages issus de votre site",
+      "start": {
+        "label": "Adresse du site",
+        "placeholder": "entreprise.fr",
+        "consent": "J’accepte que l’IA traite le contenu public de ce site pour préparer les réglages du blog et les sources de connaissances. Je vérifierai tout avant utilisation.",
+        "submit": "Charger le site",
+        "again": "Recharger le site",
+        "retryHelp": "La préparation n’a pas pu être terminée. Rechargez le site ou complétez les informations dans les différentes sections des réglages.",
+        "invalidUrl": "Saisissez l’adresse publique d’un site, par exemple entreprise.fr.",
+        "active": "Les suggestions du site sont déjà en préparation ou attendent votre vérification.",
+        "limit": "La limite de chargement du site est atteinte. Veuillez réessayer plus tard.",
+        "failed": "Le site n’a pas pu être chargé. Veuillez réessayer."
+      },
       "description": "Nous préparons les réglages du blog et les sources de connaissances en arrière-plan. Vérifiez les suggestions avant de les utiliser.",
       "review": "Vérifier les suggestions",
       "open": "Voir la progression",

@@ -37,7 +37,19 @@
       "start": "CUSTOM starts with 3 paid seats including the owner. Additional capacity can be purchased after activation."
     },
     "websiteImport": {
-      "title": "Website settings from onboarding",
+      "title": "Settings from your website",
+      "start": {
+        "label": "Website address",
+        "placeholder": "company.com",
+        "consent": "I agree that AI will process the public content of this website to prepare blog settings and knowledge sources. I will review everything before use.",
+        "submit": "Load website",
+        "again": "Load website again",
+        "retryHelp": "We could not finish preparing the settings. Try loading the website again, or complete the settings in the individual sections.",
+        "invalidUrl": "Enter a public website address, for example company.com.",
+        "active": "Website suggestions are already being prepared or are waiting for review.",
+        "limit": "The website loading limit has been reached. Please try again later.",
+        "failed": "The website could not be loaded. Please try again."
+      },
       "description": "We can prepare your blog settings and knowledge sources in the background. Review the suggestions before using them.",
       "review": "Review suggestions",
       "open": "View progress",

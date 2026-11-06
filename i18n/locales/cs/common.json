@@ -37,7 +37,19 @@
       "start": "CUSTOM začíná se 3 placenými místy včetně majitele. Další kapacitu lze dokoupit po aktivaci."
     },
     "websiteImport": {
-      "title": "Nastavení z webu při založení blogu",
+      "title": "Nastavení z vašeho webu",
+      "start": {
+        "label": "Adresa webu",
+        "placeholder": "firma.cz",
+        "consent": "Souhlasím, že AI zpracuje veřejný obsah tohoto webu a připraví z něj nastavení blogu a podklady do znalostní báze. Před použitím vše zkontroluji.",
+        "submit": "Načíst web",
+        "again": "Načíst web znovu",
+        "retryHelp": "Přípravu se nepodařilo dokončit. Zkuste web načíst znovu, nebo nastavení doplňte v jednotlivých sekcích.",
+        "invalidUrl": "Zadejte veřejnou adresu webu, například firma.cz.",
+        "active": "Návrhy z webu se už připravují nebo čekají na kontrolu.",
+        "limit": "Limit pro načítání webu je vyčerpaný. Zkuste to prosím později.",
+        "failed": "Načítání webu se nepodařilo spustit. Zkuste to prosím znovu."
+      },
       "description": "Na pozadí připravíme nastavení blogu a podklady do znalostní báze. Před použitím návrhy zkontrolujete.",
       "review": "Zkontrolovat návrhy",
       "open": "Zobrazit průběh",

@@ -13,6 +13,9 @@ export const WEBSITE_IMPORT_LIMITS = {
   // Conservative reservation for hosted-search context, both model calls and bounded indexing.
   reservationMicros: 4_000_000,
   indexingMicros: 100_000,
+  // Per tenant, the onboarding import included: one manual start a day, three in 30 days.
+  startsPerDay: 2,
+  startsPerMonth: 4,
 } as const
 
 const stableValue = (value: unknown): unknown => {

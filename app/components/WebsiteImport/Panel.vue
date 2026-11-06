@@ -1,6 +1,6 @@
 <template>
   <section
-    v-if="enabled && (job || pending || error)"
+    v-if="enabled && (job || pending || error || (canStart && data))"
     class="space-y-4 rounded-(--topiqu-surface-radius) border border-default bg-default p-4 sm:p-6"
     data-website-import-panel
   >
@@ -39,12 +39,29 @@
         color="success"
         icon="mdi:check-circle-outline"
         :title="$t('common.websiteImport.status.REVIEWED')"
+        :actions="
+          canStart && !restarting
+            ? [
+                {
+                  label: $t('common.websiteImport.start.again'),
+                  color: 'neutral',
+                  variant: 'outline',
+                  onClick: () => (restarting = true),
+                },
+              ]
+            : undefined
+        "
       />
       <UAlert
         v-if="job?.status === 'FAILED'"
         color="warning"
         :title="$t('common.websiteImport.status.FAILED')"
-        :description="$t('common.websiteImport.failedHelp')"
+        :description="$t(canStart ? 'common.websiteImport.start.retryHelp' : 'common.websiteImport.failedHelp')"
+      />
+      <WebsiteImportStart
+        v-if="canStart && data && (!job || job.status === 'FAILED' || restarting)"
+        :key="job?.id ?? 'new'"
+        :initialUrl="job?.sourceUrl ?? data?.websiteUrl"
       />
     </template>
   </section>
@@ -54,7 +71,16 @@
 defineProps<{ disabled?: boolean }>()
 const emit = defineEmits<{ applied: [] }>()
 const { data, pending, error, enabled, refresh, apply } = useWebsiteImport()
+const { data: status } = useClientSiteStatus()
 const job = computed(() => data.value?.import)
+const canStart = computed(() => hasAiPlan(status.value?.plan))
+const restarting = shallowRef(false)
+watch(
+  () => job.value?.id,
+  () => {
+    restarting.value = false
+  },
+)
 const busy = shallowRef(false)
 const message = shallowRef('')
 const { t } = useI18n()

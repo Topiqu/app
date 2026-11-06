@@ -42,6 +42,6 @@ model WebsiteImport with Base {
     @@index([clientSiteId, createdAt])
     @@index([status, leaseUntil])
     @@index([budgetDay])
-    // Creation is system-only inside the signed onboarding transaction.
+    // Creation is system-only: the signed onboarding transaction and `POST /api/website-import`, which enforce consent and caps.
     @@allow('read, update', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
 }

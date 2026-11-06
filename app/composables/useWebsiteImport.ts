@@ -44,5 +44,12 @@ export const useWebsiteImport = createSharedComposable(() => {
     )
     await Promise.all([refresh(), invalidateClients(), refreshClientSite(), refreshClientSiteStatus()])
   }
-  return { data, pending, error, refresh, apply, enabled }
+  const start = async (url: string) => {
+    await $fetch<{ id: string }, '/api/website-import'>('/api/website-import', {
+      method: 'POST',
+      body: { url, consentVersion: WEBSITE_IMPORT_CONSENT_VERSION },
+    })
+    await refresh()
+  }
+  return { data, pending, error, refresh, apply, start, enabled }
 })
