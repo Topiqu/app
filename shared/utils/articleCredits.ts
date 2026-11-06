@@ -25,6 +25,11 @@ export type ArticleCreditPlan = keyof typeof PLAN_ARTICLE_CREDITS
 export const articleCreditsForPlan = (plan: unknown): number =>
   typeof plan === 'string' && plan in PLAN_ARTICLE_CREDITS ? PLAN_ARTICLE_CREDITS[plan as ArticleCreditPlan] : 0
 
+// Unused plan credits carry over while a paid AI plan is active, up to this many monthly allowances.
+export const ARTICLE_ROLLOVER_MONTHS = 2
+
+export const articleRolloverCap = (plan: unknown): number => ARTICLE_ROLLOVER_MONTHS * articleCreditsForPlan(plan)
+
 export const nextArticleCreditMonth = (date: Date): Date => {
   const year = date.getUTCFullYear()
   const month = date.getUTCMonth() + 1

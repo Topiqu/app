@@ -84,13 +84,23 @@ Titles/snippets do not prove competitors omitted information. Describe the tenan
 The proposed angle must stay inside the exact focus too; do not widen a games article into television/books just because the franchise is shared.
 `.trim()
 
+export type AssessmentRejection = 'covered' | 'duplicate' | 'navigational' | 'poor' | 'other'
+
+const rejectionOf = (decision: z.infer<typeof decisionSchema>): AssessmentRejection | null => {
+  if (decision.coveredBy > 0) return 'covered'
+  if (decision.duplicateOf > 0) return 'duplicate'
+  if (decision.intent === 'navigational') return 'navigational'
+  if (decision.articleFit === 'poor') return 'poor'
+  return decision.write && decision.angle.trim() && decision.reason.trim() ? null : 'other'
+}
+
 export const assessOpportunities = async (
   site: ScopeSite,
   candidates: OpportunityCandidate[],
   articles: CoveredArticle[],
   themes: string[] = [],
 ) => {
-  if (!candidates.length) return { accepted: [], expansions: [], covered: [] }
+  if (!candidates.length) return { accepted: [], rejected: [], expansions: [], covered: [] }
   const result = await generateText({
     model: aiModel('keywordOpportunity', undefined, site.id),
     maxOutputTokens: 3000 + candidates.length * 180,
@@ -135,26 +145,23 @@ ${JSON.stringify(candidates.map((candidate, index) => ({ item: index + 1, ...can
       ? [{ index, article: decision.coveredBy - 1, angle: decision.angle.trim(), reason: decision.reason.trim() }]
       : [],
   )
-  const accepted = decisions.flatMap((decision, index) => {
-    if (
-      !decision.write ||
-      decision.coveredBy > 0 ||
-      decision.duplicateOf > 0 ||
-      decision.articleFit === 'poor' ||
-      decision.intent === 'navigational'
-    )
-      return []
-    if (!decision.angle.trim() || !decision.reason.trim()) return []
-    return [
-      {
-        ...decision,
-        articleFit: candidates[index]!.organic.length ? decision.articleFit : ('possible' as const),
-        index,
-      },
-    ]
+  const accepted = decisions.flatMap((decision, index) =>
+    rejectionOf(decision)
+      ? []
+      : [
+          {
+            ...decision,
+            articleFit: candidates[index]!.organic.length ? decision.articleFit : ('possible' as const),
+            index,
+          },
+        ],
+  )
+  const rejected = decisions.flatMap((decision, index) => {
+    const reason = rejectionOf(decision)
+    return reason ? [{ index, reason }] : []
   })
   const covered = decisions.flatMap((decision, index) =>
     decision.coveredBy > 0 && decision.coveredBy <= articles.length ? [{ index, article: decision.coveredBy - 1 }] : [],
   )
-  return { accepted, expansions, covered }
+  return { accepted, rejected, expansions, covered }
 }

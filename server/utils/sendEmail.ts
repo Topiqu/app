@@ -155,6 +155,7 @@ export const sendEmail = async ({ event, to, template, data, lang: forcedLang, a
     tenantMemberRemoved: ['greeting', 'intro', 'removedBy', 'removedAt', 'otherTenants', 'contact'],
     creditsDepleted: ['greeting', 'intro', 'paused', 'safe'],
     articleHeld: ['greeting', 'intro', 'reason'],
+    articleBatchFinished: ['greeting', 'intro', 'summary'],
     accountDeletionConfirm: ['greeting', 'intro', 'note'],
     accountDeletionScheduled: ['greeting', 'intro', 'note'],
     accountDeletionReminder: ['greeting', 'intro', 'note'],

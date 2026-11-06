@@ -1,4 +1,4 @@
-const ORDER = { PINNED: 0, OPEN: 1, SKIPPED: 2, USED: 3 } as const
+const ORDER = { PINNED: 0, OPEN: 1, SKIPPED: 2, USED: 3, RESERVED: 4 } as const
 
 export default defineEventHandler(async (event) => {
   const { user, db } = await requireDb(event, { role: ['admin', 'superadmin'], clientSite: true })

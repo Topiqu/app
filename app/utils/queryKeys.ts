@@ -43,6 +43,9 @@ export const queryKeys = {
   keywordPlan: {
     list: ['keyword-plan'] as const,
   },
+  articleBatch: {
+    overview: ['article-batch'] as const,
+  },
   contentActions: {
     list: ['content-actions'] as const,
   },

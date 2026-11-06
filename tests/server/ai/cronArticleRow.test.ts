@@ -68,16 +68,19 @@ describe('generate-article cron row', () => {
     expect(task).toContain('generated.editorialReview?.approved === true')
     expect(task).toContain("generated.research?.status === 'completed'")
     expect(task).toContain('generated.research?.sourceCount > 0')
-    // A requested (API) article never auto-releases: it has no slot and is always a draft.
-    expect(task).toContain('const autoRelease = !request && client.autoRelease && client.publishToWeb')
-    expect(task).toMatch(
-      /const releasable =\s+autoRelease &&\s+qualityApproved &&\s+mediaApproved &&\s+coverApproved\n/,
+    // An API article never auto-releases: it has no slot and is always a draft. Only a SPREAD batch item may.
+    expect(task).toContain(
+      'const autoRelease = (request ? batchItem?.autoRelease === true : client.autoRelease) && client.publishToWeb',
+    )
+    expect(task).toContain('const approved = qualityApproved && mediaApproved && coverApproved')
+    expect(task).toContain(
+      'const releasable = autoRelease && approved && (!batchItem || (await batchItem.stillActive()))',
     )
     expect(task).toContain("const status = releasable && !releaseAt ? 'published' : 'draft'")
     expect(task).toContain('const coverApproved = Boolean(generated.articleImageUrl)')
     expect(task).toContain('mediaReport.counts.needsAttention === 0')
     // Nobody confirms image rights before an auto-publish, so media is chosen to need no confirmation.
-    expect(task).toContain('requireClearRights: autoRelease')
+    expect(task).toContain('requireClearRights: autoRelease || Boolean(batchItem)')
     // Every failed gate counts as a hold, not only the editorial review.
     expect(task).toContain('heldFromAutoRelease: autoRelease && !releasable')
   })

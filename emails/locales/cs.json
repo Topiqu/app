@@ -132,5 +132,14 @@
     "greeting": "{tenantName} zůstává otevřený",
     "intro": "Dobrý den, {userName}, vlastník blogu {tenantName} si obnovil účet, takže se blog neuzavře.",
     "note": "Pro vás se nic dalšího nemění."
+  },
+  "articleBatchFinished": {
+    "subject": "Váš plán článků pro {tenantName} je hotový",
+    "preview": "Podívejte se, co se napsalo a co čeká na vaši kontrolu.",
+    "greeting": "Váš plán článků je hotový",
+    "intro": "Napsané články pro <b>{tenantName}</b>: <b>{written}</b>.",
+    "summary": "Čeká na vaši kontrolu: {held}. Nepodařilo se napsat: {failed}. Kredity se účtují jen za dokončené články.",
+    "button": "Zobrazit články",
+    "footer": "Další plán můžete spustit, kdykoli budete mít volné kredity."
   }
 }

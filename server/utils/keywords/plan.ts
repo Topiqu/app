@@ -12,6 +12,9 @@ const SCOPE_CANDIDATES = MAX_SEEDS * SUGGESTIONS_PER_SEED
 const MIN_READY = 3
 // A rebuild that found too few topics finds the same few tomorrow; it waits this long before trying again.
 const SHORTAGE_RETRY_DAYS = 7
+// A rejected candidate stays out of the paid checks this long; demand and the blog both move slowly.
+const REJECTION_DAYS = 90
+const MIN_STOCK = 5
 // Labs difficulty a blog without proven rankings can realistically reach.
 export const START_DIFFICULTY = 20
 // A theme may fill at most THEME_CAP of the last THEME_WINDOW articles; below the cap each repeat
@@ -151,12 +154,19 @@ export const difficultyCeiling = (ranked: { difficulty: number | null; position:
   return proven.length ? Math.min(100, Math.max(START_DIFFICULTY, Math.max(...proven) + 10)) : START_DIFFICULTY
 }
 
-const words = (text: string) =>
+const tokens = (text: string) =>
   text
     .normalize('NFD')
     .replace(/\p{Diacritic}/gu, '')
     .toLocaleLowerCase()
-    .match(/[\p{L}\p{N}]{3,}/gu) ?? []
+    .match(/[\p{L}\p{N}]+/gu) ?? []
+
+const words = (text: string) => tokens(text).filter((token) => token.length >= 3)
+
+const keywordKey = (keyword: string) => words(keyword).sort().join(' ')
+
+// Keeps short tokens: a rebuild may group "iphone 15" with "iphone 16", but writing one does not answer the other.
+const phraseKey = (keyword: string) => tokens(keyword).sort().join(' ')
 
 /**
  * Groups word-order and accent variants, plus DataForSEO's `core_keyword` where it has one (rarely for Czech).
@@ -167,9 +177,7 @@ export const clusterIdeas = (ideas: KeywordIdea[], context: ScoreContext = {}): 
   const groups = new Map<string, KeywordIdea[]>()
   for (const idea of ideas) {
     if (idea.intent === 'navigational') continue
-    const key = words(idea.core || idea.keyword)
-      .sort()
-      .join(' ')
+    const key = keywordKey(idea.core || idea.keyword)
     if (!key) continue
     groups.set(key, [...(groups.get(key) ?? []), idea])
   }
@@ -281,12 +289,31 @@ export const planProfile = (site: PlanSite) =>
     .digest('hex')
     .slice(0, 16)
 
+/** Without a focus or keywords the seeds would be the model's guess, so a paid rebuild has nothing to go on. */
+export const hasPlanProfile = (site: Pick<ScopeSite, 'focus' | 'keywords'>) =>
+  Boolean(site.focus?.trim() || siteKeywords(site).length)
+
+/** Two weeks of the autopilot's rhythm, so a rebuild that fails today still has time to succeed before it runs out. */
+export const keywordPlanStock = (perMonth: number) =>
+  Math.min(PLAN_SIZE, Math.max(MIN_STOCK, Math.ceil((perMonth * 14) / 30)))
+
 /** The retry cooldown lives in keywordPlanAttemptedAt, so profile changes can invalidate immediately. */
 export const isPlanStale = (site: PlanSite, now: Date) => {
   if (!site.keywordPlanRefreshedAt) return true
   const age = now.getTime() - new Date(site.keywordPlanRefreshedAt).getTime()
   return age > REFRESH_DAYS * DAY_MS || site.keywordPlanProfile !== planProfile(site)
 }
+
+export type KeywordRejectionReason = AssessmentRejection | 'ranking' | 'merged'
+
+const topicPhrases = (row: { keyword: string; keywords: unknown }) => [
+  row.keyword,
+  ...(Array.isArray(row.keywords)
+    ? row.keywords.flatMap((entry: { keyword?: unknown }) =>
+        typeof entry?.keyword === 'string' ? [entry.keyword] : [],
+      )
+    : []),
+]
 
 /**
  * Rebuilds the plan from DataForSEO: Labs suggestions per seed (volume, difficulty, intent), then a SERP per
@@ -341,7 +368,8 @@ export const refreshKeywordPlan = async (site: PlanSite, now = new Date()) => {
   const unique = new Map<string, KeywordIdea>()
   for (const idea of suggestions) if (!unique.has(idea.keyword)) unique.set(idea.keyword, idea)
 
-  const [ranked, pinned, product, themed] = await Promise.all([
+  const profile = planProfile(site)
+  const [ranked, pinned, product, themed, stored, rejections] = await Promise.all([
     prisma.keywordCluster.findMany({
       where: { clientSiteId: site.id, status: 'USED', position: { not: null } },
       select: { difficulty: true, position: true, rankHistory: true },
@@ -366,6 +394,14 @@ export const refreshKeywordPlan = async (site: PlanSite, now = new Date()) => {
       distinct: ['theme'],
       take: 50,
     }),
+    prisma.keywordCluster.findMany({
+      where: { clientSiteId: site.id },
+      select: { id: true, keyword: true, keywords: true, status: true, opportunity: true },
+    }),
+    prisma.keywordRejection.findMany({
+      where: { clientSiteId: site.id, profile, rejectedAt: { gte: new Date(now.getTime() - REJECTION_DAYS * DAY_MS) } },
+      select: { keyword: true },
+    }),
   ])
   const ceiling = difficultyCeiling(
     ranked.filter(
@@ -376,9 +412,23 @@ export const refreshKeywordPlan = async (site: PlanSite, now = new Date()) => {
   const context: ScoreContext = { ceiling, sells: Boolean(product), month: now.getUTCMonth() + 1 }
   const suggested = clusterIdeas([...unique.values()], context)
   const pinnedKeywords = new Set(pinned.map((row) => row.keyword))
-  const candidates = suggested
-    .filter((cluster) => !pinnedKeywords.has(cluster.keyword) && !isKeywordCovered(cluster.keyword, titles))
-    .slice(0, SCOPE_CANDIDATES)
+  // An open topic checked recently keeps its assessment, so the rebuild buys only what the plan is missing.
+  const retained = stored.filter((row) => {
+    const opportunity = row.status === 'OPEN' ? keywordOpportunity(row.opportunity) : null
+    return opportunity?.profile === profile && now.getTime() - Date.parse(opportunity.checkedAt) < REFRESH_DAYS * DAY_MS
+  })
+  const retainedIds = new Set(retained.map((row) => row.id))
+  const decided = stored.filter((row) => ['USED', 'SKIPPED', 'RESERVED'].includes(row.status))
+  const known = new Set(
+    [...[...decided, ...retained].flatMap(topicPhrases), ...rejections.map((row) => row.keyword)]
+      .map(phraseKey)
+      .filter(Boolean),
+  )
+  const unwritten = suggested.filter(
+    (cluster) => !pinnedKeywords.has(cluster.keyword) && !isKeywordCovered(cluster.keyword, titles),
+  )
+  const fresh = unwritten.filter((cluster) => !cluster.keywords.some((entry) => known.has(phraseKey(entry.keyword))))
+  const candidates = fresh.slice(0, SCOPE_CANDIDATES)
   const inside = await inScope(
     site,
     candidates.map((cluster) => cluster.keyword),
@@ -401,7 +451,8 @@ export const refreshKeywordPlan = async (site: PlanSite, now = new Date()) => {
     }
     return { ...cluster, score: clusterScore(cluster, context) }
   })
-  const scoped = [...reassessed, ...inside.map((index) => candidates[index]!).slice(0, PLAN_SIZE)]
+  const room = Math.max(0, PLAN_SIZE - retained.length)
+  const scoped = [...reassessed, ...inside.map((index) => candidates[index]!).slice(0, room)]
 
   const serps: (ReturnType<typeof serpSignals> | null)[] = []
   const failedSerps: string[] = []
@@ -448,15 +499,39 @@ export const refreshKeywordPlan = async (site: PlanSite, now = new Date()) => {
   const enriched = grouped
     .filter((cluster) => pinnedKeywords.has(cluster.keyword) || !ranking(cluster))
     .map(({ urls: _urls, ...cluster }) => cluster)
-  const { accepted: decisions, expansions } = await assessOpportunities(
+  // Topics waiting to be written answer a need like an article does. They sit after the real articles, so an
+  // expansion pointing at one finds no article below and is dropped.
+  const planned = stored.flatMap((row) =>
+    row.status === 'RESERVED' || retainedIds.has(row.id)
+      ? [{ title: row.keyword, excerpt: keywordOpportunity(row.opportunity)?.angle }]
+      : [],
+  )
+  const {
+    accepted: decisions,
+    rejected: assessed,
+    expansions,
+  } = await assessOpportunities(
     site,
     enriched,
-    articles.map(({ title, excerpt }) => ({ title, excerpt })),
+    [...articles.map(({ title, excerpt }) => ({ title, excerpt })), ...planned],
     themed.flatMap((row) => (row.theme ? [row.theme] : [])),
   )
   if (failedSerps.length && decisions.length && !decisions.some((decision) => enriched[decision.index]!.organic.length))
     throw new Error('SERP checks failed for every recommended topic')
-  const profile = planProfile(site)
+  const heads = new Set(grouped.map((cluster) => cluster.keyword))
+  const assessedKeywords = new Set(enriched.map((cluster) => cluster.keyword))
+  // The scope check is not remembered: it skips when in doubt, so one bad answer would lock a niche's topics
+  // out for months, and asking again costs only tokens.
+  const rejected = new Map<string, KeywordRejectionReason>([
+    ...scoped.filter((c) => !heads.has(c.keyword)).map((c) => [c.keyword, 'merged'] as const),
+    ...grouped.filter((c) => !assessedKeywords.has(c.keyword)).map((c) => [c.keyword, 'ranking'] as const),
+    // Judged without SERP evidence, it was not really judged: the next rebuild asks again.
+    ...assessed.flatMap(({ index, reason }) =>
+      enriched[index]!.organic.length ? [[enriched[index]!.keyword, reason] as const] : [],
+    ),
+  ])
+  // A pin is the editor's decision, and only the current assessment may set it aside.
+  for (const keyword of pinnedKeywords) rejected.delete(keyword)
   const clusters = decisions
     .map((decision) => {
       const { organic, ...cluster } = enriched[decision.index]!
@@ -484,7 +559,7 @@ export const refreshKeywordPlan = async (site: PlanSite, now = new Date()) => {
 
   const existing = await prisma.keywordCluster.findMany({
     where: { clientSiteId: site.id },
-    select: { id: true, keyword: true, status: true },
+    select: { id: true, keyword: true },
   })
   const byKeyword = new Map(existing.map((row) => [row.keyword, row]))
   await prisma.$transaction(async (tx) => {
@@ -496,8 +571,28 @@ export const refreshKeywordPlan = async (site: PlanSite, now = new Date()) => {
       else await tx.keywordCluster.create({ data: { ...data, clientSiteId: site.id } })
     }
     const kept = new Set(clusters.map((cluster) => cluster.keyword))
-    const stale = existing.filter((row) => row.status === 'OPEN' && !kept.has(row.keyword)).map((row) => row.id)
+    // From the snapshot this rebuild judged: a topic a cancelled batch released meanwhile is not stale.
+    const stale = stored
+      .filter((row) => row.status === 'OPEN' && !kept.has(row.keyword) && !retainedIds.has(row.id))
+      .map((row) => row.id)
     if (stale.length) await tx.keywordCluster.deleteMany({ where: { id: { in: stale }, status: 'OPEN' } })
+    await tx.keywordRejection.deleteMany({
+      where: {
+        clientSiteId: site.id,
+        OR: [{ profile: { not: profile } }, { rejectedAt: { lt: new Date(now.getTime() - REJECTION_DAYS * DAY_MS) } }],
+      },
+    })
+    if (rejected.size)
+      await tx.keywordRejection.createMany({
+        data: [...rejected].map(([keyword, reason]) => ({
+          clientSiteId: site.id,
+          keyword,
+          profile,
+          reason,
+          rejectedAt: now,
+        })),
+        skipDuplicates: true,
+      })
     await tx.clientSite.update({
       where: { id: site.id },
       data: { keywordPlanRefreshedAt: now, keywordPlanProfile: profile },
@@ -520,11 +615,18 @@ export const refreshKeywordPlan = async (site: PlanSite, now = new Date()) => {
     return 0
   })
 
+  const rejectedCounts: Partial<Record<KeywordRejectionReason, number>> = {}
+  for (const reason of rejected.values()) rejectedCounts[reason] = (rejectedCounts[reason] ?? 0) + 1
   await logAction({
     action: 'KEYWORD_PLAN_REFRESHED',
     clientSiteId: site.id,
     metadata: {
       clusters: clusters.length,
+      suggestions: unique.size,
+      fresh: fresh.length,
+      known: unwritten.length - fresh.length,
+      retained: retained.length,
+      rejected: rejectedCounts,
       outOfScope: candidates.length - inside.length,
       unsuitable: scoped.length - clusters.length,
       serpChecked: serps.filter(Boolean).length,
@@ -577,60 +679,83 @@ const MONTHS = [
   'December',
 ]
 
-/**
- * Rebuilds a stale plan first. The claim is a one-day lease written before the paid calls: overlapping
- * runs cannot both pay, and a failure or a crash mid-rebuild retries tomorrow instead of every slot.
- */
-export const keywordPlanFor = async (site: PlanSite, now = new Date()) => {
+const loadReadyTopics = async (site: PlanSite) => {
   const profile = planProfile(site)
   const current = <T extends { opportunity: unknown }>(rows: T[]) =>
     rows.flatMap((row) => {
       const opportunity = keywordOpportunity(row.opportunity)
       return opportunity?.profile === profile ? [{ ...row, opportunity }] : []
     })
-  const load = async () => {
-    const [pinned, open, recent] = await Promise.all([
-      prisma.keywordCluster.findMany({
-        where: { clientSiteId: site.id, status: 'PINNED' },
-        select: candidateSelect,
-        orderBy: { updatedAt: 'desc' },
-        take: PLAN_SIZE,
-      }),
-      prisma.keywordCluster.findMany({
-        where: { clientSiteId: site.id, status: 'OPEN' },
-        select: candidateSelect,
-        orderBy: { score: 'desc' },
-        take: PLAN_SIZE,
-      }),
-      recentThemes(site.id),
-    ])
-    return { pinned: current(pinned), open: current(open), recent }
-  }
-  let ready = await load()
+  const [pinned, open, recent] = await Promise.all([
+    prisma.keywordCluster.findMany({
+      where: { clientSiteId: site.id, status: 'PINNED' },
+      select: candidateSelect,
+      orderBy: { updatedAt: 'desc' },
+      take: PLAN_SIZE,
+    }),
+    prisma.keywordCluster.findMany({
+      where: { clientSiteId: site.id, status: 'OPEN' },
+      select: candidateSelect,
+      orderBy: { score: 'desc' },
+      take: PLAN_SIZE,
+    }),
+    recentThemes(site.id),
+  ])
+  return { pinned: current(pinned), open: current(open), recent }
+}
+
+/**
+ * Every assessed topic in pick order, without the paid rebuild and recheck of `keywordPlanFor`. The theme cap
+ * rests a theme for the next article; a batch runs for weeks, so capped topics follow the others.
+ */
+export const planTopicsFor = async (site: PlanSite, now = new Date()) => {
+  const ready = await loadReadyTopics(site)
+  const ordered = orderCandidates(ready.pinned, ready.open, ready.recent, now.getUTCMonth() + 1)
+  return [...new Set([...ordered, ...ready.open])]
+}
+
+/** The topic a batch item reserved. NULL when a rebuild left it without an assessment the writer can use. */
+export const reservedPlanTopic = async (id: string, clientSiteId: string) => {
+  const row = await prisma.keywordCluster.findFirst({ where: { id, clientSiteId }, select: candidateSelect })
+  const opportunity = row && keywordOpportunity(row.opportunity)
+  return opportunity ? { ...row, opportunity } : null
+}
+
+/**
+ * Rebuilds a stale plan or one holding fewer than `stock` topics. The claim is a one-day lease written before
+ * the paid calls: overlapping runs cannot both pay, and a failure or a crash mid-rebuild retries tomorrow.
+ */
+export const refillKeywordPlan = async (site: PlanSite, stock: number, now = new Date()) => {
+  const wanted = Math.min(stock, PLAN_SIZE)
+  const ready = await loadReadyTopics(site)
   const previous = site.keywordPlanAttemptedAt ? new Date(site.keywordPlanAttemptedAt) : null
   const canRetry = !previous || now.getTime() - previous.getTime() >= DAY_MS
+  if (!hasDataForSeo() || !hasPlanProfile(site) || !canRetry) return { ready, attempted: false }
   const due =
     isPlanStale(site, now) ||
-    (ready.pinned.length + ready.open.length < MIN_READY && (await shortageDue(site, ready, now)))
-  if (hasDataForSeo() && canRetry && due) {
-    const claimed = await prisma.clientSite.updateMany({
-      where: { id: site.id, keywordPlanAttemptedAt: previous },
-      data: { keywordPlanAttemptedAt: now },
+    (ready.pinned.length + ready.open.length < wanted && (await shortageDue(site, ready, wanted, now)))
+  if (!due) return { ready, attempted: false }
+  const claimed = await prisma.clientSite.updateMany({
+    where: { id: site.id, keywordPlanAttemptedAt: previous },
+    data: { keywordPlanAttemptedAt: now },
+  })
+  if (!claimed.count) return { ready, attempted: false }
+  try {
+    await refreshKeywordPlan(site, now)
+    return { ready: await loadReadyTopics(site), attempted: true }
+  } catch (error) {
+    console.error('[keyword-plan] Rebuild failed:', site.id, (error as Error).message)
+    await logAction({
+      action: 'KEYWORD_PLAN_REFRESH_FAILED',
+      clientSiteId: site.id,
+      metadata: { error: (error as Error).message },
     })
-    if (claimed.count) {
-      try {
-        await refreshKeywordPlan(site, now)
-        ready = await load()
-      } catch (error) {
-        console.error('[keyword-plan] Rebuild failed:', site.id, (error as Error).message)
-        await logAction({
-          action: 'KEYWORD_PLAN_REFRESH_FAILED',
-          clientSiteId: site.id,
-          metadata: { error: (error as Error).message },
-        })
-      }
-    }
+    return { ready, attempted: true }
   }
+}
+
+export const keywordPlanFor = async (site: PlanSite, now = new Date()) => {
+  const { ready } = await refillKeywordPlan(site, MIN_READY, now)
   const ordered = orderCandidates(ready.pinned, ready.open, ready.recent, now.getUTCMonth() + 1)
   return (await recheckCoverage(site, ordered, now)).slice(0, 3)
 }
@@ -740,17 +865,31 @@ const recheckCoverage = async <T extends RecheckRow>(site: PlanSite, ordered: T[
 }
 
 /**
- * A short plan is refilled daily only when the last rebuild found enough topics and the blog used them up.
- * A niche where it found fewer would pay for the same few again, so that waits SHORTAGE_RETRY_DAYS.
+ * A short plan is refilled daily only when the last rebuild found enough topics and they went: a batch reserved
+ * them, or the blog used them and fewer than MIN_READY remain. Above that the stock is a buffer, and rebuilding
+ * at every dip would pay daily for a topic or two. A niche where it found fewer would pay for the same few again.
+ * Both wait SHORTAGE_RETRY_DAYS.
  */
-const shortageDue = async (site: PlanSite, ready: { pinned: unknown[]; open: unknown[] }, now: Date) => {
+const shortageDue = async (
+  site: PlanSite,
+  ready: { pinned: unknown[]; open: unknown[] },
+  wanted: number,
+  now: Date,
+) => {
   if (!site.keywordPlanRefreshedAt) return true
   const refreshedAt = new Date(site.keywordPlanRefreshedAt)
   if (now.getTime() - refreshedAt.getTime() >= SHORTAGE_RETRY_DAYS * DAY_MS) return true
-  const used = await prisma.keywordCluster.count({
-    where: { clientSiteId: site.id, status: 'USED', usedAt: { gte: refreshedAt } },
+  const available = ready.pinned.length + ready.open.length
+  const spent = await prisma.keywordCluster.count({
+    where: {
+      clientSiteId: site.id,
+      OR: [
+        { status: 'RESERVED', updatedAt: { gte: refreshedAt } },
+        ...(available < MIN_READY ? [{ status: 'USED' as const, usedAt: { gte: refreshedAt } }] : []),
+      ],
+    },
   })
-  return used + ready.pinned.length + ready.open.length >= MIN_READY
+  return spent + available >= wanted
 }
 
 /** Within three months of its peak a topic has to go out now, whatever the feed wrote recently. */

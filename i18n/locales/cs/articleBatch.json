@@ -1,0 +1,145 @@
+{
+  "articleBatch": {
+    "navigation": "Využít volné kredity",
+    "title": "Využijte volné kredity",
+    "description": "Podívejte se, co vaše kredity dokážou nad rámec autopilota, a využijte je, aniž byste články zadávali po jednom.",
+    "loadFailed": "Přehled se nepodařilo načíst.",
+    "disabledTitle": "K dispozici v tarifech s AI články",
+    "disabledDescription": "Přejděte na vyšší tarif a Topiqu za vás bude psát články.",
+    "billingLink": "Využít volné kredity",
+    "activity": "Napsáno {done} z {total} článků",
+    "rolloverCapTitle": "Převedené kredity dosáhly limitu",
+    "rolloverCapDescription": "Nevyužité kredity z tohoto období se už nepřevedou. Když je využijete teď, nepropadnou.",
+    "stats": {
+      "free": {
+        "label": "Volné kredity",
+        "note": "z {available} dostupných",
+        "info": "Dostupné kredity po odečtení toho, co autopilot pravděpodobně spotřebuje v příštích 30 dnech. Jde o odhad."
+      },
+      "surplus": {
+        "label": "Nevyužito každý měsíc",
+        "note": "z měsíční dotace {allowance} kreditů",
+        "info": "Kolik kreditů z měsíční dotace autopilot při současném rytmu nevyužije."
+      },
+      "autopilot": {
+        "label": "Autopilot spotřebuje za měsíc",
+        "note": "{n} článek | {n} články | {n} článků",
+        "info": "Kolik kreditů autopilot pravděpodobně spotřebuje v příštích 30 dnech při současném rytmu a kvalitě."
+      }
+    },
+    "levers": {
+      "title": "Doporučené změny",
+      "description": "Tato nastavení využijí více z vaší dotace bez práce navíc.",
+      "saved": "Nastavení je uložené",
+      "quality": {
+        "title": "Psát v kvalitě {level}",
+        "description": "Stejný počet článků za měsíc ({articles}) by spotřeboval {credits} z vašich {allowance} kreditů. Na webu jich nepřibude víc.",
+        "apply": "Přepnout na {level}"
+      },
+      "tempo": {
+        "title": "Zrychlit autopilota",
+        "description": "Autopilot by psal zhruba {articles} článků za měsíc místo {current}.",
+        "note": "Víc článků znamená i víc čtení pro vaše publikum. V nastavení to můžete kdykoli změnit.",
+        "apply": "Zrychlit",
+        "confirmTitle": "Zrychlit autopilota?",
+        "confirmMessage": "Autopilot bude psát zhruba {articles} článků za měsíc a spotřebuje tomu odpovídající kredity. V nastavení to můžete kdykoli změnit."
+      }
+    },
+    "plan": {
+      "title": "Plán článků",
+      "description": "Topiqu navrhne témata, vy je jedním kliknutím schválíte a články se napíší na pozadí. Návrh je zdarma.",
+      "propose": "Navrhnout články",
+      "openSettings": "Otevřít nastavení",
+      "noPermission": "Spuštění plánu vyžaduje oprávnění používat AI a upravovat články ostatních autorů.",
+      "hint": "Volné kredity stačí na {n} článek. | Volné kredity stačí na {n} články. | Volné kredity stačí na {n} článků."
+    },
+    "proposal": {
+      "listLabel": "Navržené články",
+      "select": "Zahrnout: {topic}",
+      "editTopic": "Téma článku",
+      "volume": "zhruba {n} hledání za měsíc",
+      "removeTopic": "Odebrat: {topic}",
+      "proposing": "Hledáme další témata. Seznam už můžete upravovat.",
+      "fewer": "Našli jsme jen {n} silné téma. Ostatní kredity vám zůstanou na později. | Našli jsme jen {n} silná témata. Ostatní kredity vám zůstanou na později. | Našli jsme jen {n} silných témat. Ostatní kredity vám zůstanou na později.",
+      "weakNote": "Témata, kterými si nejsme tak jistí, nejsou vybraná. Zaškrtněte ta, která chcete napsat.",
+      "addPlaceholder": "Přidat vlastní téma",
+      "add": "Přidat",
+      "modeLegend": "Co se má s články stát?",
+      "paceLabel": "Tempo publikování",
+      "duration": "Odhadovaná délka plánu ve dnech: {days}.",
+      "fastPace": "Tohle je rychlé tempo. Velké množství článků najednou může na vyhledávače i čtenáře působit nepřirozeně.",
+      "overFree": "Tento plán využije i kredity, které pravděpodobně bude potřebovat autopilot. Autopilotovi tak můžou dojít dřív.",
+      "discard": "Zahodit návrh",
+      "approve": "Schválit {n} článek ({credits} kr.) | Schválit {n} články ({credits} kr.) | Schválit {n} článků ({credits} kr.)",
+      "approved": "Plán je schválený. Tuto stránku můžete zavřít."
+    },
+    "mode": {
+      "SPREAD": {
+        "label": "Psát a publikovat postupně",
+        "description": "Každý článek se napíše krátce před svým termínem a vyjde, pokud projde stejnými kontrolami jako u autopilota. Ostatní počkají na vás.",
+        "unavailable": "Vyžaduje publikování na blogu Topiqu a oprávnění publikovat."
+      },
+      "DRAFTS": {
+        "label": "Napsat hned jako koncepty",
+        "description": "Všechny články se napíší jeden po druhém a vy je sami zkontrolujete a vydáte."
+      }
+    },
+    "pace": {
+      "12": "Dvakrát denně",
+      "24": "Každý den",
+      "48": "Každé 2 dny",
+      "84": "Dvakrát týdně",
+      "168": "Jednou týdně"
+    },
+    "progress": {
+      "resume": "Pokračovat",
+      "cancel": "Zrušit zbytek",
+      "label": "Průběh plánu",
+      "summaryActive": "Napsáno {done} z {total} článků",
+      "summaryFinished": "Plán je hotový: napsáno {done} z {total} článků",
+      "summaryCancelled": "Plán je zrušený: napsáno {done} z {total} článků",
+      "cancelTitle": "Zrušit zbytek plánu?",
+      "cancelMessage": "Nezačaté články se nenapíší a kredity vám zůstanou. Článek, který se právě píše, se ještě dokončí a naúčtuje.",
+      "paused": {
+        "credits": "Plán čeká na kredity. Až jich budete mít dost, sám bude pokračovat.",
+        "allowance": "Psaní je dočasně pozastavené. Plán bude sám pokračovat.",
+        "access": "Osoba, která plán schválila, už ho nemůže spouštět. Pokračujte a plán poběží pod vaším účtem.",
+        "failures": "Několik článků po sobě se nepodařilo napsat, proto je plán pozastavený. Zítra to zkusíme znovu, nebo můžete pokračovat hned."
+      },
+      "state": {
+        "queued": "Čeká",
+        "running": "Píše se",
+        "held": "Ke kontrole",
+        "scheduled": "Naplánováno",
+        "published": "Publikováno",
+        "draft": "Koncept",
+        "failed": "Nepodařilo se",
+        "cancelled": "Zrušeno"
+      }
+    },
+    "errors": {
+      "generic": "Nepovedlo se to. Zkuste to prosím znovu.",
+      "ACTIVE": "Už běží jiný plán. Počkejte na jeho dokončení, nebo ho nejdřív zrušte.",
+      "NO_CREDITS": "Momentálně nemáte kredity, se kterými by šlo plánovat.",
+      "NO_PROFILE": "Nejdříve prosím vyplňte, o čem váš blog je, aby navržená témata odpovídala jeho zaměření.",
+      "NO_WEB_PUBLISHING": "Postupné publikování vyžaduje publikování na blogu Topiqu.",
+      "EMPTY": "Vybraná témata už nejsou k dispozici. Nechte si články navrhnout znovu.",
+      "INSUFFICIENT_CREDITS": "Na tolik článků nemáte dost kreditů. Některé odeberte."
+    },
+    "notifications": {
+      "cancelled": "Váš plán článků byl zrušen, protože váš tarif už AI články nezahrnuje.",
+      "finished": "Váš plán článků je hotový: napsáno {written}, ke kontrole {held}, nepodařilo se {failed}.",
+      "paused": {
+        "credits": "Váš plán článků čeká na kredity.",
+        "allowance": "Váš plán článků je dočasně pozastavený a bude sám pokračovat.",
+        "access": "Váš plán článků je pozastavený, protože ho schvalující osoba už nemůže spouštět.",
+        "failures": "Váš plán článků je pozastavený po několika nepovedených článcích."
+      }
+    },
+    "nudge": {
+      "title": "Volné kredity k využití: {n}",
+      "description": "Topiqu vám navrhne, jak je využít. Vy jen schválíte.",
+      "action": "Podívat se"
+    }
+  }
+}

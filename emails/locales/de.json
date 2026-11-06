@@ -132,5 +132,14 @@
     "greeting": "{tenantName} bleibt geöffnet",
     "intro": "Hallo {userName}, der Inhaber von {tenantName} hat sein Konto wiederhergestellt, der Blog wird also nicht geschlossen.",
     "note": "Für dich ändert sich sonst nichts."
+  },
+  "articleBatchFinished": {
+    "subject": "Ihr Artikelplan für {tenantName} ist fertig",
+    "preview": "Sehen Sie, was geschrieben wurde und was Ihre Prüfung braucht.",
+    "greeting": "Ihr Artikelplan ist fertig",
+    "intro": "Für <b>{tenantName}</b> geschriebene Artikel: <b>{written}</b>.",
+    "summary": "Warten auf Ihre Prüfung: {held}. Konnten nicht geschrieben werden: {failed}. Credits werden nur für fertige Artikel berechnet.",
+    "button": "Artikel ansehen",
+    "footer": "Sie können jederzeit einen weiteren Plan starten, wenn Sie freie Credits haben."
   }
 }

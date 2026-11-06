@@ -91,6 +91,25 @@ describe('keyword opportunities', () => {
       [{ title: 'Pokryté' }],
     )
     expect(result.accepted.map((entry) => entry.index)).toEqual([0])
+    expect(result.rejected).toEqual([
+      { index: 1, reason: 'covered' },
+      { index: 2, reason: 'duplicate' },
+      { index: 3, reason: 'navigational' },
+      { index: 4, reason: 'poor' },
+    ])
+  })
+
+  it('rejects a query the model would not write or could not explain', async () => {
+    vi.mocked(generateText).mockResolvedValue({
+      output: { decisions: [decision(1, { write: false }), decision(2, { angle: '  ' })] },
+      usage: {},
+    } as never)
+    const result = await assessOpportunities(site, ['slabé', 'prázdné'].map(candidate), [])
+    expect(result.accepted).toEqual([])
+    expect(result.rejected).toEqual([
+      { index: 0, reason: 'other' },
+      { index: 1, reason: 'other' },
+    ])
   })
 
   it('turns a covered need the covering article misses into an expansion of that article', async () => {
@@ -150,7 +169,12 @@ describe('keyword opportunities', () => {
   })
 
   it('does not call the model for an empty candidate list', async () => {
-    await expect(assessOpportunities(site, [], [])).resolves.toEqual({ accepted: [], expansions: [], covered: [] })
+    await expect(assessOpportunities(site, [], [])).resolves.toEqual({
+      accepted: [],
+      rejected: [],
+      expansions: [],
+      covered: [],
+    })
     expect(generateText).not.toHaveBeenCalled()
   })
 })

@@ -1,4 +1,5 @@
 import "./base"
+import "./articleBatch"
 import "./domain"
 import "./aiUsage"
 import "./articleCreditWallet"
@@ -153,6 +154,7 @@ model ClientSite with Base {
     webhooks             Webhook[]
     widgets              SiteWidget[]
     keywordClusters      KeywordCluster[]
+    keywordRejections    KeywordRejection[]
     contentActions       ContentAction[]
     /// Last successful DataForSEO rebuild.
     keywordPlanRefreshedAt DateTime?
@@ -171,6 +173,8 @@ model ClientSite with Base {
     webhookDeliveries    WebhookDelivery[]
     apiKeys              ApiKey[]
     apiGenerations       ApiGeneration[]
+    articleBatches       ArticleBatch[]
+    articleBatchItems    ArticleBatchItem[]
     aiSeriesEnabled      Boolean             @default(false)
     articleQuality       ArticleQuality      @default(STANDARD)
     keywords             Json?

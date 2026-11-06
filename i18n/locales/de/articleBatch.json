@@ -1,0 +1,145 @@
+{
+  "articleBatch": {
+    "navigation": "Freie Credits nutzen",
+    "title": "Nutzen Sie Ihre freien Credits",
+    "description": "Sehen Sie, was Ihre Credits über den Autopilot hinaus leisten können, und setzen Sie sie ein, ohne Artikel einzeln anzulegen.",
+    "loadFailed": "Die Übersicht konnte nicht geladen werden.",
+    "disabledTitle": "Verfügbar in Tarifen mit KI-Artikeln",
+    "disabledDescription": "Wechseln Sie den Tarif, damit Topiqu Artikel für Sie schreibt.",
+    "billingLink": "Freie Credits nutzen",
+    "activity": "{done} von {total} Artikeln geschrieben",
+    "rolloverCapTitle": "Ihre übertragenen Credits haben das Limit erreicht",
+    "rolloverCapDescription": "Ungenutzte Credits aus diesem Zeitraum werden nicht mehr übertragen. Wenn Sie sie jetzt nutzen, verfallen sie nicht.",
+    "stats": {
+      "free": {
+        "label": "Freie Credits",
+        "note": "von {available} verfügbaren",
+        "info": "Verfügbare Credits abzüglich dessen, was der Autopilot in den nächsten 30 Tagen voraussichtlich verbraucht. Das ist eine Schätzung."
+      },
+      "surplus": {
+        "label": "Jeden Monat ungenutzt",
+        "note": "von {allowance} Credits Monatskontingent",
+        "info": "Wie viele Credits Ihres Monatskontingents der Autopilot im aktuellen Rhythmus nicht nutzt."
+      },
+      "autopilot": {
+        "label": "Autopilot verbraucht monatlich",
+        "note": "{n} Artikel | {n} Artikel",
+        "info": "Credits, die der Autopilot in den nächsten 30 Tagen bei aktuellem Rhythmus und aktueller Qualität voraussichtlich verbraucht."
+      }
+    },
+    "levers": {
+      "title": "Empfohlene Änderungen",
+      "description": "Mit diesen Einstellungen nutzen Sie mehr von Ihrem Kontingent ohne Mehraufwand.",
+      "saved": "Einstellungen gespeichert",
+      "quality": {
+        "title": "In Qualität {level} schreiben",
+        "description": "{articles} Artikel im Monat würden {credits} Ihrer {allowance} Credits nutzen, ohne dass mehr Artikel auf Ihrer Website erscheinen.",
+        "apply": "Zu {level} wechseln"
+      },
+      "tempo": {
+        "title": "Autopilot beschleunigen",
+        "description": "Der Autopilot würde etwa {articles} Artikel im Monat schreiben statt {current}.",
+        "note": "Mehr Artikel bedeuten auch mehr Lesestoff für Ihr Publikum. Sie können das jederzeit in den Einstellungen ändern.",
+        "apply": "Beschleunigen",
+        "confirmTitle": "Autopilot beschleunigen?",
+        "confirmMessage": "Der Autopilot schreibt dann etwa {articles} Artikel im Monat und verbraucht entsprechend Credits. Sie können das jederzeit in den Einstellungen ändern."
+      }
+    },
+    "plan": {
+      "title": "Artikelplan",
+      "description": "Topiqu schlägt Themen vor, Sie genehmigen sie mit einem Klick und die Artikel entstehen im Hintergrund. Der Vorschlag ist kostenlos.",
+      "propose": "Artikel vorschlagen",
+      "openSettings": "Einstellungen öffnen",
+      "noPermission": "Zum Starten eines Plans benötigen Sie die Berechtigung, KI zu nutzen und Artikel anderer Autoren zu bearbeiten.",
+      "hint": "Ihre freien Credits reichen für {n} Artikel. | Ihre freien Credits reichen für {n} Artikel."
+    },
+    "proposal": {
+      "listLabel": "Vorgeschlagene Artikel",
+      "select": "Aufnehmen: {topic}",
+      "editTopic": "Thema des Artikels",
+      "volume": "etwa {n} Suchanfragen im Monat",
+      "removeTopic": "Entfernen: {topic}",
+      "proposing": "Wir suchen weitere Themen. Sie können die Liste bereits bearbeiten.",
+      "fewer": "Wir haben nur {n} starkes Thema gefunden. Die übrigen Credits bleiben für später. | Wir haben nur {n} starke Themen gefunden. Die übrigen Credits bleiben für später.",
+      "weakNote": "Themen, bei denen wir weniger sicher sind, sind nicht ausgewählt. Wählen Sie die aus, die geschrieben werden sollen.",
+      "addPlaceholder": "Eigenes Thema hinzufügen",
+      "add": "Hinzufügen",
+      "modeLegend": "Was soll mit den Artikeln geschehen?",
+      "paceLabel": "Veröffentlichungstempo",
+      "duration": "Der Plan dauert etwa {days} Tage.",
+      "fastPace": "Das ist ein hohes Tempo. Viele Artikel auf einmal können auf Suchmaschinen und Leser unnatürlich wirken.",
+      "overFree": "Dieser Plan nutzt auch Credits, die der Autopilot voraussichtlich braucht. Dem Autopilot können sie dadurch früher ausgehen.",
+      "discard": "Vorschlag verwerfen",
+      "approve": "{n} Artikel für {credits} Credits genehmigen | {n} Artikel für {credits} Credits genehmigen",
+      "approved": "Der Plan ist genehmigt. Sie können diese Seite schließen."
+    },
+    "mode": {
+      "SPREAD": {
+        "label": "Schrittweise schreiben und veröffentlichen",
+        "description": "Jeder Artikel entsteht kurz vor seinem Termin und erscheint, wenn er dieselben Prüfungen wie beim Autopilot besteht. Die anderen warten auf Sie.",
+        "unavailable": "Erfordert die Veröffentlichung auf Ihrem Topiqu-Blog und die Berechtigung zum Veröffentlichen."
+      },
+      "DRAFTS": {
+        "label": "Jetzt als Entwürfe schreiben",
+        "description": "Alle Artikel entstehen nacheinander, und Sie prüfen und veröffentlichen sie selbst."
+      }
+    },
+    "pace": {
+      "12": "Zweimal täglich",
+      "24": "Jeden Tag",
+      "48": "Alle 2 Tage",
+      "84": "Zweimal pro Woche",
+      "168": "Einmal pro Woche"
+    },
+    "progress": {
+      "resume": "Fortsetzen",
+      "cancel": "Rest abbrechen",
+      "label": "Fortschritt des Plans",
+      "summaryActive": "{done} von {total} Artikeln geschrieben",
+      "summaryFinished": "Plan abgeschlossen: {done} von {total} Artikeln geschrieben",
+      "summaryCancelled": "Plan abgebrochen: {done} von {total} Artikeln geschrieben",
+      "cancelTitle": "Rest des Plans abbrechen?",
+      "cancelMessage": "Noch nicht begonnene Artikel werden nicht geschrieben und die Credits bleiben Ihnen. Ein Artikel in Arbeit wird noch fertiggestellt und berechnet.",
+      "paused": {
+        "credits": "Der Plan wartet auf Credits. Sobald Sie genug haben, läuft er von selbst weiter.",
+        "allowance": "Das Schreiben ist vorübergehend pausiert. Der Plan läuft von selbst weiter.",
+        "access": "Die Person, die den Plan genehmigt hat, kann ihn nicht mehr ausführen. Setzen Sie ihn fort, damit er unter Ihrem Konto weiterläuft.",
+        "failures": "Mehrere Artikel nacheinander sind fehlgeschlagen, daher ist der Plan pausiert. Wir versuchen es morgen erneut, oder Sie setzen ihn jetzt fort."
+      },
+      "state": {
+        "queued": "Wartet",
+        "running": "Wird geschrieben",
+        "held": "Zu prüfen",
+        "scheduled": "Geplant",
+        "published": "Veröffentlicht",
+        "draft": "Entwurf",
+        "failed": "Fehlgeschlagen",
+        "cancelled": "Abgebrochen"
+      }
+    },
+    "errors": {
+      "generic": "Das hat nicht geklappt. Bitte versuchen Sie es erneut.",
+      "ACTIVE": "Es läuft bereits ein Plan. Warten Sie, bis er fertig ist, oder brechen Sie ihn zuerst ab.",
+      "NO_CREDITS": "Sie haben derzeit keine Credits, mit denen Sie planen könnten.",
+      "NO_PROFILE": "Sagen Sie uns zuerst, worum es in Ihrem Blog geht, damit die vorgeschlagenen Themen passen.",
+      "NO_WEB_PUBLISHING": "Schrittweises Veröffentlichen erfordert die Veröffentlichung auf Ihrem Topiqu-Blog.",
+      "EMPTY": "Die ausgewählten Themen sind nicht mehr verfügbar. Lassen Sie sich erneut Artikel vorschlagen.",
+      "INSUFFICIENT_CREDITS": "Für so viele Artikel haben Sie nicht genug Credits. Entfernen Sie einige davon."
+    },
+    "notifications": {
+      "cancelled": "Ihr Artikelplan wurde abgebrochen, weil Ihr Tarif keine KI-Artikel mehr enthält.",
+      "finished": "Ihr Artikelplan ist fertig: {written} geschrieben, {held} zu prüfen, {failed} fehlgeschlagen.",
+      "paused": {
+        "credits": "Ihr Artikelplan wartet auf Credits.",
+        "allowance": "Ihr Artikelplan ist vorübergehend pausiert und läuft von selbst weiter.",
+        "access": "Ihr Artikelplan ist pausiert, weil die genehmigende Person ihn nicht mehr ausführen kann.",
+        "failures": "Ihr Artikelplan ist nach mehreren fehlgeschlagenen Artikeln pausiert."
+      }
+    },
+    "nudge": {
+      "title": "Sie haben {n} freie Credits",
+      "description": "Topiqu schlägt vor, wie Sie sie nutzen können. Sie genehmigen nur noch.",
+      "action": "Ansehen"
+    }
+  }
+}

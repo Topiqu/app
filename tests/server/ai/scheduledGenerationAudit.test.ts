@@ -54,7 +54,14 @@ const setup = async (
   failure?: 'reservation' | 'author' | 'generation' | 'persistence' | 'publication' | 'settlement',
   communityInsight: JsonValue = null,
   articleQuality = 'STANDARD',
-  options: { autoRelease?: boolean; editorialReview?: unknown } = {},
+  options: {
+    autoRelease?: boolean
+    editorialReview?: unknown
+    request?: Parameters<typeof import('../../../server/tasks/generate-article').processClient>[2]
+    slot?: Date
+    writerError?: unknown
+    reservationError?: unknown
+  } = {},
 ) => {
   const log = vi.fn().mockResolvedValue({})
   const client = {
@@ -84,6 +91,8 @@ const setup = async (
     usage: { totalTokens: 42 },
   }
   const createArticle = vi.fn(async ({ data }) => ({ ...data, id: 'article-1', user: { role: 'ai' } }))
+  const linkCluster = vi.fn(async () => ({ count: 1 }))
+  const linkBatchItem = vi.fn(async () => ({ count: 1 }))
   const transaction = vi.fn(async (run) => {
     if (failure === 'persistence') throw new Error('Article persistence failed')
     return run({
@@ -91,12 +100,15 @@ const setup = async (
         findMany: async () => [],
         create: createArticle,
       },
+      articleBatchItem: { updateMany: linkBatchItem },
+      keywordCluster: { updateMany: linkCluster },
       articleTag: { createMany: async () => ({ count: 0 }) },
       mediaRightsPublicationSnapshot: { create: async () => ({}) },
     })
   })
   const reservation = vi.fn(async (_tenant, _action, run, _options) => {
     if (failure === 'reservation') throw new Error('No article credits')
+    if (options.reservationError) throw options.reservationError
     const outcome = await run({ id: 'operation-1' })
     if (failure === 'settlement') throw new Error('Settlement failed')
     return outcome
@@ -131,6 +143,7 @@ const setup = async (
   vi.stubGlobal('researchRequest', () => false)
   const writer = vi.fn(async () => {
     if (failure === 'generation') throw new Error('Writer unavailable')
+    if (options.writerError) throw options.writerError
     return generated
   })
   vi.stubGlobal('generateArticle', writer)
@@ -152,17 +165,177 @@ const setup = async (
     if (failure === 'publication') throw new Error('Publication failed')
   })
   vi.stubGlobal('invalidateFeed', vi.fn())
+  const reservedTopic = vi.fn(async (id: string) => ({
+    id,
+    keyword: 'pond care',
+    intent: 'informational',
+    keywords: [{ keyword: 'pond care' }],
+    questions: [],
+    opportunity: { angle: 'Winter', reason: 'Readers ask', organic: [] },
+  }))
+  vi.stubGlobal('reservedPlanTopic', reservedTopic)
   const { processClient } = await import('../../../server/tasks/generate-article')
   return {
-    run: () => processClient(client, new Date('2020-01-01T12:00:00Z')),
+    run: () => processClient(client as never, options.slot ?? new Date('2020-01-01T12:00:00Z'), options.request),
     log,
     transaction,
     reservation,
     writer,
     createArticle,
     notifyHeld,
+    linkCluster,
+    linkBatchItem,
+    reservedTopic,
   }
 }
+
+describe('generation client', () => {
+  it('loads the saved quality, or the autopilot would always write and charge Standard', async () => {
+    await setup()
+    const findFirst = vi.fn().mockResolvedValue(null)
+    vi.stubGlobal('prisma', { clientSite: { findFirst } })
+    const { loadGenerationClient } = await import('../../../server/tasks/generate-article')
+    await loadGenerationClient('tenant-1')
+    expect(findFirst.mock.calls[0]![0].select).toMatchObject({ articleQuality: true })
+  })
+})
+
+describe('article batch items', () => {
+  const batchItem = (overrides = {}) => ({
+    topic: 'Pond care in winter',
+    batchItem: {
+      id: 'item-1',
+      creditKey: 'article-batch:item-1:1',
+      keywordClusterId: null,
+      autoRelease: false,
+      plannedTopics: ['Pond care in spring'],
+      stillActive: async () => true,
+      ...overrides,
+    },
+  })
+  const blocking = { code: 'missing_specifics', note: 'Name a change.', blocking: true }
+  const future = new Date(Date.now() + 60 * 60_000)
+
+  it('writes the fixed topic under its own credit key and tells the picker about its siblings', async () => {
+    const { run, reservation, writer } = await setup(undefined, null, 'STANDARD', { request: batchItem() })
+    await expect(run()).resolves.toMatchObject({ status: 'draft' })
+    expect(reservation.mock.calls[0]![3].key).toBe('article-batch:item-1:1')
+    expect(reservation.mock.calls[0]![3].metadata).toMatchObject({ articleBatchItemId: 'item-1' })
+    expect(pickArticleTopic).toHaveBeenCalledWith(
+      expect.objectContaining({
+        requested: expect.objectContaining({ topic: 'Pond care in winter' }),
+        plannedTopics: ['Pond care in spring'],
+      }),
+    )
+    expect(writer).toHaveBeenCalledWith(
+      'tenant-1',
+      expect.any(String),
+      expect.objectContaining({ requireClearRights: true }),
+    )
+  })
+
+  it('explains a held draft without an email per article', async () => {
+    const { run, createArticle, notifyHeld } = await setup(undefined, null, 'STANDARD', {
+      request: batchItem(),
+      editorialReview: { approved: false, issues: [blocking] },
+    })
+    await run()
+    expect(createArticle.mock.calls[0]![0].data).toMatchObject({
+      status: 'draft',
+      releaseAt: null,
+      releaseHold: { reasons: ['review'] },
+    })
+    expect(notifyHeld).not.toHaveBeenCalled()
+  })
+
+  it('never releases a draft batch item, even on a site with auto-release', async () => {
+    const { run, createArticle } = await setup(undefined, null, 'STANDARD', {
+      autoRelease: true,
+      request: batchItem(),
+      slot: future,
+    })
+    await run()
+    expect(createArticle.mock.calls[0]![0].data).toMatchObject({ status: 'draft', releaseAt: null })
+  })
+
+  it('schedules an approved spread item for its slot, on a site without auto-release too', async () => {
+    const { run, createArticle } = await setup(undefined, null, 'STANDARD', {
+      autoRelease: false,
+      request: batchItem({ autoRelease: true }),
+      slot: future,
+    })
+    await run()
+    expect(createArticle.mock.calls[0]![0].data).toMatchObject({ status: 'draft', releaseAt: future })
+  })
+
+  it('finishes a spread item as a draft when its plan was cancelled during the run', async () => {
+    const { run, createArticle } = await setup(undefined, null, 'STANDARD', {
+      request: batchItem({ autoRelease: true, stillActive: async () => false }),
+      slot: future,
+    })
+    await run()
+    expect(createArticle.mock.calls[0]![0].data).toMatchObject({ status: 'draft', releaseAt: null })
+  })
+
+  it('saves the article and its item link in one transaction, so a dead worker leaves proof', async () => {
+    const { run, linkBatchItem } = await setup(undefined, null, 'STANDARD', { request: batchItem() })
+    await run()
+    expect(linkBatchItem).toHaveBeenCalledWith({ where: { id: 'item-1' }, data: { articleId: 'article-1' } })
+  })
+
+  it('holds a spread item that fails review and tells someone the same day', async () => {
+    const { run, createArticle, notifyHeld } = await setup(undefined, null, 'STANDARD', {
+      request: batchItem({ autoRelease: true }),
+      slot: future,
+      editorialReview: { approved: false, issues: [blocking] },
+    })
+    await run()
+    expect(createArticle.mock.calls[0]![0].data).toMatchObject({ status: 'draft', releaseAt: null })
+    expect(notifyHeld).toHaveBeenCalled()
+  })
+
+  it('links the reserved topic and does not touch the rest of the plan', async () => {
+    const { run, linkCluster, reservedTopic } = await setup(undefined, null, 'STANDARD', {
+      request: batchItem({ keywordClusterId: 'cluster-1' }),
+    })
+    await run()
+    expect(reservedTopic).toHaveBeenCalledWith('cluster-1', 'tenant-1')
+    expect(linkCluster).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'cluster-1', clientSiteId: 'tenant-1', status: { in: ['OPEN', 'PINNED', 'RESERVED'] } },
+        data: expect.objectContaining({ status: 'USED', articleId: 'article-1' }),
+      }),
+    )
+  })
+
+  it('offers no plan topics to an item without one, so it cannot consume another topic', async () => {
+    const { run, linkCluster } = await setup(undefined, null, 'STANDARD', { request: batchItem() })
+    vi.mocked(pickArticleTopic).mockResolvedValue({
+      topic: { topic: 'A topic', angle: 'Advice', format: 'guide', needsResearch: false, planKeyword: 'pond care' },
+      usage: { totalTokens: 3 },
+    } as never)
+    await run()
+    expect(linkCluster).not.toHaveBeenCalled()
+    expect(pickArticleTopic).toHaveBeenCalledWith(expect.objectContaining({ plan: [] }))
+  })
+
+  it('marks a run that hit the cost guard as worth waiting for', async () => {
+    const error = Object.assign(new Error('AI allowance exhausted'), { data: { code: 'AI_ALLOWANCE_EXHAUSTED' } })
+    const { run } = await setup(undefined, null, 'STANDARD', { request: batchItem(), writerError: error })
+    await expect(run()).resolves.toMatchObject({ status: 'failed', pauseReason: 'allowance' })
+  })
+
+  it('marks a run without credits as worth waiting for', async () => {
+    const error = Object.assign(new Error('Insufficient article credits'), { statusCode: 402 })
+    const { run } = await setup(undefined, null, 'STANDARD', { request: batchItem(), reservationError: error })
+    await expect(run()).resolves.toMatchObject({ status: 'failed', pauseReason: 'credits' })
+  })
+
+  it('does not wait for an ordinary failure', async () => {
+    const { run } = await setup('generation', null, 'STANDARD', { request: batchItem() })
+    await expect(run()).resolves.toMatchObject({ status: 'failed', pauseReason: null })
+  })
+})
 
 describe('autopilot release hold', () => {
   const blocking = { code: 'missing_specifics', note: 'Name at least one change the title promises.', blocking: true }

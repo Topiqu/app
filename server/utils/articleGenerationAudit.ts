@@ -35,7 +35,7 @@ export type ArticleGenerationAudit = {
 /** Correlates durable audit events without allowing telemetry failures to discard an article. */
 export const createArticleGenerationAudit = (context: {
   attemptId: string
-  mode: 'manual' | 'scheduled' | 'api'
+  mode: 'manual' | 'scheduled' | 'api' | 'batch'
   clientSiteId: string
   userId?: string
   ip?: string

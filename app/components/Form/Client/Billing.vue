@@ -124,6 +124,9 @@
           </span>
         </div>
         <p class="text-xs text-muted">{{ $t('common.wallet.explanation') }}</p>
+        <p v-if="client.plan !== 'BASIC'" class="text-xs font-medium">
+          <ULink :to="localePath({ name: 'admin-credits' })">{{ $t('articleBatch.billingLink') }}</ULink>
+        </p>
       </div>
 
       <div v-if="!shopifyBilled && client.plan !== 'BASIC'" class="space-y-3">
@@ -413,6 +416,7 @@ const emit = defineEmits<{ refresh: [] }>()
 
 const toast = useToast()
 const { locale, tm, rt, t } = useI18n()
+const localePath = useLocalePath()
 const { formatTime } = useTime()
 const articlePacks = computed(() => buildArticlePackViews(t, locale.value))
 const pendingAction = shallowRef<string | null>(null)

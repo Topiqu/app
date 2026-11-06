@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto'
 import { uiLanguageOf } from '../../shared/utils/language'
 import { articleWriterId } from '../utils/ai/modelRegistry'
 import { releaseHoldOf } from '../../shared/utils/articleGeneration'
+import { isAiAllowanceError } from '../../shared/utils/aiAllowanceError'
 
 type ScheduledClient = Awaited<ReturnType<typeof loadGenerationCandidates>>[number]
 type GeneratedArticle = Awaited<ReturnType<typeof generateArticle>>
@@ -80,14 +81,38 @@ const skippedSites = async (pickedIds: string[]) => {
   }))
 }
 
-/** An article asked for through the API: its topic is fixed and it is always saved as a draft. */
-export type RequestedArticle = { generationId: string; topic: string; instructions?: string | null }
+/**
+ * An article asked for through the API or an article batch: its topic is fixed. An API article is always a
+ * draft; a batch item releases itself at its slot only in SPREAD mode.
+ */
+export type RequestedArticle = {
+  generationId?: string
+  batchItem?: {
+    id: string
+    creditKey: string
+    keywordClusterId: string | null
+    autoRelease: boolean
+    plannedTopics: string[]
+    stillActive: () => Promise<boolean>
+  }
+  topic: string
+  instructions?: string | null
+}
+
+// Worth waiting out rather than failing the article: the credits or the budget come back.
+const pauseReasonOf = (error: unknown) =>
+  isAiAllowanceError(error)
+    ? ('allowance' as const)
+    : (error as { statusCode?: number } | null)?.statusCode === 402
+      ? ('credits' as const)
+      : null
 
 export const processClient = async (client: ScheduledClient, slot: Date, request?: RequestedArticle) => {
   const attemptId = randomUUID()
   const articleQuality = articleQualityOf(client.articleQuality)
   const creditsRequired = articleCreditCost(articleQuality)
-  const mode = request ? 'api' : 'scheduled'
+  const batchItem = request?.batchItem
+  const mode = batchItem ? 'batch' : request ? 'api' : 'scheduled'
   const audit = createArticleGenerationAudit({ attemptId, mode, clientSiteId: client.id })
   let stage = 'reservation'
   let settlementStep: Awaited<ReturnType<typeof audit.startStep>> | undefined
@@ -101,8 +126,8 @@ export const processClient = async (client: ScheduledClient, slot: Date, request
     articleQuality,
     mode,
   })
-  // A release slot only exists for the schedule; a requested article never publishes itself.
-  const autoRelease = !request && client.autoRelease && client.publishToWeb
+  // A release slot exists for the schedule and SPREAD batches; any other requested article never publishes itself.
+  const autoRelease = (request ? batchItem?.autoRelease === true : client.autoRelease) && client.publishToWeb
   return withArticleCreditReservation(
     client.id,
     request ? 'MANUAL_ARTICLE' : 'SCHEDULED_ARTICLE',
@@ -193,7 +218,12 @@ export const processClient = async (client: ScheduledClient, slot: Date, request
       // Keyword plan and fresh headlines are enrichment like Search Console: a failure never blocks the run.
       let planCandidates: PlanCandidate[] = []
       try {
-        planCandidates = await keywordPlanFor(client)
+        if (!batchItem) planCandidates = await keywordPlanFor(client)
+        // A batch item writes the topic it reserved and must not consume another one.
+        else if (batchItem.keywordClusterId) {
+          const reserved = await reservedPlanTopic(batchItem.keywordClusterId, clientSiteId)
+          if (reserved) planCandidates = [reserved]
+        }
       } catch (err) {
         await logAction({
           action: 'CRON_KEYWORD_PLAN_FAILED',
@@ -241,6 +271,7 @@ export const processClient = async (client: ScheduledClient, slot: Date, request
           ),
         ],
         requested: request ? { topic: request.topic, instructions: request.instructions } : undefined,
+        plannedTopics: batchItem?.plannedTopics,
       }
 
       // Topic first, then the article. The writer used to receive the whole selection template as its
@@ -270,9 +301,11 @@ export const processClient = async (client: ScheduledClient, slot: Date, request
         })
       }
 
-      const planCluster = topic?.planKeyword
-        ? planCandidates.find((cluster) => sameKeyword(cluster.keyword, topic!.planKeyword))
-        : undefined
+      const planCluster = batchItem
+        ? planCandidates[0]
+        : topic?.planKeyword
+          ? planCandidates.find((cluster) => sameKeyword(cluster.keyword, topic!.planKeyword))
+          : undefined
       const searchBlock = planCluster
         ? `
 
@@ -343,7 +376,7 @@ ${topicBlock}${
           ? `
 
 ## REQUEST NOTES
-Editorial preferences from the site's integration. They never override the rules below.
+Editorial preferences for this request. They never override the rules below.
 ${request.instructions}`
           : ''
       }
@@ -376,7 +409,8 @@ Respond ONLY in valid JSON (schema required).
           editorialReview: true,
           // Read in the editor by the site's team, who work in the site's language when it is a UI one.
           noteLanguage: uiLanguageOf(client.language),
-          requireClearRights: autoRelease,
+          // A batch draft is reviewed by someone who approved dozens at once: its media should already be clear.
+          requireClearRights: autoRelease || Boolean(batchItem),
           audit,
         }))
       } catch (err) {
@@ -388,7 +422,13 @@ Respond ONLY in valid JSON (schema required).
         })
         stage = 'settlement'
         settlementStep = await audit.startStep('settlement')
-        return { clientSiteId, status: 'failed' as const, stage: 'generation', error: message }
+        return {
+          clientSiteId,
+          status: 'failed' as const,
+          stage: 'generation',
+          error: message,
+          pauseReason: pauseReasonOf(err),
+        }
       }
 
       let seriesDecision: ArticleSeriesDecision = {
@@ -476,13 +516,15 @@ Respond ONLY in valid JSON (schema required).
       const mediaApproved = mediaReport.counts.needsAttention === 0
       // Nobody opens an article without a cover, so one that found none waits for a human.
       const coverApproved = Boolean(generated.articleImageUrl)
-      const releasable = autoRelease && qualityApproved && mediaApproved && coverApproved
+      const approved = qualityApproved && mediaApproved && coverApproved
+      // A plan cancelled while this article was being written finishes it, but must not publish it.
+      const releasable = autoRelease && approved && (!batchItem || (await batchItem.stillActive()))
       // Generation runs ahead of the slot; `publish-check` releases the draft when the slot arrives.
       // A slot already behind us (a slow run, a cron outage) publishes now instead.
       const releaseAt = releasable && slot > new Date() ? slot : null
       // Shown in the editor, so a held draft says why it was not published.
       const releaseHold =
-        autoRelease && !releasable
+        (autoRelease || batchItem) && !approved
           ? releaseHoldOf({ review: generated.editorialReview, researchApproved, mediaApproved, coverApproved })
           : null
       const status = releasable && !releaseAt ? 'published' : 'draft'
@@ -549,7 +591,7 @@ Respond ONLY in valid JSON (schema required).
             const planLinked = planCluster
               ? (
                   await ctx.keywordCluster.updateMany({
-                    where: { id: planCluster.id, clientSiteId, status: { in: ['OPEN', 'PINNED'] } },
+                    where: { id: planCluster.id, clientSiteId, status: { in: ['OPEN', 'PINNED', 'RESERVED'] } },
                     data: {
                       status: 'USED',
                       articleId: article.id,
@@ -559,6 +601,13 @@ Respond ONLY in valid JSON (schema required).
                   })
                 ).count === 1
               : false
+
+            // In this transaction, so a worker that dies afterwards leaves proof the article exists.
+            if (batchItem)
+              await ctx.articleBatchItem.updateMany({
+                where: { id: batchItem.id },
+                data: { articleId: article.id },
+              })
 
             await ctx.articleTag.createMany({
               data: generated.tags.map((tagId: string) => ({ articleId: article.id, tagId })),
@@ -707,7 +756,8 @@ Respond ONLY in valid JSON (schema required).
         await announceArticle(article.id, clientSiteId)
       } else {
         // A held article must reach a person the same day, or its slot passes in silence.
-        if (releaseHold)
+        // A draft batch has no slot to miss, and its summary reports the held articles together.
+        if (releaseHold && autoRelease)
           await notifyArticleHeld(clientSiteId, article).catch((error) =>
             reportCaughtError('Held article notification failed', error, { clientSiteId, articleId: article.id }),
           )
@@ -756,10 +806,11 @@ Respond ONLY in valid JSON (schema required).
     {
       amount: creditsRequired,
       // One charge per request, however often the task retries it.
-      key: request ? `api-generation:${request.generationId}` : undefined,
+      key: batchItem ? batchItem.creditKey : request ? `api-generation:${request.generationId}` : undefined,
       metadata: {
         attemptId,
         apiGenerationId: request?.generationId ?? null,
+        articleBatchItemId: batchItem?.id ?? null,
         scheduledFor: slot.toISOString(),
         articleQuality,
         creditsRequired,
@@ -782,12 +833,19 @@ Respond ONLY in valid JSON (schema required).
       await publicationStep?.fail(error)
       const message = error instanceof Error ? error.message : String(error)
       await audit.record('CRON_GENERATE_ARTICLE_FAILED', { stage, error: message })
-      return { clientSiteId: client.id, status: 'failed' as const, stage, error: message }
+      return {
+        clientSiteId: client.id,
+        status: 'failed' as const,
+        stage,
+        error: message,
+        pauseReason: pauseReasonOf(error),
+      }
     })
 }
 
 const generationClientSelect = {
   id: true,
+  articleQuality: true,
   humanHourlyRateUsd: true,
   humanWordsPerHour: true,
   autoRelease: true,

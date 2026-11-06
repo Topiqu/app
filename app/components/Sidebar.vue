@@ -136,6 +136,11 @@ const navigation = computed<NavigationMenuItem[][]>(() => {
         to: localePath({ name: 'admin-keywords' }),
       },
       {
+        label: $t('articleBatch.navigation'),
+        icon: 'mdi:star-four-points-outline',
+        to: localePath({ name: 'admin-credits' }),
+      },
+      {
         label: $t('series.overview'),
         icon: 'mdi:bookshelf',
         to: localePath({ name: 'admin-series' }),

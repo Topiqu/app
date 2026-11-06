@@ -2,7 +2,7 @@ export default defineEventHandler(async (event): Promise<ArticleBackgroundTask[]
   const { user, membership } = await requireTenantScope(event, 'ARTICLE_WRITE')
   const db = await getEnhancedPrisma(user)
   const since = new Date(Date.now() - 24 * 60 * 60_000)
-  const [generations, translations] = await Promise.all([
+  const [generations, translations, batches] = await Promise.all([
     // Generation receipts deny all ORM access; like the status/recovery routes, read only this actor's tenant-scoped receipts.
     prisma.articleGenerationSession.findMany({
       where: {
@@ -42,6 +42,18 @@ export default defineEventHandler(async (event): Promise<ArticleBackgroundTask[]
         updatedAt: true,
         article: { select: { title: true, slug: true } },
       },
+    }),
+    db.articleBatch.findMany({
+      where: { clientSiteId: user.clientSiteId!, status: 'ACTIVE', deletedAt: null },
+      select: {
+        id: true,
+        mode: true,
+        pausedUntil: true,
+        createdAt: true,
+        updatedAt: true,
+        items: { select: { status: true } },
+      },
+      take: 1,
     }),
   ])
   const sourceId = (options: unknown) =>
@@ -98,6 +110,27 @@ export default defineEventHandler(async (event): Promise<ArticleBackgroundTask[]
       createdAt: translation.createdAt.toISOString(),
       updatedAt: (translation.updatedAt ?? translation.createdAt).toISOString(),
     })),
+    // A spread batch lasts weeks, so between its articles it would count as running for no one's benefit.
+    ...batches
+      .filter(
+        (batch) =>
+          batch.items.some((item) => item.status === 'RUNNING') ||
+          (batch.mode === 'DRAFTS' && !(batch.pausedUntil && batch.pausedUntil > new Date())),
+      )
+      .map((batch): ArticleBackgroundTask => ({
+        id: batch.id,
+        kind: 'batch',
+        status: 'running',
+        title: null,
+        slug: null,
+        language: null,
+        progress: {
+          done: batch.items.filter((item) => item.status === 'SUCCEEDED').length,
+          total: batch.items.length,
+        },
+        createdAt: batch.createdAt.toISOString(),
+        updatedAt: (batch.updatedAt ?? batch.createdAt).toISOString(),
+      })),
   ]
     .sort(
       (a, b) =>

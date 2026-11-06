@@ -2,6 +2,7 @@
   <div class="topiqu-dashboard-page flex min-h-0 flex-col gap-4 py-6 md:h-full md:overflow-hidden">
     <AdminDomainVerificationBanner v-if="client && !client.domainVerified && can('TENANT_SETTINGS')" />
     <AdminUpgradeBanner v-if="client?.plan === 'BASIC'" />
+    <ArticleBatchNudge v-if="client && hasAiPlan(client.plan) && can('AI_USE')" />
     <ArticleTable />
 
     <ModalTrialExpired v-model="isOpen" @continueFree="handleContinueFree" />

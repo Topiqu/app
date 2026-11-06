@@ -1,0 +1,80 @@
+import "./base"
+import "./client"
+import "./user"
+import "./article"
+import "./keywordPlan"
+
+enum ArticleBatchStatus {
+    PROPOSED
+    ACTIVE
+    FINISHED
+    CANCELLED
+}
+
+enum ArticleBatchMode {
+    SPREAD
+    DRAFTS
+}
+
+enum ArticleBatchItemStatus {
+    QUEUED
+    RUNNING
+    SUCCEEDED
+    FAILED
+    CANCELLED
+}
+
+/// A plan of articles the client approved at once. See MAP.md "Article batches".
+model ArticleBatch with Base {
+    clientSiteId   String
+    clientSite     ClientSite          @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    /// Whose permissions queued work runs under. Revalidated before each article.
+    requestedById  String?
+    requestedBy    User?               @relation(fields: [requestedById], references: [id], onDelete: SetNull)
+    status         ArticleBatchStatus  @default(PROPOSED)
+    mode           ArticleBatchMode?
+    paceHours      Int?
+    /// `ArticleBatchProposalItem[]`. Confirmation reads topics and cluster IDs from here, never from the client.
+    proposal       Json
+    /// The top-up of the proposal is running until then; a crashed one simply stops counting.
+    proposingUntil DateTime?
+    pausedUntil    DateTime?
+    pauseReason    String?             @length(0, 40)
+    confirmedAt    DateTime?
+    finishedAt     DateTime?
+    items          ArticleBatchItem[]
+
+    @@index([clientSiteId, createdAt])
+    @@index([status])
+    // Writes are system-only: the routes enforce scopes, credits and the one-live-batch rule.
+    @@allow('read', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
+}
+
+model ArticleBatchItem with Base {
+    batchId          String
+    batch            ArticleBatch           @relation(fields: [batchId], references: [id], onDelete: Cascade)
+    clientSiteId     String
+    clientSite       ClientSite             @relation(fields: [clientSiteId], references: [id], onDelete: Cascade)
+    topic            String                 @length(3, 300)
+    instructions     String?                @length(0, 300)
+    keywordClusterId String?
+    keywordCluster   KeywordCluster?        @relation(fields: [keywordClusterId], references: [id], onDelete: SetNull)
+    /// A released RESERVED cluster returns to the status it was reserved from.
+    clusterPinned    Boolean                @default(false)
+    scheduledFor     DateTime
+    status           ArticleBatchItemStatus @default(QUEUED)
+    /// Scopes the credit reservation key: a run that released its reservation may run again.
+    attempts         Int                    @default(0)
+    articleId        String?
+    article          Article?               @relation(fields: [articleId], references: [id], onDelete: SetNull)
+    /// Internal diagnostics, never sent to the browser.
+    error            String?                @length(0, 500)
+    startedAt        DateTime?
+    finishedAt       DateTime?
+    /// See `server/tasks/article-batches.ts`: a lapsed lease means the worker died.
+    leaseUntil       DateTime?
+
+    @@index([status, scheduledFor])
+    @@index([batchId, scheduledFor])
+    @@allow('read', auth().role == 'superadmin' || (auth().role == 'admin' && auth().clientSiteId == clientSiteId))
+}

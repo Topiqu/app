@@ -1,4 +1,5 @@
 import "./base"
+import "./articleBatch"
 import "./client"
 import "./user"
 import "./comment"
@@ -115,6 +116,7 @@ model Article with Base, Ownable {
     aiCitations      AiCitation[]
     aiOpportunities  AiVisibilityOpportunity[]
     keywordClusters  KeywordCluster[]
+    batchItems       ArticleBatchItem[]
     contentActions   ContentAction[]
     aiPrompts        AiVisibilityPrompt[]
     pollResults      PollResult[]

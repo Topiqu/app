@@ -72,6 +72,10 @@ const {
   keywordPlanFor,
   planProfile,
   planSignal,
+  planTopicsFor,
+  hasPlanProfile,
+  keywordPlanStock,
+  refillKeywordPlan,
   refreshKeywordPlan,
 } = await import('../../../server/utils/keywords/plan')
 const { serpSignals } = await import('../../../server/utils/keywords/serp')
@@ -378,10 +382,33 @@ describe('isPlanStale', () => {
   })
 })
 
+describe('hasPlanProfile', () => {
+  it('needs a focus or a keyword, not just whitespace', () => {
+    expect(hasPlanProfile({ focus: 'Stavba domů' })).toBe(true)
+    expect(hasPlanProfile({ keywords: ['stavba'] })).toBe(true)
+    expect(hasPlanProfile({ focus: '   ', keywords: ['  ', 3] })).toBe(false)
+    expect(hasPlanProfile({})).toBe(false)
+  })
+})
+
+describe('keywordPlanStock', () => {
+  it('holds two weeks of the autopilot, within sensible bounds', () => {
+    expect(keywordPlanStock(0)).toBe(5)
+    expect(keywordPlanStock(8)).toBe(5)
+    expect(keywordPlanStock(30)).toBe(14)
+    expect(keywordPlanStock(120)).toBe(30)
+  })
+})
+
 describe('keywordPlanFor', () => {
   const db = {
     clientSite: { updateMany: vi.fn(), update: vi.fn() },
     keywordCluster: { findMany: vi.fn(), count: vi.fn(), update: vi.fn(), create: vi.fn(), deleteMany: vi.fn() },
+    keywordRejection: {
+      findMany: vi.fn().mockResolvedValue([]),
+      deleteMany: vi.fn(),
+      createMany: vi.fn(),
+    },
     article: { findMany: vi.fn() },
     knowledgeProduct: { findFirst: vi.fn() },
   }
@@ -395,6 +422,7 @@ describe('keywordPlanFor', () => {
     db.keywordCluster.findMany.mockResolvedValue([])
     db.clientSite.updateMany.mockResolvedValue({ count: 0 })
     db.article.findMany.mockResolvedValue([])
+    db.keywordRejection.findMany.mockResolvedValue([])
     dataForSeo.mockResolvedValue({ result: { items: [] }, cost: 0.02 })
   })
   afterEach(() => {
@@ -491,6 +519,129 @@ describe('keywordPlanFor', () => {
 
     await keywordPlanFor(narrow, new Date(Date.now() + 5 * DAY))
     expect(db.clientSite.updateMany).toHaveBeenCalledTimes(1)
+  })
+
+  it('pays for nothing while the site has no profile to search from', async () => {
+    db.clientSite.updateMany.mockResolvedValue({ count: 1 })
+    await keywordPlanFor({ id: 's1', language: 'cs' as const, focus: ' ', keywords: [] })
+    expect(db.clientSite.updateMany).not.toHaveBeenCalled()
+    expect(dataForSeo).not.toHaveBeenCalled()
+  })
+
+  describe('refillKeywordPlan', () => {
+    const opportunity = {
+      reason: 'Dosud nepokryté.',
+      angle: 'Čtenářská otázka',
+      articleFit: 'strong',
+      evidence: 'metrics',
+      organic: [],
+      profile: planProfile(site),
+      checkedAt: '',
+    }
+    const refreshed = (days: number) => ({
+      ...site,
+      keywordPlanProfile: planProfile(site),
+      keywordPlanRefreshedAt: new Date(Date.now() - days * DAY),
+      keywordPlanAttemptedAt: new Date(Date.now() - days * DAY),
+    })
+    const ready = (count: number) =>
+      db.keywordCluster.findMany
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce(Array.from({ length: count }, (_, index) => ({ keyword: `o${index}`, opportunity })))
+
+    beforeEach(() => {
+      db.clientSite.updateMany.mockResolvedValue({ count: 1 })
+    })
+
+    it('rebuilds below the stock the caller needs, which the three-topic autopilot check would not', async () => {
+      ready(5)
+      db.keywordCluster.count.mockResolvedValue(9)
+      const result = await refillKeywordPlan(refreshed(2), 14)
+      expect(result.attempted).toBe(true)
+      expect(dataForSeo).toHaveBeenCalled()
+    })
+
+    it('counts topics a batch reserved since the last rebuild as spent', async () => {
+      ready(1)
+      db.keywordCluster.count.mockResolvedValue(4)
+      await refillKeywordPlan(refreshed(2), 5)
+      const { where } = db.keywordCluster.count.mock.calls[0]![0]
+      expect(where.OR).toEqual([
+        { status: 'RESERVED', updatedAt: { gte: expect.any(Date) } },
+        { status: 'USED', usedAt: { gte: expect.any(Date) } },
+      ])
+      expect(db.clientSite.updateMany).toHaveBeenCalled()
+    })
+
+    it('does not rebuild at every dip while the autopilot eats into a healthy stock', async () => {
+      ready(13)
+      db.keywordCluster.count.mockResolvedValue(0)
+      await expect(refillKeywordPlan(refreshed(1.5), 14)).resolves.toMatchObject({ attempted: false })
+      expect(db.keywordCluster.count.mock.calls[0]![0].where.OR).toEqual([
+        { status: 'RESERVED', updatedAt: { gte: expect.any(Date) } },
+      ])
+    })
+
+    it('waits out a niche whose last rebuild found fewer topics than the stock', async () => {
+      ready(3)
+      db.keywordCluster.count.mockResolvedValue(1)
+      await expect(refillKeywordPlan(refreshed(2), 14)).resolves.toMatchObject({ attempted: false })
+      expect(dataForSeo).not.toHaveBeenCalled()
+      ready(3)
+      await expect(refillKeywordPlan(refreshed(8), 14)).resolves.toMatchObject({ attempted: true })
+    })
+
+    it('leaves a full stock alone', async () => {
+      ready(14)
+      await expect(refillKeywordPlan(refreshed(2), 14)).resolves.toMatchObject({ attempted: false })
+      expect(db.clientSite.updateMany).not.toHaveBeenCalled()
+    })
+
+    it('asks for no more than the plan can hold', async () => {
+      ready(30)
+      db.keywordCluster.count.mockResolvedValue(100)
+      await expect(refillKeywordPlan(refreshed(2), 37)).resolves.toMatchObject({ attempted: false })
+    })
+
+    it('tries at most once a day', async () => {
+      ready(0)
+      const site = { ...refreshed(40), keywordPlanAttemptedAt: new Date(Date.now() - 3_600_000) }
+      await expect(refillKeywordPlan(site, 14)).resolves.toMatchObject({ attempted: false })
+      expect(db.clientSite.updateMany).not.toHaveBeenCalled()
+    })
+
+    it('reports no attempt when another run won the claim', async () => {
+      ready(0)
+      db.clientSite.updateMany.mockResolvedValue({ count: 0 })
+      await expect(refillKeywordPlan(refreshed(40), 14)).resolves.toMatchObject({ attempted: false })
+      expect(dataForSeo).not.toHaveBeenCalled()
+    })
+  })
+
+  it('lists theme-capped topics last for a batch, which runs for weeks', async () => {
+    const opportunity = {
+      reason: 'Dosud nepokryté.',
+      angle: 'Čtenářská otázka',
+      articleFit: 'strong',
+      evidence: 'metrics',
+      organic: [],
+      profile: planProfile(site),
+      checkedAt: '',
+    }
+    const row = (keyword: string, theme: string, score: number) => ({
+      keyword,
+      theme,
+      score,
+      pillar: null,
+      peakMonth: null,
+      opportunity,
+    })
+    db.keywordCluster.findMany
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([row('d1', 'dotace', 10), row('d2', 'dotace', 9), row('p1', 'povolení', 6)])
+    db.article.findMany.mockResolvedValueOnce(['dotace', 'dotace'].map((theme) => ({ theme, keywordClusters: [] })))
+    const topics = await planTopicsFor(site)
+    expect(topics.map((topic) => topic.keyword)).toEqual(['p1', 'd1', 'd2'])
   })
 
   it('does not offer a pinned topic assessed for a different market', async () => {
@@ -625,9 +776,11 @@ describe('keywordPlanFor', () => {
 describe('refreshKeywordPlan', () => {
   const tx = {
     keywordCluster: { update: vi.fn(), create: vi.fn(), deleteMany: vi.fn() },
+    keywordRejection: { deleteMany: vi.fn(), createMany: vi.fn() },
     clientSite: { update: vi.fn() },
   }
   const findClusters = vi.fn()
+  const findRejections = vi.fn()
 
   beforeEach(() => {
     vi.stubGlobal('prisma', {
@@ -641,10 +794,12 @@ describe('refreshKeywordPlan', () => {
           return typeof status === 'string' ? rows.filter((row) => row.status === status) : rows
         },
       },
+      keywordRejection: { findMany: findRejections },
       $transaction: (run: (client: typeof tx) => unknown) => run(tx),
     })
     vi.stubGlobal('logAction', vi.fn())
     mockModels()
+    findRejections.mockResolvedValue([])
     findClusters.mockResolvedValue([
       { id: 'pinned', keyword: 'espresso doma', status: 'PINNED' },
       { id: 'gone', keyword: 'stará káva', status: 'OPEN' },
@@ -858,6 +1013,327 @@ describe('refreshKeywordPlan', () => {
         metadata: expect.objectContaining({ failedSeeds: 1 }),
       }),
     )
+  })
+
+  describe('candidate memory', () => {
+    const memorySite = { id: 's1', language: 'cs' as const, keywords: ['espresso', 'káva', 'mlýnek'] }
+    const now = new Date('2026-11-06T12:00:00.000Z')
+    const opportunity = (changes = {}) => ({
+      reason: 'Dosud nepokryté.',
+      angle: 'Čtenářská otázka',
+      articleFit: 'strong',
+      specificity: 'focused',
+      evidence: 'serp',
+      organic: [],
+      profile: planProfile(memorySite),
+      checkedAt: new Date(now.getTime() - 5 * 86_400_000).toISOString(),
+      ...changes,
+    })
+    const organic = (keyword: string) => ({
+      type: 'organic',
+      rank_absolute: 1,
+      url: `https://example.com/${encodeURIComponent(keyword)}`,
+      domain: 'example.com',
+      title: keyword,
+      description: keyword,
+    })
+    const suggest = (keywords: string[]) =>
+      dataForSeo.mockImplementation(async (path: string, task: { keyword: string }) =>
+        path.includes('keyword_suggestions')
+          ? {
+              cost: 0.03,
+              result: {
+                items: keywords.map((keyword) => ({
+                  keyword,
+                  keyword_info: { search_volume: 100 },
+                  search_intent_info: { main_intent: 'informational' },
+                })),
+              },
+            }
+          : { cost: 0.002, result: { items: [organic(task.keyword)] } },
+      )
+    const serpKeywords = () =>
+      dataForSeo.mock.calls.filter(([path]) => String(path).includes('/serp/')).map(([, task]) => task.keyword)
+    const models = () => vi.mocked(generateText).mock.calls.map(([call]) => (call as { model: string }).model)
+    const assessment = (decide: (keyword: string) => Record<string, unknown>) => {
+      const original = vi.mocked(generateText).getMockImplementation()!
+      vi.mocked(generateText).mockImplementation((async (params: { model: string; prompt: string }) => {
+        if (params.model !== 'keywordOpportunity') return original(params as never)
+        const candidates = JSON.parse(String(params.prompt).split('## CANDIDATES\n')[1]!) as { keyword: string }[]
+        return {
+          output: {
+            decisions: candidates.map(({ keyword }, index) => ({
+              item: index + 1,
+              write: true,
+              coveredBy: 0,
+              duplicateOf: 0,
+              articleFit: 'strong',
+              specificity: 'focused',
+              intent: 'informational',
+              angle: 'Jak na to?',
+              reason: 'Otázka čtenářů.',
+              ...decide(keyword),
+            })),
+          },
+          usage: {},
+        }
+      }) as never)
+    }
+    const stored = () =>
+      Object.fromEntries(
+        tx.keywordRejection.createMany.mock.calls[0]![0].data.map((row: { keyword: string; reason: string }) => [
+          row.keyword,
+          row.reason,
+        ]),
+      )
+
+    beforeEach(() => {
+      vi.mocked(generateText).mockClear()
+    })
+
+    it('spends the paid checks only on topics it has not decided yet', async () => {
+      findClusters.mockResolvedValue([
+        { id: 'u', keyword: 'tlak espressa', status: 'USED', keywords: [{ keyword: 'jaký tlak má espresso' }] },
+        { id: 's', keyword: 'čištění kávovaru', status: 'SKIPPED', keywords: [] },
+        { id: 'r', keyword: 'kyselé espresso', status: 'RESERVED', keywords: [] },
+        { id: 'i', keyword: 'iphone 15', status: 'USED', keywords: [] },
+      ])
+      findRejections.mockResolvedValue([{ keyword: 'espresso recept' }])
+      // Word order and accents must not matter, and short tokens must: a USED "iphone 15" says nothing about 16.
+      suggest([
+        'tlak espressa',
+        'jaký tlak má espresso',
+        'kávovaru čištění',
+        'kyselé espresso',
+        'recept espresso',
+        'iphone 16',
+      ])
+      await refreshKeywordPlan(memorySite, now)
+      expect(serpKeywords()).toEqual(['iphone 16'])
+      expect(tx.keywordCluster.create).toHaveBeenCalledTimes(1)
+    })
+
+    it('reads only rejections of the current profile that have not expired', async () => {
+      findClusters.mockResolvedValue([])
+      suggest([])
+      await refreshKeywordPlan(memorySite, now)
+      expect(findRejections).toHaveBeenCalledWith({
+        where: {
+          clientSiteId: 's1',
+          profile: planProfile(memorySite),
+          rejectedAt: { gte: new Date(now.getTime() - 90 * 86_400_000) },
+        },
+        select: { keyword: true },
+      })
+      expect(tx.keywordRejection.deleteMany).toHaveBeenCalledWith({
+        where: {
+          clientSiteId: 's1',
+          OR: [
+            { profile: { not: planProfile(memorySite) } },
+            { rejectedAt: { lt: new Date(now.getTime() - 90 * 86_400_000) } },
+          ],
+        },
+      })
+    })
+
+    it('pays for no SERP or model call when nothing new came back', async () => {
+      findClusters.mockResolvedValue([{ id: 'u', keyword: 'tlak espressa', status: 'USED', keywords: [] }])
+      suggest(['tlak espressa'])
+      await expect(refreshKeywordPlan(memorySite, now)).resolves.toBe(0)
+      expect(serpKeywords()).toEqual([])
+      expect(models()).toEqual([])
+      expect(tx.clientSite.update).toHaveBeenCalled()
+    })
+
+    it('keeps a recently checked open topic without paying for it again', async () => {
+      findClusters.mockResolvedValue([
+        { id: 'kept', keyword: 'domácí pražení', status: 'OPEN', keywords: [], opportunity: opportunity() },
+        {
+          id: 'old',
+          keyword: 'stará otázka',
+          status: 'OPEN',
+          keywords: [],
+          opportunity: opportunity({ checkedAt: new Date(now.getTime() - 31 * 86_400_000).toISOString() }),
+        },
+        {
+          id: 'other',
+          keyword: 'jiný profil',
+          status: 'OPEN',
+          keywords: [],
+          opportunity: opportunity({ profile: 'different' }),
+        },
+      ])
+      suggest(['domácí pražení', 'stará otázka', 'nová otázka'])
+      await refreshKeywordPlan(memorySite, now)
+      expect(serpKeywords().sort()).toEqual(['nová otázka', 'stará otázka'])
+      expect(tx.keywordCluster.update.mock.calls.map(([call]) => call.where.id)).toEqual(['old'])
+      expect(tx.keywordCluster.deleteMany).toHaveBeenCalledWith({ where: { id: { in: ['other'] }, status: 'OPEN' } })
+    })
+
+    it('checks only as many new topics as the plan has room for', async () => {
+      findClusters.mockResolvedValue(
+        Array.from({ length: 28 }, (_, index) => ({
+          id: `o${index}`,
+          keyword: `otevřené téma ${index}`,
+          status: 'OPEN',
+          keywords: [],
+          opportunity: opportunity(),
+        })),
+      )
+      suggest(['první otázka', 'druhá otázka', 'třetí otázka', 'čtvrtá otázka'])
+      await refreshKeywordPlan(memorySite, now)
+      expect(serpKeywords()).toHaveLength(2)
+    })
+
+    it('does not delete a topic released during the rebuild', async () => {
+      const released = { id: 'freed', keyword: 'uvolněné téma', keywords: [] }
+      findClusters.mockImplementation(async (args: { select?: { opportunity?: boolean } }) => [
+        { ...released, status: args.select?.opportunity ? 'RESERVED' : 'OPEN' },
+      ])
+      suggest([])
+      await refreshKeywordPlan(memorySite, now)
+      expect(tx.keywordCluster.deleteMany).not.toHaveBeenCalled()
+    })
+
+    it('does not remember what the scope check dropped, so one bad answer cannot lock the topics out', async () => {
+      findClusters.mockResolvedValue([])
+      suggest(['mimo blog'])
+      mockModels(() => [])
+      await refreshKeywordPlan(memorySite, now)
+      expect(tx.keywordRejection.createMany).not.toHaveBeenCalled()
+      expect(logAction).toHaveBeenCalledWith(
+        expect.objectContaining({ metadata: expect.objectContaining({ outOfScope: 1, rejected: {} }) }),
+      )
+    })
+
+    it('tells the assessment what is already planned, and no expansion comes out of it', async () => {
+      vi.mocked(prisma.article.findMany).mockResolvedValue([
+        { id: 'a1', title: 'Jak vybrat mlýnek na kávu', status: 'published' },
+      ] as never)
+      findClusters.mockResolvedValue([
+        {
+          id: 'kept',
+          keyword: 'domácí pražení',
+          status: 'OPEN',
+          keywords: [],
+          opportunity: opportunity({ angle: 'Jak pražit doma?' }),
+        },
+        { id: 'r', keyword: 'zásobník vody', status: 'RESERVED', keywords: [], opportunity: opportunity() },
+      ])
+      suggest(['nová otázka', 'část článku'])
+      const expansions = vi.fn().mockResolvedValue(0)
+      vi.stubGlobal('suggestExpansions', expansions)
+      assessment((keyword) =>
+        keyword === 'nová otázka'
+          ? { write: false, coveredBy: 2, extendsArticle: true }
+          : { write: false, coveredBy: 1, extendsArticle: true },
+      )
+      await expect(refreshKeywordPlan(memorySite, now)).resolves.toBe(0)
+      // Item 2 is a planned topic, not an article; only the real article can be extended.
+      expect(expansions.mock.calls[0]![1]).toEqual([
+        expect.objectContaining({ articleId: 'a1', keyword: 'část článku' }),
+      ])
+      const prompt = vi
+        .mocked(generateText)
+        .mock.calls.map(([call]) => call as { model: string; prompt: string })
+        .find((call) => call.model === 'keywordOpportunity')!.prompt
+      expect(prompt).toContain('2. domácí pražení — Jak pražit doma?')
+      expect(prompt).toContain('3. zásobník vody')
+      expect(stored()).toEqual({ 'nová otázka': 'covered', 'část článku': 'covered' })
+    })
+
+    it('remembers why each candidate fell out', async () => {
+      findClusters.mockResolvedValue([])
+      suggest(['mimo blog', 'pokrytá otázka', 'dvojník', 'slabá otázka', 'navigační', 'nechtěná', 'dobrá otázka'])
+      mockModels((items) => items.flatMap((item, index) => (item.includes('mimo blog') ? [] : [index + 1])))
+      const reasons: Record<string, Record<string, unknown>> = {
+        'pokrytá otázka': { write: false, coveredBy: 1 },
+        dvojník: { write: false, duplicateOf: 1 },
+        'slabá otázka': { articleFit: 'poor' },
+        navigační: { intent: 'navigational' },
+        nechtěná: { write: false },
+      }
+      assessment((keyword) => reasons[keyword] ?? {})
+      await expect(refreshKeywordPlan(memorySite, now)).resolves.toBe(1)
+      expect(stored()).toEqual({
+        'pokrytá otázka': 'covered',
+        dvojník: 'duplicate',
+        'slabá otázka': 'poor',
+        navigační: 'navigational',
+        nechtěná: 'other',
+      })
+      expect(tx.keywordRejection.createMany.mock.calls[0]![0]).toMatchObject({ skipDuplicates: true })
+      expect(tx.keywordRejection.createMany.mock.calls[0]![0].data).toContainEqual({
+        clientSiteId: 's1',
+        keyword: 'dvojník',
+        profile: planProfile(memorySite),
+        reason: 'duplicate',
+        rejectedAt: now,
+      })
+      expect(logAction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'KEYWORD_PLAN_REFRESHED',
+          metadata: expect.objectContaining({
+            suggestions: 7,
+            fresh: 7,
+            known: 0,
+            retained: 0,
+            outOfScope: 1,
+            rejected: { covered: 1, duplicate: 1, poor: 1, navigational: 1, other: 1 },
+          }),
+        }),
+      )
+    })
+
+    it('remembers what already ranks and what Google merges into another topic', async () => {
+      findClusters.mockResolvedValue([])
+      suggest(['hlavní otázka', 'stejné výsledky', 'naše stránka'])
+      const shared = ['a', 'b', 'c'].map((host) => ({
+        type: 'organic',
+        rank_absolute: 1,
+        url: `https://${host}.example.com/same`,
+        domain: `${host}.example.com`,
+        title: 'Stejná stránka',
+        description: 'Stejná stránka',
+      }))
+      const answer = dataForSeo.getMockImplementation()!
+      dataForSeo.mockImplementation(async (path: string, task: { keyword: string }) => {
+        if (!path.includes('/serp/')) return answer(path, task)
+        if (task.keyword === 'naše stránka')
+          return {
+            cost: 0.002,
+            result: { items: [{ ...shared[0], url: 'https://kava.cz/espresso', domain: 'kava.cz' }] },
+          }
+        return { cost: 0.002, result: { items: shared } }
+      })
+      await refreshKeywordPlan({ ...memorySite, domain: 'kava.cz' }, now)
+      const reasons = stored()
+      expect(reasons['naše stránka']).toBe('ranking')
+      expect(Object.values(reasons)).toEqual(expect.arrayContaining(['merged', 'ranking']))
+    })
+
+    it('never remembers a pin, which only the current assessment may set aside', async () => {
+      findClusters.mockResolvedValue([
+        { id: 'pin', keyword: 'připnuté téma', status: 'PINNED', keywords: [{ keyword: 'připnuté téma' }] },
+      ])
+      suggest(['připnuté téma'])
+      assessment(() => ({ write: false, articleFit: 'poor' }))
+      await refreshKeywordPlan(memorySite, now)
+      expect(tx.keywordRejection.createMany).not.toHaveBeenCalled()
+    })
+
+    it('asks again about a topic judged without SERP evidence', async () => {
+      findClusters.mockResolvedValue([])
+      suggest(['bez důkazů', 's důkazy'])
+      const answer = dataForSeo.getMockImplementation()!
+      dataForSeo.mockImplementation(async (path: string, task: { keyword: string }) => {
+        if (path.includes('/serp/') && task.keyword === 'bez důkazů') throw new Error('timeout')
+        return answer(path, task)
+      })
+      assessment(() => ({ write: false }))
+      await refreshKeywordPlan(memorySite, now)
+      expect(stored()).toEqual({ 's důkazy': 'other' })
+    })
   })
 
   it('fails when every seed fails, so nothing half-empty replaces the plan', async () => {

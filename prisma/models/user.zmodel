@@ -1,4 +1,5 @@
 import "./base"
+import "./articleBatch"
 import "./article"
 import "./client"
 import "./comment"
@@ -54,6 +55,7 @@ model User with Base {
     bansIssued                    UserBan[]         @relation("BannedBy")
     logs                          Log[]             @relation("LogToUser")
     apiKeys                       ApiKey[]
+    articleBatches                ArticleBatch[]
     mediaAssets                   MediaAsset[]      @relation("MediaAssetCreator")
     mediaRightsConfirmations      MediaAsset[]      @relation("MediaRightsConfirmer")
     mediaPublicationConfirmations MediaRightsPublicationSnapshot[] @relation("MediaPublicationConfirmer")

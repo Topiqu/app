@@ -1,0 +1,145 @@
+{
+  "articleBatch": {
+    "navigation": "Use free credits",
+    "title": "Use your free credits",
+    "description": "See what your credits can do beyond the autopilot, and put them to work without writing articles one by one.",
+    "loadFailed": "The overview could not be loaded.",
+    "disabledTitle": "Available on plans with AI articles",
+    "disabledDescription": "Upgrade your plan to have Topiqu write articles for you.",
+    "billingLink": "Put free credits to use",
+    "activity": "{done} of {total} articles written",
+    "rolloverCapTitle": "Your carried credits have reached the limit",
+    "rolloverCapDescription": "Unused credits from this period will not carry over. Using them now keeps them from lapsing.",
+    "stats": {
+      "free": {
+        "label": "Free credits",
+        "note": "of {available} available",
+        "info": "Available credits minus what the autopilot is expected to use in the next 30 days. This is an estimate."
+      },
+      "surplus": {
+        "label": "Unused every month",
+        "note": "of a {allowance} credit allowance",
+        "info": "How many credits of your monthly allowance the autopilot does not use at its current rhythm."
+      },
+      "autopilot": {
+        "label": "Autopilot uses monthly",
+        "note": "{n} article | {n} articles",
+        "info": "Credits the autopilot is expected to use in the next 30 days at its current rhythm and quality."
+      }
+    },
+    "levers": {
+      "title": "Recommended changes",
+      "description": "These settings use more of your allowance without any extra work.",
+      "saved": "Settings saved",
+      "quality": {
+        "title": "Write in {level} quality",
+        "description": "{articles} articles a month would use {credits} of your {allowance} credits, with no more articles on your site.",
+        "apply": "Switch to {level}"
+      },
+      "tempo": {
+        "title": "Speed up the autopilot",
+        "description": "The autopilot would write about {articles} articles a month instead of {current}.",
+        "note": "More articles also means more to read for your audience. Change it any time in settings.",
+        "apply": "Speed up",
+        "confirmTitle": "Speed up the autopilot?",
+        "confirmMessage": "The autopilot will write about {articles} articles a month and use credits accordingly. You can change this any time in settings."
+      }
+    },
+    "plan": {
+      "title": "Article plan",
+      "description": "Topiqu proposes topics, you approve them with one click and the articles are written in the background. The proposal is free.",
+      "propose": "Propose articles",
+      "openSettings": "Open settings",
+      "noPermission": "Starting a plan requires permission to use AI and edit other authors’ articles.",
+      "hint": "Your free credits cover {n} article. | Your free credits cover {n} articles."
+    },
+    "proposal": {
+      "listLabel": "Proposed articles",
+      "select": "Include: {topic}",
+      "editTopic": "Article topic",
+      "volume": "about {n} searches a month",
+      "removeTopic": "Remove: {topic}",
+      "proposing": "Looking for more topics. You can already edit the list.",
+      "fewer": "We found only {n} strong topic. The other credits stay available for later. | We found only {n} strong topics. The other credits stay available for later.",
+      "weakNote": "Topics we are less sure about are not selected. Tick the ones you want written.",
+      "addPlaceholder": "Add your own topic",
+      "add": "Add",
+      "modeLegend": "What should happen with the articles?",
+      "paceLabel": "Publishing pace",
+      "duration": "The plan will take about {days} days.",
+      "fastPace": "This is a fast pace. Publishing many articles at once can look unnatural to search engines and readers.",
+      "overFree": "This plan also uses credits the autopilot is expected to need. The autopilot may run out sooner.",
+      "discard": "Discard proposal",
+      "approve": "Approve {n} article for {credits} credits | Approve {n} articles for {credits} credits",
+      "approved": "The plan is approved. You can close this page."
+    },
+    "mode": {
+      "SPREAD": {
+        "label": "Write and publish gradually",
+        "description": "Each article is written shortly before its date and published if it passes the same checks as the autopilot. Others wait for you.",
+        "unavailable": "Requires publishing on your Topiqu blog and permission to publish."
+      },
+      "DRAFTS": {
+        "label": "Write now as drafts",
+        "description": "All articles are written one after another, and you review and publish them yourself."
+      }
+    },
+    "pace": {
+      "12": "Twice a day",
+      "24": "Every day",
+      "48": "Every 2 days",
+      "84": "Twice a week",
+      "168": "Once a week"
+    },
+    "progress": {
+      "resume": "Resume",
+      "cancel": "Cancel the rest",
+      "label": "Plan progress",
+      "summaryActive": "{done} of {total} articles written",
+      "summaryFinished": "Plan finished: {done} of {total} articles written",
+      "summaryCancelled": "Plan cancelled: {done} of {total} articles written",
+      "cancelTitle": "Cancel the rest of the plan?",
+      "cancelMessage": "Articles not yet started will not be written and their credits stay yours. An article being written will still finish and be charged.",
+      "paused": {
+        "credits": "The plan is waiting for credits. It continues on its own once you have enough.",
+        "allowance": "Writing is temporarily paused. The plan continues on its own.",
+        "access": "The person who approved this plan can no longer run it. Resume it to continue under your account.",
+        "failures": "Several articles in a row failed, so the plan is paused. We will try again tomorrow, or you can resume it now."
+      },
+      "state": {
+        "queued": "Waiting",
+        "running": "Writing",
+        "held": "Needs review",
+        "scheduled": "Scheduled",
+        "published": "Published",
+        "draft": "Draft",
+        "failed": "Failed",
+        "cancelled": "Cancelled"
+      }
+    },
+    "errors": {
+      "generic": "That did not work. Please try again.",
+      "ACTIVE": "A plan is already running. Wait for it to finish or cancel it first.",
+      "NO_CREDITS": "You have no credits to plan with right now.",
+      "NO_PROFILE": "Tell us what your blog is about first, so the proposed topics fit it.",
+      "NO_WEB_PUBLISHING": "Gradual publishing requires publishing on your Topiqu blog.",
+      "EMPTY": "The selected topics are no longer available. Propose articles again.",
+      "INSUFFICIENT_CREDITS": "You do not have enough credits for this many articles. Remove some of them."
+    },
+    "notifications": {
+      "cancelled": "Your article plan was cancelled because your plan no longer includes AI articles.",
+      "finished": "Your article plan is finished: {written} written, {held} to review, {failed} failed.",
+      "paused": {
+        "credits": "Your article plan is waiting for credits.",
+        "allowance": "Your article plan is temporarily paused and will continue on its own.",
+        "access": "Your article plan is paused because its approver can no longer run it.",
+        "failures": "Your article plan is paused after several failed articles."
+      }
+    },
+    "nudge": {
+      "title": "You have {n} free credits",
+      "description": "Topiqu can propose how to use them. You only approve.",
+      "action": "See how"
+    }
+  }
+}

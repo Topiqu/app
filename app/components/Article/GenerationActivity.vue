@@ -69,14 +69,18 @@
             />
             <div class="min-w-0 flex-1">
               <p class="line-clamp-2 text-sm font-medium text-highlighted">
-                {{ task.title || $t('articles.addArticle') }}
+                {{
+                  task.progress ? $t('articleBatch.activity', task.progress) : task.title || $t('articles.addArticle')
+                }}
               </p>
               <p class="mt-1 text-xs text-muted">
                 {{
                   $t(
                     task.kind === 'translation'
                       ? 'articles.translations.languageTabs'
-                      : 'articles.editor.generationTask',
+                      : task.kind === 'batch'
+                        ? 'articleBatch.title'
+                        : 'articles.editor.generationTask',
                   )
                 }}
                 <template v-if="task.language"> · {{ $t(`languages.${task.language}`) }}</template>
@@ -170,10 +174,13 @@ const stopTask = async (id: string) => {
     stopping.value = null
   }
 }
-const taskPath = (task: ArticleBackgroundTask) => ({
-  path: localePath({ name: 'admin-editor-id', params: { id: task.slug ?? 'new' } }),
-  query: task.language ? { lang: task.language } : {},
-})
+const taskPath = (task: ArticleBackgroundTask) =>
+  task.kind === 'batch'
+    ? { path: localePath({ name: 'admin-credits' }) }
+    : {
+        path: localePath({ name: 'admin-editor-id', params: { id: task.slug ?? 'new' } }),
+        query: task.language ? { lang: task.language } : {},
+      }
 const { now, pause, resume } = useNow({
   controls: true,
   scheduler: (callback) => useIntervalFn(callback, 1_000, { immediate: false }),

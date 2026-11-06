@@ -132,5 +132,14 @@
     "greeting": "{tenantName} will stay open",
     "intro": "Hi {userName}, the owner of {tenantName} restored their account, so the blog is no longer closing.",
     "note": "Nothing else changes for you."
+  },
+  "articleBatchFinished": {
+    "subject": "Your article plan for {tenantName} is finished",
+    "preview": "See what was written and what needs your review.",
+    "greeting": "Your article plan is finished",
+    "intro": "Articles written for <b>{tenantName}</b>: <b>{written}</b>.",
+    "summary": "Waiting for your review: {held}. Could not be written: {failed}. Credits are charged only for finished articles.",
+    "button": "See the articles",
+    "footer": "You can start another plan whenever you have free credits."
   }
 }

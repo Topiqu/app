@@ -161,7 +161,7 @@ export default defineNuxtConfig({
     scheduledTasks:
       IS_PROD && !IS_BROWSER_TEST
         ? {
-            '* * * * *': ['webhook-deliver', 'website-import', 'domain-cleanup', 'api-generations'],
+            '* * * * *': ['webhook-deliver', 'website-import', 'domain-cleanup', 'api-generations', 'article-batches'],
             '*/15 * * * *': ['generate-article'],
             '*/30 * * * *': ['sentiment-analysis'],
             '0 * * * *': ['community-insights'],
@@ -181,6 +181,7 @@ export default defineNuxtConfig({
             '20 * * * *': ['shopify-billing'],
             '0 5 * * *': ['ai-visibility-monitor'],
             '30 5 * * *': ['keyword-rank'],
+            '35 * * * *': ['keyword-plan-refill'],
             '0 6 * * *': ['backlink-discovery'],
             '30 6 * * *': ['backlink-check'],
             '*/10 * * * *': ['publish-check', 'trial-expiry'],
@@ -525,6 +526,7 @@ export default defineNuxtConfig({
           'en/knowledge.json',
           'en/backlinks.json',
           'en/widgets.json',
+          'en/articleBatch.json',
           'master_en.json',
         ],
       },
@@ -552,6 +554,7 @@ export default defineNuxtConfig({
           'cs/knowledge.json',
           'cs/backlinks.json',
           'cs/widgets.json',
+          'cs/articleBatch.json',
           'master_cs.json',
         ],
       },
@@ -579,6 +582,7 @@ export default defineNuxtConfig({
           'de/knowledge.json',
           'de/backlinks.json',
           'de/widgets.json',
+          'de/articleBatch.json',
           'master_de.json',
         ],
       },
@@ -606,6 +610,7 @@ export default defineNuxtConfig({
           'fr/knowledge.json',
           'fr/backlinks.json',
           'fr/widgets.json',
+          'fr/articleBatch.json',
           'master_fr.json',
         ],
       },

@@ -132,5 +132,14 @@
     "greeting": "{tenantName} reste ouvert",
     "intro": "Bonjour {userName}, le propriétaire de {tenantName} a restauré son compte : le blog ne fermera donc pas.",
     "note": "Rien d'autre ne change pour vous."
+  },
+  "articleBatchFinished": {
+    "subject": "Votre plan d’articles pour {tenantName} est terminé",
+    "preview": "Découvrez ce qui a été rédigé et ce qui attend votre relecture.",
+    "greeting": "Votre plan d’articles est terminé",
+    "intro": "Articles rédigés pour <b>{tenantName}</b> : <b>{written}</b>.",
+    "summary": "En attente de votre relecture : {held}. Impossibles à rédiger : {failed}. Les crédits ne sont facturés que pour les articles terminés.",
+    "button": "Voir les articles",
+    "footer": "Vous pouvez lancer un autre plan dès que vous avez des crédits libres."
   }
 }
