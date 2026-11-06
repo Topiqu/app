@@ -191,7 +191,16 @@ const reviseDraft = async (
     )
     tokens += edited.usage.totalTokens ?? 0
     const applied = applyRevisionEdits(draft, edited.output)
-    if (applied.ok) return { draft: applied.draft, changes: applied.changes, mode: 'edits' as const, tokens }
+    if (applied.ok) {
+      if (applied.skipped)
+        await audit?.record('ARTICLE_GENERATION_FALLBACK', {
+          stage: 'revision',
+          reason: 'revision_edits_excerpt_not_found',
+          outcome: 'partial',
+          skipped: applied.skipped,
+        })
+      return { draft: applied.draft, changes: applied.changes, mode: 'edits' as const, tokens }
+    }
     await audit?.record('ARTICLE_GENERATION_FALLBACK', {
       stage: 'revision',
       reason: `revision_edits_${applied.reason}`,

@@ -549,6 +549,30 @@ describe('manual editorial review', () => {
     expect(vi.mocked(generateStructuredText).mock.calls[3]![0].prompt).toContain('originalDraft')
   })
 
+  it('keeps the edits that apply when another quotes text that is not in the draft', async () => {
+    const corrected = '<p>A corrected draft.</p>'
+    vi.mocked(generateStructuredText)
+      .mockResolvedValueOnce(response(rejected, 10) as never)
+      .mockResolvedValueOnce(
+        response(
+          {
+            ...asEdits({}),
+            edits: [
+              { find: 'Not in the draft', replace: 'x', insertAfter: false },
+              { find: '<p>A draft.</p>', replace: corrected, insertAfter: false },
+            ],
+          },
+          4,
+        ) as never,
+      )
+      .mockResolvedValueOnce(response(fixed, 5) as never)
+    const generation = await streamArticle('site', 'Write a report', { research: false })
+
+    expect((await generation.review(draft)).content).toBe(`<h2>Ciri</h2>${corrected}`)
+    expect(generation.editorialReview).toMatchObject({ approved: true, revisionMode: 'edits' })
+    expect(generateStructuredText).toHaveBeenCalledTimes(3)
+  })
+
   it('rechecks an edit list against the changed passages only', async () => {
     const revision = { ...draft, content: '<h2>Ciri</h2><p>A corrected draft.</p>' }
     vi.mocked(generateStructuredText)

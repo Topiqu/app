@@ -151,13 +151,26 @@ describe('revision edits', () => {
   it.each([
     ['missing', 'Pokuta je až 9 mil. Kč.'],
     ['ambiguous', '<p>'],
-  ])('fails as a whole when an excerpt is %s', (_label, find) => {
+  ])('fails as a whole when its only excerpt is %s', (_label, find) => {
     const result = applyRevisionEdits(article, {
       ...none,
       title: 'Changed title that must not ship alone',
       edits: [{ find, replace: '', insertAfter: false }],
     })
     expect(result).toEqual({ ok: false, reason: 'excerpt_not_found' })
+  })
+
+  it('skips a missing or ambiguous excerpt and applies the rest', () => {
+    const result = applyRevisionEdits(article, {
+      ...none,
+      edits: [
+        { find: 'Pokuta je až 9 mil. Kč.', replace: '', insertAfter: false },
+        { find: '<p>', replace: '', insertAfter: false },
+        { find: 'Úřad může nařídit odstranění.', replace: 'Úřad nařídí odstranění.', insertAfter: false },
+      ],
+    })
+    expect(result).toMatchObject({ ok: true, skipped: 2 })
+    expect(result.ok && result.draft.content).toContain('<p>Pokuta je až 2 mil. Kč.</p><p>Úřad nařídí odstranění.</p>')
   })
 
   it('replaces whole fields and lists only when given', () => {

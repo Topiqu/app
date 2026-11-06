@@ -288,25 +288,31 @@ type EditableDraft = ReviewDraft & { keyTakeaways?: string[]; faq?: Array<{ ques
 export type RevisionChange = { before: string; after: string }
 
 /**
- * Applies an edit list. Fails as a whole when an excerpt is missing or ambiguous, so a half-applied
- * correction never ships; with \`removalOnly\` it also fails on any edit that adds a word or a tag.
+ * Applies an edit list, skipping an edit whose excerpt is missing or ambiguous: the recheck reads the
+ * whole revised draft, so the finding it targeted stays open. Fails when no body edit applies, and with
+ * \`removalOnly\` on any edit that adds a word or a tag.
  */
 export const applyRevisionEdits = <T extends EditableDraft>(
   draft: T,
   edits: RevisionEdits,
   { removalOnly = false } = {},
-): { ok: true; draft: T; changes: RevisionChange[] } | { ok: false; reason: string } => {
+): { ok: true; draft: T; changes: RevisionChange[]; skipped: number } | { ok: false; reason: string } => {
   let content = draft.content
   const changes: RevisionChange[] = []
+  let skipped = 0
   for (const edit of edits.edits) {
     const match = locate(content, edit.find)
-    if (!match) return { ok: false, reason: 'excerpt_not_found' }
+    if (!match) {
+      skipped++
+      continue
+    }
     if (removalOnly && (edit.insertAfter || !onlyRemoves(match.text, edit.replace)))
       return { ok: false, reason: 'not_a_removal' }
     const replacement = edit.insertAfter ? match.text + edit.replace : edit.replace
     content = content.slice(0, match.index) + replacement + content.slice(match.index + match.text.length)
     changes.push({ before: match.text, after: edit.replace })
   }
+  if (skipped && skipped === edits.edits.length) return { ok: false, reason: 'excerpt_not_found' }
   const next: T = { ...draft, content }
   // A deletion cannot need a new citation; the caller filters these against the grounding URLs.
   if (!removalOnly && edits.sources?.length)
@@ -333,7 +339,7 @@ export const applyRevisionEdits = <T extends EditableDraft>(
     changes.push({ before: current, after: value })
     ;(next as EditableDraft)[field] = edits[field] as never
   }
-  return { ok: true, draft: next, changes }
+  return { ok: true, draft: next, changes, skipped }
 }
 
 /** Findings a deletion can resolve: a wrong or unsupported specific, not a missing answer or a reversed stance. */
