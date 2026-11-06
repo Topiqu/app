@@ -18,7 +18,7 @@ export default defineMonitoredTask({
         propertyUrl: { not: null },
         OR: [{ autopilotLastRunAt: null }, { autopilotLastRunAt: { lte: dueBefore } }],
         clientSite: {
-          plan: { in: ['PREMIUM', 'CUSTOM'] },
+          plan: { in: SEO_AUTOPILOT_PLANS },
           AND: [activeFeatureFilter('SEARCH_CONSOLE'), activeFeatureFilter('AI')],
         },
       },

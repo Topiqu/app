@@ -9,7 +9,7 @@ export default defineMonitoredTask({
         status: { in: ['CONNECTED', 'ERROR'] },
         propertyUrl: { not: null },
         clientSite: {
-          plan: { in: ['PREMIUM', 'CUSTOM'] },
+          plan: { in: ['PRO', 'PREMIUM', 'CUSTOM'] },
           ...activeFeatureFilter('SEARCH_CONSOLE'),
         },
       },

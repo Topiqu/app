@@ -20,7 +20,7 @@
         v-for="action in actions"
         :key="action.id"
         :action
-        :allowed="data?.allowed ?? false"
+        :allowed="action.allowed"
         :busy="busy === action.id"
         @run="run(action, $event)"
       />

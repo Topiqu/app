@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
     },
   })
   const active = new Set(site?.features.map((row) => row.feature.code) ?? [])
-  if (enabled && (!site || !['PREMIUM', 'CUSTOM'].includes(site.plan) || !active.has('SEARCH_CONSOLE')))
+  if (enabled && (!site || !SEO_AUTOPILOT_PLANS.includes(site.plan) || !active.has('SEARCH_CONSOLE')))
     throw createError({
       statusCode: 403,
       message: 'Search Console Autopilot requires an active Search Console feature',

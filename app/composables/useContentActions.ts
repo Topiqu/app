@@ -5,6 +5,8 @@ export type ContentActionStatus = 'SUGGESTED' | 'QUEUED' | 'READY' | 'APPLIED' |
 export interface ContentActionView {
   id: string
   type: 'REFRESH' | 'EXPAND'
+  /** Whether this plan may prepare this suggestion type. */
+  allowed: boolean
   status: ContentActionStatus
   keyword: string
   reason: string | null

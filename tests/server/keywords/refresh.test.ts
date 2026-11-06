@@ -271,10 +271,13 @@ describe('suggestions', () => {
 })
 
 describe('credit reservation and limits', () => {
-  it('allows Premium and managed Custom 50 preparations monthly', () => {
+  it('allows refreshes from PRO and expansions from Premium, half the article credits monthly', () => {
     expect(refreshAllowance('PREMIUM')).toEqual({ allowed: true, monthly: 50 })
     expect(refreshAllowance('CUSTOM')).toEqual({ allowed: true, monthly: 50 })
-    expect(refreshAllowance('PRO')).toEqual({ allowed: false, monthly: 0 })
+    expect(refreshAllowance('PRO')).toEqual({ allowed: true, monthly: 25 })
+    expect(refreshAllowance('PRO', 'EXPAND')).toEqual({ allowed: false, monthly: 0 })
+    expect(refreshAllowance('PREMIUM', 'EXPAND')).toEqual({ allowed: true, monthly: 50 })
+    expect(refreshAllowance('BASIC')).toEqual({ allowed: false, monthly: 0 })
   })
   it('queues a suggestion with a reserved credit under a tenant lock', async () => {
     await queueContentAction(mocks.scoped, action, 'PREMIUM', NOW)
@@ -287,7 +290,10 @@ describe('credit reservation and limits', () => {
     expect(settle).not.toHaveBeenCalled()
   })
   it('rejects a plan or state that cannot prepare before reserving', async () => {
-    await expect(queueContentAction(mocks.scoped, action, 'PRO', NOW)).rejects.toMatchObject({ statusCode: 403 })
+    await expect(queueContentAction(mocks.scoped, action, 'BASIC', NOW)).rejects.toMatchObject({ statusCode: 403 })
+    await expect(queueContentAction(mocks.scoped, { ...action, type: 'EXPAND' }, 'PRO', NOW)).rejects.toMatchObject({
+      statusCode: 403,
+    })
     await expect(
       queueContentAction(mocks.scoped, { ...action, status: 'READY' }, 'PREMIUM', NOW),
     ).rejects.toMatchObject({ statusCode: 409 })

@@ -26,12 +26,12 @@ describe('getAllowedFeatures', () => {
     })
   })
 
-  it('PRO unlocks AI + ARTICLE_CRONS but not SENTIMENT', () => {
+  it('PRO unlocks AI, ARTICLE_CRONS and SEARCH_CONSOLE but not SENTIMENT', () => {
     expect(getAllowedFeatures('PRO')).toEqual({
       AI: true,
       SENTIMENT: false,
       ARTICLE_CRONS: true,
-      SEARCH_CONSOLE: false,
+      SEARCH_CONSOLE: true,
     })
   })
 
@@ -108,11 +108,11 @@ describe('planFeatureSync (plan grant provisioning)', () => {
   })
 
   it('is a no-op once the plan is already fully provisioned', () => {
-    expect(planFeatureSync('PRO', ['AI', 'ARTICLE_CRONS'])).toEqual({ activate: [], deactivate: [] })
+    expect(planFeatureSync('PRO', ['AI', 'ARTICLE_CRONS', 'SEARCH_CONSOLE'])).toEqual({ activate: [], deactivate: [] })
   })
 
   it('revokes what a downgrade no longer covers', () => {
-    expect(planFeatureSync('PRO', ['AI', 'SENTIMENT', 'ARTICLE_CRONS'])).toEqual({
+    expect(planFeatureSync('PRO', ['AI', 'SENTIMENT', 'ARTICLE_CRONS', 'SEARCH_CONSOLE'])).toEqual({
       activate: [],
       deactivate: ['SENTIMENT'],
     })
@@ -223,7 +223,7 @@ describe('syncGenerationSchedule', () => {
 describe('syncSeoAutopilot', () => {
   it('turns autopilot off when Search Console or AI becomes inactive', async () => {
     const updateMany = vi.fn().mockResolvedValue({ count: 1 })
-    await syncSeoAutopilot({ searchConsoleConnection: { updateMany } } as any, 'cs1', ['SEARCH_CONSOLE'])
+    await syncSeoAutopilot({ searchConsoleConnection: { updateMany } } as any, 'cs1', ['SEARCH_CONSOLE'], 'PREMIUM')
     expect(updateMany).toHaveBeenCalledWith({
       where: { clientSiteId: 'cs1', autopilotEnabled: true },
       data: { autopilotEnabled: false },
@@ -232,8 +232,22 @@ describe('syncSeoAutopilot', () => {
 
   it('keeps the opt-in when both required features remain active', async () => {
     const updateMany = vi.fn()
-    await syncSeoAutopilot({ searchConsoleConnection: { updateMany } } as any, 'cs1', ['AI', 'SEARCH_CONSOLE'])
+    await syncSeoAutopilot(
+      { searchConsoleConnection: { updateMany } } as any,
+      'cs1',
+      ['AI', 'SEARCH_CONSOLE'],
+      'PREMIUM',
+    )
     expect(updateMany).not.toHaveBeenCalled()
+  })
+
+  it('turns autopilot off on a downgrade to PRO that keeps Search Console', async () => {
+    const updateMany = vi.fn().mockResolvedValue({ count: 1 })
+    await syncSeoAutopilot({ searchConsoleConnection: { updateMany } } as any, 'cs1', ['AI', 'SEARCH_CONSOLE'], 'PRO')
+    expect(updateMany).toHaveBeenCalledWith({
+      where: { clientSiteId: 'cs1', autopilotEnabled: true },
+      data: { autopilotEnabled: false },
+    })
   })
 })
 

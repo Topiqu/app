@@ -30,8 +30,11 @@ export const getAllowedFeatures = (plan: ClientPlan): Record<FeatureCode, boolea
   AI: ['PRO', 'PREMIUM', 'CUSTOM'].includes(plan),
   SENTIMENT: ['PREMIUM', 'CUSTOM'].includes(plan),
   ARTICLE_CRONS: ['PRO', 'PREMIUM', 'CUSTOM'].includes(plan),
-  SEARCH_CONSOLE: ['PREMIUM', 'CUSTOM'].includes(plan),
+  SEARCH_CONSOLE: ['PRO', 'PREMIUM', 'CUSTOM'].includes(plan),
 })
+
+// Search Console data and REFRESH suggestions are PRO; autonomous changes stay PREMIUM.
+export const SEO_AUTOPILOT_PLANS: ClientPlan[] = ['PREMIUM', 'CUSTOM']
 
 export const isCustomPlan = (plan: ClientPlan): boolean => plan === 'CUSTOM'
 
@@ -111,9 +114,14 @@ export const syncGenerationSchedule = async (tx: FeatureSyncDb, clientSiteId: st
   })
 }
 
-/** Losing either data access or AI must require a fresh explicit autopilot opt-in later. */
-export const syncSeoAutopilot = async (tx: FeatureSyncDb, clientSiteId: string, active: FeatureCode[]) => {
-  if (active.includes('SEARCH_CONSOLE') && active.includes('AI')) return
+/** Losing data access, AI or the autopilot plan must require a fresh explicit autopilot opt-in later. */
+export const syncSeoAutopilot = async (
+  tx: FeatureSyncDb,
+  clientSiteId: string,
+  active: FeatureCode[],
+  plan: ClientPlan,
+) => {
+  if (active.includes('SEARCH_CONSOLE') && active.includes('AI') && SEO_AUTOPILOT_PLANS.includes(plan)) return
 
   await tx.searchConsoleConnection.updateMany({
     where: { clientSiteId, autopilotEnabled: true },
@@ -232,7 +240,7 @@ export const syncPlanFeatures = async (tx: FeatureSyncDb, clientSiteId: string) 
 
   await syncAutoRelease(tx, clientSiteId, nextActive)
   await syncGenerationSchedule(tx, clientSiteId, nextActive)
-  await syncSeoAutopilot(tx, clientSiteId, nextActive)
+  await syncSeoAutopilot(tx, clientSiteId, nextActive, plan)
   await recalcFeatureBilling(tx, clientSiteId, plan, site.billingPlan)
   if (plan === 'BASIC') await retireUnpaidCustomDomains(tx, clientSiteId)
 

@@ -36,7 +36,8 @@ export default defineEventHandler(async (event) => {
     : null
   const actionMetadata = lastAction?.metadata as { articleId?: unknown; query?: unknown } | null
   return {
-    eligible: Boolean(site && ['PREMIUM', 'CUSTOM'].includes(site.plan) && site.features.length),
+    eligible: Boolean(site && ['PRO', 'PREMIUM', 'CUSTOM'].includes(site.plan) && site.features.length),
+    autopilotEligible: Boolean(site && SEO_AUTOPILOT_PLANS.includes(site.plan) && site.features.length),
     connection,
     lastAction:
       lastAction && typeof actionMetadata?.articleId === 'string' && typeof actionMetadata.query === 'string'

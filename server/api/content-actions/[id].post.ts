@@ -16,6 +16,7 @@ export default defineEventHandler(async (event) => {
       id: true,
       clientSiteId: true,
       status: true,
+      type: true,
       proposal: true,
       snapshot: true,
       article: { select: { userId: true } },

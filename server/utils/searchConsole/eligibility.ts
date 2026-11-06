@@ -8,7 +8,7 @@ export const requireSearchConsoleEligibility = async (clientSiteId: string) => {
       features: { where: { isActive: true, feature: { code: 'SEARCH_CONSOLE' } }, select: { id: true }, take: 1 },
     },
   })
-  if (!site || site.deletedAt || !['PREMIUM', 'CUSTOM'].includes(site.plan) || !site.features.length)
-    throw createError({ statusCode: 403, message: 'Search Console intelligence requires PREMIUM' })
+  if (!site || site.deletedAt || !['PRO', 'PREMIUM', 'CUSTOM'].includes(site.plan) || !site.features.length)
+    throw createError({ statusCode: 403, message: 'Search Console requires PRO' })
   return site
 }

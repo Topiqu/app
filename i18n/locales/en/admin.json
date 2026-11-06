@@ -22,22 +22,22 @@
         "title": "Grow your blog with the PRO plan",
         "description": "AI generation, scheduled publishing, advanced SEO and a custom domain.",
         "features": [
-          "50 article credits per month with optional top-ups",
-          "Advanced SEO optimization",
+          "50 article credits per month; unused ones carry over (up to 100)",
+          "Advanced SEO optimization and Search Console",
           "Import of existing articles",
           "Custom domain"
         ]
       },
       "toPremium": {
         "title": "Maximum power with the PREMIUM plan",
-        "description": "Everything in PRO plus sentiment analysis, Search Console and priority indexing.",
+        "description": "Everything in PRO plus sentiment analysis, the SEO autopilot and priority indexing.",
         "features": [
-          "100 article credits per month with optional top-ups",
+          "100 article credits per month; unused ones carry over (up to 200)",
           "AI Sentiment & automatic images",
           "Priority indexing and sourcing",
           "Custom emojis & branding",
           "Priority 24/7 support",
-          "Search Console intelligence"
+          "SEO autopilot and AI visibility"
         ]
       }
     }

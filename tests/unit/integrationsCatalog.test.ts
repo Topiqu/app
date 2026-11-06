@@ -37,7 +37,9 @@ describe('settings integrations catalog', () => {
     const keys = source('app/components/Form/Client/ApiKeys.vue')
 
     expect(catalog).toContain("id: 'pro'")
-    expect(catalog).toContain("id: 'premium'")
+    // Search Console is a PRO integration; the SEO autopilot inside it stays PREMIUM.
+    expect(catalog).not.toContain("id: 'premium'")
+    expect(catalog.indexOf("id: 'gsc'")).toBeGreaterThan(catalog.indexOf("id: 'pro'"))
     expect(catalog).toContain('<FormClientApiKeys')
     expect(catalog).not.toContain('<template #trailing>')
     expect(catalog).not.toContain('class="absolute right-2')
@@ -92,7 +94,7 @@ describe('settings integrations catalog', () => {
     const settings = source('app/pages/settings/index.vue')
 
     expect(catalog).toMatch(
-      /shallowRef<'available' \| 'all' \| 'pro' \| 'premium'>\(\s*props\.currentPlan === 'BASIC' \? 'all' : 'available'/,
+      /shallowRef<'available' \| 'all'>\(\s*props\.currentPlan === 'BASIC' \? 'all' : 'available'/,
     )
     expect(catalog).toContain("$t('common.integrationsCatalog.requiresPlan'")
     expect(catalog).toContain("$t('common.integrationsCatalog.includedInPlan')")

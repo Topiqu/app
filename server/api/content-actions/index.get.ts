@@ -54,6 +54,7 @@ export default defineEventHandler(async (event) => {
     used,
     actions: [...open, ...applied].map(({ proposal, ...action }) => ({
       ...action,
+      allowed: refreshAllowance(site?.plan, action.type).allowed,
       // The proposal body is shown only while it waits for a decision.
       proposal: action.status === 'READY' ? proposalView.parse(proposal) : null,
     })),

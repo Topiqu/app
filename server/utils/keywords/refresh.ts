@@ -25,8 +25,13 @@ export const articleHash = (article: { title: string; excerpt: string | null; co
   contentHash(JSON.stringify([article.title, article.excerpt, article.content]))
 
 /** Plans that may prepare edits, and how many per calendar month: half the plan's article credits. */
-export const refreshAllowance = (plan: ClientPlan | string | null | undefined) => {
-  if (plan !== 'PREMIUM' && plan !== 'CUSTOM') return { allowed: false, monthly: 0 }
+export const refreshAllowance = (
+  plan: ClientPlan | string | null | undefined,
+  type: 'REFRESH' | 'EXPAND' = 'REFRESH',
+) => {
+  // REFRESH comes from rule-based rank checks; EXPAND needs the LLM plan assessment and stays on PREMIUM.
+  if (!(type === 'EXPAND' ? ['PREMIUM', 'CUSTOM'] : ['PRO', 'PREMIUM', 'CUSTOM']).includes(plan ?? ''))
+    return { allowed: false, monthly: 0 }
   return { allowed: true, monthly: Math.max(5, Math.floor((articleCreditsForPlan(plan) || 30) / 2)) }
 }
 
@@ -513,7 +518,7 @@ export const measureContentActions = async (now = new Date()) => {
   return { measured, failed, costUsd: Math.round(costUsd * 10_000) / 10_000 }
 }
 
-type ActionRef = { id: string; clientSiteId: string; status: string }
+type ActionRef = { id: string; clientSiteId: string; status: string; type: 'REFRESH' | 'EXPAND' }
 
 /** Reserves one article credit and queues the paid preparation; the monthly allowance is checked first. */
 export const queueContentAction = async (
@@ -522,8 +527,13 @@ export const queueContentAction = async (
   plan: ClientPlan | string | null,
   now = new Date(),
 ) => {
-  const allowance = refreshAllowance(plan)
-  if (!allowance.allowed) throw createError({ statusCode: 403, message: 'Article updates need the Premium plan' })
+  const allowance = refreshAllowance(plan, action.type)
+  if (!allowance.allowed)
+    throw createError({
+      statusCode: 403,
+      message:
+        action.type === 'EXPAND' ? 'Article expansions need the Premium plan' : 'Article updates need the Pro plan',
+    })
   if (!['SUGGESTED', 'FAILED'].includes(action.status))
     throw createError({ statusCode: 409, message: 'This suggestion is not waiting for preparation' })
   if ((await refreshesThisMonth(action.clientSiteId, now, db)) >= allowance.monthly)

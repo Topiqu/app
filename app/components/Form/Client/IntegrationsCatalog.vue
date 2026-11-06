@@ -33,20 +33,14 @@
       :key="section.id"
       :class="[
         'space-y-4 rounded-(--topiqu-surface-radius) border p-4 sm:p-5',
-        section.available && section.id === 'premium'
-          ? 'border-amber-200 border-l-4 border-l-amber-400 bg-amber-50/60 dark:border-amber-400/20 dark:border-l-amber-400 dark:bg-amber-500/5'
-          : section.available
-            ? 'border-sky-200 border-l-4 border-l-sky-500 bg-sky-50/60 dark:border-sky-400/20 dark:border-l-sky-400 dark:bg-sky-500/5'
-            : 'border-dashed border-default border-l-4 border-l-neutral-300 bg-elevated/30 dark:border-l-neutral-700',
+        section.available
+          ? 'border-sky-200 border-l-4 border-l-sky-500 bg-sky-50/60 dark:border-sky-400/20 dark:border-l-sky-400 dark:bg-sky-500/5'
+          : 'border-dashed border-default border-l-4 border-l-neutral-300 bg-elevated/30 dark:border-l-neutral-700',
       ]"
     >
       <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
         <div class="flex items-start gap-3">
-          <UBadge
-            :color="section.available ? (section.id === 'premium' ? 'warning' : 'info') : 'neutral'"
-            variant="soft"
-            size="lg"
-          >
+          <UBadge :color="section.available ? 'info' : 'neutral'" variant="soft" size="lg">
             {{ section.label }}
           </UBadge>
           <div>
@@ -169,8 +163,8 @@
         <FormClientDialogIntro
           icon="mdi:chart-timeline-variant-shimmer"
           :description="$t('common.integrationsCatalog.gscDescription')"
-          plan="premium"
-          planLabel="Premium"
+          plan="pro"
+          planLabel="Pro"
           :benefits="[$t('common.integrationsCatalog.gscBenefitOne'), $t('common.integrationsCatalog.gscBenefitTwo')]"
           :steps="[
             $t('common.integrationsCatalog.gscStepOne'),
@@ -370,7 +364,7 @@ type CatalogCard =
   | { kind: 'api'; id: 'api'; title: string; description: string }
   | { kind: 'wordpress'; id: 'wordpress'; title: string; description: string }
 type PlanSection = {
-  id: 'pro' | 'premium'
+  id: 'pro'
   label: string
   title: string
   description: string
@@ -416,17 +410,13 @@ watch(
   },
 )
 const filterQuery = shallowRef('')
-const planFilter = shallowRef<'available' | 'all' | 'pro' | 'premium'>(
-  props.currentPlan === 'BASIC' ? 'all' : 'available',
-)
+const planFilter = shallowRef<'available' | 'all'>(props.currentPlan === 'BASIC' ? 'all' : 'available')
 const planFilterItems = computed(() => [
   {
     value: 'available',
     label: $t('common.integrationsCatalog.availableForMe'),
   },
   { value: 'all', label: $t('common.integrationsCatalog.allPlans') },
-  { value: 'pro', label: 'Pro' },
-  { value: 'premium', label: 'Premium' },
 ])
 const currentPlanLabel = computed(() => {
   if (props.currentPlan === 'PRO') return 'Pro'
@@ -434,10 +424,7 @@ const currentPlanLabel = computed(() => {
   if (props.currentPlan === 'CUSTOM') return 'Custom'
   return 'Basic'
 })
-const hasPlanAccess = (minimumPlan: PlanSection['id']) => {
-  if (props.currentPlan === 'CUSTOM' || props.currentPlan === 'PREMIUM') return true
-  return props.currentPlan === 'PRO' && minimumPlan === 'pro'
-}
+const hasPlanAccess = (minimumPlan: PlanSection['id']) => minimumPlan === 'pro' && props.currentPlan !== 'BASIC'
 
 const planSections = computed<PlanSection[]>(() => [
   {
@@ -493,26 +480,18 @@ const planSections = computed<PlanSection[]>(() => [
         description: $t('common.integrationsCatalog.wordpressDescription'),
       },
       {
-        kind: 'api',
-        id: 'api',
-        title: $t('common.preferences.api.title'),
-        description: $t('common.preferences.api.description'),
-      },
-    ],
-  },
-  {
-    id: 'premium',
-    label: 'Premium',
-    title: $t('common.integrationsCatalog.premiumTitle'),
-    description: $t('common.integrationsCatalog.premiumDescription'),
-    cards: [
-      {
         kind: 'service',
         id: 'gsc',
         title: $t('common.searchConsole.title'),
         logo: 'google',
         status: null,
         description: $t('common.integrationsCatalog.gscDescription'),
+      },
+      {
+        kind: 'api',
+        id: 'api',
+        title: $t('common.preferences.api.title'),
+        description: $t('common.preferences.api.description'),
       },
     ],
   },
@@ -523,7 +502,7 @@ const visibleSections = computed<PlanLane[]>(() => {
   return planSections.value
     .filter((section) => {
       if (planFilter.value === 'available') return hasPlanAccess(section.id)
-      return planFilter.value === 'all' || section.id === planFilter.value
+      return true
     })
     .map((section) => ({
       ...section,

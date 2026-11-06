@@ -3,7 +3,7 @@
     <h3 v-if="!embedded" class="mb-4 flex items-center gap-2 text-lg font-semibold">
       <UIcon name="mdi:google" class="size-5 text-blue-500" />
       {{ $t('common.searchConsole.title') }}
-      <UBadge color="warning" variant="soft" size="sm">Premium</UBadge>
+      <UBadge color="info" variant="soft" size="sm">Pro</UBadge>
     </h3>
     <div
       :class="
@@ -18,7 +18,7 @@
       />
       <div v-else-if="!data?.eligible" class="flex items-start gap-3 text-sm text-neutral-600 dark:text-neutral-400">
         <UIcon name="mdi:lock-outline" class="mt-0.5 size-5 shrink-0" />
-        <p>{{ $t('common.searchConsole.premiumOnly') }}</p>
+        <p>{{ $t('common.searchConsole.planRequired') }}</p>
       </div>
       <div v-else-if="!data.connection" class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -66,8 +66,15 @@
         <p v-if="data.connection.lastSyncAt" class="text-xs text-neutral-500">
           {{ $t('common.searchConsole.lastSync') }} <NuxtTime :datetime="data.connection.lastSyncAt" relative />
         </p>
+        <p
+          v-if="data.connection.propertyUrl && !data.autopilotEligible"
+          class="flex items-start gap-2 border-t border-neutral-200 pt-4 text-sm text-neutral-500 dark:border-neutral-700"
+        >
+          <UIcon name="mdi:lock-outline" class="mt-0.5 size-4 shrink-0" />
+          {{ $t('common.searchConsole.autopilotPremium') }}
+        </p>
         <div
-          v-if="data.connection.propertyUrl"
+          v-else-if="data.connection.propertyUrl"
           class="flex items-start justify-between gap-4 border-t border-neutral-200 pt-4 dark:border-neutral-700"
         >
           <div>
@@ -107,6 +114,7 @@ defineProps<{ embedded?: boolean }>()
 
 interface Status {
   eligible: boolean
+  autopilotEligible: boolean
   lastAction: null | {
     id: string
     action: string

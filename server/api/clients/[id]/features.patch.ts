@@ -108,7 +108,7 @@ export default defineEventHandler(async (event) => {
 
     await syncAutoRelease(tx, clientId, activeFeatures)
     await syncGenerationSchedule(tx, clientId, activeFeatures)
-    await syncSeoAutopilot(tx, clientId, activeFeatures)
+    await syncSeoAutopilot(tx, clientId, activeFeatures, lockedSite.plan)
 
     const { monthlyPayment, annualPayment } = await recalcFeatureBilling(
       tx,
