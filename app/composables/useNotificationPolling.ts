@@ -9,6 +9,7 @@ export const useNotificationPolling = <T>(options: {
 }) => {
   const { data: auth, getSession } = useAuth()
   const visibility = useDocumentVisibility()
+  const mounted = useMounted()
   const status = shallowRef<PollStatus>('connecting')
   const delay = shallowRef(10_000)
   let cursor: NotificationCursor | undefined
@@ -127,7 +128,8 @@ export const useNotificationPolling = <T>(options: {
   })
 
   return {
-    status: computed<PollStatus>(() => (enabled() ? status.value : 'paused')),
+    // `enabled()` is false on the server, so the first client render must also say paused or hydration mismatches.
+    status: computed<PollStatus>(() => (mounted.value && enabled() ? status.value : 'paused')),
     retry,
   }
 }
