@@ -171,7 +171,9 @@ describe('company website knowledge import', () => {
     await flushPromises()
 
     expect(mocks.fetch).not.toHaveBeenCalledWith('/api/knowledge/sitemap', expect.anything())
-    const urls = mocks.fetch.mock.calls.filter(([path]) => path === '/api/knowledge').map(([, init]) => init.body.get('url'))
+    const urls = mocks.fetch.mock.calls
+      .filter(([path]) => path === '/api/knowledge')
+      .map(([, init]) => init.body.get('url'))
     expect(urls.sort()).toEqual(['https://firma.cz/a', 'https://firma.cz/b'])
     expect(dialog.emitted('created')).toHaveLength(1)
   })

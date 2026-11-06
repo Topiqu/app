@@ -274,9 +274,7 @@ const sitemapCapNote = computed(() => {
     ? t('knowledge.sitemap.cappedByQuota', { count: found.quotaLeft })
     : t('knowledge.sitemap.cappedByBatch', { count: KNOWLEDGE_LIMITS.maxSitemapPages })
 })
-const pastedUrls = computed(() => [
-  ...new Set(form.urls.split(/\s+/).map(normalizeSourceUrl).filter(Boolean)),
-])
+const pastedUrls = computed(() => [...new Set(form.urls.split(/\s+/).map(normalizeSourceUrl).filter(Boolean))])
 const listedUrls = computed(() => pastedUrls.value.slice(0, KNOWLEDGE_LIMITS.maxSitemapPages))
 
 const submitLabel = computed(() => {
