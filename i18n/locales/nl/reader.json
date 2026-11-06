@@ -172,8 +172,7 @@
       "showDetails": "Details tonen",
       "toggleComments": "Reacties aan/uit",
       "toggleTheme": "Kleurmodus wisselen",
-      "unlike": "Like verwijderen",
-      "view": "Bekijken"
+      "unlike": "Like verwijderen"
     },
     "advertisement": "Advertentie",
     "auth": {
@@ -281,9 +280,11 @@
       "loadFailed": "Meldingen konden niet worden geladen: {message}",
       "loginPrompt": "Log in om nieuws en activiteit op het platform te volgen.",
       "newNotification": "Nieuwe melding: {message}",
-      "pollingActive": "Meldingen zijn actief",
-      "pollingConnecting": "Updates van meldingen controleren",
-      "pollingPaused": "Meldingen zijn gepauzeerd",
+      "title": "Meldingen",
+      "newNotifications": "Nieuwe meldingen: {count}",
+      "openWithUnread": "Meldingen openen, ongelezen: {count}",
+      "unread": "Ongelezen",
+      "settings": "Meldingsinstellingen",
       "pollingRetrying": "Updates van meldingen zijn niet beschikbaar. We proberen automatisch opnieuw verbinding te maken.",
       "pollingSignIn": "Log opnieuw in om updates van meldingen te ontvangen.",
       "pollingUnavailable": "Updates van meldingen zijn niet beschikbaar voor deze site. Probeer het later opnieuw."

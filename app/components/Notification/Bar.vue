@@ -12,82 +12,112 @@
         variant="ghost"
         icon="mdi:bell-outline"
         square
-        :aria-label="$t('common.actions.openNotifications')"
-        :title="$t(pollTitle)"
+        :aria-label="triggerLabel"
+        :title="pollProblem ? $t(pollProblem) : triggerLabel"
       />
 
       <template #content>
         <div class="w-[26rem] max-w-[95vw]">
-          <UAlert
-            v-if="pollStatus === 'retrying' || pollStatus === 'forbidden' || pollStatus === 'unauthorized'"
-            color="warning"
-            variant="soft"
-            icon="mdi:bell-alert-outline"
-            :title="$t(pollTitle)"
-            class="m-3"
-          >
-            <template #actions>
-              <UButton
-                color="neutral"
-                variant="outline"
-                size="sm"
-                :label="$t('common.messages.retry')"
-                @click="retryPolling"
-              />
-            </template>
-          </UAlert>
           <template v-if="auth?.user">
+            <div class="flex items-center justify-between gap-2 border-b border-default bg-default py-1.5 pl-4 pr-2">
+              <h2 class="text-sm font-semibold text-highlighted">{{ $t('common.notifications.title') }}</h2>
+              <UButton
+                :to="localePath({ name: 'uzivatel', query: { tab: 'notifications' } })"
+                color="neutral"
+                variant="ghost"
+                icon="mdi:cog-outline"
+                size="sm"
+                square
+                :aria-label="$t('common.notifications.settings')"
+                :title="$t('common.notifications.settings')"
+                @click="show = false"
+              />
+            </div>
+            <UAlert
+              v-if="pollProblem"
+              color="warning"
+              variant="soft"
+              icon="mdi:bell-alert-outline"
+              :title="$t(pollProblem)"
+              class="m-3"
+            >
+              <template #actions>
+                <UButton
+                  color="neutral"
+                  variant="outline"
+                  size="sm"
+                  :label="$t('common.messages.retry')"
+                  @click="retryPolling"
+                />
+              </template>
+            </UAlert>
             <UScrollArea v-if="notifications.length" class="max-h-[30rem]">
-              <div ref="scroll" class="divide-y divide-default bg-default">
-                <div v-for="n in notifications" :key="n.id" :data-notification-id="n.id" class="p-4">
-                  <div class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3">
-                    <UIcon :name="notificationIcon(n.type)" size="20" class="mt-0.5 shrink-0 text-muted" />
-                    <div class="min-w-0 flex-1">
-                      <p class="text-sm font-medium leading-5 text-highlighted">
-                        {{ n.message }}
-                        <UBadge v-if="n.count > 1" color="error" variant="soft" size="sm">×{{ n.count }}</UBadge>
-                      </p>
-                      <p class="mt-1 text-xs text-muted">{{ formatDate(n.createdAt) }}</p>
-                      <ULink v-if="n.link" :to="n.link" class="mt-1 block text-sm">{{
-                        $t('common.actions.view')
-                      }}</ULink>
-                      <ULink
-                        v-if="n.article?.slug"
-                        :to="localePath({ name: 'clanky-slug', params: { slug: n.article.slug } }, n.article.language)"
-                        class="mt-1 block text-sm leading-5 text-muted hover:text-primary"
-                      >
-                        <span class="line-clamp-2 break-words">{{ n.article.title }}</span>
-                      </ULink>
-                    </div>
-                    <div class="flex items-start gap-1">
-                      <ULink
-                        v-if="n.article?.imageUrl && n.article.slug"
-                        :to="localePath({ name: 'clanky-slug', params: { slug: n.article.slug } }, n.article.language)"
-                        class="shrink-0 rounded-[var(--ui-radius)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-                        :aria-label="n.article.title"
-                      >
-                        <AppMedia
-                          :src="n.article.imageUrl"
-                          alt=""
-                          aspectRatio="1 / 1"
-                          sizes="56px"
-                          containerClass="size-14 rounded-[var(--ui-radius)]"
-                        />
-                      </ULink>
+              <div ref="scroll" class="bg-default">
+                <div v-for="group in groups" :key="group.key">
+                  <h3 class="sticky top-0 z-20 bg-default px-4 pb-1 pt-3 text-xs font-semibold text-muted">
+                    {{ group.label }}
+                  </h3>
+                  <ul class="divide-y divide-default">
+                    <li
+                      v-for="n in group.items"
+                      :key="n.id"
+                      :data-notification-id="n.id"
+                      class="group relative grid grid-cols-[0.5rem_2.5rem_minmax(0,1fr)_auto] items-start gap-x-2.5 py-3 pl-2 pr-2 transition-colors"
+                      :class="[n.isNew && 'bg-primary/5', n.to && 'hover:bg-elevated/60']"
+                    >
+                      <span class="mt-4 size-2 rounded-full" :class="n.isNew && 'bg-primary'">
+                        <span v-if="n.isNew" class="sr-only">{{ $t('common.notifications.unread') }}</span>
+                      </span>
+                      <AppMedia
+                        v-if="n.article?.imageUrl"
+                        :src="n.article.imageUrl"
+                        alt=""
+                        aspectRatio="1 / 1"
+                        sizes="40px"
+                        containerClass="size-10 rounded-[var(--ui-radius)]"
+                      />
+                      <span v-else class="grid size-10 place-items-center rounded-[var(--ui-radius)] bg-elevated">
+                        <UIcon :name="notificationIcon(n.type)" size="20" class="text-muted" />
+                      </span>
+                      <div class="min-w-0 text-sm leading-5">
+                        <!-- The stretched ::after makes the whole row one link without nesting the delete button in it. -->
+                        <ULink
+                          v-if="n.to"
+                          raw
+                          :to="n.to"
+                          class="block after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-primary"
+                          @click="show = false"
+                        >
+                          <span class="block whitespace-pre-line break-words font-medium text-highlighted">{{
+                            n.message
+                          }}</span>
+                          <span v-if="n.article" class="line-clamp-1 break-words text-muted">{{
+                            n.article.title
+                          }}</span>
+                        </ULink>
+                        <p v-else class="whitespace-pre-line break-words font-medium text-highlighted">
+                          {{ n.message }}
+                        </p>
+                        <p class="mt-0.5 flex items-center gap-2 text-xs text-muted">
+                          <AppTime :datetime="n.createdAt" :preset="group.key === today ? 'relative' : 'time'" />
+                          <UBadge v-if="n.count > 1" color="neutral" variant="soft" size="sm">×{{ n.count }}</UBadge>
+                        </p>
+                      </div>
                       <UButton
-                        color="error"
+                        color="neutral"
                         variant="ghost"
                         icon="mdi:close"
                         size="xs"
                         square
+                        class="relative z-10 justify-center pointer-fine:opacity-0 pointer-fine:group-focus-within:opacity-100 pointer-fine:group-hover:opacity-100 pointer-coarse:size-11"
                         :aria-label="$t('common.actions.deleteNotification')"
                         :title="$t('common.actions.deleteNotification')"
                         :loading="deletingKeys.has(notificationKey(n))"
                         :disabled="deletingKeys.has(notificationKey(n))"
                         @click.stop="del(n.id)"
                       />
-                    </div>
-                  </div>
+                    </li>
+                  </ul>
                 </div>
                 <div ref="sentinel" class="h-px" />
                 <UProgress v-if="loading" />
@@ -115,12 +145,12 @@
       </template>
     </UPopover>
     <span
-      v-if="unreadCount > 0"
+      v-if="badgeCount > 0"
       data-notification-count
       class="pointer-events-none absolute -right-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-error px-1 text-[11px] font-bold leading-none tabular-nums text-white ring-2 ring-default"
       aria-hidden="true"
     >
-      {{ Math.min(unreadCount, 99) }}
+      {{ badgeCount > 99 ? '99+' : badgeCount }}
     </span>
   </span>
 </template>
@@ -137,7 +167,6 @@ type Notif = {
   createdAt: string
   articleId: string | null
   article?: { slug: string; language: Language; title: string; imageUrl: string | null } | null
-  count: number
   link?: string | null
 }
 type FetchResponse = {
@@ -160,11 +189,15 @@ const scroll = useTemplateRef('scroll')
 const sentinel = useTemplateRef('sentinel')
 const notificationTrigger = useTemplateRef<any>('notificationTrigger')
 const deletingKeys = ref(new Set<string>())
+// Stays lit until the panel closes, although the rows are already read on the server.
+const highlighted = shallowRef(new Set<string>())
 const pendingDeletes = ref(new Map<string, Notif[]>())
 const optimisticStatus = useOptimisticStatus()
 const url = computed(() => `/api/notifications?page=${page.value}&limit=${limit}`)
 const { data: auth } = useAuth()
 const localePath = useLocalePath()
+const { locale } = useI18n()
+const toast = useToast()
 const {
   data: fetchedData,
   error,
@@ -181,6 +214,7 @@ const { status: pollStatus, retry: retryPolling } = useNotificationPolling<Notif
     unreadCount.value = 0
     deletingKeys.value = new Set()
     pendingDeletes.value = new Map()
+    highlighted.value = new Set()
   },
   receive: (res) => {
     const known = new Set(data.value.map((n) => n.id))
@@ -191,27 +225,62 @@ const { status: pollStatus, retry: retryPolling } = useNotificationPolling<Notif
       data.value = [...fresh, ...data.value]
         .sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.id.localeCompare(a.id))
         .slice(0, max)
-      for (const n of fresh)
-        useToast().add({
-          color: 'success',
-          title: $t('common.notifications.newNotification', { message: n.message }),
-        })
+      if (!show.value) announce(fresh)
     }
     const hiddenUnread = [...pendingDeletes.value.values()].flat().filter((n) => !n.isRead).length
     unreadCount.value = Math.max(0, res.unreadCount - hiddenUnread)
+    if (show.value) void markRead()
   },
 })
-const pollTitle = computed(
-  () =>
-    ({
-      active: 'common.notifications.pollingActive',
-      paused: 'common.notifications.pollingPaused',
-      connecting: 'common.notifications.pollingConnecting',
-      retrying: 'common.notifications.pollingRetrying',
-      forbidden: 'common.notifications.pollingUnavailable',
-      unauthorized: 'common.notifications.pollingSignIn',
-    })[pollStatus.value],
+const pollProblem = computed(() =>
+  pollStatus.value === 'retrying'
+    ? 'common.notifications.pollingRetrying'
+    : pollStatus.value === 'forbidden'
+      ? 'common.notifications.pollingUnavailable'
+      : pollStatus.value === 'unauthorized'
+        ? 'common.notifications.pollingSignIn'
+        : null,
 )
+const badgeCount = computed(() => (show.value ? 0 : unreadCount.value))
+const triggerLabel = computed(() =>
+  badgeCount.value > 0
+    ? $t('common.notifications.openWithUnread', { count: badgeCount.value })
+    : $t('common.actions.openNotifications'),
+)
+
+const toastId = 'notifications-new'
+let announced = 0
+// Draining a backlog arrives in batches, so one toast keeps a running total instead of stacking.
+const announce = (fresh: Notif[]) => {
+  if (!toast.toasts.value.some((item) => item.id === toastId)) announced = 0
+  announced += fresh.length
+  toast.add({
+    id: toastId,
+    color: 'neutral',
+    icon: 'mdi:bell-outline',
+    title:
+      announced === 1
+        ? $t('common.notifications.newNotification', { message: fresh[0]!.message })
+        : $t('common.notifications.newNotifications', { count: announced }),
+  })
+}
+
+const markRead = async () => {
+  const before = data.value[0]?.createdAt
+  if (!before || !unreadCount.value) return
+  const userId = auth.value?.user?.id
+  highlighted.value = new Set([...highlighted.value, ...data.value.filter((n) => !n.isRead).map((n) => n.id)])
+  data.value = data.value.map((n) => (n.isRead ? n : { ...n, isRead: true }))
+  try {
+    const res = await $fetch<{ unreadCount: number }, '/api/notifications/read'>('/api/notifications/read', {
+      method: 'POST',
+      body: { before },
+    })
+    if (auth.value?.user?.id === userId) unreadCount.value = res.unreadCount
+  } catch {
+    // Nothing is lost: the badge keeps its count and the next opening retries.
+  }
+}
 
 watch(
   fetchedData,
@@ -239,30 +308,48 @@ watch(error, (e) => {
     })
 })
 
+const rowTarget = (n: Notif) =>
+  n.link ||
+  (n.article?.slug
+    ? localePath({ name: 'clanky-slug', params: { slug: n.article.slug } }, n.article.language)
+    : undefined)
+
 const notifications = computed(() => {
-  const map = new Map<string, Notif>()
+  const map = new Map<string, Notif & { count: number; isNew: boolean; to?: string }>()
   for (const n of data.value) {
-    const key = [n.type, n.message, n.article?.slug ?? '', n.link ?? ''].join('|')
-    if (map.has(key)) {
-      const ex = map.get(key)!
+    const key = notificationKey(n)
+    const ex = map.get(key)
+    const isNew = highlighted.value.has(n.id)
+    if (ex) {
       ex.count++
+      ex.isNew ||= isNew
       if (new Date(n.createdAt) > new Date(ex.createdAt))
         Object.assign(ex, {
           createdAt: n.createdAt,
           id: n.id,
           isRead: n.isRead,
         })
-    } else map.set(key, { ...n, count: 1 })
+    } else map.set(key, { ...n, count: 1, isNew, to: rowTarget(n) })
   }
   return [...map.values()]
 })
+const groups = computed(() =>
+  groupByDay(notifications.value, { locale: locale.value, timeZone: TOPIQU_TIME_ZONE, relativeTo: new Date() }),
+)
+const today = computed(() => dayKey(new Date(), TOPIQU_TIME_ZONE))
 
-const handleOpen = (open: boolean) => {
-  if (open && auth?.value?.user) {
-    if (pollStatus.value === 'forbidden' || pollStatus.value === 'unauthorized') return
-    page.value = 1
-    refresh()
+const handleOpen = async (open: boolean) => {
+  if (!open) {
+    highlighted.value = new Set()
+    return
   }
+  if (!auth?.value?.user || pollStatus.value === 'forbidden' || pollStatus.value === 'unauthorized') return
+  loading.value = true
+  page.value = 1
+  await refresh()
+  await nextTick()
+  loading.value = false
+  if (show.value) await markRead()
 }
 
 const notificationIcon = (type: string) =>
@@ -354,25 +441,17 @@ watch(
   },
 )
 
-watch(
-  () => [show.value, sentinel.value] as const,
-  async ([s, sent], _previous, onCleanup) => {
-    if (s && sent && scroll.value && auth?.value?.user) {
-      const o = new IntersectionObserver(
-        async (e) => {
-          if (e[0]?.isIntersecting && !loading.value && hasMore.value) {
-            loading.value = true
-            page.value++
-            await refresh()
-            await nextTick()
-            loading.value = false
-          }
-        },
-        { root: scroll.value, threshold: 0.01 },
-      )
-      o.observe(sent)
-      onCleanup(() => o.disconnect())
-    }
-  },
-)
+const loadMore = async () => {
+  loading.value = true
+  page.value++
+  await refresh()
+  await nextTick()
+  if (error.value) page.value--
+  loading.value = false
+}
+// With no explicit root the observer still clips to the scroll area. An open error stops a retry loop.
+const sentinelVisible = useElementVisibility(sentinel)
+watch([sentinelVisible, loading], ([visible, busy]) => {
+  if (visible && !busy && show.value && hasMore.value && !error.value && auth.value?.user) void loadMore()
+})
 </script>

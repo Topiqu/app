@@ -182,7 +182,7 @@ export const applyProjectColorScheme = async (page: Page) => {
   else await expect(root).not.toHaveClass(/\bdark\b/)
 }
 
-export const expectAccessible = async (page: Page, disabledRules: string[] = []) => {
+export const expectAccessible = async (page: Page, disabledRules: string[] = [], within?: string) => {
   await waitForPageReady(page)
   let builder = new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
@@ -191,6 +191,7 @@ export const expectAccessible = async (page: Page, disabledRules: string[] = [])
     // Reka UI's document-level focus guards are intentionally focusable but
     // visually hidden; axe otherwise reports them as aria-hidden-focus.
     .exclude('span[aria-hidden="true"][tabindex="0"]')
+  if (within) builder = builder.include(within)
   if (disabledRules.length) builder = builder.disableRules(disabledRules)
   const results = await builder.analyze()
   expect(results.violations, results.violations.map(({ id, help }) => `${id}: ${help}`).join('\n')).toEqual([])

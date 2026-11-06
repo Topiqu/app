@@ -43,6 +43,8 @@
 </template>
 
 <script setup lang="ts">
+import type { InternalApi } from 'nitropack'
+
 import { CUSTOM_MIN_SEATS, CUSTOM_MAX_SEATS } from '~~/shared/utils/billingCatalog'
 
 const { paidSeats } = defineProps<{ paidSeats: number | null }>()
@@ -73,7 +75,7 @@ const request = async (token?: string) => {
   busy.value = true
   failure.value = ''
   try {
-    const result = await $fetch('/api/stripe/seats', {
+    const result = await $fetch<InternalApi['/api/stripe/seats']['post'], '/api/stripe/seats'>('/api/stripe/seats', {
       method: 'POST',
       body: { seats: seats.value, ...(token ? { quote: token } : {}) },
     })

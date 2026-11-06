@@ -172,8 +172,7 @@
       "showDetails": "Pokaż szczegóły",
       "toggleComments": "Przełącz komentarze",
       "toggleTheme": "Przełącz tryb kolorów",
-      "unlike": "Cofnij polubienie",
-      "view": "Wyświetl"
+      "unlike": "Cofnij polubienie"
     },
     "advertisement": "Reklama",
     "auth": {
@@ -281,9 +280,11 @@
       "loadFailed": "Nie udało się wczytać powiadomień: {message}",
       "loginPrompt": "Zaloguj się, aby śledzić nowości i aktywność na platformie.",
       "newNotification": "Nowe powiadomienie: {message}",
-      "pollingActive": "Powiadomienia są aktywne",
-      "pollingConnecting": "Sprawdzanie nowych powiadomień",
-      "pollingPaused": "Powiadomienia są wstrzymane",
+      "title": "Powiadomienia",
+      "newNotifications": "Nowe powiadomienia: {count}",
+      "openWithUnread": "Otwórz powiadomienia, nieprzeczytane: {count}",
+      "unread": "Nieprzeczytane",
+      "settings": "Ustawienia powiadomień",
       "pollingRetrying": "Aktualizacje powiadomień są niedostępne. Automatycznie spróbujemy połączyć się ponownie.",
       "pollingSignIn": "Zaloguj się ponownie, aby otrzymywać aktualizacje powiadomień.",
       "pollingUnavailable": "Aktualizacje powiadomień są niedostępne dla tej witryny. Spróbuj ponownie później."

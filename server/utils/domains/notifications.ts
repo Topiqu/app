@@ -19,7 +19,12 @@ export const domainAdminNotifications = async (clientSiteId: string, key: string
         })
         return null
       }
-      return { userId: member.userId, type: 'SYSTEM' as const, message, link: '/settings?tab=branding' }
+      return {
+        userId: member.userId,
+        type: 'SYSTEM' as const,
+        message,
+        link: `/${uiLanguageOf(member.user.language)}/settings?tab=branding`,
+      }
     }),
   )
   return notifications.filter((notification) => notification !== null)

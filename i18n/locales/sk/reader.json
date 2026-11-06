@@ -172,8 +172,7 @@
       "showDetails": "Zobraziť detaily",
       "toggleComments": "Prepnúť komentáre",
       "toggleTheme": "Prepnúť farebný režim",
-      "unlike": "Zrušiť lajk",
-      "view": "Zobraziť"
+      "unlike": "Zrušiť lajk"
     },
     "advertisement": "Reklama",
     "auth": {
@@ -281,9 +280,11 @@
       "loadFailed": "Oznámenia sa nepodarilo načítať: {message}",
       "loginPrompt": "Prihláste sa a sledujte novinky a aktivity na platforme.",
       "newNotification": "Nové oznámenie: {message}",
-      "pollingActive": "Oznámenia sú aktívne",
-      "pollingConnecting": "Overujeme aktualizácie oznámení",
-      "pollingPaused": "Oznámenia sú pozastavené",
+      "title": "Oznámenia",
+      "newNotifications": "Nové oznámenia: {count}",
+      "openWithUnread": "Otvoriť oznámenia, neprečítané: {count}",
+      "unread": "Neprečítané",
+      "settings": "Nastavenia oznámení",
       "pollingRetrying": "Aktualizácie oznámení sú nedostupné. Pripojenie sa pokúsime obnoviť automaticky.",
       "pollingSignIn": "Ak chcete dostávať aktualizácie oznámení, prihláste sa znova.",
       "pollingUnavailable": "Aktualizácie oznámení sú pre tento web nedostupné. Skúste to znova neskôr."

@@ -172,8 +172,7 @@
       "showDetails": "Mostrar detalhes",
       "toggleComments": "Mostrar/ocultar comentários",
       "toggleTheme": "Alternar modo de cor",
-      "unlike": "Remover gosto",
-      "view": "Ver"
+      "unlike": "Remover gosto"
     },
     "advertisement": "Publicidade",
     "auth": {
@@ -281,9 +280,11 @@
       "loadFailed": "Não foi possível carregar as notificações: {message}",
       "loginPrompt": "Inicie sessão para acompanhar as novidades e a atividade na plataforma.",
       "newNotification": "Nova notificação: {message}",
-      "pollingActive": "As notificações estão ativas",
-      "pollingConnecting": "A verificar atualizações de notificações",
-      "pollingPaused": "As notificações estão em pausa",
+      "title": "Notificações",
+      "newNotifications": "Novas notificações: {count}",
+      "openWithUnread": "Abrir notificações, não lidas: {count}",
+      "unread": "Não lida",
+      "settings": "Definições de notificações",
       "pollingRetrying": "As atualizações de notificações estão indisponíveis. Vamos tentar restabelecer a ligação automaticamente.",
       "pollingSignIn": "Inicie sessão novamente para receber atualizações de notificações.",
       "pollingUnavailable": "As atualizações de notificações estão indisponíveis neste site. Tente novamente mais tarde."
