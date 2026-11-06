@@ -272,6 +272,8 @@ export const processClient = async (client: ScheduledClient, slot: Date, request
         ],
         requested: request ? { topic: request.topic, instructions: request.instructions } : undefined,
         plannedTopics: batchItem?.plannedTopics,
+        controversyLevel: client.aiControversyLevel,
+        toneOfVoice: client.aiToneOfVoice,
       }
 
       // Topic first, then the article. The writer used to receive the whole selection template as its
@@ -854,6 +856,8 @@ const generationClientSelect = {
   audience: true,
   keywords: true,
   focus: true,
+  aiControversyLevel: true,
+  aiToneOfVoice: true,
   language: true,
   generationFrequency: true,
   timeZone: true,

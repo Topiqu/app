@@ -565,7 +565,7 @@ ${
 
 Set blocking=true only when publishing the article as it stands would mislead readers or fail the assignment:
 - invented_detail: a number, date, quotation or named source in neither the grounding material nor the assignment;
-- assignment_mismatch: the requested stance, genre or tone is reversed or replaced;
+- assignment_mismatch: the requested stance, genre or tone is reversed or replaced, or softened where the editorial direction above calls that blocking;
 - missing_specifics: the article never answers the central question its title or perex promises (a title asking what changed, and no change is named), or its sections only circle one claim;
 - unsupported_claim or continuity_error, when no independent verification is supplied.
 Everything else is blocking=false: adding further figures, sources, ranges, examples or comparisons from the brief, widening the scope to related questions, hedging, structure and wording. Once the central question is answered, a request for more of the brief's specifics is never blocking.

@@ -66,6 +66,27 @@ describe('editorial policy', () => {
     expect(policy).toContain('assignment_mismatch')
   })
 
+  it('blocks unrequested softening of a HIGH opinion', () => {
+    expect(editorialPolicy('opinion', 'HIGH')).toContain('softening of this voice is a blocking assignment_mismatch')
+  })
+
+  it.each(['analysis', 'comparison'] as const)('makes a HIGH %s argue a thesis and blocks a neutral one', (format) => {
+    const policy = editorialPolicy(format, 'HIGH', false, 'sarcastic')
+    expect(policy).toContain('This piece argues a position')
+    expect(policy).toContain('neutral explainer is a blocking assignment_mismatch')
+    expect(policy).not.toContain('Deliberately confrontational writing is part of this assignment')
+  })
+
+  it('keeps the thesis directive off news, guides and lower levels', () => {
+    for (const policy of [
+      editorialPolicy('news', 'HIGH'),
+      editorialPolicy('guide', 'HIGH'),
+      editorialPolicy('analysis', 'MEDIUM'),
+      editorialPolicy('opinion', 'HIGH'),
+    ])
+      expect(policy).not.toContain('This piece argues a position')
+  })
+
   it('reserves the confrontational directive for HIGH opinion and story', () => {
     for (const policy of [
       editorialPolicy('opinion', 'LOW'),

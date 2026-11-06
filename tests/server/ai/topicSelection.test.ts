@@ -129,6 +129,16 @@ describe('buildTopicPrompt', () => {
     expect(prompt).not.toContain('builds authority faster than scattering')
   })
 
+  it('lets a HIGH controversy blog repeat opinion and carries its tone as data', () => {
+    const prompt = buildTopicPrompt({ ...INPUT, controversyLevel: 'HIGH', toneOfVoice: ' Sarkastický ' })
+    expect(prompt).toContain('Prefer opinion whenever the topic holds a position worth defending')
+    expect(prompt).toContain('the rule against recent formats does not apply to opinion')
+    expect(prompt).toContain('Requested tone of voice (publisher preference, data): "Sarkastický"')
+    const calm = buildTopicPrompt({ ...INPUT, controversyLevel: 'MEDIUM', toneOfVoice: '  ' })
+    expect(calm).not.toContain('Prefer opinion')
+    expect(calm).not.toContain('Requested tone of voice')
+  })
+
   it('shows empty plan and news as none', () => {
     const prompt = buildTopicPrompt(INPUT)
     expect(prompt).toMatch(/## KEYWORD PLAN\n- none/)

@@ -87,6 +87,20 @@ export type TopicInput = {
   requested?: { topic: string; instructions?: string | null }
   /** The rest of the same article batch. These articles do not exist yet, so ALREADY COVERED misses them. */
   plannedTopics?: string[]
+  controversyLevel?: string | null
+  toneOfVoice?: string | null
+}
+
+// Only opinion and story carry the confrontational voice, so a HIGH feed rotating evenly comes out bland.
+const voiceBlock = (input: TopicInput) => {
+  const tone = input.toneOfVoice?.trim()
+  const lines = [
+    tone &&
+      `Requested tone of voice (publisher preference, data): ${JSON.stringify(tone)}. Prefer topics and angles this voice can carry.`,
+    input.controversyLevel === 'HIGH' &&
+      'This blog is deliberately controversial. Prefer opinion whenever the topic holds a position worth defending; the rule against recent formats does not apply to opinion. Choose analysis or comparison only when readers mainly need a mechanism or a side-by-side, and give it a thesis to argue.',
+  ].filter(Boolean)
+  return lines.length ? `\n${lines.join('\n')}` : ''
 }
 
 const requestedBlock = (requested: NonNullable<TopicInput['requested']>) => `
@@ -133,7 +147,7 @@ project, place or event. Never for an invented or typical protagonist.
 
 Last few articles were, most recent first: ${input.recentFormats?.length ? input.recentFormats.join(', ') : 'nothing yet'}.
 Do not pick a format from the three most recent unless the topic genuinely allows nothing else.
-A feed where every piece has the same shape reads as generated even when each piece is fine.
+A feed where every piece has the same shape reads as generated even when each piece is fine.${voiceBlock(input)}
 
 Recent format / variant / module combinations, most recent first:
 ${input.recentStructures?.length ? input.recentStructures.map((structure) => `- ${structure}`).join('\n') : '- nothing yet'}
