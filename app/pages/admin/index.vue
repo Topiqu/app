@@ -23,9 +23,8 @@ const isOpen = shallowRef(false)
 const trialPrompted = useState('trial-expired-prompted', () => false)
 
 onMounted(() => {
-  if (trialPrompted.value || status.value?.trial.state !== 'EXPIRED' || !can('BILLING_CHANGE')) return
-  trialPrompted.value = true
-  isOpen.value = true
+  isOpen.value = !trialPrompted.value && status.value?.trial.state === 'EXPIRED' && can('BILLING_CHANGE')
+  if (isOpen.value) trialPrompted.value = true
 })
 
 const handleContinueFree = async () => {
