@@ -1,8 +1,9 @@
 <template>
   <div
     data-client-dock
-    class="pointer-events-none fixed right-3 bottom-[calc(0.75rem+var(--topiqu-unsaved-bar-height,0px))] z-overlay flex w-88 max-w-[calc(100vw-1.5rem)] flex-col items-stretch gap-2"
+    class="pointer-events-none fixed right-3 bottom-[calc(0.75rem+var(--topiqu-unsaved-bar-height,0px))] z-overlay flex w-88 max-w-[calc(100vw-1.5rem)] flex-col items-stretch gap-2 transition-[bottom] duration-200 ease-out min-[90rem]:bottom-3 motion-reduce:transition-none"
   >
+    <!-- From 90rem the centred unsaved bar (max-w-2xl) no longer reaches this dock, so it stays put. -->
     <AdminWebsiteImportNotice />
     <AdminSetupChecklist />
     <div
