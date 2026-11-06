@@ -56,8 +56,14 @@ const bytes = (value: unknown) => Buffer.byteLength(JSON.stringify(value) ?? '',
 const searchAllowance = (params: LanguageModelV4CallOptions) =>
   params.tools?.some((tool) => tool.type === 'provider' && /search/i.test(tool.id)) ? 100_000 : 0
 
-const reserve = async (model: string, task: string, maximum: number, clientSiteId?: string) =>
-  reserveAiAllowance(aiSpendSiteId(clientSiteId), 'BUDGET', Math.max(1, maximum), {
+const reserve = async (
+  model: string,
+  task: string,
+  maximum: number,
+  clientSiteId?: string,
+  kind: 'BUDGET' | 'SEO' = 'BUDGET',
+) =>
+  reserveAiAllowance(aiSpendSiteId(clientSiteId), kind, Math.max(1, maximum), {
     model,
     task,
     priceVersion: AI_PRICE_VERSION,

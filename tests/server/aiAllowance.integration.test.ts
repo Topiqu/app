@@ -19,13 +19,14 @@ import {
 const url = process.env.TEST_DATABASE_URL
 const enabled = !!url && /test/i.test(new URL(url).pathname) && url !== process.env.DATABASE_URL
 const db = enabled ? createDatabaseClient(url) : null
+const reported = vi.fn()
 
 describe.skipIf(!enabled)('blog AI allowances on PostgreSQL', () => {
   beforeAll(() => {
     vi.stubGlobal('prisma', db)
     vi.stubGlobal('createError', createError)
     vi.stubGlobal('toDatabaseJson', toDatabaseJson)
-    vi.stubGlobal('reportCaughtError', vi.fn())
+    vi.stubGlobal('reportCaughtError', reported)
     vi.stubGlobal('ARTICLE_CREDIT_POLICY_VERSION', ARTICLE_CREDIT_POLICY_VERSION)
     vi.stubGlobal(
       'planFromPriceId',
@@ -71,17 +72,17 @@ describe.skipIf(!enabled)('blog AI allowances on PostgreSQL', () => {
   it('serializes concurrent reservations without overspending', async () => {
     const s = await site()
     const outcomes = await Promise.allSettled([
-      reserveAiAllowance(s.id, 'BUDGET', 4_000_000),
-      reserveAiAllowance(s.id, 'BUDGET', 4_000_000),
+      reserveAiAllowance(s.id, 'BUDGET', 13_000_000),
+      reserveAiAllowance(s.id, 'BUDGET', 13_000_000),
     ])
     expect(outcomes.filter((result) => result.status === 'fulfilled')).toHaveLength(1)
-    expect((await getAiAllowance(s.id)).allowances.find((row) => row.kind === 'BUDGET')?.remaining).toBe(3_350_000)
+    expect((await getAiAllowance(s.id)).allowances.find((row) => row.kind === 'BUDGET')?.remaining).toBe(11_500_000)
   })
   it('refunds unused funding exactly once', async () => {
     const s = await site()
     const reservation = await reserveAiAllowance(s.id, 'BUDGET', 1_000_000)
     await Promise.all([settleAiAllowance(reservation, 100_000), settleAiAllowance(reservation, 100_000)])
-    expect((await getAiAllowance(s.id)).allowances.find((row) => row.kind === 'BUDGET')?.remaining).toBe(7_250_000)
+    expect((await getAiAllowance(s.id)).allowances.find((row) => row.kind === 'BUDGET')?.remaining).toBe(24_400_000)
   })
   it('retains uncertain provider cost and blocks new work at exhaustion', async () => {
     const s = await site({ budget: 100 })
@@ -116,16 +117,16 @@ describe.skipIf(!enabled)('blog AI allowances on PostgreSQL', () => {
     expect(first.allowances.find((row) => row.kind === 'TRANSLATION')).toMatchObject({ total: 250, remaining: 230 })
     expect(second).toEqual(first)
   })
-  it('gives one dollar for the whole trial and stops at its end', async () => {
+  it('gives two dollars of AI cost for the whole trial and stops at its end', async () => {
     const s = await site({ trial: true })
-    expect((await getAiAllowance(s.id)).allowances.find((row) => row.kind === 'BUDGET')?.total).toBe(1_000_000)
+    expect((await getAiAllowance(s.id)).allowances.find((row) => row.kind === 'BUDGET')?.total).toBe(2_000_000)
     await db!.clientSite.update({ where: { id: s.id }, data: { trialEndsAt: new Date(Date.now() - 1) } })
     await expect(reserveAiAllowance(s.id, 'EDIT')).rejects.toMatchObject({ statusCode: 403 })
   })
   it('normalizes annual base revenue monthly and keeps monthly operation counts', async () => {
     const s = await site({ annual: true })
     const allowance = await getAiAllowance(s.id)
-    expect(allowance.allowances.find((row) => row.kind === 'BUDGET')?.total).toBe(5_880_000)
+    expect(allowance.allowances.find((row) => row.kind === 'BUDGET')?.total).toBe(19_600_000)
     expect(allowance.allowances.find((row) => row.kind === 'TRANSLATION')?.total).toBe(60)
   })
   it('credits a purchased usage pack once despite webhook replay', async () => {
@@ -158,6 +159,43 @@ describe.skipIf(!enabled)('blog AI allowances on PostgreSQL', () => {
     const reservation = await reserveAiAllowance(s.id, 'BUDGET', 100, { articleOperationId: operation.id })
     await settleAiAllowance(reservation, 100)
     await expect(reserveAiAllowance(s.id, 'BUDGET', 1)).rejects.toMatchObject({ statusCode: 402 })
+  })
+  it('funds a carried article only for the operation that allocates it', async () => {
+    const s = await site({ budget: 0 })
+    await db!.articleCreditGrant.updateMany({ where: { clientSiteId: s.id, source: 'PLAN' }, data: { remaining: 0 } })
+    await creditArticleCredits({
+      clientSiteId: s.id,
+      amount: 1,
+      source: 'ROLLOVER',
+      idempotencyKey: randomUUID(),
+      reason: 'Rollover fixture',
+    })
+    await db!.articleCreditWallet.update({ where: { id: s.id }, data: { balance: 1 } })
+    const operation = await reserveArticleCredit(s.id, 'MANUAL_ARTICLE')
+    await expect(reserveAiAllowance(s.id, 'BUDGET', 1)).rejects.toMatchObject({ statusCode: 402 })
+    await expect(
+      reserveAiAllowance(s.id, 'BUDGET', 250_001, { articleOperationId: operation.id }),
+    ).rejects.toMatchObject({ statusCode: 402 })
+    await reserveAiAllowance(s.id, 'BUDGET', 250_000, { articleOperationId: operation.id })
+  })
+  it('keeps DataForSEO spend out of the AI cost budget', async () => {
+    const s = await site()
+    await settleAiAllowance(await reserveAiAllowance(s.id, 'SEO', 1_000_000), 1_000_000)
+    const allowance = await getAiAllowance(s.id)
+    expect(allowance.allowances.find((row) => row.kind === 'SEO')).toMatchObject({
+      total: 10_000_000,
+      remaining: 9_000_000,
+    })
+    expect(allowance.allowances.find((row) => row.kind === 'BUDGET')?.remaining).toBe(24_500_000)
+    await expect(reserveAiAllowance(s.id, 'SEO', 9_000_001)).rejects.toMatchObject({
+      statusCode: 402,
+      data: { kind: 'SEO' },
+    })
+    expect(reported).toHaveBeenCalledWith(
+      'AI cost cap reached',
+      expect.any(Error),
+      expect.objectContaining({ clientSiteId: s.id, kind: 'SEO' }),
+    )
   })
   it('rejects a reservation paired with a different tenant', async () => {
     const [a, b] = await Promise.all([site(), site()])
@@ -193,7 +231,7 @@ describe.skipIf(!enabled)('blog AI allowances on PostgreSQL', () => {
     await settleAiAllowance(await reserveAiAllowance(s.id, 'BUDGET', 100), 100)
     expect((await getAiAllowance(s.id)).allowances.find((row) => row.kind === 'BUDGET')?.remaining).toBe(600)
   })
-  it('funds 15% of discounted base revenue while excluding additional-seat revenue', async () => {
+  it('funds 50% of discounted base revenue while excluding additional-seat revenue', async () => {
     const s = await site()
     const invoice = {
       id: `invoice_${s.id}`,
@@ -219,7 +257,7 @@ describe.skipIf(!enabled)('blog AI allowances on PostgreSQL', () => {
         periodEnd: s.end,
       }),
     )
-    expect((await getAiAllowance(s.id)).allowances.find((row) => row.kind === 'BUDGET')?.total).toBe(21_465_000)
+    expect((await getAiAllowance(s.id)).allowances.find((row) => row.kind === 'BUDGET')?.total).toBe(71_550_000)
     await db!.$transaction((tx) =>
       creditInvoiceAiBudget(tx, {
         clientSiteId: s.id,
@@ -229,7 +267,7 @@ describe.skipIf(!enabled)('blog AI allowances on PostgreSQL', () => {
         periodEnd: s.end,
       }),
     )
-    expect((await getAiAllowance(s.id)).allowances.find((row) => row.kind === 'BUDGET')?.total).toBe(21_465_000)
+    expect((await getAiAllowance(s.id)).allowances.find((row) => row.kind === 'BUDGET')?.total).toBe(71_550_000)
   })
   it('adds only funding actually paid for a mid-period upgrade and does not refill it on replay', async () => {
     const s = await site()
@@ -255,7 +293,7 @@ describe.skipIf(!enabled)('blog AI allowances on PostgreSQL', () => {
       recurringBaseCents: 9900,
     }
     await db!.$transaction((tx) => creditInvoiceAiBudget(tx, input))
-    const expected = 7_350_000 + 750_000
+    const expected = 24_500_000 + 2_500_000
     expect((await getAiAllowance(s.id)).allowances.find((row) => row.kind === 'BUDGET')?.total).toBe(expected)
     await db!.$transaction((tx) => creditInvoiceAiBudget(tx, input))
     expect((await getAiAllowance(s.id)).allowances.find((row) => row.kind === 'BUDGET')?.total).toBe(expected)
@@ -309,8 +347,8 @@ describe.skipIf(!enabled)('blog AI allowances on PostgreSQL', () => {
         servicePeriodEnd: paidThrough,
       }),
     )
-    expect((await db!.clientSite.findUniqueOrThrow({ where: { id: s.id } })).aiBudgetMonthlyMicros).toBe(5_292_000)
-    expect((await getAiAllowance(s.id)).allowances.find((row) => row.kind === 'BUDGET')?.total).toBe(5_292_000)
+    expect((await db!.clientSite.findUniqueOrThrow({ where: { id: s.id } })).aiBudgetMonthlyMicros).toBe(17_640_000)
+    expect((await getAiAllowance(s.id)).allowances.find((row) => row.kind === 'BUDGET')?.total).toBe(17_640_000)
   })
   it('preserves upgrade funding and the current baseline when the initial invoice arrives late', async () => {
     const s = await site({ budget: 0 })
@@ -345,8 +383,8 @@ describe.skipIf(!enabled)('blog AI allowances on PostgreSQL', () => {
         periodEnd: s.end,
       }),
     )
-    expect((await getAiAllowance(s.id)).allowances.find((row) => row.kind === 'BUDGET')?.total).toBe(8_100_000)
-    expect((await db!.clientSite.findUniqueOrThrow({ where: { id: s.id } })).aiBudgetMonthlyMicros).toBe(14_850_000)
+    expect((await getAiAllowance(s.id)).allowances.find((row) => row.kind === 'BUDGET')?.total).toBe(27_000_000)
+    expect((await db!.clientSite.findUniqueOrThrow({ where: { id: s.id } })).aiBudgetMonthlyMicros).toBe(49_500_000)
   })
   it('uses the discounted recurring annual base for future slots, including a negative downgrade proration', async () => {
     const s = await site({ annual: true, budget: 10_000_000 })
@@ -365,7 +403,7 @@ describe.skipIf(!enabled)('blog AI allowances on PostgreSQL', () => {
         recurringBaseCents: 23520,
       }),
     )
-    expect((await db!.clientSite.findUniqueOrThrow({ where: { id: s.id } })).aiBudgetMonthlyMicros).toBe(2_940_000)
-    expect((await getAiAllowance(s.id)).allowances.find((row) => row.kind === 'BUDGET')?.total).toBe(2_940_000)
+    expect((await db!.clientSite.findUniqueOrThrow({ where: { id: s.id } })).aiBudgetMonthlyMicros).toBe(9_800_000)
+    expect((await getAiAllowance(s.id)).allowances.find((row) => row.kind === 'BUDGET')?.total).toBe(9_800_000)
   })
 })

@@ -16,7 +16,7 @@
       <p v-if="!data.active" class="text-sm text-muted">{{ $t('common.aiAllowance.inactive') }}</p>
       <dl class="divide-y divide-default">
         <div
-          v-for="item in data.allowances.filter((row) => row.kind !== 'BUDGET')"
+          v-for="item in data.allowances"
           :key="item.kind"
           class="flex items-center justify-between gap-4 py-3 text-sm"
         >
@@ -30,12 +30,6 @@
             }}
           </dd>
         </div>
-        <div class="flex items-center justify-between gap-4 py-3 text-sm">
-          <dt class="text-toned">{{ $t('common.aiAllowance.kinds.BUDGET') }}</dt>
-          <dd class="font-semibold tabular-nums" :class="budgetPercent ? 'text-highlighted' : 'text-error'">
-            {{ budgetPercent }} %
-          </dd>
-        </div>
       </dl>
       <p v-if="data.renewsAt" class="text-sm text-muted">
         {{
@@ -44,7 +38,6 @@
           })
         }}
       </p>
-      <p class="text-xs leading-relaxed text-muted">{{ $t('common.aiAllowance.sharedBudget') }}</p>
       <div v-if="canBuy && data.active" class="space-y-3 border-t border-default pt-4">
         <h3 class="font-medium text-highlighted">{{ $t('common.aiAllowance.packs') }}</h3>
         <div
@@ -59,7 +52,7 @@
                 edits: pack.EDIT,
                 checks: pack.VISIBILITY,
               })
-            }}<br /><span class="text-xs text-muted">{{ packCapacity(pack.BUDGET) }}</span>
+            }}
           </p>
           <UButton
             color="neutral"
@@ -89,18 +82,8 @@ const { data, status, error, refresh } = await useFetch('/api/stripe/ai-usage', 
   getCachedData: (key, nuxtApp) => (nuxtApp.isHydrating ? nuxtApp.payload.data[key] : undefined),
 })
 const packs = Object.entries(AI_USAGE_PACKS).map(([id, pack]) => ({ ...pack, id: id as AiUsagePackId }))
-const budgetPercent = computed(() => {
-  const budget = data.value?.allowances.find((row) => row.kind === 'BUDGET')
-  return budget?.total ? Math.max(0, Math.min(100, Math.floor((budget.remaining / budget.total) * 100))) : 0
-})
 const currency = (amount: number) =>
   new Intl.NumberFormat(locale.value, { style: 'currency', currency: 'USD' }).format(amount)
-const packCapacity = (amount: number) => {
-  const included = data.value?.allowances.find((row) => row.kind === 'BUDGET')?.included
-  return included
-    ? t('common.aiAllowance.packBudget', { percent: Math.round((amount / included) * 100) })
-    : t('common.aiAllowance.extraCapacity')
-}
 const buy = async (packId: AiUsagePackId) => {
   buying.value = packId
   try {

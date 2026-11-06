@@ -70,6 +70,32 @@ describe('DataForSEO response contract', () => {
     })
     await expect(dataForSeo('/test', {})).rejects.toThrow('No credit')
   })
+
+  it('reserves each live call against the SEO guard at its endpoint ceiling', async () => {
+    const reserve = vi.fn(async () => ({ id: 'reservation' }))
+    const settle = vi.fn(async () => undefined)
+    vi.stubEnv('DATAFORSEO_SANDBOX', '0')
+    vi.stubGlobal('reserveAiAllowance', reserve)
+    vi.stubGlobal('settleAiAllowance', settle)
+    vi.mocked($fetch).mockResolvedValue({
+      status_code: 20000,
+      cost: 0.002,
+      tasks: [{ status_code: 20000, result: [] }],
+    })
+    try {
+      await dataForSeo('/serp/google/organic/live/advanced', {}, 'blog-a')
+      await dataForSeo('/dataforseo_labs/google/keyword_suggestions/live', {}, 'blog-a')
+      await dataForSeo('/content_analysis/search/live', {}, 'blog-a')
+      expect(reserve.mock.calls.map((call: unknown[]) => [call[1], call[2]])).toEqual([
+        ['SEO', 20_000],
+        ['SEO', 50_000],
+        ['SEO', 200_000],
+      ])
+    } finally {
+      vi.unstubAllEnvs()
+      vi.unstubAllGlobals()
+    }
+  })
 })
 
 beforeEach(stubImports)

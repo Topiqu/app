@@ -8,11 +8,17 @@ import { nextArticleCreditMonth } from '~~/shared/utils/articleCredits'
 import {
   AI_ALLOWANCES,
   AI_ALLOWANCE_KINDS,
+  AI_BUDGET_MICROS_PER_CENT,
   AI_USAGE_PACKS,
+  ARTICLE_UNIT_FUNDING_MICROS,
   BILLING_POLICY_VERSION,
+  isInternalAiAllowance,
 } from '~~/shared/utils/billingCatalog'
 
 type Allocation = { id: string; amount: number }[]
+// Funding that only an article operation allocating the matching article grant may spend.
+const ARTICLE_FUNDING_SOURCES = ['ARTICLE_PURCHASE', 'ARTICLE_ROLLOVER']
+const articleFundingKey = (articleGrantId: string) => `article-funding:${articleGrantId}`
 type AllowanceSite = Pick<
   ClientSite,
   | 'id'
@@ -123,20 +129,33 @@ const fund = async (tx: DatabaseTransaction, site: AllowanceSite, now: Date, pur
       idempotencyKey: `included:${BILLING_POLICY_VERSION}:${site.id}:${start.toISOString()}:${kind}:${ceiling}`,
     })
   }
-  // Existing bought articles retain separately funded capacity; this never consumes their balance.
-  const purchases = await tx.articleCreditGrant.findMany({
-    where: { clientSiteId: site.id, source: 'PURCHASE', OR: [{ remaining: { gt: 0 } }, { id: { in: purchaseIds } }] },
-    select: { id: true, amount: true },
+  // Bought and carried articles retain separately funded capacity; this never consumes their balance.
+  const articles = await tx.articleCreditGrant.findMany({
+    where: {
+      clientSiteId: site.id,
+      source: { in: ['PURCHASE', 'ROLLOVER'] },
+      OR: [{ remaining: { gt: 0 } }, { id: { in: purchaseIds } }],
+    },
+    select: { id: true, amount: true, source: true },
   })
-  for (const purchase of purchases) {
-    const pack = ARTICLE_PACK_LIST.find((candidate) => candidate.articles === purchase.amount)
-    const funded = pack ? pack.priceUsd : purchase.amount * (22.49 / 25)
+  // Funding minted under an earlier rate keeps its amount.
+  const funded = await tx.aiAllowanceGrant.findMany({
+    where: { idempotencyKey: { in: articles.map((article) => articleFundingKey(article.id)) } },
+    select: { idempotencyKey: true },
+  })
+  for (const article of articles) {
+    if (funded.some((row) => row.idempotencyKey === articleFundingKey(article.id))) continue
+    const pack = ARTICLE_PACK_LIST.find((candidate) => candidate.articles === article.amount)
+    const priceUsd = pack ? pack.priceUsd : article.amount * (22.49 / 25)
     await grant(tx, {
       clientSiteId: site.id,
       kind: 'BUDGET',
-      amount: Math.round(funded * 0.15 * 1_000_000),
-      source: 'ARTICLE_PURCHASE',
-      idempotencyKey: `article-funding:${purchase.id}`,
+      amount:
+        article.source === 'ROLLOVER'
+          ? article.amount * ARTICLE_UNIT_FUNDING_MICROS
+          : Math.round(priceUsd * 100 * AI_BUDGET_MICROS_PER_CENT),
+      source: article.source === 'ROLLOVER' ? 'ARTICLE_ROLLOVER' : 'ARTICLE_PURCHASE',
+      idempotencyKey: articleFundingKey(article.id),
     })
   }
   return { start, end, trial }
@@ -208,13 +227,16 @@ export const creditInvoiceAiBudget = async (
   })
   const currentBase = fullPeriod ? invoiceBaseNetCents(invoice, price.id) : input.recurringBaseCents
   const monthly = fullPeriod
-    ? Math.max(0, Math.floor((netCents * 1500) / (annual ? 12 : 1)))
+    ? Math.max(0, Math.floor((netCents * AI_BUDGET_MICROS_PER_CENT) / (annual ? 12 : 1)))
     : currentBase != null
-      ? Math.max(0, Math.floor((currentBase * 1500) / (annual ? 12 : 1)))
+      ? Math.max(0, Math.floor((currentBase * AI_BUDGET_MICROS_PER_CENT) / (annual ? 12 : 1)))
       : (stored.aiBudgetMonthlyMicros ?? 0)
   const amount = fullPeriod
     ? Math.max(0, monthly - (existing._sum.amount ?? 0))
-    : Math.min(Math.max(0, Math.floor(netCents * 1500)), Math.max(0, monthly - (existing._sum.amount ?? 0)))
+    : Math.min(
+        Math.max(0, Math.floor(netCents * AI_BUDGET_MICROS_PER_CENT)),
+        Math.max(0, monthly - (existing._sum.amount ?? 0)),
+      )
   // A late invoice for an old price may fund its own cycle but cannot restore an old baseline.
   if (currentBase != null)
     await tx.clientSite.updateMany({
@@ -222,7 +244,9 @@ export const creditInvoiceAiBudget = async (
         id: clientSiteId,
         OR: [{ paidThrough: null }, { paidThrough: { lte: input.servicePeriodEnd ?? input.periodEnd } }],
       },
-      data: { aiBudgetMonthlyMicros: Math.max(0, Math.floor((currentBase * 1500) / (annual ? 12 : 1))) },
+      data: {
+        aiBudgetMonthlyMicros: Math.max(0, Math.floor((currentBase * AI_BUDGET_MICROS_PER_CENT) / (annual ? 12 : 1))),
+      },
     })
   await grant(tx, {
     clientSiteId,
@@ -294,16 +318,27 @@ export const reserveAiAllowance = async (
           { OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
           {
             OR: [
-              { source: { not: 'ARTICLE_PURCHASE' } },
-              { idempotencyKey: { in: purchaseIds.map((id) => `article-funding:${id}`) } },
+              { source: { notIn: ARTICLE_FUNDING_SOURCES } },
+              { idempotencyKey: { in: purchaseIds.map(articleFundingKey) } },
             ],
           },
         ],
       },
       orderBy: [{ expiresAt: { sort: 'asc', nulls: 'last' } }, { createdAt: 'asc' }, { id: 'asc' }],
     })
+    // Bought and carried articles spend their own funding first; overrun debt is the shared budget's.
+    const funding = grants.filter((row) => ARTICLE_FUNDING_SOURCES.includes(row.source))
+    const shared = grants.filter((row) => !ARTICLE_FUNDING_SOURCES.includes(row.source))
     const debt = kind === 'BUDGET' ? site.aiBudgetDebtMicros : 0
-    if (grants.reduce((total, row) => total + row.remaining, 0) < amount + debt)
+    if (grants.reduce((total, row) => total + row.remaining, 0) < amount + debt) {
+      // Not awaited: the blog row stays locked until this transaction ends.
+      if (isInternalAiAllowance(kind))
+        void reportCaughtError('AI cost cap reached', new Error('AI_COST_CAP_REACHED'), {
+          clientSiteId,
+          kind,
+          plan: site.plan,
+          task: metadata.task,
+        })
       throw createError({
         statusCode: 402,
         message: 'AI allowance exhausted',
@@ -313,10 +348,11 @@ export const reserveAiAllowance = async (
           renewsAt: period.end.toISOString(),
         },
       })
+    }
     if (debt) {
       let unpaid = debt
       const corrections: Allocation = []
-      for (const row of grants) {
+      for (const row of [...shared, ...funding]) {
         const used = Math.min(unpaid, row.remaining)
         if (!used) continue
         await tx.aiAllowanceGrant.update({ where: { id: row.id }, data: { remaining: { decrement: used } } })
@@ -341,7 +377,7 @@ export const reserveAiAllowance = async (
     }
     const allocations: Allocation = []
     let needed = amount
-    for (const row of grants) {
+    for (const row of [...funding, ...shared]) {
       if (!needed) break
       const used = Math.min(needed, row.remaining)
       await tx.aiAllowanceGrant.update({ where: { id: row.id }, data: { remaining: { decrement: used } } })
@@ -391,10 +427,11 @@ export const settleAiAllowance = async (
       },
     })
     if (charged !== null && charged > row.reserved) {
-      await tx.clientSite.update({
-        where: { id: row.clientSiteId },
-        data: { aiBudgetDebtMicros: { increment: charged - row.reserved } },
-      })
+      if (row.kind === 'BUDGET')
+        await tx.clientSite.update({
+          where: { id: row.clientSiteId },
+          data: { aiBudgetDebtMicros: { increment: charged - row.reserved } },
+        })
       return { clientSiteId: row.clientSiteId, reservationId: row.id, charged, reserved: row.reserved }
     }
   })
@@ -404,7 +441,7 @@ export const settleAiAllowance = async (
 
 export const withAiAllowance = async <T>(
   clientSiteId: string,
-  kind: Exclude<AiAllowanceKind, 'BUDGET'>,
+  kind: Exclude<AiAllowanceKind, 'BUDGET' | 'SEO'>,
   run: () => Promise<T>,
 ) => {
   const reservation = await reserveAiAllowance(clientSiteId, kind)
@@ -457,7 +494,7 @@ export const getAiAllowance = async (clientSiteId: string) =>
     const rows = await tx.aiAllowanceGrant.findMany({
       where: {
         clientSiteId,
-        source: { not: 'ARTICLE_PURCHASE' },
+        source: { notIn: ARTICLE_FUNDING_SOURCES },
         OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
       },
       select: { kind: true, amount: true, remaining: true, source: true },

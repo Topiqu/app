@@ -147,7 +147,7 @@ export default defineEventHandler(async (event) => {
       ...translated
     } = await withAiAllowance(user.clientSiteId, 'TRANSLATION', () =>
       withAiSpend(user.clientSiteId, () => generateTranslation(article, targetLang, localPassages)),
-    ).catch((error) => throwAiAllowanceMessage(error, t('common.aiAllowance.exhausted')!))
+    ).catch((error) => throwAiAllowanceMessage(error, t))
 
     try {
       await recordAiUsage(

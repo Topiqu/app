@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { randomUUID } from 'node:crypto'
-import { aiAllowanceErrorCode } from '~~/shared/utils/aiAllowanceError'
+import { aiAllowanceErrorCode, aiAllowanceMessageKey } from '~~/shared/utils/aiAllowanceError'
 
 import { articleWriterId } from '../../../utils/ai/modelRegistry'
 
@@ -488,7 +488,7 @@ export default defineEventHandler(async (event) => {
               type: 'error',
               message:
                 aiAllowanceErrorCode(error) === 'AI_ALLOWANCE_EXHAUSTED'
-                  ? t('common.aiAllowance.exhausted')
+                  ? t(aiAllowanceMessageKey(error))
                   : timedOutStage
                     ? timedOutStage === 'writer_idle'
                       ? t('articles.editor.ai.writerIdleError')

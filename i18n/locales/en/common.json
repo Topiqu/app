@@ -2,11 +2,11 @@
   "common": {
     "aiAllowance": {
       "exhausted": "This blog has used its AI allowance. Wait for renewal or explicitly purchase more usage in Billing. Nothing extra is charged automatically.",
+      "paused": "AI work for this blog is temporarily paused. We have been alerted and are restoring it. Nothing extra is charged.",
       "title": "AI usage for this blog",
       "policy": "Usage is shared by this blog’s team. At the limit, new work pauses until renewal or an explicit top-up. No automatic overage charges.",
       "inactive": "AI is paused until this blog has an active AI plan.",
       "kinds": {
-        "BUDGET": "Shared AI capacity",
         "TRANSLATION": "Article translations",
         "EDIT": "Short AI edits",
         "VISIBILITY": "AI visibility responses"
@@ -14,11 +14,8 @@
       "remaining": "{remaining} of {total} remaining",
       "renews": "Included usage renews on {date}.",
       "trialEnds": "The trial allowance ends on {date}.",
-      "sharedBudget": "Articles, images, research and other AI tools share the same capacity. Operation counts are maximum allowances; work also needs enough shared capacity. Some provider costs are reserved conservatively when exact usage is unavailable.",
       "packs": "Add AI usage",
       "packContents": "{translations} translations · {edits} edits · {checks} visibility responses",
-      "packBudget": "Adds {percent}% of this period’s included AI capacity",
-      "extraCapacity": "Includes additional shared AI capacity",
       "purchasePolicy": "One-time payment, before tax. Purchased usage does not expire and does not renew. It is separate from article packs; an active AI plan is required."
     },
     "customBilling": {

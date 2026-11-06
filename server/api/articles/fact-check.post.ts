@@ -36,7 +36,7 @@ export default defineEventHandler(async (event) => {
   try {
     checked = await withAiSpend(user.clientSiteId, () => runArticleFactCheck({ ...input, sources }, inspected))
   } catch (error) {
-    if (aiAllowanceErrorCode(error)) throwAiAllowanceMessage(error, t('common.aiAllowance.exhausted')!)
+    if (aiAllowanceErrorCode(error)) throwAiAllowanceMessage(error, t)
     console.error('Article fact-check provider failed', error)
     throw createError({ statusCode: 503, message: 'AI service is temporarily unavailable' })
   }

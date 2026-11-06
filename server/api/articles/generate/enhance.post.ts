@@ -28,13 +28,13 @@ export default defineEventHandler(async (event) => {
   if (action === 'questions') {
     const { questions, usage } = await withAiAllowance(user.clientSiteId, 'EDIT', () =>
       withAiSpend(user.clientSiteId, () => briefQuestions(prompt, format)),
-    ).catch((error) => throwAiAllowanceMessage(error, t('common.aiAllowance.exhausted')!))
+    ).catch((error) => throwAiAllowanceMessage(error, t))
     await recordAiUsage(user.clientSiteId, usage.totalTokens ?? 0, 'ENHANCE_PROMPT', { usage, action }, event)
     return { questions }
   }
   const { text, usage } = await withAiAllowance(user.clientSiteId, 'EDIT', () =>
     withAiSpend(user.clientSiteId, () => enhancePrompt(prompt, action)),
-  ).catch((error) => throwAiAllowanceMessage(error, t('common.aiAllowance.exhausted')!))
+  ).catch((error) => throwAiAllowanceMessage(error, t))
   await recordAiUsage(user.clientSiteId, usage.totalTokens ?? 0, 'ENHANCE_PROMPT', { usage, action }, event)
   return { prompt: text }
 })

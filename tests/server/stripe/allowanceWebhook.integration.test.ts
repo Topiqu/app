@@ -253,6 +253,8 @@ describe.skipIf(!enabled)('subscription invoice allowances on PostgreSQL', () =>
         (row) => row.periodStart?.getTime() === start.getTime() && row.periodEnd?.getTime() === end.getTime(),
       ),
     ).toBe(true)
-    expect((await db!.clientSite.findUniqueOrThrow({ where: { id: f.site.id } })).aiBudgetMonthlyMicros).toBe(5_940_000)
+    expect((await db!.clientSite.findUniqueOrThrow({ where: { id: f.site.id } })).aiBudgetMonthlyMicros).toBe(
+      19_800_000,
+    )
   })
 })

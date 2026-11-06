@@ -44,7 +44,7 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, message: t('articles.editor.aiEdit.unsupported')! })
     const result = await withAiAllowance(user.clientSiteId, 'EDIT', () =>
       withAiSpend(user.clientSiteId, () => rewriteDocumentBlocks(blocks, input.instruction)),
-    ).catch((error) => throwAiAllowanceMessage(error, t('common.aiAllowance.exhausted')!))
+    ).catch((error) => throwAiAllowanceMessage(error, t))
     await recordAiUsage(
       user.clientSiteId,
       result.usage.totalTokens ?? 0,
@@ -57,7 +57,7 @@ export default defineEventHandler(async (event) => {
 
   const result = await withAiAllowance(user.clientSiteId, 'EDIT', () =>
     withAiSpend(user.clientSiteId, () => rewritePassage(sanitizePassage(input.html), input.action, input.instruction)),
-  ).catch((error) => throwAiAllowanceMessage(error, t('common.aiAllowance.exhausted')!))
+  ).catch((error) => throwAiAllowanceMessage(error, t))
   await recordAiUsage(
     user.clientSiteId,
     result.usage.totalTokens ?? 0,

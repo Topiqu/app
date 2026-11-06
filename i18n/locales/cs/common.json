@@ -2,11 +2,11 @@
   "common": {
     "aiAllowance": {
       "exhausted": "Blog vyčerpal AI limit. Počkejte na obnovení nebo výslovně dokupte spotřebu ve Fakturaci. Nic navíc se neúčtuje automaticky.",
+      "paused": "AI práce pro tento blog je dočasně pozastavená. Už o tom víme a obnovujeme ji. Nic navíc se neúčtuje.",
       "title": "AI spotřeba tohoto blogu",
       "policy": "Spotřebu sdílí tým tohoto blogu. Po vyčerpání se nová práce pozastaví do obnovení nebo výslovného dokoupení. Nic navíc se neúčtuje automaticky.",
       "inactive": "AI je pozastavena, dokud blog nemá aktivní tarif s AI.",
       "kinds": {
-        "BUDGET": "Sdílená AI kapacita",
         "TRANSLATION": "Překlady článků",
         "EDIT": "Krátké úpravy AI",
         "VISIBILITY": "Odpovědi pro AI viditelnost"
@@ -14,11 +14,8 @@
       "remaining": "Zbývá {remaining} z {total}",
       "renews": "Zahrnutá spotřeba se obnoví {date}.",
       "trialEnds": "Zkušební spotřeba končí {date}.",
-      "sharedBudget": "Články, obrázky, rešerše a další AI nástroje sdílí jednu kapacitu. Počty operací jsou maximální limity; práce zároveň potřebuje dostatek sdílené kapacity. Pokud poskytovatel nevrátí přesnou spotřebu, náklady rezervujeme konzervativně.",
       "packs": "Dokoupit AI spotřebu",
       "packContents": "{translations} překladů · {edits} úprav · {checks} odpovědí pro viditelnost",
-      "packBudget": "Přidá {percent} % AI kapacity zahrnuté v tomto období",
-      "extraCapacity": "Obsahuje dodatečnou sdílenou AI kapacitu",
       "purchasePolicy": "Jednorázová platba bez daně. Zakoupená spotřeba neexpiruje a automaticky se neobnovuje. Je oddělená od balíčků článků; vyžaduje aktivní tarif s AI."
     },
     "customBilling": {

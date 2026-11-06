@@ -21,12 +21,17 @@ interface DataForSeoResponse<T> {
   tasks?: { status_code: number; status_message: string; result: T[] | null }[]
 }
 
+// Held while the call runs (callers run five at once) and the most it can be charged. A live SERP page
+// bills $0.002, a Labs task about $0.015.
+const reservationMicros = (path: string) =>
+  path.startsWith('/serp/') ? 20_000 : path.startsWith('/dataforseo_labs/') ? 50_000 : 200_000
+
 /** Labs may return seed data and suggestions as separate results in the same task. */
 export const dataForSeo = async <T>(path: string, task: Record<string, unknown>, clientSiteId?: string) => {
   const origin = baseUrl()
   const reservation =
     origin === 'https://api.dataforseo.com/v3'
-      ? await reserveAiSpend('dataforseo', 'search', 200_000, clientSiteId)
+      ? await reserveAiSpend('dataforseo', 'search', reservationMicros(path), clientSiteId, 'SEO')
       : null
   const auth = Buffer.from(`${process.env.DATAFORSEO_LOGIN}:${process.env.DATAFORSEO_PASSWORD}`).toString('base64')
   let response: DataForSeoResponse<T>

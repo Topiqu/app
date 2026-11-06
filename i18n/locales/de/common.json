@@ -2,11 +2,11 @@
   "common": {
     "aiAllowance": {
       "exhausted": "Dieser Blog hat sein KI-Kontingent aufgebraucht. Warten Sie auf die Erneuerung oder kaufen Sie ausdrücklich zusätzliche Nutzung unter Abrechnung. Es entstehen keine automatischen Mehrkosten.",
+      "paused": "KI-Aufträge für diesen Blog sind vorübergehend pausiert. Wir wurden benachrichtigt und stellen sie wieder her. Es entstehen keine Mehrkosten.",
       "title": "KI-Nutzung dieses Blogs",
       "policy": "Das Team dieses Blogs teilt die Nutzung. Am Limit pausieren neue Aufträge bis zur Erneuerung oder einer ausdrücklichen Aufstockung. Keine automatischen Mehrkosten.",
       "inactive": "KI pausiert, bis dieser Blog einen aktiven KI-Tarif hat.",
       "kinds": {
-        "BUDGET": "Gemeinsame KI-Kapazität",
         "TRANSLATION": "Artikelübersetzungen",
         "EDIT": "Kurze KI-Bearbeitungen",
         "VISIBILITY": "KI-Sichtbarkeitsantworten"
@@ -14,11 +14,8 @@
       "remaining": "{remaining} von {total} verbleibend",
       "renews": "Enthaltene Nutzung wird am {date} erneuert.",
       "trialEnds": "Das Testkontingent endet am {date}.",
-      "sharedBudget": "Artikel, Bilder, Recherche und andere KI-Werkzeuge teilen eine Kapazität. Die Anzahlen sind Höchstgrenzen; Aufträge benötigen zusätzlich ausreichend gemeinsame Kapazität. Fehlen genaue Nutzungsdaten des Anbieters, werden Kosten vorsichtig reserviert.",
       "packs": "KI-Nutzung aufstocken",
       "packContents": "{translations} Übersetzungen · {edits} Bearbeitungen · {checks} Sichtbarkeitsantworten",
-      "packBudget": "Ergänzt {percent}% der enthaltenen KI-Kapazität dieses Zeitraums",
-      "extraCapacity": "Enthält zusätzliche gemeinsame KI-Kapazität",
       "purchasePolicy": "Einmalzahlung vor Steuern. Gekaufte Nutzung verfällt nicht und verlängert sich nicht automatisch. Sie ist von Artikelpaketen getrennt; ein aktiver KI-Tarif ist erforderlich."
     },
     "customBilling": {

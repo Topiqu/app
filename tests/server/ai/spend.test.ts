@@ -2,8 +2,15 @@
 import { createError } from 'h3'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { isAiAllowanceError } from '../../../shared/utils/aiAllowanceError'
-import { aiLanguageSpend, aiTextCostMicros, aiTextPrice, withAiSpend } from '../../../server/utils/ai/spend'
+import { throwAiAllowanceMessage } from '../../../server/utils/ai/allowanceError'
+import { aiAllowanceMessageKey, isAiAllowanceError } from '../../../shared/utils/aiAllowanceError'
+import {
+  aiLanguageSpend,
+  aiTextCostMicros,
+  aiTextPrice,
+  reserveAiSpend,
+  withAiSpend,
+} from '../../../server/utils/ai/spend'
 
 const reserve = vi.fn()
 const settle = vi.fn()
@@ -93,5 +100,25 @@ describe('funded provider calls', () => {
       isAiAllowanceError({ lastError: createError({ statusCode: 402, data: { code: 'AI_ALLOWANCE_EXHAUSTED' } }) }),
     ).toBe(true)
     expect(isAiAllowanceError(new Error('Provider outage'))).toBe(false)
+  })
+  it('reserves DataForSEO against its own guard', async () => {
+    await reserveAiSpend('dataforseo', 'search', 200_000, 'blog-a', 'SEO')
+    expect(reserve).toHaveBeenCalledWith('blog-a', 'SEO', 200_000, expect.objectContaining({ model: 'dataforseo' }))
+  })
+  it('reports a cost guard as a pause and a counted operation as used up', () => {
+    const exhausted = (kind: string) =>
+      ({ cause: createError({ statusCode: 402, data: { code: 'AI_ALLOWANCE_EXHAUSTED', kind } }) }) as unknown
+    expect(aiAllowanceMessageKey(exhausted('BUDGET'))).toBe('common.aiAllowance.paused')
+    expect(aiAllowanceMessageKey(exhausted('SEO'))).toBe('common.aiAllowance.paused')
+    expect(aiAllowanceMessageKey(exhausted('EDIT'))).toBe('common.aiAllowance.exhausted')
+    expect(() => throwAiAllowanceMessage(exhausted('BUDGET'), (key) => key)).toThrow(
+      expect.objectContaining({
+        statusCode: 402,
+        message: 'common.aiAllowance.paused',
+        data: expect.objectContaining({ kind: 'BUDGET' }),
+      }),
+    )
+    const outage = new Error('Provider outage')
+    expect(() => throwAiAllowanceMessage(outage, (key) => key)).toThrow(outage)
   })
 })
