@@ -22,27 +22,75 @@ async function lockWallet(tx: Tx, clientSiteId: string) {
   })
 }
 
+// Expiring credits first, then carried plan credits, then purchased and admin credits.
+const spendOrder = <T extends { source: string; expiresAt: Date | null }>(grants: T[]) => {
+  const rank = (grant: T) => (grant.expiresAt ? 0 : grant.source === 'ROLLOVER' ? 1 : 2)
+  return grants.sort((a, b) => rank(a) - rank(b))
+}
+
+async function expireCredits(tx: Tx, grant: { id: string; clientSiteId: string }, amount: number) {
+  await tx.articleCreditGrant.update({ where: { id: grant.id }, data: { remaining: { decrement: amount } } })
+  await tx.articleCreditWallet.update({ where: { id: grant.clientSiteId }, data: { balance: { decrement: amount } } })
+  await tx.articleCreditLedgerEntry.create({
+    data: {
+      clientSiteId: grant.clientSiteId,
+      grantId: grant.id,
+      kind: 'EXPIRE',
+      amount: -amount,
+      reason: 'Article credits expired',
+      // A held allocation can be returned after this grant's available portion already expired.
+      idempotencyKey: `expire:${grant.id}:${randomUUID()}`,
+    },
+  })
+}
+
 async function expireAvailableGrants(tx: Tx, clientSiteId: string) {
+  const site = await tx.clientSite.findUniqueOrThrow({ where: { id: clientSiteId }, select: { plan: true } })
+  const carried = await tx.articleCreditGrant.findMany({
+    where: { clientSiteId, source: 'ROLLOVER', remaining: { gt: 0 } },
+    orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+  })
+  // A downgrade trims carried credits to the new cap; leaving the paid AI plans drops them.
+  let room = articleRolloverCap(site.plan) - carried.reduce((total, grant) => total + grant.remaining, 0)
+  for (const grant of carried) {
+    if (room >= 0) break
+    const lapsed = Math.min(grant.remaining, -room)
+    await expireCredits(tx, grant, lapsed)
+    room += lapsed
+  }
+
   const expired = await tx.articleCreditGrant.findMany({
     where: { clientSiteId, remaining: { gt: 0 }, expiresAt: { lte: new Date() } },
+    orderBy: [{ expiresAt: 'asc' }, { createdAt: 'asc' }, { id: 'asc' }],
   })
   for (const grant of expired) {
-    await tx.articleCreditGrant.update({ where: { id: grant.id }, data: { remaining: 0 } })
-    await tx.articleCreditWallet.update({
-      where: { id: clientSiteId },
-      data: { balance: { decrement: grant.remaining } },
-    })
-    await tx.articleCreditLedgerEntry.create({
-      data: {
-        clientSiteId,
-        grantId: grant.id,
-        kind: 'EXPIRE',
-        amount: -grant.remaining,
-        reason: 'Article credits expired',
-        // A held allocation can be returned after this grant's available portion already expired.
-        idempotencyKey: `expire:${grant.id}:${randomUUID()}`,
-      },
-    })
+    const carry = grant.source === 'PLAN' ? Math.min(grant.remaining, Math.max(0, room)) : 0
+    if (carry) {
+      room -= carry
+      await tx.articleCreditGrant.update({ where: { id: grant.id }, data: { remaining: { decrement: carry } } })
+      const next = await tx.articleCreditGrant.create({
+        data: {
+          clientSiteId,
+          source: 'ROLLOVER',
+          amount: carry,
+          remaining: carry,
+          policyVersion: ARTICLE_CREDIT_POLICY_VERSION,
+          idempotencyKey: `rollover:${grant.id}:${randomUUID()}`,
+        },
+      })
+      // The balance does not change; the entry links the carried grant to the period it came from.
+      await tx.articleCreditLedgerEntry.create({
+        data: {
+          clientSiteId,
+          grantId: next.id,
+          kind: 'ROLLOVER',
+          amount: 0,
+          reason: `Carried over from ${grant.id}`,
+          idempotencyKey: `ledger:${next.idempotencyKey}`,
+        },
+      })
+    }
+    if (grant.remaining > carry) await expireCredits(tx, grant, grant.remaining - carry)
   }
 }
 
@@ -81,7 +129,7 @@ export async function creditArticleCredits(
   input: {
     clientSiteId: string
     amount: number
-    source: 'TRIAL' | 'PLAN' | 'PURCHASE' | 'BONUS' | 'ADMIN'
+    source: 'TRIAL' | 'PLAN' | 'PURCHASE' | 'BONUS' | 'ADMIN' | 'ROLLOVER'
     idempotencyKey: string
     reason: string
     expiresAt?: Date | null
@@ -252,7 +300,7 @@ export async function adjustArticleCredits(input: {
       where: { clientSiteId: input.clientSiteId, remaining: { gt: 0 } },
       orderBy: [{ expiresAt: { sort: 'asc', nulls: 'last' } }, { createdAt: 'asc' }, { id: 'asc' }],
     })
-    for (const grant of grants) {
+    for (const grant of spendOrder(grants)) {
       if (!remaining) break
       const used = Math.min(grant.remaining, remaining)
       await tx.articleCreditGrant.update({ where: { id: grant.id }, data: { remaining: { decrement: used } } })
@@ -308,7 +356,7 @@ export async function reserveArticleCredit(
     })
     const allocations: Allocation = []
     let remaining = amount
-    for (const grant of grants) {
+    for (const grant of spendOrder(grants)) {
       if (!remaining) break
       const used = Math.min(grant.remaining, remaining)
       allocations.push({ id: grant.id, amount: used })
@@ -402,7 +450,7 @@ export async function getArticleCreditWallet(clientSiteId: string, transaction?:
       orderBy: [{ expiresAt: { sort: 'asc', nulls: 'last' } }, { createdAt: 'asc' }],
       select: { id: true, source: true, remaining: true, expiresAt: true, periodEnd: true },
     })
-    return { ...wallet, available: wallet.balance - wallet.reserved, grants }
+    return { ...wallet, available: wallet.balance - wallet.reserved, grants: spendOrder(grants) }
   }
   return transaction ? read(transaction) : prisma.$transaction(read)
 }

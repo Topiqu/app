@@ -245,7 +245,7 @@
       "bonusExpiry": "Bonus credits may expire; purchased credits do not.",
       "generationReservation": "Each article reserves 1, 2 or 3 credits according to quality. Review and one automatic revision are included. A technical failure returns the full reservation.",
       "neverExpires": "Plan credits are valid for their period. Purchased credits do not expire.",
-      "explanation": "Purchased credits never expire.",
+      "explanation": "Unused plan credits carry over while your plan is active, up to twice the monthly allowance. Purchased credits never expire.",
       "reserved": "Temporarily reserved",
       "reservedHint": "Each article reserves 1, 2 or 3 credits according to quality. A technical failure returns the full amount.",
       "reasons": {
@@ -255,6 +255,7 @@
       },
       "periodUsage": "Used in {period}",
       "expires": "Valid until",
+      "carried": "Carried over from earlier periods",
       "topup": "Buy more credits",
       "history": "Credit history",
       "empty": "No credit movements yet.",
@@ -270,6 +271,7 @@
         "RELEASE": "Reservation released",
         "EXPIRY": "Credits expired",
         "EXPIRE": "Credits expired",
+        "ROLLOVER": "Credits carried over",
         "REFUND": "Credits returned",
         "BONUS": "Bonus",
         "ADJUSTMENT": "Manual debit"

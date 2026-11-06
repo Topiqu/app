@@ -34,6 +34,7 @@ type Operation = {
 // Stateful delegates exercise the real reservation/settlement code without requiring a live DB.
 const setup = (amounts = [1, 4]) => {
   const state = {
+    plan: 'BASIC',
     wallet: { id: 'site', balance: amounts.reduce((sum, value) => sum + value, 0), reserved: 0 },
     grants: amounts.map((amount, index): Grant => ({
       id: `grant-${index}`,
@@ -49,6 +50,7 @@ const setup = (amounts = [1, 4]) => {
   }
   const tx = {
     $queryRaw: vi.fn(async () => [{ id: 'site' }]),
+    clientSite: { findUniqueOrThrow: vi.fn(async () => ({ plan: state.plan })) },
     articleCreditWallet: {
       upsert: vi.fn(async () => ({ ...state.wallet })),
       findUniqueOrThrow: vi.fn(async () => ({ ...state.wallet })),
@@ -66,6 +68,7 @@ const setup = (amounts = [1, 4]) => {
           .filter(
             (grant) =>
               grant.remaining > 0 &&
+              (!where.source || grant.source === where.source) &&
               (!where.expiresAt?.lte || (grant.expiresAt != null && grant.expiresAt <= where.expiresAt.lte)),
           )
           .map((grant) => ({ ...grant })),
@@ -243,6 +246,38 @@ describe('quality-priced article credits', () => {
     await withArticleCreditReservation('site', 'CONTENT_REFRESH', async () => 'updated')
     expect(state.operations[0]).toMatchObject({ reserved: 1, charged: 1 })
     expect(state.wallet.balance).toBe(4)
+  })
+
+  it('carries unused plan credits over up to twice the monthly allowance', async () => {
+    const { state } = setup([120])
+    state.plan = 'PRO'
+    state.grants[0]!.expiresAt = new Date(0)
+    expect(await getArticleCreditWallet('site')).toMatchObject({ balance: 100, available: 100 })
+    expect(state.grants[1]).toMatchObject({ source: 'ROLLOVER', amount: 100, remaining: 100, expiresAt: null })
+    expect(state.entries.filter((entry) => entry.amount !== 0)).toEqual([
+      expect.objectContaining({ kind: 'EXPIRE', amount: -20, grantId: 'grant-0' }),
+    ])
+  })
+
+  it('spends carried credits after expiring ones and before purchased ones', async () => {
+    const { state } = setup([1, 4])
+    state.plan = 'PRO'
+    state.grants[0]!.expiresAt = new Date(0)
+    const operation = await reserveArticleCredit('site', 'MANUAL_ARTICLE', 'carried', {}, 2)
+    expect(operation.allocations).toEqual([
+      { id: 'grant-2', amount: 1 },
+      { id: 'grant-1', amount: 1 },
+    ])
+  })
+
+  it('trims carried credits on a downgrade and drops them off the paid AI plans', async () => {
+    const { state } = setup([150])
+    Object.assign(state.grants[0]!, { source: 'ROLLOVER', expiresAt: null })
+    state.plan = 'PRO'
+    expect(await getArticleCreditWallet('site')).toMatchObject({ balance: 100 })
+    state.plan = 'BASIC'
+    expect(await getArticleCreditWallet('site')).toMatchObject({ balance: 0 })
+    expect(state.entries.map((entry) => entry.amount)).toEqual([-50, -100])
   })
 
   it.each([0, -1, 1.5, Number.NaN])('rejects an invalid reservation amount %s', async (amount) => {

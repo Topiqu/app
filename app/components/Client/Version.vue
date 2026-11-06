@@ -93,6 +93,10 @@
                 </div>
                 <p class="mt-0.5 text-xs text-muted">{{ $t('common.wallet.reservedHint') }}</p>
               </div>
+              <div v-if="carried" class="flex items-baseline justify-between gap-3">
+                <dt class="min-w-0 text-muted">{{ $t('common.wallet.carried') }}</dt>
+                <dd class="shrink-0 tabular-nums text-highlighted">{{ carried.toLocaleString(locale) }}</dd>
+              </div>
               <div
                 v-for="grant in wallet.grants.filter((item) => item.expiresAt)"
                 :key="grant.id"
@@ -301,6 +305,9 @@ const isLowArticles = computed(() => affordableArticles.value <= 1)
 // Summary numbers come from the status payload, which is already loaded — the paginated
 // /wallet fetch is deliberately not the source, it would render zeros until it resolves.
 const wallet = computed(() => status.value?.articleWallet)
+const carried = computed(() =>
+  (wallet.value?.grants ?? []).reduce((total, grant) => total + (grant.source === 'ROLLOVER' ? grant.remaining : 0), 0),
+)
 const planBadgeColor = computed(() =>
   site.value?.plan === 'PREMIUM'
     ? 'warning'

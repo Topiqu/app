@@ -245,7 +245,7 @@
       "bonusExpiry": "Les crédits bonus peuvent expirer ; les crédits achetés n’expirent pas.",
       "generationReservation": "Chaque article réserve 1, 2 ou 3 crédits selon la qualité. La vérification et une révision automatique sont incluses. Un échec technique restitue toute la réservation.",
       "neverExpires": "Les crédits du forfait sont valables pour leur période. Les crédits achetés n’expirent pas.",
-      "explanation": "Les crédits achetés n’expirent pas.",
+      "explanation": "Les crédits du forfait non utilisés sont reportés tant que le forfait est actif, jusqu’à deux fois l’allocation mensuelle. Les crédits achetés n’expirent pas.",
       "reserved": "Réservés temporairement",
       "reservedHint": "Chaque article réserve 1, 2 ou 3 crédits selon la qualité. Un échec technique restitue la totalité.",
       "reasons": {
@@ -255,6 +255,7 @@
       },
       "periodUsage": "Utilisés pendant {period}",
       "expires": "Valable jusqu'au",
+      "carried": "Reportés des périodes précédentes",
       "topup": "Acheter des crédits",
       "history": "Historique des crédits",
       "empty": "Aucun mouvement de crédits.",
@@ -270,6 +271,7 @@
         "RELEASE": "Réservation libérée",
         "EXPIRY": "Crédits expirés",
         "EXPIRE": "Crédits expirés",
+        "ROLLOVER": "Crédits reportés",
         "REFUND": "Crédits restitués",
         "BONUS": "Bonus",
         "ADJUSTMENT": "Débit manuel"

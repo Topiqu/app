@@ -66,6 +66,12 @@ balances survive subscription/trial expiry. Each purchased grant has separate AI
 funding accessible only to an article operation using that grant, so auxiliary
 operations cannot spend it. An active AI plan is still required for generation.
 
+Unused plan article units carry over in a non-expiring `ROLLOVER` grant while a
+PRO/PREMIUM/CUSTOM plan is active, capped at twice the monthly allowance; the next
+expiry pass trims them to a lower plan's cap or drops them off the paid AI plans.
+Each carried unit brings USD 0.25 of article-only funding, above the USD 0.194
+STANDARD worst case. Trial units and operation counts do not carry over.
+
 Separate nonexpiring usage packs, usable with an active AI plan:
 
 | Pack   | One-time price | Extra translations | Extra edits | Extra visibility responses | Internal provider funding |

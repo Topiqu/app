@@ -245,7 +245,7 @@
       "bonusExpiry": "Bonusové kredity mohou expirovat, dokoupené ne.",
       "generationReservation": "Článek rezervuje podle kvality 1, 2 nebo 3 kredity. Kontrola i jedna automatická oprava jsou v ceně. Při technické chybě se rezervace vrátí.",
       "neverExpires": "Kredity z tarifu platí pro dané období. Dokoupené kredity neexpirují.",
-      "explanation": "Dokoupené kredity neexpirují.",
+      "explanation": "Nevyčerpané kredity z tarifu se při aktivním tarifu převádějí, nejvýše do dvojnásobku měsíční dotace. Dokoupené kredity neexpirují.",
       "reserved": "Dočasně rezervováno",
       "reservedHint": "Článek podle kvality rezervuje 1, 2 nebo 3 kredity. Při technické chybě se celá částka vrátí.",
       "reasons": {
@@ -255,6 +255,7 @@
       },
       "periodUsage": "Spotřeba za {period}",
       "expires": "Platnost do",
+      "carried": "Převedeno z minulých období",
       "topup": "Dokoupit kredity",
       "history": "Historie kreditů",
       "empty": "Zatím žádné pohyby kreditů.",
@@ -270,6 +271,7 @@
         "RELEASE": "Uvolnění rezervace",
         "EXPIRY": "Expirované kredity",
         "EXPIRE": "Expirované kredity",
+        "ROLLOVER": "Převedené kredity",
         "REFUND": "Vrácené kredity",
         "BONUS": "Bonus",
         "ADJUSTMENT": "Ruční odečet"

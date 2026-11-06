@@ -245,7 +245,7 @@
       "bonusExpiry": "Bonus-Credits können verfallen; gekaufte Credits nicht.",
       "generationReservation": "Ein Artikel reserviert je nach Qualität 1, 2 oder 3 Credits. Prüfung und eine automatische Überarbeitung sind enthalten. Bei einem technischen Fehler wird die gesamte Reservierung freigegeben.",
       "neverExpires": "Tarif-Credits gelten für ihren Zeitraum. Gekaufte Credits verfallen nicht.",
-      "explanation": "Gekaufte Credits verfallen nicht.",
+      "explanation": "Nicht genutzte Tarif-Credits werden bei aktivem Tarif übertragen, bis zum Doppelten des Monatskontingents. Gekaufte Credits verfallen nicht.",
       "reserved": "Vorübergehend reserviert",
       "reservedHint": "Je nach Qualität werden 1, 2 oder 3 Credits reserviert. Bei einem technischen Fehler wird der gesamte Betrag freigegeben.",
       "reasons": {
@@ -255,6 +255,7 @@
       },
       "periodUsage": "Verwendet in {period}",
       "expires": "Gültig bis",
+      "carried": "Aus Vorperioden übertragen",
       "topup": "Credits kaufen",
       "history": "Credit-Verlauf",
       "empty": "Noch keine Credit-Bewegungen.",
@@ -270,6 +271,7 @@
         "RELEASE": "Reservierung freigegeben",
         "EXPIRY": "Credits verfallen",
         "EXPIRE": "Credits verfallen",
+        "ROLLOVER": "Credits übertragen",
         "REFUND": "Credits zurückgegeben",
         "BONUS": "Bonus",
         "ADJUSTMENT": "Manuelle Abbuchung"
