@@ -525,7 +525,7 @@ Since 2026-11-01 the language registry has two tiers (`shared/siteSchemas.ts`). 
 
 ## 6a. Plan Matrix (`ClientSite.plan` — enum `ClientPlan`)
 
-Marketing names diverge from the DB enum: marketing **FREE** = enum **BASIC**. Enum is the source of truth (`prisma/schema.zmodel:84`); the pricing copy now lives in the separate `../landing` project. Tenant-facing surfaces (billing, the dock badge, upgrade CTAs) print `planName(plan)` from `shared/utils/plans.ts`; superadmin and dev views keep the enum.
+Marketing names diverge from the DB enum: marketing **FREE** = enum **BASIC**. Enum is the source of truth (`prisma/schema.zmodel:84`); the pricing copy now lives in the separate `../landing` project. Tenant-facing surfaces (billing, the dock badge, upgrade CTAs) print `planName(plan)` from `shared/utils/plans.ts`; superadmin and dev views keep the enum. Superadmin client creation (`POST /api/clients`) syncs plan features and gives PRO/PREMIUM `billingPlan: PERMANENT` (`manualBillingPlan`): without an invoice, only a permanent contract funds the AI budget.
 
 **A literal `@` in any i18n message breaks the production build.** vue-i18n reads `@` as the start of a linked message (`@:key`), so an e-mail address in a message fails with `Invalid linked format`. It only surfaces under `jit: true`, which the build uses and neither `typecheck` nor `vitest` does — write `&#64;` instead (these messages render through `v-html`, so the entity decodes in both the link text and the `mailto:` href).
 

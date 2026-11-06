@@ -7,6 +7,13 @@ const PLAN_NAMES: Record<string, string> = { BASIC: 'Free', PRO: 'Pro', PREMIUM:
 
 export const planName = (plan?: string | null) => (plan ? (PLAN_NAMES[plan] ?? plan) : '')
 
+/**
+ * A paid plan provisioned by hand has no Stripe invoice, and only a permanent contract funds its
+ * monthly AI budget without one (`aiAllowance.ts::fund`). A later subscription overwrites it.
+ */
+export const manualBillingPlan = (plan?: string | null) =>
+  plan === 'PRO' || plan === 'PREMIUM' ? ('PERMANENT' as const) : undefined
+
 export type UpgradeTarget = 'PRO' | 'PREMIUM'
 
 const UPGRADE_LADDER: Record<string, UpgradeTarget> = {

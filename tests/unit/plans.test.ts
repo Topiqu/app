@@ -1,5 +1,6 @@
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { getUpgradeTarget, getUpgradeTargets, planName } from '~~/shared/utils/plans'
+import { getUpgradeTarget, getUpgradeTargets, manualBillingPlan, planName } from '~~/shared/utils/plans'
 
 describe('plan upgrade ladder', () => {
   it('walks BASIC → PRO → PREMIUM and stops at the top', () => {
@@ -17,6 +18,17 @@ describe('plan upgrade ladder', () => {
   it('hides the checkout upgrade for active subscribers — those go through the Stripe portal for correct proration', () => {
     expect(getUpgradeTarget('BASIC', true)).toBeNull()
     expect(getUpgradeTarget('PRO', true)).toBeNull()
+  })
+
+  it('gives hand-provisioned PRO/PREMIUM a permanent contract so their AI budget is funded', () => {
+    expect(manualBillingPlan('PRO')).toBe('PERMANENT')
+    expect(manualBillingPlan('PREMIUM')).toBe('PERMANENT')
+    expect(manualBillingPlan('BASIC')).toBeUndefined()
+    expect(manualBillingPlan('CUSTOM')).toBeUndefined()
+
+    const create = readFileSync('server/api/clients/index.post.ts', 'utf8')
+    expect(create).toContain('billingPlan: manualBillingPlan(body.plan)')
+    expect(create).toContain('await syncPlanFeatures(tx, clientSite.id)')
   })
 
   it('names plans as the pricing page does', () => {

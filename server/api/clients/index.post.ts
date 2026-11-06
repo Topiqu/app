@@ -1,4 +1,5 @@
 import { randomBytes } from 'crypto'
+import { manualBillingPlan } from '~~/shared/utils/plans'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
@@ -36,6 +37,7 @@ export default defineEventHandler(async (event) => {
         domain: body.domain,
         ...domainVerificationDefaults(body.domain, randomBytes(24).toString('base64url')),
         plan: body.plan,
+        billingPlan: manualBillingPlan(body.plan),
         generationFrequency: body.generationFrequency,
         focus: body.focus || '',
         keywords:
@@ -47,6 +49,12 @@ export default defineEventHandler(async (event) => {
         audience: body.audience || '',
       },
     })
+    // Never fatal, as at signup: it throws on an unseeded Feature catalog before writing anything.
+    try {
+      await syncPlanFeatures(tx, clientSite.id)
+    } catch (error) {
+      await reportCaughtError('Client plan feature provisioning failed', error, { clientSiteId: clientSite.id })
+    }
 
     if (initialArticles > 0)
       await creditArticleCredits(
