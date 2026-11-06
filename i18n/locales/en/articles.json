@@ -153,9 +153,11 @@
       "feedError": "Could not load the articles."
     },
     "readingTime": "{0} min read",
-    "noResults": {
-      "imageAlt": "Sad Topík",
-      "message": "Oh no, I feel useless..."
+    "list": {
+      "emptyTitle": "You have no articles yet",
+      "emptyDescription": "Drafts and published articles will appear here.",
+      "noMatchesTitle": "No articles match your filters",
+      "noMatchesDescription": "Try changing the search or filters."
     },
     "empty": {
       "badge": "Coming soon",

@@ -58,7 +58,27 @@
       </div>
     </template>
 
-    <UEmpty v-else icon="mdi:file-search-outline" :description="$t('articles.noResults.message')" />
+    <UEmpty
+      v-else-if="search.trim()"
+      icon="mdi:file-search-outline"
+      :title="$t('articles.home.noMatches')"
+      :actions="[
+        { label: $t('articles.home.clearFilters'), color: 'neutral', variant: 'outline', onClick: clearSearch },
+      ]"
+    />
+    <UEmpty
+      v-else
+      icon="mdi:file-document-outline"
+      :title="$t('articles.empty.title')"
+      :actions="[
+        {
+          label: $t('articles.home.browseArticles'),
+          color: 'neutral',
+          variant: 'outline',
+          to: localePath({ name: 'index' }),
+        },
+      ]"
+    />
   </div>
 </template>
 
@@ -76,6 +96,10 @@ const hasDashboardChrome = computed(() => ['admin', 'superadmin'].includes(auth.
 const search = defineModel<string>('search', { required: true })
 const sort = defineModel<string>('sort', { required: true })
 const page = defineModel<number>('page', { required: true })
+const localePath = useLocalePath()
+const clearSearch = () => {
+  search.value = ''
+}
 
 const totalPages = computed(() => (hasMore ? page.value + 1 : page.value))
 const sortItems = computed(() => [

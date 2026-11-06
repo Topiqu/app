@@ -153,9 +153,11 @@
       "feedError": "Artikel konnten nicht geladen werden."
     },
     "readingTime": "{0} Min. Lesezeit",
-    "noResults": {
-      "imageAlt": "Trauriger Topík",
-      "message": "Oh nein, ich fühle mich nutzlos..."
+    "list": {
+      "emptyTitle": "Sie haben noch keine Artikel",
+      "emptyDescription": "Entwürfe und veröffentlichte Artikel erscheinen hier.",
+      "noMatchesTitle": "Keine Artikel entsprechen Ihren Filtern",
+      "noMatchesDescription": "Passen Sie die Suche oder die Filter an."
     },
     "empty": {
       "badge": "Demnächst",

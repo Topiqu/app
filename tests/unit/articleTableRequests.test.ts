@@ -18,13 +18,17 @@ const mocks = vi.hoisted(() => ({
   setCache: vi.fn(),
 }))
 const articles = shallowRef<{ data: ArticleWithDetails[]; total: number }>({ data: [], total: 0 })
+const status = shallowRef<Record<string, unknown>>({ language: 'en' })
+const route = { query: {} as Record<string, string> }
+const scopes = new Set<string>()
 mockNuxtImport('$fetch', () => mocks.fetch)
 mockNuxtImport('useToast', () => () => ({ add: mocks.toast }))
 mockNuxtImport('useConfirm', () => () => vi.fn())
-mockNuxtImport('useRoute', () => () => ({ query: {} }))
+mockNuxtImport('useRoute', () => () => route)
+mockNuxtImport('useTenantScope', () => () => (scope: string) => scopes.has(scope))
 mockNuxtImport('useLocalePath', () => () => () => '/article')
 mockNuxtImport('useI18n', () => () => ({ t: (key: string) => key }))
-mockNuxtImport('useClientSiteStatus', () => async () => ({ data: shallowRef({ language: 'en' }) }))
+mockNuxtImport('useClientSiteStatus', () => async () => ({ data: status }))
 mockNuxtImport('useTime', () => () => ({ formatTime: () => '' }))
 mockNuxtImport('useCacheInvalidation', () => () => ({
   invalidateArticleLists: mocks.invalidate,
@@ -106,6 +110,9 @@ beforeEach(() => {
   mocks.fetch.mockResolvedValue(undefined)
   mocks.invalidate.mockResolvedValue(undefined)
   articles.value = { data: [article()], total: 1 }
+  status.value = { language: 'en' }
+  route.query = {}
+  scopes.clear()
   vi.spyOn(console, 'warn').mockImplementation(() => {})
 })
 afterEach(() => {
@@ -237,5 +244,49 @@ describe('article table request intent', () => {
     wrapper.unmount()
     await vi.advanceTimersByTimeAsync(450)
     expect(replace).not.toHaveBeenCalled()
+  })
+})
+
+describe('article table empty states', () => {
+  const empty = async () => {
+    articles.value = { data: [], total: 0 }
+    const wrapper = await mountTable()
+    return wrapper.findComponent({ name: 'UEmpty' })
+  }
+
+  it('offers AI generation and writing when the tenant has no articles', async () => {
+    scopes.add('ARTICLE_WRITE').add('AI_USE')
+    status.value = { language: 'en', plan: 'PREMIUM', articlesRemaining: 10 }
+    const state = await empty()
+    expect(state.attributes('data-articles-empty')).toBe('none')
+    expect(state.props('title')).toBe('articles.list.emptyTitle')
+    expect(state.props('actions').map((action: { label: string }) => action.label)).toEqual([
+      'articles.empty.owner.aiCta',
+      'articles.empty.owner.writeSelfCta',
+    ])
+  })
+
+  it('offers only writing without AI credits or permission, and nothing to readers', async () => {
+    scopes.add('ARTICLE_WRITE').add('AI_USE')
+    status.value = { language: 'en', plan: 'PREMIUM', articlesRemaining: 0 }
+    expect((await empty()).props('actions').map((action: { label: string }) => action.label)).toEqual([
+      'articles.empty.owner.writeCta',
+    ])
+    scopes.clear()
+    expect((await empty()).props('actions')).toEqual([])
+  })
+
+  it('offers clearing the filters when only the filters hide articles', async () => {
+    route.query = { query: 'coffee', status: 'draft' }
+    articles.value = { data: [], total: 0 }
+    const wrapper = await mountTable()
+    const state = wrapper.findComponent({ name: 'UEmpty' })
+    expect(state.attributes('data-articles-empty')).toBe('filtered')
+    expect(state.props('title')).toBe('articles.list.noMatchesTitle')
+    const [clear] = state.props('actions')
+    expect(clear.label).toBe('articles.home.clearFilters')
+    clear.onClick()
+    await nextTick()
+    expect(wrapper.findComponent({ name: 'UEmpty' }).attributes('data-articles-empty')).toBe('none')
   })
 })

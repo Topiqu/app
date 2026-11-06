@@ -153,9 +153,11 @@
       "loadErrorDescription": "Zkuste stránku načíst znovu.",
       "feedError": "Články se nepodařilo načíst."
     },
-    "noResults": {
-      "imageAlt": "Smutný Topík",
-      "message": "Achjo, cítím se tak zbytečný..."
+    "list": {
+      "emptyTitle": "Zatím tu nemáte žádný článek",
+      "emptyDescription": "Rozepsané i vydané články se objeví tady.",
+      "noMatchesTitle": "Filtrům neodpovídá žádný článek",
+      "noMatchesDescription": "Zkuste upravit hledání nebo filtry."
     },
     "empty": {
       "badge": "Už se to chystá",

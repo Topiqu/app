@@ -99,9 +99,22 @@
     </div>
 
     <UEmpty
-      v-else-if="!isPending && rows.length === 0"
+      v-else-if="!isPending && rows.length === 0 && filtered"
+      icon="mdi:filter-remove-outline"
+      :title="$t('articles.list.noMatchesTitle')"
+      :description="$t('articles.list.noMatchesDescription')"
+      :actions="[
+        { label: $t('articles.home.clearFilters'), color: 'neutral', variant: 'outline', onClick: clearFilters },
+      ]"
+      data-articles-empty="filtered"
+    />
+    <UEmpty
+      v-else-if="!isPending && rows.length === 0 && !articles?.total"
       icon="mdi:file-document-outline"
-      :title="$t('articles.noResults.message')"
+      :title="$t('articles.list.emptyTitle')"
+      :description="$t('articles.list.emptyDescription')"
+      :actions="emptyActions"
+      data-articles-empty="none"
     />
 
     <div
@@ -468,6 +481,27 @@ const loadFailed = computed(() => !!error.value && rows.value.length === 0)
 const activeFilterCount = computed(
   () => [statusFilter.value !== 'all', dateFrom.value, dateTo.value].filter(Boolean).length,
 )
+const filtered = computed(() => !!globalFilter.value.trim() || activeFilterCount.value > 0)
+const can = useTenantScope()
+const emptyActions = computed(() => {
+  if (!can('ARTICLE_WRITE')) return []
+  const editor = (query?: Record<string, string>) =>
+    localePath({ name: 'admin-editor-id', params: { id: 'new' }, query })
+  const ai =
+    can('AI_USE') &&
+    hasAiPlan(clientSite.value?.plan) &&
+    Number(clientSite.value?.articlesRemaining ?? 0) >= articleCreditCost(clientSite.value?.articleQuality)
+  return [
+    ...(ai ? [{ label: $t('articles.empty.owner.aiCta'), icon: 'mdi:auto-fix', to: editor({ ai: '1' }) }] : []),
+    {
+      label: $t(ai ? 'articles.empty.owner.writeSelfCta' : 'articles.empty.owner.writeCta'),
+      icon: 'mdi:pencil-outline',
+      color: 'neutral' as const,
+      variant: 'outline' as const,
+      to: editor(),
+    },
+  ]
+})
 const columns = computed<TableColumn<ArticleWithDetails>[]>(() => [
   {
     accessorKey: 'imageUrl',

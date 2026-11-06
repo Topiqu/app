@@ -153,9 +153,11 @@
       "feedError": "Impossible de charger les articles."
     },
     "readingTime": "{0} min de lecture",
-    "noResults": {
-      "imageAlt": "Topík triste",
-      "message": "Oh non, je me sens inutile..."
+    "list": {
+      "emptyTitle": "Vous n’avez encore aucun article",
+      "emptyDescription": "Vos brouillons et articles publiés apparaîtront ici.",
+      "noMatchesTitle": "Aucun article ne correspond à vos filtres",
+      "noMatchesDescription": "Modifiez la recherche ou les filtres."
     },
     "empty": {
       "badge": "Bientôt",
