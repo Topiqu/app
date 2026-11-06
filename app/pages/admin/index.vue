@@ -17,23 +17,26 @@ const can = useTenantScope()
 
 useSeoMeta({ title: () => `${client.value?.name ?? 'Topiqu'} - ${$t('admin.title')}` })
 
+const toast = useToast()
 const isOpen = shallowRef(false)
+// The modal blocks the page, so it asks once per visit rather than on every return to this route.
+const trialPrompted = useState('trial-expired-prompted', () => false)
 
 onMounted(() => {
-  isOpen.value = status.value?.trial.state === 'EXPIRED' && can('BILLING_CHANGE')
+  if (trialPrompted.value || status.value?.trial.state !== 'EXPIRED' || !can('BILLING_CHANGE')) return
+  trialPrompted.value = true
+  isOpen.value = true
 })
 
 const handleContinueFree = async () => {
   try {
-    const toast = useToast()
     await $fetch<unknown, '/api/clients/end-trial'>('/api/clients/end-trial', { method: 'POST' })
+    // The status snapshot is cached across navigations; unrefreshed, it still reports EXPIRED.
+    await refreshClientSiteStatus()
     isOpen.value = false
-    toast.add({
-      color: 'success',
-      title: $t('admin.trial.continueFreeSuccess'),
-    })
-  } catch (error) {
-    console.error('Chyba při přepnutí:', error)
+    toast.add({ color: 'success', title: $t('admin.trial.continueFreeSuccess') })
+  } catch {
+    toast.add({ color: 'error', title: $t('error.generic') })
   }
 }
 </script>

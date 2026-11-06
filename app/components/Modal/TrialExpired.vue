@@ -43,8 +43,6 @@ const goToBilling = () => {
   navigateTo(localePath({ name: 'settings', query: { tab: 'billing' } }))
 }
 
-const continueFree = () => {
-  emit('continueFree')
-  open.value = false
-}
+// The parent closes the modal once the server has recorded the choice; a failed request keeps it open.
+const continueFree = () => emit('continueFree')
 </script>

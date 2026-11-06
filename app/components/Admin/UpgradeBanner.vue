@@ -1,47 +1,19 @@
 <template>
   <UAlert
     v-if="target"
-    color="primary"
-    variant="soft"
-    icon="mdi:rocket-launch"
-    :title="$t(`admin.upgrade.${i18nKey}.title`)"
-    :description="$t(`admin.upgrade.${i18nKey}.description`)"
-    :ui="{ root: 'relative pr-12' }"
+    color="neutral"
+    variant="subtle"
+    orientation="horizontal"
+    icon="mdi:rocket-launch-outline"
+    :title="$t(`admin.upgrade.${i18nKey}.description`)"
+    :description="status?.trial.repeatInbox ? $t('admin.upgrade.repeatInbox') : undefined"
+    close
+    @update:open="dismiss"
   >
-    <UButton
-      class="absolute right-3 top-3"
-      color="neutral"
-      variant="ghost"
-      icon="mdi:close"
-      square
-      size="sm"
-      :aria-label="$t('common.close')"
-      @click="dismiss"
-    />
-    <template #description>
-      <p v-if="status?.trial.repeatInbox" class="mt-1 text-sm leading-relaxed">
-        {{ $t('admin.upgrade.repeatInbox') }}
-      </p>
-      <ul class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 mt-1">
-        <li v-for="feature in features" :key="feature" class="flex items-start gap-2 text-sm leading-relaxed">
-          <UIcon size="16" name="mdi:check-circle" class="mt-0.5 shrink-0" />
-          <span>{{ feature }}</span>
-        </li>
-      </ul>
-    </template>
     <template #actions>
-      <div>
-        <UButton
-          color="primary"
-          variant="solid"
-          icon="mdi:star-four-points"
-          :loading="loading"
-          :disabled="loading"
-          @click="upgrade"
-        >
-          {{ loading ? $t('admin.upgrade.loading') : $t('admin.upgrade.cta', { plan: target }) }}
-        </UButton>
-      </div>
+      <UButton size="sm" variant="soft" :loading :disabled="loading" @click="upgrade">
+        {{ loading ? $t('admin.upgrade.loading') : $t('admin.upgrade.cta', { plan: planName(target) }) }}
+      </UButton>
     </template>
   </UAlert>
 </template>
@@ -51,14 +23,18 @@
 // actually charge, and the host tenant is not always that one.
 const { data: auth } = useAuth()
 const { data: status } = await useClientSiteStatus()
-const { t, tm, rt } = useI18n()
+const { t } = useI18n()
 const toast = useToast()
 
 const loading = shallowRef(false)
 
 // Keyed per offered plan, so dismissing the PRO pitch does not also swallow the PREMIUM one
-// the tenant becomes eligible for later.
-const dismissed = useLocalStorage<string[]>('upsell-dismissed', [])
+// the tenant becomes eligible for later. A cookie, unlike localStorage, is known during SSR.
+const dismissed = useCookie<string[]>('upsell-dismissed', {
+  default: () => [],
+  maxAge: 60 * 60 * 24 * 365,
+  sameSite: 'lax',
+})
 
 const target = computed(() => {
   if (status.value?.billingProvider === 'SHOPIFY') return null
@@ -67,12 +43,6 @@ const target = computed(() => {
 })
 
 const i18nKey = computed(() => (target.value === 'PREMIUM' ? 'toPremium' : 'toPro'))
-
-const features = computed<string[]>(() => {
-  if (!target.value) return []
-  const messages = tm(`admin.upgrade.${i18nKey.value}.features`) as unknown[]
-  return Array.isArray(messages) ? messages.map((m) => rt(m as string)) : []
-})
 
 const dismiss = () => {
   if (target.value) dismissed.value = [...dismissed.value, target.value]
