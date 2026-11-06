@@ -13,7 +13,7 @@
         <span class="sr-only">{{ $t('common.wallet.title') }}</span>
         <span class="hidden shrink-0 sm:inline">Topiqu {{ config.public.appVersion }}</span>
         <UBadge class="ml-auto min-w-0 shrink truncate" :color="planBadgeColor" variant="soft">{{
-          site?.plan ?? $t('articles.userMenu.noClientAssigned')
+          site?.plan ? planName(site.plan) : $t('articles.userMenu.noClientAssigned')
         }}</UBadge>
         <UBadge
           v-if="status?.articlesRemaining != null"

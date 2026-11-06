@@ -10,7 +10,7 @@
         <UIcon name="mdi:check-circle" class="size-7 text-emerald-500" />
         <div>
           <div class="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
-            {{ client?.plan }}
+            {{ planName(client?.plan) }}
           </div>
           <div class="text-sm text-neutral-500 dark:text-neutral-400">
             {{ billingPlanText }}
@@ -246,6 +246,21 @@
         <div
           class="min-w-[15rem] rounded-(--topiqu-surface-radius) bg-default/85 p-4 ring ring-default backdrop-blur-sm"
         >
+          <div v-if="upgradeTargets.length > 1" class="mb-2 flex items-center gap-1 rounded-full bg-elevated p-1">
+            <UButton
+              v-for="plan in upgradeTargets"
+              :key="plan"
+              type="button"
+              size="sm"
+              :color="upgradeTarget === plan ? 'primary' : 'neutral'"
+              :variant="upgradeTarget === plan ? 'solid' : 'ghost'"
+              :ui="{ base: 'flex-1 justify-center rounded-full' }"
+              :aria-pressed="upgradeTarget === plan"
+              @click="selectedTarget = plan"
+            >
+              {{ planName(plan) }}
+            </UButton>
+          </div>
           <div class="flex items-center gap-1 rounded-full bg-elevated p-1">
             <UButton
               type="button"
@@ -291,7 +306,7 @@
             :loading="pendingAction === 'upgrade'"
             @click="upgrade"
           >
-            {{ $t('common.preferences.billing.upgrade', { plan: upgradeTarget }) }}
+            {{ $t('common.preferences.billing.upgrade', { plan: planName(upgradeTarget) }) }}
           </UButton>
           <p class="mt-3 text-xs leading-relaxed text-muted">{{ $t('common.preferences.billing.checkoutHint') }}</p>
         </div>
@@ -419,8 +434,14 @@ const {
 const shopifyBilled = computed(() => client?.billingProvider === 'SHOPIFY')
 const shopify = shopifyBilled.value ? await useShopify() : null
 const shopifyPricingUrl = computed(() => shopify?.data.value?.pricingUrl ?? null)
+const upgradeTargets = computed(() =>
+  shopifyBilled.value ? [] : getUpgradeTargets(client?.plan, !!client?.stripeSubscriptionId),
+)
+const selectedTarget = shallowRef<UpgradeTarget | null>(null)
 const upgradeTarget = computed(() =>
-  shopifyBilled.value ? null : getUpgradeTarget(client?.plan, !!client?.stripeSubscriptionId),
+  selectedTarget.value && upgradeTargets.value.includes(selectedTarget.value)
+    ? selectedTarget.value
+    : (upgradeTargets.value[0] ?? null),
 )
 const { data: planPricing } = await useLazyFetch<PlanPricing>('/api/stripe/plans', {
   immediate: Boolean(upgradeTarget.value),
