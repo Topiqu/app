@@ -34,6 +34,24 @@
         />
       </div>
     </div>
+    <div class="space-y-3">
+      <div>
+        <h4 :id="homeTitleId" class="text-sm font-semibold text-highlighted">
+          {{ $t('common.preferences.publicationChannels.contentHome.title') }}
+        </h4>
+        <p :id="homeHelpId" class="mt-1 max-w-2xl text-sm leading-6 text-muted">
+          {{ $t('common.preferences.publicationChannels.contentHome.help') }}
+        </p>
+      </div>
+      <URadioGroup
+        v-model="contentHome"
+        :items="contentHomes"
+        :aria-labelledby="homeTitleId"
+        :aria-describedby="homeHelpId"
+        variant="card"
+        :ui="{ fieldset: 'grid gap-3 sm:grid-cols-2' }"
+      />
+    </div>
     <UButton
       :to="localePath({ name: 'settings', query: { tab: 'integrations' } })"
       color="neutral"
@@ -49,6 +67,7 @@
 import type { PublicationChannelSettings } from '~~/shared/utils/publicationChannels'
 
 const settings = defineModel<PublicationChannelSettings>({ required: true })
+const contentHome = defineModel<'TOPIQU' | 'EXTERNAL'>('contentHome', { required: true })
 const props = defineProps<{ linkedinConnected: boolean }>()
 const { data: shopify } = useShopify()
 const availability = computed(() => ({
@@ -58,4 +77,14 @@ const availability = computed(() => ({
   linkedin: props.linkedinConnected ? 'ready' : 'needsSetup',
 }))
 const localePath = useLocalePath()
+const { t } = useI18n()
+const homeTitleId = useId()
+const homeHelpId = useId()
+const contentHomes = computed(() =>
+  (['TOPIQU', 'EXTERNAL'] as const).map((value) => ({
+    value,
+    label: t(`common.preferences.publicationChannels.contentHome.${value}`),
+    description: t(`common.preferences.publicationChannels.contentHome.${value}Help`),
+  })),
+)
 </script>

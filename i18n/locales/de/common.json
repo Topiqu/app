@@ -1608,6 +1608,14 @@
         "emojiHelp": "Eigene Bilder, mit denen Leser auf Kommentare reagieren können."
       },
       "publicationChannels": {
+        "contentHome": {
+          "title": "Wo Artikel indexiert werden",
+          "help": "Suchmaschinen sollten jeden Artikel an einem Ort finden. Wenn Ihre eigene Website die Artikel über das WordPress-Plugin, Shopify oder die API zeigt, wählen Sie sie hier: Dieser Blog bleibt lesbar, wird aber mit noindex markiert und verlässt Sitemap, RSS und LLM-Feeds.",
+          "TOPIQU": "Dieser Blog",
+          "TOPIQUHelp": "Die Artikel werden hier, in diesem Blog, indexiert.",
+          "EXTERNAL": "Meine eigene Website",
+          "EXTERNALHelp": "Ihre Website trägt die indexierte Kopie. Versehen Sie sie mit eigenen Canonical- und hreflang-Tags."
+        },
         "title": "Publikationskanäle",
         "description": "Wählen Sie, wo diese Publikation veröffentlichen darf. Verbundene Kanäle behalten ihre bisherigen Veröffentlichungs- und Freigabeabläufe. Das Deaktivieren stoppt neue Veröffentlichungen einschließlich wartender Aufträge und erhält bereits veröffentlichte Inhalte.",
         "web": "Website der Publikation",

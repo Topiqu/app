@@ -1,7 +1,7 @@
 /** Tenant index for LLM crawlers: what the blog is, and every article as a markdown link. */
 export default defineEventHandler(async (event) => {
   const tenant = await tenantByHost(event)
-  if (!tenant) throw createError({ statusCode: 404, message: 'Not found' })
+  if (!tenant || hasExternalContentHome(tenant)) throw createError({ statusCode: 404, message: 'Not found' })
 
   const origin = requestOrigin(event)
 

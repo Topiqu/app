@@ -78,6 +78,12 @@ enum SocialPlatform {
     OTHER
 }
 
+/// The one indexable copy of the articles: this blog, or the customer's site fed by the plugin or API.
+enum ContentHome {
+    TOPIQU
+    EXTERNAL
+}
+
 enum PublicationTypography {
     MODERN
     EDITORIAL
@@ -145,6 +151,7 @@ model ClientSite with Base {
     publishToWeb         Boolean             @default(true)
     publishToShopify     Boolean             @default(true)
     publishToLinkedIn    Boolean             @default(true)
+    contentHome          ContentHome         @default(TOPIQU)
     mediaAssets          MediaAsset[]
     articleMediaUsages   ArticleMediaUsage[]
     mediaRightsSnapshots MediaRightsPublicationSnapshot[]

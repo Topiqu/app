@@ -134,7 +134,7 @@ useHead(() => ({
       href: liveClientSite.value?.faviconUrl || liveClientSite.value?.logoUrl || '/favicon.ico?v=20260908',
     },
     ...(liveClientSite.value ? [] : [{ rel: 'apple-touch-icon' as const, href: '/apple-touch-icon.png' }]),
-    ...(liveClientSite.value
+    ...(liveClientSite.value && !hasExternalContentHome(liveClientSite.value)
       ? [
           {
             rel: 'alternate' as const,

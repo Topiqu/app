@@ -3,7 +3,7 @@ import type { Language } from '~~/generated/zenstack/models'
 /** `/md/{locale}/{segment}/{slug}[.md]` — the plain-text article for LLM and agent consumption. */
 export default defineEventHandler(async (event) => {
   const tenant = await tenantByHost(event)
-  if (!tenant) throw createError({ statusCode: 404, message: 'Not found' })
+  if (!tenant || hasExternalContentHome(tenant)) throw createError({ statusCode: 404, message: 'Not found' })
 
   const parts = (getRouterParam(event, 'path') ?? '').replace(/\.md$/, '').split('/').filter(Boolean)
   if (parts.length !== 3) throw createError({ statusCode: 404, message: 'Not found' })

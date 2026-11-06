@@ -74,6 +74,7 @@ export default defineEventHandler(async (event) => {
         publishToWeb: clientSite.publishToWeb,
         publishToShopify: clientSite.publishToShopify,
         publishToLinkedIn: clientSite.publishToLinkedIn,
+        contentHome: clientSite.contentHome,
         humanHourlyRateUsd: clientSite.humanHourlyRateUsd,
         humanWordsPerHour: clientSite.humanWordsPerHour,
       }

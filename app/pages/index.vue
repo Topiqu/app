@@ -645,6 +645,7 @@ useSeoMeta({
     preview.active.value
       ? 'noindex, nofollow'
       : isBlankSite.value ||
+          hasExternalContentHome(clientSite) ||
           (featuredError.value && !featuredData.value) ||
           (requestedPage() > 1 && !feedPending.value && !feed.value?.items?.length)
         ? 'noindex, follow'

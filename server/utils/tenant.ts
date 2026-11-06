@@ -11,6 +11,7 @@ const TENANT_SELECT = {
   plan: true,
   focus: true,
   audience: true,
+  contentHome: true,
 } as const
 
 /** The blog host, or null when the request is for the platform's own hosts. */

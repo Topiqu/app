@@ -22,7 +22,9 @@ const isoDate = (value: string | Date | null | undefined) => (value ? new Date(v
 
 export function useArticleSeo(
   data: MaybeRefOrGetter<SeoArticle | null | undefined>,
-  clientSite: MaybeRefOrGetter<{ name?: string; plan?: string; logoUrl?: string | null } | null | undefined>,
+  clientSite: MaybeRefOrGetter<
+    { name?: string; plan?: string; logoUrl?: string | null; contentHome?: string | null } | null | undefined
+  >,
   canonicalUrl: MaybeRefOrGetter<string>,
   alternates: MaybeRefOrGetter<{ hreflang: string; href: string }[]> = [],
 ) {
@@ -35,6 +37,8 @@ export function useArticleSeo(
   const resolvedAlternates = computed(() => toValue(alternates) ?? [])
 
   const seoEnabled = computed(() => hasSeoPlan(site.value?.plan))
+  // A noindex copy must not also claim to be the canonical or offer language alternates.
+  const external = computed(() => hasExternalContentHome(site.value))
 
   // Both go in as the body so the perex is also cut at a word and entity-decoded.
   const description = computed(() =>
@@ -53,6 +57,7 @@ export function useArticleSeo(
   const faq = computed(() => readFaq(article.value?.faq))
 
   useSeoMeta({
+    robots: () => (external.value ? 'noindex, follow' : undefined),
     title: () => article.value?.title || 'Article',
     description: () => (seoEnabled.value ? description.value : undefined),
     ogTitle: () => (seoEnabled.value ? article.value?.title || 'Article' : undefined),
@@ -69,23 +74,26 @@ export function useArticleSeo(
   })
 
   useHead({
-    link: () => [
-      { rel: 'canonical', href: canonical.value },
-      ...resolvedAlternates.value.map((alt) => ({
-        rel: 'alternate' as const,
-        hreflang: alt.hreflang,
-        href: alt.href,
-      })),
-      ...(resolvedAlternates.value.length
-        ? [
-            {
+    link: () =>
+      external.value
+        ? []
+        : [
+            { rel: 'canonical', href: canonical.value },
+            ...resolvedAlternates.value.map((alt) => ({
               rel: 'alternate' as const,
-              hreflang: 'x-default',
-              href: resolvedAlternates.value[0]!.href,
-            },
-          ]
-        : []),
-    ],
+              hreflang: alt.hreflang,
+              href: alt.href,
+            })),
+            ...(resolvedAlternates.value.length
+              ? [
+                  {
+                    rel: 'alternate' as const,
+                    hreflang: 'x-default',
+                    href: resolvedAlternates.value[0]!.href,
+                  },
+                ]
+              : []),
+          ],
   })
 
   if (!seoEnabled.value) return

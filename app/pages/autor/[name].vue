@@ -211,7 +211,8 @@ useSeoMeta({
   ogImage: () => (hasSeoPlan.value ? author.value.avatarUrl || '/default-user.png' : undefined),
   ogUrl: () => (hasSeoPlan.value ? canonicalUrl.value : undefined),
   twitterCard: () => (hasSeoPlan.value ? 'summary' : undefined),
-  robots: () => (hasSeoPlan.value && !search.value ? 'index, follow' : 'noindex, follow'),
+  robots: () =>
+    hasSeoPlan.value && !search.value && !hasExternalContentHome(clientSite) ? 'index, follow' : 'noindex, follow',
 })
 
 useHead({ link: [{ rel: 'canonical', href: canonicalUrl }] })

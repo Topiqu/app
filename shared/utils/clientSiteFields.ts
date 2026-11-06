@@ -46,6 +46,7 @@ export const TENANT_EDITABLE_CLIENT_SITE_FIELDS = [
   'publishToWeb',
   'publishToShopify',
   'publishToLinkedIn',
+  'contentHome',
 ] as const
 
 export const PUBLIC_CLIENT_SITE_FIELDS = [
@@ -79,6 +80,7 @@ export const PUBLIC_CLIENT_SITE_FIELDS = [
   'commentGifsEnabled',
   'discloseAiContent',
   'gamNetworkCode',
+  'contentHome',
 ] as const
 
 export const CLIENT_SITE_SECRET_FIELDS = [

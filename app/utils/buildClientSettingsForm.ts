@@ -55,6 +55,7 @@ export interface ClientSettingsForm extends PublicationChannelSettings, ReleaseS
   autoRelease: boolean
   commentsEnabled: boolean
   commentGifsEnabled: boolean
+  contentHome: 'TOPIQU' | 'EXTERNAL'
   aiSeriesEnabled: boolean
   articleQuality: ArticleQuality
   generationFrequency: 'DAILY' | 'WEEKLY' | 'INTERVAL' | 'NONE'
@@ -94,6 +95,7 @@ const emptyForm = (): ClientSettingsForm => ({
   commentsEnabled: true,
   commentGifsEnabled: true,
   ...publicationChannelSettings(),
+  contentHome: 'TOPIQU',
   aiSeriesEnabled: false,
   articleQuality: 'STANDARD',
   generationFrequency: 'NONE',
@@ -165,6 +167,7 @@ export function buildClientSettingsForm(client?: ClientSite | null): ClientSetti
     commentsEnabled: client.commentsEnabled ?? true,
     commentGifsEnabled: client.commentGifsEnabled ?? true,
     ...publicationChannelSettings(client),
+    contentHome: client.contentHome ?? 'TOPIQU',
     aiSeriesEnabled: client.aiSeriesEnabled ?? false,
     articleQuality: articleQualityOf(client.articleQuality),
     generationFrequency: client.generationFrequency ?? 'NONE',

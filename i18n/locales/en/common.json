@@ -1608,6 +1608,14 @@
         "emojiHelp": "Your own images readers can react to comments with."
       },
       "publicationChannels": {
+        "contentHome": {
+          "title": "Where articles are indexed",
+          "help": "Search engines should find each article in one place. If your own website shows the articles through the WordPress plugin, Shopify or the API, choose it here: this blog then stays readable but is marked noindex and leaves the sitemap, RSS and LLM feeds.",
+          "TOPIQU": "This blog",
+          "TOPIQUHelp": "The articles are indexed here, on this blog.",
+          "EXTERNAL": "My own website",
+          "EXTERNALHelp": "Your website carries the indexed copy. Give it its own canonical and hreflang tags."
+        },
         "title": "Publication channels",
         "description": "Choose where this publication may publish. Connected channels keep their existing publishing and approval workflows. Turning a channel off stops new publications, including queued jobs, and keeps previously published content.",
         "web": "Publication website",

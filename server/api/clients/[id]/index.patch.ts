@@ -24,6 +24,7 @@ export default defineEventHandler(async (event) => {
     'gtagId',
     'allowGtag',
     'gamNetworkCode',
+    'contentHome',
     ...PUBLICATION_CHANNELS.map(({ field }) => field),
   ]
   if (user.role !== 'superadmin' && integrationFields.some((field) => field in body))

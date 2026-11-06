@@ -7,7 +7,7 @@ type Alternative = { hreflang: string; href: string }
 /** Per-host sitemap source. The module forwards the request host and keys its cache by it. */
 export default defineSitemapEventHandler(async (event) => {
   const tenant = await tenantByHost(event)
-  if (!tenant) return []
+  if (!tenant || hasExternalContentHome(tenant)) return []
 
   const primary = tenant.language as Language
 

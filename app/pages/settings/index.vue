@@ -215,6 +215,7 @@
           <FormClientPublicationChannels
             v-if="can('TENANT_SETTINGS') && can('INTEGRATION_CONTROL')"
             v-model="publicationChannelsModel"
+            v-model:contentHome="form.contentHome"
             :linkedinConnected="Boolean(client?.linkedinCompanies?.length)"
             class="mt-10"
           />

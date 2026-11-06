@@ -1608,6 +1608,14 @@
         "emojiHelp": "Vlastní obrázky, kterými můžou čtenáři reagovat na komentáře."
       },
       "publicationChannels": {
+        "contentHome": {
+          "title": "Kde se články indexují",
+          "help": "Vyhledávače by měly každý článek najít na jednom místě. Pokud články zobrazujete na vlastním webu přes plugin pro WordPress, Shopify nebo API, zvolte ho zde: tento blog zůstane čitelný, ale dostane noindex a zmizí ze sitemapy, RSS i feedů pro LLM.",
+          "TOPIQU": "Tento blog",
+          "TOPIQUHelp": "Články se indexují zde, na tomto blogu.",
+          "EXTERNAL": "Můj vlastní web",
+          "EXTERNALHelp": "Indexovaná kopie je na vašem webu. Doplňte na něm vlastní canonical a hreflang."
+        },
         "title": "Publikační kanály",
         "description": "Vyberte, kam smí tato publikace publikovat. Připojené kanály používají své stávající postupy publikování a schvalování. Vypnutí zastaví nové publikace včetně čekajících úloh a zachová již publikovaný obsah.",
         "web": "Web publikace",
