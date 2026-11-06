@@ -29,6 +29,17 @@ const Input = defineComponent({
         onInput: (event: Event) => emit('update:modelValue', (event.target as HTMLInputElement).value),
       }),
 })
+const Textarea = defineComponent({
+  props: ['modelValue'],
+  emits: ['update:modelValue'],
+  setup:
+    (props, { emit }) =>
+    () =>
+      h('textarea', {
+        value: props.modelValue,
+        onInput: (event: Event) => emit('update:modelValue', (event.target as HTMLTextAreaElement).value),
+      }),
+})
 const Consent = defineComponent({
   props: ['confirmed'],
   emits: ['update:confirmed'],
@@ -63,7 +74,7 @@ const mountDialog = async (initialUrl?: string, initiallyOpen = false) => {
         stubs: {
           UModal: Modal,
           UInput: Input,
-          UTextarea: true,
+          UTextarea: Textarea,
           UButton: { template: '<button><slot /></button>' },
           UFormField: true,
           UTabs: true,
@@ -144,6 +155,25 @@ describe('company website knowledge import', () => {
     expect(creation[1].body.get('confirmed')).toBe('true')
     expect(dialog.emitted('created')).toHaveLength(1)
     expect(dialog.emitted('update:open')?.at(-1)).toEqual([false])
+  })
+
+  it('imports a pasted list of addresses without sitemap discovery, deduplicated', async () => {
+    mocks.fetch.mockResolvedValue({})
+    const { wrapper, dialog } = await mountDialog()
+    wrapper.getComponent({ name: 'UTabs' }).vm.$emit('update:modelValue', 'URL')
+    await nextTick()
+    wrapper.getComponent({ name: 'URadioGroup' }).vm.$emit('update:modelValue', 'LIST')
+    await nextTick()
+    await wrapper.get('textarea').setValue('https://firma.cz/a\n firma.cz/b \nhttps://firma.cz/a\n')
+    expect(wrapper.get('button[type="submit"]').text()).toBe('knowledge.sitemap.import')
+    await wrapper.get('input[type="checkbox"]').setValue(true)
+    await wrapper.get('form').trigger('submit')
+    await flushPromises()
+
+    expect(mocks.fetch).not.toHaveBeenCalledWith('/api/knowledge/sitemap', expect.anything())
+    const urls = mocks.fetch.mock.calls.filter(([path]) => path === '/api/knowledge').map(([, init]) => init.body.get('url'))
+    expect(urls.sort()).toEqual(['https://firma.cz/a', 'https://firma.cz/b'])
+    expect(dialog.emitted('created')).toHaveLength(1)
   })
 
   it('clears the website and confirmation before a generic Add action', async () => {

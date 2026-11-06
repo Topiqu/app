@@ -67,6 +67,7 @@
       "scope": "Co přidat",
       "page": "Jen tuto stránku",
       "site": "Najít další stránky tohoto webu",
+      "list": "Vložit seznam adres",
       "siteHint": "Nejdřív ukážeme nalezené stránky. Najednou lze přidat nejvýš {count}."
     },
     "status": {
@@ -85,6 +86,8 @@
       "fileHint": "Nejvýše {size}. Naskenovaná PDF bez textové vrstvy nejsou podporována.",
       "url": "Adresa stránky",
       "urlHint": "Pouze veřejné stránky přes https.",
+      "urls": "Adresy stránek",
+      "urlsHint": "Jedna adresa na řádek, nejvýš {count}. Pouze veřejné stránky přes https.",
       "publicUrl": "Veřejná URL pro citace",
       "publicUrlHint": "Nechte prázdné, pokud má zdroj zůstat interní.",
       "validAsOf": "Platné k",

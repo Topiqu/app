@@ -67,6 +67,7 @@
       "scope": "What to add",
       "page": "Just this page",
       "site": "Find more pages from this website",
+      "list": "Paste a list of addresses",
       "siteHint": "We will show the pages found before adding them. You can add up to {count} at a time."
     },
     "status": {
@@ -85,6 +86,8 @@
       "fileHint": "Up to {size}. Scanned PDFs without a text layer are not supported.",
       "url": "Page address",
       "urlHint": "Public https pages only.",
+      "urls": "Page addresses",
+      "urlsHint": "One address per line, up to {count}. Public https pages only.",
       "publicUrl": "Public URL for citations",
       "publicUrlHint": "Leave empty to keep the source internal.",
       "validAsOf": "Valid as of",

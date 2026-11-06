@@ -67,6 +67,7 @@
       "scope": "Was soll hinzugefügt werden?",
       "page": "Nur diese Seite",
       "site": "Weitere Seiten dieser Website finden",
+      "list": "Liste von Adressen einfügen",
       "siteHint": "Wir zeigen dir die gefundenen Seiten, bevor du sie hinzufügst. Du kannst bis zu {count} gleichzeitig hinzufügen."
     },
     "status": {
@@ -85,6 +86,8 @@
       "fileHint": "Bis zu {size}. Eingescannte PDFs ohne Textebene werden nicht unterstützt.",
       "url": "Seitenadresse",
       "urlHint": "Nur öffentliche HTTPS-Seiten.",
+      "urls": "Seitenadressen",
+      "urlsHint": "Eine Adresse pro Zeile, höchstens {count}. Nur öffentliche HTTPS-Seiten.",
       "publicUrl": "Öffentliche URL für Quellenangaben",
       "publicUrlHint": "Leer lassen, damit die Quelle intern bleibt.",
       "validAsOf": "Gültig ab",

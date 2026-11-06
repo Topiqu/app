@@ -67,6 +67,7 @@
       "scope": "Éléments à ajouter",
       "page": "Cette page uniquement",
       "site": "Trouver d'autres pages de ce site",
+      "list": "Coller une liste d'adresses",
       "siteHint": "Nous afficherons les pages trouvées avant leur ajout. Vous pouvez en ajouter jusqu'à {count} à la fois."
     },
     "status": {
@@ -85,6 +86,8 @@
       "fileHint": "Jusqu'à {size}. Les PDF numérisés sans couche de texte ne sont pas pris en charge.",
       "url": "Adresse de la page",
       "urlHint": "Pages HTTPS publiques uniquement.",
+      "urls": "Adresses des pages",
+      "urlsHint": "Une adresse par ligne, {count} au maximum. Pages HTTPS publiques uniquement.",
       "publicUrl": "URL publique pour les citations",
       "publicUrlHint": "Laissez vide pour garder la source en interne.",
       "validAsOf": "Valable au",

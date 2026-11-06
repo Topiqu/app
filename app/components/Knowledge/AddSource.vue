@@ -79,7 +79,24 @@
           </p>
         </template>
         <template v-else>
-          <UFormField :label="$t('knowledge.fields.url')" required>
+          <UFormField
+            v-if="webScope === 'LIST'"
+            :label="$t('knowledge.fields.urls')"
+            :help="$t('knowledge.fields.urlsHint', { count: KNOWLEDGE_LIMITS.maxSitemapPages })"
+            required
+          >
+            <UTextarea
+              v-model="form.urls"
+              class="w-full"
+              :rows="6"
+              autoresize
+              :maxrows="14"
+              placeholder="https://"
+              required
+              :disabled="saving"
+            />
+          </UFormField>
+          <UFormField v-else :label="$t('knowledge.fields.url')" required>
             <UInput
               v-model="form.url"
               type="text"
@@ -116,11 +133,14 @@
               </dl>
               <p v-if="sitemapCapNote" class="mt-2 text-xs text-muted">{{ sitemapCapNote }}</p>
             </div>
-            <div v-if="progress" class="flex flex-col gap-1.5" aria-live="polite">
-              <UProgress :modelValue="progress.done" :max="progress.total" />
-              <p class="text-xs text-muted">{{ $t('knowledge.sitemapProgress', progress) }}</p>
-            </div>
           </template>
+          <p v-if="webScope === 'LIST' && listedUrls.length < pastedUrls.length" class="-mt-2 text-sm text-muted">
+            {{ $t('knowledge.sitemap.cappedByBatch', { count: KNOWLEDGE_LIMITS.maxSitemapPages }) }}
+          </p>
+          <div v-if="progress" class="flex flex-col gap-1.5" aria-live="polite">
+            <UProgress :modelValue="progress.done" :max="progress.total" />
+            <p class="text-xs text-muted">{{ $t('knowledge.sitemapProgress', progress) }}</p>
+          </div>
         </template>
 
         <AddSourceSettings
@@ -175,7 +195,7 @@ const clientSite = await useClientSite()
 
 type Kind = 'NOTE' | 'FILE' | 'URL' | 'FEED'
 const kind = shallowRef<Kind>('NOTE')
-const webScope = shallowRef<'PAGE' | 'SITE'>('PAGE')
+const webScope = shallowRef<'PAGE' | 'SITE' | 'LIST'>('PAGE')
 const kindTabs = computed(() =>
   (['NOTE', 'FILE', 'URL', 'FEED'] as const).map((value) => ({ value, label: t(`knowledge.addKinds.${value}`) })),
 )
@@ -196,6 +216,7 @@ const tenantLanguage: Language = isLanguage(clientSite?.language) ? clientSite.l
 const webScopeItems = computed(() => [
   { value: 'PAGE', label: t('knowledge.web.page') },
   { value: 'SITE', label: t('knowledge.web.site') },
+  { value: 'LIST', label: t('knowledge.web.list') },
 ])
 const progress = shallowRef<{ done: number; total: number } | null>(null)
 type Discovery = { urls: string[]; found: number; existing: number; quotaLeft: number }
@@ -208,6 +229,7 @@ const blank = () => ({
   title: '',
   text: '',
   url: '',
+  urls: '',
   publicUrl: '',
   validAsOf: '',
   isPublic: false,
@@ -252,8 +274,15 @@ const sitemapCapNote = computed(() => {
     ? t('knowledge.sitemap.cappedByQuota', { count: found.quotaLeft })
     : t('knowledge.sitemap.cappedByBatch', { count: KNOWLEDGE_LIMITS.maxSitemapPages })
 })
+const pastedUrls = computed(() => [
+  ...new Set(form.urls.split(/\s+/).map(normalizeSourceUrl).filter(Boolean)),
+])
+const listedUrls = computed(() => pastedUrls.value.slice(0, KNOWLEDGE_LIMITS.maxSitemapPages))
+
 const submitLabel = computed(() => {
   if (kind.value === 'FEED') return feedPreview.value ? t('knowledge.add') : t('knowledge.feed.verify')
+  if (kind.value === 'URL' && webScope.value === 'LIST')
+    return t('knowledge.sitemap.import', { count: listedUrls.value.length })
   if (kind.value !== 'URL' || webScope.value !== 'SITE') return t('knowledge.add')
   return discovered.value?.urls.length
     ? t('knowledge.sitemap.import', { count: discovered.value.urls.length })
@@ -293,7 +322,7 @@ const discoverSitemap = () =>
 
 // Pages go through the regular URL endpoint two at a time, gentle on the site and on the
 // per-tenant rate limit; a full quota or the rate limit ends the import early.
-const importSitemap = async (urls: string[]) => {
+const importPages = async (urls: string[]) => {
   const queue = [...urls]
   let added = 0
   let stopped = false
@@ -317,10 +346,20 @@ const importSitemap = async (urls: string[]) => {
 
 const submit = async () => {
   if (saving.value || !form.confirmed) return
+  if (kind.value === 'URL' && webScope.value === 'LIST') {
+    if (!listedUrls.value.length) return
+    saving.value = true
+    try {
+      await importPages(listedUrls.value)
+    } finally {
+      saving.value = false
+    }
+    return
+  }
   if (kind.value === 'URL' && webScope.value === 'SITE') {
     saving.value = true
     try {
-      if (discovered.value?.urls.length) await importSitemap(discovered.value.urls)
+      if (discovered.value?.urls.length) await importPages(discovered.value.urls)
       else {
         const found = await discoverSitemap()
         discovered.value = found
