@@ -750,6 +750,13 @@ main {
   padding: 0.25rem 0.5rem;
 }
 
+/* The floating dock would cover the last lines being typed. */
+@media (width < 40rem) {
+  body:has(.editor-canvas .ProseMirror:focus, [data-editor-toolbar]:focus-within) [data-client-dock] {
+    display: none;
+  }
+}
+
 .editor-canvas .ProseMirror {
   width: 100%;
   min-width: 0;

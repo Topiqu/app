@@ -215,3 +215,13 @@ export const expectNoHorizontalOverflow = async (page: Page) => {
   )
   expect(overflow).toBeLessThanOrEqual(1)
 }
+
+/** Below `sm` the editor's secondary actions sit behind a toggle in the command bar. */
+export const openEditorActions = async (page: Page) => {
+  if ((page.viewportSize()?.width ?? 0) >= 640) return
+  const toggle = page.locator('[data-editor-actions-toggle]')
+  await expect(async () => {
+    if ((await toggle.getAttribute('aria-expanded')) !== 'true') await toggle.click()
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true', { timeout: 1000 })
+  }).toPass()
+}

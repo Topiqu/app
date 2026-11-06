@@ -265,6 +265,8 @@ describe('Nuxt UI component behavior', () => {
       chain: () => chain,
       isActive: (name: unknown) => name === 'bulletList',
       getAttributes: () => ({}),
+      on: vi.fn(),
+      off: vi.fn(),
     }
     const wrapper = mount(TiptapToolbar, {
       props: { editor: editor as never, limit: 5000 },

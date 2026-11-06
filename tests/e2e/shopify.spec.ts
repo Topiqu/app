@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { expect, test } from '@playwright/test'
 
+import { openEditorActions } from './helpers'
 import { createDatabaseClient } from '../../server/utils/database'
 
 test.use({ storageState: { cookies: [], origins: [] } })
@@ -124,6 +125,7 @@ test('publishes to Shopify from the publish dialog and disables sending after an
     return route.fulfill({ json: remote })
   })
   await page.goto('/en/admin/editor/shopify-test-article')
+  await openEditorActions(page)
   const shopify = page.locator('[data-shopify-status]')
   await expect(shopify).toBeVisible({ timeout: 20_000 })
   await page.locator('[data-editor-command-bar]').getByRole('button', { name: 'Publish', exact: true }).click()

@@ -31,6 +31,13 @@
           :class="[EDITOR_TABLE_CLASS, contentClass]"
           @click.stop="handleEditorClick"
         />
+        <TiptapCharacterCount
+          v-if="edit"
+          :editor
+          :limit
+          compact
+          class="rounded-b-(--topiqu-surface-radius) border-t border-default px-3 py-1.5 text-muted sm:hidden"
+        />
         <TiptapDropOverlay :active="isDragging && edit" />
       </div>
 

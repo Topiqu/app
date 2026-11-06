@@ -2,7 +2,7 @@ import { join } from 'node:path'
 import { randomUUID } from 'node:crypto'
 import { expect, test } from '@playwright/test'
 
-import { applyProjectColorScheme, expectAccessible, expectNoHorizontalOverflow } from './helpers'
+import { applyProjectColorScheme, expectAccessible, expectNoHorizontalOverflow, openEditorActions } from './helpers'
 
 const authDir = join(process.cwd(), 'tests/e2e/.auth')
 const origin = 'http://127.0.0.1:4173'
@@ -56,6 +56,7 @@ test.describe('article recovery', () => {
       const conflict = page.waitForResponse(
         (response) => response.url().endsWith(`/api/articles/${id}`) && response.request().method() === 'PATCH',
       )
+      await openEditorActions(page)
       await save.click()
       expect((await conflict).status()).toBe(409)
       await expect(title).toHaveValue('My unsaved draft')
@@ -72,6 +73,7 @@ test.describe('article recovery', () => {
         .click()
       await expect(title).toHaveValue('Updated in another session')
       await page.locator('html[data-topiqu-hydrated="true"]').waitFor()
+      await openEditorActions(page)
       const mobileSettings = (page.viewportSize()?.width ?? 0) < 1280
       const settingsButton = page.getByRole('button', { name: /^(Article settings|Nastavení článku)$/ })
       if (mobileSettings) await settingsButton.click()

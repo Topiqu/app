@@ -70,6 +70,46 @@ test.describe('admin', () => {
     })
   }
 
+  test('phone editor leaves room to write and its toolbar controls do not collide', async ({ page }, testInfo) => {
+    test.skip((page.viewportSize()?.width ?? 0) >= 640, 'Phone layout')
+    await preparePage(page)
+    await page.goto(`/${localeFor(testInfo.project.name)}/admin/editor/new`)
+    await page.locator('html[data-topiqu-hydrated="true"]').waitFor()
+
+    const commandBar = page.locator('[data-editor-command-bar]')
+    const toolbar = page.locator('[data-editor-toolbar]')
+    await expect(toolbar).toBeVisible({ timeout: 30_000 })
+    expect((await commandBar.boundingBox())!.height).toBeLessThanOrEqual(72)
+    expect((await toolbar.boundingBox())!.height).toBeLessThanOrEqual(64)
+
+    await toolbar.getByRole('button', { name: /^(More|Další)$/ }).click()
+    const boxes = await toolbar.locator('button:visible, [role="status"]:visible').evaluateAll((nodes) =>
+      nodes.map((node) => {
+        const { left, right, top, bottom } = node.getBoundingClientRect()
+        return { label: node.getAttribute('aria-label') ?? node.textContent?.trim(), left, right, top, bottom }
+      }),
+    )
+    for (const [index, a] of boxes.entries())
+      for (const b of boxes.slice(index + 1)) {
+        const overlaps = a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1
+        expect(overlaps, `${a.label} overlaps ${b.label}`).toBe(false)
+      }
+    await toolbar.getByRole('button', { name: /^(More|Další)$/ }).click()
+
+    const canvas = page.locator('.tiptap.ProseMirror')
+    await canvas.click()
+    await expect(page.locator('[data-client-dock]')).toBeHidden()
+    // An empty article is too short to scroll, so the toolbar would never reach its sticky position.
+    for (let line = 0; line < 40; line++) await page.keyboard.press('Enter')
+    await canvas.evaluate((node) => node.scrollIntoView({ block: 'start' }))
+    await expect
+      .poll(async () => (await toolbar.boundingBox())!.y, 'the toolbar sticks below the app header')
+      .toBeLessThanOrEqual(80)
+    const { y, height } = (await toolbar.boundingBox())!
+    expect(page.viewportSize()!.height - (y + height)).toBeGreaterThanOrEqual(page.viewportSize()!.height * 0.5)
+    await expectNoHorizontalOverflow(page)
+  })
+
   test('dashboard shell and square controls have non-overlapping geometry', async ({ page }, testInfo) => {
     test.skip((page.viewportSize()?.width ?? 0) < 1024, 'Desktop dashboard geometry')
     await preparePage(page)

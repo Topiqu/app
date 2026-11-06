@@ -1,9 +1,9 @@
 <template>
   <div class="flex min-w-36 items-center gap-2 text-xs" role="status">
-    <UProgress :modelValue="percentage" :max="100" :color="progressColor" size="sm" class="flex-1" />
-    <span class="whitespace-nowrap">
-      {{ chars }} / {{ limit }}<br />
-      {{ words }} {{ $t('articles.editor.toolbar.words') }}
+    <UProgress v-if="!compact" :modelValue="percentage" :max="100" :color="progressColor" size="sm" class="flex-1" />
+    <span class="whitespace-nowrap" :class="{ 'text-error': compact && chars >= limit }">
+      {{ chars }} / {{ limit }}<br v-if="!compact" /><template v-else> · </template> {{ words }}
+      {{ $t('articles.editor.toolbar.words') }}
     </span>
   </div>
 </template>
@@ -11,7 +11,7 @@
 <script setup lang="ts">
 import type { Editor } from '@tiptap/vue-3'
 
-const { editor, limit } = defineProps<{ editor: Editor; limit: number }>()
+const { editor, limit, compact = false } = defineProps<{ editor: Editor; limit: number; compact?: boolean }>()
 
 const chars = computed(() => editor.storage.characterCount.characters())
 const words = computed(() => editor.storage.characterCount.words())

@@ -2,7 +2,7 @@ import type { APIResponse, Page, Request, Route } from '@playwright/test'
 
 import { expect, test } from '@playwright/test'
 
-import { preparePage, waitForPageReady } from './helpers'
+import { openEditorActions, preparePage, waitForPageReady } from './helpers'
 
 const articleId = '20000000-0000-4000-8000-000000000001'
 const articleTitle = 'Jak postavit udržitelnou digitální redakci'
@@ -228,6 +228,7 @@ test.describe('interrupted compiled navigation', () => {
     page.on('requestfailed', recordCancellation)
     await page.route('**/api/media?**', intercept, { times: 1 })
     try {
+      await openEditorActions(page)
       const mobileSettings = (page.viewportSize()?.width ?? 0) < 1280
       if (mobileSettings) await page.getByRole('button', { name: /^(Article settings|Nastavení článku)$/ }).click()
       await page

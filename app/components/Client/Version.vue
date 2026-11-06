@@ -1,5 +1,6 @@
 <template>
   <div
+    data-client-dock
     class="pointer-events-none fixed right-3 bottom-[calc(0.75rem+var(--topiqu-unsaved-bar-height,0px))] z-overlay flex w-88 max-w-[calc(100vw-1.5rem)] flex-col items-stretch gap-2"
   >
     <AdminWebsiteImportNotice />

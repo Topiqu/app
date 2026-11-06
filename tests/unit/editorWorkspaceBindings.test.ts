@@ -174,6 +174,21 @@ describe('editor settings orchestration', () => {
     expect(mobile.props('articleTags')).toEqual([])
   })
 
+  it('collapses secondary actions below sm and keeps them mounted', async () => {
+    const wrapper = await mountEditor()
+    const toggle = wrapper
+      .findAllComponents({ name: 'UButton' })
+      .find((b) => b.props('icon') === 'mdi:dots-horizontal')!
+    const panel = wrapper.get(`[id="${toggle.attributes('aria-controls')}"]`)
+    expect(toggle.attributes('aria-expanded')).toBe('false')
+    expect(panel.classes()).toContain('max-sm:hidden')
+    toggle.vm.$emit('click')
+    await flushPromises()
+    expect(toggle.attributes('aria-expanded')).toBe('true')
+    expect(panel.classes()).not.toContain('max-sm:hidden')
+    expect(panel.text()).toContain('articles.saveAsDraft')
+  })
+
   it('keeps the mobile drawer mounted while a sidebar check focuses its article section', async () => {
     const wrapper = await mountEditor()
     const mobile = await openMobilePanel(wrapper)

@@ -1,200 +1,217 @@
 <template>
   <div
-    class="sticky top-[var(--editor-command-bar-height,0px)] z-10 min-w-0 max-w-full overflow-hidden rounded-t-[var(--topiqu-surface-radius)] border-b border-default bg-default px-1 py-1.5 sm:px-2"
+    class="sticky top-0 z-10 min-w-0 max-w-full overflow-hidden rounded-t-[var(--topiqu-surface-radius)] border-b border-default bg-default px-1 py-1.5 sm:px-2 xl:top-[var(--editor-command-bar-height,0px)]"
     data-editor-toolbar
   >
-    <div
-      class="grid min-w-0 max-w-full grid-flow-col grid-rows-2 items-center justify-start justify-items-start gap-2 overflow-x-auto overscroll-x-contain sm:flex"
-      role="toolbar"
-      :aria-label="$t('articles.editor.title')"
-    >
-      <UFieldGroup class="shrink-0">
-        <UButton
-          icon="mdi:undo"
-          color="neutral"
-          variant="ghost"
-          :title="sk($t('articles.editor.toolbar.undo'), 'Mod+Z')"
-          :aria-label="$t('articles.editor.toolbar.undo')"
-          :disabled="!editor.can().undo()"
-          @click="run((c) => c.undo())"
-        />
-        <UButton
-          icon="mdi:redo"
-          color="neutral"
-          variant="ghost"
-          :title="sk($t('articles.editor.toolbar.redo'), 'Mod+Shift+Z')"
-          :aria-label="$t('articles.editor.toolbar.redo')"
-          :disabled="!editor.can().redo()"
-          @click="run((c) => c.redo())"
-        />
-      </UFieldGroup>
+    <div class="flex min-w-0 max-w-full items-start gap-1" role="toolbar" :aria-label="$t('articles.editor.title')">
+      <div
+        class="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto overscroll-x-contain"
+        :class="{ 'max-sm:flex-wrap max-sm:overflow-x-visible': moreOpen }"
+      >
+        <UFieldGroup class="shrink-0">
+          <UButton
+            icon="mdi:undo"
+            color="neutral"
+            variant="ghost"
+            :title="sk($t('articles.editor.toolbar.undo'), 'Mod+Z')"
+            :aria-label="$t('articles.editor.toolbar.undo')"
+            :disabled="!editor.can().undo()"
+            @click="run((c) => c.undo())"
+          />
+          <UButton
+            icon="mdi:redo"
+            color="neutral"
+            variant="ghost"
+            :title="sk($t('articles.editor.toolbar.redo'), 'Mod+Shift+Z')"
+            :aria-label="$t('articles.editor.toolbar.redo')"
+            :disabled="!editor.can().redo()"
+            @click="run((c) => c.redo())"
+          />
+        </UFieldGroup>
 
-      <div class="w-40 shrink-0">
-        <USelectMenu
-          v-model="headingValue"
-          valueKey="value"
-          labelKey="label"
-          :searchInput="false"
-          :items="headingItems"
-          :aria-label="$t('articles.editor.title')"
-          :ui="{ base: 'whitespace-nowrap' }"
+        <div class="w-32 shrink-0 sm:w-40">
+          <USelectMenu
+            v-model="headingValue"
+            valueKey="value"
+            labelKey="label"
+            :searchInput="false"
+            :items="headingItems"
+            :aria-label="$t('articles.editor.title')"
+            :ui="{ base: 'whitespace-nowrap' }"
+          />
+        </div>
+
+        <UFieldGroup class="shrink-0">
+          <UButton
+            icon="mdi:format-list-bulleted"
+            color="neutral"
+            variant="ghost"
+            :title="sk($t('articles.editor.toolbar.bulletList'), 'Mod+Shift+8')"
+            :aria-label="$t('articles.editor.toolbar.bulletList')"
+            :active="editor.isActive('bulletList')"
+            @click="run((c) => c.toggleBulletList())"
+          />
+          <UButton
+            icon="mdi:format-list-numbered"
+            color="neutral"
+            variant="ghost"
+            :title="sk($t('articles.editor.toolbar.numberedList'), 'Mod+Shift+7')"
+            :aria-label="$t('articles.editor.toolbar.numberedList')"
+            :active="editor.isActive('orderedList')"
+            @click="run((c) => c.toggleOrderedList())"
+          />
+          <UButton
+            icon="mdi:format-quote-open"
+            :class="optionalClass"
+            color="neutral"
+            variant="ghost"
+            :title="$t('articles.editor.toolbar.blockquote')"
+            :aria-label="$t('articles.editor.toolbar.blockquote')"
+            :active="editor.isActive('blockquote')"
+            @click="toggleBlockquote"
+          />
+        </UFieldGroup>
+
+        <UFieldGroup class="shrink-0">
+          <FileInput :uploadImage="onUploadFile" @close="emit('focusEditor')" />
+          <UButton
+            icon="mdi:image-plus"
+            :class="optionalClass"
+            color="neutral"
+            variant="ghost"
+            :title="$t('articles.editor.toolbar.insertImage')"
+            :aria-label="$t('articles.editor.toolbar.insertImage')"
+            @click="emit('openLink', { type: 'image' })"
+          />
+          <UButton
+            icon="mdi:image-multiple-outline"
+            color="neutral"
+            variant="ghost"
+            :title="$t('media.choose')"
+            :aria-label="$t('media.choose')"
+            @click="emit('openMedia')"
+          />
+          <UButton
+            icon="mdi:link"
+            color="neutral"
+            variant="ghost"
+            :title="sk($t('articles.editor.toolbar.link'), 'Mod+K')"
+            :aria-label="$t('articles.editor.toolbar.link')"
+            :active="editor.isActive('link')"
+            @click="emit('openLink', { type: 'link', url: editor.getAttributes('link').href })"
+          />
+          <UButton
+            icon="mdi:youtube"
+            :class="optionalClass"
+            color="neutral"
+            variant="ghost"
+            :title="$t('articles.editor.toolbar.insertYoutube')"
+            :aria-label="$t('articles.editor.toolbar.insertYoutube')"
+            @click="emit('openLink', { type: 'youtube' })"
+          />
+          <UButton
+            icon="mdi:poll"
+            :class="optionalClass"
+            color="neutral"
+            variant="ghost"
+            :title="$t('articles.editor.toolbar.insertPoll')"
+            :aria-label="$t('articles.editor.toolbar.insertPoll')"
+            @click="emit('insertPoll')"
+          />
+        </UFieldGroup>
+
+        <UFieldGroup class="shrink-0" :class="optionalClass">
+          <UButton
+            v-for="a in alignments"
+            :key="a"
+            :icon="`i-mdi-format-align-${a}`"
+            color="neutral"
+            variant="ghost"
+            :title="$t(`articles.editor.toolbar.align${a[0]!.toUpperCase() + a.slice(1)}`)"
+            :aria-label="$t(`articles.editor.toolbar.align${a[0]!.toUpperCase() + a.slice(1)}`)"
+            :active="editor.isActive({ textAlign: a })"
+            @click="run((c) => c.setTextAlign(a))"
+          />
+        </UFieldGroup>
+        <UFieldGroup class="shrink-0" :class="optionalClass">
+          <UButton
+            icon="mdi:format-indent-increase"
+            color="neutral"
+            variant="ghost"
+            :title="$t('articles.editor.toolbar.indent')"
+            :aria-label="$t('articles.editor.toolbar.indent')"
+            @click="run((c) => c.indent())"
+          />
+          <UButton
+            icon="mdi:format-indent-decrease"
+            color="neutral"
+            variant="ghost"
+            :title="$t('articles.editor.toolbar.outdent')"
+            :aria-label="$t('articles.editor.toolbar.outdent')"
+            @click="run((c) => c.outdent())"
+          />
+        </UFieldGroup>
+
+        <UFieldGroup class="shrink-0" :class="optionalClass">
+          <UButton
+            icon="mdi:minus"
+            color="neutral"
+            variant="ghost"
+            :title="$t('articles.editor.toolbar.horizontalRule')"
+            :aria-label="$t('articles.editor.toolbar.horizontalRule')"
+            @click="run((c) => c.setHorizontalRule())"
+          />
+          <UButton
+            icon="mdi:format-clear"
+            color="neutral"
+            variant="ghost"
+            :title="$t('articles.editor.toolbar.clearFormatting')"
+            :aria-label="$t('articles.editor.toolbar.clearFormatting')"
+            @click="run((c) => c.clearNodes())"
+          />
+        </UFieldGroup>
+
+        <UButton
+          icon="mdi:table-plus"
+          :class="optionalClass"
+          color="neutral"
+          variant="ghost"
+          :title="$t('articles.editor.toolbar.insertTable')"
+          :aria-label="$t('articles.editor.toolbar.insertTable')"
+          @click="run((c) => c.insertTable({ rows: 3, cols: 3, withHeaderRow: true }))"
         />
+
+        <UButton
+          icon="mdi:creation-outline"
+          color="primary"
+          variant="soft"
+          class="shrink-0 max-sm:px-3"
+          :title="$t('articles.editor.aiEdit.wholeContent')"
+          :aria-label="$t('articles.editor.aiEdit.wholeContent')"
+          :aria-expanded="rewritePromptOpen"
+          :active="rewritePromptOpen"
+          :loading="rewritePending === 'document'"
+          :disabled="rewritePending !== null"
+          @click="rewritePromptOpen = !rewritePromptOpen"
+        >
+          <span class="max-sm:sr-only">{{ $t('articles.editor.aiEdit.text.improve') }}</span>
+        </UButton>
+
+        <TiptapColorPicker v-model="textColor" :class="optionalClass" />
+        <TiptapCharacterCount :editor :limit class="shrink-0 max-sm:hidden sm:ml-auto" />
       </div>
-
-      <UFieldGroup class="shrink-0">
-        <UButton
-          icon="mdi:format-list-bulleted"
-          color="neutral"
-          variant="ghost"
-          :title="sk($t('articles.editor.toolbar.bulletList'), 'Mod+Shift+8')"
-          :aria-label="$t('articles.editor.toolbar.bulletList')"
-          :active="editor.isActive('bulletList')"
-          @click="run((c) => c.toggleBulletList())"
-        />
-        <UButton
-          icon="mdi:format-list-numbered"
-          color="neutral"
-          variant="ghost"
-          :title="sk($t('articles.editor.toolbar.numberedList'), 'Mod+Shift+7')"
-          :aria-label="$t('articles.editor.toolbar.numberedList')"
-          :active="editor.isActive('orderedList')"
-          @click="run((c) => c.toggleOrderedList())"
-        />
-        <UButton
-          icon="mdi:format-quote-open"
-          color="neutral"
-          variant="ghost"
-          :title="$t('articles.editor.toolbar.blockquote')"
-          :aria-label="$t('articles.editor.toolbar.blockquote')"
-          :active="editor.isActive('blockquote')"
-          @click="toggleBlockquote"
-        />
-      </UFieldGroup>
-
-      <UFieldGroup class="shrink-0">
-        <FileInput :uploadImage="onUploadFile" @close="emit('focusEditor')" />
-        <UButton
-          icon="mdi:image-plus"
-          color="neutral"
-          variant="ghost"
-          :title="$t('articles.editor.toolbar.insertImage')"
-          :aria-label="$t('articles.editor.toolbar.insertImage')"
-          @click="emit('openLink', { type: 'image' })"
-        />
-        <UButton
-          icon="mdi:image-multiple-outline"
-          color="neutral"
-          variant="ghost"
-          :title="$t('media.choose')"
-          :aria-label="$t('media.choose')"
-          @click="emit('openMedia')"
-        />
-        <UButton
-          icon="mdi:link"
-          color="neutral"
-          variant="ghost"
-          :title="sk($t('articles.editor.toolbar.link'), 'Mod+K')"
-          :aria-label="$t('articles.editor.toolbar.link')"
-          :active="editor.isActive('link')"
-          @click="emit('openLink', { type: 'link', url: editor.getAttributes('link').href })"
-        />
-        <UButton
-          icon="mdi:youtube"
-          color="neutral"
-          variant="ghost"
-          :title="$t('articles.editor.toolbar.insertYoutube')"
-          :aria-label="$t('articles.editor.toolbar.insertYoutube')"
-          @click="emit('openLink', { type: 'youtube' })"
-        />
-        <UButton
-          icon="mdi:poll"
-          color="neutral"
-          variant="ghost"
-          :title="$t('articles.editor.toolbar.insertPoll')"
-          :aria-label="$t('articles.editor.toolbar.insertPoll')"
-          @click="emit('insertPoll')"
-        />
-      </UFieldGroup>
-
-      <UFieldGroup class="shrink-0">
-        <UButton
-          v-for="a in alignments"
-          :key="a"
-          :icon="`i-mdi-format-align-${a}`"
-          color="neutral"
-          variant="ghost"
-          :title="$t(`articles.editor.toolbar.align${a[0]!.toUpperCase() + a.slice(1)}`)"
-          :aria-label="$t(`articles.editor.toolbar.align${a[0]!.toUpperCase() + a.slice(1)}`)"
-          :active="editor.isActive({ textAlign: a })"
-          @click="run((c) => c.setTextAlign(a))"
-        />
-      </UFieldGroup>
-      <UFieldGroup class="shrink-0">
-        <UButton
-          icon="mdi:format-indent-increase"
-          color="neutral"
-          variant="ghost"
-          :title="$t('articles.editor.toolbar.indent')"
-          :aria-label="$t('articles.editor.toolbar.indent')"
-          @click="run((c) => c.indent())"
-        />
-        <UButton
-          icon="mdi:format-indent-decrease"
-          color="neutral"
-          variant="ghost"
-          :title="$t('articles.editor.toolbar.outdent')"
-          :aria-label="$t('articles.editor.toolbar.outdent')"
-          @click="run((c) => c.outdent())"
-        />
-      </UFieldGroup>
-
-      <UFieldGroup class="shrink-0">
-        <UButton
-          icon="mdi:minus"
-          color="neutral"
-          variant="ghost"
-          :title="$t('articles.editor.toolbar.horizontalRule')"
-          :aria-label="$t('articles.editor.toolbar.horizontalRule')"
-          @click="run((c) => c.setHorizontalRule())"
-        />
-        <UButton
-          icon="mdi:format-clear"
-          color="neutral"
-          variant="ghost"
-          :title="$t('articles.editor.toolbar.clearFormatting')"
-          :aria-label="$t('articles.editor.toolbar.clearFormatting')"
-          @click="run((c) => c.clearNodes())"
-        />
-      </UFieldGroup>
-
       <UButton
-        icon="mdi:table-plus"
+        icon="mdi:dots-horizontal"
         color="neutral"
         variant="ghost"
-        :title="$t('articles.editor.toolbar.insertTable')"
-        :aria-label="$t('articles.editor.toolbar.insertTable')"
-        @click="run((c) => c.insertTable({ rows: 3, cols: 3, withHeaderRow: true }))"
+        square
+        class="shrink-0 sm:hidden"
+        :aria-label="$t('common.actions.more')"
+        :title="$t('common.actions.more')"
+        :aria-expanded="moreOpen"
+        :active="moreOpen"
+        @click="moreOpen = !moreOpen"
       />
-
-      <UButton
-        icon="mdi:creation-outline"
-        color="primary"
-        variant="soft"
-        size="sm"
-        class="shrink-0"
-        :title="$t('articles.editor.aiEdit.wholeContent')"
-        :aria-label="$t('articles.editor.aiEdit.wholeContent')"
-        :aria-expanded="rewritePromptOpen"
-        :active="rewritePromptOpen"
-        :loading="rewritePending === 'document'"
-        :disabled="rewritePending !== null"
-        @click="rewritePromptOpen = !rewritePromptOpen"
-      >
-        {{ $t('articles.editor.aiEdit.text.improve') }}
-      </UButton>
-
-      <TiptapColorPicker v-model="textColor" />
-      <TiptapCharacterCount :editor :limit class="shrink-0 sm:ml-auto" />
     </div>
     <div v-if="rewritePromptOpen" class="border-t border-default px-2 py-1.5">
       <TiptapRewritePrompt
@@ -228,7 +245,15 @@ const submitRewritePrompt = async (instruction: string) => {
 }
 const alignments = ['left', 'center', 'right', 'justify'] as const
 
+const moreOpen = shallowRef(false)
+const optionalClass = computed(() => (moreOpen.value ? undefined : 'max-sm:hidden'))
+const collapse = () => (moreOpen.value = false)
+// The expanded toolbar is sticky and tall, so returning to the text must give the room back.
+onMounted(() => editor.on('focus', collapse))
+onBeforeUnmount(() => editor.off('focus', collapse))
+
 const run = (fn: (c: ChainedCommands) => ChainedCommands) => {
+  collapse()
   fn(editor.chain().focus()).run()
 }
 

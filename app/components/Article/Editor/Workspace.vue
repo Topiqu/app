@@ -10,9 +10,9 @@
       :data-editor-submitting="submitting"
       :data-editor-title-length="editedArticle.title?.length || 0"
       :aria-label="$t('articles.editor.title')"
-      class="sticky top-0 z-20 -mx-4 mb-6 flex flex-col gap-2 border-b border-default bg-default px-4 py-3 xl:flex-row xl:items-center xl:justify-between"
+      class="z-20 -mx-4 mb-6 flex flex-wrap items-center gap-2 border-b border-default bg-default px-4 py-3 sm:flex-col sm:flex-nowrap sm:items-stretch xl:sticky xl:top-0 xl:flex-row xl:items-center xl:justify-between"
     >
-      <div class="flex items-center gap-3 min-w-0">
+      <div class="flex min-w-0 flex-1 items-center gap-3 sm:flex-none">
         <UButton
           icon="mdi:arrow-left"
           color="neutral"
@@ -20,7 +20,7 @@
           :aria-label="$t('common.actions.back') || 'Back'"
           @click="goBack"
         />
-        <h1 class="min-w-0 text-lg font-bold">
+        <h1 class="min-w-0 text-lg font-bold max-sm:sr-only">
           {{ isNew ? $t('articles.addArticle') : $t('articles.updateArticle') }}
         </h1>
         <div class="flex items-center gap-2 min-w-0">
@@ -31,92 +31,134 @@
         </div>
       </div>
 
-      <div class="flex min-w-0 w-full flex-wrap items-center gap-2 xl:ml-auto xl:w-auto">
-        <div v-if="autosaveVisible" class="flex items-center gap-1.5 text-xs text-muted" aria-live="polite">
-          <UIcon :name="saveStatusIcon" size="16" class="transition duration-300" :class="saveStatusClass" />
-          <template v-if="saving">{{ $t('common.messages.savingNow') }}</template>
-          <template v-else-if="lastSavedAt">
-            {{ $t('common.messages.savedAgo') }}
+      <div class="flex min-w-0 w-full flex-wrap items-center gap-2 max-sm:contents xl:ml-auto xl:w-auto">
+        <UButton
+          icon="mdi:dots-horizontal"
+          color="neutral"
+          variant="soft"
+          square
+          data-editor-actions-toggle
+          class="max-sm:order-1 sm:hidden"
+          :aria-label="$t('common.actions.more')"
+          :aria-expanded="actionsOpen"
+          :aria-controls="actionsPanelId"
+          @click="actionsOpen = !actionsOpen"
+        />
+
+        <div
+          :id="actionsPanelId"
+          class="flex min-w-0 flex-wrap items-center gap-2 max-sm:order-3 max-sm:w-full sm:contents"
+          :class="{ 'max-sm:hidden': !actionsOpen }"
+        >
+          <div v-if="autosaveVisible" class="flex items-center gap-1.5 text-xs text-muted" aria-live="polite">
+            <UIcon :name="saveStatusIcon" size="16" class="transition duration-300" :class="saveStatusClass" />
+            <template v-if="saving">{{ $t('common.messages.savingNow') }}</template>
+            <template v-else-if="lastSavedAt">
+              {{ $t('common.messages.savedAgo') }}
+            </template>
+            <template v-else>{{ $t('common.messages.unsaved') }}</template>
+          </div>
+
+          <UButton
+            icon="mdi:eye-outline"
+            color="neutral"
+            variant="ghost"
+            square
+            :aria-label="$t('articles.editor.preview.title')"
+            @click="previewing = true"
+          />
+          <UButton
+            v-if="livePath"
+            :to="livePath"
+            target="_blank"
+            icon="mdi:open-in-new"
+            color="neutral"
+            variant="ghost"
+            :aria-label="$t('common.actions.view')"
+          />
+          <ArticleEditorLanguageTabs
+            v-if="isNew || tr.enabled"
+            v-model="editorLanguageModel"
+            class="shrink-0"
+            :primaryLanguage="primaryLanguage"
+            :targetLanguages="editorTargetLanguages"
+            :byLanguage="tr.byLanguage"
+            :sourceValue="isNew ? primaryLanguage : ''"
+            :disabled="aiGenerating"
+          />
+          <UButton
+            v-if="!isNew && tr.isSource"
+            icon="mdi:history"
+            color="neutral"
+            variant="ghost"
+            :aria-label="$t('articles.editor.history.title')"
+            :disabled="submitting || aiGenerating"
+            @click="historyOpen = true"
+          />
+
+          <UButton
+            v-if="isNew && drafts?.length"
+            icon="mdi:file-document-outline"
+            color="neutral"
+            variant="soft"
+            class="shrink-0"
+            @click="draftsOpen = true"
+          >
+            {{ $t('articles.editor.drafts.loadDrafts') }}
+          </UButton>
+
+          <ArticleEditorShopify
+            v-if="tr.isSource && clientSite?.plan !== 'BASIC'"
+            ref="shopifyPanel"
+            :articleId="isNew ? undefined : article?.id"
+            :disabled="submitting || aiGenerating || hasChanges"
+          />
+
+          <UButton
+            icon="mdi:cog"
+            color="neutral"
+            variant="soft"
+            class="xl:hidden"
+            square
+            :aria-label="$t('articles.editor.settingsTitle')"
+            :title="$t('articles.editor.settingsTitle')"
+            @click="sidebarOpen = true"
+          />
+
+          <UButton
+            v-if="tr.isSource && (isNew || editedArticle.status === 'draft')"
+            color="neutral"
+            variant="soft"
+            class="shrink-0"
+            :disabled="submitting || aiGenerating"
+            @click="submit('draft')"
+          >
+            {{ isNew ? $t('articles.saveAsDraft') : $t('articles.saveChanges') }}
+          </UButton>
+
+          <template v-if="!isNew && !tr.isSource">
+            <UButton
+              v-if="tr.active?.status !== 'PUBLISHED'"
+              color="neutral"
+              variant="soft"
+              icon="mdi:content-save-outline"
+              :loading="tr.pending === 'save'"
+              :disabled="Boolean(tr.pending) || !tr.hasBody || !tr.isDirty"
+              @click="tr.save()"
+            >
+              {{ $t('common.actions.saveChanges') }}
+            </UButton>
+            <UDropdownMenu v-if="tr.hasBody" :items="translationActions">
+              <UButton
+                icon="mdi:dots-vertical"
+                color="neutral"
+                variant="ghost"
+                :disabled="Boolean(tr.pending)"
+                :aria-label="$t('common.actions.more')"
+              />
+            </UDropdownMenu>
           </template>
-          <template v-else>{{ $t('common.messages.unsaved') }}</template>
         </div>
-
-        <UButton
-          icon="mdi:eye-outline"
-          color="neutral"
-          variant="ghost"
-          square
-          :aria-label="$t('articles.editor.preview.title')"
-          @click="previewing = true"
-        />
-        <UButton
-          v-if="livePath"
-          :to="livePath"
-          target="_blank"
-          icon="mdi:open-in-new"
-          color="neutral"
-          variant="ghost"
-          :aria-label="$t('common.actions.view')"
-        />
-        <ArticleEditorLanguageTabs
-          v-if="isNew || tr.enabled"
-          v-model="editorLanguageModel"
-          class="shrink-0"
-          :primaryLanguage="primaryLanguage"
-          :targetLanguages="editorTargetLanguages"
-          :byLanguage="tr.byLanguage"
-          :sourceValue="isNew ? primaryLanguage : ''"
-          :disabled="aiGenerating"
-        />
-        <UButton
-          v-if="!isNew && tr.isSource"
-          icon="mdi:history"
-          color="neutral"
-          variant="ghost"
-          :aria-label="$t('articles.editor.history.title')"
-          :disabled="submitting || aiGenerating"
-          @click="historyOpen = true"
-        />
-
-        <UButton
-          v-if="isNew && drafts?.length"
-          icon="mdi:file-document-outline"
-          color="neutral"
-          variant="soft"
-          class="shrink-0"
-          @click="draftsOpen = true"
-        >
-          {{ $t('articles.editor.drafts.loadDrafts') }}
-        </UButton>
-
-        <ArticleEditorShopify
-          v-if="tr.isSource && clientSite?.plan !== 'BASIC'"
-          ref="shopifyPanel"
-          :articleId="isNew ? undefined : article?.id"
-          :disabled="submitting || aiGenerating || hasChanges"
-        />
-
-        <UButton
-          icon="mdi:cog"
-          color="neutral"
-          variant="soft"
-          class="xl:hidden"
-          square
-          :aria-label="$t('articles.editor.settingsTitle')"
-          :title="$t('articles.editor.settingsTitle')"
-          @click="sidebarOpen = true"
-        />
-
-        <UButton
-          v-if="tr.isSource && (isNew || editedArticle.status === 'draft')"
-          color="neutral"
-          variant="soft"
-          class="shrink-0"
-          :disabled="submitting || aiGenerating"
-          @click="submit('draft')"
-        >
-          {{ isNew ? $t('articles.saveAsDraft') : $t('articles.saveChanges') }}
-        </UButton>
 
         <UButton
           v-if="tr.isSource"
@@ -124,52 +166,33 @@
           :loading="submitting"
           color="primary"
           variant="solid"
-          class="shrink-0"
+          class="shrink-0 max-sm:order-2"
           @click="requestPublish"
         >
-          {{ publishLabel }}
+          <span class="sm:hidden">{{ publishLabelShort }}</span>
+          <span class="max-sm:hidden">{{ publishLabel }}</span>
         </UButton>
 
-        <template v-if="!isNew && !tr.isSource">
-          <UButton
-            v-if="tr.active?.status !== 'PUBLISHED'"
-            color="neutral"
-            variant="soft"
-            icon="mdi:content-save-outline"
-            :loading="tr.pending === 'save'"
-            :disabled="Boolean(tr.pending) || !tr.hasBody || !tr.isDirty"
-            @click="tr.save()"
-          >
-            {{ $t('common.actions.saveChanges') }}
-          </UButton>
-          <UButton
-            :icon="tr.hasBody ? 'mdi:check-circle-outline' : 'mdi:translate'"
-            :loading="Boolean(tr.pending)"
-            :disabled="Boolean(tr.pending)"
-            @click="tr.hasBody ? tr.save('PUBLISHED') : tr.translateNow()"
-          >
-            {{
-              $t(
-                !tr.hasBody
-                  ? tr.active?.status === 'SKIPPED'
-                    ? 'articles.translations.actions.translateAnyway'
-                    : 'articles.translations.actions.translate'
-                  : tr.active?.status === 'PUBLISHED'
-                    ? 'articles.saveChanges'
-                    : 'articles.translations.actions.approve',
-              )
-            }}
-          </UButton>
-          <UDropdownMenu v-if="tr.hasBody" :items="translationActions">
-            <UButton
-              icon="mdi:dots-vertical"
-              color="neutral"
-              variant="ghost"
-              :disabled="Boolean(tr.pending)"
-              :aria-label="$t('common.actions.more')"
-            />
-          </UDropdownMenu>
-        </template>
+        <UButton
+          v-if="!isNew && !tr.isSource"
+          class="max-sm:order-2"
+          :icon="tr.hasBody ? 'mdi:check-circle-outline' : 'mdi:translate'"
+          :loading="Boolean(tr.pending)"
+          :disabled="Boolean(tr.pending)"
+          @click="tr.hasBody ? tr.save('PUBLISHED') : tr.translateNow()"
+        >
+          {{
+            $t(
+              !tr.hasBody
+                ? tr.active?.status === 'SKIPPED'
+                  ? 'articles.translations.actions.translateAnyway'
+                  : 'articles.translations.actions.translate'
+                : tr.active?.status === 'PUBLISHED'
+                  ? 'articles.saveChanges'
+                  : 'articles.translations.actions.approve',
+            )
+          }}
+        </UButton>
       </div>
     </div>
 
@@ -553,6 +576,8 @@ import type { HistoryState } from 'vue-router'
 import type SettingsPanel from './SettingsPanel.vue'
 
 const editorFieldId = useId()
+const actionsPanelId = useId()
+const actionsOpen = shallowRef(false)
 const route = useRoute()
 const router = useRouter()
 const localePath = useLocalePath()
@@ -1048,6 +1073,10 @@ const settingsTab = shallowRef<'article' | 'ai' | 'checks'>(
 )
 
 const publishLabel = computed(() => t(`articles.${publishAction(editedArticle.value, isNew)}`))
+const publishLabelShort = computed(() => {
+  const action = publishAction(editedArticle.value, isNew)
+  return t(`articles.${action === 'createAndPublish' ? 'publishNow' : action}`)
+})
 const publishScheduled = computed(() => publishAction(editedArticle.value, isNew) === 'schedule')
 
 const handleUpload = (file: { url: string; optimizedUrl: string; mediaAsset?: { id: string } }) => {
@@ -1059,7 +1088,7 @@ const handleUpload = (file: { url: string; optimizedUrl: string; mediaAsset?: { 
 }
 
 const generationRun = useTemplateRef<ComponentPublicInstance>('generationRun')
-// The sticky command bar wraps to two rows on narrow screens; a fixed margin let it cover the run's header.
+// The bar's height varies with wrapping and it is sticky from `xl`; a fixed margin let it cover the run's header.
 const { height: commandBarHeight } = useElementSize(useTemplateRef<HTMLElement>('commandBar'), undefined, {
   box: 'border-box',
 })

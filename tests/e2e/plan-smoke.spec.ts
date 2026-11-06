@@ -1,7 +1,7 @@
 import { join } from 'node:path'
 import { expect, test } from '@playwright/test'
 
-import { expectOverlayWithinViewport, preparePage } from './helpers'
+import { expectOverlayWithinViewport, openEditorActions, preparePage } from './helpers'
 
 test.use({ storageState: join(process.cwd(), 'tests/e2e/.auth/admin.json') })
 
@@ -33,6 +33,7 @@ test('publication and admin UX plan remains viewport-safe', async ({ page, conte
   if ((page.viewportSize()?.width ?? 0) >= 1024) {
     await expect(page.locator('aside [data-article-settings-panel]')).toBeVisible()
   } else {
+    await openEditorActions(page)
     await page.getByRole('button', { name: /Nastavení|Settings/i }).click()
     await expect(page.locator('[role="dialog"] [data-article-settings-panel]')).toBeVisible()
     await page.keyboard.press('Escape')
