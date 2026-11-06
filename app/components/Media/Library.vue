@@ -32,9 +32,9 @@
 
     <div
       v-else-if="loading && !items.length"
-      class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+      class="grid grid-cols-3 gap-1 sm:grid-cols-4 sm:gap-1.5 lg:grid-cols-6 xl:grid-cols-8"
     >
-      <div v-for="index in 15" :key="index" class="overflow-hidden rounded-(--topiqu-surface-radius)">
+      <div v-for="index in 16" :key="index" class="overflow-hidden rounded-md">
         <USkeleton class="aspect-square w-full" />
       </div>
     </div>
@@ -46,55 +46,73 @@
       :description="$t('media.emptyDescription')"
     />
 
-    <div v-else class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-      <article
-        v-for="asset in items"
-        :key="asset.id"
-        class="group relative cursor-pointer overflow-hidden rounded-(--topiqu-surface-radius) border bg-default transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-        :class="
-          selectedId === asset.id ? 'border-primary ring-2 ring-primary/30' : 'border-default hover:border-primary/50'
-        "
-        role="button"
-        tabindex="0"
-        :aria-label="asset.name || asset.originalFilename || $t('media.use')"
-        @click="activate(asset)"
-        @keydown.enter.prevent="activate(asset)"
-        @keydown.space.prevent="activate(asset)"
-      >
-        <AppMedia
-          :src="asset.deliveryUrl || asset.url"
-          :originalSrc="asset.url"
-          :alt="asset.defaultAltText || asset.name || asset.originalFilename || ''"
-          aspectRatio="1 / 1"
-          sizes="xs:50vw phone:50vw sm:33vw lg:25vw xl:220px"
-          containerClass="w-full"
-        />
-        <div class="space-y-1 p-3">
-          <p class="truncate text-sm font-medium text-highlighted">
-            {{ asset.name || asset.originalFilename || asset.id }}
-          </p>
-          <div class="flex items-center justify-between gap-2 text-xs text-muted">
-            <span class="truncate">{{ $t(`media.origins.${asset.origin}`) }}</span>
-            <span class="shrink-0">{{ asset.usageCount }}</span>
-          </div>
+    <div v-else class="flex flex-col gap-6">
+      <section v-for="group in groups" :key="group.key" :aria-labelledby="`${instanceId}-${group.key}`">
+        <h2 :id="`${instanceId}-${group.key}`" class="mb-2 text-sm font-semibold text-highlighted">
+          {{ group.label }}
+        </h2>
+        <div class="grid grid-cols-3 gap-1 sm:grid-cols-4 sm:gap-1.5 lg:grid-cols-6 xl:grid-cols-8">
+          <article
+            v-for="asset in group.items"
+            :key="asset.id"
+            class="group relative cursor-pointer overflow-hidden rounded-md border bg-default transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            :class="
+              selectedId === asset.id
+                ? 'border-primary ring-2 ring-primary/30'
+                : 'border-transparent hover:border-primary/50'
+            "
+            role="button"
+            tabindex="0"
+            :title="asset.name || asset.originalFilename || undefined"
+            :aria-label="asset.name || asset.originalFilename || $t('media.use')"
+            @click="activate(asset)"
+            @keydown.enter.prevent="activate(asset)"
+            @keydown.space.prevent="activate(asset)"
+          >
+            <AppMedia
+              :src="asset.deliveryUrl || asset.url"
+              :originalSrc="asset.url"
+              :alt="asset.defaultAltText || asset.name || asset.originalFilename || ''"
+              aspectRatio="1 / 1"
+              sizes="xs:33vw phone:33vw sm:25vw lg:16vw xl:160px"
+              containerClass="w-full"
+            />
+            <div
+              class="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-t from-black/70 to-transparent p-2 pt-6 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+            >
+              <p class="truncate font-medium">{{ asset.name || asset.originalFilename || asset.id }}</p>
+              <p class="truncate">{{ $t(`media.origins.${asset.origin}`) }}</p>
+            </div>
+            <span
+              v-if="asset.usageCount"
+              class="pointer-events-none absolute bottom-1 right-1 rounded-sm bg-black/70 px-1.5 text-xs tabular-nums text-white"
+              :title="$t('media.usageCount', { count: asset.usageCount })"
+            >
+              {{ asset.usageCount }}
+            </span>
+            <!-- Outside the picker a tap already opens the detail, and on a phone this button hides much of the tile. -->
+            <UButton
+              v-if="selectable"
+              class="absolute right-1 top-1 z-10"
+              color="neutral"
+              variant="overlay"
+              size="xs"
+              square
+              icon="mdi:information-outline"
+              :aria-label="$t('media.details')"
+              @click.stop="$emit('inspect', asset.id)"
+            />
+          </article>
         </div>
-        <UButton
-          class="absolute right-2 top-2 z-10"
-          color="neutral"
-          variant="soft"
-          size="xs"
-          square
-          icon="mdi:information-outline"
-          :aria-label="$t('media.details')"
-          @click.stop="$emit('inspect', asset.id)"
-        />
-      </article>
+      </section>
     </div>
 
-    <div v-if="total > pageSize" class="flex flex-col items-center justify-center gap-3 border-t border-default pt-4">
-      <UPagination v-model:page="page" :total="total" :itemsPerPage="pageSize" />
+    <div v-if="items.length && hasMore" ref="sentinel" class="flex flex-col items-center gap-2 pt-2">
+      <UButton color="neutral" variant="soft" :loading="loading" :disabled="loading" @click="loadMore">
+        {{ $t('media.loadMore') }}
+      </UButton>
       <p class="text-xs text-muted">
-        {{ $t('media.pagination', { from: rangeStart, to: rangeEnd, total }) }}
+        {{ $t('media.pagination', { from: 1, to: items.length, total }) }}
       </p>
     </div>
   </div>
@@ -105,7 +123,7 @@ import type { MediaLibraryAsset } from '~~/shared/types/mediaLibrary'
 
 const { selectable = false, selectedId = null } = defineProps<{ selectable?: boolean; selectedId?: string | null }>()
 const emit = defineEmits<{ select: [asset: MediaLibraryAsset]; inspect: [id: string] }>()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const requestFetch = useRequestFetch()
 const { data: auth } = useAuth()
 const instanceId = useId()
@@ -117,13 +135,15 @@ const usage = shallowRef('all')
 const archived = shallowRef(false)
 const page = shallowRef(1)
 const pageSize = 30
-const lastPage = shallowRef<MediaLibraryPage>()
+const loaded = shallowRef<MediaLibraryAsset[]>([])
+const total = shallowRef(0)
 
 watch([debouncedSearch, origin, usage, archived], () => (page.value = 1), { flush: 'sync' })
 watch(
   scopeKey,
   () => {
-    lastPage.value = undefined
+    loaded.value = []
+    total.value = 0
     page.value = 1
   },
   { flush: 'sync' },
@@ -147,9 +167,17 @@ const query = computed(() => ({
   limit: pageSize,
 }))
 const key = computed(() => `media-library:${instanceId}:${scopeKey.value}`)
-const request = createAsyncDataRequest((signal) =>
-  requestFetch<MediaLibraryPage>('/api/media', { query: query.value, signal }),
-)
+const fetchPage = (number: number, signal: AbortSignal) =>
+  requestFetch<MediaLibraryPage>('/api/media', { query: { ...query.value, page: number }, signal })
+// A reload refetches everything scrolled so far, so editing an old image does not jump back to the top.
+let reloadPages = 1
+const request = createAsyncDataRequest(async (signal) => {
+  const count = reloadPages
+  reloadPages = 1
+  if (count === 1) return fetchPage(page.value, signal)
+  const pages = await Promise.all(Array.from({ length: count }, (_, index) => fetchPage(index + 1, signal)))
+  return { ...pages.at(-1)!, page: 1, items: pages.flatMap((item) => item.items) }
+})
 onScopeDispose(request.dispose)
 const { data, error, status, refresh, clear } = useAsyncData(key, request.fetch, { lazy: true, deep: false })
 // A reactive key handles tenant changes. Keep filters in a scoped watcher rather than
@@ -162,22 +190,46 @@ watch([query, scopeKey], ([_query, scope], [_previousQuery, previousScope]) => {
 watch(
   [data, status],
   ([response, currentStatus]) => {
-    if (response && currentStatus === 'success') lastPage.value = response
+    if (!response || currentStatus !== 'success') return
+    total.value = response.total
+    // Offset pages shift when an image is added meanwhile, so an appended page can repeat a row.
+    const known = new Set(loaded.value.map(({ id }) => id))
+    loaded.value =
+      response.page > 1 ? [...loaded.value, ...response.items.filter(({ id }) => !known.has(id))] : response.items
   },
   { immediate: true },
 )
-const items = computed(() => lastPage.value?.items ?? [])
-const total = computed(() => lastPage.value?.total ?? 0)
+const items = computed(() => loaded.value)
+const hasMore = computed(() => items.value.length < total.value)
 const loading = computed(() => status.value === 'idle' || status.value === 'pending')
 const loadError = computed(() => !!error.value)
 const reload = () => {
   // A mutation must fetch fresh data even while the surrounding app is still hydrating.
+  reloadPages = page.value
   clear()
   return refresh()
 }
 defineExpose({ reload })
 
-const rangeStart = computed(() => (total.value ? (page.value - 1) * pageSize + 1 : 0))
-const rangeEnd = computed(() => Math.min(page.value * pageSize, total.value))
+// The first render uses UTC and absolute dates, which the server and the browser agree on.
+const mounted = useMounted()
+const groups = computed(() =>
+  groupByDay(items.value, {
+    locale: locale.value,
+    timeZone: mounted.value ? undefined : 'UTC',
+    relativeTo: mounted.value ? new Date() : undefined,
+  }),
+)
+
+const loadMore = () => {
+  if (error.value) return refresh()
+  if (hasMore.value && status.value === 'success') page.value++
+}
+// Only after a success: a failed page keeps the sentinel visible and must not retry in a loop.
+const sentinelVisible = useElementVisibility(useTemplateRef<HTMLElement>('sentinel'))
+watch([sentinelVisible, status], ([visible, current]) => {
+  if (visible && current === 'success') loadMore()
+})
+
 const activate = (asset: MediaLibraryAsset) => (selectable ? emit('select', asset) : emit('inspect', asset.id))
 </script>
