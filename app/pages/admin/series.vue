@@ -46,12 +46,34 @@
             <h2 class="break-words font-semibold text-highlighted">{{ series.name }}</h2>
             <p v-if="series.description" class="mt-1 text-sm text-muted">{{ series.description }}</p>
           </div>
-          <span class="shrink-0 text-sm text-muted">{{
-            $t('series.publishedCount', {
-              published: series.publishedCount,
-              total: series.articles.length,
-            })
-          }}</span>
+          <div class="flex shrink-0 items-center gap-1">
+            <span class="mr-2 text-sm text-muted">{{
+              $t('series.publishedCount', {
+                published: series.publishedCount,
+                total: series.articles.length,
+              })
+            }}</span>
+            <UButton
+              icon="mdi:pencil-outline"
+              color="neutral"
+              variant="ghost"
+              square
+              :aria-label="`${$t('common.actions.edit')}: ${series.name}`"
+              :title="$t('common.actions.edit')"
+              @click="openEdit(series)"
+            />
+            <UButton
+              icon="mdi:delete-outline"
+              color="error"
+              variant="ghost"
+              square
+              :aria-label="`${$t('common.actions.delete')}: ${series.name}`"
+              :title="$t('common.actions.delete')"
+              :loading="deletingId === series.id"
+              :disabled="deletingId !== null"
+              @click="deleteSeries(series.id)"
+            />
+          </div>
         </div>
       </template>
       <ul class="divide-y divide-default">
@@ -65,7 +87,9 @@
             :ui="{ base: 'justify-start' }"
           >
             <span class="w-6 shrink-0 text-sm tabular-nums text-muted">{{ index + 1 }}</span>
-            <span class="min-w-0 flex-1 break-words text-sm text-highlighted">{{ article.title }}</span>
+            <span class="min-w-0 flex-1 whitespace-normal break-words text-left text-sm text-highlighted">{{
+              article.title
+            }}</span>
             <UBadge
               v-if="article.status === 'published' && !article.available"
               color="neutral"
@@ -80,6 +104,7 @@
       </ul>
     </UCard>
     <SeriesCreate v-model:open="createOpen" @created="onCreated" />
+    <SeriesEdit v-model:open="editOpen" :series="editedSeries" @saved="refresh()" />
   </div>
 </template>
 
@@ -97,6 +122,40 @@ const onCreated = async () => {
   status.value = 'all'
   sort.value = 'newest'
   await refresh()
+}
+
+const editOpen = shallowRef(false)
+const editedSeries = shallowRef<{ id: string; name: string; description?: string | null } | null>(null)
+const openEdit = (series: { id: string; name: string; description?: string | null }) => {
+  editedSeries.value = series
+  editOpen.value = true
+}
+
+const confirm = useConfirm()
+const toast = useToast()
+const { invalidateArticles } = useCacheInvalidation()
+const deletingId = shallowRef<string | null>(null)
+const deleteSeries = async (id: string) => {
+  const accepted = await confirm({
+    title: $t('series.deleteTitle'),
+    message: $t('series.deleteDescription'),
+    icon: 'mdi:playlist-remove',
+    confirmText: $t('common.actions.delete'),
+    cancelText: $t('common.actions.cancel'),
+    variant: 'danger',
+  })
+  if (!accepted) return
+  deletingId.value = id
+  try {
+    await $fetch(`/api/series/${id}` as '/api/series/:id', { method: 'DELETE' })
+    toast.add({ color: 'success', title: $t('common.messages.deleteSuccess') })
+    await refresh()
+    await invalidateArticles()
+  } catch {
+    toast.add({ color: 'error', title: $t('common.messages.deleteFailed') })
+  } finally {
+    deletingId.value = null
+  }
 }
 const statusItems = computed(() => [
   { label: $t('series.allParts'), value: 'all' },
