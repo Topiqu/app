@@ -49,6 +49,7 @@
             color="neutral"
             variant="soft"
             icon="mdi:refresh"
+            :disabled="retryDisabled"
             @click="emit('retry')"
           >
             {{ $t('articles.editor.ai.run.retry') }}
@@ -189,10 +190,11 @@
 <script setup lang="ts">
 import type { GenerationRun } from '~~/shared/utils/articleGeneration'
 
-const { run, words, authorName } = defineProps<{
+const { run, words, authorName, retryDisabled } = defineProps<{
   run: GenerationRun
   words: number
   authorName?: string | null
+  retryDisabled?: boolean
 }>()
 const emit = defineEmits<{ stop: []; retry: []; dismiss: [] }>()
 

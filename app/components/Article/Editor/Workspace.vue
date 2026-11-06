@@ -341,6 +341,7 @@
           :run="aiRun"
           :words="aiWordCount"
           :authorName="clientStatus?.aiUser?.username"
+          :retryDisabled="!customPrompt.trim()"
           @stop="requestStopGeneration"
           @retry="generateAIContent"
           @dismiss="generation.clear()"
@@ -663,6 +664,17 @@ const generationTarget = computed(() => (isNew ? 'new' : (article.value?.id ?? n
 const ownsGeneration = computed(() => !!generationTarget.value && generation.target === generationTarget.value)
 const aiRun = computed(() => (ownsGeneration.value ? generation.run : null))
 const aiGenerating = computed(() => aiRun.value?.status === 'running')
+// A run restored after a page load arrives after setup, and this form starts empty after any remount.
+watch(
+  () => (ownsGeneration.value ? generation.prompt : ''),
+  (prompt) => {
+    if (!prompt || customPrompt.value) return
+    customPrompt.value = prompt
+    const options = generation.options
+    if (options) aiOptions.value = { ...options, modules: [...options.modules], research: { ...options.research } }
+  },
+  { immediate: true },
+)
 const aiWordCount = computed(() => {
   const text = (editedArticle.value.content ?? '').replace(/<[^>]*>/g, ' ').trim()
   return text ? text.split(/\s+/).length : 0

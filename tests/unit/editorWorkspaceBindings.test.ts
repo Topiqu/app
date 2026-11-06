@@ -8,12 +8,14 @@ import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
 import Workspace from '../../app/components/Article/Editor/Workspace.vue'
 
 const mocks = vi.hoisted(() => ({ focus: vi.fn(), focusBlock: vi.fn(), saveDraft: vi.fn(), retry: vi.fn() }))
-const generation = reactive({
+const generation = reactive<Record<string, any>>({
   target: null,
   article: {},
   run: null,
   sessionId: null,
   language: undefined,
+  prompt: '',
+  options: null,
   running: false,
   clear: vi.fn(),
   start: vi.fn(),
@@ -144,10 +146,30 @@ enableAutoUnmount(afterEach)
 beforeEach(() => {
   localStorage.clear()
   vi.clearAllMocks()
+  Object.assign(generation, { target: null, prompt: '', options: null })
 })
 afterEach(() => vi.restoreAllMocks())
 
 describe('editor settings orchestration', () => {
+  it('restores the failed run’s prompt and options after a remount, so Retry resends them', async () => {
+    const options = {
+      format: 'guide',
+      allowGeneratedImages: false,
+      useKnowledge: true,
+      modules: ['faq'],
+      research: { enabled: true, depth: 'deep', fallbackWithoutResearch: false },
+    }
+    Object.assign(generation, { target: 'new', prompt: 'Původní zadání', options })
+    const wrapper = await mountEditor()
+    expect(wrapper.getComponent(Panel).props()).toMatchObject({ customPrompt: 'Původní zadání', aiOptions: options })
+  })
+
+  it('leaves the form alone for a run on another article', async () => {
+    Object.assign(generation, { target: 'other-article', prompt: 'Cizí zadání' })
+    const wrapper = await mountEditor()
+    expect(wrapper.getComponent(Panel).props('customPrompt')).toBe('')
+  })
+
   it('shares models and upload/tag events between desktop and mobile without losing reactivity', async () => {
     const wrapper = await mountEditor()
     const desktop = wrapper.getComponent(Panel)

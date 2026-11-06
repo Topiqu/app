@@ -37,6 +37,8 @@ describe('article generation store', () => {
     expect(store.running).toBe(true)
     expect(store.sessionId).toBe('session-1')
     expect(store.language).toBe('de')
+    expect(store.prompt).toBe('topic')
+    expect(store.options?.language).toBe('de')
     expect(store.article.content).toBe('<p>Draft <img src="https://img.test/a.png"></p>')
 
     store.clear()
@@ -51,5 +53,7 @@ describe('article generation store', () => {
     expect(store.run).toBeNull()
     expect(store.target).toBeNull()
     expect(store.language).toBeUndefined()
+    expect(store.prompt).toBe('')
+    expect(store.options).toBeNull()
   })
 })

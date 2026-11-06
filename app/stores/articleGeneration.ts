@@ -66,6 +66,9 @@ export const useArticleGenerationStore = defineStore('articleGeneration', () => 
   const target = shallowRef<string | null>(null)
   const editorPath = shallowRef('')
   const language = shallowRef<ArticleGenerationOptions['language']>()
+  // The editor's form dies with the page, but the run's Retry outlives it.
+  const prompt = shallowRef('')
+  const options = shallowRef<ArticleGenerationOptions | null>(null)
   const sessionId = shallowRef<string | null>(null)
   const article = shallowRef<GeneratedArticle>({})
   const stopRequested = shallowRef(false)
@@ -108,6 +111,8 @@ export const useArticleGenerationStore = defineStore('articleGeneration', () => 
     target.value = request.target
     editorPath.value = request.editorPath
     language.value = request.options.language
+    prompt.value = request.prompt
+    options.value = request.options
     sessionId.value = null
     article.value = {}
     stopRequested.value = false
@@ -212,6 +217,8 @@ export const useArticleGenerationStore = defineStore('articleGeneration', () => 
     target.value = null
     editorPath.value = ''
     language.value = undefined
+    prompt.value = ''
+    options.value = null
     sessionId.value = null
     article.value = {}
   }
@@ -280,7 +287,14 @@ export const useArticleGenerationStore = defineStore('articleGeneration', () => 
     const persist = () => {
       if (saved) return
       if (!run.value) return sessionStorage.removeItem(STORAGE_KEY)
-      const state = { run: run.value, target: target.value, editorPath: editorPath.value, language: language.value }
+      const state = {
+        run: run.value,
+        target: target.value,
+        editorPath: editorPath.value,
+        language: language.value,
+        prompt: prompt.value,
+        options: options.value,
+      }
       sessionStorage.setItem(
         STORAGE_KEY,
         JSON.stringify({ ...state, owner: owner(), sessionId: sessionId.value, article: article.value }),
@@ -297,11 +311,27 @@ export const useArticleGenerationStore = defineStore('articleGeneration', () => 
       target.value = restored.target
       editorPath.value = restored.editorPath
       language.value = restored.language
+      prompt.value = restored.prompt ?? ''
+      options.value = restored.options ?? null
       sessionId.value = restored.sessionId
       article.value = restored.article ?? {}
       if (restored.run.status === 'running') void resume()
     })
   }
 
-  return { run, target, editorPath, language, sessionId, article, running, stopRequested, start, requestStop, clear }
+  return {
+    run,
+    target,
+    editorPath,
+    language,
+    prompt,
+    options,
+    sessionId,
+    article,
+    running,
+    stopRequested,
+    start,
+    requestStop,
+    clear,
+  }
 })
