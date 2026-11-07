@@ -13,6 +13,7 @@ export const websiteImportView = async (clientSiteId: string, db: DatabaseClient
       result: true,
       acceptedFields: true,
       errorCode: true,
+      progress: true,
       knowledgeSources: {
         where: { clientSiteId, deletedAt: null },
         select: { id: true, title: true, sourceUrl: true, status: true, version: true, useInArticles: true },
@@ -47,6 +48,7 @@ export const websiteImportView = async (clientSiteId: string, db: DatabaseClient
         WEBSITE_IMPORT_FIELDS.some((value) => value === field),
       ),
       errorCode: job.errorCode,
+      progress: WebsiteProgressSchema.safeParse(job.progress).data ?? null,
     },
   }
 }

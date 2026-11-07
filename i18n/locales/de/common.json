@@ -45,7 +45,9 @@
         "invalidUrl": "Geben Sie eine öffentliche Website-Adresse ein, zum Beispiel firma.de.",
         "active": "Vorschläge aus der Website werden bereits vorbereitet oder warten auf Ihre Prüfung.",
         "limit": "Das Limit zum Laden der Website ist erreicht. Bitte versuchen Sie es später erneut.",
-        "failed": "Die Website konnte nicht geladen werden. Bitte versuchen Sie es erneut."
+        "failed": "Die Website konnte nicht geladen werden. Bitte versuchen Sie es erneut.",
+        "aiPlanRequired": "Der Tarif dieses Blogs hat derzeit keine aktive KI. Prüfen Sie das Abonnement unter Abrechnung oder wenden Sie sich an den Support.",
+        "allowanceExhausted": "Dieser Blog hat sein KI-Kontingent aufgebraucht. Warten Sie auf die Erneuerung oder kaufen Sie zusätzliche Nutzung unter Abrechnung."
       },
       "description": "Wir bereiten Blog-Einstellungen und Wissensquellen im Hintergrund vor. Prüfen Sie die Vorschläge vor der Verwendung.",
       "review": "Vorschläge prüfen",
@@ -89,6 +91,51 @@
         "knowledgeQuota": "Einige Seiten überschreiten Ihr Wissenslimit.",
         "assetUnavailable": "Einige Markenmedien konnten nicht gelesen werden. Sie können sie selbst hochladen.",
         "analysisFailed": "Einige Inhaltsvorschläge konnten nicht vorbereitet werden. Prüfen Sie die verfügbaren Werte."
+      },
+      "waiting": {
+        "AI_UNAVAILABLE": "Die Vorbereitung wird fortgesetzt, sobald dieser Blog einen aktiven KI-Tarif hat.",
+        "AI_PLAN_REQUIRED": "Die Vorbereitung wird fortgesetzt, sobald KI im Tarif dieses Blogs aktiv ist. Dauert es länger, prüfen Sie das Abonnement unter Abrechnung oder wenden Sie sich an den Support.",
+        "AI_ALLOWANCE_EXHAUSTED": "Dieser Blog hat sein KI-Kontingent aufgebraucht. Die Vorbereitung wird nach der Erneuerung oder nach dem Kauf zusätzlicher Nutzung unter Abrechnung fortgesetzt.",
+        "PROVIDER_OVERLOADED": "Der KI-Dienst ist gerade überlastet. Wir versuchen es in einigen Minuten automatisch erneut."
+      },
+      "errors": {
+        "AI_UNAVAILABLE": "Dieser Blog hat keinen aktiven KI-Tarif.",
+        "URL_UNREACHABLE": "Die Website wurde nicht gefunden. Prüfen Sie die Adresse und ob die Website öffentlich über HTTPS erreichbar ist.",
+        "PROVIDER_UNAVAILABLE": "Der KI-Dienst ist derzeit nicht verfügbar. Bitte versuchen Sie es später erneut.",
+        "PROVIDER_OVERLOADED": "Der KI-Dienst war wiederholt überlastet. Bitte versuchen Sie es später erneut.",
+        "PROVIDER_TIMEOUT": "Der KI-Dienst hat nicht rechtzeitig geantwortet. Laden Sie die Website erneut.",
+        "PROVIDER_REJECTED": "Der KI-Dienst hat die Anfrage abgelehnt. Laden Sie die Website erneut und wenden Sie sich an den Support, falls das Problem bleibt.",
+        "PROVIDER_FAILED": "Der KI-Dienst hat einen Fehler gemeldet. Laden Sie die Website erneut.",
+        "SEARCH_OUTCOME_UNKNOWN": "Die Suche auf der Website wurde unterbrochen. Laden Sie die Website erneut.",
+        "ANALYSIS_OUTCOME_UNKNOWN": "Die Vorbereitung der Vorschläge wurde unterbrochen. Laden Sie die Website erneut.",
+        "NO_CONTENT": "Auf der Website wurde kein verwertbarer Inhalt gefunden. Versuchen Sie eine andere Adresse oder ergänzen Sie die Einstellungen selbst.",
+        "RETRY_LIMIT": "Die Vorbereitung konnte auch nach mehreren Versuchen nicht abgeschlossen werden. Bitte versuchen Sie es später erneut."
+      },
+      "steps": {
+        "address": "Website-Adresse prüfen",
+        "search": "Seiten der Website finden",
+        "pages": "Seiten laden",
+        "brand": "Logo, Favicon und Farben",
+        "analysis": "Einstellungsvorschläge vorbereiten"
+      },
+      "progress": {
+        "label": "Fortschritt der Vorbereitung",
+        "elapsed": "{seconds} s",
+        "found": "Zu ladende Seiten: {count}",
+        "failedHere": "Hier wurde die Vorbereitung angehalten.",
+        "state": {
+          "pending": "Noch nicht gestartet",
+          "running": "Läuft",
+          "done": "Erledigt",
+          "warning": "Erledigt mit Hinweis",
+          "waiting": "Pausiert",
+          "failed": "Fehlgeschlagen",
+          "skipped": "Nicht ausgeführt"
+        },
+        "page": {
+          "done": "geladen",
+          "failed": "konnte nicht geladen werden"
+        }
       }
     },
     "entry": {

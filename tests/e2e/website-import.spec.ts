@@ -31,6 +31,7 @@ const fixture = (): WebsiteImportView => ({
   expected: {},
   acceptedFields: [],
   errorCode: null,
+  progress: null,
   knowledge: [
     { id: 'synthetic-source', title: 'Firma – informace a služby', sourceUrl: 'https://firma.cz/', status: 'PENDING' },
   ],

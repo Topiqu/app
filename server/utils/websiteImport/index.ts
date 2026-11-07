@@ -12,6 +12,13 @@ export const WEBSITE_SITE_SELECT = {
   socials: { select: { platform: true, url: true } },
 } as const
 
+const MAX_ATTEMPTS = 3
+const FUNDING_RETRY_MS = 30 * 60_000
+const OVERLOADED_RETRY_MS = 2 * 60_000
+// Only for a stage the provider never processed: its reservation returns to the daily budget.
+const REOPEN_SEARCH = { searchStartedAt: null, budgetDay: null, reservedCostMicros: 0, budgetCostMicros: 0 }
+const REOPEN_ANALYSIS = { extractionStartedAt: null }
+
 const audit = async (action: string, clientSiteId: string, id: string, metadata: Record<string, unknown> = {}) => {
   try {
     await logAction({ action, clientSiteId, metadata: { importId: id, ...metadata } })
@@ -20,7 +27,12 @@ const audit = async (action: string, clientSiteId: string, id: string, metadata:
   }
 }
 
-const reserveBudget = async (id: string, token: string, continuing = false) =>
+const reserveBudget = async (
+  id: string,
+  token: string,
+  waiting: ReturnType<typeof toDatabaseJson>,
+  continuing = false,
+) =>
   prisma.$transaction(async (tx) => {
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext('website-import-daily-budget'))`
     const job = await tx.websiteImport.findFirst({ where: { id, leaseToken: token, status: 'PROCESSING' } })
@@ -40,6 +52,7 @@ const reserveBudget = async (id: string, token: string, continuing = false) =>
           leaseToken: null,
           leaseUntil: new Date(Date.now() + 60_000),
           errorCode: 'DAILY_BUDGET',
+          progress: waiting,
         },
       })
       return 'deferred' as const
@@ -111,7 +124,7 @@ export const processWebsiteImport = async (id: string) => {
       where: {
         id,
         deletedAt: null,
-        attempts: { lt: 3 },
+        attempts: { lt: MAX_ATTEMPTS },
         OR: [
           { status: 'PENDING', OR: [{ leaseUntil: null }, { leaseUntil: { lt: now } }] },
           { status: 'PROCESSING', leaseUntil: { lt: now } },
@@ -129,30 +142,62 @@ export const processWebsiteImport = async (id: string) => {
   if (claim.count !== 1) return false
   const job = await prisma.websiteImport.findUniqueOrThrow({ where: { id } })
   const started = Date.now()
+  // A resumed run keeps the steps it already finished; each write stores the whole object.
+  let progress: WebsiteImportProgress = WebsiteProgressSchema.safeParse(job.progress).data ?? { steps: {}, pages: [] }
+  let step: WebsiteImportStep = 'address'
+  const at = (
+    next: WebsiteImportStep,
+    state: WebsiteImportStepState,
+    detail: { count?: number; code?: string } = {},
+  ): WebsiteImportProgress => ({
+    ...progress,
+    steps: { ...progress.steps, [next]: { state, at: new Date().toISOString(), ...detail } },
+  })
+  const mark = (...args: Parameters<typeof at>) => {
+    step = args[0]
+    progress = at(...args)
+    return toDatabaseJson(progress)
+  }
+  const save = async (...args: Parameters<typeof at>) => {
+    await prisma.websiteImport.updateMany({ where: { id, leaseToken: token }, data: { progress: mark(...args) } })
+  }
+  const fail = (failed: WebsiteImportStep, code: string, cause?: unknown) => {
+    step = failed
+    return new Error(code, { cause })
+  }
+  // Waiting releases the lease; a repeated wait for the same reason is not audited again.
+  const wait = async (code: string, delayMs: number, data: Record<string, unknown> = {}) => {
+    const repeated = progress.steps[step]?.state === 'waiting' && progress.steps[step]?.code === code
+    await prisma.websiteImport.updateMany({
+      where: { id, leaseToken: token },
+      data: {
+        ...data,
+        status: 'PENDING',
+        leaseToken: null,
+        leaseUntil: new Date(Date.now() + delayMs),
+        errorCode: code,
+        progress: mark(step, 'waiting', { code }),
+      },
+    })
+    if (!repeated) await audit('WEBSITE_IMPORT_DEFERRED', job.clientSiteId, id, { code, stage: step })
+    return false
+  }
   try {
     const site = await prisma.clientSite.findFirst({
       where: { id: job.clientSiteId, deletedAt: null },
       select: { language: true, plan: true },
     })
     if (!site) throw new Error('AI_UNAVAILABLE')
-    if (!hasAiPlan(site.plan)) {
-      await prisma.websiteImport.updateMany({
-        where: { id, leaseToken: token },
-        data: {
-          status: 'PENDING',
-          attempts: { decrement: 1 },
-          leaseToken: null,
-          leaseUntil: new Date(Date.now() + 30 * 60_000),
-          errorCode: 'AI_UNAVAILABLE',
-        },
-      })
-      return false
-    }
-    await assertPublicHttpsUrl(job.sourceUrl)
+    if (!hasAiPlan(site.plan)) return await wait('AI_UNAVAILABLE', FUNDING_RETRY_MS, { attempts: { decrement: 1 } })
+    await save('address', 'running')
+    await assertPublicHttpsUrl(job.sourceUrl).catch((error: unknown) => {
+      throw fail('address', 'URL_UNREACHABLE', error)
+    })
+    mark('address', 'done')
     if (!useRuntimeConfig().anthropic.apiKey?.trim() && !process.env.ANTHROPIC_API_KEY?.trim())
-      throw new Error('PROVIDER_UNAVAILABLE')
-    if (job.searchStartedAt && !job.searchCompletedAt) throw new Error('SEARCH_OUTCOME_UNKNOWN')
-    if (job.extractionStartedAt && !job.extractionCompletedAt) throw new Error('ANALYSIS_OUTCOME_UNKNOWN')
+      throw fail('search', 'PROVIDER_UNAVAILABLE')
+    if (job.searchStartedAt && !job.searchCompletedAt) throw fail('search', 'SEARCH_OUTCOME_UNKNOWN')
+    if (job.extractionStartedAt && !job.extractionCompletedAt) throw fail('analysis', 'ANALYSIS_OUTCOME_UNKNOWN')
     const { researchWebsite, analyzeWebsite } = await import('./ai')
     await audit('WEBSITE_IMPORT_STARTED', job.clientSiteId, id, {
       attempt: job.attempts,
@@ -166,14 +211,28 @@ export const processWebsiteImport = async (id: string) => {
           )
         : [job.sourceUrl]
       research = { text: job.searchText, urls, usage: null }
+      mark('search', 'done', { count: urls.length })
     } else {
-      const budget = await reserveBudget(id, token)
+      step = 'search'
+      const funding = await aiBudgetError(job.clientSiteId)
+      if (funding) return await wait(funding, FUNDING_RETRY_MS, { attempts: { decrement: 1 } })
+      const budget = await reserveBudget(id, token, toDatabaseJson(at('search', 'waiting', { code: 'DAILY_BUDGET' })))
       if (budget !== 'reserved') {
         if (budget === 'deferred')
           await audit('WEBSITE_IMPORT_BUDGET_DEFERRED', job.clientSiteId, id, { stage: 'search' })
         return false
       }
-      research = await researchWebsite(id, job.clientSiteId, job.sourceUrl)
+      await save('search', 'running')
+      try {
+        research = await researchWebsite(id, job.clientSiteId, job.sourceUrl)
+      } catch (error) {
+        const failure = websiteFailure(error)
+        if (failure.retry === 'funding')
+          return await wait(failure.code, FUNDING_RETRY_MS, { ...REOPEN_SEARCH, attempts: { decrement: 1 } })
+        if (failure.retry === 'overloaded' && job.attempts < MAX_ATTEMPTS)
+          return await wait(failure.code, OVERLOADED_RETRY_MS, REOPEN_SEARCH)
+        throw fail('search', failure.code, error)
+      }
       const saved = await prisma.websiteImport.updateMany({
         where: { id, leaseToken: token, status: 'PROCESSING' },
         data: {
@@ -181,6 +240,7 @@ export const processWebsiteImport = async (id: string) => {
           searchText: research.text,
           searchSources: toDatabaseJson(research.urls),
           usage: toDatabaseJson({ search: research.usage }),
+          progress: mark('search', 'done', { count: research.urls.length }),
         },
       })
       if (saved.count !== 1) return false
@@ -189,6 +249,8 @@ export const processWebsiteImport = async (id: string) => {
     const metadata = emptyWebsiteMetadata()
     const pages: { url: string; content: string }[] = []
     const sources: WebsiteImportResult['sources'] = []
+    progress = { ...progress, pages: [] }
+    await save('pages', 'running', { count: 0 })
     for (const url of research.urls.slice(0, WEBSITE_IMPORT_LIMITS.pages)) {
       try {
         let found = emptyWebsiteMetadata()
@@ -209,12 +271,18 @@ export const processWebsiteImport = async (id: string) => {
         for (const social of found.socials)
           if (!metadata.socials.some((item) => item.platform === social.platform)) metadata.socials.push(social)
         if ((await storePage(job, token, url, page)) === 'quota') warnings.add('knowledgeQuota')
+        progress = { ...progress, pages: [...progress.pages, { url, state: 'done' }] }
       } catch {
         warnings.add('pageFailed')
+        progress = { ...progress, pages: [...progress.pages, { url, state: 'failed' }] }
         await audit('WEBSITE_IMPORT_PAGE_FAILED', job.clientSiteId, id, { host: new URL(url).hostname })
       }
+      await save('pages', 'running', { count: pages.length })
     }
-    if (!pages.length && !research.text) throw new Error('NO_CONTENT')
+    if (!pages.length && !research.text) throw fail('pages', 'NO_CONTENT')
+    const pageWarning = (['pageFailed', 'knowledgeQuota'] as const).find((code) => warnings.has(code))
+    mark('pages', pageWarning ? 'warning' : 'done', { count: pages.length, code: pageWarning })
+    await save('brand', 'running')
     for (const [field, key] of [
       ['logoUrl', 'logoUrls'],
       ['faviconUrl', 'faviconUrls'],
@@ -232,7 +300,17 @@ export const processWebsiteImport = async (id: string) => {
         }
       }
     }
-    const budget = await reserveBudget(id, token, true)
+    const assetWarning = warnings.has('assetUnavailable')
+    mark('brand', assetWarning ? 'warning' : 'done', assetWarning ? { code: 'assetUnavailable' } : {})
+    step = 'analysis'
+    const funding = await aiBudgetError(job.clientSiteId)
+    if (funding) return await wait(funding, FUNDING_RETRY_MS, { attempts: { decrement: 1 } })
+    const budget = await reserveBudget(
+      id,
+      token,
+      toDatabaseJson(at('analysis', 'waiting', { code: 'DAILY_BUDGET' })),
+      true,
+    )
     if (budget !== 'reserved') {
       if (budget === 'deferred')
         await audit('WEBSITE_IMPORT_BUDGET_DEFERRED', job.clientSiteId, id, { stage: 'analysis' })
@@ -240,7 +318,11 @@ export const processWebsiteImport = async (id: string) => {
     }
     const currentLease = await prisma.websiteImport.updateMany({
       where: { id, leaseToken: token, status: 'PROCESSING', extractionStartedAt: null },
-      data: { extractionStartedAt: new Date(), leaseUntil: new Date(Date.now() + WEBSITE_IMPORT_LIMITS.leaseMs) },
+      data: {
+        extractionStartedAt: new Date(),
+        leaseUntil: new Date(Date.now() + WEBSITE_IMPORT_LIMITS.leaseMs),
+        progress: mark('analysis', 'running'),
+      },
     })
     if (currentLease.count !== 1) return false
     let values = emptyWebsiteValues()
@@ -256,11 +338,14 @@ export const processWebsiteImport = async (id: string) => {
       values = analysis.values
       topics = analysis.topics
       analysisUsage = analysis.usage
-    } catch {
+    } catch (error) {
+      const failure = websiteFailure(error)
+      if (failure.retry === 'funding')
+        return await wait(failure.code, FUNDING_RETRY_MS, { ...REOPEN_ANALYSIS, attempts: { decrement: 1 } })
+      if (failure.retry === 'overloaded' && job.attempts < MAX_ATTEMPTS)
+        return await wait(failure.code, OVERLOADED_RETRY_MS, REOPEN_ANALYSIS)
       warnings.add('analysisFailed')
-      await reportCaughtError('Website settings analysis failed', new Error('WEBSITE_ANALYSIS_FAILED'), {
-        importId: id,
-      })
+      await reportCaughtError('Website settings analysis failed', error, { importId: id, code: failure.code })
     }
     // Asset URLs and colors must have been observed in fetched HTML, never invented by the model.
     values.logoUrl = metadata.logoUrls.includes(values.logoUrl ?? '') ? values.logoUrl : (metadata.logoUrls[0] ?? null)
@@ -288,6 +373,9 @@ export const processWebsiteImport = async (id: string) => {
         leaseToken: null,
         leaseUntil: null,
         usage: toDatabaseJson({ search: research.usage, analysis: analysisUsage }),
+        progress: warnings.has('analysisFailed')
+          ? mark('analysis', 'warning', { code: 'analysisFailed' })
+          : mark('analysis', 'done'),
         ...(budgetCostMicros === undefined ? {} : { budgetCostMicros }),
       },
     })
@@ -305,27 +393,34 @@ export const processWebsiteImport = async (id: string) => {
     })
     return true
   } catch (error) {
-    const safeCodes = [
-      'AI_UNAVAILABLE',
-      'PROVIDER_UNAVAILABLE',
-      'SEARCH_OUTCOME_UNKNOWN',
-      'ANALYSIS_OUTCOME_UNKNOWN',
-      'NO_CONTENT',
-    ]
-    const code = error instanceof Error && safeCodes.includes(error.message) ? error.message : 'PROCESSING_FAILED'
+    const code =
+      error instanceof Error && (WEBSITE_IMPORT_ERROR_CODES as readonly string[]).includes(error.message)
+        ? error.message
+        : 'PROCESSING_FAILED'
     await prisma.websiteImport.updateMany({
       where: { id, leaseToken: token },
-      data: { status: 'FAILED', errorCode: code, leaseToken: null, leaseUntil: null },
+      data: {
+        status: 'FAILED',
+        errorCode: code,
+        leaseToken: null,
+        leaseUntil: null,
+        progress: mark(step, 'failed', { code }),
+      },
     })
-    await audit('WEBSITE_IMPORT_FAILED', job.clientSiteId, id, { code, durationMs: Date.now() - started })
-    await reportCaughtError('Website import failed', new Error(code), { importId: id, clientSiteId: job.clientSiteId })
+    await audit('WEBSITE_IMPORT_FAILED', job.clientSiteId, id, { code, stage: step, durationMs: Date.now() - started })
+    await reportCaughtError('Website import failed', error, {
+      importId: id,
+      clientSiteId: job.clientSiteId,
+      code,
+      stage: step,
+    })
     return false
   }
 }
 
 export const kickWebsiteImport = (id: string) => {
-  void processWebsiteImport(id).catch(() =>
-    reportCaughtError('Website import kick failed', new Error('WEBSITE_KICK_FAILED'), { importId: id }),
+  void processWebsiteImport(id).catch((error: unknown) =>
+    reportCaughtError('Website import kick failed', error, { importId: id }),
   )
 }
 
@@ -334,7 +429,7 @@ export const drainWebsiteImports = async () => {
     where: {
       deletedAt: null,
       status: { in: ['PENDING', 'PROCESSING'] },
-      attempts: { gte: 3 },
+      attempts: { gte: MAX_ATTEMPTS },
       leaseUntil: { lt: new Date() },
     },
     data: { status: 'FAILED', errorCode: 'RETRY_LIMIT', leaseToken: null, leaseUntil: null },
@@ -343,7 +438,7 @@ export const drainWebsiteImports = async () => {
     where: {
       deletedAt: null,
       status: { in: ['PENDING', 'PROCESSING'] },
-      attempts: { lt: 3 },
+      attempts: { lt: MAX_ATTEMPTS },
       OR: [{ leaseUntil: null }, { leaseUntil: { lt: new Date() } }],
     },
     orderBy: { createdAt: 'asc' },

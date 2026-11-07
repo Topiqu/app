@@ -45,7 +45,9 @@
         "invalidUrl": "Saisissez l’adresse publique d’un site, par exemple entreprise.fr.",
         "active": "Les suggestions du site sont déjà en préparation ou attendent votre vérification.",
         "limit": "La limite de chargement du site est atteinte. Veuillez réessayer plus tard.",
-        "failed": "Le site n’a pas pu être chargé. Veuillez réessayer."
+        "failed": "Le site n’a pas pu être chargé. Veuillez réessayer.",
+        "aiPlanRequired": "Le forfait de ce blog n’a actuellement pas d’IA active. Vérifiez l’abonnement dans Facturation ou contactez le support.",
+        "allowanceExhausted": "Ce blog a épuisé son allocation IA. Attendez le renouvellement ou achetez de l’utilisation dans Facturation."
       },
       "description": "Nous préparons les réglages du blog et les sources de connaissances en arrière-plan. Vérifiez les suggestions avant de les utiliser.",
       "review": "Vérifier les suggestions",
@@ -89,6 +91,51 @@
         "knowledgeQuota": "Certaines pages dépassent votre quota de connaissances.",
         "assetUnavailable": "Certains éléments de marque n’ont pas pu être lus. Vous pouvez les importer manuellement.",
         "analysisFailed": "Certaines suggestions de contenu n’ont pas pu être préparées. Vérifiez les valeurs disponibles."
+      },
+      "waiting": {
+        "AI_UNAVAILABLE": "La préparation reprendra dès que ce blog aura un forfait IA actif.",
+        "AI_PLAN_REQUIRED": "La préparation reprendra dès que l’IA sera active sur le forfait de ce blog. Si cela dure, vérifiez l’abonnement dans Facturation ou contactez le support.",
+        "AI_ALLOWANCE_EXHAUSTED": "Ce blog a épuisé son allocation IA. La préparation reprendra après le renouvellement ou l’achat d’utilisation dans Facturation.",
+        "PROVIDER_OVERLOADED": "Le service d’IA est actuellement surchargé. Nous réessaierons automatiquement dans quelques minutes."
+      },
+      "errors": {
+        "AI_UNAVAILABLE": "Ce blog n’a pas de forfait IA actif.",
+        "URL_UNREACHABLE": "Le site est introuvable. Vérifiez l’adresse et que le site est accessible publiquement en HTTPS.",
+        "PROVIDER_UNAVAILABLE": "Le service d’IA n’est pas disponible pour le moment. Veuillez réessayer plus tard.",
+        "PROVIDER_OVERLOADED": "Le service d’IA a été surchargé à plusieurs reprises. Veuillez réessayer plus tard.",
+        "PROVIDER_TIMEOUT": "Le service d’IA n’a pas répondu à temps. Rechargez le site.",
+        "PROVIDER_REJECTED": "Le service d’IA a refusé la demande. Rechargez le site et contactez le support si le problème persiste.",
+        "PROVIDER_FAILED": "Le service d’IA a renvoyé une erreur. Rechargez le site.",
+        "SEARCH_OUTCOME_UNKNOWN": "La recherche sur le site a été interrompue. Rechargez le site.",
+        "ANALYSIS_OUTCOME_UNKNOWN": "La préparation des suggestions a été interrompue. Rechargez le site.",
+        "NO_CONTENT": "Aucun contenu exploitable n’a été trouvé sur le site. Essayez une autre adresse ou complétez les réglages vous-même.",
+        "RETRY_LIMIT": "La préparation n’a pas pu être terminée, même après plusieurs tentatives. Veuillez réessayer plus tard."
+      },
+      "steps": {
+        "address": "Vérification de l’adresse du site",
+        "search": "Recherche des pages du site",
+        "pages": "Chargement des pages",
+        "brand": "Logo, favicon et couleurs",
+        "analysis": "Préparation des suggestions de réglages"
+      },
+      "progress": {
+        "label": "Progression de la préparation",
+        "elapsed": "{seconds} s",
+        "found": "Pages à charger : {count}",
+        "failedHere": "La préparation s’est arrêtée ici.",
+        "state": {
+          "pending": "Pas encore commencé",
+          "running": "En cours",
+          "done": "Terminé",
+          "warning": "Terminé avec un avertissement",
+          "waiting": "En pause",
+          "failed": "Échec",
+          "skipped": "Non exécuté"
+        },
+        "page": {
+          "done": "chargée",
+          "failed": "n’a pas pu être chargée"
+        }
       }
     },
     "entry": {

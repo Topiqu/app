@@ -16,6 +16,9 @@ export default defineEventHandler(async (event) => {
   const sourceUrl = normalizeWebsiteUrl(body.url)
   if (!sourceUrl) throw createError({ statusCode: 400, data: { code: 'WEBSITE_URL' } })
   if (!(await consumeRateLimit(`website-import-start:${user.id}`, 10, 3600))) throw createError({ statusCode: 429 })
+  // The plan name alone admits a paid plan whose budget is not funded; the import would only wait.
+  const funding = await aiBudgetError(clientSiteId)
+  if (funding) throw createError({ statusCode: funding === 'AI_PLAN_REQUIRED' ? 403 : 402, data: { code: funding } })
 
   // The zmodel keeps creation system-only: a create policy would let the generic model API skip consent and caps.
   const job = await prisma

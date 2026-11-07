@@ -29,7 +29,12 @@ export const useWebsiteImport = createSharedComposable(() => {
       visibility.value === 'visible' &&
       ['PENDING', 'PROCESSING'].includes(data.value?.import?.status ?? ''),
   )
-  const { pause, resume } = useIntervalFn(() => refresh({ dedupe: 'defer' }), 5000, { immediate: false })
+  // A running import reports each step, so it is polled faster than a queued one.
+  const { pause, resume } = useIntervalFn(
+    () => refresh({ dedupe: 'defer' }),
+    () => (data.value?.import?.status === 'PROCESSING' ? 2000 : 5000),
+    { immediate: false },
+  )
   watch(processing, (active) => (active ? resume() : pause()), { immediate: true })
   const { invalidateClients } = useCacheInvalidation()
   const apply = async (fields: WebsiteImportField[], values: WebsiteValues) => {

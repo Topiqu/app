@@ -45,7 +45,9 @@
         "invalidUrl": "Zadejte veřejnou adresu webu, například firma.cz.",
         "active": "Návrhy z webu se už připravují nebo čekají na kontrolu.",
         "limit": "Limit pro načítání webu je vyčerpaný. Zkuste to prosím později.",
-        "failed": "Načítání webu se nepodařilo spustit. Zkuste to prosím znovu."
+        "failed": "Načítání webu se nepodařilo spustit. Zkuste to prosím znovu.",
+        "aiPlanRequired": "Tarif tohoto blogu teď nemá aktivní AI. Zkontrolujte předplatné ve Fakturaci, nebo kontaktujte podporu.",
+        "allowanceExhausted": "Blog vyčerpal AI limit. Počkejte na obnovení, nebo dokupte spotřebu ve Fakturaci."
       },
       "description": "Na pozadí připravíme nastavení blogu a podklady do znalostní báze. Před použitím návrhy zkontrolujete.",
       "review": "Zkontrolovat návrhy",
@@ -89,6 +91,51 @@
         "knowledgeQuota": "Některé stránky se nevešly do limitu znalostní báze.",
         "assetUnavailable": "Některé podklady značky se nepodařilo načíst. Můžete je nahrát ručně.",
         "analysisFailed": "Některé obsahové návrhy se nepodařilo připravit. Zkontrolujte dostupné hodnoty."
+      },
+      "waiting": {
+        "AI_UNAVAILABLE": "Příprava bude pokračovat, jakmile bude mít blog aktivní tarif s AI.",
+        "AI_PLAN_REQUIRED": "Příprava bude pokračovat, jakmile bude AI v tarifu tohoto blogu aktivní. Pokud to trvá déle, zkontrolujte předplatné ve Fakturaci, nebo kontaktujte podporu.",
+        "AI_ALLOWANCE_EXHAUSTED": "Blog vyčerpal AI limit. Příprava bude pokračovat po jeho obnovení nebo po dokoupení spotřeby ve Fakturaci.",
+        "PROVIDER_OVERLOADED": "AI služba je právě přetížená. Za pár minut to automaticky zkusíme znovu."
+      },
+      "errors": {
+        "AI_UNAVAILABLE": "Blog nemá aktivní tarif s AI.",
+        "URL_UNREACHABLE": "Web se nepodařilo najít. Zkontrolujte adresu a to, že je web veřejně dostupný přes HTTPS.",
+        "PROVIDER_UNAVAILABLE": "AI služba teď není dostupná. Zkuste to prosím později.",
+        "PROVIDER_OVERLOADED": "AI služba byla opakovaně přetížená. Zkuste to prosím později.",
+        "PROVIDER_TIMEOUT": "AI služba neodpověděla včas. Zkuste web načíst znovu.",
+        "PROVIDER_REJECTED": "AI služba požadavek odmítla. Zkuste web načíst znovu, a pokud potíže přetrvají, kontaktujte podporu.",
+        "PROVIDER_FAILED": "AI služba vrátila chybu. Zkuste web načíst znovu.",
+        "SEARCH_OUTCOME_UNKNOWN": "Vyhledávání na webu se přerušilo. Zkuste web načíst znovu.",
+        "ANALYSIS_OUTCOME_UNKNOWN": "Příprava návrhů se přerušila. Zkuste web načíst znovu.",
+        "NO_CONTENT": "Na webu jsme nenašli obsah, ze kterého by šlo vycházet. Zkuste jinou adresu, nebo nastavení doplňte ručně.",
+        "RETRY_LIMIT": "Přípravu se nepodařilo dokončit ani po opakovaných pokusech. Zkuste to prosím později."
+      },
+      "steps": {
+        "address": "Ověření adresy webu",
+        "search": "Vyhledání stránek webu",
+        "pages": "Načtení stránek",
+        "brand": "Logo, favicon a barvy",
+        "analysis": "Příprava návrhů nastavení"
+      },
+      "progress": {
+        "label": "Průběh přípravy",
+        "elapsed": "{seconds} s",
+        "found": "Stránky k načtení: {count}",
+        "failedHere": "Tady se příprava zastavila.",
+        "state": {
+          "pending": "Zatím nezačalo",
+          "running": "Probíhá",
+          "done": "Hotovo",
+          "warning": "Hotovo s upozorněním",
+          "waiting": "Pozastaveno",
+          "failed": "Selhalo",
+          "skipped": "Neproběhlo"
+        },
+        "page": {
+          "done": "načteno",
+          "failed": "nepodařilo se načíst"
+        }
       }
     },
     "entry": {

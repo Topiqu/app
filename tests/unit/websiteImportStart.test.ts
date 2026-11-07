@@ -86,6 +86,8 @@ describe('website import start', () => {
   it.each([
     ['WEBSITE_IMPORT_ACTIVE', 409, 'common.websiteImport.start.active'],
     ['WEBSITE_IMPORT_LIMIT', 429, 'common.websiteImport.start.limit'],
+    ['AI_PLAN_REQUIRED', 403, 'common.websiteImport.start.aiPlanRequired'],
+    ['AI_ALLOWANCE_EXHAUSTED', 402, 'common.websiteImport.start.allowanceExhausted'],
     [undefined, 429, 'common.websiteImport.rateLimited'],
     [undefined, 500, 'common.websiteImport.start.failed'],
   ])('explains a %s refusal', async (code, statusCode, message) => {

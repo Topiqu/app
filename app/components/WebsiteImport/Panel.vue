@@ -24,15 +24,15 @@
       :disabled="disabled"
       @apply="applySelection"
     />
-    <UAlert
-      v-else-if="job && ['PENDING', 'PROCESSING'].includes(job.status)"
-      color="neutral"
-      icon="mdi:web-sync"
-      :title="$t(`common.websiteImport.status.${job.status}`)"
-      :description="
-        $t(job.errorCode === 'DAILY_BUDGET' ? 'common.websiteImport.budgetWait' : 'common.websiteImport.background')
-      "
-    />
+    <template v-else-if="job && ['PENDING', 'PROCESSING'].includes(job.status)">
+      <UAlert
+        color="neutral"
+        icon="mdi:web-sync"
+        :title="$t(`common.websiteImport.status.${job.status}`)"
+        :description="$t(reason ?? 'common.websiteImport.background')"
+      />
+      <WebsiteImportProgress v-if="job.progress" :job />
+    </template>
     <template v-else>
       <UAlert
         v-if="job?.status === 'REVIEWED'"
@@ -72,8 +72,11 @@
         v-if="job?.status === 'FAILED'"
         color="warning"
         :title="$t('common.websiteImport.status.FAILED')"
-        :description="$t(canStart ? 'common.websiteImport.start.retryHelp' : 'common.websiteImport.failedHelp')"
+        :description="
+          $t(reason ?? (canStart ? 'common.websiteImport.start.retryHelp' : 'common.websiteImport.failedHelp'))
+        "
       />
+      <WebsiteImportProgress v-if="job?.status === 'FAILED' && job.progress" :job />
       <WebsiteImportStart
         v-if="canStart && data && (!job || job.status === 'FAILED' || restarting)"
         :key="job?.id ?? 'new'"
@@ -89,6 +92,7 @@ const emit = defineEmits<{ applied: [] }>()
 const { data, pending, error, enabled, refresh, apply } = useWebsiteImport()
 const { data: status } = useClientSiteStatus()
 const job = computed(() => data.value?.import)
+const reason = computed(() => (job.value ? websiteImportReason(job.value) : null))
 const canStart = computed(() => hasAiPlan(status.value?.plan))
 const can = useTenantScope()
 const localePath = useLocalePath()

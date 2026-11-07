@@ -43,6 +43,8 @@ const failure = (error: unknown) => {
   if (code === 'WEBSITE_URL') return t('common.websiteImport.start.invalidUrl')
   if (code === 'WEBSITE_IMPORT_ACTIVE') return t('common.websiteImport.start.active')
   if (code === 'WEBSITE_IMPORT_LIMIT') return t('common.websiteImport.start.limit')
+  if (code === 'AI_PLAN_REQUIRED') return t('common.websiteImport.start.aiPlanRequired')
+  if (code === 'AI_ALLOWANCE_EXHAUSTED') return t('common.websiteImport.start.allowanceExhausted')
   if ((detail.statusCode ?? detail.data?.statusCode) === 429) return t('common.websiteImport.rateLimited')
   return t('common.websiteImport.start.failed')
 }

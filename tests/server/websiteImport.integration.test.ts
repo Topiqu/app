@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { createError } from 'h3'
+import { APICallError } from 'ai'
 import { randomUUID } from 'node:crypto'
 import { PolicyPlugin } from '@zenstackhq/plugin-policy'
 import { mockNuxtImport } from '@nuxt/test-utils/runtime'
@@ -43,6 +44,7 @@ async function stubImports() {
     'extractWebsiteMetadata',
   )
   await stubNitroImports(import('../../server/utils/websiteImport/index'), 'WEBSITE_SITE_SELECT')
+  await stubNitroImports(import('../../server/utils/websiteImport/failure'), 'websiteFailure')
 }
 
 await stubImports()
@@ -77,6 +79,7 @@ const mocks = vi.hoisted(() => ({
   audit: vi.fn(),
   report: vi.fn(),
   index: vi.fn(),
+  funding: vi.fn(),
   budget: '100',
 }))
 vi.mock('nitropack/runtime', () => ({
@@ -147,6 +150,7 @@ describe.skipIf(!enabled)('website import on PostgreSQL', () => {
       websiteImport: { dailyBudgetUsd: mocks.budget },
     }))
     vi.stubGlobal('reportCaughtError', mocks.report)
+    vi.stubGlobal('aiBudgetError', mocks.funding)
     vi.stubGlobal('defineEventHandler', (handler: unknown) => handler)
     vi.stubGlobal('readValidatedBody', async (input: { body: unknown }, parse: (value: unknown) => unknown) =>
       parse(input.body),
@@ -170,6 +174,7 @@ describe.skipIf(!enabled)('website import on PostgreSQL', () => {
     vi.resetAllMocks()
     mocks.budget = '100'
     mocks.index.mockResolvedValue(false)
+    mocks.funding.mockResolvedValue(null)
     user.scopes = ['TENANT_SETTINGS', 'INTEGRATION_CONTROL']
     mocks.research.mockImplementation(async (_id, _site, sourceUrl) => ({
       text: 'Supported company evidence.',
@@ -412,6 +417,93 @@ describe.skipIf(!enabled)('website import on PostgreSQL', () => {
     const { job } = await run()
     expect(job).toMatchObject({ status: 'READY', budgetCostMicros: 4_000_000 })
     expect(job.result).toMatchObject({ values: { focus: null, audience: null }, warnings: ['analysisFailed'] })
+  })
+
+  it('records each step and every loaded page for the live progress view', async () => {
+    const { job } = await run()
+    expect(job.progress).toMatchObject({
+      steps: {
+        address: { state: 'done' },
+        search: { state: 'done', count: 1 },
+        pages: { state: 'done', count: 1 },
+        brand: { state: 'done' },
+        analysis: { state: 'done' },
+      },
+      pages: [{ url: 'https://firma.cz/', state: 'done' }],
+    })
+  })
+
+  it('waits for an unfunded AI budget without spending an attempt or the daily budget', async () => {
+    mocks.funding.mockResolvedValueOnce('AI_PLAN_REQUIRED')
+    const { job } = await run()
+    expect(mocks.research).not.toHaveBeenCalled()
+    expect(job).toMatchObject({
+      status: 'PENDING',
+      errorCode: 'AI_PLAN_REQUIRED',
+      attempts: 0,
+      searchStartedAt: null,
+      budgetCostMicros: 0,
+      progress: { steps: { search: { state: 'waiting', code: 'AI_PLAN_REQUIRED' } } },
+    })
+    expect(job.leaseUntil!.getTime()).toBeGreaterThan(Date.now() + 25 * 60_000)
+  })
+
+  it('reopens a search the funding reservation refused before the provider saw it', async () => {
+    mocks.research.mockRejectedValueOnce(createError({ statusCode: 402, data: { code: 'AI_ALLOWANCE_EXHAUSTED' } }))
+    const { job } = await run()
+    expect(job).toMatchObject({
+      status: 'PENDING',
+      errorCode: 'AI_ALLOWANCE_EXHAUSTED',
+      attempts: 0,
+      searchStartedAt: null,
+      budgetDay: null,
+      budgetCostMicros: 0,
+    })
+    expect(mocks.audit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'WEBSITE_IMPORT_DEFERRED',
+        metadata: expect.objectContaining({ code: 'AI_ALLOWANCE_EXHAUSTED', stage: 'search' }),
+      }),
+    )
+  })
+
+  it('retries an overloaded provider within the attempt cap', async () => {
+    mocks.research.mockRejectedValueOnce(
+      new APICallError({
+        message: 'Overloaded',
+        url: 'https://api.anthropic.com',
+        requestBodyValues: {},
+        statusCode: 529,
+      }),
+    )
+    const { job } = await run()
+    expect(job).toMatchObject({
+      status: 'PENDING',
+      errorCode: 'PROVIDER_OVERLOADED',
+      attempts: 1,
+      searchStartedAt: null,
+    })
+  })
+
+  it('ends with the provider reason and step, and reports the original error', async () => {
+    const rejection = new APICallError({
+      message: 'synthetic rejection',
+      url: 'https://api.anthropic.com',
+      requestBodyValues: {},
+      statusCode: 400,
+    })
+    mocks.research.mockRejectedValueOnce(rejection)
+    const { job } = await run()
+    expect(job).toMatchObject({
+      status: 'FAILED',
+      errorCode: 'PROVIDER_REJECTED',
+      progress: { steps: { address: { state: 'done' }, search: { state: 'failed', code: 'PROVIDER_REJECTED' } } },
+    })
+    expect(mocks.report).toHaveBeenCalledWith(
+      'Website import failed',
+      expect.objectContaining({ message: 'PROVIDER_REJECTED', cause: rejection }),
+      expect.objectContaining({ importId: job.id, code: 'PROVIDER_REJECTED', stage: 'search' }),
+    )
   })
 
   it('applies only selected fields and is idempotent', async () => {

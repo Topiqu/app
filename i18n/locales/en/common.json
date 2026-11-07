@@ -45,7 +45,9 @@
         "invalidUrl": "Enter a public website address, for example company.com.",
         "active": "Website suggestions are already being prepared or are waiting for review.",
         "limit": "The website loading limit has been reached. Please try again later.",
-        "failed": "The website could not be loaded. Please try again."
+        "failed": "The website could not be loaded. Please try again.",
+        "aiPlanRequired": "This blog's plan has no active AI right now. Check the subscription in Billing or contact support.",
+        "allowanceExhausted": "This blog has used its AI allowance. Wait for renewal or purchase more usage in Billing."
       },
       "description": "We can prepare your blog settings and knowledge sources in the background. Review the suggestions before using them.",
       "review": "Review suggestions",
@@ -89,6 +91,51 @@
         "knowledgeQuota": "Some pages did not fit your knowledge allowance.",
         "assetUnavailable": "Some brand assets could not be read. You can upload them yourself.",
         "analysisFailed": "Some content suggestions could not be prepared. Review the available values."
+      },
+      "waiting": {
+        "AI_UNAVAILABLE": "Preparation continues once this blog has an active AI plan.",
+        "AI_PLAN_REQUIRED": "Preparation continues once AI is active on this blog's plan. If this takes longer, check the subscription in Billing or contact support.",
+        "AI_ALLOWANCE_EXHAUSTED": "This blog has used its AI allowance. Preparation continues after renewal or once you purchase more usage in Billing.",
+        "PROVIDER_OVERLOADED": "The AI service is busy right now. We will try again automatically in a few minutes."
+      },
+      "errors": {
+        "AI_UNAVAILABLE": "This blog has no active AI plan.",
+        "URL_UNREACHABLE": "The website could not be found. Check the address and that the site is publicly available over HTTPS.",
+        "PROVIDER_UNAVAILABLE": "The AI service is not available right now. Please try again later.",
+        "PROVIDER_OVERLOADED": "The AI service was repeatedly overloaded. Please try again later.",
+        "PROVIDER_TIMEOUT": "The AI service did not respond in time. Try loading the website again.",
+        "PROVIDER_REJECTED": "The AI service rejected the request. Try loading the website again, and contact support if the problem persists.",
+        "PROVIDER_FAILED": "The AI service returned an error. Try loading the website again.",
+        "SEARCH_OUTCOME_UNKNOWN": "The website search was interrupted. Try loading the website again.",
+        "ANALYSIS_OUTCOME_UNKNOWN": "Preparing the suggestions was interrupted. Try loading the website again.",
+        "NO_CONTENT": "We found no content on the website to work from. Try another address or complete the settings yourself.",
+        "RETRY_LIMIT": "Preparation could not be finished even after several attempts. Please try again later."
+      },
+      "steps": {
+        "address": "Checking the website address",
+        "search": "Finding the website's pages",
+        "pages": "Loading pages",
+        "brand": "Logo, favicon and colors",
+        "analysis": "Preparing settings suggestions"
+      },
+      "progress": {
+        "label": "Preparation progress",
+        "elapsed": "{seconds} s",
+        "found": "Pages to load: {count}",
+        "failedHere": "Preparation stopped here.",
+        "state": {
+          "pending": "Not started",
+          "running": "In progress",
+          "done": "Done",
+          "warning": "Done with a warning",
+          "waiting": "Paused",
+          "failed": "Failed",
+          "skipped": "Did not run"
+        },
+        "page": {
+          "done": "loaded",
+          "failed": "could not be loaded"
+        }
       }
     },
     "entry": {

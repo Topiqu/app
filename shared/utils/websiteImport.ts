@@ -59,6 +59,46 @@ export const WebsiteResultSchema = z.object({
 })
 export type WebsiteImportResult = z.infer<typeof WebsiteResultSchema>
 
+export const WEBSITE_IMPORT_STEPS = ['address', 'search', 'pages', 'brand', 'analysis'] as const
+export type WebsiteImportStep = (typeof WEBSITE_IMPORT_STEPS)[number]
+export const WEBSITE_IMPORT_STEP_STATES = ['running', 'done', 'warning', 'failed', 'waiting'] as const
+export type WebsiteImportStepState = (typeof WEBSITE_IMPORT_STEP_STATES)[number]
+// `errorCode` of a queued import says what it waits for; of a failed one, why it stopped. Each has panel copy.
+export const WEBSITE_IMPORT_WAIT_CODES = [
+  'DAILY_BUDGET',
+  'AI_UNAVAILABLE',
+  'AI_PLAN_REQUIRED',
+  'AI_ALLOWANCE_EXHAUSTED',
+  'PROVIDER_OVERLOADED',
+] as const
+export const WEBSITE_IMPORT_ERROR_CODES = [
+  'AI_UNAVAILABLE',
+  'URL_UNREACHABLE',
+  'PROVIDER_UNAVAILABLE',
+  'PROVIDER_OVERLOADED',
+  'PROVIDER_TIMEOUT',
+  'PROVIDER_REJECTED',
+  'PROVIDER_FAILED',
+  'SEARCH_OUTCOME_UNKNOWN',
+  'ANALYSIS_OUTCOME_UNKNOWN',
+  'NO_CONTENT',
+  'RETRY_LIMIT',
+] as const
+
+export const WebsiteProgressSchema = z.object({
+  steps: z.partialRecord(
+    z.enum(WEBSITE_IMPORT_STEPS),
+    z.object({
+      state: z.enum(WEBSITE_IMPORT_STEP_STATES),
+      at: z.string().max(40),
+      count: z.number().int().min(0).optional(),
+      code: z.string().max(64).optional(),
+    }),
+  ),
+  pages: z.array(z.object({ url: publicUrl, state: z.enum(['done', 'failed']) })).max(5),
+})
+export type WebsiteImportProgress = z.infer<typeof WebsiteProgressSchema>
+
 export const emptyWebsiteValues = (): WebsiteValues => ({
   accentColor: null,
   logoUrl: null,
@@ -111,6 +151,7 @@ export interface WebsiteImportView {
   knowledge: { id: string; title: string; sourceUrl: string | null; status: string }[]
   acceptedFields: WebsiteImportField[]
   errorCode: string | null
+  progress: WebsiteImportProgress | null
 }
 
 export interface WebsiteImportResponse {

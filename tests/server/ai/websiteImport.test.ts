@@ -33,6 +33,7 @@ async function stubImports() {
   await stubNitroImports(import('../../../server/utils/ai/models'), 'aiModel')
   await stubNitroImports(import('../../../server/utils/websiteImport/policy'), 'WEBSITE_IMPORT_LIMITS', 'websiteUsage')
   await stubNitroImports(import('../../../server/utils/aiUsage'), 'recordAiUsage')
+  await stubNitroImports(import('../../../server/utils/websiteImport/failure'), 'websiteFailure')
 }
 
 await stubImports()
@@ -175,15 +176,17 @@ describe('bounded website AI requests', () => {
     expect(result.values.focus).toBe('Výběrová káva a domácí příprava.')
     expect(result.topics).toEqual([topic(1), topic(2), topic(3)])
   })
-  it('does not retry a failed paid search and records unknown usage honestly', async () => {
+  it('does not retry a failed paid search, keeps the provider error and records unknown usage honestly', async () => {
     mocks.fail = true
-    await expect(researchWebsite('import-1', 'site-1', 'https://firma.cz/')).rejects.toThrow('WEBSITE_SEARCH_FAILED')
+    await expect(researchWebsite('import-1', 'site-1', 'https://firma.cz/')).rejects.toMatchObject({
+      statusCode: 503,
+    })
     expect(mocks.requests).toHaveLength(1)
     expect(mocks.record).toHaveBeenCalledWith(
       'site-1',
       0,
       'WEBSITE_IMPORT_SEARCH',
-      expect.objectContaining({ usageKnown: false, status: 'failed' }),
+      expect.objectContaining({ usageKnown: false, status: 'failed', code: 'PROVIDER_FAILED' }),
     )
   })
 })

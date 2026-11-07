@@ -34,6 +34,7 @@ model WebsiteImport with Base {
     reservedCostMicros Int @default(0)
     budgetCostMicros Int @default(0)
     usage Json?
+    progress Json?
     errorCode String?
     reviewedAt DateTime?
     reviewedById String?

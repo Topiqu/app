@@ -19,6 +19,7 @@ const mocks = vi.hoisted(() => ({
   log: vi.fn(),
   kick: vi.fn(),
   lock: vi.fn(),
+  funding: vi.fn(),
 }))
 const tx = {
   $queryRaw: mocks.lock,
@@ -55,6 +56,7 @@ beforeAll(async () => {
   vi.stubGlobal('requireTenantScope', mocks.scope)
   vi.stubGlobal('requireAiPlan', mocks.aiPlan)
   vi.stubGlobal('consumeRateLimit', mocks.rateLimit)
+  vi.stubGlobal('aiBudgetError', mocks.funding)
   vi.stubGlobal('normalizeWebsiteUrl', normalizeWebsiteUrl)
   vi.stubGlobal('WEBSITE_IMPORT_CONSENT_VERSION', WEBSITE_IMPORT_CONSENT_VERSION)
   vi.stubGlobal('emptyWebsiteValues', emptyWebsiteValues)
@@ -76,6 +78,7 @@ beforeEach(() => {
   mocks.scope.mockResolvedValue({ user })
   mocks.aiPlan.mockResolvedValue(undefined)
   mocks.rateLimit.mockResolvedValue(true)
+  mocks.funding.mockResolvedValue(null)
   mocks.site.mockResolvedValue(site)
   mocks.create.mockResolvedValue({ id: 'import-2' })
 })
@@ -155,6 +158,17 @@ describe('POST /api/website-import', () => {
     await expect(start()).rejects.toMatchObject({ statusCode: 429 })
     expect(mocks.rateLimit).toHaveBeenCalledWith('website-import-start:user-1', 10, 3600)
     expect(transaction).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    ['AI_PLAN_REQUIRED', 403],
+    ['AI_ALLOWANCE_EXHAUSTED', 402],
+  ])('refuses a paid plan whose AI budget cannot fund the run (%s)', async (code, statusCode) => {
+    mocks.funding.mockResolvedValueOnce(code)
+    await expect(start()).rejects.toMatchObject({ statusCode, data: { code } })
+    expect(mocks.funding).toHaveBeenCalledWith('site-1')
+    expect(transaction).not.toHaveBeenCalled()
+    expect(mocks.kick).not.toHaveBeenCalled()
   })
 
   it('rechecks the plan under the tenant lock', async () => {

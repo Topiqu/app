@@ -482,6 +482,10 @@ export const creditAiUsagePack = async (
       where: { clientSiteId, error: 'AI_ALLOWANCE_EXHAUSTED', aiRetryAt: { not: null } },
       data: { aiRetryAt: null },
     })
+    await tx.websiteImport.updateMany({
+      where: { clientSiteId, status: 'PENDING', errorCode: 'AI_ALLOWANCE_EXHAUSTED' },
+      data: { leaseUntil: null },
+    })
   })
 }
 
@@ -517,3 +521,11 @@ export const getAiAllowance = async (clientSiteId: string) =>
       })),
     }
   })
+
+/** Why a BUDGET-funded call would be refused right now; the reservation still decides the exact amount. */
+export const aiBudgetError = async (clientSiteId: string) => {
+  const allowance = await getAiAllowance(clientSiteId)
+  if (!allowance.active) return 'AI_PLAN_REQUIRED' as const
+  const budget = allowance.allowances.find((row) => row.kind === 'BUDGET')
+  return budget && budget.remaining > 0 ? null : ('AI_ALLOWANCE_EXHAUSTED' as const)
+}
