@@ -16,6 +16,8 @@ export const ensureMinAccountAge = async (event: H3Event, userId: string) => {
     throw createError({
       statusCode: 429,
       message: t('common.auth.accountTooNew') || 'Account too new for this action',
+      // Lets the editor wait out the first minute instead of failing the very first generation.
+      data: { code: 'ACCOUNT_TOO_NEW', retryAfterMs: MIN_AGE_MS - ageMs },
     })
   }
 }

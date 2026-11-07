@@ -47,12 +47,37 @@ export const useArticleGeneration = () => {
 
     try {
       const requestKey = crypto.randomUUID()
-      const res = await fetch('/api/articles/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Idempotency-Key': requestKey },
-        body: JSON.stringify({ prompt, options, articleId }),
-        signal: controller.signal,
-      })
+      const signal = controller.signal
+      const send = () =>
+        fetch('/api/articles/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Idempotency-Key': requestKey },
+          body: JSON.stringify({ prompt, options, articleId }),
+          signal,
+        })
+      let res = await send()
+      // A brand-new account waits out its first minute; the first generation waits with it instead of failing.
+      if (res.status === 429) {
+        const wait = await res
+          .clone()
+          .json()
+          .then((body) => (body?.data?.code === 'ACCOUNT_TOO_NEW' ? Number(body.data.retryAfterMs) : 0))
+          .catch(() => 0)
+        if (wait > 0 && wait <= 60_000) {
+          await new Promise<void>((resolve, reject) => {
+            const timer = setTimeout(resolve, wait + 500)
+            signal.addEventListener(
+              'abort',
+              () => {
+                clearTimeout(timer)
+                reject(signal.reason)
+              },
+              { once: true },
+            )
+          })
+          res = await send()
+        }
+      }
 
       if (!res.ok || !res.body) {
         const message = await res.json().catch(() => null)
