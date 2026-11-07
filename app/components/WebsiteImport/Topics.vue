@@ -1,15 +1,21 @@
 <template>
   <ul v-if="topics.length" class="space-y-2" data-website-topics>
     <li v-for="item in topics" :key="item.topic">
-      <NuxtLink
+      <UButton
         :to="editorLink(item)"
-        class="block rounded-(--topiqu-surface-radius) border border-default p-3 text-left transition-colors hover:bg-elevated focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:transition-none"
+        color="neutral"
+        variant="outline"
+        block
         data-website-topic
         @click="emit('navigate')"
       >
-        <span class="block text-sm font-medium text-highlighted [overflow-wrap:anywhere]">{{ item.topic }}</span>
-        <span class="mt-1 block text-xs leading-5 text-muted [overflow-wrap:anywhere]">{{ item.reason }}</span>
-      </NuxtLink>
+        <span class="block w-full min-w-0 text-left">
+          <span class="block text-sm font-medium text-highlighted [overflow-wrap:anywhere]">{{ item.topic }}</span>
+          <span class="mt-1 block text-xs leading-5 font-normal text-muted [overflow-wrap:anywhere]">{{
+            item.reason
+          }}</span>
+        </span>
+      </UButton>
     </li>
   </ul>
 </template>

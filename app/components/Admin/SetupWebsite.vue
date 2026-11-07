@@ -1,11 +1,7 @@
 <template>
   <div class="space-y-3" data-setup-website>
     <p v-if="waiting" class="flex items-start gap-2 text-xs leading-5 text-muted">
-      <UIcon
-        name="mdi:loading"
-        class="mt-0.5 size-4 shrink-0 animate-spin motion-reduce:animate-none"
-        aria-hidden="true"
-      />
+      <UIcon name="mdi:progress-clock" class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
       <span>{{
         $t(
           job?.errorCode === 'DAILY_BUDGET'
@@ -56,7 +52,6 @@
         size="sm"
         color="neutral"
         variant="link"
-        class="px-0"
         :label="
           $t(withoutWebsite ? 'common.setup.checklist.website.useWebsite' : 'common.setup.checklist.website.noWebsite')
         "

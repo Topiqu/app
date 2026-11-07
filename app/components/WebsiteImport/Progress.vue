@@ -15,12 +15,7 @@
       :data-state="item.state"
     >
       <span class="grid size-7 place-items-center rounded-full border" :class="tone[item.state].class">
-        <UIcon
-          :name="tone[item.state].icon"
-          size="15"
-          :class="item.state === 'running' ? 'animate-spin motion-reduce:animate-none' : ''"
-          aria-hidden="true"
-        />
+        <UIcon :name="tone[item.state].icon" size="15" aria-hidden="true" />
         <span class="sr-only">{{ $t(`common.websiteImport.progress.state.${item.state}`) }}</span>
       </span>
       <div class="min-w-0">
@@ -100,7 +95,7 @@ const pages = computed(() =>
 
 const tone: Record<State, { icon: string; class: string; text: string }> = {
   pending: { icon: 'mdi:circle-small', class: 'border-default text-muted', text: 'text-muted' },
-  running: { icon: 'mdi:loading', class: 'border-primary/30 bg-primary/10 text-primary', text: 'text-muted' },
+  running: { icon: 'mdi:progress-clock', class: 'border-primary/30 bg-primary/10 text-primary', text: 'text-muted' },
   done: { icon: 'mdi:check', class: 'border-success/30 bg-success/10 text-success', text: 'text-muted' },
   warning: { icon: 'mdi:alert-outline', class: 'border-warning/30 bg-warning/10 text-warning', text: 'text-warning' },
   waiting: { icon: 'mdi:timer-sand', class: 'border-warning/30 bg-warning/10 text-warning', text: 'text-muted' },
