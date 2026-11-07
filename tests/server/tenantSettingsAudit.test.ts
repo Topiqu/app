@@ -25,6 +25,8 @@ const setup = async (body: Record<string, unknown>, role = 'admin', plan = 'PRO'
     autoRelease: false,
     domainVerificationToken: 'private-dns-token',
     apiKey: 'private-api-key',
+    billingPlan: 'MONTHLY',
+    stripeSubscriptionId: null as string | null,
     socials: [{ platform: 'FACEBOOK', url: 'https://facebook.com/old' }],
     users: [{ id: 'ai-1', username: 'Writer', bio: 'Original bio' }],
   }
@@ -84,6 +86,28 @@ const setup = async (body: Record<string, unknown>, role = 'admin', plan = 'PRO'
 }
 
 describe('tenant settings audit', () => {
+  it.each([
+    [null, 'PERMANENT'],
+    ['sub_live', undefined],
+  ])(
+    'funds a hand-set paid plan with permanent billing only without a subscription (%s)',
+    async (subscription, billing) => {
+      const { run, db } = await setup({ plan: 'PREMIUM' }, 'superadmin', 'BASIC')
+      const read = db.clientSite.findUnique.getMockImplementation()!
+      db.clientSite.findUnique.mockImplementationOnce(async () => ({
+        ...(await read()),
+        stripeSubscriptionId: subscription,
+      }))
+      vi.stubGlobal('serializableTransaction', async (work: (tx: unknown) => unknown) =>
+        work({ clientSite: { update: db.clientSite.update, findUniqueOrThrow: () => db.clientSite.findUnique() } }),
+      )
+      vi.stubGlobal('syncPlanFeatures', vi.fn())
+      await run()
+      expect(db.clientSite.update.mock.calls[0]![0].data).toMatchObject({ plan: 'PREMIUM' })
+      expect(db.clientSite.update.mock.calls[0]![0].data.billingPlan).toBe(billing)
+    },
+  )
+
   it('saves validated footer settings on a paid tenant', async () => {
     const footerSettings = {
       enabled: false,

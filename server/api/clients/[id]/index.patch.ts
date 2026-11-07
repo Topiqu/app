@@ -4,6 +4,7 @@ import type { Language, SocialPlatform } from '~~/generated/zenstack/models'
 import equal from 'fast-deep-equal'
 import { randomBytes } from 'crypto'
 import { DbNull } from '@zenstackhq/orm'
+import { manualBillingPlan } from '~~/shared/utils/plans'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
@@ -224,6 +225,9 @@ export default defineEventHandler(async (event) => {
   }
 
   const planChanged = data.plan !== undefined && data.plan !== clientSite.plan
+  // Without a subscription no invoice funds the plan; as at creation, only PERMANENT billing does.
+  const manualBilling = planChanged && !clientSite.stripeSubscriptionId ? manualBillingPlan(data.plan) : undefined
+  if (manualBilling) data.billingPlan = manualBilling
   const languagesBilled = data.extraTranslationLanguages !== undefined
   const updateArgs = {
     where: { id },
