@@ -41,6 +41,7 @@
         "consent": "Souhlasím, že AI zpracuje veřejný obsah tohoto webu a připraví z něj nastavení blogu a podklady do znalostní báze. Před použitím vše zkontroluji.",
         "submit": "Načíst web",
         "again": "Načíst web znovu",
+        "open": "Načíst nastavení z webu",
         "retryHelp": "Přípravu se nepodařilo dokončit. Zkuste web načíst znovu, nebo nastavení doplňte v jednotlivých sekcích.",
         "invalidUrl": "Zadejte veřejnou adresu webu, například firma.cz.",
         "active": "Návrhy z webu se už připravují nebo čekají na kontrolu.",

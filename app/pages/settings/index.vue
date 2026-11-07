@@ -7,23 +7,26 @@
         {{ $t('common.preferences.title') }}
       </h1>
 
-      <LazyClientPreferencesGuide
-        hydrateOnInteraction
-        :focus="form.focus"
-        :audience="form.audience"
-        :language="form.language"
-        :keywords="form.keywords"
-      >
-        <UButton
-          square
-          variant="ghost"
-          size="sm"
-          color="neutral"
-          icon="mdi:information-outline"
-          :aria-label="$t('common.preferences.explanation')"
-          :title="$t('common.preferences.explanation')"
-        />
-      </LazyClientPreferencesGuide>
+      <div class="flex items-center gap-1">
+        <WebsiteImportEntry v-if="can('TENANT_SETTINGS') && activeTab === 'content'" />
+        <LazyClientPreferencesGuide
+          hydrateOnInteraction
+          :focus="form.focus"
+          :audience="form.audience"
+          :language="form.language"
+          :keywords="form.keywords"
+        >
+          <UButton
+            square
+            variant="ghost"
+            size="sm"
+            color="neutral"
+            icon="mdi:information-outline"
+            :aria-label="$t('common.preferences.explanation')"
+            :title="$t('common.preferences.explanation')"
+          />
+        </LazyClientPreferencesGuide>
+      </div>
     </header>
 
     <WebsiteImportPanel

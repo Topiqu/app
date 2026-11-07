@@ -12,6 +12,7 @@
         maxlength="2048"
         :placeholder="$t('common.websiteImport.start.placeholder')"
         :disabled="busy"
+        :autofocus
       />
     </UFormField>
     <UCheckbox v-model="consent" :label="$t('common.websiteImport.start.consent')" :disabled="busy" />
@@ -26,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-const { initialUrl } = defineProps<{ initialUrl?: string | null }>()
+const { initialUrl, autofocus } = defineProps<{ initialUrl?: string | null; autofocus?: boolean }>()
 const { start } = useWebsiteImport()
 const { t } = useI18n()
 const url = shallowRef(initialUrl ?? '')

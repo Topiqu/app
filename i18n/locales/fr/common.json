@@ -41,6 +41,7 @@
         "consent": "J’accepte que l’IA traite le contenu public de ce site pour préparer les réglages du blog et les sources de connaissances. Je vérifierai tout avant utilisation.",
         "submit": "Charger le site",
         "again": "Recharger le site",
+        "open": "Charger les réglages depuis votre site",
         "retryHelp": "La préparation n’a pas pu être terminée. Rechargez le site ou complétez les informations dans les différentes sections des réglages.",
         "invalidUrl": "Saisissez l’adresse publique d’un site, par exemple entreprise.fr.",
         "active": "Les suggestions du site sont déjà en préparation ou attendent votre vérification.",

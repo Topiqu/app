@@ -41,6 +41,7 @@
         "consent": "Ich bin einverstanden, dass KI die öffentlichen Inhalte dieser Website verarbeitet, um Blog-Einstellungen und Wissensquellen vorzubereiten. Ich prüfe alles vor der Verwendung.",
         "submit": "Website laden",
         "again": "Website erneut laden",
+        "open": "Einstellungen aus Ihrer Website laden",
         "retryHelp": "Die Vorbereitung konnte nicht abgeschlossen werden. Laden Sie die Website erneut oder ergänzen Sie die Angaben in den jeweiligen Einstellungen.",
         "invalidUrl": "Geben Sie eine öffentliche Website-Adresse ein, zum Beispiel firma.de.",
         "active": "Vorschläge aus der Website werden bereits vorbereitet oder warten auf Ihre Prüfung.",

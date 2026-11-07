@@ -41,6 +41,7 @@
         "consent": "I agree that AI will process the public content of this website to prepare blog settings and knowledge sources. I will review everything before use.",
         "submit": "Load website",
         "again": "Load website again",
+        "open": "Load settings from your website",
         "retryHelp": "We could not finish preparing the settings. Try loading the website again, or complete the settings in the individual sections.",
         "invalidUrl": "Enter a public website address, for example company.com.",
         "active": "Website suggestions are already being prepared or are waiting for review.",

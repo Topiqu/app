@@ -1,6 +1,6 @@
 <template>
   <section
-    v-if="enabled && (job || pending || error || (canStart && data))"
+    v-if="open"
     class="space-y-4 rounded-(--topiqu-surface-radius) border border-default bg-default p-4 sm:p-6"
     data-website-import-panel
   >
@@ -40,13 +40,13 @@
         icon="mdi:check-circle-outline"
         :title="$t('common.websiteImport.status.REVIEWED')"
         :actions="
-          canStart && !restarting
+          canStart && !rerun
             ? [
                 {
                   label: $t('common.websiteImport.start.again'),
                   color: 'neutral',
                   variant: 'outline',
-                  onClick: () => (restarting = true),
+                  onClick: () => (rerun = true),
                 },
               ]
             : undefined
@@ -78,9 +78,19 @@
       />
       <WebsiteImportProgress v-if="job?.status === 'FAILED' && job.progress" :job />
       <WebsiteImportStart
-        v-if="canStart && data && (!job || job.status === 'FAILED' || restarting)"
+        v-if="canStart && data && (!job || job.status === 'FAILED' || rerun)"
         :key="job?.id ?? 'new'"
         :initialUrl="job?.sourceUrl ?? data?.websiteUrl"
+        :autofocus="rerun"
+      />
+      <UButton
+        v-if="rerun"
+        size="sm"
+        color="neutral"
+        variant="ghost"
+        :label="$t('common.actions.cancel')"
+        data-website-import-cancel
+        @click="rerun = false"
       />
     </template>
   </section>
@@ -89,25 +99,21 @@
 <script setup lang="ts">
 defineProps<{ disabled?: boolean }>()
 const emit = defineEmits<{ applied: [] }>()
-const { data, pending, error, enabled, refresh, apply } = useWebsiteImport()
-const { data: status } = useClientSiteStatus()
+const { data, pending, error, refresh, apply } = useWebsiteImport()
 const job = computed(() => data.value?.import)
 const reason = computed(() => (job.value ? websiteImportReason(job.value) : null))
-const canStart = computed(() => hasAiPlan(status.value?.plan))
-const can = useTenantScope()
+const { open, rerun, canStart, firstArticle } = useWebsiteImportCard()
 const localePath = useLocalePath()
 const topics = useWebsiteTopics()
-// Reviewing is where the settings work ends, so the next step is the first article, not more settings.
-const firstArticle = computed(
-  () => canStart.value && status.value?.setup?.hasDraft === false && can('AI_USE') && can('ARTICLE_WRITE'),
-)
-const restarting = shallowRef(false)
 watch(
   () => job.value?.id,
   () => {
-    restarting.value = false
+    rerun.value = false
   },
 )
+onScopeDispose(() => {
+  rerun.value = false
+})
 const busy = shallowRef(false)
 const message = shallowRef('')
 const { t } = useI18n()
