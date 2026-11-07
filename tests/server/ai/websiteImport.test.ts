@@ -151,8 +151,29 @@ describe('bounded website AI requests', () => {
     })
     expect(mocks.requests).toHaveLength(1)
     expect(mocks.requests[0]).not.toHaveProperty('tools')
-    expect(mocks.requests[0]).toMatchObject({ max_tokens: 3000, thinking: { type: 'disabled' } })
+    expect(mocks.requests[0]).toMatchObject({ max_tokens: 3500, thinking: { type: 'disabled' } })
     expect(result.values.focus).toBe('Výběrová káva a domácí příprava.')
+    expect(result.values).not.toHaveProperty('topics')
+    expect(result.topics).toEqual([])
+  })
+  it('keeps the settings when a proposed topic is unusable and caps the topics at three', async () => {
+    const topic = (index: number) => ({
+      topic: `Jak vybrat kávu na espresso, díl ${index}`,
+      reason: 'Začínající baristé tápou u prvního nákupu.',
+    })
+    mocks.text = JSON.stringify({
+      ...emptyWebsiteValues(),
+      focus: 'Výběrová káva a domácí příprava.',
+      topics: [{ topic: 'Krátké', reason: 'Příliš krátké téma se zahodí.' }, topic(1), topic(2), topic(3), topic(4)],
+    })
+    const result = await analyzeWebsite('import-1', 'site-1', {
+      language: 'cs',
+      research: 'Evidence',
+      pages: [],
+      metadata: { logoUrls: [], faviconUrls: [], colors: [], socials: [] },
+    })
+    expect(result.values.focus).toBe('Výběrová káva a domácí příprava.')
+    expect(result.topics).toEqual([topic(1), topic(2), topic(3)])
   })
   it('does not retry a failed paid search and records unknown usage honestly', async () => {
     mocks.fail = true

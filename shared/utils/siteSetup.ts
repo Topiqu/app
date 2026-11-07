@@ -1,3 +1,5 @@
+import type { WebsiteImportView } from './websiteImport'
+
 import { hasAiPlan } from './plans'
 import { isManagedDomain } from './domain'
 
@@ -16,6 +18,8 @@ export interface SiteSetupInfo {
 
 export interface SiteSetupStatus {
   hasPublishedArticle: boolean
+  /** Any article, a draft from a writer's own editor or a finished AI generation. */
+  hasDraft?: boolean
   draftArticleSlug?: string | null
   knowledge: { indexed: number; processing: number; failed: number }
   publishing?: { automatic: boolean; scheduled: boolean; scheduleValid: boolean }
@@ -36,10 +40,14 @@ export interface SiteSetupChecklistInfo extends SiteSetupInfo {
   aiToneOfVoice?: string | null
   aiUser?: { username?: string | null; bio?: string | null; avatarUrl?: string | null } | null
   setup?: SiteSetupStatus
+  websiteImport?: Pick<WebsiteImportView, 'status'> | null
 }
 
-export type SetupChecklistStepId = SetupStepId | 'author' | 'knowledge' | 'publishing' | OptionalSetupStepId
+export type SetupChecklistStepId =
+  SetupStepId | 'website' | 'draft' | 'author' | 'knowledge' | 'publishing' | OptionalSetupStepId
 export type SetupRequirementId =
+  | 'website'
+  | 'draft'
   | 'name'
   | 'logo'
   | 'description'
@@ -58,8 +66,12 @@ export type SetupRequirementId =
   | 'teammate'
   | 'channel'
 
+/** `start` leads to the first published article; `later` is the fine-tuning nothing waits on. */
+export type SetupPhase = 'start' | 'later'
+
 export interface SetupChecklistStep {
   id: SetupChecklistStepId
+  phase: SetupPhase
   done: boolean
   state: 'todo' | 'done' | 'processing' | 'attention'
   requirements: { id: SetupRequirementId; done: boolean }[]
@@ -91,42 +103,69 @@ export const buildSetupChecklist = (
 ): SetupChecklistStep[] => {
   if (!site) return []
   const filled = (value?: string | null) => Boolean(value?.trim())
-  const step = (id: SetupChecklistStepId, requirements: SetupChecklistStep['requirements']): SetupChecklistStep => {
+  const ai = hasAiPlan(site.plan)
+  const step = (
+    id: SetupChecklistStepId,
+    phase: SetupPhase,
+    requirements: SetupChecklistStep['requirements'],
+  ): SetupChecklistStep => {
     const done = requirements.every((requirement) => requirement.done)
-    return { id, requirements, done, state: done ? 'done' : 'todo' }
+    return { id, phase, requirements, done, state: done ? 'done' : 'todo' }
   }
-  const steps = [
-    step('branding', [
-      { id: 'name', done: filled(site.name) },
-      { id: 'logo', done: filled(site.logoUrl) },
-      { id: 'description', done: filled(site.description) },
-    ]),
-  ]
+  const optional = (id: OptionalSetupStepId, requirement: SetupChecklistStep['requirements'][number]) => {
+    const item = step(id, 'later', [requirement])
+    return { ...item, optional: true, skipped: !item.done && !!choices?.skipped.includes(id) }
+  }
+  const branding = step('branding', ai ? 'later' : 'start', [
+    { id: 'name', done: filled(site.name) },
+    { id: 'logo', done: filled(site.logoUrl) },
+    { id: 'description', done: filled(site.description) },
+  ])
+  const steps: SetupChecklistStep[] = []
 
-  if (hasAiPlan(site.plan)) {
+  if (ai) {
+    // A skipped review still finishes the step: generation never needs the brief, it only reads better with it.
+    const website = step('website', 'start', [
+      {
+        id: 'website',
+        done: site.websiteImport?.status === 'REVIEWED' || (filled(site.focus) && filled(site.audience)),
+      },
+    ])
+    if (!website.done) {
+      if (site.websiteImport?.status === 'PENDING' || site.websiteImport?.status === 'PROCESSING')
+        website.state = 'processing'
+      else if (site.websiteImport?.status === 'FAILED') website.state = 'attention'
+    }
     steps.push(
-      step('author', [
+      website,
+      step('draft', 'start', [
+        { id: 'draft', done: site.setup?.hasDraft === true || site.setup?.hasPublishedArticle === true },
+      ]),
+    )
+  } else steps.push(branding)
+  steps.push(step('article', 'start', [{ id: 'article', done: site.setup?.hasPublishedArticle === true }]))
+
+  if (ai) {
+    const knowledge = step('knowledge', 'later', [{ id: 'source', done: (site.setup?.knowledge.indexed ?? 0) > 0 }])
+    if (!knowledge.done) {
+      if (site.setup?.knowledge.processing) knowledge.state = 'processing'
+      else if (site.setup?.knowledge.failed) knowledge.state = 'attention'
+    }
+    const publishing = site.setup?.publishing
+    steps.push(
+      branding,
+      step('author', 'later', [
         { id: 'authorName', done: filled(site.aiUser?.username) },
         { id: 'avatar', done: filled(site.aiUser?.avatarUrl) },
         { id: 'bio', done: filled(site.aiUser?.bio) },
         { id: 'tone', done: filled(site.aiToneOfVoice) },
       ]),
-    )
-    steps.push(
-      step('voice', [
+      step('voice', 'later', [
         { id: 'focus', done: filled(site.focus) },
         { id: 'audience', done: filled(site.audience) },
       ]),
-    )
-    const knowledge = step('knowledge', [{ id: 'source', done: (site.setup?.knowledge.indexed ?? 0) > 0 }])
-    if (!knowledge.done) {
-      if (site.setup?.knowledge.processing) knowledge.state = 'processing'
-      else if (site.setup?.knowledge.failed) knowledge.state = 'attention'
-    }
-    steps.push(knowledge)
-    const publishing = site.setup?.publishing
-    steps.push(
-      step('publishing', [
+      knowledge,
+      step('publishing', 'later', [
         { id: 'publishingMode', done: !!publishing && (!!publishing.scheduled || !!choices?.publishingReviewed) },
         ...(publishing?.scheduled ? [{ id: 'schedule' as const, done: publishing.scheduleValid }] : []),
       ]),
@@ -135,14 +174,9 @@ export const buildSetupChecklist = (
 
   const domain = site.pendingDomain || site.domain
   if (domain && !isManagedDomain(domain, baseDomain)) {
-    steps.push(step('domain', [{ id: 'domain', done: !site.pendingDomain && site.domainVerified === true }]))
+    steps.push(step('domain', 'later', [{ id: 'domain', done: !site.pendingDomain && site.domainVerified === true }]))
   }
-  steps.push(step('article', [{ id: 'article', done: site.setup?.hasPublishedArticle === true }]))
-  const optional = (id: OptionalSetupStepId, requirement: SetupChecklistStep['requirements'][number]) => {
-    const item = step(id, [requirement])
-    return { ...item, optional: true, skipped: !item.done && !!choices?.skipped.includes(id) }
-  }
-  if (hasAiPlan(site.plan)) {
+  if (ai) {
     steps.push(
       optional('measurement', {
         id: 'measurement',
@@ -156,7 +190,7 @@ export const buildSetupChecklist = (
       done: (site.setup?.team?.members ?? 0) > 1 || (site.setup?.team?.invitations ?? 0) > 0,
     }),
   )
-  if (hasAiPlan(site.plan)) {
+  if (ai) {
     steps.push(
       optional('channels', {
         id: 'channel',

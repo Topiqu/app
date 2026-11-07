@@ -1,6 +1,6 @@
 <template>
   <section
-    v-if="enabled && job && job.status !== 'REVIEWED'"
+    v-if="enabled && job && job.status !== 'REVIEWED' && !websiteShown"
     class="pointer-events-auto w-88 max-w-[calc(100vw-1.5rem)] rounded-(--topiqu-surface-radius) border border-default bg-default p-3"
     data-website-import-notice
     aria-live="polite"
@@ -36,4 +36,5 @@
 const { data, enabled } = useWebsiteImport()
 const job = computed(() => data.value?.import)
 const localePath = useLocalePath()
+const websiteShown = useState('setup-checklist-website', () => false)
 </script>

@@ -9,6 +9,7 @@ const db = {
   tenantInvitation: { count: vi.fn() },
   log: { count: vi.fn() },
 }
+const sessions = { findFirst: vi.fn() }
 const requireDb = vi.fn()
 const requireMember = vi.fn()
 let handler: typeof import('../../../server/api/clients/status.get').default
@@ -17,6 +18,7 @@ beforeAll(async () => {
   vi.stubGlobal('defineEventHandler', (run: unknown) => run)
   vi.stubGlobal('requireDb', requireDb)
   vi.stubGlobal('requireTenantMember', requireMember)
+  vi.stubGlobal('prisma', { articleGenerationSession: sessions })
   vi.stubGlobal('trialState', () => 'NONE')
   vi.stubGlobal('getArticleCreditWallet', async () => ({ available: 5, reserved: 0, balance: 5, grants: [] }))
   handler = (await import('../../../server/api/clients/status.get')).default
@@ -40,6 +42,7 @@ beforeEach(() => {
   })
   db.knowledgeSource.findMany.mockResolvedValue([])
   db.article.findFirst.mockResolvedValue(null)
+  sessions.findFirst.mockResolvedValue(null)
   db.tenantMembership.count.mockResolvedValue(1)
   db.tenantInvitation.count.mockResolvedValue(0)
 })
@@ -129,6 +132,22 @@ describe('dashboard setup status', () => {
     expect((await handler(event()))?.setup.hasPublishedArticle).toBe(false)
     db.article.findFirst.mockResolvedValueOnce({ id: 'published-article' })
     expect((await handler(event()))?.setup.hasPublishedArticle).toBe(true)
+  })
+
+  it('counts a finished generation as the first draft even before anything is saved as an article', async () => {
+    expect((await handler(event()))?.setup.hasDraft).toBe(false)
+    expect(sessions.findFirst).toHaveBeenCalledWith({
+      where: { clientSiteId: 'own-site', status: 'COMPLETED' },
+      select: { id: true },
+    })
+    sessions.findFirst.mockResolvedValueOnce({ id: 'session' })
+    expect((await handler(event()))?.setup.hasDraft).toBe(true)
+  })
+
+  it('does not look for a generation once the blog has a publication', async () => {
+    db.article.findFirst.mockResolvedValueOnce({ id: 'published-article' })
+    expect((await handler(event()))?.setup.hasDraft).toBe(true)
+    expect(sessions.findFirst).not.toHaveBeenCalled()
   })
 
   it('selects only the active AI author profile needed to evaluate setup', async () => {

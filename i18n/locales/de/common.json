@@ -99,7 +99,12 @@
     "setup": {
       "checklist": {
         "title": "Blog einrichten",
-        "description": "Schließen Sie die Einrichtung ab und bereiten Sie Ihren Blog auf die Veröffentlichung vor.",
+        "description": "Drei Schritte bis zu Ihrem ersten veröffentlichten Artikel. Den Rest können Sie jederzeit verfeinern.",
+        "laterDescription": "Ihr erster Artikel ist online. Den Rest Ihres Blogs können Sie jederzeit verfeinern.",
+        "phases": {
+          "start": "Ihr erster Artikel",
+          "later": "Blog verfeinern"
+        },
         "expand": "Anleitung zur Blog-Einrichtung aufklappen",
         "collapse": "Anleitung zur Blog-Einrichtung zuklappen",
         "processing": "In Bearbeitung",
@@ -118,6 +123,8 @@
         "manualDescription": "Artikel warten auf Ihre Freigabe. Bestätigen Sie diesen Modus oder aktivieren Sie die automatische Veröffentlichung und passen Sie den Zeitplan an.",
         "automaticDescription": "KI-Artikel werden automatisch veröffentlicht. Prüfen Sie den Modus und bei regelmäßiger Erstellung auch Häufigkeit, Tage, Uhrzeit und Zeitzone.",
         "requirements": {
+          "website": "Vorschläge der Website geprüft oder Fokus und Zielgruppe eingetragen",
+          "draft": "KI-Entwurf erstellt",
           "name": "Blogname",
           "logo": "Bloglogo",
           "description": "Beschreibung für Leser",
@@ -137,6 +144,20 @@
           "channel": "Shopify-Blog oder LinkedIn-Profil verbunden und aktiviert"
         },
         "steps": {
+          "website": {
+            "title": "Prüfen Sie, was wir auf Ihrer Website gefunden haben",
+            "description": "Wir bereiten aus Ihrer Website Fokus, Zielgruppe, Schreibstil und KI-Quellen Ihres Blogs vor.",
+            "readyDescription": "Wir haben Ihre Website gelesen und diese Einstellungen vorbereitet. Übernehmen Sie sie, oder prüfen Sie sie zuerst einzeln.",
+            "startDescription": "Geben Sie Ihre Website ein, und wir bereiten daraus Fokus, Zielgruppe und KI-Quellen Ihres Blogs vor. Keine Website? Beschreiben Sie Ihren Blog selbst.",
+            "action": "Website-Einstellungen öffnen"
+          },
+          "draft": {
+            "title": "Ersten Artikel erstellen lassen",
+            "description": "Geben Sie ein Thema ein, und die KI schreibt einen Entwurf. Veröffentlicht wird erst, wenn Sie es entscheiden.",
+            "topicsDescription": "Wählen Sie ein Thema auf Basis Ihrer Website oder geben Sie ein eigenes ein. Die KI schreibt einen Entwurf, veröffentlicht wird erst, wenn Sie es entscheiden.",
+            "action": "Ersten Artikel erstellen lassen",
+            "ownTopic": "Eigenes Thema eingeben"
+          },
           "branding": {
             "title": "Blogprofil vervollständigen",
             "description": "Laden Sie ein Logo hoch und ergänzen Sie eine kurze Beschreibung, damit Leser wissen, wessen Blog sie lesen und was sie dort finden.",
@@ -164,8 +185,8 @@
           },
           "article": {
             "title": "Ersten Artikel veröffentlichen",
-            "description": "Erstellen Sie einen Artikel, prüfen Sie die Vorschau und veröffentlichen Sie ihn. Entwürfe und zukünftige Veröffentlichungen zählen noch nicht.",
-            "action": "Ersten Artikel erstellen"
+            "description": "Öffnen Sie den Artikel im Editor, prüfen Sie die Vorschau und veröffentlichen Sie ihn. Geplante Veröffentlichungen zählen, sobald sie online sind.",
+            "action": "Editor öffnen"
           },
           "publishing": {
             "title": "Veröffentlichungsmodus wählen",
@@ -187,6 +208,14 @@
             "description": "Verbinden Sie Shopify und wählen Sie einen Zielblog oder verknüpfen Sie ein LinkedIn-Profil. Die Veröffentlichung muss für den verbundenen Kanal aktiviert sein.",
             "action": "Kanal verbinden"
           }
+        },
+        "website": {
+          "processing": "Wir lesen Ihre Website. Das dauert meist ein bis zwei Minuten, und Sie können Topiqu währenddessen weiter nutzen.",
+          "accept": "Alle übernehmen",
+          "review": "Einzeln prüfen",
+          "noWebsite": "Ich habe keine Website",
+          "useWebsite": "Doch meine Website laden",
+          "sources": "{count} Seite für die KI | {count} Seiten für die KI"
         }
       },
       "menu": "Einrichtung abschließen",

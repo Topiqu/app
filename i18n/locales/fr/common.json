@@ -99,7 +99,12 @@
     "setup": {
       "checklist": {
         "title": "Configurer le blog",
-        "description": "Terminez la configuration du blog pour préparer vos publications.",
+        "description": "Trois étapes jusqu’à votre premier article publié. Vous pourrez peaufiner le reste quand vous voudrez.",
+        "laterDescription": "Votre premier article est en ligne. Peaufinez le reste de votre blog quand vous voudrez.",
+        "phases": {
+          "start": "Votre premier article",
+          "later": "Peaufiner le blog"
+        },
         "expand": "Développer le guide de configuration du blog",
         "collapse": "Réduire le guide de configuration du blog",
         "processing": "En cours de traitement",
@@ -118,6 +123,8 @@
         "manualDescription": "Les articles attendent votre validation. Confirmez ce mode ou activez la publication automatique et ajustez le calendrier dans les réglages.",
         "automaticDescription": "Les articles IA sont publiés automatiquement. Vérifiez ce mode et, pour une création régulière, la fréquence, les jours, l’heure et le fuseau horaire.",
         "requirements": {
+          "website": "Suggestions du site vérifiées, ou thématique et public renseignés",
+          "draft": "Brouillon IA généré",
           "name": "Nom du blog",
           "logo": "Logo du blog",
           "description": "Description pour les lecteurs",
@@ -137,6 +144,20 @@
           "channel": "Blog Shopify ou profil LinkedIn connecté et activé"
         },
         "steps": {
+          "website": {
+            "title": "Vérifiez ce que nous avons trouvé sur votre site",
+            "description": "Nous préparons depuis votre site la thématique, le public, le style d’écriture et les sources IA de votre blog.",
+            "readyDescription": "Nous avons lu votre site et préparé ces réglages. Acceptez-les, ou vérifiez-les d’abord un par un.",
+            "startDescription": "Saisissez votre site et nous en tirerons la thématique, le public et les sources IA de votre blog. Pas de site ? Décrivez votre blog vous-même.",
+            "action": "Ouvrir les réglages du site"
+          },
+          "draft": {
+            "title": "Générez votre premier article",
+            "description": "Saisissez un sujet et l’IA rédige un brouillon. Rien n’est publié sans votre décision.",
+            "topicsDescription": "Choisissez un sujet tiré de votre site, ou saisissez le vôtre. L’IA rédige un brouillon, et rien n’est publié sans votre décision.",
+            "action": "Générer le premier article",
+            "ownTopic": "Saisir mon propre sujet"
+          },
           "branding": {
             "title": "Complétez le profil du blog",
             "description": "Ajoutez un logo et une courte description pour que les lecteurs sachent à qui appartient le blog et ce qu’ils y trouveront.",
@@ -164,8 +185,8 @@
           },
           "article": {
             "title": "Publiez votre premier article",
-            "description": "Créez un article, vérifiez son aperçu et publiez-le. Les brouillons et les publications futures ne comptent pas encore.",
-            "action": "Créer le premier article"
+            "description": "Ouvrez l’article dans l’éditeur, vérifiez son aperçu et publiez-le. Les publications programmées comptent une fois en ligne.",
+            "action": "Ouvrir l’éditeur"
           },
           "publishing": {
             "title": "Choisissez le mode de publication",
@@ -187,6 +208,14 @@
             "description": "Connectez Shopify et choisissez un blog de destination ou liez un profil LinkedIn. La publication doit être activée pour le canal connecté.",
             "action": "Connecter un canal"
           }
+        },
+        "website": {
+          "processing": "Nous lisons votre site. Cela prend en général une ou deux minutes, et vous pouvez continuer à utiliser Topiqu entre-temps.",
+          "accept": "Tout accepter",
+          "review": "Vérifier une par une",
+          "noWebsite": "Je n’ai pas de site",
+          "useWebsite": "Charger plutôt mon site",
+          "sources": "{count} page pour l’IA | {count} pages pour l’IA"
         }
       },
       "menu": "Terminer la configuration",

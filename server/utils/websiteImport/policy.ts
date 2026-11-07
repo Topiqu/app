@@ -7,7 +7,7 @@ export const WEBSITE_IMPORT_LIMITS = {
   pageCharacters: 12_000,
   researchCharacters: 10_000,
   researchOutputTokens: 2000,
-  extractionOutputTokens: 3000,
+  extractionOutputTokens: 3500,
   timeoutMs: 90_000,
   leaseMs: 5 * 60_000,
   // Conservative reservation for hosted-search context, both model calls and bounded indexing.

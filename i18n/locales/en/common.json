@@ -99,7 +99,12 @@
     "setup": {
       "checklist": {
         "title": "Blog setup",
-        "description": "Finish setting up your blog and get ready to publish.",
+        "description": "Three steps to your first published article. You can fine-tune the rest whenever you like.",
+        "laterDescription": "Your first article is out. Fine-tune the rest of your blog whenever you like.",
+        "phases": {
+          "start": "Your first article",
+          "later": "Fine-tune your blog"
+        },
         "expand": "Expand the blog setup guide",
         "collapse": "Collapse the blog setup guide",
         "processing": "Processing",
@@ -118,6 +123,8 @@
         "manualDescription": "Articles wait for your approval. Confirm this mode, or enable automatic publishing and adjust the schedule in settings.",
         "automaticDescription": "AI articles are published automatically. Review this mode and, for scheduled creation, the frequency, days, time and time zone.",
         "requirements": {
+          "website": "Website suggestions reviewed, or focus and audience entered",
+          "draft": "AI draft generated",
           "name": "Blog name",
           "logo": "Blog logo",
           "description": "Description for readers",
@@ -137,6 +144,20 @@
           "channel": "Shopify blog or LinkedIn profile connected and enabled"
         },
         "steps": {
+          "website": {
+            "title": "Check what we found on your website",
+            "description": "We are preparing your blog's focus, audience, writing style and AI sources from your website.",
+            "readyDescription": "We read your website and prepared these settings. Accept them, or review each one first.",
+            "startDescription": "Enter your website and we will prepare your blog's focus, audience and AI sources from it. No website? Describe your blog yourself.",
+            "action": "Open website settings"
+          },
+          "draft": {
+            "title": "Generate your first article",
+            "description": "Enter a topic and AI writes a draft. Nothing is published until you decide.",
+            "topicsDescription": "Pick a topic based on your website, or enter your own. AI writes a draft, and nothing is published until you decide.",
+            "action": "Generate your first article",
+            "ownTopic": "Use my own topic"
+          },
           "branding": {
             "title": "Complete your blog profile",
             "description": "Upload a logo and add a short description so readers know whose blog this is and what they will find.",
@@ -164,8 +185,8 @@
           },
           "article": {
             "title": "Publish your first article",
-            "description": "Create an article, check its preview and publish it. Drafts and future publications do not count yet.",
-            "action": "Create your first article"
+            "description": "Open the article in the editor, check its preview and publish it. Scheduled publications count once they go live.",
+            "action": "Open the editor"
           },
           "publishing": {
             "title": "Choose how to publish",
@@ -187,6 +208,14 @@
             "description": "Connect Shopify and select a destination blog, or link a LinkedIn profile. Publishing must be enabled for the connected channel.",
             "action": "Connect a channel"
           }
+        },
+        "website": {
+          "processing": "We are reading your website. This usually takes a minute or two, and you can keep using Topiqu in the meantime.",
+          "accept": "Accept all",
+          "review": "Review each one",
+          "noWebsite": "I do not have a website",
+          "useWebsite": "Load my website instead",
+          "sources": "{count} page for AI | {count} pages for AI"
         }
       },
       "menu": "Finish setup",

@@ -157,7 +157,8 @@
       "emptyTitle": "Vous n’avez encore aucun article",
       "emptyDescription": "Vos brouillons et articles publiés apparaîtront ici.",
       "noMatchesTitle": "Aucun article ne correspond à vos filtres",
-      "noMatchesDescription": "Modifiez la recherche ou les filtres."
+      "noMatchesDescription": "Modifiez la recherche ou les filtres.",
+      "websiteTopics": "Ou commencez par un sujet tiré de votre site"
     },
     "empty": {
       "badge": "Bientôt",

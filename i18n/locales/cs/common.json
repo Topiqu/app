@@ -99,7 +99,12 @@
     "setup": {
       "checklist": {
         "title": "Nastavení blogu",
-        "description": "Dokončete nastavení a připravte blog na publikování.",
+        "description": "Tři kroky k prvnímu publikovanému článku. Zbytek můžete doladit, kdykoli budete chtít.",
+        "laterDescription": "První článek je venku. Zbytek blogu můžete doladit, kdykoli budete chtít.",
+        "phases": {
+          "start": "Váš první článek",
+          "later": "Doladit blog"
+        },
         "expand": "Rozbalit průvodce nastavením blogu",
         "collapse": "Sbalit průvodce nastavením blogu",
         "processing": "Zpracovává se",
@@ -118,6 +123,8 @@
         "manualDescription": "Články čekají na vaše schválení. Tento režim můžete potvrdit, nebo v nastavení zapnout automatické publikování a upravit harmonogram.",
         "automaticDescription": "AI články se publikují automaticky. Zkontrolujte režim a při pravidelné tvorbě i frekvenci, dny, čas a časové pásmo.",
         "requirements": {
+          "website": "Návrhy z webu zkontrolované, nebo vyplněné zaměření a publikum",
+          "draft": "Vygenerovaný koncept od AI",
           "name": "Název blogu",
           "logo": "Logo blogu",
           "description": "Popis pro čtenáře",
@@ -137,6 +144,20 @@
           "channel": "Připojený a zapnutý Shopify blog nebo LinkedIn profil"
         },
         "steps": {
+          "website": {
+            "title": "Zkontrolujte, co jsme zjistili o vašem webu",
+            "description": "Z vašeho webu připravujeme zaměření blogu, publikum, styl psaní a zdroje pro AI.",
+            "readyDescription": "Prošli jsme váš web a připravili tato nastavení. Přijměte je, nebo je nejdřív zkontrolujte jednotlivě.",
+            "startDescription": "Zadejte adresu svého webu a připravíme z něj zaměření blogu, publikum a zdroje pro AI. Nemáte web? Popište blog sami.",
+            "action": "Otevřít nastavení z webu"
+          },
+          "draft": {
+            "title": "Vygenerujte první článek",
+            "description": "Zadejte téma a AI napíše koncept. Nic se nepublikuje, dokud se sami nerozhodnete.",
+            "topicsDescription": "Vyberte téma podle vašeho webu, nebo zadejte vlastní. AI napíše koncept a nic se nepublikuje, dokud se sami nerozhodnete.",
+            "action": "Vygenerovat první článek",
+            "ownTopic": "Zadat vlastní téma"
+          },
           "branding": {
             "title": "Doplňte profil blogu",
             "description": "Nahrajte logo a napište krátký popis, aby čtenáři věděli, čí blog čtou a co tu najdou.",
@@ -164,8 +185,8 @@
           },
           "article": {
             "title": "Publikujte první článek",
-            "description": "Vytvořte článek, zkontrolujte náhled a publikujte. Koncepty a budoucí publikace se zatím nepočítají.",
-            "action": "Vytvořit první článek"
+            "description": "Otevřete článek v editoru, zkontrolujte náhled a publikujte ho. Naplánované publikace se počítají, až budou živé.",
+            "action": "Otevřít editor"
           },
           "publishing": {
             "title": "Zvolte způsob publikování",
@@ -187,6 +208,14 @@
             "description": "Připojte Shopify a vyberte cílový blog, nebo propojte LinkedIn profil. Propojený kanál musí mít zapnuté publikování.",
             "action": "Propojit kanál"
           }
+        },
+        "website": {
+          "processing": "Procházíme váš web. Obvykle to trvá minutu nebo dvě a mezitím můžete Topiqu dál používat.",
+          "accept": "Přijmout vše",
+          "review": "Zkontrolovat jednotlivě",
+          "noWebsite": "Nemám web",
+          "useWebsite": "Raději načíst můj web",
+          "sources": "{count} stránka pro AI | {count} stránky pro AI | {count} stránek pro AI"
         }
       },
       "menu": "Dokončit nastavení",

@@ -157,7 +157,8 @@
       "emptyTitle": "Zatím tu nemáte žádný článek",
       "emptyDescription": "Rozepsané i vydané články se objeví tady.",
       "noMatchesTitle": "Filtrům neodpovídá žádný článek",
-      "noMatchesDescription": "Zkuste upravit hledání nebo filtry."
+      "noMatchesDescription": "Zkuste upravit hledání nebo filtry.",
+      "websiteTopics": "Nebo začněte tématem podle vašeho webu"
     },
     "empty": {
       "badge": "Už se to chystá",

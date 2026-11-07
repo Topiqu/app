@@ -157,7 +157,8 @@
       "emptyTitle": "Sie haben noch keine Artikel",
       "emptyDescription": "Entwürfe und veröffentlichte Artikel erscheinen hier.",
       "noMatchesTitle": "Keine Artikel entsprechen Ihren Filtern",
-      "noMatchesDescription": "Passen Sie die Suche oder die Filter an."
+      "noMatchesDescription": "Passen Sie die Suche oder die Filter an.",
+      "websiteTopics": "Oder beginnen Sie mit einem Thema von Ihrer Website"
     },
     "empty": {
       "badge": "Demnächst",

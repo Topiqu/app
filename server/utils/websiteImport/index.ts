@@ -244,6 +244,7 @@ export const processWebsiteImport = async (id: string) => {
     })
     if (currentLease.count !== 1) return false
     let values = emptyWebsiteValues()
+    let topics: WebsiteTopic[] = []
     let analysisUsage: Awaited<ReturnType<typeof analyzeWebsite>>['usage'] = null
     try {
       const analysis = await analyzeWebsite(id, job.clientSiteId, {
@@ -253,6 +254,7 @@ export const processWebsiteImport = async (id: string) => {
         metadata,
       })
       values = analysis.values
+      topics = analysis.topics
       analysisUsage = analysis.usage
     } catch {
       warnings.add('analysisFailed')
@@ -272,7 +274,7 @@ export const processWebsiteImport = async (id: string) => {
     values.keywords = [
       ...new Map(values.keywords.map((keyword) => [keyword.trim().toLocaleLowerCase(), keyword.trim()])).values(),
     ].filter(Boolean)
-    const result: WebsiteImportResult = { values, sources, warnings: [...warnings] }
+    const result: WebsiteImportResult = { values, sources, warnings: [...warnings], topics }
     const knownUsage = research.usage && research.usage.searches !== null && analysisUsage
     const budgetCostMicros = knownUsage
       ? research.usage!.estimatedCostMicros + analysisUsage!.estimatedCostMicros + WEBSITE_IMPORT_LIMITS.indexingMicros
@@ -297,6 +299,7 @@ export const processWebsiteImport = async (id: string) => {
       fields: Object.entries(values)
         .filter(([, value]) => (Array.isArray(value) ? value.length > 0 : value !== null))
         .map(([key]) => key),
+      topics: topics.length,
       searches: research.usage?.searches ?? null,
       estimatedCostMicros: budgetCostMicros ?? null,
     })

@@ -52,6 +52,22 @@
             : undefined
         "
       />
+      <div v-if="job?.status === 'REVIEWED' && firstArticle" class="space-y-2" data-website-import-next>
+        <p class="text-sm font-medium text-highlighted">{{ $t('common.setup.checklist.steps.draft.title') }}</p>
+        <WebsiteImportTopics />
+        <UButton
+          size="sm"
+          icon="mdi:auto-fix"
+          :to="localePath({ name: 'admin-editor-id', params: { id: 'new' }, query: { ai: '1' } })"
+          :label="
+            $t(
+              topics.length
+                ? 'common.setup.checklist.steps.draft.ownTopic'
+                : 'common.setup.checklist.steps.draft.action',
+            )
+          "
+        />
+      </div>
       <UAlert
         v-if="job?.status === 'FAILED'"
         color="warning"
@@ -74,6 +90,13 @@ const { data, pending, error, enabled, refresh, apply } = useWebsiteImport()
 const { data: status } = useClientSiteStatus()
 const job = computed(() => data.value?.import)
 const canStart = computed(() => hasAiPlan(status.value?.plan))
+const can = useTenantScope()
+const localePath = useLocalePath()
+const topics = useWebsiteTopics()
+// Reviewing is where the settings work ends, so the next step is the first article, not more settings.
+const firstArticle = computed(
+  () => canStart.value && status.value?.setup?.hasDraft === false && can('AI_USE') && can('ARTICLE_WRITE'),
+)
 const restarting = shallowRef(false)
 watch(
   () => job.value?.id,
@@ -89,17 +112,6 @@ let disposed = false
 onScopeDispose(() => {
   disposed = true
 })
-const failure = (error: unknown) => {
-  const detail = error as {
-    data?: { data?: { code?: string; field?: string }; statusCode?: number }
-    statusCode?: number
-  }
-  const code = detail.data?.data?.code
-  if (code === 'WEBSITE_CONFLICT') return t('common.websiteImport.conflict')
-  if (code === 'WEBSITE_ASSET') return t('common.websiteImport.assetFailed')
-  if (detail.statusCode === 429 || detail.data?.statusCode === 429) return t('common.websiteImport.rateLimited')
-  return t('common.websiteImport.failedHelp')
-}
 const applySelection = async (fields: WebsiteImportField[], values: WebsiteValues) => {
   if (busy.value) return
   busy.value = true
@@ -110,7 +122,7 @@ const applySelection = async (fields: WebsiteImportField[], values: WebsiteValue
     toast.add({ color: 'success', title: t('common.websiteImport.applied') })
     emit('applied')
   } catch (error) {
-    if (!disposed) message.value = failure(error)
+    if (!disposed) message.value = websiteImportApplyMessage(error, t)
   } finally {
     if (!disposed) busy.value = false
   }

@@ -45,10 +45,17 @@ export const WebsiteValuesSchema = z.object({
 })
 export type WebsiteValues = z.infer<typeof WebsiteValuesSchema>
 
+/** A first-article idea from the website, the same shape as an article batch topic. */
+export const WebsiteTopicSchema = z.object({ topic: z.string().min(10).max(300), reason: z.string().min(10).max(300) })
+export type WebsiteTopic = z.infer<typeof WebsiteTopicSchema>
+export const WEBSITE_TOPICS_MAX = 3
+
 export const WebsiteResultSchema = z.object({
   values: WebsiteValuesSchema,
   sources: z.array(z.object({ url: publicUrl, title: z.string().max(200) })).max(5),
   warnings: z.array(z.enum(['pageFailed', 'knowledgeQuota', 'assetUnavailable', 'analysisFailed'])).max(4),
+  // Imports before topics have none; a required field would fail their whole result, review included.
+  topics: z.array(WebsiteTopicSchema).max(WEBSITE_TOPICS_MAX).default([]),
 })
 export type WebsiteImportResult = z.infer<typeof WebsiteResultSchema>
 

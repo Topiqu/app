@@ -53,3 +53,9 @@ export const useWebsiteImport = createSharedComposable(() => {
   }
   return { data, pending, error, refresh, apply, start, enabled }
 })
+
+/** First-article ideas from the latest import; empty for imports that predate them. */
+export const useWebsiteTopics = () => {
+  const { data } = useWebsiteImport()
+  return computed(() => data.value?.import?.result?.topics ?? [])
+}

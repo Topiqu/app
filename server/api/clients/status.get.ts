@@ -180,6 +180,15 @@ export default defineEventHandler(async (event) => {
           select: { slug: true },
         })
       : null
+  // A new editor autosaves to ArticleDraft, not Article, so a finished generation is what proves the first draft.
+  // Sessions deny every policy read; this answers only a yes/no for the verified member's own tenant.
+  const hasDraft =
+    !!publishedArticle ||
+    !!draftArticle ||
+    !!(await prisma.articleGenerationSession.findFirst({
+      where: { clientSiteId: clientSite.id, status: 'COMPLETED' },
+      select: { id: true },
+    }))
   // Onboarding records why a new site started without a trial; nothing on the site row says so.
   const repeatInbox =
     clientSite.plan === 'BASIC' &&
@@ -193,6 +202,7 @@ export default defineEventHandler(async (event) => {
     knowledgeSources: knowledgeSources.length,
     setup: {
       hasPublishedArticle: Boolean(publishedArticle),
+      hasDraft,
       draftArticleSlug: draftArticle?.slug ?? null,
       knowledge,
       publishing: { automatic: autoRelease === true, scheduled, scheduleValid },

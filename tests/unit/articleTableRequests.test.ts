@@ -21,6 +21,7 @@ const articles = shallowRef<{ data: ArticleWithDetails[]; total: number }>({ dat
 const status = shallowRef<Record<string, unknown>>({ language: 'en' })
 const route = { query: {} as Record<string, string> }
 const scopes = new Set<string>()
+const topics = shallowRef<{ topic: string; reason: string }[]>([])
 mockNuxtImport('$fetch', () => mocks.fetch)
 mockNuxtImport('useToast', () => () => ({ add: mocks.toast }))
 mockNuxtImport('useConfirm', () => () => vi.fn())
@@ -49,6 +50,7 @@ mockNuxtImport('useQueryCache', () => () => ({
 }))
 mockNuxtImport('useMutation', () => () => ({ mutate: vi.fn(), isLoading: shallowRef(false) }))
 mockNuxtImport('useOptimisticStatus', () => () => ({ saving: () => 1, saved: mocks.saved, reverted: mocks.reverted }))
+mockNuxtImport('useWebsiteTopics', () => () => topics)
 mockNuxtImport('useExport', () => () => ({ exportJson: vi.fn(), exportCsv: vi.fn(), exportPdf: vi.fn() }))
 
 const TranslationMenu = defineComponent({
@@ -113,6 +115,7 @@ beforeEach(() => {
   status.value = { language: 'en' }
   route.query = {}
   scopes.clear()
+  topics.value = []
   vi.spyOn(console, 'warn').mockImplementation(() => {})
 })
 afterEach(() => {
@@ -264,6 +267,29 @@ describe('article table empty states', () => {
       'articles.empty.owner.aiCta',
       'articles.empty.owner.writeSelfCta',
     ])
+  })
+
+  it('adds the website topics under the generation actions only when AI can write', async () => {
+    const footer = async () => {
+      articles.value = { data: [], total: 0 }
+      const wrapper = await mountTable()
+      return wrapper.find('[data-articles-empty-topics]').exists()
+    }
+    const mountTable = () =>
+      mountSuspended(Table, {
+        shallow: true,
+        global: {
+          mocks: { $t: (key: string) => key },
+          stubs: { UEmpty: { template: '<div><slot name="footer" /></div>' } },
+        },
+      })
+    scopes.add('ARTICLE_WRITE').add('AI_USE')
+    status.value = { language: 'en', plan: 'PREMIUM', articlesRemaining: 10 }
+    expect(await footer()).toBe(false)
+    topics.value = [{ topic: 'How to choose a grinder', reason: 'Home baristas start with the grinder.' }]
+    expect(await footer()).toBe(true)
+    status.value = { language: 'en', plan: 'PREMIUM', articlesRemaining: 0 }
+    expect(await footer()).toBe(false)
   })
 
   it('offers only writing without AI credits or permission, and nothing to readers', async () => {

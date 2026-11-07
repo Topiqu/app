@@ -115,7 +115,14 @@
       :description="$t('articles.list.emptyDescription')"
       :actions="emptyActions"
       data-articles-empty="none"
-    />
+    >
+      <template v-if="canGenerateAi && topics.length" #footer>
+        <div class="w-full max-w-md text-left" data-articles-empty-topics>
+          <p class="mb-2 text-sm font-medium text-highlighted">{{ $t('articles.list.websiteTopics') }}</p>
+          <WebsiteImportTopics />
+        </div>
+      </template>
+    </UEmpty>
 
     <div
       v-else
@@ -483,14 +490,19 @@ const activeFilterCount = computed(
 )
 const filtered = computed(() => !!globalFilter.value.trim() || activeFilterCount.value > 0)
 const can = useTenantScope()
+const canGenerateAi = computed(
+  () =>
+    can('ARTICLE_WRITE') &&
+    can('AI_USE') &&
+    hasAiPlan(clientSite.value?.plan) &&
+    Number(clientSite.value?.articlesRemaining ?? 0) >= articleCreditCost(clientSite.value?.articleQuality),
+)
+const topics = useWebsiteTopics()
 const emptyActions = computed(() => {
   if (!can('ARTICLE_WRITE')) return []
   const editor = (query?: Record<string, string>) =>
     localePath({ name: 'admin-editor-id', params: { id: 'new' }, query })
-  const ai =
-    can('AI_USE') &&
-    hasAiPlan(clientSite.value?.plan) &&
-    Number(clientSite.value?.articlesRemaining ?? 0) >= articleCreditCost(clientSite.value?.articleQuality)
+  const ai = canGenerateAi.value
   return [
     ...(ai ? [{ label: $t('articles.empty.owner.aiCta'), icon: 'mdi:auto-fix', to: editor({ ai: '1' }) }] : []),
     {

@@ -157,7 +157,8 @@
       "emptyTitle": "You have no articles yet",
       "emptyDescription": "Drafts and published articles will appear here.",
       "noMatchesTitle": "No articles match your filters",
-      "noMatchesDescription": "Try changing the search or filters."
+      "noMatchesDescription": "Try changing the search or filters.",
+      "websiteTopics": "Or start with a topic from your website"
     },
     "empty": {
       "badge": "Coming soon",

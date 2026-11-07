@@ -184,6 +184,7 @@ describe.skipIf(!enabled)('website import on PostgreSQL', () => {
         language: 'cs',
         keywords: ['káva', 'espresso'],
       },
+      topics: [{ topic: 'Jak vybrat první mlýnek na kávu', reason: 'Začínající baristé řeší mlýnek jako první.' }],
       usage: { ...usage, searches: 0, estimatedCostMicros: 35 },
     })
     mocks.extract.mockImplementation(async (target, options) => {
@@ -223,6 +224,7 @@ describe.skipIf(!enabled)('website import on PostgreSQL', () => {
     expect(await db!.websiteImport.findUniqueOrThrow({ where: { id: job.id } })).toMatchObject({
       status: 'READY',
       budgetCostMicros: 110_070,
+      result: { topics: [{ topic: 'Jak vybrat první mlýnek na kávu' }] },
     })
     expect(await db!.knowledgeSource.findFirstOrThrow({ where: { websiteImportId: job.id } })).toMatchObject({
       useInArticles: false,
