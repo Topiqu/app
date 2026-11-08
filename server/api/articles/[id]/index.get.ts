@@ -256,11 +256,15 @@ export default defineEventHandler(async (event) => {
     // Only place that sees the resolved translation, so the split belongs here.
     // `content` stays as stored for the editor; only the rendered blocks carry resolved links.
     ...articleBlocks(
-      await resolveArticleLinks(prisma, article.content, {
-        clientSiteId: article.clientSiteId,
-        language,
-        tenantDomain: clientSite.domain,
-      }),
+      await resolveProductCards(
+        prisma,
+        await resolveArticleLinks(prisma, article.content, {
+          clientSiteId: article.clientSiteId,
+          language,
+          tenantDomain: clientSite.domain,
+        }),
+        { clientSiteId: article.clientSiteId },
+      ),
       { adBreak: true },
     ),
     commentCount: _count.comments,

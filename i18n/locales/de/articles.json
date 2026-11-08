@@ -331,6 +331,16 @@
       "noAuthor": "Nicht angegeben",
       "author": "Artikelautor"
     },
+    "productCard": {
+      "label": "Produkt: {name}",
+      "from": "ab {price}",
+      "view": "Produkt ansehen",
+      "availability": {
+        "IN_STOCK": "Auf Lager",
+        "PREORDER": "Vorbestellung",
+        "BACKORDER": "Auf Bestellung"
+      }
+    },
     "poll": {
       "defaultQuestion": "Frage eingeben",
       "defaultOption": "Option 1",
@@ -432,6 +442,14 @@
       "articlePublished": "Artikel veröffentlicht",
       "draftCreated": "Entwurf erstellt",
       "translationSaveFailedAfterCreate": "Der Artikel wurde gespeichert, aber eine Übersetzung konnte nicht gespeichert werden. Prüfe vor dem Fortfahren den entsprechenden Sprachreiter.",
+      "productPicker": {
+        "title": "Produkt einfügen",
+        "description": "Produkte aus Ihrem verbundenen Feed oder Shopify-Shop. Die Karte zeigt den aktuellen Preis und die Verfügbarkeit.",
+        "search": "Produkte suchen",
+        "empty": "Kein vorrätiges Produkt passt. Verbinden Sie unter Wissen einen Produktfeed oder Shopify.",
+        "failed": "Das Produkt konnte nicht eingefügt werden.",
+        "card": "Produktkarte"
+      },
       "toolbar": {
         "more": "Weitere Optionen",
         "fontFamily": "Schriftfamilie",
@@ -446,6 +464,7 @@
         "insertImage": "Bild aus URL einfügen",
         "insertYoutube": "YouTube-Video einfügen",
         "insertPoll": "Umfrage einfügen",
+        "insertProduct": "Produkt einfügen",
         "insertTable": "Tabelle einfügen",
         "table": "Tabellenaktionen",
         "addColumnAfter": "Spalte hinzufügen",

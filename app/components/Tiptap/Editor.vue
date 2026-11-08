@@ -14,6 +14,7 @@
           :limit
           @openLink="openLink"
           @insertPoll="insertPoll"
+          @openProductPicker="productPickerOpen = true"
           @uploadFile="uploadImage"
           @openMedia="openMedia"
           @focusEditor="focusEditor"
@@ -51,6 +52,7 @@
       />
 
       <TiptapAltModal v-model:open="altModal.show" :defaultAlt="altModal.defaultAlt" @submit="onAltSubmit" />
+      <TiptapProductModal v-model:open="productPickerOpen" @insert="(card) => run((c) => c.insertProductCard(card))" />
       <LazyMediaPicker v-if="mediaPickerOpen" v-model:open="mediaPickerOpen" mode="body" @select="onMediaSelect" />
       <MediaDetail :id="mediaDetail.id" v-model:open="mediaDetail.open" @updated="onMediaUpdated" />
     </template>
@@ -82,6 +84,7 @@ const linkModal = shallowReactive({
 
 const altModal = shallowReactive({ show: false, defaultAlt: '' })
 const mediaPickerOpen = shallowRef(false)
+const productPickerOpen = shallowRef(false)
 /** Position of the image being replaced; `null` inserts a new one. */
 let replacePos: number | null = null
 let altResolver: ((alt: string) => void) | null = null
@@ -194,6 +197,7 @@ const { suggestion } = useTiptapSlashCommand({
   openImagePrompt: () => openLink({ type: 'image' }),
   openYoutubePrompt: () => openLink({ type: 'youtube' }),
   insertPoll: () => insertPoll(),
+  openProductPicker: () => (productPickerOpen.value = true),
 })
 
 const editor = useTiptapInstance({

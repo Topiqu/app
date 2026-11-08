@@ -56,8 +56,8 @@ const safeParse = (raw: string | undefined): unknown => {
  * Poll text (question + labels), image `alt`/`title`, and human-readable attributes on
  * surviving elements (`title`, `aria-label` — e.g. link tooltips) are carried out
  * separately and translated as ordered structured fields; the ids, URLs and remaining
- * markup stay server-side and are re-stamped on rebuild. Twitter embeds are preserved
- * verbatim. Pure + deterministic — unit-testable.
+ * markup stay server-side and are re-stamped on rebuild. Twitter embeds and product cards are
+ * preserved verbatim. Pure + deterministic — unit-testable.
  */
 export const maskContentBlocks = (content: string): MaskResult => {
   const $ = cheerio.load(content)
@@ -87,6 +87,13 @@ export const maskContentBlocks = (content: string): MaskResult => {
       $script.remove()
     }
     $el.replaceWith(verbatimToken(verbatim.length))
+    verbatim.push(html)
+  })
+
+  // A product keeps the shop's name.
+  $('div[data-type="product"]').each((_, el) => {
+    const html = $.html(el)
+    $(el).replaceWith(verbatimToken(verbatim.length))
     verbatim.push(html)
   })
 

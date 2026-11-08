@@ -6,6 +6,7 @@ import { InlineImage } from '~~/extensions/image'
 import { Youtube } from '@tiptap/extension-youtube'
 import SlashCommand from '~~/extensions/slashCommand'
 import { Underline } from '@tiptap/extension-underline'
+import { ProductCard } from '~~/extensions/productCard'
 import { TextAlign } from '@tiptap/extension-text-align'
 import { TextStyle } from '@tiptap/extension-text-style'
 import { Typography } from '@tiptap/extension-typography'
@@ -23,6 +24,7 @@ import Poll from '~~/extensions/poll'
 
 import TiptapImage from '~/components/File/TiptapImage.vue'
 import TiptapFigure from '~/components/File/TiptapFigure.vue'
+import TiptapProductNode from '~/components/Tiptap/ProductNode.vue'
 
 const CustomBlockquote = Blockquote.extend({
   renderHTML: ({ HTMLAttributes }) => ['blockquote', { class: 'blockquote', ...HTMLAttributes }, 0],
@@ -70,6 +72,7 @@ export function useTiptapInstance(opts: UseTiptapInstanceOptions) {
       ColoredTableHeader,
       ColoredTableCell,
       Poll,
+      ProductCard.extend({ addNodeView: () => VueNodeViewRenderer(TiptapProductNode) }),
       Indent,
       TextStyle,
       Color.configure({ types: ['textStyle'] }),

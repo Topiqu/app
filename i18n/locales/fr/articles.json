@@ -331,6 +331,16 @@
       "noAuthor": "Non indiqué",
       "author": "Auteur de l'article"
     },
+    "productCard": {
+      "label": "Produit : {name}",
+      "from": "à partir de {price}",
+      "view": "Voir le produit",
+      "availability": {
+        "IN_STOCK": "En stock",
+        "PREORDER": "Précommande",
+        "BACKORDER": "Sur commande"
+      }
+    },
     "poll": {
       "defaultQuestion": "Saisissez une question",
       "defaultOption": "Option 1",
@@ -427,6 +437,14 @@
       "articlePublished": "Article publié",
       "draftCreated": "Brouillon créé",
       "translationSaveFailedAfterCreate": "L’article a été enregistré, mais une traduction n’a pas pu l’être. Vérifiez son onglet de langue avant de continuer.",
+      "productPicker": {
+        "title": "Insérer un produit",
+        "description": "Produits de votre flux connecté ou de votre boutique Shopify. La carte affiche le prix et la disponibilité du jour.",
+        "search": "Rechercher des produits",
+        "empty": "Aucun produit en stock ne correspond. Connectez un flux de produits ou Shopify dans Connaissances.",
+        "failed": "Le produit n'a pas pu être inséré.",
+        "card": "Fiche produit"
+      },
       "toolbar": {
         "more": "Autres options",
         "fontFamily": "Famille de polices",
@@ -441,6 +459,7 @@
         "insertImage": "Insérer une image depuis une URL",
         "insertYoutube": "Insérer une vidéo YouTube",
         "insertPoll": "Insérer un sondage",
+        "insertProduct": "Insérer un produit",
         "insertTable": "Insérer un tableau",
         "table": "Actions du tableau",
         "addColumnAfter": "Ajouter une colonne",

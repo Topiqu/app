@@ -3,8 +3,11 @@ import type { Language } from '~~/generated/zenstack/models'
 import { z } from 'zod'
 import * as cheerio from 'cheerio'
 import { generateText, Output } from 'ai'
+import { productCardHtml } from '~~/shared/utils/articleEmbeds'
 import { isTag, isText, type AnyNode, type Text } from 'domhandler'
 import { isAiAllowanceError } from '~~/shared/utils/aiAllowanceError'
+
+import { copyProductImages } from '../knowledge/productImage'
 
 export const MAX_ARTICLE_LINKS = 3
 export const MAX_SITE_LINKS = 2
@@ -66,7 +69,10 @@ const wrapPhrase = ($: cheerio.CheerioAPI, paragraph: AnyNode, phrase: string, h
   return false
 }
 
-/** The model only proposes; a link survives when its target was offered and its anchor is verbatim text. */
+/**
+ * The model only proposes; a link survives when its target was offered and its anchor is verbatim text.
+ * A linked product also gets a card after the top-level block that mentions it.
+ */
 export const insertArticleLinks = (
   html: string,
   links: readonly ArticleLink[],
@@ -83,6 +89,13 @@ export const insertArticleLinks = (
     .map((el) => $(el).attr('href') ?? '')
   const linkedSlugs = new Set(hrefs.flatMap((href) => articleLinkTarget(href)?.slug ?? []))
   const linkedUrls = new Set(hrefs)
+  const carded = new Set(
+    $('[data-type="product"]')
+      .toArray()
+      .map((el) => $(el).attr('data-product-id')),
+  )
+  const cards = new Map<AnyNode, string[]>()
+  const productIds: string[] = []
   const usedParagraphs = new Set<number>()
   let siteLinks = 0
 
@@ -101,14 +114,25 @@ export const insertArticleLinks = (
       if (!wrapPhrase($, element, phrase, page.url)) continue
       linkedUrls.add(page.url)
       siteLinks++
+      if (page.productId && !carded.has(page.productId)) {
+        const block = $(element).parents().last()[0] ?? element
+        cards.set(block, [
+          ...(cards.get(block) ?? []),
+          productCardHtml({ productId: page.productId, url: page.url, name: page.title }),
+        ])
+        carded.add(page.productId)
+        productIds.push(page.productId)
+      }
     } else continue
     usedParagraphs.add(paragraph)
   }
 
+  for (const [block, markup] of cards) $(block).after(markup.join(''))
   return {
     html: usedParagraphs.size ? $.html() : html,
     articleLinks: usedParagraphs.size - siteLinks,
     siteLinks,
+    productIds,
   }
 }
 
@@ -209,11 +233,16 @@ export const linkArticle = async (
     })
 
     const inserted = insertArticleLinks(article.content, output.links, candidates, language, siteTargets)
+    // A card without its picture is still a card; the copy never costs the links.
+    await copyProductImages(clientSiteId, inserted.productIds).catch((error) =>
+      reportCaughtError('Product card images failed', error, { clientSiteId }),
+    )
     await step?.complete({
       candidates: candidates.length,
       siteCandidates: siteTargets.length,
       proposedLinks: output.links.length,
       siteLinks: inserted.siteLinks,
+      productCards: inserted.productIds.length,
       tokens: usage.totalTokens ?? 0,
     })
     return {

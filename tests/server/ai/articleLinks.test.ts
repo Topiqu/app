@@ -10,6 +10,8 @@ async function stubImports() {
   await stubNitroImports(import('../../../server/utils/ai/reasoning'), 'aiReasoning')
 }
 
+vi.mock('../../../server/utils/knowledge/productImage', () => ({ copyProductImages: vi.fn(async () => {}) }))
+
 await stubImports()
 
 const { createArticleGenerationAudit } = await import('../../../server/utils/articleGenerationAudit')
@@ -94,11 +96,25 @@ describe('insertArticleLinks', () => {
       'cs',
       sites,
     )
-    expect(result).toMatchObject({ siteLinks: 2, articleLinks: 1 })
+    expect(result).toMatchObject({ siteLinks: 2, articleLinks: 1, productIds: ['p1'] })
     expect(result.html).toContain('<a href="https://shop.test/kompostery">Kompost</a>')
     expect(result.html).toContain('<p><a href="https://shop.test/hnojivo?a=1&amp;b=2">Hnojivo</a> doplní dusík.</p>')
     expect(result.html).not.toContain('https://shop.test/ryc')
     expect(result.html).toContain('<a href="/cs/clanky/puda">Půda</a>')
+  })
+
+  it('puts a card for a linked product after its top-level block, once per product', () => {
+    const list = '<ul><li>Hnojivo doplní dusík.</li><li>Rýč usnadní práci.</li></ul><p>Konec.</p>'
+    const result = insertArticleLinks(list, [link(0, 'Hnojivo', 'W2'), link(1, 'Rýč', 'W3')], candidates, 'cs', sites)
+    expect(result.productIds).toEqual(['p1', 'p2'])
+    expect(result.html).toMatch(
+      /<\/ul><div data-type="product" data-product-id="p1"[^>]*>.*?<\/div><div data-type="product" data-product-id="p2"/,
+    )
+    expect(result.html).toContain(
+      '<div data-type="product" data-product-id="p1" data-url="https://shop.test/hnojivo?a=1&amp;b=2" data-name="Hnojivo"><p><a href="https://shop.test/hnojivo?a=1&amp;b=2">Hnojivo</a></p></div>',
+    )
+    // The card's own link counts as linked, so relinking a carded body adds neither.
+    expect(insertArticleLinks(result.html, [link(0, 'Hnojivo', 'W2')], [], 'cs', sites).productIds).toEqual([])
   })
 
   it('never links a page that was not offered or is already linked', () => {

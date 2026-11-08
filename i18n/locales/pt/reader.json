@@ -143,7 +143,17 @@
       "noBio": "Sem biografia",
       "userDataError": "Erro ao carregar os dados do utilizador"
     },
-    "votes": "Votos"
+    "votes": "Votos",
+    "productCard": {
+      "label": "Produto: {name}",
+      "from": "a partir de {price}",
+      "view": "Ver produto",
+      "availability": {
+        "IN_STOCK": "Em stock",
+        "PREORDER": "Pré-venda",
+        "BACKORDER": "Por encomenda"
+      }
+    }
   },
   "common": {
     "actions": {

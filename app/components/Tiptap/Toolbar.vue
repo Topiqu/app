@@ -118,6 +118,15 @@
             :aria-label="$t('articles.editor.toolbar.insertPoll')"
             @click="emit('insertPoll')"
           />
+          <UButton
+            icon="mdi:shopping-outline"
+            :class="optionalClass"
+            color="neutral"
+            variant="ghost"
+            :title="$t('articles.editor.toolbar.insertProduct')"
+            :aria-label="$t('articles.editor.toolbar.insertProduct')"
+            @click="emit('openProductPicker')"
+          />
         </UFieldGroup>
 
         <UFieldGroup class="shrink-0" :class="optionalClass">
@@ -234,7 +243,7 @@ const { editor, limit } = defineProps<{ editor: Editor; limit: number }>()
 const emit = defineEmits<{
   (e: 'openLink', payload: { type: 'link' | 'image' | 'youtube'; url?: string }): void
   (e: 'uploadFile', files: FileList | null): void
-  (e: 'insertPoll' | 'focusEditor' | 'openMedia'): void
+  (e: 'insertPoll' | 'focusEditor' | 'openMedia' | 'openProductPicker'): void
 }>()
 
 const sk = useTiptapShortcuts()

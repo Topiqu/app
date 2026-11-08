@@ -331,6 +331,16 @@
       "noAuthor": "Not Specified",
       "author": "Article author"
     },
+    "productCard": {
+      "label": "Product: {name}",
+      "from": "from {price}",
+      "view": "View product",
+      "availability": {
+        "IN_STOCK": "In stock",
+        "PREORDER": "Pre-order",
+        "BACKORDER": "Available to order"
+      }
+    },
     "poll": {
       "defaultQuestion": "Enter a question",
       "defaultOption": "Option 1",
@@ -432,6 +442,14 @@
       "articlePublished": "Article published",
       "draftCreated": "Draft created",
       "translationSaveFailedAfterCreate": "Article saved, but a translation could not be saved. Check its language tab before continuing.",
+      "productPicker": {
+        "title": "Insert product",
+        "description": "Products from your connected feed or Shopify store. The card shows today's price and stock.",
+        "search": "Search products",
+        "empty": "No product in stock matches. Connect a product feed or Shopify in Knowledge.",
+        "failed": "The product could not be inserted.",
+        "card": "Product card"
+      },
       "toolbar": {
         "more": "More options",
         "fontFamily": "Font family",
@@ -446,6 +464,7 @@
         "insertImage": "Insert image from URL",
         "insertYoutube": "Insert YouTube video",
         "insertPoll": "Insert poll",
+        "insertProduct": "Insert product",
         "insertTable": "Insert table",
         "table": "Table actions",
         "addColumnAfter": "Add column",

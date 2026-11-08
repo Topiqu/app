@@ -143,7 +143,17 @@
       "noBio": "Žiadne bio",
       "userDataError": "Chyba pri načítaní používateľských údajov"
     },
-    "votes": "Hlasov"
+    "votes": "Hlasov",
+    "productCard": {
+      "label": "Produkt: {name}",
+      "from": "od {price}",
+      "view": "Zobraziť produkt",
+      "availability": {
+        "IN_STOCK": "Skladom",
+        "PREORDER": "Predobjednávka",
+        "BACKORDER": "Na objednávku"
+      }
+    }
   },
   "common": {
     "actions": {

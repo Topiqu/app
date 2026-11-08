@@ -1,9 +1,11 @@
 import { ARTICLE_TABLE_CLASS } from './articleProse'
 import { normalizePollOptions, type PollOptionData } from './polls'
+import { readProductCard, type ProductCardData } from './articleEmbeds'
 
 export type ArticleBlock =
   | { type: 'html'; html: string }
   | { type: 'poll'; pollId: string; question: string; options: PollOptionData[] }
+  | { type: 'product'; product: ProductCardData }
   | { type: 'ad' }
 
 export type ArticleHeading = { id: string; text: string; level: number }
@@ -83,7 +85,7 @@ export const adBreakIndex = (nodes: ArticleNode[]) => {
 }
 
 /**
- * Body into `v-html` runs plus poll blocks, with anchor ids stamped on headings. Adjacent HTML
+ * Body into `v-html` runs plus poll and product blocks, with anchor ids stamped on headings. Adjacent HTML
  * nodes merge into one run — a wrapper per node breaks the adjacent-sibling rules `prose` uses.
  */
 export const buildArticleBlocks = (nodes: ArticleNode[], { adBreak = false } = {}) => {
@@ -118,6 +120,13 @@ export const buildArticleBlocks = (nodes: ArticleNode[], { adBreak = false } = {
         continue
       }
       run += node.outerHtml
+      continue
+    }
+
+    const product = node.tag === 'DIV' && node.attr('data-type') === 'product' ? readProductCard(node.attr) : null
+    if (product) {
+      flush()
+      blocks.push({ type: 'product', product })
       continue
     }
 

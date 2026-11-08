@@ -143,7 +143,17 @@
       "noBio": "Geen bio",
       "userDataError": "Fout bij laden van gebruikersgegevens"
     },
-    "votes": "Stemmen"
+    "votes": "Stemmen",
+    "productCard": {
+      "label": "Product: {name}",
+      "from": "vanaf {price}",
+      "view": "Bekijk product",
+      "availability": {
+        "IN_STOCK": "Op voorraad",
+        "PREORDER": "Voorbestelling",
+        "BACKORDER": "Op bestelling"
+      }
+    }
   },
   "common": {
     "actions": {

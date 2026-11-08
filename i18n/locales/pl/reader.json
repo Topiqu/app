@@ -143,7 +143,17 @@
       "noBio": "Brak opisu",
       "userDataError": "Błąd wczytywania danych użytkownika"
     },
-    "votes": "Głosów"
+    "votes": "Głosów",
+    "productCard": {
+      "label": "Produkt: {name}",
+      "from": "od {price}",
+      "view": "Zobacz produkt",
+      "availability": {
+        "IN_STOCK": "Dostępny",
+        "PREORDER": "Przedsprzedaż",
+        "BACKORDER": "Na zamówienie"
+      }
+    }
   },
   "common": {
     "actions": {

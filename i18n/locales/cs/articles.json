@@ -331,6 +331,16 @@
       "noAuthor": "Není uveden",
       "author": "Autor článku"
     },
+    "productCard": {
+      "label": "Produkt: {name}",
+      "from": "od {price}",
+      "view": "Zobrazit produkt",
+      "availability": {
+        "IN_STOCK": "Skladem",
+        "PREORDER": "Předobjednávka",
+        "BACKORDER": "Na objednávku"
+      }
+    },
     "poll": {
       "defaultQuestion": "Zadejte otázku",
       "defaultOption": "Možnost 1",
@@ -427,6 +437,14 @@
       "articlePublished": "Článek publikován",
       "draftCreated": "Koncept vytvořen",
       "translationSaveFailedAfterCreate": "Článek je uložený, ale překlad se nepodařilo uložit. Před pokračováním zkontrolujte jeho jazykovou záložku.",
+      "productPicker": {
+        "title": "Vložit produkt",
+        "description": "Produkty z připojeného feedu nebo obchodu Shopify. Karta ukazuje aktuální cenu a dostupnost.",
+        "search": "Hledat produkty",
+        "empty": "Žádný skladový produkt neodpovídá. Připojte produktový feed nebo Shopify ve Znalostech.",
+        "failed": "Produkt se nepodařilo vložit.",
+        "card": "Karta produktu"
+      },
       "toolbar": {
         "more": "Další možnosti",
         "fontFamily": "Písmo",
@@ -441,6 +459,7 @@
         "insertImage": "Vložit obrázek z URL",
         "insertYoutube": "Vložit YouTube video",
         "insertPoll": "Vložit anketu",
+        "insertProduct": "Vložit produkt",
         "insertTable": "Vložit tabulku",
         "table": "Akce tabulky",
         "addColumnAfter": "Přidat sloupec",
