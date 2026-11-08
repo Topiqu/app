@@ -20,9 +20,9 @@
     </p>
     <div class="flex flex-wrap items-center justify-between gap-2 border-t border-default pt-3 text-sm text-muted">
       <AppTime v-if="post.date" :datetime="post.date" preset="date" />
-      <ULink :to="post.url" external class="font-medium text-primary hover:underline">
+      <UButton :to="post.url" external variant="link" color="primary" size="sm" trailingIcon="mdi:open-in-new">
         {{ $t('articles.xPost.view') }}
-      </ULink>
+      </UButton>
     </div>
   </figure>
 </template>

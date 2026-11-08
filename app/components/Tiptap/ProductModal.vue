@@ -17,36 +17,34 @@
         />
         <ul v-if="products.length" class="flex max-h-96 flex-col gap-1 overflow-y-auto">
           <li v-for="product in products" :key="product.id">
-            <button
-              type="button"
-              class="flex w-full items-center gap-3 rounded-lg p-2 text-left transition-colors hover:bg-elevated focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-60"
+            <UButton
+              block
+              color="neutral"
+              variant="ghost"
+              trailingIcon="mdi:plus"
+              :loading="inserting === product.id"
               :disabled="inserting !== null"
+              :ui="{ base: 'justify-start text-left' }"
               @click="insert(product.id)"
             >
-              <span class="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-md bg-white">
-                <img
-                  v-if="product.cdnImageUrl"
-                  :src="product.cdnImageUrl"
-                  alt=""
-                  width="48"
-                  height="48"
-                  loading="lazy"
-                  class="size-full object-contain"
-                />
-                <UIcon v-else name="mdi:shopping-outline" class="size-5 text-muted" />
-              </span>
+              <AppMedia
+                :src="product.cdnImageUrl"
+                alt=""
+                aspectRatio="1 / 1"
+                fit="contain"
+                sizes="48px"
+                :width="48"
+                :height="48"
+                fallbackIcon="mdi:shopping-outline"
+                containerClass="size-12 shrink-0 rounded-md"
+              />
               <span class="flex min-w-0 flex-1 flex-col">
                 <span class="truncate font-medium text-highlighted">{{ product.name }}</span>
                 <span class="truncate text-xs text-muted">
                   {{ [product.brand, price(product), availability(product)].filter(Boolean).join(' · ') }}
                 </span>
               </span>
-              <UIcon
-                :name="inserting === product.id ? 'mdi:loading' : 'mdi:plus'"
-                class="size-5 shrink-0 text-muted"
-                :class="{ 'animate-spin': inserting === product.id }"
-              />
-            </button>
+            </UButton>
           </li>
         </ul>
         <p v-else-if="status !== 'pending'" class="text-sm text-muted">

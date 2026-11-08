@@ -1,6 +1,6 @@
 <template>
   <NodeViewWrapper
-    class="not-prose group my-6 flex items-center gap-3 rounded-(--topiqu-surface-radius) border border-default bg-default p-4 shadow-sm"
+    class="not-prose my-6 flex items-center gap-3 rounded-(--topiqu-surface-radius) border border-default bg-default p-4 shadow-sm"
     contenteditable="false"
     data-drag-handle
   >
@@ -18,10 +18,10 @@
       size="sm"
       color="error"
       variant="ghost"
-      icon="i-mdi-trash-can-outline"
-      class="shrink-0 opacity-70 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
-      :aria-label="$t('common.delete')"
-      :title="$t('common.delete')"
+      icon="mdi:trash-can-outline"
+      class="shrink-0"
+      :aria-label="$t('common.actions.delete')"
+      :title="$t('common.actions.delete')"
       @click.stop.prevent="deleteNode"
       @mousedown.stop.prevent
     />

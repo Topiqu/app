@@ -3,21 +3,18 @@
     :aria-label="$t('articles.productCard.label', { name: product.name })"
     class="not-prose my-8 flex items-center gap-4 rounded-(--topiqu-surface-radius) border border-default bg-default p-4 shadow-sm sm:gap-5 sm:p-5"
   >
-    <!-- Fixed box: the copy is at most 480 px on its longer side, any aspect, so it never shifts layout. -->
-    <div
+    <!-- Fixed square box: the copy is at most 480 px on its longer side, any aspect, so it never shifts layout. -->
+    <AppMedia
       v-if="product.imageUrl"
-      class="flex size-24 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white sm:size-32"
-    >
-      <img
-        :src="product.imageUrl"
-        alt=""
-        width="480"
-        height="480"
-        loading="lazy"
-        decoding="async"
-        class="size-full object-contain"
-      />
-    </div>
+      :src="product.imageUrl"
+      alt=""
+      aspectRatio="1 / 1"
+      fit="contain"
+      sizes="96px sm:128px"
+      :width="480"
+      :height="480"
+      containerClass="size-24 shrink-0 rounded-lg sm:size-32"
+    />
     <div class="flex min-w-0 flex-1 flex-col gap-2">
       <p class="line-clamp-2 font-semibold text-highlighted">{{ product.name }}</p>
       <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
