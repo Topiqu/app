@@ -117,6 +117,33 @@ describe('insertArticleLinks', () => {
     expect(insertArticleLinks(result.html, [link(0, 'Hnojivo', 'W2')], [], 'cs', sites).productIds).toEqual([])
   })
 
+  it('links the subject before the website pages that would use up the cap', () => {
+    const result = insertArticleLinks(
+      garden,
+      [link(0, 'Kompost', 'W1'), link(2, 'Rýč', 'W3'), link(1, 'Hnojivo', 'W2')],
+      [],
+      'cs',
+      sites,
+      'W2',
+    )
+    expect(result).toMatchObject({ siteLinks: 2, productIds: ['p1'] })
+    expect(result.html).toContain('<a href="https://shop.test/hnojivo?a=1&amp;b=2">Hnojivo</a>')
+    expect(result.html).toContain('<a href="https://shop.test/kompostery">Kompost</a>')
+    expect(result.html).not.toContain('https://shop.test/ryc')
+  })
+
+  it('keeps the card of a subject product whose anchor did not hold', () => {
+    const missed = insertArticleLinks(garden, [link(1, 'Hnojiva', 'W2')], [], 'cs', sites, 'W2')
+    expect(missed).toMatchObject({ siteLinks: 0, productIds: ['p1'] })
+    expect(missed.html).toMatch(/<p>Hnojivo doplní dusík\.<\/p><div data-type="product" data-product-id="p1"/)
+
+    const unproposed = insertArticleLinks(garden, [], [], 'cs', sites, 'W2')
+    expect(unproposed.html).toMatch(
+      /<p>Půda drží vodu\.<\/p><div data-type="product" data-product-id="p1"[^>]*>.*<\/div>$/,
+    )
+    expect(insertArticleLinks(garden, [], [], 'cs', sites, 'W1').html).toBe(garden)
+  })
+
   it('never links a page that was not offered or is already linked', () => {
     const linked = '<p>Viz <a href="https://shop.test/kompostery">kompostéry</a>.</p><p>Kompost zlepší půdu.</p>'
     expect(insertLinks(linked, [link(1, 'Kompost', 'W1')], candidates, 'cs', sites)).toBe(linked)

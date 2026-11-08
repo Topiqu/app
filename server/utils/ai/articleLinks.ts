@@ -22,6 +22,11 @@ export type SiteLinkTarget = { url: string; title: string; productId: string | n
 const siteId = (index: number) => `W${index + 1}`
 
 const articleLinksSchema = z.object({
+  subject: z
+    .string()
+    .max(8)
+    .nullable()
+    .describe('W number of the listed product or page the whole article is about, or null'),
   links: z
     .array(
       z.object({
@@ -71,7 +76,8 @@ const wrapPhrase = ($: cheerio.CheerioAPI, paragraph: AnyNode, phrase: string, h
 
 /**
  * The model only proposes; a link survives when its target was offered and its anchor is verbatim text.
- * A linked product also gets a card after the top-level block that mentions it.
+ * A linked product also gets a card after the top-level block that mentions it. The subject links first,
+ * and a subject product keeps its card even when no anchor held: after its proposed paragraph, else at the end.
  */
 export const insertArticleLinks = (
   html: string,
@@ -79,6 +85,7 @@ export const insertArticleLinks = (
   candidates: readonly LinkCandidate[],
   language: Language,
   sites: readonly SiteLinkTarget[] = [],
+  subject: string | null = null,
 ) => {
   const $ = cheerio.load(html, null, false)
   const paragraphs = linkableParagraphs($)
@@ -98,8 +105,18 @@ export const insertArticleLinks = (
   const productIds: string[] = []
   const usedParagraphs = new Set<number>()
   let siteLinks = 0
+  const addCard = (element: AnyNode, page: SiteLinkTarget & { productId: string }) => {
+    const block = $(element).parents().last()[0] ?? element
+    cards.set(block, [
+      ...(cards.get(block) ?? []),
+      productCardHtml({ productId: page.productId, url: page.url, name: page.title }),
+    ])
+    carded.add(page.productId)
+    productIds.push(page.productId)
+  }
+  const ordered = [...links].sort((a, b) => Number(b.target === subject) - Number(a.target === subject))
 
-  for (const { paragraph, anchor, target } of links) {
+  for (const { paragraph, anchor, target } of ordered) {
     const article = articles.get(target)
     const page = pages.get(target)
     const element = paragraphs[paragraph]
@@ -114,22 +131,21 @@ export const insertArticleLinks = (
       if (!wrapPhrase($, element, phrase, page.url)) continue
       linkedUrls.add(page.url)
       siteLinks++
-      if (page.productId && !carded.has(page.productId)) {
-        const block = $(element).parents().last()[0] ?? element
-        cards.set(block, [
-          ...(cards.get(block) ?? []),
-          productCardHtml({ productId: page.productId, url: page.url, name: page.title }),
-        ])
-        carded.add(page.productId)
-        productIds.push(page.productId)
-      }
+      if (page.productId && !carded.has(page.productId)) addCard(element, { ...page, productId: page.productId })
     } else continue
     usedParagraphs.add(paragraph)
   }
 
+  const main = subject ? pages.get(subject) : undefined
+  if (main?.productId && !carded.has(main.productId)) {
+    const proposed = paragraphs[ordered.find(({ target }) => target === subject)?.paragraph ?? -1]
+    const element = proposed ?? $.root().children().last()[0]
+    if (element) addCard(element, { ...main, productId: main.productId })
+  }
+
   for (const [block, markup] of cards) $(block).after(markup.join(''))
   return {
-    html: usedParagraphs.size ? $.html() : html,
+    html: usedParagraphs.size || cards.size ? $.html() : html,
     articleLinks: usedParagraphs.size - siteLinks,
     siteLinks,
     productIds,
@@ -181,6 +197,7 @@ ${sites.map((page, index) => `- ${siteId(index)}: ${page.productId ? 'product ·
 Rules:
 - Link only where a listed article is what the reader would want next at that exact point: it explains something the paragraph assumes, goes deeper into something the paragraph only touches, or is the practical next step. A shared topic or keyword is not enough.
 - Link a website page only in a paragraph that talks about that very product, product range or page subject, so the link takes the reader to what the sentence names. Never insert one as an advertisement.
+- "subject" is the W number of the one listed product or page the whole article is about (the article reviews, compares or explains that very product or service), otherwise null. Link the subject at its first substantive mention, before any other website page, and between a product and a general service page prefer the product.
 - Zero links is a normal answer. Return at most ${MAX_ARTICLE_LINKS} article links and ${MAX_SITE_LINKS} website links, and prefer fewer, stronger ones.
 - "anchor" is 1-6 consecutive words copied exactly from that paragraph, with the same case and diacritics, naming what the linked article or page is about. Never a generic phrase such as "here", "this article" or "read more".
 - At most one link per paragraph and each article or page at most once. Never link an article that answers the same question as this one.
@@ -232,7 +249,14 @@ export const linkArticle = async (
         : AbortSignal.timeout(30_000),
     })
 
-    const inserted = insertArticleLinks(article.content, output.links, candidates, language, siteTargets)
+    const inserted = insertArticleLinks(
+      article.content,
+      output.links,
+      candidates,
+      language,
+      siteTargets,
+      output.subject ?? null,
+    )
     // A card without its picture is still a card; the copy never costs the links.
     await copyProductImages(clientSiteId, inserted.productIds).catch((error) =>
       reportCaughtError('Product card images failed', error, { clientSiteId }),
@@ -240,6 +264,7 @@ export const linkArticle = async (
     await step?.complete({
       candidates: candidates.length,
       siteCandidates: siteTargets.length,
+      subject: output.subject ?? null,
       proposedLinks: output.links.length,
       siteLinks: inserted.siteLinks,
       productCards: inserted.productIds.length,
