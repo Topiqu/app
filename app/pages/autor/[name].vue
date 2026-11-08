@@ -215,7 +215,7 @@ useSeoMeta({
     hasSeoPlan.value && !search.value && !hasExternalContentHome(clientSite) ? 'index, follow' : 'noindex, follow',
 })
 
-useHead({ link: [{ rel: 'canonical', href: canonicalUrl }] })
+useHead(() => ({ link: publicationSeoLinks(clientSite, [{ rel: 'canonical', href: canonicalUrl.value }]) }))
 
 // Same `@id` the article's `author` points at, so the two resolve to one entity.
 if (hasSeoPlan.value) {
