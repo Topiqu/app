@@ -57,12 +57,14 @@ export type KnowledgeBrief = {
   /** The citable entries the article may also link in its body. */
   linkTargets: KnowledgeLinkTarget[]
   used: KnowledgeUsage[]
+  /** The selected products and documents by name, for the author's view of the run. */
+  names: string[]
   tokens: number
   /** What the gate saw and chose; only the knowledge playground reads it. */
   shortlist?: { sourceId: string; title: string; excerpt: string; similarity: number; selected: boolean }[]
 }
 
-const EMPTY: KnowledgeBrief = { brief: null, publicUrls: [], linkTargets: [], used: [], tokens: 0 }
+const EMPTY: KnowledgeBrief = { brief: null, publicUrls: [], linkTargets: [], used: [], names: [], tokens: 0 }
 
 /**
  * Words only, left unfolded: `searchKnowledge` folds them with the index's own `knowledge_unaccent`,
@@ -196,8 +198,51 @@ const productOffer = (chunk: KnowledgeCandidate, language: string) => {
   return `product · ${price}${AVAILABILITY_LABELS[chunk.availability ?? 'IN_STOCK']} · `
 }
 
+const normalizeName = (value: string) =>
+  value
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .trim()
+
+const modelShaped = (words: readonly string[]) => words.length >= 2 && words.some((word) => /\d/.test(word))
+
+/**
+ * How many words of the product's model the topic spells out: the whole name before " - ", or else
+ * the longest leading run of its words. 0 unless that is two words and a number.
+ */
+const modelMatch = (productName: string, topic: string) => {
+  const haystack = ` ${normalizeName(topic)} `
+  const [model = ''] = productName.split(/\s[-–|]\s/)
+  const words = normalizeName(model).split(' ').filter(Boolean)
+  if (model !== productName) return modelShaped(words) && haystack.includes(` ${words.join(' ')} `) ? words.length : 0
+  let matched = 0
+  while (matched < words.length && haystack.includes(` ${words.slice(0, matched + 1).join(' ')} `)) matched++
+  return modelShaped(words.slice(0, matched)) ? matched : 0
+}
+
+/**
+ * Products the topic names by model. Only the closest match of each model line counts, so asking for
+ * "Ilaria 24 idro" does not also pin "Ilaria 24 DD Idro AUTO".
+ */
+export const namedProducts = (candidates: readonly KnowledgeCandidate[], topic: string) => {
+  const scored = candidates.flatMap((chunk) => {
+    const score = chunk.productId && chunk.productName ? modelMatch(chunk.productName, topic) : 0
+    return score ? [{ chunk, score, line: normalizeName(chunk.productName!).split(' ').slice(0, 2).join(' ') }] : []
+  })
+  const best = new Map<string, number>()
+  for (const { line, score } of scored) best.set(line, Math.max(best.get(line) ?? 0, score))
+  return scored.filter(({ line, score }) => score === best.get(line)).map(({ chunk }) => chunk)
+}
+
 /** Private entries carry no URL at all, so nothing downstream can turn them into a citation. */
-export const formatKnowledgeBrief = (selected: readonly KnowledgeCandidate[], now = new Date(), language = 'en') =>
+export const formatKnowledgeBrief = (
+  selected: readonly KnowledgeCandidate[],
+  now = new Date(),
+  language = 'en',
+  named: readonly KnowledgeCandidate[] = [],
+) =>
   selected
     .map((chunk, index) => {
       const asOf = knowledgeAsOf(chunk)
@@ -205,7 +250,8 @@ export const formatKnowledgeBrief = (selected: readonly KnowledgeCandidate[], no
       // Computed here rather than left to the models: date arithmetic in a prompt is unreliable.
       const stale = isKnowledgeStale(asOf, now) ? ` · STALE (older than ${KNOWLEDGE_STALE_MONTHS} months)` : ''
       const citation = chunk.publicUrl ? `citable: ${chunk.publicUrl}` : 'internal — never cite or link'
-      return `[K${index + 1}] "${chunk.title}" · as of ${date}${stale} · ${productOffer(chunk, language)}${citation}\n${chunk.content}`
+      const pinned = named.includes(chunk) ? 'NAMED IN THE BRIEF · ' : ''
+      return `[K${index + 1}] "${chunk.title}" · ${pinned}as of ${date}${stale} · ${productOffer(chunk, language)}${citation}\n${chunk.content}`
     })
     .join('\n\n')
 
@@ -305,7 +351,10 @@ export const retrieveKnowledge = async (
     )
     if (!shortlist.length) return { ...EMPTY, tokens: usage.tokens }
 
-    const { selected, tokens } = await selectRelevant(clientSiteId, topic, shortlist, abortSignal)
+    const { selected: chosen, tokens } = await selectRelevant(clientSiteId, topic, shortlist, abortSignal)
+    // The gate judges relevance, not identity: a product the author named is always in the brief.
+    const named = namedProducts(shortlist, topic)
+    const selected = [...named.filter((chunk) => !chosen.includes(chunk)), ...chosen]
     const used = knowledgeUsage(selected)
     // A statistics write must never cost the article its grounding.
     if (track && used.length)
@@ -316,10 +365,11 @@ export const retrieveKnowledge = async (
         })
         .catch((error) => reportCaughtError('Knowledge usage tracking failed', error, { clientSiteId }))
     return {
-      brief: selected.length ? formatKnowledgeBrief(selected, new Date(), language ?? 'en') : null,
+      brief: selected.length ? formatKnowledgeBrief(selected, new Date(), language ?? 'en', named) : null,
       publicUrls: [...new Set(selected.flatMap((chunk) => (chunk.publicUrl ? [chunk.publicUrl] : [])))],
       linkTargets: knowledgeLinkTargets(selected),
       used,
+      names: [...new Set(selected.map((chunk) => chunk.productName || chunk.title))],
       tokens: usage.tokens + tokens,
       shortlist: shortlist.map((chunk) => ({
         sourceId: chunk.sourceId,

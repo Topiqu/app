@@ -134,6 +134,14 @@ Draft:
 ${JSON.stringify(draft)}
 `.trim()
 
+/** Our listing's figure stays in the article; a source stating it differently is only for the audit. */
+const LISTING_DIFFERS = /^\s*(?:[-*\d.)]+\s*)?LISTING DIFFERS\b/i
+const withoutListingDifferences = (brief: string | null) =>
+  brief
+    ?.split('\n')
+    .filter((line) => !LISTING_DIFFERS.test(line.replaceAll('**', '')))
+    .join('\n') || null
+
 /** Advisory NOT VERIFIED verdicts stay in the audit; handed to a reviser they come back as caveats. */
 export const revisionEvidence = (brief?: string | null) =>
   brief
@@ -355,7 +363,7 @@ export const verdictLines = (text: string) =>
   text
     .split('\n')
     .filter((line) =>
-      /^\s*(?:[-*\d.)]+\s*)?(?:SUPPORTED|CONTRADICTED|UNSUPPORTED MATERIAL|NOT VERIFIED)\b/i.test(
+      /^\s*(?:[-*\d.)]+\s*)?(?:SUPPORTED|CONTRADICTED|UNSUPPORTED MATERIAL|NOT VERIFIED|LISTING DIFFERS)\b/i.test(
         line.replaceAll('**', ''),
       ),
     )
@@ -460,11 +468,11 @@ ${context.illustrative ? ILLUSTRATIVE_STORY : ''}
 Verify the factual premises of arguments and scenarios. Do not demand that a source has already published the author's comparison, value judgment or conditional conclusion; do not mark these as unsupported events. A hypothetical must not smuggle an unverified real-world action into its factual premises.
 Claims about rules currently in force (law, regulation, official requirements: deadlines, amounts, qualifications, penalties) must rest on text the source shows to be in force at the review date: a consolidated current version or a provision with a stated effective date that has passed. A draft, proposal, pending amendment, future version or a page marking changes ("after the amendment", struck/inserted wording) supports only claims about that proposal. If the in-force wording differs, the claim is CONTRADICTED; if no in-force text was found, it is UNSUPPORTED MATERIAL.
 For negative claims, search first-hand interviews for an explicit positive confirmation. Distinguish whether an event happened from whether its mechanism has been explained.
-Return one verdict per line: SUPPORTED, CONTRADICTED, UNSUPPORTED MATERIAL or NOT VERIFIED; the exact claim; the correction or finding; event/publication date; and the full supporting URL retrieved by web search on that same line.${noteLanguage ? ` Keep the verdict keyword in English; write the correction or finding in ${noteLanguage}.` : ''} Use UNSUPPORTED MATERIAL only for unsupported concrete consequential assertions (invented quotes, confirmed character returns, dates, numbers). Its finding says what to delete or how to narrow the claim to what the sources show; never ask the writer to verify, research or add specifics, because the reviser gets no new sources. NOT VERIFIED is advisory for minor uncertainty. Reasonable qualified inferences from a source are SUPPORTED even without verbatim wording: a demo subject to change supports saying its depicted location may change. Do not demand proof of every possible absence or literal matching wording. Do not invent sources or fill gaps with model memory. Do not assess headline style.
+Return one verdict per line: SUPPORTED, CONTRADICTED, UNSUPPORTED MATERIAL, NOT VERIFIED or LISTING DIFFERS; the exact claim; the correction or finding; event/publication date; and the full supporting URL retrieved by web search on that same line.${noteLanguage ? ` Keep the verdict keyword in English; write the correction or finding in ${noteLanguage}.` : ''} Use UNSUPPORTED MATERIAL only for unsupported concrete consequential assertions (invented quotes, confirmed character returns, dates, numbers). Its finding says what to delete or how to narrow the claim to what the sources show; never ask the writer to verify, research or add specifics, because the reviser gets no new sources. NOT VERIFIED is advisory for minor uncertainty. Reasonable qualified inferences from a source are SUPPORTED even without verbatim wording: a demo subject to change supports saying its depicted location may change. Do not demand proof of every possible absence or literal matching wording. Do not invent sources or fill gaps with model memory. Do not assess headline style.
 ${AUTHOR_ACCOUNT_VERIFICATION}${
           context.knowledgeBrief
             ? `
-firstPartyKnowledge is the publisher's own material, dated per entry. A claim about the publisher's own products, pricing, customers or internal figures that it supports is SUPPORTED without a web source; never report it as UNSUPPORTED MATERIAL for lacking one. Two exceptions: a time-sensitive claim (price, plan, availability, current counts) resting only on an entry marked STALE is UNSUPPORTED MATERIAL (stale first-party knowledge); and when a retrieved official source contradicts first-party knowledge about the publisher, report UNSUPPORTED MATERIAL (first-party and web conflict, needs human confirmation) rather than choosing a side.`
+firstPartyKnowledge is the publisher's own material, dated per entry. A claim about the publisher's own products, pricing, customers or internal figures that it supports is SUPPORTED without a web source; never report it as UNSUPPORTED MATERIAL for lacking one. A technical figure of our own product (output, capacity, dimensions, consumption, heated space) that its product entry gives is our specification: when a manufacturer or other source states it differently, report LISTING DIFFERS with both values and that URL, never CONTRADICTED or UNSUPPORTED MATERIAL. Two exceptions: a time-sensitive claim (price, plan, availability, current counts) resting only on an entry marked STALE is UNSUPPORTED MATERIAL (stale first-party knowledge); and when a retrieved official source contradicts any other first-party knowledge about the publisher, report UNSUPPORTED MATERIAL (first-party and web conflict, needs human confirmation) rather than choosing a side.`
             : ''
         }`,
         prompt: JSON.stringify({
@@ -510,11 +518,12 @@ firstPartyKnowledge is the publisher's own material, dated per entry. A claim ab
       return {
         review: { approved: false, issues },
         usage: { totalTokens: verificationTokens },
-        verificationBrief,
+        verificationBrief: withoutListingDifferences(verificationBrief),
         verdicts,
       }
     }
   }
+  const factsBrief = withoutListingDifferences(verificationBrief)
   context.onProgress?.('checking')
   const { output: object, usage } = await generateText({
     model: aiModel('articleEditor'),
@@ -561,7 +570,7 @@ ${
 - When the research brief contains named examples, exceptions, figures or primary sources relevant to the angle, the article uses the useful specifics instead of replacing them with generalities.
 - Externally verifiable factual premises stay within the research brief, the first-party knowledge or the author's first-hand account in the assignment; the latter two are authoritative only about the publisher's and the author's own case. Original reasoning from those premises follows the authorial policy above. An invented specific of the author's case (name, amount, date, duration, quote, decision) the account does not state is an unsupported claim. The article never presents the author's account as a model or hypothetical case. The draft never mentions internal documents or cites an entry marked internal. The independent verification takes precedence over the original brief where it corrects it. Reject CONTRADICTED and UNSUPPORTED MATERIAL claims still present. NOT VERIFIED alone is advisory, not a reason to reject reasonable qualified inferences or minor uncertainty. An old summary cannot be presented as the current state when a newer state was required but not established.${
       context.knowledgeBrief
-        ? '\n- The article runs on the publisher\'s own website, so the publisher\'s products, services, prices and terms from the first-party knowledge are stated in its own voice (first person plural or its name). Report as hedging a passage that calls the publisher a seller or shop, attributes its own facts to its website ("the product page states") or qualifies its own offer as a vendor claim, with the direct wording as the edit. Never ask for such attribution.'
+        ? '\n- The article runs on the publisher\'s own website, so the publisher\'s products, services, prices and terms from the first-party knowledge are stated in its own voice (first person plural or its name). Report as hedging a passage that calls the publisher a seller or shop, attributes its own facts to its website ("the product page states") or qualifies its own offer as a vendor claim, with the direct wording as the edit. Never ask for such attribution.\n- A product figure our own entry gives is our specification, and one it does not give stays out of the article: never ask to replace or add a figure of our products from the research, a manual or a sibling variant, or to set our figure beside a different source value. A sentence saying we do not state a figure is hedging whose edit is its deletion; a table cell marking a figure not stated is not hedging.'
         : ''
     }
 - Wording sounds natural in the article language: concrete nouns and direct verbs, no inflated administrative phrasing or generic AI transitions.
@@ -582,9 +591,7 @@ Everything else is blocking=false: adding further figures, sources, ranges, exam
     `.trim(),
     prompt:
       buildEditorialReviewPrompt(draft, context) +
-      (verificationBrief
-        ? `\nIndependent live verification (takes precedence over the original brief):\n${verificationBrief}`
-        : ''),
+      (factsBrief ? `\nIndependent live verification (takes precedence over the original brief):\n${factsBrief}` : ''),
     output: Output.object({ schema: editorialReviewSchema }),
   })
 
@@ -605,7 +612,7 @@ Everything else is blocking=false: adding further figures, sources, ranges, exam
   return {
     review: { issues, approved: !issues.some((issue) => issue.blocking) },
     usage: { ...usage, totalTokens: (usage.totalTokens ?? 0) + verificationTokens },
-    verificationBrief,
+    verificationBrief: factsBrief,
     verdicts,
   }
 }

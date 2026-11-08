@@ -225,7 +225,7 @@ describe.skipIf(!enabled)('knowledge retrieval on PostgreSQL', () => {
 
   it('skips the model call entirely when the tenant has nothing indexed', async () => {
     const result = await retrieveKnowledge(await tenant(), 'anything')
-    expect(result).toEqual({ brief: null, publicUrls: [], linkTargets: [], used: [], tokens: 0 })
+    expect(result).toEqual({ brief: null, publicUrls: [], linkTargets: [], used: [], names: [], tokens: 0 })
     expect(embed).not.toHaveBeenCalled()
   })
 

@@ -82,6 +82,28 @@ describe('independent verification of the written draft', () => {
     expect(result.usage.totalTokens).toBe(80)
   })
 
+  it('keeps our listed product figure and records the manufacturer value only in the audit', async () => {
+    const manual = 'https://example.test/olga-manual.pdf'
+    const differs = `LISTING DIFFERS: Hopper 17 kg. The manual states 17.5 kg. ${manual}`
+    vi.mocked(generatePlainText).mockResolvedValue({
+      text: `SUPPORTED: Ciri is the protagonist. ${url}\n${differs}`,
+      sources: [
+        { sourceType: 'url', url },
+        { sourceType: 'url', url: manual },
+      ],
+      usage: { totalTokens: 30 },
+    } as never)
+    const result = await reviewArticle(draft, { ...context, knowledgeBrief: '[K1] "OLGA 501 L" · Hopper 17 kg' })
+
+    expect(result.review.approved).toBe(true)
+    expect(result.verdicts).toContain(differs)
+    expect(result.verificationBrief).not.toContain('LISTING DIFFERS')
+    const desk = vi.mocked(generateStructuredText).mock.calls[0]![0]
+    expect(desk.prompt).not.toContain('17.5 kg')
+    expect(desk.instructions).toContain('never ask to replace or add a figure of our products')
+    expect(vi.mocked(generatePlainText).mock.calls[0]![0].instructions).toContain('report LISTING DIFFERS')
+  })
+
   it('rejects a contradicted claim even if the copy desk approves, and supplies the correction to revision', async () => {
     const finding = `CONTRADICTED: Ciri's trial is unconfirmed. Developers explicitly confirmed it on 2024-12-19; the circumstances were undisclosed. ${url}`
     vi.mocked(generatePlainText).mockResolvedValue({

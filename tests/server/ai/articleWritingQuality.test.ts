@@ -74,6 +74,26 @@ describe('article quality configuration', () => {
   })
 })
 
+describe('first-party product rules', () => {
+  it('keeps a figure our entry lacks unknown instead of borrowing it from a variant or the web', async () => {
+    setup('STANDARD')
+    vi.stubGlobal('retrieveKnowledge', async () => ({
+      brief: '[K1] "Ilaria 24 idro" · NAMED IN THE BRIEF',
+      publicUrls: [],
+      linkTargets: [],
+      used: [],
+      names: ['Ilaria 24 idro'],
+      tokens: 0,
+    }))
+    const { config } = await buildArticleConfig('site-1', 'Compare Ilaria 24 idro', {
+      research: false,
+      knowledgeQuery: 'Ilaria 24 idro',
+    })
+    expect(config.instructions).toContain("Never fill it from a sibling variant's entry or from a web source")
+    expect(config.instructions).toContain('"some sellers state"')
+  })
+})
+
 describe('publisher media pages', () => {
   it('keeps feed products and pages on the blog or website host, not third-party knowledge', () => {
     const links = [

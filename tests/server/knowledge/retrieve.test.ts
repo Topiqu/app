@@ -11,8 +11,14 @@ async function stubImports() {
 await stubImports()
 
 const { filterResearchSources } = await import('../../../server/utils/ai/researchEvidence')
-const { formatKnowledgeBrief, knowledgeLinkTargets, knowledgeSearchTerms, knowledgeUsage, shortlistKnowledge } =
-  await import('../../../server/utils/knowledge/retrieve')
+const {
+  formatKnowledgeBrief,
+  knowledgeLinkTargets,
+  knowledgeSearchTerms,
+  knowledgeUsage,
+  namedProducts,
+  shortlistKnowledge,
+} = await import('../../../server/utils/knowledge/retrieve')
 
 const candidate = (overrides: Partial<KnowledgeCandidate>): KnowledgeCandidate => ({
   id: 'chunk',
@@ -163,6 +169,22 @@ describe('knowledge retrieval', () => {
       { sourceId: 'a', title: 'Source', version: 2, chunkIds: ['1', '3'] },
       { sourceId: 'b', title: 'Source', version: 1, chunkIds: ['2'] },
     ])
+  })
+
+  it('pins the product the topic names, not a similarly named variant', () => {
+    const product = (id: string, productName: string) => candidate({ id, productId: id, productName })
+    const idro = product('idro', 'Kalor Ilaria 24 idro - Krbová kamna na pelety s výměníkem')
+    const auto = product('auto', 'Kalor Ilaria 24 DD Idro AUTO - Peletová kamna s výměníkem')
+    const olga = product('olga', 'LINCAR OLGA 501 L Krbová kamna na pelety s rozvodem horkého vzduchu')
+    const olgaXl = product('olga-xl', 'LINCAR OLGA 501 XL Krbová kamna na pelety')
+    const page = candidate({ id: 'page', title: 'Kalor Ilaria 24 idro' })
+    const topic = 'Porovnejte LINCAR OLGA 501 L s modelem Kalor Ilaria 24 idro.'
+
+    expect(namedProducts([auto, idro, olgaXl, olga, page], topic).map(({ id }) => id)).toEqual(['idro', 'olga'])
+    expect(namedProducts([auto, idro], 'Peletová kamna Kalor Ilaria')).toEqual([])
+    expect(formatKnowledgeBrief([auto, idro], new Date('2026-08-03T10:00:00Z'), 'cs', [idro])).toMatch(
+      /\[K2\] "Source" · NAMED IN THE BRIEF · as of/,
+    )
   })
 })
 
