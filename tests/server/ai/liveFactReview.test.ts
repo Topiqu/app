@@ -82,6 +82,37 @@ describe('independent verification of the written draft', () => {
     expect(result.usage.totalTokens).toBe(80)
   })
 
+  it('holds the article when the verification times out twice, instead of failing the review', async () => {
+    vi.stubGlobal('reportCaughtError', vi.fn())
+    vi.mocked(generatePlainText).mockRejectedValue(new DOMException('timed out', 'TimeoutError'))
+    const result = await reviewArticle(draft, context)
+    expect(result.review).toMatchObject({ approved: false, issues: [{ key: 'verificationIncomplete' }] })
+    expect(generatePlainText).toHaveBeenCalledTimes(2)
+    expect(vi.mocked(generatePlainText).mock.calls[0]![0].abortSignal).toBeInstanceOf(AbortSignal)
+  })
+
+  it('retries a timed-out verification and keeps a completed retry', async () => {
+    vi.stubGlobal('reportCaughtError', vi.fn())
+    vi.mocked(generatePlainText)
+      .mockRejectedValueOnce(new DOMException('timed out', 'TimeoutError'))
+      .mockResolvedValueOnce({
+        text: `SUPPORTED: Ciri is the protagonist. ${url}`,
+        sources: [{ sourceType: 'url', url }],
+        usage: { totalTokens: 30 },
+      } as never)
+    const result = await reviewArticle(draft, context)
+    expect(result.review.approved).toBe(true)
+    expect(result.usage.totalTokens).toBe(50)
+  })
+
+  it('stops instead of retrying once the author cancels', async () => {
+    const abort = new AbortController()
+    abort.abort()
+    vi.mocked(generatePlainText).mockRejectedValue(new DOMException('aborted', 'AbortError'))
+    await expect(reviewArticle(draft, { ...context, abortSignal: abort.signal })).rejects.toThrow('aborted')
+    expect(generatePlainText).toHaveBeenCalledTimes(1)
+  })
+
   it('keeps our listed product figure and records the manufacturer value only in the audit', async () => {
     const manual = 'https://example.test/olga-manual.pdf'
     const differs = `LISTING DIFFERS: Hopper 17 kg. The manual states 17.5 kg. ${manual}`

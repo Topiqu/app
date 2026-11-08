@@ -82,25 +82,7 @@ export const generateArticle = async (
       editorialReview = pass.review
     } catch (error) {
       if (isAiAllowanceError(error)) throw error
-      await reportCaughtError('Article editorial review failed', error, { clientSiteId })
-      editorialReview = {
-        approved: false,
-        revised: false,
-        checkedAfterRevision: false,
-        issues: [
-          {
-            code: 'broken_structure',
-            note: 'The automated editorial review did not complete.',
-            key: 'reviewUnavailable',
-            blocking: true,
-          },
-        ],
-      }
-      await audit?.record('ARTICLE_GENERATION_FALLBACK', {
-        stage: 'review',
-        reason: 'review_unavailable',
-        outcome: 'draft',
-      })
+      editorialReview = await reviewUnavailable(error, clientSiteId, audit)
     }
   } else await audit?.skip('review', 'disabled')
 
@@ -161,6 +143,33 @@ type EditorialPassInput = {
 
 const withTimeout = (signal: AbortSignal | undefined, ms: number) =>
   signal ? AbortSignal.any([signal, AbortSignal.timeout(ms)]) : AbortSignal.timeout(ms)
+
+/** A review that did not finish keeps the draft and holds it for a person. */
+const reviewUnavailable = async (
+  error: unknown,
+  clientSiteId: string,
+  audit?: ArticleGenerationAudit,
+): Promise<EditorialOutcome> => {
+  await reportCaughtError('Article editorial review failed', error, { clientSiteId })
+  await audit?.record('ARTICLE_GENERATION_FALLBACK', {
+    stage: 'review',
+    reason: 'review_unavailable',
+    outcome: 'draft',
+  })
+  return {
+    approved: false,
+    revised: false,
+    checkedAfterRevision: false,
+    issues: [
+      {
+        code: 'broken_structure',
+        note: 'The automated editorial review did not complete.',
+        key: 'reviewUnavailable',
+        blocking: true,
+      },
+    ],
+  }
+}
 
 /**
  * The revision: an edit list by default, a full rewrite only when the whole piece must change (a blocking
@@ -517,6 +526,9 @@ export const streamArticle = async (
         noteLanguage: opts.noteLanguage,
         onProgress,
       },
+    }).catch(async (error) => {
+      if (isAiAllowanceError(error) || opts.abortSignal?.aborted) throw error
+      return { draft, groundingBrief, tokens: 0, review: await reviewUnavailable(error, clientSiteId, audit) }
     })
     groundingBrief = pass.groundingBrief
     editorialTokens += pass.tokens

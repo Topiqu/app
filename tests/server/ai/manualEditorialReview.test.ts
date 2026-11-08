@@ -173,6 +173,28 @@ describe('manual editorial review', () => {
     expect(vi.mocked(generateStructuredText).mock.calls[2]![0].prompt).toContain(revision.title)
   })
 
+  it('keeps a finished draft and holds it when the first review fails', async () => {
+    vi.mocked(generateStructuredText).mockRejectedValueOnce(new DOMException('timed out', 'TimeoutError'))
+    vi.stubGlobal('reportCaughtError', vi.fn())
+    const generation = await streamArticle('site', 'Write a report', { research: false })
+
+    expect(await generation.review(draft)).toEqual(draft)
+    expect(generation.editorialReview).toMatchObject({
+      approved: false,
+      revised: false,
+      issues: [{ key: 'reviewUnavailable', blocking: true }],
+    })
+  })
+
+  it('still stops on a cancelled run instead of holding the draft', async () => {
+    const abort = new AbortController()
+    abort.abort()
+    vi.mocked(generateStructuredText).mockRejectedValueOnce(new DOMException('aborted', 'AbortError'))
+    const generation = await streamArticle('site', 'Write a report', { research: false, abortSignal: abort.signal })
+
+    await expect(generation.review(draft)).rejects.toThrow('aborted')
+  })
+
   it('does not approve a rewrite that still repeats the absence of confirmation', async () => {
     const emptyAngle = {
       issues: [
