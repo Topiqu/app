@@ -565,12 +565,10 @@
         "researchOff": "without research",
         "modulesLabel": "Article components",
         "elapsed": "Elapsed {seconds}s",
-        "waitingWriting": "No new text for {seconds}s. Writing stops after 45s without text.",
-        "waitingResearch": "Source verification is taking longer than usual. The run is still active and can be stopped safely.",
-        "waitingImages": "Preparing an image can take up to 45s. If the service does not return one, the article will finish without it.",
         "reservedDuringRun": "Temporarily held: {count} credits",
         "writerIdleError": "Generation stopped: no text arrived for 45 seconds. Try again.",
-        "writerDeadlineError": "Generation stopped after reaching the 120-second writing limit.",
+        "writerDeadlineError": "Generation stopped: {minutes} minutes of writing produced no text that could be finished.",
+        "writerThinkingError": "Generation stopped: the model had not started writing after {minutes} minutes of thinking. Try again.",
         "output": {
           "news": "News report",
           "analysis": "Analysis",
@@ -652,6 +650,15 @@
         "allowGeneratedImages": "Allow AI illustrations as a last resort",
         "useKnowledge": "Use knowledge",
         "run": {
+          "thinking": {
+            "title": "No text yet: the model plans the whole article first, then starts writing."
+          },
+          "inputs": {
+            "title": "Working from:",
+            "web": "web sources: {count}",
+            "knowledge": "Knowledge items: {count}",
+            "video": "a video"
+          },
           "elapsed": "Time {time}",
           "attention": "Article generated, {count} to review",
           "progress": "Generation progress",
@@ -666,6 +673,7 @@
             "knowledge": "Reading your Knowledge",
             "youtube": "Looking for a YouTube video",
             "writing": "Writing the article",
+            "thinking": "Planning the article",
             "review": "Editorial review",
             "media": "Preparing images"
           },
@@ -681,7 +689,8 @@
             "verifyNote": "Check the facts before you publish.",
             "imageMissing": "No picture found for image {number}",
             "searched": "Searched for: “{query}”",
-            "coverMissing": "The cover image is missing"
+            "coverMissing": "The cover image is missing",
+            "cutNote": "The unfinished last paragraph was left out; the rest of the article is complete. This generation was not charged."
           },
           "action": {
             "verify": "Check facts",
@@ -753,6 +762,8 @@
           },
           "writing": {
             "words": "Words written: {count}",
+            "finishing": "The writing time ran out; adding the summary, FAQ and image briefs…",
+            "cut": "Cut short by the time limit, words written: {count}",
             "starting": "Preparing the article structure…",
             "title": "The headline is ready; preparing the introduction…",
             "intro": "The introduction is ready; writing the main text…",
@@ -764,7 +775,6 @@
             "checking": "Checking continuity, structure and alignment with the assignment…",
             "revising": "Revising the text to address the issues found…",
             "rechecking": "Checking the revised text…",
-            "waiting": "Waiting for the current step's result. Last update {seconds} s ago.",
             "approved": "Approved without changes.",
             "revised": "Revised; issues fixed: {count}",
             "revisedIssues": "Revised, left for manual review: {count}",

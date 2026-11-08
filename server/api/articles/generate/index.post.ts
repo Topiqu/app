@@ -4,6 +4,15 @@ import { aiAllowanceErrorCode, aiAllowanceMessageKey } from '~~/shared/utils/aiA
 
 import { articleWriterId } from '../../../utils/ai/modelRegistry'
 
+/** The writer thinks until its first token; the writing and idle clocks start there. */
+const WRITER_LIMITS = { thinkingMs: 240_000, writingMs: 300_000, idleMs: 45_000 } as const
+
+const WRITER_TIMEOUT_MESSAGES = {
+  writer_thinking: 'writerThinkingError',
+  writer_idle: 'writerIdleError',
+  writer_deadline: 'writerDeadlineError',
+} as const
+
 export default defineEventHandler(async (event) => {
   const { translate: t, locale } = await useServerI18n(event)
   const user = await getSessionUser(event)
@@ -96,7 +105,9 @@ export default defineEventHandler(async (event) => {
   let recoverySnapshot: GenerationSnapshot = {}
   let lastRecoveryCheckpointAt = 0
   let writerWaitTimer: ReturnType<typeof setTimeout> | undefined
-  let timedOutStage: 'writer_idle' | 'writer_deadline' | null = null
+  let timedOutStage: 'writer_thinking' | 'writer_idle' | 'writer_deadline' | null = null
+  // A timeout stops only the writer, so the text it already wrote can still be reviewed and finished.
+  const writerAbort = new AbortController()
   let writingAuditStep: Awaited<ReturnType<typeof audit.startStep>> | undefined
 
   const encoder = new TextEncoder()
@@ -226,6 +237,7 @@ export default defineEventHandler(async (event) => {
           generation = await streamArticle(clientSiteId, prompt, {
             articleQuality,
             abortSignal: abortController.signal,
+            writerSignal: AbortSignal.any([abortController.signal, writerAbort.signal]),
             research: options?.research.enabled === false ? false : undefined,
             researchDepth: options?.research.depth,
             fallbackWithoutResearch: options?.research.fallbackWithoutResearch,
@@ -247,17 +259,29 @@ export default defineEventHandler(async (event) => {
           writingAuditStep = await audit.startStep('writing')
 
           const writerStartedAt = Date.now()
+          let textStartedAt: number | null = null
           let lastWriterDataAt = writerStartedAt
           let lastActivitySentAt = 0
           let writingStage: 'starting' | 'title' | 'intro' | 'body' = 'starting'
+          let lastPartial: Record<string, unknown> = {}
+          let salvaged: ReturnType<typeof salvageBody> = null
+          let cutStage: typeof timedOutStage = null
           const writerIterator = articleWriterStream(result)[Symbol.asyncIterator]()
           try {
             for (;;) {
               const now = Date.now()
-              const idleRemaining = Math.max(0, 45_000 - (now - lastWriterDataAt))
-              const deadlineRemaining = Math.max(0, 120_000 - (now - writerStartedAt))
-              const timeoutStage = idleRemaining <= deadlineRemaining ? 'writer_idle' : 'writer_deadline'
-              const timeoutMs = Math.min(idleRemaining, deadlineRemaining)
+              // Before the first token only the thinking budget runs: a reasoning model is silent until then.
+              const thinking = textStartedAt === null
+              const idleRemaining = thinking ? Infinity : WRITER_LIMITS.idleMs - (now - lastWriterDataAt)
+              const deadlineRemaining = thinking
+                ? WRITER_LIMITS.thinkingMs - (now - writerStartedAt)
+                : WRITER_LIMITS.writingMs - (now - (textStartedAt ?? now))
+              const timeoutStage = thinking
+                ? 'writer_thinking'
+                : idleRemaining <= deadlineRemaining
+                  ? 'writer_idle'
+                  : 'writer_deadline'
+              const timeoutMs = Math.max(0, Math.min(idleRemaining, deadlineRemaining))
 
               // Do not rely on AbortSignal to unblock a provider iterator. The race rejects our own
               // request on time even if the SDK/provider ignores abort and leaves `next()` pending.
@@ -266,7 +290,7 @@ export default defineEventHandler(async (event) => {
                 new Promise<never>((_, reject) => {
                   writerWaitTimer = setTimeout(() => {
                     timedOutStage = timeoutStage
-                    abortController.abort()
+                    writerAbort.abort()
                     reject(new Error(timeoutStage))
                   }, timeoutMs)
                 }),
@@ -282,6 +306,8 @@ export default defineEventHandler(async (event) => {
               lastWriterDataAt = Date.now()
               if (part.type === 'partial') {
                 const partial = part.output
+                textStartedAt ??= Date.now()
+                lastPartial = partial
                 const sources = partial.sources?.filter((source): source is string => typeof source === 'string')
                 recoverySnapshot = {
                   ...recoverySnapshot,
@@ -313,20 +339,40 @@ export default defineEventHandler(async (event) => {
                 lastActivitySentAt = activityAt
               }
             }
+          } catch (error) {
+            // A writer that ran out of time mid-article still leaves finished sections worth completing.
+            salvaged = timedOutStage && timedOutStage !== 'writer_thinking' ? salvageBody(lastPartial) : null
+            if (!salvaged) throw error
+            cutStage = timedOutStage
+            timedOutStage = null
           } finally {
             void writerIterator.return(undefined).catch(() => {})
           }
           textDone = true
 
-          send(controller, { type: 'activity', phase: 'writing', writingStage: 'review' })
-          const draft = await result.output
-          await writingAuditStep.complete({ contentLength: draft.content.length })
+          send(controller, { type: 'activity', phase: 'writing', writingStage: salvaged ? 'finishing' : 'review' })
+          const draft = salvaged ? await generation.completeDraft(salvaged) : await result.output
+          await writingAuditStep.complete({ contentLength: draft.content.length, ...(cutStage && { cut: cutStage }) })
+          if (cutStage) {
+            await auditAttempt('ARTICLE_GENERATION_FALLBACK', {
+              stage: 'writing',
+              reason: cutStage,
+              outcome: 'cut_draft',
+            })
+            send(controller, { type: 'activity', phase: 'writing', writingStage: 'review' })
+          }
           const object = await generation.review(draft, (stage) => send(controller, { type: 'review-progress', stage }))
           recoverySnapshot = { ...recoverySnapshot, ...object }
           await checkpointGeneration(recoverySession!.id, 'review', recoverySnapshot)
           send(controller, { type: 'review', review: generation.editorialReview })
           send(controller, { type: 'partial', object, writingStage: 'review' })
-          const usage = await result.usage
+          // A writer aborted mid-stream may never settle its usage: its tokens go unrecorded rather than the run hang.
+          const usage = salvaged
+            ? await Promise.race([
+                Promise.resolve(result.usage).catch(() => null),
+                new Promise<null>((resolve) => setTimeout(() => resolve(null), 2_000)),
+              ])
+            : await result.usage
 
           send(controller, { type: 'phase', phase: 'images' })
 
@@ -359,7 +405,11 @@ export default defineEventHandler(async (event) => {
           )
 
           const apiTokens =
-            (usage.totalTokens || 0) + researchTokens + generation.editorialTokens + generation.linkTokens
+            (usage?.totalTokens || 0) +
+            researchTokens +
+            generation.editorialTokens +
+            generation.linkTokens +
+            generation.completionTokens
           recoverySnapshot = { ...recoverySnapshot, ...finalized, format: generationOptions.format, metrics }
           await auditArticleStep(audit, 'persistence', () =>
             checkpointGeneration(recoverySession!.id, 'final', recoverySnapshot),
@@ -368,12 +418,17 @@ export default defineEventHandler(async (event) => {
             audit,
             'settlement',
             () =>
-              settleArticleCredit(articleReservation, true, {
+              // A run cut by our time limit is not charged, as a timeout never was.
+              settleArticleCredit(articleReservation, !cutStage, {
                 ...runConfig,
                 title: finalized.title,
                 apiTokens,
+                ...(cutStage && { cut: cutStage }),
               }),
-            (wallet) => ({ articlesCharged: articleReservation.reserved, articlesRemaining: wallet.available }),
+            (wallet) => ({
+              articlesCharged: cutStage ? 0 : articleReservation.reserved,
+              articlesRemaining: wallet.available,
+            }),
           )
           await auditArticleStep(
             audit,
@@ -382,7 +437,7 @@ export default defineEventHandler(async (event) => {
               finishGenerationSession({
                 sessionId: recoverySession!.id,
                 status: 'COMPLETED',
-                charged: true,
+                charged: !cutStage,
               }),
             undefined,
             { operation: 'finish_session' },
@@ -398,6 +453,8 @@ export default defineEventHandler(async (event) => {
               researchTokens,
               editorialTokens: generation.editorialTokens,
               linkTokens: generation.linkTokens,
+              completionTokens: generation.completionTokens,
+              cut: cutStage,
               editorialReview: generation.editorialReview,
               metrics,
               aiInvolvement: 'ASSIST',
@@ -411,10 +468,11 @@ export default defineEventHandler(async (event) => {
             type: 'final',
             article: { ...finalized, metrics, aiInvolvement: 'ASSIST' },
             missingModules: missingArticleModules(finalized, options?.modules ?? []),
+            ...(cutStage && { cut: true }),
           })
           send(controller, {
             type: 'billing',
-            articlesCharged: articleReservation.reserved,
+            articlesCharged: cutStage ? 0 : articleReservation.reserved,
             articlesRemaining: articleWallet.available,
           })
         } catch (error: any) {
@@ -474,9 +532,11 @@ export default defineEventHandler(async (event) => {
             await auditAttempt('MANUAL_GENERATION_FAILED', {
               stage: failedStage,
               error: timedOutStage
-                ? timedOutStage === 'writer_idle'
-                  ? 'Writer produced no data for 45 seconds'
-                  : 'Writer exceeded the 120 second generation deadline'
+                ? {
+                    writer_thinking: 'Writer produced no text within its thinking budget',
+                    writer_idle: 'Writer produced no data within its idle limit',
+                    writer_deadline: 'Writer exceeded its writing budget',
+                  }[timedOutStage]
                 : error?.message || String(error),
             })
             await reportCaughtError('Article generation stream failed', error, {
@@ -490,9 +550,12 @@ export default defineEventHandler(async (event) => {
                 aiAllowanceErrorCode(error) === 'AI_ALLOWANCE_EXHAUSTED'
                   ? t(aiAllowanceMessageKey(error))
                   : timedOutStage
-                    ? timedOutStage === 'writer_idle'
-                      ? t('articles.editor.ai.writerIdleError')
-                      : t('articles.editor.ai.writerDeadlineError')
+                    ? t(`articles.editor.ai.${WRITER_TIMEOUT_MESSAGES[timedOutStage]}`, {
+                        minutes: Math.round(
+                          (timedOutStage === 'writer_thinking' ? WRITER_LIMITS.thinkingMs : WRITER_LIMITS.writingMs) /
+                            60_000,
+                        ),
+                      })
                     : t('articles.editor.aiContentFailed'),
               stage: failedStage,
               // A failed run always releases its held article below.

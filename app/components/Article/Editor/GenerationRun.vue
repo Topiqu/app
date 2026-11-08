@@ -123,7 +123,18 @@
         v-if="running && activeSteps.length"
         class="mx-4 mb-3 rounded-md border border-default bg-elevated/40 px-3 py-2.5"
       >
-        <template v-if="activeSteps[0]?.id === 'writing' && outline.length">
+        <template v-if="thinking">
+          <p class="text-sm text-highlighted">{{ $t('articles.editor.ai.run.thinking.title') }}</p>
+          <p v-if="inputs.length" class="mt-1.5 text-xs leading-5 text-muted">
+            {{ $t('articles.editor.ai.run.inputs.title') }} {{ inputs.join(' · ') }}
+          </p>
+          <ul v-if="knowledgeItems.length" class="mt-1.5 flex flex-wrap gap-1">
+            <li v-for="name in knowledgeItems" :key="name" class="min-w-0 max-w-full">
+              <UBadge color="neutral" variant="soft" size="sm" :label="name" class="max-w-full" />
+            </li>
+          </ul>
+        </template>
+        <template v-else-if="activeSteps[0]?.id === 'writing' && run.writingStage !== 'finishing' && outline.length">
           <p class="text-xs leading-5 text-muted">{{ $t('articles.editor.ai.run.outline') }}</p>
           <ol class="mt-1.5 space-y-1">
             <li
@@ -174,7 +185,6 @@
             <template v-if="step.detail">{{ $t(`articles.editor.ai.run.${step.detail}`, step.params ?? {}) }}</template>
           </li>
         </ul>
-        <p v-if="stalledMessage" class="mt-1.5 text-xs leading-5 text-warning">{{ stalledMessage }}</p>
       </div>
 
       <dl v-if="!running && stats.length" class="grid grid-cols-2 gap-2 px-4 pb-3 sm:grid-cols-4">
@@ -443,6 +453,9 @@ const elapsed = computed(() =>
 )
 const time = computed(() => `${Math.floor(elapsed.value / 60)}:${String(elapsed.value % 60).padStart(2, '0')}`)
 
+// Until its first token the writer only thinks, which would otherwise look like a stalled run.
+const thinking = computed(() => activeSteps.value[0]?.id === 'writing' && !run.textAt)
+
 const REVIEW_STAGES: GenerationReviewStage[] = ['verifying', 'checking', 'revising', 'rechecking']
 const reviewStages = computed(() =>
   run.reviewStage ? REVIEW_STAGES.slice(0, REVIEW_STAGES.indexOf(run.reviewStage) + 1) : [],
@@ -478,11 +491,25 @@ const tone = computed(() => {
 })
 
 const knowledgeSources = computed(() => run.researchResult?.knowledgeSources ?? [])
+const knowledgeItems = computed(() => run.researchResult?.knowledgeItems?.slice(0, 8) ?? [])
 const researchSources = computed(() => run.researchResult?.sources ?? [])
 const researchSourcesOpen = shallowRef(false)
 const video = computed(() => {
   const youtube = run.researchResult?.youtube
   return youtube?.status === 'found' && !run.missingModules?.includes('youtube') ? youtube : null
+})
+const inputs = computed(() => {
+  const result = run.researchResult
+  if (!result) return []
+  return [
+    ...(run.research && result.sourceCount
+      ? [t('articles.editor.ai.run.inputs.web', { count: result.sourceCount })]
+      : []),
+    ...(result.knowledgeItems?.length
+      ? [t('articles.editor.ai.run.inputs.knowledge', { count: result.knowledgeItems.length })]
+      : []),
+    ...(video.value ? [t('articles.editor.ai.run.inputs.video')] : []),
+  ]
 })
 
 const mediaTiles = computed(() => {
@@ -589,7 +616,9 @@ const todos = computed(() => {
           run: () => emit('addVideo', found?.status === 'found' ? found.url : undefined),
         },
       })
-    } else if (step.id === 'review')
+    } else if (step.id === 'writing' && step.state === 'warning')
+      list.push({ key: 'cut', title: detailText(step), note: t('articles.editor.ai.run.todo.cutNote') })
+    else if (step.id === 'review')
       list.push({ key: 'review', title: detailText(step), failed: step.state === 'failed' })
     else if (step.id === 'media' && run.media?.stage === 'failed')
       list.push({ key: 'media', title: detailText(step), failed: true })
@@ -638,7 +667,9 @@ const settledSteps = computed(() =>
 const headline = computed(() => {
   const active = activeSteps.value[0]
   if (running.value)
-    return active ? t(`articles.editor.ai.run.now.${active.id}`) : t('articles.editor.ai.run.title.running')
+    return active
+      ? t(`articles.editor.ai.run.now.${thinking.value ? 'thinking' : active.id}`)
+      : t('articles.editor.ai.run.title.running')
   if (run.status === 'partial' && todos.value.length)
     return t('articles.editor.ai.run.attention', { count: todos.value.length })
   return t(`articles.editor.ai.run.title.${run.status}`)
@@ -652,15 +683,4 @@ const missingModuleLabels = computed(() =>
     .map((module) => t(`articles.editor.ai.module.${module}`))
     .join(', '),
 )
-
-const stalledMessage = computed(() => {
-  if (!running.value) return null
-  const idle = Math.floor((now.value.getTime() - run.lastActivityAt) / 1_000)
-  if (idle < 20) return null
-  if (run.phase === 'research') return t('articles.editor.ai.waitingResearch')
-  if (run.phase === 'images') return t('articles.editor.ai.waitingImages')
-  return run.writingStage === 'review'
-    ? t('articles.editor.ai.run.review.waiting', { seconds: idle })
-    : t('articles.editor.ai.waitingWriting', { seconds: idle })
-})
 </script>

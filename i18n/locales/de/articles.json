@@ -565,12 +565,10 @@
         "researchOff": "ohne Recherche",
         "modulesLabel": "Artikelbausteine",
         "elapsed": "Vergangen: {seconds} s",
-        "waitingWriting": "Seit {seconds} s kam kein neuer Text. Nach 45 s ohne Text wird das Schreiben beendet.",
-        "waitingResearch": "Die Quellenprüfung dauert länger als üblich. Der Vorgang läuft noch und kann sicher gestoppt werden.",
-        "waitingImages": "Die Vorbereitung eines Bildes kann bis zu 45 s dauern. Falls der Dienst kein Bild liefert, wird der Artikel ohne Bild abgeschlossen.",
         "reservedDuringRun": "Vorübergehend reserviert: {count} Credits",
-        "writerIdleError": "Die Generierung wurde gestoppt: 45 Sekunden lang kam kein Text. Versuche es erneut.",
-        "writerDeadlineError": "Die Generierung wurde nach Erreichen des 120-Sekunden-Limits für das Schreiben gestoppt.",
+        "writerIdleError": "Die Generierung wurde gestoppt: 45 Sekunden lang kam kein Text. Versuchen Sie es erneut.",
+        "writerDeadlineError": "Die Generierung wurde gestoppt: In {minutes} Minuten Schreiben ist kein Text entstanden, der sich fertigstellen ließ.",
+        "writerThinkingError": "Die Generierung wurde gestoppt: Das Modell hat nach {minutes} Minuten Nachdenken noch nicht zu schreiben begonnen. Versuchen Sie es erneut.",
         "output": {
           "news": "Nachrichtenbericht",
           "analysis": "Analyse",
@@ -652,6 +650,15 @@
         "allowGeneratedImages": "KI-Illustrationen als letzte Möglichkeit erlauben",
         "useKnowledge": "Wissensbasis verwenden",
         "run": {
+          "thinking": {
+            "title": "Noch kein Text: Das Modell plant zuerst den ganzen Artikel und beginnt dann zu schreiben."
+          },
+          "inputs": {
+            "title": "Arbeitet mit:",
+            "web": "Quellen aus dem Web: {count}",
+            "knowledge": "Einträge aus Ihrem Wissen: {count}",
+            "video": "einem Video"
+          },
           "elapsed": "Zeit {time}",
           "attention": "Artikel generiert, zu prüfen: {count}",
           "progress": "Fortschritt der Generierung",
@@ -666,6 +673,7 @@
             "knowledge": "Ihr Wissen wird durchsucht",
             "youtube": "YouTube-Video wird gesucht",
             "writing": "Artikeltext wird geschrieben",
+            "thinking": "Der Artikel wird geplant",
             "review": "Redaktionelle Prüfung",
             "media": "Bilder werden vorbereitet"
           },
@@ -681,7 +689,8 @@
             "verifyNote": "Prüfen Sie die Fakten vor der Veröffentlichung.",
             "imageMissing": "Für Bild {number} wurde nichts gefunden",
             "searched": "Gesucht: „{query}“",
-            "coverMissing": "Das Titelbild fehlt"
+            "coverMissing": "Das Titelbild fehlt",
+            "cutNote": "Der unvollständige letzte Absatz wurde weggelassen, der Rest des Artikels ist fertig. Diese Generierung wurde nicht berechnet."
           },
           "action": {
             "verify": "Fakten prüfen",
@@ -753,6 +762,8 @@
           },
           "writing": {
             "words": "Geschriebene Wörter: {count}",
+            "finishing": "Die Schreibzeit ist abgelaufen; Zusammenfassung, FAQ und Bildvorgaben werden ergänzt…",
+            "cut": "Durch das Zeitlimit gekürzt, geschriebene Wörter: {count}",
             "starting": "Die Artikelstruktur wird vorbereitet…",
             "title": "Die Überschrift steht; die Einleitung wird vorbereitet…",
             "intro": "Die Einleitung steht; der Haupttext wird geschrieben…",
@@ -764,7 +775,6 @@
             "checking": "Zusammenhang, Struktur und Übereinstimmung mit dem Auftrag werden geprüft…",
             "revising": "Der Text wird anhand der gefundenen Probleme überarbeitet…",
             "rechecking": "Der überarbeitete Text wird geprüft…",
-            "waiting": "Warten auf das Ergebnis des aktuellen Schritts. Letzte Änderung vor {seconds} s.",
             "approved": "Ohne Änderungen freigegeben.",
             "revised": "Überarbeitet; behobene Probleme: {count}",
             "revisedIssues": "Überarbeitet, zur manuellen Prüfung offen: {count}",

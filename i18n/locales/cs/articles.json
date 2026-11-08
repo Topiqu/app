@@ -560,12 +560,10 @@
         "researchOff": "bez výzkumu",
         "modulesLabel": "Součásti článku",
         "elapsed": "Uplynulo {seconds} s",
-        "waitingWriting": "Už {seconds} s nepřišel další text. Po 45 s bez textu se psaní zastaví.",
-        "waitingResearch": "Ověřování zdrojů trvá déle než obvykle. Běh je stále aktivní a lze jej bezpečně zastavit.",
-        "waitingImages": "Příprava obrázku může trvat až 45 s. Pokud jej služba nedodá, článek se dokončí bez něj.",
         "reservedDuringRun": "Dočasně rezervováno: {count} kreditů",
         "writerIdleError": "Generování se zastavilo: 45 sekund nepřišel žádný text. Zkuste to znovu.",
-        "writerDeadlineError": "Generování bylo zastaveno po dosažení 120sekundového limitu psaní.",
+        "writerDeadlineError": "Generování bylo zastaveno: za {minutes} minut psaní nevznikl text, který by šlo dokončit.",
+        "writerThinkingError": "Generování bylo zastaveno: model ani po {minutes} minutách přemýšlení nezačal psát. Zkuste to znovu.",
         "output": {
           "news": "Zpráva",
           "analysis": "Analýza",
@@ -647,6 +645,15 @@
         "allowGeneratedImages": "Povolit AI ilustrace jako poslední možnost",
         "useKnowledge": "Použít znalosti",
         "run": {
+          "thinking": {
+            "title": "Zatím nevznikl žádný text: model si nejdřív promyslí celý článek, pak začne psát."
+          },
+          "inputs": {
+            "title": "Pracuje s:",
+            "web": "zdroje z webu: {count}",
+            "knowledge": "položky ze Znalostí: {count}",
+            "video": "video"
+          },
           "elapsed": "Čas {time}",
           "attention": "Článek je hotový, ke kontrole: {count}",
           "progress": "Průběh generování",
@@ -661,6 +668,7 @@
             "knowledge": "Procházím vaše Znalosti",
             "youtube": "Hledám video na YouTube",
             "writing": "Píšu text článku",
+            "thinking": "Promýšlím článek",
             "review": "Redakční kontrola",
             "media": "Připravuji obrázky"
           },
@@ -676,7 +684,8 @@
             "verifyNote": "Před zveřejněním ověřte fakta.",
             "imageMissing": "Obrázek {number} se nenašel",
             "searched": "Hledáno: „{query}“",
-            "coverMissing": "Chybí titulní obrázek"
+            "coverMissing": "Chybí titulní obrázek",
+            "cutNote": "Rozepsaný poslední odstavec byl vynechán, zbytek článku je dokončený. Toto generování se neúčtovalo."
           },
           "action": {
             "verify": "Ověřit fakta",
@@ -748,6 +757,8 @@
           },
           "writing": {
             "words": "Napsaných slov: {count}",
+            "finishing": "Čas na psaní vypršel, doplňuji shrnutí, FAQ a podklady k obrázkům…",
+            "cut": "Zkráceno časovým limitem, napsaných slov: {count}",
             "starting": "Připravuji strukturu článku…",
             "title": "Titulek je hotový, připravuji úvod…",
             "intro": "Úvod je hotový, píšu hlavní text…",
@@ -759,7 +770,6 @@
             "checking": "Kontroluji návaznost, strukturu a soulad se zadáním…",
             "revising": "Přepracovávám text podle nalezených problémů…",
             "rechecking": "Kontroluji upravený text…",
-            "waiting": "Čekám na výsledek aktuálního kroku. Poslední změna před {seconds} s.",
             "approved": "Schváleno bez úprav.",
             "revised": "Upraveno, opravené problémy: {count}",
             "revisedIssues": "Upraveno, k ruční kontrole zbývá: {count}",

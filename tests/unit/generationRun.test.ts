@@ -198,6 +198,46 @@ describe('missingArticleModules', () => {
   })
 })
 
+describe('writer clocks', () => {
+  it('marks the writer as thinking until its first text', () => {
+    const run = play(start(), [
+      { type: 'phase', phase: 'writing' },
+      { type: 'activity', writingStage: 'starting' },
+      { type: 'activity', writingStage: 'title' },
+      { type: 'activity', writingStage: 'body' },
+    ])
+    expect(play(start(), [{ type: 'activity', writingStage: 'starting' }]).textAt).toBeUndefined()
+    expect(run.textAt).toBe(3)
+  })
+
+  it('treats a cut run as a partial result with a warning on the writing step', () => {
+    const run = play(start(), [
+      { type: 'phase', phase: 'writing' },
+      { type: 'phase', phase: 'images' },
+      { type: 'final', missingModules: [], cut: true },
+    ])
+    expect(step(run, 'writing', 300)).toMatchObject({ state: 'warning', detail: 'writing.cut', params: { count: 300 } })
+    expect(finishGenerationRun(run, 'completed', 9).status).toBe('partial')
+  })
+
+  it('says the remaining fields are being written once the writer was cut', () => {
+    const run = play(start(), [
+      { type: 'phase', phase: 'writing' },
+      { type: 'activity', writingStage: 'finishing' },
+    ])
+    expect(step(run, 'writing', 640)?.detail).toBe('writing.finishing')
+  })
+
+  it('points a thinking timeout at the writing step', () => {
+    const run = finishGenerationRun(
+      play(start(), [{ type: 'phase', phase: 'writing' }]),
+      { message: 'stopped', stage: 'writer_thinking', creditReturned: true },
+      9,
+    )
+    expect(step(run, 'writing')?.state).toBe('failed')
+  })
+})
+
 describe('writtenHeadings', () => {
   it('reads closed H2 headings as text and ignores the one still streaming', () => {
     expect(

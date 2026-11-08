@@ -58,6 +58,8 @@ export interface GenerationResearchResult {
   depth: ResearchDepth
   knowledgeSourceCount?: number
   knowledgeSources?: { id: string; title: string }[]
+  /** Products and pages the writer was given, by name. */
+  knowledgeItems?: string[]
   sources: string[]
   /** Present only when the YouTube module was selected. */
   youtube?: YoutubeOutcome
@@ -112,9 +114,10 @@ export interface ArticleGenerationBilling {
 }
 
 export type GenerationPhase = 'research' | 'writing' | 'images'
-export type GenerationWritingStage = 'starting' | 'title' | 'intro' | 'body' | 'review'
+export type GenerationWritingStage = 'starting' | 'title' | 'intro' | 'body' | 'finishing' | 'review'
 export type GenerationReviewStage = 'verifying' | 'checking' | 'revising' | 'rechecking'
-export type GenerationFailureStage = 'research' | 'writing' | 'finalization' | 'writer_idle' | 'writer_deadline'
+export type GenerationFailureStage =
+  'research' | 'writing' | 'finalization' | 'writer_thinking' | 'writer_idle' | 'writer_deadline'
 
 export type GenerationEvent =
   | { type: 'reservation'; articles: number }
@@ -124,7 +127,7 @@ export type GenerationEvent =
   | ({ type: 'media' } & ArticleMediaProgress)
   | { type: 'review-progress'; stage: GenerationReviewStage }
   | { type: 'review'; review: GenerationReview }
-  | { type: 'final'; missingModules?: ArticleGenerationModule[] }
+  | { type: 'final'; missingModules?: ArticleGenerationModule[]; cut?: boolean }
   | ({ type: 'billing' } & ArticleGenerationBilling)
 
 export interface GenerationRun {
@@ -137,6 +140,8 @@ export interface GenerationRun {
   /** Optional so runs saved before detailed review progress remain readable. */
   reviewStage?: GenerationReviewStage
   startedAt: number
+  /** When the writer's first token arrived; until then it only thinks. */
+  textAt?: number
   finishedAt: number | null
   lastActivityAt: number
   reserved: number | null
@@ -149,6 +154,8 @@ export interface GenerationRun {
   error: { message: string; stage: GenerationFailureStage | null; creditReturned: boolean } | null
   /** Finished from the server's session after a page load cut the stream; later steps were never reported. */
   resumed?: boolean
+  /** The writer ran out of time: its last block was dropped and the remaining fields were written separately. */
+  cut?: boolean
 }
 
 export const startGenerationRun = (options: ArticleGenerationOptions, now: number): GenerationRun => ({
@@ -182,7 +189,10 @@ export const reduceGenerationRun = (run: GenerationRun, event: GenerationEvent, 
       return { ...next, researchResult }
     }
     case 'activity':
-      return event.writingStage ? { ...next, writingStage: event.writingStage } : next
+      if (!event.writingStage) return next
+      return event.writingStage !== 'starting' && !run.textAt
+        ? { ...next, writingStage: event.writingStage, textAt: now }
+        : { ...next, writingStage: event.writingStage }
     case 'media': {
       const { type: _, ...media } = event
       return { ...next, media }
@@ -192,13 +202,14 @@ export const reduceGenerationRun = (run: GenerationRun, event: GenerationEvent, 
     case 'review':
       return { ...next, review: event.review }
     case 'final':
-      return { ...next, missingModules: event.missingModules ?? [] }
+      return { ...next, missingModules: event.missingModules ?? [], cut: event.cut || undefined }
     case 'billing':
       return { ...next, charged: event.articlesCharged > 0 }
   }
 }
 
 const hasWarnings = (run: GenerationRun) =>
+  Boolean(run.cut) ||
   Boolean(run.missingModules?.length) ||
   run.review?.approved === false ||
   run.media?.stage === 'failed' ||
@@ -233,6 +244,7 @@ export interface GenerationStep {
 const FAILURE_STEP: Record<GenerationFailureStage, GenerationStepId> = {
   research: 'research',
   writing: 'writing',
+  writer_thinking: 'writing',
   writer_idle: 'writing',
   writer_deadline: 'writing',
   finalization: 'review',
@@ -284,10 +296,11 @@ export const generationSteps = (run: GenerationRun, words: number): GenerationSt
   if (phaseIndex < 1) steps.push({ id: 'writing', state: 'pending', detail: null })
   else if (run.phase === 'writing' && !reviewing)
     steps.push(
-      words
+      words && run.writingStage !== 'finishing'
         ? { id: 'writing', state: 'running', detail: 'writing.words', params: { count: words } }
         : { id: 'writing', state: 'running', detail: `writing.${run.writingStage}` },
     )
+  else if (run.cut) steps.push({ id: 'writing', state: 'warning', detail: 'writing.cut', params: { count: words } })
   else steps.push({ id: 'writing', state: 'done', detail: 'writing.words', params: { count: words } })
 
   const review = run.review

@@ -16,7 +16,6 @@ import {
 
 const translate = (key: string, params?: Record<string, string | number>) => {
   if (key === 'articles.editor.ai.run.research.sources') return `Nalezené zdroje: ${params?.count}`
-  if (key === 'articles.editor.ai.run.review.waiting') return `waiting:${params?.seconds}`
   if (key === 'articles.editor.ai.run.note.correctClaim') return `Opravte: ${params?.claim}`
   return key
 }
@@ -86,17 +85,16 @@ describe('generation report details', () => {
     expect(wrapper.text()).toContain('Vyprávěč zní jako zpráva.')
   })
 
-  it('updates review details only on real events while the waiting time keeps advancing', async () => {
+  it('updates review details only on real events and stays quiet while a step takes long', async () => {
     let run = reduceGenerationRun(running(), { type: 'review-progress', stage: 'verifying' }, Date.now())
     const wrapper = await mountSuspended(Run, { props: { run, words: 500 }, global })
     expect(wrapper.text()).toContain('articles.editor.ai.run.review.verifying')
-    await vi.advanceTimersByTimeAsync(21_000)
-    expect(wrapper.text()).toContain('waiting:21')
+    await vi.advanceTimersByTimeAsync(60_000)
     expect(wrapper.text()).toContain('articles.editor.ai.run.review.verifying')
+    expect(wrapper.find('.text-warning').exists()).toBe(false)
     run = reduceGenerationRun(run, { type: 'review-progress', stage: 'checking' }, Date.now())
     await wrapper.setProps({ run })
     expect(wrapper.text()).toContain('articles.editor.ai.run.review.checking')
-    expect(wrapper.text()).not.toContain('waiting:')
   })
 })
 
@@ -191,5 +189,47 @@ describe('generation report actions', () => {
     expect(wrapper.text()).toContain('Instalace')
     expect(wrapper.text()).toContain('articles.editor.ai.run.writingNow')
     expect(wrapper.get('[aria-current="step"]').text()).toContain('articles.editor.ai.run.step.writing')
+  })
+
+  it('says the writer is still thinking and from what, without its time limit', async () => {
+    const thinking = play([
+      {
+        type: 'research',
+        status: 'completed',
+        sourceCount: 21,
+        depth: 'standard',
+        sources: [],
+        knowledgeItems: ['LINCAR OLGA 501 L', 'Kalor Marta 20 idro'],
+      },
+      { type: 'phase', phase: 'writing' },
+    ])
+    const wrapper = await mountSuspended(Run, { props: { run: thinking, words: 0 }, global })
+    await vi.advanceTimersByTimeAsync(90_000)
+    expect(wrapper.find('h2').text()).toBe('articles.editor.ai.run.now.thinking')
+    expect(wrapper.text()).toContain('articles.editor.ai.run.thinking.title')
+    expect(wrapper.text()).toContain('LINCAR OLGA 501 L')
+    expect(wrapper.text()).not.toContain('articles.editor.ai.run.writing.starting')
+    expect(wrapper.find('.text-warning').exists()).toBe(false)
+
+    const written = reduceGenerationRun(thinking, { type: 'activity', writingStage: 'body' }, Date.now())
+    await wrapper.setProps({ run: written, words: 80, outline: ['Cena'] })
+    expect(wrapper.find('h2').text()).toBe('articles.editor.ai.run.now.writing')
+    expect(wrapper.text()).toContain('Cena')
+  })
+
+  it('reports a run cut by the time limit as finished text to check', async () => {
+    const run = finishGenerationRun(
+      play([
+        { type: 'phase', phase: 'writing' },
+        { type: 'phase', phase: 'images' },
+        { type: 'final', missingModules: [], cut: true },
+      ]),
+      'completed',
+      Date.now(),
+    )
+    const wrapper = await mountSuspended(Run, { props: { run, words: 640 }, global })
+    expect(run.status).toBe('partial')
+    expect(wrapper.text()).toContain('articles.editor.ai.run.writing.cut')
+    expect(wrapper.text()).toContain('articles.editor.ai.run.todo.cutNote')
   })
 })

@@ -4,6 +4,8 @@ import type { GenerationReviewStage } from '~~/shared/utils/articleGeneration'
 import { generateText, Output, streamText } from 'ai'
 import { isAiAllowanceError } from '~~/shared/utils/aiAllowanceError'
 
+import { slotCounts } from './draftCut'
+
 export const generateArticle = async (
   clientSiteId: string,
   prompt: string,
@@ -401,12 +403,15 @@ const editorialPass = async (draft: ArticleObject, input: EditorialPassInput) =>
 
 // A revision rewrites the whole article, so it needs about as long as the draft; 90 s left no margin.
 const REVISION_TIMEOUT_MS = 300_000
+const COMPLETION_TIMEOUT_MS = 240_000
 
 export const streamArticle = async (
   clientSiteId: string,
   prompt: string,
   opts: {
     abortSignal?: AbortSignal
+    /** Stops only the writer, so a cut draft can still be reviewed and finished. */
+    writerSignal?: AbortSignal
     research?: ResearchOption
     researchDepth?: ResearchDepth
     fallbackWithoutResearch?: boolean
@@ -446,7 +451,7 @@ export const streamArticle = async (
     illustrative: true,
   })
   let groundingBrief = citationAllowlist
-  const result = streamText({ ...config, abortSignal: opts.abortSignal })
+  const result = streamText({ ...config, abortSignal: opts.writerSignal ?? opts.abortSignal })
 
   let linkTokens = 0
   // Caption labels follow the requested article language, including a selected translation tab.
@@ -518,10 +523,61 @@ export const streamArticle = async (
     editorialReview = pass.review
     return pass.draft
   }
+
+  let completionTokens = 0
+  // The writer's own config, so the fields match the format, modules and sources it wrote the body from.
+  const completeDraft = async (body: { title: string; perex: string; content: string }): Promise<ArticleObject> => {
+    const slots = slotCounts(body.content)
+    const tail = await auditArticleStep(
+      audit,
+      'writing',
+      () =>
+        generateText({
+          ...config,
+          prompt: `${prompt}
+
+Your previous answer was cut off after the article below. The article is final: do not rewrite it. Return only the remaining fields for exactly this text. It has ${slots.IMAGE} image, ${slots.POLL} poll, ${slots.VIDEO} video and ${slots.XPOST} X post slots; return exactly that many entries of each, in slot order.
+
+Title: ${body.title}
+Perex: ${body.perex}
+
+${body.content}`,
+          output: Output.object({ schema: articleSchema.omit({ title: true, perex: true, content: true }) }),
+          abortSignal: withTimeout(opts.abortSignal, COMPLETION_TIMEOUT_MS),
+        }),
+      (result) => ({ tokens: result.usage.totalTokens ?? 0 }),
+      { completion: true },
+    )
+      .then((result) => {
+        completionTokens += result.usage.totalTokens ?? 0
+        return result.output
+      })
+      .catch(async (error) => {
+        if (isAiAllowanceError(error) || opts.abortSignal?.aborted) throw error
+        await reportCaughtError('Draft completion failed', error, { clientSiteId })
+        return null
+      })
+    return {
+      ...body,
+      ...(tail ?? {
+        answer: '',
+        keyTakeaways: [],
+        faq: [],
+        coverImage: { type: 'photo' as const, query: body.title, broaderQuery: '' },
+        images: [],
+        polls: [],
+        videos: [],
+        xPosts: [],
+        tags: [],
+        sources: [],
+      }),
+    }
+  }
   return {
     result,
     finalize,
     review,
+    completeDraft,
     researchTokens,
     researchSources,
     research,
@@ -531,6 +587,9 @@ export const streamArticle = async (
     },
     get linkTokens() {
       return linkTokens
+    },
+    get completionTokens() {
+      return completionTokens
     },
     get editorialReview() {
       return editorialReview

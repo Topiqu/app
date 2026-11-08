@@ -440,6 +440,7 @@ For our own products the first-party entry is the specification: state its figur
       depth: researchDepth,
       knowledgeSourceCount: knowledge?.used.length ?? 0,
       knowledgeSources: (knowledge?.used ?? []).map(({ sourceId, title }) => ({ id: sourceId, title })),
+      knowledgeItems: knowledge?.names ?? [],
       knowledgeShortlisted: knowledge?.shortlist?.length ?? 0,
       knowledgeSelected: knowledge?.used.reduce((sum, entry) => sum + entry.chunkIds.length, 0) ?? 0,
     },

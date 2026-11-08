@@ -560,12 +560,10 @@
         "researchOff": "sans recherche",
         "modulesLabel": "Éléments de l'article",
         "elapsed": "Temps écoulé : {seconds} s",
-        "waitingWriting": "Aucun nouveau texte depuis {seconds} s. La rédaction s'arrête après 45 s sans texte.",
-        "waitingResearch": "La vérification des sources prend plus de temps que prévu. La tâche est toujours active et peut être arrêtée sans risque.",
-        "waitingImages": "La préparation d'une image peut prendre jusqu'à 45 s. Si le service n'en fournit pas, l'article sera terminé sans image.",
         "reservedDuringRun": "Réservés temporairement : {count} crédits",
         "writerIdleError": "La génération s'est arrêtée : aucun texte reçu pendant 45 secondes. Réessayez.",
-        "writerDeadlineError": "La génération s'est arrêtée après avoir atteint la limite de rédaction de 120 secondes.",
+        "writerDeadlineError": "La génération s’est arrêtée : {minutes} minutes de rédaction n’ont produit aucun texte qu’il était possible de terminer.",
+        "writerThinkingError": "La génération s’est arrêtée : après {minutes} minutes de réflexion, le modèle n’avait pas commencé à écrire. Réessayez.",
         "output": {
           "news": "Actualité",
           "analysis": "Analyse",
@@ -647,6 +645,15 @@
         "allowGeneratedImages": "Autoriser les illustrations IA en dernier recours",
         "useKnowledge": "Utiliser la base de connaissances",
         "run": {
+          "thinking": {
+            "title": "Pas encore de texte : le modèle planifie d’abord tout l’article, puis commence à écrire."
+          },
+          "inputs": {
+            "title": "Travaille avec :",
+            "web": "sources web : {count}",
+            "knowledge": "éléments de vos Connaissances : {count}",
+            "video": "une vidéo"
+          },
           "elapsed": "Durée {time}",
           "attention": "Article généré, à vérifier : {count}",
           "progress": "Progression de la génération",
@@ -661,6 +668,7 @@
             "knowledge": "Lecture de vos connaissances",
             "youtube": "Recherche d’une vidéo YouTube",
             "writing": "Rédaction de l’article",
+            "thinking": "Préparation de l’article",
             "review": "Relecture éditoriale",
             "media": "Préparation des images"
           },
@@ -676,7 +684,8 @@
             "verifyNote": "Vérifiez les faits avant de publier.",
             "imageMissing": "Aucune image trouvée pour l’image {number}",
             "searched": "Recherché : « {query} »",
-            "coverMissing": "L’image de couverture manque"
+            "coverMissing": "L’image de couverture manque",
+            "cutNote": "Le dernier paragraphe inachevé a été retiré ; le reste de l’article est complet. Cette génération n’a pas été facturée."
           },
           "action": {
             "verify": "Vérifier les faits",
@@ -748,6 +757,8 @@
           },
           "writing": {
             "words": "Mots rédigés : {count}",
+            "finishing": "Le temps de rédaction est écoulé ; ajout du résumé, de la FAQ et des consignes d’images…",
+            "cut": "Écourté par la limite de temps, mots rédigés : {count}",
             "starting": "Préparation de la structure de l’article…",
             "title": "Le titre est prêt ; préparation de l’introduction…",
             "intro": "L’introduction est prête ; rédaction du texte principal…",
@@ -759,7 +770,6 @@
             "checking": "Vérification de la cohérence, de la structure et du respect de la consigne…",
             "revising": "Révision du texte pour corriger les problèmes relevés…",
             "rechecking": "Vérification du texte révisé…",
-            "waiting": "En attente du résultat de l'étape actuelle. Dernière mise à jour il y a {seconds} s.",
             "approved": "Approuvé sans modification.",
             "revised": "Révisé ; problèmes corrigés : {count}",
             "revisedIssues": "Révisé, reste à vérifier manuellement : {count}",

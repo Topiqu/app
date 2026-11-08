@@ -56,8 +56,8 @@ describe('manual article generation stream', () => {
     expect(articleResearch).toContain('abortSignal: researchSignal')
     expect(endpoint).toContain("'MANUAL_GENERATION_RESEARCH_STARTED'")
     expect(endpoint).toContain("auditAttempt('MANUAL_GENERATION_WRITER_STARTED'")
-    expect(endpoint).toContain('45_000 - (now - lastWriterDataAt)')
-    expect(endpoint).toContain('120_000 - (now - writerStartedAt)')
+    expect(endpoint).toContain('WRITER_LIMITS.idleMs - (now - lastWriterDataAt)')
+    expect(endpoint).toContain('WRITER_LIMITS.thinkingMs - (now - writerStartedAt)')
     expect(endpoint).toContain('const next = await Promise.race([')
     expect(endpoint).toContain('writerIterator.next()')
     expect(endpoint).toContain('reject(new Error(timeoutStage))')
@@ -144,8 +144,9 @@ describe('manual article generation stream', () => {
     expect(articleConfig).toContain('The author selected a YouTube video.')
   })
 
-  it('streams the authoritative article balance after settlement', () => {
-    expect(endpoint).toContain('articlesCharged: articleReservation.reserved')
+  it('streams the authoritative article balance after settlement and charges no run cut by the time limit', () => {
+    expect(endpoint).toContain('settleArticleCredit(articleReservation, !cutStage, {')
+    expect(endpoint).toContain('articlesCharged: cutStage ? 0 : articleReservation.reserved')
     expect(endpoint).toContain('articlesRemaining: articleWallet.available')
   })
 
