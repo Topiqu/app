@@ -49,7 +49,7 @@ type ClaimedItem = {
   }
 }
 
-const activeRuns = new Set<string>()
+const activeRuns = new Map<string, number>()
 
 const pauseBatch = async (item: ClaimedItem, reason: ArticleBatchPauseReason, now = new Date()) => {
   const { count } = await prisma.articleBatch.updateMany({
@@ -69,10 +69,11 @@ const pauseBatch = async (item: ClaimedItem, reason: ArticleBatchPauseReason, no
  * before the pause, so a concurrent cancel either sees this row as queued or leaves the pause nothing to update.
  */
 const waitFor = async (item: ClaimedItem, reason: ArticleBatchPauseReason) => {
-  await prisma.articleBatchItem.updateMany({
+  const { count: requeued } = await prisma.articleBatchItem.updateMany({
     where: { id: item.id, status: 'RUNNING', attempts: item.attempts },
     data: { status: 'QUEUED', startedAt: null, leaseUntil: null },
   })
+  if (!requeued) return { id: item.id, status: 'superseded' as const }
   if (await pauseBatch(item, reason)) return { id: item.id, status: 'paused' as const, reason }
   // Cancelled meanwhile: nothing will claim this article again.
   const { count } = await prisma.articleBatchItem.updateMany({
@@ -99,9 +100,22 @@ type ItemOutcome =
   | { status: 'CANCELLED'; error: string }
 
 /** Guarded on the attempt: a run declared lost must not overwrite the attempt that replaced it, and vice versa. */
-const finishItem = async (item: ClaimedItem, outcome: ItemOutcome) => {
+const finishItem = async (item: ClaimedItem, outcome: ItemOutcome, expiredAt?: Date) => {
   const { count } = await prisma.articleBatchItem.updateMany({
-    where: { id: item.id, status: 'RUNNING', attempts: item.attempts },
+    where: {
+      id: item.id,
+      status: 'RUNNING',
+      attempts: item.attempts,
+      ...(expiredAt
+        ? {
+            articleId: null,
+            OR: [
+              { leaseUntil: { lt: expiredAt } },
+              { startedAt: { lt: new Date(expiredAt.getTime() - ITEM_TIMEOUT_MS) } },
+            ],
+          }
+        : {}),
+    },
     data:
       outcome.status === 'SUCCEEDED'
         ? { status: 'SUCCEEDED', articleId: outcome.articleId, error: null, finishedAt: new Date(), leaseUntil: null }
@@ -138,24 +152,31 @@ export const recoverLostBatchItems = async (now = new Date()) => {
     select: { ...ITEM_SELECT, articleId: true, batch: { select: { ...ITEM_SELECT.batch.select, status: true } } },
   })
   for (const item of lost) {
-    activeRuns.delete(item.id)
+    if (activeRuns.get(item.id) === item.attempts) activeRuns.delete(item.id)
     if (item.articleId) await finishItem(item, { status: 'SUCCEEDED', articleId: item.articleId })
     else if (item.attempts < MAX_ATTEMPTS && item.batch.status === 'ACTIVE')
       await prisma.articleBatchItem.updateMany({
-        where: { id: item.id, status: 'RUNNING', attempts: item.attempts },
+        where: {
+          id: item.id,
+          status: 'RUNNING',
+          attempts: item.attempts,
+          articleId: null,
+          OR: [{ leaseUntil: { lt: now } }, { startedAt: { lt: new Date(now.getTime() - ITEM_TIMEOUT_MS) } }],
+        },
         data: { status: 'QUEUED', startedAt: null, leaseUntil: null },
       })
-    else await finishItem(item, { status: 'FAILED', error: 'The generation was interrupted' })
+    else await finishItem(item, { status: 'FAILED', error: 'The generation was interrupted' }, now)
   }
   return lost.length
 }
 
 const renewLeases = async (now: Date) => {
   if (!activeRuns.size) return
-  await prisma.articleBatchItem.updateMany({
-    where: { id: { in: [...activeRuns] }, status: 'RUNNING' },
-    data: { leaseUntil: new Date(now.getTime() + LEASE_MS) },
-  })
+  for (const [id, attempts] of activeRuns)
+    await prisma.articleBatchItem.updateMany({
+      where: { id, attempts, status: 'RUNNING' },
+      data: { leaseUntil: new Date(now.getTime() + LEASE_MS) },
+    })
 }
 
 export const claimBatchItems = async (now = new Date()) =>
@@ -229,7 +250,7 @@ export const runArticleBatchItem = async (item: ClaimedItem) => {
     await finishItem(item, { status: 'FAILED', error })
     return { id: item.id, status: 'failed' as const }
   }
-  activeRuns.add(item.id)
+  activeRuns.set(item.id, item.attempts)
   try {
     const access = await articleBatchAccess(item.batch, item.clientSiteId)
     if (access === 'plan') return await endBatch(item)
@@ -261,6 +282,7 @@ export const runArticleBatchItem = async (item: ClaimedItem) => {
         instructions: item.instructions,
         batchItem: {
           id: item.id,
+          attempts: item.attempts,
           // Attempt-scoped: only a run that left no article is ever attempted again.
           creditKey: `article-batch:${item.id}:${item.attempts}`,
           keywordClusterId: item.keywordClusterId,
@@ -281,7 +303,7 @@ export const runArticleBatchItem = async (item: ClaimedItem) => {
   } catch (error) {
     return fail(error instanceof Error ? error.message : String(error))
   } finally {
-    activeRuns.delete(item.id)
+    if (activeRuns.get(item.id) === item.attempts) activeRuns.delete(item.id)
   }
 }
 

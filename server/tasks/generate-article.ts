@@ -89,6 +89,7 @@ export type RequestedArticle = {
   generationId?: string
   batchItem?: {
     id: string
+    attempts: number
     creditKey: string
     keywordClusterId: string | null
     autoRelease: boolean
@@ -605,11 +606,21 @@ Respond ONLY in valid JSON (schema required).
               : false
 
             // In this transaction, so a worker that dies afterwards leaves proof the article exists.
-            if (batchItem)
-              await ctx.articleBatchItem.updateMany({
-                where: { id: batchItem.id },
+            if (batchItem) {
+              const { count } = await ctx.articleBatchItem.updateMany({
+                where: {
+                  id: batchItem.id,
+                  clientSiteId,
+                  status: 'RUNNING',
+                  attempts: batchItem.attempts,
+                  articleId: null,
+                  leaseUntil: { gt: new Date() },
+                },
                 data: { articleId: article.id },
               })
+              // Roll back the article too: a worker whose lease was replaced must never publish a second copy.
+              if (count !== 1) throw new Error('Article batch attempt no longer owns this item')
+            }
 
             await ctx.articleTag.createMany({
               data: generated.tags.map((tagId: string) => ({ articleId: article.id, tagId })),

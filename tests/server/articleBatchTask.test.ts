@@ -173,6 +173,7 @@ describe('article-batches task', () => {
         instructions: null,
         batchItem: {
           id: 'item-1',
+          attempts: 3,
           creditKey: 'article-batch:item-1:3',
           keywordClusterId: 'cluster-1',
           autoRelease: false,
@@ -241,6 +242,14 @@ describe('article-batches task', () => {
       })
       expect(notifyPaused).toHaveBeenCalledWith('batch-1', 'access')
       expect(release).not.toHaveBeenCalled()
+    })
+
+    it('never pauses the replacement batch when a superseded attempt loses access', async () => {
+      access.mockResolvedValue('member')
+      itemUpdateMany.mockResolvedValueOnce({ count: 0 })
+      await expect(task.runArticleBatchItem(item())).resolves.toMatchObject({ status: 'superseded' })
+      expect(batchUpdateMany).not.toHaveBeenCalled()
+      expect(notifyPaused).not.toHaveBeenCalled()
     })
 
     it('ends the whole plan when the plan lapsed, so a later upgrade cannot resume publishing', async () => {
@@ -364,7 +373,13 @@ describe('article-batches task', () => {
       itemFindMany.mockResolvedValue([lost()])
       await expect(task.recoverLostBatchItems(now)).resolves.toBe(1)
       expect(itemUpdateMany).toHaveBeenCalledWith({
-        where: { id: 'item-1', status: 'RUNNING', attempts: 1 },
+        where: {
+          id: 'item-1',
+          status: 'RUNNING',
+          attempts: 1,
+          articleId: null,
+          OR: [{ leaseUntil: { lt: now } }, { startedAt: { lt: new Date(now.getTime() - 45 * 60_000) } }],
+        },
         data: { status: 'QUEUED', startedAt: null, leaseUntil: null },
       })
       expect(release).not.toHaveBeenCalled()
@@ -383,10 +398,25 @@ describe('article-batches task', () => {
       itemFindMany.mockResolvedValue([lost({ attempts: 3 })])
       await task.recoverLostBatchItems(now)
       expect(itemUpdateMany).toHaveBeenCalledWith({
-        where: { id: 'item-1', status: 'RUNNING', attempts: 3 },
+        where: {
+          id: 'item-1',
+          status: 'RUNNING',
+          attempts: 3,
+          articleId: null,
+          OR: [{ leaseUntil: { lt: now } }, { startedAt: { lt: new Date(now.getTime() - 45 * 60_000) } }],
+        },
         data: expect.objectContaining({ status: 'FAILED' }),
       })
       expect(release).toHaveBeenCalled()
+    })
+
+    it('does not mark a saved final attempt failed from an obsolete recovery snapshot', async () => {
+      itemFindMany.mockResolvedValue([lost({ attempts: 3 })])
+      itemUpdateMany.mockResolvedValueOnce({ count: 0 })
+      await task.recoverLostBatchItems(now)
+      expect(release).not.toHaveBeenCalled()
+      expect(finishIfDone).not.toHaveBeenCalled()
+      expect(itemUpdateMany.mock.calls[0]![0].where).toMatchObject({ articleId: null })
     })
 
     it('does not requeue into a cancelled plan', async () => {
