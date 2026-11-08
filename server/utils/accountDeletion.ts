@@ -2,7 +2,7 @@ import type { H3Event } from 'h3'
 
 import argon from 'argon2'
 import { DbNull } from '@zenstackhq/orm'
-import { createHmac, timingSafeEqual } from 'node:crypto'
+import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto'
 
 export const ACCOUNT_DELETION_GRACE_DAYS = 30
 export const ACCOUNT_DELETION_REMINDER_DAYS = 7
@@ -157,6 +157,14 @@ const isMissingSubscription = (error: unknown) =>
 
 const hasEnded = (status: string) => status === 'canceled' || status === 'incomplete_expired'
 
+const BILLING_REQUEST = { timeout: 8000, maxNetworkRetries: 0 } as const
+
+const lockClosingBilling = async (tx: DatabaseTransaction, id: string) => {
+  const [blog] = await tx.$queryRaw<{ closingAt: Date | null; closingSubscriptionIds: string[] }[]>`
+    SELECT "closingAt", "closingSubscriptionIds" FROM "ClientSite" WHERE "id" = ${id} FOR UPDATE`
+  return blog
+}
+
 /** Reads Stripe rather than the row: a teammate may have subscribed again after the row was last synced. */
 const blogSubscriptions = async (blog: BillingBlog) => {
   if (!blog.stripeCustomerId) return []
@@ -188,49 +196,68 @@ export const hasScheduledBillingChange = async (blogs: BillingBlog[]) => {
  */
 export const endBlogBilling = async (blog: BillingBlog) => {
   const stripe = useStripe()
-  let recorded = blog.closingSubscriptionIds
   for (const subscription of await blogSubscriptions(blog)) {
     if (subscription.cancel_at_period_end) continue
-    if (!recorded.includes(subscription.id)) {
-      recorded = [...recorded, subscription.id]
-      await prisma.clientSite.update({ where: { id: blog.id }, data: { closingSubscriptionIds: recorded } })
-    }
-    // Billing routes refuse a closing blog, so this is only a schedule that predates the closure. Stripe refuses a
-    // cancellation on a scheduled subscription, and the blog is closing, so its pending change no longer matters.
-    if (subscription.schedule) {
-      const scheduleId = typeof subscription.schedule === 'string' ? subscription.schedule : subscription.schedule.id
-      await stripe.subscriptionSchedules.release(scheduleId)
-    }
-    await stripe.subscriptions.update(subscription.id, { cancel_at_period_end: true })
+    // Commit the recovery marker before Stripe: a failed transaction cannot erase evidence of a remote change.
+    await prisma.clientSite.updateMany({
+      where: { id: blog.id, closingAt: { not: null }, NOT: { closingSubscriptionIds: { has: subscription.id } } },
+      data: { closingSubscriptionIds: { push: subscription.id } },
+    })
+    await prisma.$transaction(async (tx) => {
+      const current = await lockClosingBilling(tx, blog.id)
+      if (!current?.closingAt || !current.closingSubscriptionIds.includes(subscription.id)) return
+      // Bounded provider requests under the row lock; restoration waits until they finish.
+      if (subscription.schedule) {
+        const scheduleId = typeof subscription.schedule === 'string' ? subscription.schedule : subscription.schedule.id
+        await stripe.subscriptionSchedules.release(scheduleId, {}, BILLING_REQUEST)
+      }
+      await stripe.subscriptions.update(subscription.id, { cancel_at_period_end: true }, BILLING_REQUEST)
+    })
   }
 }
 
 type BillingState = 'resumed' | 'ended' | 'failed'
 
 /** Ids stay recorded until Stripe confirms, so the hourly task can retry after an outage. */
-const resumeBlogBilling = async (blog: Pick<BillingBlog, 'id' | 'closingSubscriptionIds'>): Promise<BillingState> => {
+const resumeBlogBilling = async (blog: Pick<BillingBlog, 'id'>): Promise<BillingState> => {
   const stripe = useStripe()
-  const remaining: string[] = []
+  const snapshot = await prisma.clientSite.findUnique({
+    where: { id: blog.id },
+    select: { closingSubscriptionIds: true },
+  })
   let state: BillingState = 'resumed'
-  for (const subscriptionId of blog.closingSubscriptionIds) {
+  for (const subscriptionId of new Set(snapshot?.closingSubscriptionIds ?? [])) {
     try {
-      const subscription = await stripe.subscriptions.retrieve(subscriptionId)
-      if (hasEnded(subscription.status)) state = state === 'failed' ? state : 'ended'
-      else await stripe.subscriptions.update(subscriptionId, { cancel_at_period_end: false })
+      const outcome = await prisma.$transaction(async (tx): Promise<BillingState> => {
+        const current = await lockClosingBilling(tx, blog.id)
+        if (!current) return 'ended'
+        if (current.closingAt) return 'failed'
+        if (!current.closingSubscriptionIds.includes(subscriptionId)) return 'resumed'
+        let ended = false
+        try {
+          const subscription = await stripe.subscriptions.retrieve(subscriptionId, {}, BILLING_REQUEST)
+          ended = hasEnded(subscription.status)
+          if (!ended)
+            await stripe.subscriptions.update(subscriptionId, { cancel_at_period_end: false }, BILLING_REQUEST)
+        } catch (error) {
+          if (!isMissingSubscription(error)) throw error
+          ended = true
+        }
+        await tx.clientSite.update({
+          where: { id: blog.id },
+          data: { closingSubscriptionIds: current.closingSubscriptionIds.filter((id) => id !== subscriptionId) },
+        })
+        return ended ? 'ended' : 'resumed'
+      })
+      if (outcome === 'failed' || state === 'resumed') state = outcome
     } catch (error) {
-      if (isMissingSubscription(error)) {
-        state = state === 'failed' ? state : 'ended'
-        continue
-      }
       state = 'failed'
-      remaining.push(subscriptionId)
       await reportCaughtError('Account deletion subscription resume failed', error, {
         clientSiteId: blog.id,
         subscriptionId,
       })
     }
   }
-  await prisma.clientSite.update({ where: { id: blog.id }, data: { closingSubscriptionIds: remaining } })
   return state
 }
 
@@ -497,10 +524,10 @@ export const pendingDeletionSignIn = async (email: string, password: string) => 
   return true
 }
 
-/** Both columns are unique, and the old values must become free for a new account. */
-export const anonymizedIdentity = (userId: string) => {
-  const id = userId.replace(/-/g, '')
-  return { username: `deleted-${id.slice(0, 16)}`, email: `deleted-${id}@deleted.invalid` }
+/** A public author ID must not let another account reserve its anonymized username or email. */
+export const anonymizedIdentity = () => {
+  const id = randomUUID().replace(/-/g, '')
+  return { username: `deleted-${id}`, email: `deleted-${id}@deleted.invalid` }
 }
 
 const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -523,7 +550,7 @@ export const anonymizeAccount = async (userId: string, now = new Date()) => {
   })
   for (const blog of billing) await endBlogBilling(blog)
 
-  const identity = anonymizedIdentity(userId)
+  const identity = anonymizedIdentity()
   const result = await prisma.$transaction(async (tx) => {
     await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${userId} FOR UPDATE`
     const user = await tx.user.findFirst({

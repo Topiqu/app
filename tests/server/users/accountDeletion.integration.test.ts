@@ -149,6 +149,13 @@ describe.skipIf(!enabled)('account deletion on PostgreSQL', () => {
   it('anonymises after the period, keeps articles on other blogs and frees the email', async () => {
     const { scheduleAccountDeletion, anonymizeAccount } = await load()
 
+    // A pre-existing account claimed the former deterministic tombstone identity.
+    const legacyId = ownerId.replace(/-/g, '')
+    await db!.user.update({
+      where: { id: readerId },
+      data: { username: `deleted-${legacyId.slice(0, 16)}`, email: `deleted-${legacyId}@deleted.invalid` },
+    })
+
     const { scheduledFor } = await scheduleAccountDeletion(ownerId, [ownedSiteId], event)
 
     await expect(anonymizeAccount(ownerId, new Date(scheduledFor.getTime() - 1000))).resolves.toBe(false)
@@ -160,6 +167,8 @@ describe.skipIf(!enabled)('account deletion on PostgreSQL', () => {
     })
     expect(user.email).toMatch(/@deleted\.invalid$/)
     expect(user.username).toMatch(/^deleted-/)
+    expect(user.username).not.toBe(`deleted-${legacyId.slice(0, 16)}`)
+    expect(user.email).not.toBe(`deleted-${legacyId}@deleted.invalid`)
     expect(user.bio).toBeNull()
     expect(user.password).toBeNull()
     expect(user.anonymizedAt).toEqual(scheduledFor)
