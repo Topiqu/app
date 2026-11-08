@@ -7,6 +7,7 @@ import type { DatabaseTransaction } from '../database'
 import { chunkKnowledge } from './chunk'
 import { KnowledgeExtractError } from './extract'
 import { knowledgeSiteWhere } from './eligibility'
+import { refreshProductImages } from './productImage'
 import { aiEmbeddingModelId } from '../ai/modelRegistry'
 import { fetchShopifyCatalog } from '../shopify/catalog'
 import { fetchKnowledgeFeed, type FeedProduct } from './feed'
@@ -213,9 +214,9 @@ const upsertProducts = (
   source: FeedSource,
   products: readonly FeedProduct[],
 ) => tx.$executeRaw`
-  INSERT INTO "KnowledgeProduct" ("id", "updatedAt", "sourceId", "clientSiteId", "externalId", "name", "brand", "url", "price", "currency", "availability")
+  INSERT INTO "KnowledgeProduct" ("id", "updatedAt", "sourceId", "clientSiteId", "externalId", "name", "brand", "url", "price", "currency", "availability", "imageUrl")
   SELECT gen_random_uuid()::text, now(), ${source.id}, ${source.clientSiteId}, t.external_id, t.name, t.brand, t.url, t.price::numeric,
-         t.currency, t.availability::"KnowledgeProductAvailability"
+         t.currency, t.availability::"KnowledgeProductAvailability", t.image_url
   FROM unnest(
     ${products.map((product) => product.externalId)}::text[],
     ${products.map((product) => product.name)}::text[],
@@ -223,13 +224,14 @@ const upsertProducts = (
     ${products.map((product) => product.url)}::text[],
     ${products.map((product) => product.price)}::text[],
     ${products.map((product) => product.currency)}::text[],
-    ${products.map((product) => product.availability)}::text[]
-  ) AS t(external_id, name, brand, url, price, currency, availability)
+    ${products.map((product) => product.availability)}::text[],
+    ${products.map((product) => product.imageUrl)}::text[]
+  ) AS t(external_id, name, brand, url, price, currency, availability, image_url)
   ON CONFLICT ("sourceId", "externalId") DO UPDATE SET
     "name" = EXCLUDED."name", "brand" = EXCLUDED."brand", "url" = EXCLUDED."url", "price" = EXCLUDED."price",
-    "currency" = EXCLUDED."currency", "availability" = EXCLUDED."availability", "updatedAt" = now()
-  WHERE ("KnowledgeProduct"."name", "KnowledgeProduct"."brand", "KnowledgeProduct"."url", "KnowledgeProduct"."price", "KnowledgeProduct"."currency", "KnowledgeProduct"."availability")
-    IS DISTINCT FROM (EXCLUDED."name", EXCLUDED."brand", EXCLUDED."url", EXCLUDED."price", EXCLUDED."currency", EXCLUDED."availability")`
+    "currency" = EXCLUDED."currency", "availability" = EXCLUDED."availability", "imageUrl" = EXCLUDED."imageUrl", "updatedAt" = now()
+  WHERE ("KnowledgeProduct"."name", "KnowledgeProduct"."brand", "KnowledgeProduct"."url", "KnowledgeProduct"."price", "KnowledgeProduct"."currency", "KnowledgeProduct"."availability", "KnowledgeProduct"."imageUrl")
+    IS DISTINCT FROM (EXCLUDED."name", EXCLUDED."brand", EXCLUDED."url", EXCLUDED."price", EXCLUDED."currency", EXCLUDED."availability", EXCLUDED."imageUrl")`
 
 /** Retain completed batches privately; live products and chunks remain a consistent snapshot. */
 const embedProducts = async (source: FeedSource, batch: readonly FeedProduct[], model: string) => {
@@ -390,6 +392,9 @@ const syncFeed = async (source: FeedSource) => {
       } catch (error) {
         await reportCaughtError('Knowledge feed audit failed', error, { sourceId: source.id })
       }
+      await refreshProductImages(source.id).catch((error) =>
+        reportCaughtError('Product image refresh failed', error, { sourceId: source.id }),
+      )
     }
     return true
   } catch (error) {

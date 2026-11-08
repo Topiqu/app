@@ -119,6 +119,11 @@ model KnowledgeProduct {
     price        Decimal?                     @db.Decimal(12, 2)
     currency     String?                      @length(3, 3)
     availability KnowledgeProductAvailability
+    imageUrl     String?                      @length(0, 2048)
+    /// Our resized copy for article product cards: shop image hosts are not on the image proxy
+    /// allowlist. `cdnImageSource` is the `imageUrl` it was made from, so a new feed image is copied again.
+    cdnImageUrl    String?                    @length(0, 2048)
+    cdnImageSource String?                    @length(0, 2048)
     textHash     String?                      @length(64, 64)
     chunks       KnowledgeChunk[]
 

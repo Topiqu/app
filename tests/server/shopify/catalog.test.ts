@@ -30,6 +30,7 @@ const product = (id = '1'): CatalogProduct => ({
   productType: 'Shoes',
   handle: `shoes-${id}`,
   onlineStoreUrl: `https://shop.example/products/shoes-${id}`,
+  featuredMedia: { preview: { image: { url: `https://cdn.shopify.com/s/files/shoes-${id}.jpg` } } },
   variants: page([
     {
       id: `gid://shopify/ProductVariant/${id}`,
@@ -84,6 +85,7 @@ describe('Shopify catalog ingestion', () => {
       price: '99.00',
       currency: 'EUR',
       availability: 'IN_STOCK',
+      imageUrl: 'https://cdn.shopify.com/s/files/shoes-1.jpg',
     })
     expect(snapshot.products[0]!.text).toContain('Collection: Trail running')
     expect(snapshot.products[0]!.text).toContain('For off-road runners')

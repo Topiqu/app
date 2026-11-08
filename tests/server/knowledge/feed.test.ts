@@ -20,6 +20,7 @@ const heureka = `<?xml version="1.0" encoding="utf-8"?>
     <MANUFACTURER>Acme</MANUFACTURER>
     <CATEGORYTEXT>Oblečení | Trička</CATEGORYTEXT>
     <DELIVERY_DATE>5</DELIVERY_DATE>
+    <IMGURL>http://shop.example.cz/tricko-s.jpg</IMGURL>
     <PARAM><PARAM_NAME>Velikost</PARAM_NAME><VAL>S</VAL></PARAM>
   </SHOPITEM>
   <SHOPITEM>
@@ -29,6 +30,7 @@ const heureka = `<?xml version="1.0" encoding="utf-8"?>
     <URL>https://shop.example.cz/tricko-m</URL>
     <PRICE_VAT>349,50</PRICE_VAT>
     <DELIVERY_DATE>0</DELIVERY_DATE>
+    <IMGURL>https://shop.example.cz/tricko-m.jpg?utm_source=heureka</IMGURL>
     <PARAM><PARAM_NAME>Velikost</PARAM_NAME><VAL>M</VAL></PARAM>
   </SHOPITEM>
   <SHOPITEM>
@@ -52,6 +54,7 @@ const google = `<?xml version="1.0"?>
       <title>Chef knife &amp; sheath</title>
       <link>https://shop.example.com/knife?gclid=abc&amp;ref=feed</link>
       <g:price>1,299.00 USD</g:price>
+      <g:image_link>https://shop.example.com/knife.jpg</g:image_link>
       <g:availability>out of stock</g:availability>
       <g:product_type>Home &gt; Kitchen</g:product_type>
       <g:product_detail>
@@ -86,6 +89,8 @@ describe('knowledge product feeds', () => {
       price: '349.50',
       currency: 'CZK',
       availability: 'IN_STOCK',
+      // The orderable variant's image, https and without tracking; the http one is never fetched.
+      imageUrl: 'https://shop.example.cz/tricko-m.jpg',
     })
     expect(products[0]!.text).toBe(
       'Tričko Basic\nBrand: Acme\nCategory: Oblečení › Trička\nVelikost: S, M\nBavlněné tričko. Pere se na 40 °C.',
@@ -98,6 +103,7 @@ describe('knowledge product feeds', () => {
       externalId: 'KNIFE-1',
       name: 'Chef knife & sheath',
       url: 'https://shop.example.com/knife?ref=feed',
+      imageUrl: 'https://shop.example.com/knife.jpg',
       availability: 'OUT_OF_STOCK',
       // "1,299.00" is ambiguous across locales, so no price rather than a wrong one.
       price: null,
@@ -112,6 +118,7 @@ describe('knowledge product feeds', () => {
       price: '45.50',
       currency: 'EUR',
       availability: 'PREORDER',
+      imageUrl: null,
     })
   })
 

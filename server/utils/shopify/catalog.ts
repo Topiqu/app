@@ -20,6 +20,7 @@ export type CatalogProduct = {
   productType: string
   handle: string
   onlineStoreUrl: string | null
+  featuredMedia: { preview: { image: { url: string } | null } | null } | null
   variants: Page<Variant>
   collections: Page<Collection>
 }
@@ -31,6 +32,7 @@ const PRODUCT_QUERY = `query TopiquCatalog($after: String) {
   shop { currencyCode }
   products(first: 5, after: $after, sortKey: ID, query: "status:active AND published_status:published") {
     nodes { id title description vendor productType handle onlineStoreUrl
+      featuredMedia { preview { image { url } } }
       variants(first: 50) { ${VARIANTS} }
       collections(first: 20) { ${COLLECTIONS} }
     } ${PAGE_INFO}
@@ -57,6 +59,7 @@ export const catalogVariants = (product: CatalogProduct, currency: string, store
     name: product.title,
     description: product.description,
     url,
+    image: product.featuredMedia?.preview?.image?.url,
     price: variant.price,
     currency,
     availability:

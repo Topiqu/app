@@ -21,6 +21,7 @@ export type FeedProduct = {
   price: string | null
   currency: string | null
   availability: KnowledgeProductAvailability
+  imageUrl: string | null
   text: string
   textHash: string
 }
@@ -34,6 +35,7 @@ export type RawVariant = {
   name?: string
   description?: string
   url?: string
+  image?: string
   price?: string
   currency?: string
   availability: KnowledgeProductAvailability
@@ -79,6 +81,7 @@ const heureka = (item: FeedNode, currency: string | null): RawVariant => ({
   name: child(item, 'PRODUCTNAME', 'PRODUCT'),
   description: child(item, 'DESCRIPTION'),
   url: child(item, 'URL'),
+  image: child(item, 'IMGURL'),
   price: child(item, 'PRICE_VAT'),
   currency: currency ?? undefined,
   availability: heurekaAvailability(child(item, 'DELIVERY_DATE')),
@@ -96,6 +99,7 @@ const google = (item: FeedNode): RawVariant => {
     name: child(item, 'g:title', 'title'),
     description: child(item, 'g:description', 'description', 'summary'),
     url: child(item, 'g:link', 'link') ?? children(item, 'link')[0]?.attribs.href,
+    image: child(item, 'g:image_link'),
     price: price?.[1],
     currency: price?.[2]?.toUpperCase(),
     availability: googleAvailability(child(item, 'g:availability')),
@@ -118,7 +122,7 @@ export const plainText = (value: string | undefined, max: number) =>
     .trim()
     .slice(0, max)
 
-/** Links go into published articles and are never fetched by us: https, no credentials, no tracking. */
+/** Links go into published articles: https, no credentials, no tracking. Only an image URL is ever fetched. */
 export const productUrl = (value: string | undefined) => {
   const url = value ? URL.parse(value.trim()) : null
   if (!url || url.protocol !== 'https:' || url.username || url.password) return null
@@ -152,6 +156,7 @@ export const normalizeVariant = (raw: RawVariant): Variant | KnowledgeFeedSkip =
     price,
     currency: price ? currency : null,
     availability: raw.availability,
+    imageUrl: productUrl(raw.image),
     description: plainText(raw.description, 1500),
     brand: plainText(raw.brand, 100),
     category: (raw.category ?? [])
@@ -178,7 +183,7 @@ const productText = (variant: Variant, params: Map<string, Set<string>>) =>
 /**
  * Variants of one product share an `item_group_id`: they become one product so eight sizes of a
  * shirt do not fill the shortlist. It takes the lowest price, the best availability and the link
- * of the first variant that can be ordered.
+ * and image of the first variant that can be ordered.
  */
 export const mergeVariants = (variants: readonly Variant[]): FeedProduct[] => {
   const groups = new Map<string, Variant[]>()
@@ -205,6 +210,7 @@ export const mergeVariants = (variants: readonly Variant[]): FeedProduct[] => {
       price,
       currency: price ? first.currency : null,
       availability: best.availability,
+      imageUrl: best.imageUrl ?? group.find((variant) => variant.imageUrl)?.imageUrl ?? null,
       text,
       textHash: createHash('sha256').update(text).digest('hex'),
     }
