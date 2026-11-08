@@ -1,7 +1,11 @@
+import { vi } from 'vitest'
+
 import { stubNitroImports } from '../helpers/nitroImports'
 
 /** The real article pipeline (research → writer → review → revision) with its Nitro auto-imports wired up. */
 export async function stubArticlePipeline() {
+  // The spend cap reserves in the database, which an eval does not have.
+  vi.stubGlobal('aiLanguageSpend', () => ({}))
   await stubNitroImports(import('../../server/utils/aiUsage'), 'recordAiUsage')
   await stubNitroImports(import('../../server/utils/ai/articleUsage'), 'withArticleUsageStage')
   await stubNitroImports(import('../../server/utils/ai/articleUsage'), 'articleLanguageUsage')
