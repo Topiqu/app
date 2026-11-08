@@ -119,7 +119,7 @@ describe('manual article generation stream', () => {
       /if \(session\?\.failureReason !== 'USER_STOP_REQUESTED'\) return\s+abortController\.abort\(\)/,
     )
     expect(articleMedia).toContain("reportMedia('cover')")
-    expect(articleMedia).toContain("reportMedia('complete')")
+    expect(articleMedia).toMatch(/reportMedia\(\s*'complete'/)
     expect(endpoint).toContain("send(controller, { type: 'media', stage: 'failed'")
     expect(articleMedia).not.toContain('if (!articleImageUrl && firstBodyImage)')
   })
