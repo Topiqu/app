@@ -115,11 +115,11 @@ describe('translation draft and request ownership', () => {
 
   it('seeds the correct empty buffer when switching between missing languages', () => {
     const state = setup('fr')
-    expect(state.draft.value).toEqual({ title: '', excerpt: '', content: '' })
+    expect(state.draft.value).toEqual({ title: '', excerpt: '', content: '', answer: '', keyTakeaways: [], faq: [] })
     state.draft.value.title = 'Temporary missing-language buffer'
     data.value = { ...data.value, targetLanguages: ['en', 'de', 'fr', 'cs'] }
     state.activeLang.value = 'cs'
-    expect(state.draft.value).toEqual({ title: '', excerpt: '', content: '' })
+    expect(state.draft.value).toEqual({ title: '', excerpt: '', content: '', answer: '', keyTakeaways: [], faq: [] })
     expect(state.isDirty.value).toBe(false)
     state.activeLang.value = 'de'
     expect(state.draft.value.title).toBe('de title')
@@ -289,7 +289,7 @@ describe('translation draft and request ownership', () => {
         body: { expectedUpdatedAt: null },
       },
     ])
-    expect(state.draft.value).toEqual({ title: '', excerpt: '', content: '' })
+    expect(state.draft.value).toEqual({ title: '', excerpt: '', content: '', answer: '', keyTakeaways: [], faq: [] })
     expect(state.hasBody.value).toBe(false)
   })
 

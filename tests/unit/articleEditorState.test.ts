@@ -60,6 +60,26 @@ describe('articleEditorSnapshot', () => {
     expect(articleEditorSnapshot({ ...article, ...change }, ['tag-a'], 'series-1')).not.toBe(baseline)
   })
 
+  it('ignores summary whitespace and blank takeaway rows the save strips anyway', () => {
+    const saved = { ...article, answer: 'Answer', keyTakeaways: ['First'] }
+    expect(articleEditorSnapshot({ ...article, answer: ' Answer ', keyTakeaways: [' First', ''] }, [], null)).toBe(
+      articleEditorSnapshot(saved, [], null),
+    )
+    expect(articleEditorSnapshot({ ...article, answer: '  ' }, [], null)).toBe(articleEditorSnapshot(article, [], null))
+  })
+
+  it('treats an empty FAQ as none and ignores its blank rows, but not a half-written entry', () => {
+    const entry = { question: 'Kdy?', answer: 'Na jaře.' }
+    const baseline = articleEditorSnapshot({ ...article, faq: [entry] }, [], null)
+    expect(articleEditorSnapshot({ ...article, faq: [] }, [], null)).toBe(
+      articleEditorSnapshot({ ...article, faq: null }, [], null),
+    )
+    expect(articleEditorSnapshot({ ...article, faq: [entry, { question: '', answer: '' }] }, [], null)).toBe(baseline)
+    expect(articleEditorSnapshot({ ...article, faq: [entry, { question: 'Proč?', answer: '' }] }, [], null)).not.toBe(
+      baseline,
+    )
+  })
+
   it('treats missing restored metadata like its empty persisted defaults', () => {
     expect(
       articleEditorSnapshot(

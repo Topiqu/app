@@ -446,6 +446,25 @@
       "articlePublished": "Article published",
       "draftCreated": "Draft created",
       "translationSaveFailedAfterCreate": "Article saved, but a translation could not be saved. Check its language tab before continuing.",
+      "summary": {
+        "answer": "Direct answer",
+        "answerHelp": "One or two sentences that answer the article's question. Shown above the body.",
+        "answerPlaceholder": "Answer the article's main question directly…",
+        "takeaways": "Key takeaways",
+        "takeaway": "Key takeaway {n}",
+        "removeTakeaway": "Remove key takeaway {n}",
+        "addAnswer": "Add direct answer",
+        "addTakeaway": "Add key takeaway"
+      },
+      "faq": {
+        "question": "Question {n}",
+        "answer": "Answer to question {n}",
+        "questionPlaceholder": "What do readers ask?",
+        "answerPlaceholder": "A short, complete answer",
+        "add": "Add question",
+        "remove": "Remove question {n}",
+        "incomplete": "Give every question an answer, or remove it."
+      },
       "productPicker": {
         "title": "Insert product",
         "description": "Products from your connected feed or Shopify store. The card shows today's price and stock.",

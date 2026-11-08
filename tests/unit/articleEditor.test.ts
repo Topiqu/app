@@ -2,8 +2,10 @@ import { resolve } from 'node:path'
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
+import { cleanFaq, faqEntriesSchema, hasIncompleteFaq } from '../../shared/utils/articleFaq'
 import {
   canManageArticle,
+  cleanTakeaways,
   dropBlankLines,
   hasArticleBody,
   isBlankArticle,
@@ -21,14 +23,13 @@ describe('generated article modules', () => {
     expect(hasArticleBody('<p>Obsah</p>')).toBe(true)
     expect(hasArticleBody('<p><img src="/cover.jpg"></p>')).toBe(true)
   })
-  it('renders extraction fields in the editor canvas', () => {
-    expect(editorSource).toContain(
-      'const activeExtraction = computed(() => (tr.isSource ? editedArticle.value : tr.active))',
-    )
-    expect(editorSource.match(/:answer="activeExtraction\?\.answer"/g)).toHaveLength(2)
-    expect(editorSource.match(/:takeaways="activeExtraction\?\.keyTakeaways \?\? \[\]"/g)).toHaveLength(2)
-    expect(editorSource).toContain(':entries="readFaq(activeExtraction?.faq)"')
-    expect(editorSource).toContain(':faq="activeExtraction?.faq"')
+  it('edits the summary and FAQ of the selected language and previews the saved form', () => {
+    expect(editorSource).toContain('v-model:answer="answerModel"')
+    expect(editorSource).toContain('v-model:takeaways="takeawaysModel"')
+    expect(editorSource).toContain(':takeaways="cleanTakeaways(takeawaysModel)"')
+    expect(editorSource).toContain('v-model="faqModel"')
+    expect(editorSource).toContain(':faq="cleanFaq(faqModel)"')
+    expect(editorSource).toContain('get: () => (tr.isSource ? readFaq(editedArticle.value.faq) : tr.draft.faq),')
     expect(editorSource).toContain('<ArticleEditorGenerationRun')
     expect(generationStore).toContain('finishGenerationRun(run.value, outcome, Date.now())')
   })
@@ -38,6 +39,46 @@ describe('generated article modules', () => {
     expect(clientSiteSource).toContain('status.articleWallet.reserved <= reservedBefore')
     expect(generationStore).toContain('patchClientSiteArticleWallet({')
     expect(generationStore).toContain('refreshClientSiteStatusAfterStop(reservedBefore)')
+  })
+})
+
+describe('cleanTakeaways', () => {
+  it('drops the blank rows the editor keeps while typing and trims the rest', () => {
+    expect(cleanTakeaways(['  First  ', '', '   ', 'Second'])).toEqual(['First', 'Second'])
+    expect(cleanTakeaways(null)).toEqual([])
+  })
+})
+
+describe('FAQ entries', () => {
+  it('trims entries and drops fully blank rows, but keeps a half-written one', () => {
+    expect(
+      cleanFaq([
+        { question: ' Kdy? ', answer: ' Na jaře. ' },
+        { question: '', answer: '  ' },
+        { question: 'Proč?', answer: '' },
+      ]),
+    ).toEqual([
+      { question: 'Kdy?', answer: 'Na jaře.' },
+      { question: 'Proč?', answer: '' },
+    ])
+  })
+
+  it('reports a question without an answer, or the reverse, as incomplete', () => {
+    expect(
+      hasIncompleteFaq([
+        { question: 'Kdy?', answer: 'Na jaře.' },
+        { question: ' ', answer: '' },
+      ]),
+    ).toBe(false)
+    expect(hasIncompleteFaq([{ question: 'Proč?', answer: ' ' }])).toBe(true)
+    expect(hasIncompleteFaq([{ question: '', answer: 'Protože.' }])).toBe(true)
+  })
+
+  it('accepts only complete, trimmed entries from a person', () => {
+    expect(faqEntriesSchema.parse([{ question: ' Kdy? ', answer: ' Na jaře. ' }])).toEqual([
+      { question: 'Kdy?', answer: 'Na jaře.' },
+    ])
+    expect(faqEntriesSchema.safeParse([{ question: 'Proč?', answer: '  ' }]).success).toBe(false)
   })
 })
 

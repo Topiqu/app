@@ -1,12 +1,18 @@
 import { z } from 'zod'
+import { faqEntriesSchema } from '~~/shared/utils/articleFaq'
 
 const BodySchema = z.object({
   expectedUpdatedAt: z.iso.datetime().nullable().optional(),
   title: z.string().min(1).max(255).optional(),
   excerpt: z.string().max(500).nullable().optional(),
   content: z.string().min(1).max(50000).optional(),
+  answer: z.string().trim().max(600).nullable().optional(),
+  keyTakeaways: z.array(z.string().trim().min(1).max(1000)).max(20).optional(),
+  faq: faqEntriesSchema.optional(),
   status: z.enum(['READY', 'PUBLISHED']).optional(),
 })
+
+const TEXT_FIELDS = ['title', 'excerpt', 'content', 'answer', 'keyTakeaways', 'faq'] as const
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
@@ -89,10 +95,11 @@ export default defineEventHandler(async (event) => {
         ...(body.title !== undefined ? { title: body.title } : {}),
         ...(body.excerpt !== undefined ? { excerpt: body.excerpt } : {}),
         ...(body.content !== undefined ? { content: sanitizeHtml(body.content) } : {}),
+        ...(body.answer !== undefined ? { answer: body.answer || null } : {}),
+        ...(body.keyTakeaways !== undefined ? { keyTakeaways: body.keyTakeaways } : {}),
+        ...(body.faq !== undefined ? { faq: body.faq } : {}),
         ...(body.status !== undefined ? { status: body.status } : {}),
-        ...(body.title !== undefined || body.excerpt !== undefined || body.content !== undefined
-          ? { source: 'HUMAN' as const }
-          : {}),
+        ...(TEXT_FIELDS.some((field) => body[field] !== undefined) ? { source: 'HUMAN' as const } : {}),
         slug,
         error: null,
       },

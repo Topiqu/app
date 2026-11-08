@@ -170,6 +170,10 @@ export const useArticleTranslations = (articleId?: string, initialLang = '') => 
       })
       return Promise.resolve()
     }
+    if (hasIncompleteFaq(submitted.faq)) {
+      toast.add({ color: 'error', title: t('articles.editor.faq.incomplete') })
+      return Promise.resolve()
+    }
     if (!token?.id || token.language !== activeLang.value) return Promise.resolve()
     return run(
       nextStatus ? 'publish' : 'save',
@@ -183,6 +187,9 @@ export const useArticleTranslations = (articleId?: string, initialLang = '') => 
               title: submitted.title,
               excerpt: submitted.excerpt || null,
               content: submitted.content,
+              answer: submitted.answer.trim() || null,
+              keyTakeaways: cleanTakeaways(submitted.keyTakeaways),
+              faq: cleanFaq(submitted.faq),
               ...(nextStatus ? { status: nextStatus } : {}),
             },
           },
@@ -192,6 +199,9 @@ export const useArticleTranslations = (articleId?: string, initialLang = '') => 
           title: translation.title ?? submitted.title,
           excerpt: translation.excerpt ?? '',
           content: translation.content ?? submitted.content,
+          answer: translation.answer ?? '',
+          keyTakeaways: translation.keyTakeaways ?? cleanTakeaways(submitted.keyTakeaways),
+          faq: translation.faq === undefined ? cleanFaq(submitted.faq) : readFaq(translation.faq),
         }
         const unchanged = !isTranslationDirty(draft.value, submitted)
         patchTranslation(translation)

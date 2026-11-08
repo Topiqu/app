@@ -1,11 +1,15 @@
 import { z } from 'zod'
 import { Language } from '~~/generated/zenstack/models'
+import { faqEntriesSchema } from '~~/shared/utils/articleFaq'
 
 const BodySchema = z.object({
   language: z.nativeEnum(Language),
   title: z.string().min(1).max(255),
   excerpt: z.string().max(500).nullable().optional(),
   content: z.string().min(1).max(50000),
+  answer: z.string().trim().max(600).nullable().optional(),
+  keyTakeaways: z.array(z.string().trim().min(1).max(1000)).max(20).optional(),
+  faq: faqEntriesSchema.optional(),
 })
 
 export default defineEventHandler(async (event) => {
@@ -39,6 +43,9 @@ export default defineEventHandler(async (event) => {
         title: body.title,
         excerpt: body.excerpt || null,
         content: sanitizeHtml(body.content),
+        answer: body.answer || null,
+        keyTakeaways: body.keyTakeaways ?? [],
+        faq: body.faq ?? [],
         status: 'READY',
         source: 'HUMAN',
         translatedAt: new Date(),

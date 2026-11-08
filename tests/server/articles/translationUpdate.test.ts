@@ -140,6 +140,41 @@ describe('translation optimistic updates', () => {
     expect(result.translation.updatedAt).toEqual(new Date('2026-10-22T10:00:00Z'))
     expect(media).toHaveBeenCalledTimes(1)
   })
+
+  it('saves an edited summary as human text', async () => {
+    payload = { expectedUpdatedAt: observed, answer: '  Direct answer  ', keyTakeaways: [' First ', 'Second'] }
+    await run()
+    expect(update.mock.calls[0]![0].data).toMatchObject({
+      answer: 'Direct answer',
+      keyTakeaways: ['First', 'Second'],
+      source: 'HUMAN',
+    })
+  })
+
+  it('saves an edited FAQ and refuses a question without an answer', async () => {
+    payload = { expectedUpdatedAt: observed, faq: [{ question: ' Kdy? ', answer: 'Na jaře.' }] }
+    await run()
+    expect(update.mock.calls[0]![0].data).toMatchObject({
+      faq: [{ question: 'Kdy?', answer: 'Na jaře.' }],
+      source: 'HUMAN',
+    })
+
+    update.mockClear()
+    payload = { expectedUpdatedAt: observed, faq: [{ question: 'Proč?', answer: ' ' }] }
+    await expect(run()).rejects.toThrow()
+    expect(update).not.toHaveBeenCalled()
+  })
+
+  it('clears an emptied answer and refuses a blank takeaway', async () => {
+    payload = { expectedUpdatedAt: observed, answer: '   ', keyTakeaways: [] }
+    await run()
+    expect(update.mock.calls[0]![0].data).toMatchObject({ answer: null, keyTakeaways: [] })
+
+    update.mockClear()
+    payload = { expectedUpdatedAt: observed, keyTakeaways: ['   '] }
+    await expect(run()).rejects.toThrow()
+    expect(update).not.toHaveBeenCalled()
+  })
 })
 
 beforeEach(stubImports)

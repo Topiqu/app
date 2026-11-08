@@ -441,6 +441,25 @@
       "articlePublished": "Article publié",
       "draftCreated": "Brouillon créé",
       "translationSaveFailedAfterCreate": "L’article a été enregistré, mais une traduction n’a pas pu l’être. Vérifiez son onglet de langue avant de continuer.",
+      "summary": {
+        "answer": "Réponse directe",
+        "answerHelp": "Une ou deux phrases qui répondent à la question de l’article. Affichée au-dessus du texte.",
+        "answerPlaceholder": "Répondez directement à la question principale de l’article…",
+        "takeaways": "Points clés",
+        "takeaway": "Point clé {n}",
+        "removeTakeaway": "Retirer le point clé {n}",
+        "addAnswer": "Ajouter une réponse directe",
+        "addTakeaway": "Ajouter un point clé"
+      },
+      "faq": {
+        "question": "Question {n}",
+        "answer": "Réponse à la question {n}",
+        "questionPlaceholder": "Que demandent les lecteurs ?",
+        "answerPlaceholder": "Une réponse courte et complète",
+        "add": "Ajouter une question",
+        "remove": "Retirer la question {n}",
+        "incomplete": "Répondez à chaque question ou retirez-la."
+      },
       "productPicker": {
         "title": "Insérer un produit",
         "description": "Produits de votre flux connecté ou de votre boutique Shopify. La carte affiche le prix et la disponibilité du jour.",

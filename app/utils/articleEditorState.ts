@@ -1,3 +1,6 @@
+import { cleanTakeaways } from '~~/shared/utils/articleEditor'
+import { cleanFaq, readFaq } from '~~/shared/utils/articleFaq'
+
 export interface ArticleEditorSourceState {
   title?: string | null
   excerpt?: string | null
@@ -43,9 +46,9 @@ export const articleEditorSnapshot = (article: ArticleEditorSourceState, tags: s
     savedAmount: article.savedAmount ?? null,
     savedTimeMinutes: article.savedTimeMinutes ?? null,
     aiInvolvement: article.aiInvolvement ?? null,
-    answer: article.answer ?? null,
-    keyTakeaways: article.keyTakeaways ?? [],
-    faq: article.faq ?? null,
+    answer: article.answer?.trim() || null,
+    keyTakeaways: cleanTakeaways(article.keyTakeaways),
+    faq: cleanFaq(readFaq(article.faq)),
     format: article.format ?? null,
     structureVariant: article.structureVariant ?? null,
     prompt: article.prompt ?? null,

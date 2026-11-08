@@ -391,7 +391,12 @@
           </UFormField>
         </div>
 
-        <ArticleSummary :answer="activeExtraction?.answer" :takeaways="activeExtraction?.keyTakeaways ?? []" />
+        <ArticleEditorSummary
+          :key="isNew ? newArticleLanguage : tr.activeLang"
+          v-model:answer="answerModel"
+          v-model:takeaways="takeawaysModel"
+          :disabled="aiGenerating || tr.pending === 'translate'"
+        />
 
         <div ref="contentTarget" class="mt-4 min-w-0 max-w-full">
           <TiptapEditor
@@ -401,7 +406,11 @@
             class="min-h-[500px]"
           />
 
-          <ArticleFaq :entries="readFaq(activeExtraction?.faq)" />
+          <ArticleEditorFaq
+            :key="isNew ? newArticleLanguage : tr.activeLang"
+            v-model="faqModel"
+            :disabled="aiGenerating || tr.pending === 'translate'"
+          />
         </div>
       </div>
       <aside class="hidden self-start xl:block" :aria-label="$t('articles.editor.settingsTitle')">
@@ -478,9 +487,9 @@
           :articleId="editedArticle.id"
           :title="titleModel"
           :excerpt="excerptModel"
-          :answer="activeExtraction?.answer"
-          :takeaways="activeExtraction?.keyTakeaways ?? []"
-          :faq="activeExtraction?.faq"
+          :answer="answerModel"
+          :takeaways="cleanTakeaways(takeawaysModel)"
+          :faq="cleanFaq(faqModel)"
           :content="bodyModel"
           :imageUrl="editedArticle.imageUrl"
           :imageCredit="previewImageCredit"
@@ -573,6 +582,7 @@
 
 <script setup lang="ts">
 import type { HistoryState } from 'vue-router'
+import type { FaqEntry } from '~~/shared/utils/articleFaq'
 
 import type SettingsPanel from './SettingsPanel.vue'
 
@@ -655,6 +665,14 @@ const newLanguageDrafts = reactive(
     ReturnType<typeof translationDraft>
   >,
 )
+const currentLanguageDraft = (): ReturnType<typeof translationDraft> => ({
+  title: editedArticle.value.title ?? '',
+  excerpt: editedArticle.value.excerpt ?? '',
+  content: editedArticle.value.content ?? '',
+  answer: editedArticle.value.answer ?? '',
+  keyTakeaways: editedArticle.value.keyTakeaways ?? [],
+  faq: readFaq(editedArticle.value.faq),
+})
 const selectedSeries = shallowRef<ArticleSeriesSelection | null>(null)
 const articleTags = shallowRef<string[]>([])
 const optimizedImageUrl = shallowRef('')
@@ -807,15 +825,9 @@ const editorLanguageModel = computed({
   set: (language: string) => {
     if (aiGenerating.value) return
     if (isNew) {
-      newLanguageDrafts[newArticleLanguage.value] = {
-        title: editedArticle.value.title ?? '',
-        excerpt: editedArticle.value.excerpt ?? '',
-        content: editedArticle.value.content ?? '',
-      }
-      const next = newLanguageDrafts[language as Language]
-      editedArticle.value.title = next.title
-      editedArticle.value.excerpt = next.excerpt
-      editedArticle.value.content = next.content
+      newLanguageDrafts[newArticleLanguage.value] = currentLanguageDraft()
+      const { answer, ...next } = newLanguageDrafts[language as Language]
+      Object.assign(editedArticle.value, next, { answer: answer || null })
       newArticleLanguage.value = language as Language
     } else activeLanguageModel.value = language
   },
@@ -843,9 +855,6 @@ const translationBadgeColor = computed(() => {
 const marketFit = computed(() => readMarketFit(tr.active?.marketFit))
 const activeSlug = computed(() => (tr.isSource ? editedArticle.value.slug : (tr.active?.slug ?? '')))
 const bodyEditable = computed(() => tr.isSource || tr.hasBody)
-// Summary and FAQ follow the selected language just like the title and body.
-// Missing translation fields stay empty instead of showing source-language text.
-const activeExtraction = computed(() => (tr.isSource ? editedArticle.value : tr.active))
 
 watch(
   () => tr.activeLang,
@@ -879,6 +888,30 @@ const excerptModel = computed({
   set: (value: string | null) => {
     if (tr.isSource) editedArticle.value.excerpt = value
     else tr.draft.excerpt = value ?? ''
+  },
+})
+
+const answerModel = computed({
+  get: () => (tr.isSource ? (editedArticle.value.answer ?? null) : tr.draft.answer || null),
+  set: (value: string | null) => {
+    if (tr.isSource) editedArticle.value.answer = value
+    else tr.draft.answer = value ?? ''
+  },
+})
+
+const takeawaysModel = computed<string[]>({
+  get: () => (tr.isSource ? (editedArticle.value.keyTakeaways ?? []) : tr.draft.keyTakeaways),
+  set: (value) => {
+    if (tr.isSource) editedArticle.value.keyTakeaways = value
+    else tr.draft.keyTakeaways = value
+  },
+})
+
+const faqModel = computed<FaqEntry[]>({
+  get: () => (tr.isSource ? readFaq(editedArticle.value.faq) : tr.draft.faq),
+  set: (value) => {
+    if (tr.isSource) editedArticle.value.faq = value
+    else tr.draft.faq = value
   },
 })
 
@@ -1144,17 +1177,18 @@ const submit = async (
 ) => {
   if (submitting.value) return
   if (isNew) {
-    newLanguageDrafts[newArticleLanguage.value] = {
-      title: editedArticle.value.title ?? '',
-      excerpt: editedArticle.value.excerpt ?? '',
-      content: editedArticle.value.content ?? '',
-    }
+    newLanguageDrafts[newArticleLanguage.value] = currentLanguageDraft()
   }
   const sourceDraft = isNew ? newLanguageDrafts[primaryLanguage.value] : null
   if (!(sourceDraft?.title ?? editedArticle.value.title)?.trim())
     return toast.add({ color: 'error', title: t('common.messages.articleTitleRequired') })
   if (targetStatus === 'published' && !hasArticleBody(sourceDraft?.content ?? editedArticle.value.content))
     return toast.add({ color: 'error', title: t('articles.editor.contentRequired') })
+  if (
+    hasIncompleteFaq(readFaq(editedArticle.value.faq)) ||
+    (isNew && Object.values(newLanguageDrafts).some((draft) => hasIncompleteFaq(draft.faq)))
+  )
+    return toast.add({ color: 'error', title: t('articles.editor.faq.incomplete') })
 
   const releaseAt = editedArticle.value.releaseAt ? new Date(editedArticle.value.releaseAt) : null
   const schedulesForLater = targetStatus === 'published' && !!releaseAt && releaseAt.getTime() > Date.now()
@@ -1179,9 +1213,9 @@ const submit = async (
     savedAmount: editedArticle.value.savedAmount,
     savedTimeMinutes: editedArticle.value.savedTimeMinutes,
     allowedComments: editedArticle.value.allowedComments,
-    answer: editedArticle.value.answer,
-    keyTakeaways: editedArticle.value.keyTakeaways ?? [],
-    faq: editedArticle.value.faq,
+    answer: editedArticle.value.answer?.trim() || null,
+    keyTakeaways: cleanTakeaways(editedArticle.value.keyTakeaways),
+    faq: cleanFaq(readFaq(editedArticle.value.faq)),
     format: editedArticle.value.format,
     structureVariant: editedArticle.value.structureVariant,
     prompt: editedArticle.value.prompt,
@@ -1207,7 +1241,13 @@ const submit = async (
               `/api/articles/${created.id}/translations` as '/api/articles/:id/translations',
               {
                 method: 'POST',
-                body: { language, ...draft },
+                body: {
+                  language,
+                  ...draft,
+                  answer: draft.answer.trim() || null,
+                  keyTakeaways: cleanTakeaways(draft.keyTakeaways),
+                  faq: cleanFaq(draft.faq),
+                },
               },
             ),
           ),

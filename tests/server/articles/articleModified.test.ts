@@ -16,6 +16,8 @@ describe('changesReaderText', () => {
     expect(changesReaderText(previous, { ...previous })).toBe(false)
     expect(changesReaderText(previous, { content: '<h2>Úvod</h2>\n<p>Kompost   zlepší půdu.</p>' })).toBe(false)
     expect(changesReaderText(previous, { excerpt: '', answer: '' })).toBe(false)
+    expect(changesReaderText(previous, { faq: [], keyTakeaways: [] })).toBe(false)
+    expect(changesReaderText({ ...previous, faq: [] }, { faq: null })).toBe(false)
     expect(changesReaderText(previous, {})).toBe(false)
   })
 

@@ -54,3 +54,7 @@ export const publishAction = (
 
   return isNew ? 'createAndPublish' : 'publishNow'
 }
+
+/** What a key-takeaways list persists as: the editor keeps blank rows while the author types. */
+export const cleanTakeaways = (items?: readonly string[] | null) =>
+  (items ?? []).map((item) => item.trim()).filter(Boolean)

@@ -53,13 +53,30 @@ describe('translation body', () => {
       title: '',
       excerpt: '',
       content: '',
+      answer: '',
+      keyTakeaways: [],
+      faq: [],
     })
-    expect(translationDraft(undefined)).toEqual({ title: '', excerpt: '', content: '' })
+    expect(translationDraft(undefined)).toEqual({
+      title: '',
+      excerpt: '',
+      content: '',
+      answer: '',
+      keyTakeaways: [],
+      faq: [],
+    })
   })
 })
 
 describe('dirty tracking', () => {
-  const pristine = { title: 'Title', excerpt: 'Excerpt', content: '<p>Body</p>' }
+  const pristine = {
+    title: 'Title',
+    excerpt: 'Excerpt',
+    content: '<p>Body</p>',
+    answer: 'Answer',
+    keyTakeaways: ['First', 'Second'],
+    faq: [{ question: 'Kdy?', answer: 'Na jaře.' }],
+  }
 
   it('stays clean for an untouched draft', () => {
     expect(isTranslationDirty({ ...pristine }, pristine)).toBe(false)
@@ -79,10 +96,34 @@ describe('dirty tracking', () => {
     expect(isTranslationDirty({ ...pristine, content: '<p><strong>Body</strong></p>' }, pristine)).toBe(true)
   })
 
-  it('reports every editable field, excerpt included', () => {
+  it('reports every editable field, excerpt and summary included', () => {
     expect(isTranslationDirty({ ...pristine, title: 'Other' }, pristine)).toBe(true)
     expect(isTranslationDirty({ ...pristine, excerpt: 'Other' }, pristine)).toBe(true)
     expect(isTranslationDirty({ ...pristine, content: '<p>Other</p>' }, pristine)).toBe(true)
+    expect(isTranslationDirty({ ...pristine, answer: 'Other' }, pristine)).toBe(true)
+    expect(isTranslationDirty({ ...pristine, keyTakeaways: ['First'] }, pristine)).toBe(true)
+    expect(isTranslationDirty({ ...pristine, keyTakeaways: ['Second', 'First'] }, pristine)).toBe(true)
+    expect(isTranslationDirty({ ...pristine, faq: [{ question: 'Kdy?', answer: 'Na podzim.' }] }, pristine)).toBe(true)
+    expect(
+      isTranslationDirty({ ...pristine, faq: [...pristine.faq, { question: 'Proč?', answer: '' }] }, pristine),
+    ).toBe(true)
+  })
+
+  it('ignores summary edits that save as the same text', () => {
+    expect(isTranslationDirty({ ...pristine, answer: ' Answer ' }, pristine)).toBe(false)
+    expect(isTranslationDirty({ ...pristine, keyTakeaways: ['First', '', ' Second '] }, pristine)).toBe(false)
+    expect(
+      isTranslationDirty(
+        {
+          ...pristine,
+          faq: [
+            { question: ' Kdy? ', answer: 'Na jaře.' },
+            { question: '', answer: ' ' },
+          ],
+        },
+        pristine,
+      ),
+    ).toBe(false)
   })
 
   it('is the only thing that disables Save — a body always keeps the action on screen', () => {

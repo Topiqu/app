@@ -441,6 +441,25 @@
       "articlePublished": "Článek publikován",
       "draftCreated": "Koncept vytvořen",
       "translationSaveFailedAfterCreate": "Článek je uložený, ale překlad se nepodařilo uložit. Před pokračováním zkontrolujte jeho jazykovou záložku.",
+      "summary": {
+        "answer": "Přímá odpověď",
+        "answerHelp": "Jedna až dvě věty, které odpovídají na otázku článku. Zobrazí se nad textem.",
+        "answerPlaceholder": "Odpovězte přímo na hlavní otázku článku…",
+        "takeaways": "Klíčové body",
+        "takeaway": "Klíčový bod {n}",
+        "removeTakeaway": "Odebrat klíčový bod {n}",
+        "addAnswer": "Přidat přímou odpověď",
+        "addTakeaway": "Přidat klíčový bod"
+      },
+      "faq": {
+        "question": "Otázka {n}",
+        "answer": "Odpověď na otázku {n}",
+        "questionPlaceholder": "Na co se čtenáři ptají?",
+        "answerPlaceholder": "Stručná a úplná odpověď",
+        "add": "Přidat otázku",
+        "remove": "Odebrat otázku {n}",
+        "incomplete": "Doplňte ke každé otázce odpověď, nebo ji odeberte."
+      },
       "productPicker": {
         "title": "Vložit produkt",
         "description": "Produkty z připojeného feedu nebo obchodu Shopify. Karta ukazuje aktuální cenu a dostupnost.",

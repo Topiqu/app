@@ -446,6 +446,25 @@
       "articlePublished": "Artikel veröffentlicht",
       "draftCreated": "Entwurf erstellt",
       "translationSaveFailedAfterCreate": "Der Artikel wurde gespeichert, aber eine Übersetzung konnte nicht gespeichert werden. Prüfe vor dem Fortfahren den entsprechenden Sprachreiter.",
+      "summary": {
+        "answer": "Direkte Antwort",
+        "answerHelp": "Ein bis zwei Sätze, die die Frage des Artikels beantworten. Erscheint über dem Text.",
+        "answerPlaceholder": "Beantworten Sie die Hauptfrage des Artikels direkt …",
+        "takeaways": "Wichtigste Erkenntnisse",
+        "takeaway": "Erkenntnis {n}",
+        "removeTakeaway": "Erkenntnis {n} entfernen",
+        "addAnswer": "Direkte Antwort hinzufügen",
+        "addTakeaway": "Erkenntnis hinzufügen"
+      },
+      "faq": {
+        "question": "Frage {n}",
+        "answer": "Antwort auf Frage {n}",
+        "questionPlaceholder": "Was fragen Leser?",
+        "answerPlaceholder": "Eine kurze, vollständige Antwort",
+        "add": "Frage hinzufügen",
+        "remove": "Frage {n} entfernen",
+        "incomplete": "Geben Sie jeder Frage eine Antwort oder entfernen Sie sie."
+      },
       "productPicker": {
         "title": "Produkt einfügen",
         "description": "Produkte aus Ihrem verbundenen Feed oder Shopify-Shop. Die Karte zeigt den aktuellen Preis und die Verfügbarkeit.",

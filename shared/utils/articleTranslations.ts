@@ -1,4 +1,5 @@
-import { hasArticleBody } from './articleEditor'
+import { cleanFaq, readFaq, type FaqEntry } from './articleFaq'
+import { cleanTakeaways, hasArticleBody } from './articleEditor'
 
 export type TranslationStatus = 'PENDING' | 'TRANSLATING' | 'READY' | 'PUBLISHED' | 'FAILED' | 'STALE' | 'SKIPPED'
 export type TranslationSource = 'AI' | 'HUMAN'
@@ -49,12 +50,18 @@ export interface TranslationDraft {
   title: string
   excerpt: string
   content: string
+  answer: string
+  keyTakeaways: string[]
+  faq: FaqEntry[]
 }
 
 export const translationDraft = (row?: ArticleTranslationRow | null): TranslationDraft => ({
   title: row?.title ?? '',
   excerpt: row?.excerpt ?? '',
   content: row?.content ?? '',
+  answer: row?.answer ?? '',
+  keyTakeaways: row?.keyTakeaways ?? [],
+  faq: readFaq(row?.faq),
 })
 
 /** The edit token belongs to the row that seeded a draft, including legacy nullable tokens. */
@@ -70,6 +77,9 @@ export const translationHasBody = (row?: ArticleTranslationRow | null) => Boolea
 export const isTranslationDirty = (draft: TranslationDraft, pristine: TranslationDraft) =>
   draft.title !== pristine.title ||
   draft.excerpt !== pristine.excerpt ||
+  draft.answer.trim() !== pristine.answer.trim() ||
+  JSON.stringify(cleanTakeaways(draft.keyTakeaways)) !== JSON.stringify(cleanTakeaways(pristine.keyTakeaways)) ||
+  JSON.stringify(cleanFaq(draft.faq)) !== JSON.stringify(cleanFaq(pristine.faq)) ||
   // Tiptap normalizes an untranslated body's empty string to an empty paragraph.
   (draft.content !== pristine.content && (hasArticleBody(draft.content) || hasArticleBody(pristine.content)))
 
