@@ -11,7 +11,7 @@ async function stubImports() {
 await stubImports()
 
 const { filterResearchSources } = await import('../../../server/utils/ai/researchEvidence')
-const { formatKnowledgeBrief, knowledgeSearchTerms, knowledgeUsage, shortlistKnowledge } =
+const { formatKnowledgeBrief, knowledgeLinkTargets, knowledgeSearchTerms, knowledgeUsage, shortlistKnowledge } =
   await import('../../../server/utils/knowledge/retrieve')
 
 const candidate = (overrides: Partial<KnowledgeCandidate>): KnowledgeCandidate => ({
@@ -130,6 +130,26 @@ describe('knowledge retrieval', () => {
     expect(formatKnowledgeBrief([{ ...product, price: null }], new Date('2026-09-30'), 'cs')).toContain(
       '· product · available to order · citable:',
     )
+  })
+
+  it('offers each citable page once as a link target, a product under its own name', () => {
+    expect(
+      knowledgeLinkTargets([
+        candidate({ id: '1', title: 'Pricing', publicUrl: 'https://firma.test/cenik' }),
+        candidate({ id: '2', title: 'Pricing', publicUrl: 'https://firma.test/cenik' }),
+        candidate({ id: '3', title: 'Internal notes' }),
+        candidate({
+          id: '4',
+          title: 'Shop feed',
+          productId: 'p',
+          productName: 'Rýč',
+          publicUrl: 'https://firma.test/ryc',
+        }),
+      ]),
+    ).toEqual([
+      { url: 'https://firma.test/cenik', title: 'Pricing', productId: null },
+      { url: 'https://firma.test/ryc', title: 'Rýč', productId: 'p' },
+    ])
   })
 
   it('groups used chunks by source for the generation audit', () => {

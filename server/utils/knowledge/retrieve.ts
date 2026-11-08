@@ -40,6 +40,8 @@ export type KnowledgeCandidate = {
   score: number
   /** Feed products only; read at retrieval time, never embedded, so the brief carries today's price. */
   productId: string | null
+  /** The product's own name; `title` stays the feed's. */
+  productName?: string | null
   price: string | null
   currency: string | null
   availability: KnowledgeProductAvailability | null
@@ -47,16 +49,20 @@ export type KnowledgeCandidate = {
 
 export type KnowledgeUsage = { sourceId: string; title: string; version: number; chunkIds: string[] }
 
+export type KnowledgeLinkTarget = { url: string; title: string; productId: string | null }
+
 export type KnowledgeBrief = {
   brief: string | null
   publicUrls: string[]
+  /** The citable entries the article may also link in its body. */
+  linkTargets: KnowledgeLinkTarget[]
   used: KnowledgeUsage[]
   tokens: number
   /** What the gate saw and chose; only the knowledge playground reads it. */
   shortlist?: { sourceId: string; title: string; excerpt: string; similarity: number; selected: boolean }[]
 }
 
-const EMPTY: KnowledgeBrief = { brief: null, publicUrls: [], used: [], tokens: 0 }
+const EMPTY: KnowledgeBrief = { brief: null, publicUrls: [], linkTargets: [], used: [], tokens: 0 }
 
 /**
  * Words only, left unfolded: `searchKnowledge` folds them with the index's own `knowledge_unaccent`,
@@ -91,7 +97,8 @@ export const searchKnowledge = (
     WITH eligible AS (
       SELECT c."id", c."sourceId", c."version", c."content", c."embedding", c."searchVector",
              s."title", COALESCE(p."url", s."publicUrl") AS "publicUrl", s."indexedAt", s."validAsOf", s."fetchedAt",
-             c."productId", p."price"::text AS "price", p."currency", p."availability"::text AS "availability"
+             c."productId", p."name" AS "productName", p."price"::text AS "price", p."currency",
+             p."availability"::text AS "availability"
       FROM "KnowledgeChunk" c
       JOIN "KnowledgeSource" s ON s."id" = c."sourceId" AND s."version" = c."version"
       LEFT JOIN "KnowledgeProduct" p ON p."id" = c."productId" AND p."clientSiteId" = ${clientSiteId}
@@ -142,7 +149,7 @@ export const searchKnowledge = (
       LIMIT ${CANDIDATES}
     )
     SELECT e."id", e."sourceId", e."version", e."title", e."publicUrl", e."indexedAt", e."validAsOf", e."fetchedAt", e."content",
-           e."productId", e."price", e."currency", e."availability",
+           e."productId", e."productName", e."price", e."currency", e."availability",
            (1 - (e."embedding" <=> ${vector}::vector))::float8 AS similarity,
            l.rank::int AS "lexicalRank",
            (COALESCE(1.0 / (60 + s.rank), 0) + COALESCE(1.0 / (60 + l.rank), 0))::float8 AS score
@@ -201,6 +208,14 @@ export const formatKnowledgeBrief = (selected: readonly KnowledgeCandidate[], no
       return `[K${index + 1}] "${chunk.title}" · as of ${date}${stale} · ${productOffer(chunk, language)}${citation}\n${chunk.content}`
     })
     .join('\n\n')
+
+export const knowledgeLinkTargets = (selected: readonly KnowledgeCandidate[]): KnowledgeLinkTarget[] => {
+  const byUrl = new Map<string, KnowledgeLinkTarget>()
+  for (const { publicUrl, productId, productName, title } of selected)
+    if (publicUrl && !byUrl.has(publicUrl))
+      byUrl.set(publicUrl, { url: publicUrl, title: productName || title, productId })
+  return [...byUrl.values()]
+}
 
 export const knowledgeUsage = (selected: readonly KnowledgeCandidate[]): KnowledgeUsage[] => {
   const bySource = new Map<string, KnowledgeUsage>()
@@ -303,6 +318,7 @@ export const retrieveKnowledge = async (
     return {
       brief: selected.length ? formatKnowledgeBrief(selected, new Date(), language ?? 'en') : null,
       publicUrls: [...new Set(selected.flatMap((chunk) => (chunk.publicUrl ? [chunk.publicUrl] : [])))],
+      linkTargets: knowledgeLinkTargets(selected),
       used,
       tokens: usage.tokens + tokens,
       shortlist: shortlist.map((chunk) => ({

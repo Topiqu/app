@@ -32,11 +32,12 @@ const body =
   '<h2>Zahrada</h2><p>Kompost na zahradě zlepší půdu.</p><p>Zdravá půda drží vodu.</p>' +
   '<figure><figcaption>Kompost v zahradě</figcaption></figure><blockquote><p>Kompost je zlato.</p></blockquote>'
 
-const link = (paragraph: number, anchor: string, articleId: string) => ({ paragraph, anchor, articleId })
+const link = (paragraph: number, anchor: string, target: string) => ({ paragraph, anchor, target })
+const insertLinks = (...args: Parameters<typeof insertArticleLinks>) => insertArticleLinks(...args).html
 
 describe('insertArticleLinks', () => {
   it('wraps the verbatim anchor with a path to the offered article', () => {
-    const html = insertArticleLinks(body, [link(0, 'Kompost na zahradě', 'a1')], candidates, 'cs')
+    const html = insertLinks(body, [link(0, 'Kompost na zahradě', 'a1')], candidates, 'cs')
     expect(html).toContain('<p><a href="/cs/clanky/kompostovani">Kompost na zahradě</a> zlepší půdu.</p>')
   })
 
@@ -47,20 +48,20 @@ describe('insertArticleLinks', () => {
       link(9, 'Kompost', 'a1'),
       link(1, 'Zdravá', 'a2'),
     ]
-    expect(insertArticleLinks(body, links.slice(0, 3), candidates, 'cs')).toBe(body)
-    expect(insertArticleLinks(body, links, candidates, 'cs')).toContain('<a href="/cs/clanky/puda">Zdravá</a>')
+    expect(insertLinks(body, links.slice(0, 3), candidates, 'cs')).toBe(body)
+    expect(insertLinks(body, links, candidates, 'cs')).toContain('<a href="/cs/clanky/puda">Zdravá</a>')
   })
 
   it('never links inside a word, a caption or a quotation', () => {
-    expect(insertArticleLinks('<p>pestrý pes.</p>', [link(0, 'pes', 'a1')], candidates, 'cs')).toBe(
+    expect(insertLinks('<p>pestrý pes.</p>', [link(0, 'pes', 'a1')], candidates, 'cs')).toBe(
       '<p>pestrý <a href="/cs/clanky/kompostovani">pes</a>.</p>',
     )
     // Only the two body paragraphs are offered; index 2 would be the quoted one.
-    expect(insertArticleLinks(body, [link(2, 'Kompost', 'a1')], candidates, 'cs')).toBe(body)
+    expect(insertLinks(body, [link(2, 'Kompost', 'a1')], candidates, 'cs')).toBe(body)
   })
 
   it('links each article once, one per paragraph, never twice to an existing target', () => {
-    const html = insertArticleLinks(
+    const html = insertLinks(
       body,
       [link(0, 'Kompost', 'a1'), link(0, 'půdu', 'a2'), link(1, 'půda', 'a1')],
       candidates,
@@ -69,12 +70,42 @@ describe('insertArticleLinks', () => {
     expect(html.match(/<a /g)).toHaveLength(1)
 
     const linked = '<p>Viz <a href="/cs/clanky/kompostovani">návod</a>. Kompost pomáhá.</p>'
-    expect(insertArticleLinks(linked, [link(0, 'Kompost', 'a1')], candidates, 'cs')).toBe(linked)
+    expect(insertLinks(linked, [link(0, 'Kompost', 'a1')], candidates, 'cs')).toBe(linked)
   })
 
   it('escapes the surrounding text it rewrites', () => {
-    const html = insertArticleLinks('<p>Kompost &amp; &lt;půda&gt;</p>', [link(0, 'Kompost', 'a1')], candidates, 'cs')
+    const html = insertLinks('<p>Kompost &amp; &lt;půda&gt;</p>', [link(0, 'Kompost', 'a1')], candidates, 'cs')
     expect(html).toBe('<p><a href="/cs/clanky/kompostovani">Kompost</a> &amp; &lt;půda&gt;</p>')
+  })
+
+  const sites = [
+    { url: 'https://shop.test/kompostery', title: 'Kompostéry', productId: null },
+    { url: 'https://shop.test/hnojivo?a=1&b=2', title: 'Hnojivo', productId: 'p1' },
+    { url: 'https://shop.test/ryc', title: 'Rýč', productId: 'p2' },
+  ]
+  const garden =
+    '<p>Kompost zlepší půdu.</p><p>Hnojivo doplní dusík.</p><p>Rýč usnadní práci.</p><p>Půda drží vodu.</p>'
+
+  it("links the publisher's offered pages by W number, capped and alongside article links", () => {
+    const result = insertArticleLinks(
+      garden,
+      [link(0, 'Kompost', 'W1'), link(1, 'Hnojivo', 'W2'), link(2, 'Rýč', 'W3'), link(3, 'Půda', 'a2')],
+      candidates,
+      'cs',
+      sites,
+    )
+    expect(result).toMatchObject({ siteLinks: 2, articleLinks: 1 })
+    expect(result.html).toContain('<a href="https://shop.test/kompostery">Kompost</a>')
+    expect(result.html).toContain('<p><a href="https://shop.test/hnojivo?a=1&amp;b=2">Hnojivo</a> doplní dusík.</p>')
+    expect(result.html).not.toContain('https://shop.test/ryc')
+    expect(result.html).toContain('<a href="/cs/clanky/puda">Půda</a>')
+  })
+
+  it('never links a page that was not offered or is already linked', () => {
+    const linked = '<p>Viz <a href="https://shop.test/kompostery">kompostéry</a>.</p><p>Kompost zlepší půdu.</p>'
+    expect(insertLinks(linked, [link(1, 'Kompost', 'W1')], candidates, 'cs', sites)).toBe(linked)
+    expect(insertLinks(garden, [link(0, 'Kompost', 'W9')], candidates, 'cs', sites)).toBe(garden)
+    expect(insertLinks(garden, [link(0, 'Kompost', 'W1')], candidates, 'cs')).toBe(garden)
   })
 })
 
@@ -125,6 +156,22 @@ describe('linkArticle', () => {
 
     expect(result.tokens).toBe(42)
     expect(result.content).toContain('href="/cs/clanky/kompostovani"')
+  })
+
+  it("offers the publisher's pages even when the site has no articles yet", async () => {
+    findMany.mockResolvedValue([])
+    vi.mocked(generateStructuredText).mockResolvedValue({
+      output: { links: [link(0, 'Kompost na zahradě', 'W1')] },
+      usage: { totalTokens: 9 },
+    } as never)
+    const siteTargets = [{ url: 'https://shop.test/kompostery', title: 'Kompostéry', productId: null }]
+
+    const result = await linkArticle('site', { title: 'Zahrada', content: body }, 'cs', { siteTargets })
+
+    expect(result.content).toContain('<a href="https://shop.test/kompostery">Kompost na zahradě</a>')
+    expect(vi.mocked(generateStructuredText).mock.calls[0]![0].prompt).toContain(
+      '- W1: Kompostéry · https://shop.test/kompostery',
+    )
   })
 
   it('returns the article unchanged when linking fails', async () => {

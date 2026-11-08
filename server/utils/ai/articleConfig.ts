@@ -394,6 +394,7 @@ export const buildArticleConfig = async (
     // Citable first-party URLs join the citation allowlist; internal entries never had a URL to leak.
     citationAllowlist: [brief, ...(knowledge?.publicUrls ?? [])].filter(Boolean).join('\n') || null,
     knowledge: knowledge?.used ?? [],
+    knowledgeLinks: knowledge?.linkTargets ?? [],
     researchSources: researchResult.sources,
     // Billed on top of `usage` by every caller: the brief is a separate model call, so it is
     // invisible to the writer's own token count. It went unbilled entirely while research was a

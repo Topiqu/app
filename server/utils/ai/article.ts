@@ -33,6 +33,7 @@ export const generateArticle = async (
     editorialDirection,
     citationAllowlist,
     knowledge,
+    knowledgeLinks,
     research,
     allowGeneratedImages,
     officialMediaPages,
@@ -116,7 +117,7 @@ export const generateArticle = async (
       bodyImages: (result.content.match(/<img\b/gi) ?? []).length,
     }),
   )
-  const linked = await linkArticle(clientSiteId, finalized, language, { audit })
+  const linked = await linkArticle(clientSiteId, finalized, language, { audit, siteTargets: knowledgeLinks })
 
   return {
     ...finalized,
@@ -428,6 +429,7 @@ export const streamArticle = async (
     editorialDirection,
     citationAllowlist,
     knowledge,
+    knowledgeLinks,
     researchSources,
     research,
     allowGeneratedImages,
@@ -472,6 +474,7 @@ export const streamArticle = async (
       excludeId: opts.articleId,
       abortSignal: callbacks?.abortSignal ?? opts.abortSignal,
       audit,
+      siteTargets: knowledgeLinks,
     })
     linkTokens += linked.tokens
     return { ...finalized, content: linked.content }
