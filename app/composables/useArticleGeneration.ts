@@ -31,6 +31,7 @@ interface StreamHandlers {
 const PARTIAL_THROTTLE_MS = 60
 
 export const useArticleGeneration = () => {
+  const { $i18n } = useNuxtApp()
   const generating = shallowRef(false)
   let controller: AbortController | null = null
 
@@ -51,7 +52,11 @@ export const useArticleGeneration = () => {
       const send = () =>
         fetch('/api/articles/generate', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Idempotency-Key': requestKey },
+          headers: {
+            'Content-Type': 'application/json',
+            'Idempotency-Key': requestKey,
+            'X-UI-Locale': $i18n.locale.value,
+          },
           body: JSON.stringify({ prompt, options, articleId }),
           signal,
         })

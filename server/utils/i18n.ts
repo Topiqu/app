@@ -82,7 +82,8 @@ export const useServerI18n = async (
     messages?: Messages
   } = {},
 ) => {
-  const locale = opts.locale || getCookie(event, 'i18n_lang') || 'en'
+  // A client that knows its interface locale sends it: the cookie follows a language switch, not a /cs/ link.
+  const locale = opts.locale || getHeader(event, 'x-ui-locale') || getCookie(event, 'i18n_lang') || 'en'
 
   return { translate: await getServerTranslator(locale, opts.messages), locale: serverLocale(locale) }
 }
