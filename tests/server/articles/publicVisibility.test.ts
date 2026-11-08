@@ -53,6 +53,7 @@ const setup = async (
   vi.stubGlobal('hasArticleAdminAccess', hasArticleAdminAccess)
   vi.stubGlobal('isArticleLive', isArticleLive)
   vi.stubGlobal('resolveArticleLinks', links)
+  vi.stubGlobal('resolveProductCards', async (_db: unknown, content: string) => content)
   vi.stubGlobal('articleBlocks', () => ({}))
   vi.stubGlobal('prisma', {
     article: {
