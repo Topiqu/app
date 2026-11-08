@@ -1,5 +1,7 @@
 import type { Language } from '~~/generated/zenstack/models'
 
+import { htmlToText } from './articleBlocks'
+
 export const ARTICLE_GENERATION_FORMATS = ['news', 'analysis', 'guide', 'comparison', 'opinion', 'story'] as const
 export type ArticleGenerationFormat = (typeof ARTICLE_GENERATION_FORMATS)[number]
 
@@ -31,6 +33,18 @@ export interface ArticleMediaProgress {
   cover?: ArticleMediaSource | null
   /** Indexed by slot - 1; `undefined` while that slot is still being resolved. */
   slots?: (ArticleMediaSource | null | undefined)[]
+  /** What the cover and each slot received, for the run's thumbnails. */
+  coverUrl?: string | null
+  slotUrls?: (string | null | undefined)[]
+  /** Unfilled image slots, sent once media completes. */
+  gaps?: ArticleMediaGap[]
+}
+
+/** `after` is the whitespace-free text of the block the slot followed; `null` is the article start. */
+export interface ArticleMediaGap {
+  slot: number
+  query: string
+  after: string | null
 }
 
 export type YoutubeOutcome =
@@ -347,6 +361,10 @@ export const generationSteps = (run: GenerationRun, words: number): GenerationSt
         : step,
   )
 }
+
+/** The H2 headings streamed so far, as plain text. */
+export const writtenHeadings = (html: string | null | undefined) =>
+  [...(html ?? '').matchAll(/<h2\b[^>]*>([\s\S]*?)<\/h2>/gi)].map(([, inner]) => htmlToText(inner)).filter(Boolean)
 
 /** What the author asked for but the finished article does not contain. */
 export const missingArticleModules = (

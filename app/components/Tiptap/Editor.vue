@@ -63,7 +63,7 @@
 </template>
 
 <script setup lang="ts">
-import type { ChainedCommands } from '@tiptap/vue-3'
+import type { JSONContent, ChainedCommands } from '@tiptap/vue-3'
 
 import { EditorContent } from '@tiptap/vue-3'
 
@@ -90,6 +90,8 @@ const productPickerOpen = shallowRef(false)
 const xPostPromptOpen = shallowRef(false)
 /** Position of the image being replaced; `null` inserts a new one. */
 let replacePos: number | null = null
+/** Where the next picked image or entered video goes; `null` follows the selection. */
+let insertPos: number | null = null
 let altResolver: ((alt: string) => void) | null = null
 
 const promptAlt = (defaultAlt: string) =>
@@ -114,6 +116,7 @@ const onDragLeave = () => (dragDepth.value = Math.max(0, dragDepth.value - 1))
 const onDrop = () => (dragDepth.value = 0)
 
 const openLink = ({ type, url = '' }: { type: 'link' | 'image' | 'youtube'; url?: string }) => {
+  insertPos = null
   linkModal.type = type
   linkModal.url = url
   linkModal.show = true
@@ -145,7 +148,10 @@ const applyLink = (url: string) => {
   if (!url) return
   if (type === 'link') run((c) => c.setLink({ href: url }))
   if (type === 'image') run((c) => c.setFigure({ src: url, alt: '' }))
-  if (type === 'youtube') run((c) => c.setYoutubeVideo({ src: normalizeYoutubeUrl(url) }))
+  if (type !== 'youtube') return
+  const src = normalizeYoutubeUrl(url)
+  if (insertPos === null) return run((c) => c.setYoutubeVideo({ src }))
+  if (youtubeVideoId(src)) insertAtTarget({ type: 'youtube', attrs: { src } })
 }
 
 const removeLink = () => run((c) => c.unsetLink())
@@ -218,11 +224,13 @@ const uploadImage = useTiptapImageUpload(editor, promptAlt)
 
 const openMedia = () => {
   replacePos = null
+  insertPos = null
   mediaPickerOpen.value = true
 }
 
 const openReplace = (pos: number) => {
   replacePos = pos
+  insertPos = null
   mediaPickerOpen.value = true
 }
 
@@ -236,6 +244,8 @@ const onMediaSelect = (asset: MediaPickerSelection, alt: string) => {
   }
   const instance = editor.value
   const node = replacePos === null ? null : instance?.state.doc.nodeAt(replacePos)
+  if (insertPos !== null && !node)
+    return void insertAtTarget({ type: 'figure', attrs, content: [{ type: 'figcaption' }] })
   if (!instance || !node || !['figure', 'image'].includes(node.type.name)) return run((c) => c.setFigure(attrs))
 
   // Layout, caption and link stay; only the asset changes.
@@ -283,5 +293,67 @@ const focusBlock = (blockIndex?: number) => {
   return Boolean(target)
 }
 
-defineExpose({ focusBlock })
+const reveal = (pos: number) => {
+  const element = editor.value?.view.nodeDOM(pos)
+  if (element instanceof HTMLElement) element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+}
+
+const insertAtTarget = (content: JSONContent) => {
+  const instance = editor.value
+  const pos = insertPos
+  insertPos = null
+  if (!instance || pos === null) return
+  const at = Math.min(pos, instance.state.doc.content.size)
+  instance.chain().focus().insertContentAt(at, content).run()
+  void nextTick(() => reveal(at))
+}
+
+/** After the top-level block whose text starts with `after`, as the generation recorded it; the end when it was edited away. */
+const positionAfter = (after: string | null) => {
+  const doc = editor.value?.state.doc
+  if (!doc || after === null) return 0
+  let pos = null as number | null
+  doc.forEach((node, offset) => {
+    if (pos === null && node.textContent.replace(/\s+/g, '').startsWith(after)) pos = offset + node.nodeSize
+  })
+  return pos ?? doc.content.size
+}
+
+/** Before the second H2, so a video follows the opening section; the end in a shorter article. */
+const videoPosition = () => {
+  const doc = editor.value?.state.doc
+  if (!doc) return 0
+  let headings = 0
+  let pos = null as number | null
+  doc.forEach((node, offset) => {
+    if (pos === null && node.type.name === 'heading' && node.attrs.level === 2 && ++headings === 2) pos = offset
+  })
+  return pos ?? doc.content.size
+}
+
+const fillImage = (after: string | null) => {
+  openMedia()
+  insertPos = positionAfter(after)
+}
+
+const insertVideo = (url = '') => {
+  openLink({ type: 'youtube', url })
+  insertPos = videoPosition()
+}
+
+const focusImage = (src: string) => {
+  const instance = editor.value
+  if (!instance) return false
+  let found = null as number | null
+  instance.state.doc.descendants((node, pos) => {
+    if (found !== null) return false
+    if (['figure', 'image'].includes(node.type.name) && node.attrs.src === src) found = pos
+  })
+  if (found === null) return false
+  instance.chain().setNodeSelection(found).run()
+  reveal(found)
+  return true
+}
+
+defineExpose({ focusBlock, fillImage, insertVideo, focusImage })
 </script>

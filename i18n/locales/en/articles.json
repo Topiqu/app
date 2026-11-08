@@ -652,6 +652,44 @@
         "allowGeneratedImages": "Allow AI illustrations as a last resort",
         "useKnowledge": "Use knowledge",
         "run": {
+          "elapsed": "Time {time}",
+          "attention": "Article generated, {count} to review",
+          "progress": "Generation progress",
+          "outline": "Outline so far",
+          "writingNow": "writing",
+          "done": "Done",
+          "show": "Show progress",
+          "showSummary": "Show summary",
+          "hideSummary": "Hide summary",
+          "now": {
+            "research": "Searching the web for sources",
+            "knowledge": "Reading your Knowledge",
+            "youtube": "Looking for a YouTube video",
+            "writing": "Writing the article",
+            "review": "Editorial review",
+            "media": "Preparing images"
+          },
+          "stats": {
+            "web": "web sources",
+            "knowledge": "own knowledge",
+            "fixes": "editorial fixes",
+            "open": "left to review",
+            "images": "images"
+          },
+          "todo": {
+            "title": "To review",
+            "verifyNote": "Check the facts before you publish.",
+            "imageMissing": "No picture found for image {number}",
+            "searched": "Searched for: “{query}”",
+            "coverMissing": "The cover image is missing"
+          },
+          "action": {
+            "verify": "Check facts",
+            "pickImage": "Choose an image",
+            "addVideo": "Insert a video",
+            "pickCover": "Choose a cover",
+            "show": "Go to: {label}"
+          },
           "title": {
             "running": "Generating the article",
             "completed": "Article generated",

@@ -647,6 +647,44 @@
         "allowGeneratedImages": "Autoriser les illustrations IA en dernier recours",
         "useKnowledge": "Utiliser la base de connaissances",
         "run": {
+          "elapsed": "Durée {time}",
+          "attention": "Article généré, à vérifier : {count}",
+          "progress": "Progression de la génération",
+          "outline": "Plan en cours",
+          "writingNow": "en cours d’écriture",
+          "done": "Terminé",
+          "show": "Afficher la progression",
+          "showSummary": "Afficher le récapitulatif",
+          "hideSummary": "Masquer le récapitulatif",
+          "now": {
+            "research": "Recherche de sources sur le web",
+            "knowledge": "Lecture de vos connaissances",
+            "youtube": "Recherche d’une vidéo YouTube",
+            "writing": "Rédaction de l’article",
+            "review": "Relecture éditoriale",
+            "media": "Préparation des images"
+          },
+          "stats": {
+            "web": "sources web",
+            "knowledge": "connaissances propres",
+            "fixes": "corrections éditoriales",
+            "open": "à vérifier",
+            "images": "images"
+          },
+          "todo": {
+            "title": "À vérifier",
+            "verifyNote": "Vérifiez les faits avant de publier.",
+            "imageMissing": "Aucune image trouvée pour l’image {number}",
+            "searched": "Recherché : « {query} »",
+            "coverMissing": "L’image de couverture manque"
+          },
+          "action": {
+            "verify": "Vérifier les faits",
+            "pickImage": "Choisir une image",
+            "addVideo": "Insérer une vidéo",
+            "pickCover": "Choisir une couverture",
+            "show": "Aller à : {label}"
+          },
           "title": {
             "running": "Génération de l’article",
             "completed": "Article généré",

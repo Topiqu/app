@@ -4,9 +4,12 @@ import { enableAutoUnmount } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
 
+import type { GenerationEvent } from '../../shared/utils/articleGeneration'
+
 import Run from '../../app/components/Article/Editor/GenerationRun.vue'
 import {
   defaultArticleGenerationOptions,
+  finishGenerationRun,
   reduceGenerationRun,
   startGenerationRun,
 } from '../../shared/utils/articleGeneration'
@@ -94,5 +97,99 @@ describe('generation report details', () => {
     await wrapper.setProps({ run })
     expect(wrapper.text()).toContain('articles.editor.ai.run.review.checking')
     expect(wrapper.text()).not.toContain('waiting:')
+  })
+})
+
+describe('generation report actions', () => {
+  const play = (events: GenerationEvent[]) =>
+    events.reduce((run, event) => reduceGenerationRun(run, event, Date.now()), running())
+  const finished = (events: GenerationEvent[]) =>
+    finishGenerationRun(play([...events, { type: 'final', missingModules: [] }]), 'completed', Date.now())
+  const buttonNamed = (wrapper: Awaited<ReturnType<typeof mountSuspended>>, label: string) =>
+    wrapper.findAll('button').find((button) => button.text() === label)!
+
+  it('offers a fix for each problem and jumps to the chosen images', async () => {
+    const run = finished([
+      {
+        type: 'research',
+        status: 'fallback',
+        fallbackReason: 'timeout',
+        sourceCount: 0,
+        depth: 'standard',
+        sources: [],
+      },
+      { type: 'review', review: { approved: true, revised: false } },
+      {
+        type: 'media',
+        stage: 'complete',
+        completed: 3,
+        total: 3,
+        found: 2,
+        cover: 'ai',
+        slots: [null, 'library'],
+        coverUrl: 'https://cdn.test/cover.webp',
+        slotUrls: [null, 'https://cdn.test/two.webp'],
+        gaps: [{ slot: 1, query: 'Atmos DC 25 S boiler room', after: 'Cenaadotace' }],
+      },
+    ])
+    const wrapper = await mountSuspended(Run, { props: { run, words: 747, canVerify: true }, global })
+
+    expect(run.status).toBe('partial')
+    expect(wrapper.text()).toContain('articles.editor.ai.run.attention')
+    expect(wrapper.text()).toContain('articles.editor.ai.run.research.fallback.timeout')
+    await buttonNamed(wrapper, 'articles.editor.ai.run.action.verify').trigger('click')
+    await buttonNamed(wrapper, 'articles.editor.ai.run.action.pickImage').trigger('click')
+    expect(wrapper.emitted('verify')).toHaveLength(1)
+    expect(wrapper.emitted('fillImage')).toEqual([['Cenaadotace']])
+
+    const show = wrapper.findAll('button[aria-label="articles.editor.ai.run.action.show"]')
+    expect(show).toHaveLength(2)
+    await show[0]!.trigger('click')
+    await show[1]!.trigger('click')
+    expect(wrapper.emitted('showCover')).toHaveLength(1)
+    expect(wrapper.emitted('showImage')).toEqual([['https://cdn.test/two.webp']])
+  })
+
+  it('leaves out the fact check when there is nothing to check yet', async () => {
+    const run = finished([
+      { type: 'research', status: 'fallback', fallbackReason: 'error', sourceCount: 0, depth: 'standard', sources: [] },
+    ])
+    const wrapper = await mountSuspended(Run, { props: { run, words: 0 }, global })
+    expect(wrapper.text()).toContain('articles.editor.ai.run.research.fallback.error')
+    expect(buttonNamed(wrapper, 'articles.editor.ai.run.action.verify')).toBeUndefined()
+  })
+
+  it('folds a clean run into its header until the summary is opened', async () => {
+    const run = finished([
+      {
+        type: 'research',
+        status: 'completed',
+        sourceCount: 3,
+        depth: 'standard',
+        sources: [],
+        knowledgeSourceCount: 1,
+      },
+      { type: 'review', review: { approved: true, revised: true, resolvedIssues: [] } },
+      { type: 'media', stage: 'complete', completed: 1, total: 1, found: 1, cover: 'library', slots: [] },
+    ])
+    const wrapper = await mountSuspended(Run, { props: { run, words: 600 }, global })
+
+    expect(run.status).toBe('completed')
+    expect(wrapper.text()).not.toContain('articles.editor.ai.run.stats.web')
+    await wrapper.get('button[aria-expanded]').trigger('click')
+    expect(wrapper.text()).toContain('articles.editor.ai.run.stats.web')
+    expect(wrapper.text()).not.toContain('articles.editor.ai.run.todo.title')
+  })
+
+  it('shows the outline while the text is being written', async () => {
+    const run = play([
+      { type: 'phase', phase: 'writing' },
+      { type: 'activity', writingStage: 'body' },
+    ])
+    const wrapper = await mountSuspended(Run, { props: { run, words: 120, outline: ['Cena', 'Instalace'] }, global })
+    expect(wrapper.text()).toContain('articles.editor.ai.run.now.writing')
+    expect(wrapper.text()).toContain('Instalace')
+    expect(wrapper.text()).toContain('articles.editor.ai.run.writingNow')
+    expect(wrapper.get('[aria-current="step"]').text()).toContain('articles.editor.ai.run.step.writing')
   })
 })

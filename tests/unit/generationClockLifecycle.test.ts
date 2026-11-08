@@ -41,8 +41,12 @@ const global = {
   renderStubDefaultSlot: true,
   stubs: { USlideover: Slideover },
   mocks: {
-    $t: (key: string, params?: { seconds?: number }) =>
-      key === 'articles.editor.ai.elapsed' ? `elapsed:${params?.seconds}` : key,
+    $t: (key: string, params?: { seconds?: number; time?: string }) =>
+      key === 'articles.editor.ai.elapsed'
+        ? `elapsed:${params?.seconds}`
+        : key === 'articles.editor.ai.run.elapsed'
+          ? `time:${params?.time}`
+          : key,
   },
 }
 const running = () => startGenerationRun(defaultArticleGenerationOptions(), Date.now())
@@ -98,7 +102,7 @@ describe('generation clock scheduling', () => {
     await vi.advanceTimersByTimeAsync(3_000)
     await wrapper.setProps({ run: finishGenerationRun(run, 'aborted', Date.now()) })
     expect(vi.getTimerCount()).toBe(0)
-    expect(wrapper.text()).toContain('elapsed:3')
+    expect(wrapper.text()).toContain('time:0:03')
     await wrapper.setProps({ run: running() })
     expect(vi.getTimerCount()).toBe(1)
     wrapper.unmount()

@@ -8,6 +8,7 @@ import {
   reduceGenerationRun,
   releaseHoldOf,
   startGenerationRun,
+  writtenHeadings,
   type GenerationEvent,
   type GenerationRun,
   type YoutubeOutcome,
@@ -194,5 +195,16 @@ describe('missingArticleModules', () => {
         'youtube',
       ]),
     ).toEqual(['takeaways', 'youtube'])
+  })
+})
+
+describe('writtenHeadings', () => {
+  it('reads closed H2 headings as text and ignores the one still streaming', () => {
+    expect(
+      writtenHeadings(
+        '<h2 id="a">Cena &amp; dotace</h2><p>Text</p><h2><strong>Instalace</strong></h2><h3>Ne</h3><h2>Neú',
+      ),
+    ).toEqual(['Cena & dotace', 'Instalace'])
+    expect(writtenHeadings(null)).toEqual([])
   })
 })

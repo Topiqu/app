@@ -6,6 +6,17 @@
 @theme inline {
   --color-action: var(--topiqu-action);
   --font-sans: 'Manrope Variable', ui-sans-serif, system-ui, sans-serif;
+  /* A generation step without a known share: a sliver sweeps its track. */
+  --animate-run-sweep: run-sweep 1.6s ease-in-out infinite;
+
+  @keyframes run-sweep {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(300%);
+    }
+  }
 }
 
 :root {

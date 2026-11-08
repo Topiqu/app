@@ -340,11 +340,18 @@
           :style="{ scrollMarginTop: `${commandBarHeight + 16}px` }"
           :run="aiRun"
           :words="aiWordCount"
+          :outline="aiOutline"
+          :canVerify="factCheckCanRun"
           :authorName="clientStatus?.aiUser?.username"
           :retryDisabled="!customPrompt.trim()"
           @stop="requestStopGeneration"
           @retry="generateAIContent"
           @dismiss="generation.clear()"
+          @verify="verifyGeneratedFacts"
+          @fillImage="(after) => tiptapEditor?.fillImage(after)"
+          @addVideo="(url) => tiptapEditor?.insertVideo(url)"
+          @showImage="(url) => tiptapEditor?.focusImage(url)"
+          @showCover="navigateOptimization({ kind: 'featured-image' })"
         />
         <div ref="titleTarget" class="rounded-(--topiqu-surface-radius) transition-shadow">
           <UFormField name="title" :label="$t('common.labels.articleTitle')">
@@ -697,6 +704,7 @@ const aiWordCount = computed(() => {
   const text = (editedArticle.value.content ?? '').replace(/<[^>]*>/g, ' ').trim()
   return text ? text.split(/\s+/).length : 0
 })
+const aiOutline = computed(() => (aiGenerating.value ? writtenHeadings(editedArticle.value.content) : []))
 const requestStopGeneration = () => void generation.requestStop()
 const serializeSourceState = () =>
   articleEditorSnapshot(editedArticle.value, articleTags.value, selectedSeries.value?.id ?? null)
@@ -962,7 +970,12 @@ const {
 const titleTarget = useTemplateRef<HTMLElement>('titleTarget')
 const excerptTarget = useTemplateRef<HTMLElement>('excerptTarget')
 const contentTarget = useTemplateRef<HTMLElement>('contentTarget')
-const tiptapEditor = useTemplateRef<{ focusBlock: (index?: number) => boolean }>('tiptapEditor')
+const tiptapEditor = useTemplateRef<{
+  focusBlock: (index?: number) => boolean
+  fillImage: (after: string | null) => void
+  insertVideo: (url?: string) => void
+  focusImage: (src: string) => boolean
+}>('tiptapEditor')
 type SettingsPanelHandle = { focusOptimizationTarget: (target: OptimizationTarget) => Promise<HTMLElement | null> }
 const desktopSettingsPanel = useTemplateRef<SettingsPanelHandle>('desktopSettingsPanel')
 const mobileSettingsPanel = useTemplateRef<SettingsPanelHandle>('mobileSettingsPanel')
@@ -1370,11 +1383,18 @@ const submit = async (
   }
 }
 
-const openMediaRightsPanel = () => {
-  mediaPublishReviewOpen.value = false
+const openChecksPanel = () => {
   settingsExpanded.value = true
   settingsTab.value = 'checks'
   if (window.matchMedia('(max-width: 1279px)').matches) sidebarOpen.value = true
+}
+const openMediaRightsPanel = () => {
+  mediaPublishReviewOpen.value = false
+  openChecksPanel()
+}
+const verifyGeneratedFacts = () => {
+  openChecksPanel()
+  void runFactCheck()
 }
 const confirmMediaRightsPublish = async () => {
   const fingerprint = pendingMediaReport.value?.fingerprint

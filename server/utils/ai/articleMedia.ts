@@ -1,8 +1,33 @@
 import type { Language } from '~~/generated/zenstack/models'
 
+import * as cheerio from 'cheerio'
+import { unwrapContentSlots } from '~~/shared/utils/contentSlots'
 import { isAiAllowanceError } from '~~/shared/utils/aiAllowanceError'
 
 type FinalizeImage = { slot: number; html: string }
+
+const IMAGE_MARKER = /\[\[\s*IMAGE\s*(\d+)\s*\]\]/gi
+// Enough of a block to tell it apart; whitespace is dropped because HTML and the editor space lists differently.
+const ANCHOR_LENGTH = 80
+const anchorText = (text: string) =>
+  text
+    .replace(/\[\[[^\]]*\]\]/g, '')
+    .replace(/\s+/g, '')
+    .slice(0, ANCHOR_LENGTH)
+
+/** The top-level block each image marker sits in or follows (`null`: the article start), so the editor can fill a gap in place. */
+export const imageSlotAnchors = (content: string) => {
+  const $ = cheerio.load(unwrapContentSlots(content), null, false)
+  const anchors = new Map<number, string | null>()
+  let previous: string | null = null
+  for (const node of $.root().contents().toArray()) {
+    const text = $(node).text()
+    const own = anchorText(text)
+    for (const [, slot] of text.matchAll(IMAGE_MARKER)) anchors.set(Number(slot), own || previous)
+    if (own) previous = own
+  }
+  return anchors
+}
 
 // Library pictures looked at per search; past that the slot falls back as if nothing matched.
 const IMAGE_CHECKS = 3
@@ -231,7 +256,8 @@ export const finalizeArticle = async (
   let mediaFound = 0
   let coverSource: ArticleMediaSource | null | undefined
   const slotSources: (ArticleMediaSource | null | undefined)[] = object.images.map(() => undefined)
-  const reportMedia = (stage: ArticleMediaProgress['stage']) =>
+  const slotUrls: (string | null | undefined)[] = object.images.map(() => undefined)
+  const reportMedia = (stage: ArticleMediaProgress['stage'], gaps?: ArticleMediaGap[]) =>
     onMedia?.({
       stage,
       completed: mediaCompleted,
@@ -239,6 +265,9 @@ export const finalizeArticle = async (
       found: mediaFound,
       cover: coverSource,
       slots: [...slotSources],
+      coverUrl: coverSource === undefined ? undefined : articleImageUrl || null,
+      slotUrls: [...slotUrls],
+      ...(gaps && { gaps }),
     })
   reportMedia('cover')
   if (object.coverImage) {
@@ -310,6 +339,7 @@ export const finalizeArticle = async (
       })
       slotSources[idx] = resolved?.source ?? null
       if (!resolved) {
+        slotUrls[idx] = null
         reportMedia('content')
         return null
       }
@@ -321,6 +351,7 @@ export const finalizeArticle = async (
           img.type === 'photo' ? null : await tryGenerateImage(img.query, { filenameSuffix: idx.toString() })
         if (!generated || !acceptImage(generated)) {
           slotSources[idx] = null
+          slotUrls[idx] = null
           reportMedia('content')
           return null
         }
@@ -336,6 +367,7 @@ export const finalizeArticle = async (
         resolved: registered,
       }
       mediaFound += 1
+      slotUrls[idx] = registered.url
       onImage?.(image)
       reportMedia('content')
 
@@ -348,7 +380,13 @@ export const finalizeArticle = async (
   const generatedImages = settledImages.filter((image) => image !== null).map(({ slot, html }) => ({ slot, html }))
 
   mediaCompleted = mediaTotal
-  reportMedia('complete')
+  const anchors = imageSlotAnchors(object.content)
+  reportMedia(
+    'complete',
+    object.images.flatMap(({ query }, idx) =>
+      slotSources[idx] === null ? [{ slot: idx + 1, query, after: anchors.get(idx + 1) ?? null }] : [],
+    ),
+  )
 
   object.content = dropBlankLines(dropAuthoredImages(stripUntrustedIframes(object.content)))
   object.content = applyContentSlots(object.content, 'IMAGE', generatedImages)

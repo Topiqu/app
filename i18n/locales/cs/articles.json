@@ -647,6 +647,44 @@
         "allowGeneratedImages": "Povolit AI ilustrace jako poslední možnost",
         "useKnowledge": "Použít znalosti",
         "run": {
+          "elapsed": "Čas {time}",
+          "attention": "Článek je hotový, ke kontrole: {count}",
+          "progress": "Průběh generování",
+          "outline": "Osnova, jak vzniká",
+          "writingNow": "píšu",
+          "done": "Hotovo",
+          "show": "Zobrazit průběh",
+          "showSummary": "Zobrazit přehled",
+          "hideSummary": "Skrýt přehled",
+          "now": {
+            "research": "Hledám zdroje na webu",
+            "knowledge": "Procházím vaše Znalosti",
+            "youtube": "Hledám video na YouTube",
+            "writing": "Píšu text článku",
+            "review": "Redakční kontrola",
+            "media": "Připravuji obrázky"
+          },
+          "stats": {
+            "web": "zdroje z webu",
+            "knowledge": "vlastní znalosti",
+            "fixes": "opravy redakce",
+            "open": "k ruční kontrole",
+            "images": "obrázky"
+          },
+          "todo": {
+            "title": "Ke kontrole",
+            "verifyNote": "Před zveřejněním ověřte fakta.",
+            "imageMissing": "Obrázek {number} se nenašel",
+            "searched": "Hledáno: „{query}“",
+            "coverMissing": "Chybí titulní obrázek"
+          },
+          "action": {
+            "verify": "Ověřit fakta",
+            "pickImage": "Vybrat obrázek",
+            "addVideo": "Vložit video",
+            "pickCover": "Vybrat titulní obrázek",
+            "show": "Přejít na: {label}"
+          },
           "title": {
             "running": "Generuji článek",
             "completed": "Článek je vygenerovaný",

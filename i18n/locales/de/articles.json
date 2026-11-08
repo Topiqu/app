@@ -652,6 +652,44 @@
         "allowGeneratedImages": "KI-Illustrationen als letzte Möglichkeit erlauben",
         "useKnowledge": "Wissensbasis verwenden",
         "run": {
+          "elapsed": "Zeit {time}",
+          "attention": "Artikel generiert, zu prüfen: {count}",
+          "progress": "Fortschritt der Generierung",
+          "outline": "Gliederung bisher",
+          "writingNow": "wird geschrieben",
+          "done": "Erledigt",
+          "show": "Fortschritt anzeigen",
+          "showSummary": "Übersicht anzeigen",
+          "hideSummary": "Übersicht ausblenden",
+          "now": {
+            "research": "Quellen im Web werden gesucht",
+            "knowledge": "Ihr Wissen wird durchsucht",
+            "youtube": "YouTube-Video wird gesucht",
+            "writing": "Artikeltext wird geschrieben",
+            "review": "Redaktionelle Prüfung",
+            "media": "Bilder werden vorbereitet"
+          },
+          "stats": {
+            "web": "Quellen aus dem Web",
+            "knowledge": "eigenes Wissen",
+            "fixes": "redaktionelle Korrekturen",
+            "open": "manuell zu prüfen",
+            "images": "Bilder"
+          },
+          "todo": {
+            "title": "Zu prüfen",
+            "verifyNote": "Prüfen Sie die Fakten vor der Veröffentlichung.",
+            "imageMissing": "Für Bild {number} wurde nichts gefunden",
+            "searched": "Gesucht: „{query}“",
+            "coverMissing": "Das Titelbild fehlt"
+          },
+          "action": {
+            "verify": "Fakten prüfen",
+            "pickImage": "Bild auswählen",
+            "addVideo": "Video einfügen",
+            "pickCover": "Titelbild auswählen",
+            "show": "Gehe zu: {label}"
+          },
           "title": {
             "running": "Artikel wird generiert",
             "completed": "Artikel generiert",

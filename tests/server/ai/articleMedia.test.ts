@@ -68,7 +68,7 @@ await stubImports()
 
 const { streamArticle } = await import('../../../server/utils/ai/article')
 const { findStockImage } = await import('../../../server/utils/images/chain')
-const { finalizeArticle, stockOrigin } = await import('../../../server/utils/ai/articleMedia')
+const { finalizeArticle, imageSlotAnchors, stockOrigin } = await import('../../../server/utils/ai/articleMedia')
 const { createArticleGenerationAudit } = await import('../../../server/utils/articleGenerationAudit')
 
 vi.mock('../../../server/utils/images/chain', () => ({
@@ -622,6 +622,21 @@ describe('auto-published media rights', () => {
     expect(result.content).toContain('images.test/ai-')
   })
 
+  it('reports where an unfilled photo slot stood so the editor can fill it in place', async () => {
+    library(null)
+    const onMedia = vi.fn()
+    await finalizeArticle(object(), 'en', { ...auto, onMedia })
+    expect(onMedia).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        stage: 'complete',
+        slots: [null, 'ai'],
+        slotUrls: [null, expect.stringContaining('images.test/ai-')],
+        coverUrl: expect.stringContaining('images.test/ai-'),
+        gaps: [{ slot: 1, query: 'Witcher 4 Ciri', after: 'Ciri' }],
+      }),
+    )
+  })
+
   it('keeps an unclear real cover for review when no illustration is available', async () => {
     library(null)
     const result = await finalizeArticle(object(), 'en', { clientSiteId: 'site', requireClearRights: true })
@@ -733,3 +748,18 @@ describe('auto-published media rights', () => {
 })
 
 beforeEach(stubImports)
+
+describe('image slot anchors', () => {
+  it('records the block each marker sits in or follows, without whitespace', () => {
+    const anchors = imageSlotAnchors(
+      '<p>Úvod článku.</p>[[IMAGE1]]<h2>Cena</h2><p>Text [[IMAGE2]]</p><ul>\n<li>a</li>\n<li>b</li></ul><figure><img src="[[IMAGE3]]"></figure>',
+    )
+    expect(anchors.get(1)).toBe('Úvodčlánku.')
+    expect(anchors.get(2)).toBe('Text')
+    expect(anchors.get(3)).toBe('ab')
+  })
+
+  it('anchors a marker before any text to the article start', () => {
+    expect(imageSlotAnchors('[[IMAGE1]]<p>První</p>').get(1)).toBeNull()
+  })
+})
