@@ -341,6 +341,10 @@
         "BACKORDER": "Na objednávku"
       }
     },
+    "xPost": {
+      "media": "Příspěvek obsahuje fotku nebo video.",
+      "view": "Zobrazit na X"
+    },
     "poll": {
       "defaultQuestion": "Zadejte otázku",
       "defaultOption": "Možnost 1",
@@ -445,6 +449,19 @@
         "failed": "Produkt se nepodařilo vložit.",
         "card": "Karta produktu"
       },
+      "xPost": {
+        "title": "Vložit příspěvek z X",
+        "description": "Vložte odkaz na jeden příspěvek. Zobrazí se jako statická citace, bez skriptu od X.",
+        "url": "Odkaz na příspěvek",
+        "placeholder": "https://x.com/…/status/…",
+        "insert": "Vložit",
+        "card": "Příspěvek z X",
+        "errors": {
+          "invalid": "Toto není odkaz na jeden příspěvek na X.",
+          "notFound": "Příspěvek neexistuje, byl smazán nebo je soukromý.",
+          "unavailable": "X neodpovídá. Zkuste to prosím později."
+        }
+      },
       "toolbar": {
         "more": "Další možnosti",
         "fontFamily": "Písmo",
@@ -460,6 +477,7 @@
         "insertYoutube": "Vložit YouTube video",
         "insertPoll": "Vložit anketu",
         "insertProduct": "Vložit produkt",
+        "insertXPost": "Vložit příspěvek z X",
         "insertTable": "Vložit tabulku",
         "table": "Akce tabulky",
         "addColumnAfter": "Přidat sloupec",

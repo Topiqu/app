@@ -10,7 +10,7 @@ async function stubImports() {
 await stubImports()
 
 const { localPassagesRule, maskContentBlocks, rebuildContent } = await import('../../../server/utils/ai/translate')
-const { productCardHtml } = await import('../../../shared/utils/articleEmbeds')
+const { productCardHtml, xPostHtml } = await import('../../../shared/utils/articleEmbeds')
 
 const optionsAttr = (opts: Array<{ id: string; label: string }>) => JSON.stringify(opts).replace(/"/g, '&quot;')
 
@@ -72,13 +72,22 @@ describe('maskContentBlocks', () => {
 })
 
 describe('embeds', () => {
-  it('keeps product cards out of the translation, verbatim', () => {
+  it('keeps X posts and product cards out of the translation, verbatim', () => {
+    const post = xPostHtml({
+      url: 'https://x.com/topiqu/status/1',
+      author: 'Topiqu',
+      handle: 'topiqu',
+      text: 'Původní text',
+      date: null,
+      media: false,
+    })
     const card = productCardHtml({ productId: 'p1', url: 'https://shop.test/ryc', name: 'Rýč' })
-    const { masked, verbatim, polls, images } = maskContentBlocks(`<p>Úvod</p>${card}`)
+    const { masked, verbatim, polls, images } = maskContentBlocks(`<p>Úvod</p>${post}${card}`)
 
+    expect(masked).not.toContain('Původní text')
     expect(masked).not.toContain('Rýč')
     expect(masked).not.toContain('data-')
-    expect(rebuildContent(masked, verbatim, polls, images)).toBe(`<p>Úvod</p>${card}`)
+    expect(rebuildContent(masked, verbatim, polls, images)).toBe(`<p>Úvod</p>${post}${card}`)
   })
 })
 

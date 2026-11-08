@@ -341,6 +341,10 @@
         "BACKORDER": "Available to order"
       }
     },
+    "xPost": {
+      "media": "The post includes a photo or video.",
+      "view": "View on X"
+    },
     "poll": {
       "defaultQuestion": "Enter a question",
       "defaultOption": "Option 1",
@@ -450,6 +454,19 @@
         "failed": "The product could not be inserted.",
         "card": "Product card"
       },
+      "xPost": {
+        "title": "Insert post from X",
+        "description": "Paste the link to a single post. It is shown as a static quote, without X's script.",
+        "url": "Post link",
+        "placeholder": "https://x.com/…/status/…",
+        "insert": "Insert",
+        "card": "Post from X",
+        "errors": {
+          "invalid": "This is not a link to a single post on X.",
+          "notFound": "The post does not exist, was deleted or is private.",
+          "unavailable": "X is not responding. Please try again later."
+        }
+      },
       "toolbar": {
         "more": "More options",
         "fontFamily": "Font family",
@@ -465,6 +482,7 @@
         "insertYoutube": "Insert YouTube video",
         "insertPoll": "Insert poll",
         "insertProduct": "Insert product",
+        "insertXPost": "Insert post from X",
         "insertTable": "Insert table",
         "table": "Table actions",
         "addColumnAfter": "Add column",

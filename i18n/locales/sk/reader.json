@@ -153,6 +153,10 @@
         "PREORDER": "Predobjednávka",
         "BACKORDER": "Na objednávku"
       }
+    },
+    "xPost": {
+      "media": "Príspevok obsahuje fotku alebo video.",
+      "view": "Zobraziť na X"
     }
   },
   "common": {

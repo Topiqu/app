@@ -1,3 +1,4 @@
+import { XPost } from '~~/extensions/xPost'
 import StarterKit from '@tiptap/starter-kit'
 import { Link } from '@tiptap/extension-link'
 import { Indent } from '~~/extensions/indent'
@@ -24,6 +25,7 @@ import Poll from '~~/extensions/poll'
 
 import TiptapImage from '~/components/File/TiptapImage.vue'
 import TiptapFigure from '~/components/File/TiptapFigure.vue'
+import TiptapXPostNode from '~/components/Tiptap/XPostNode.vue'
 import TiptapProductNode from '~/components/Tiptap/ProductNode.vue'
 
 const CustomBlockquote = Blockquote.extend({
@@ -73,6 +75,7 @@ export function useTiptapInstance(opts: UseTiptapInstanceOptions) {
       ColoredTableCell,
       Poll,
       ProductCard.extend({ addNodeView: () => VueNodeViewRenderer(TiptapProductNode) }),
+      XPost.extend({ addNodeView: () => VueNodeViewRenderer(TiptapXPostNode) }),
       Indent,
       TextStyle,
       Color.configure({ types: ['textStyle'] }),

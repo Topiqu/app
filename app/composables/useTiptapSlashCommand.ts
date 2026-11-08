@@ -14,6 +14,7 @@ export interface SlashCommandHandlers {
   openYoutubePrompt: () => void
   insertPoll: () => void
   openProductPicker: () => void
+  openXPostPrompt: () => void
 }
 
 export interface SlashCommandItem {
@@ -51,6 +52,7 @@ export function useTiptapSlashCommand(handlers: SlashCommandHandlers) {
     prompt('insertYoutube', 'mdi:youtube', handlers.openYoutubePrompt),
     prompt('insertPoll', 'mdi:poll', handlers.insertPoll),
     prompt('insertProduct', 'mdi:shopping-outline', handlers.openProductPicker),
+    prompt('insertXPost', 'mdi:twitter', handlers.openXPostPrompt),
   ]
 
   const getItems = ({ query }: { query: string }): SlashCommandItem[] =>

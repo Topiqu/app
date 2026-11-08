@@ -3,6 +3,7 @@
     <template v-for="(block, i) in blocks" :key="i">
       <ArticlePoll v-if="block.type === 'poll'" :poll="block" :articleId="articleId" />
       <ArticleProductCard v-else-if="block.type === 'product'" :product="block.product" />
+      <ArticleXPost v-else-if="block.type === 'xPost'" :post="block.post" />
       <template v-else-if="block.type === 'ad'">
         <ArticleBodyAd v-if="ad" :articleId="articleId" />
       </template>

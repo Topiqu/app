@@ -41,6 +41,8 @@ export type FinalizeCallbacks = {
   abortSignal?: AbortSignal
   allowGeneratedImages?: boolean
   officialMediaPages?: readonly string[]
+  /** Canonical post URLs from the research brief; an [[XPOST]] slot may embed only these. */
+  xPostUrls?: readonly string[]
   clientSiteId?: string
   /** Set when the article publishes without a human, so no one could confirm an image's rights. */
   requireClearRights?: boolean
@@ -71,11 +73,21 @@ export const finalizeArticle = async (
     abortSignal,
     allowGeneratedImages = false,
     officialMediaPages = [],
+    xPostUrls = [],
     clientSiteId,
     requireClearRights = false,
     illustrative = false,
     audit,
   } = callbacks
+  // Fetched alongside the images; a deleted or private post simply drops its slot.
+  const xPostsPending = Promise.all(
+    (object.xPosts ?? []).map(async ({ url }, idx) => {
+      const canonical = parseXPostUrl(url)?.url
+      if (!canonical || !xPostUrls.includes(canonical)) return []
+      const post = await fetchXPost(canonical, language).catch(() => null)
+      return post ? [{ slot: idx + 1, html: xPostHtml(post) }] : []
+    }),
+  )
   const generateImageOptions = {
     clientSiteId,
     outputDir: 'article-images',
@@ -320,6 +332,8 @@ export const finalizeArticle = async (
     }),
   )
 
+  // Slots are filled in place on the input object, so the edits below stay one synchronous run.
+  const xPosts = (await xPostsPending).flat()
   const generatedImages = settledImages.filter((image) => image !== null).map(({ slot, html }) => ({ slot, html }))
 
   mediaCompleted = mediaTotal
@@ -350,6 +364,7 @@ export const finalizeArticle = async (
     ]
   })
   object.content = applyContentSlots(object.content, 'VIDEO', videos)
+  object.content = applyContentSlots(object.content, 'XPOST', xPosts)
 
   return { ...object, articleImageUrl, articleImageCredit, articleCoverMediaId }
 }

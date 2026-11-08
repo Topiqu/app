@@ -2,6 +2,7 @@ import { load } from 'cheerio'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { stubNitroImports } from '../../helpers/nitroImports'
+import { parseXPostUrl, xPostHtml } from '../../../shared/utils/articleEmbeds'
 import { applyContentSlots, dropAuthoredImages } from '../../../shared/utils/contentSlots'
 
 async function stubImports() {
@@ -220,6 +221,43 @@ describe('article media finalization', () => {
     const poll = load(result.content)('div[data-type="poll"]')
     expect(poll.attr('data-question')).toBe('Who wins the "1v1"?')
     expect(JSON.parse(poll.attr('data-options')!)).toEqual([{ label: 'Jotaro' }, { label: 'Tom & <b>Jerry</b>' }])
+  })
+
+  it('embeds only an X post the research brief listed, and drops a slot it cannot fill', async () => {
+    vi.mocked(findStockImage).mockResolvedValue(null)
+    const fetchXPost = vi.fn(async (url: string) => ({
+      url,
+      author: 'Jan',
+      handle: 'jan',
+      text: 'Citovaný příspěvek',
+      date: null,
+      media: false,
+    }))
+    vi.stubGlobal('fetchXPost', fetchXPost)
+    vi.stubGlobal('parseXPostUrl', parseXPostUrl)
+    vi.stubGlobal('xPostHtml', xPostHtml)
+    // Finalization fills slots in place, so each call gets its own draft.
+    const object = () => ({
+      ...draft(),
+      content: '<p>a</p>[[XPOST1]]<p>b</p>',
+      images: [],
+      xPosts: [{ url: 'https://twitter.com/jan/status/1?s=20' }],
+    })
+
+    const listed = await finalizeArticle(object(), 'cs', { xPostUrls: ['https://x.com/jan/status/1'] })
+    expect(listed.content).toMatch(
+      /^<p>a<\/p><blockquote data-type="x-post" data-url="https:\/\/x\.com\/jan\/status\/1"/,
+    )
+    expect(fetchXPost).toHaveBeenCalledWith('https://x.com/jan/status/1', 'cs')
+
+    fetchXPost.mockClear()
+    expect((await finalizeArticle(object(), 'cs', { xPostUrls: [] })).content).toBe('<p>a</p><p>b</p>')
+    expect(fetchXPost).not.toHaveBeenCalled()
+
+    fetchXPost.mockRejectedValue(new Error('gone'))
+    expect((await finalizeArticle(object(), 'cs', { xPostUrls: ['https://x.com/jan/status/1'] })).content).toBe(
+      '<p>a</p><p>b</p>',
+    )
   })
 
   it('never generates a cover or body image when AI fallback is disabled', async () => {

@@ -341,6 +341,10 @@
         "BACKORDER": "Auf Bestellung"
       }
     },
+    "xPost": {
+      "media": "Der Beitrag enthält ein Foto oder Video.",
+      "view": "Auf X ansehen"
+    },
     "poll": {
       "defaultQuestion": "Frage eingeben",
       "defaultOption": "Option 1",
@@ -450,6 +454,19 @@
         "failed": "Das Produkt konnte nicht eingefügt werden.",
         "card": "Produktkarte"
       },
+      "xPost": {
+        "title": "Beitrag von X einfügen",
+        "description": "Fügen Sie den Link zu einem einzelnen Beitrag ein. Er wird als statisches Zitat angezeigt, ohne das Skript von X.",
+        "url": "Link zum Beitrag",
+        "placeholder": "https://x.com/…/status/…",
+        "insert": "Einfügen",
+        "card": "Beitrag von X",
+        "errors": {
+          "invalid": "Das ist kein Link zu einem einzelnen Beitrag auf X.",
+          "notFound": "Der Beitrag existiert nicht, wurde gelöscht oder ist privat.",
+          "unavailable": "X antwortet nicht. Bitte versuchen Sie es später erneut."
+        }
+      },
       "toolbar": {
         "more": "Weitere Optionen",
         "fontFamily": "Schriftfamilie",
@@ -465,6 +482,7 @@
         "insertYoutube": "YouTube-Video einfügen",
         "insertPoll": "Umfrage einfügen",
         "insertProduct": "Produkt einfügen",
+        "insertXPost": "Beitrag von X einfügen",
         "insertTable": "Tabelle einfügen",
         "table": "Tabellenaktionen",
         "addColumnAfter": "Spalte hinzufügen",

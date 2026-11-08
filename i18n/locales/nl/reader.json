@@ -153,6 +153,10 @@
         "PREORDER": "Voorbestelling",
         "BACKORDER": "Op bestelling"
       }
+    },
+    "xPost": {
+      "media": "Het bericht bevat een foto of video.",
+      "view": "Bekijk op X"
     }
   },
   "common": {

@@ -153,6 +153,10 @@
         "PREORDER": "Preventa",
         "BACKORDER": "Bajo pedido"
       }
+    },
+    "xPost": {
+      "media": "La publicación incluye una foto o un vídeo.",
+      "view": "Ver en X"
     }
   },
   "common": {

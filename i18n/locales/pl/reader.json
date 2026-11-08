@@ -153,6 +153,10 @@
         "PREORDER": "Przedsprzedaż",
         "BACKORDER": "Na zamówienie"
       }
+    },
+    "xPost": {
+      "media": "Wpis zawiera zdjęcie lub wideo.",
+      "view": "Zobacz na X"
     }
   },
   "common": {

@@ -341,6 +341,10 @@
         "BACKORDER": "Sur commande"
       }
     },
+    "xPost": {
+      "media": "La publication contient une photo ou une vidéo.",
+      "view": "Voir sur X"
+    },
     "poll": {
       "defaultQuestion": "Saisissez une question",
       "defaultOption": "Option 1",
@@ -445,6 +449,19 @@
         "failed": "Le produit n'a pas pu être inséré.",
         "card": "Fiche produit"
       },
+      "xPost": {
+        "title": "Insérer une publication X",
+        "description": "Collez le lien d'une seule publication. Elle s'affiche comme une citation statique, sans le script de X.",
+        "url": "Lien de la publication",
+        "placeholder": "https://x.com/…/status/…",
+        "insert": "Insérer",
+        "card": "Publication X",
+        "errors": {
+          "invalid": "Ce n'est pas le lien d'une seule publication sur X.",
+          "notFound": "La publication n'existe pas, a été supprimée ou est privée.",
+          "unavailable": "X ne répond pas. Veuillez réessayer plus tard."
+        }
+      },
       "toolbar": {
         "more": "Autres options",
         "fontFamily": "Famille de polices",
@@ -460,6 +477,7 @@
         "insertYoutube": "Insérer une vidéo YouTube",
         "insertPoll": "Insérer un sondage",
         "insertProduct": "Insérer un produit",
+        "insertXPost": "Insérer une publication X",
         "insertTable": "Insérer un tableau",
         "table": "Actions du tableau",
         "addColumnAfter": "Ajouter une colonne",

@@ -153,6 +153,10 @@
         "PREORDER": "Preordine",
         "BACKORDER": "Su ordinazione"
       }
+    },
+    "xPost": {
+      "media": "Il post contiene una foto o un video.",
+      "view": "Vedi su X"
     }
   },
   "common": {

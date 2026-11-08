@@ -102,6 +102,10 @@ export const articleSchema = z.object({
     )
     .max(1)
     .describe('One verified YouTube video corresponding to [[VIDEO1]], or an empty array'),
+  xPosts: z
+    .array(z.object({ url: z.string().max(300).describe('An X post URL listed in the research brief') }))
+    .max(1)
+    .describe('One X post corresponding to [[XPOST1]], or an empty array'),
   tags: z
     .array(z.string())
     .max(5)
@@ -276,6 +280,7 @@ export const buildArticleConfig = async (
   const pollsSelected = selectedModules ? selectedModules.includes('poll') : null
   const tablesSelected = selectedModules ? selectedModules.includes('table') : null
   const videosSelected = selectedModules ? selectedModules.includes('youtube') : null
+  const xPostUrls = findXPostUrls(brief)
   const currentDateTime = new Date().toISOString()
 
   const instructions = `
@@ -297,6 +302,7 @@ export const buildArticleConfig = async (
         "images": [{"type": "photo", "query": "keyword for IMAGE1", "caption": "what IMAGE1 shows"}, {"type": "generate", "query": "prompt for IMAGE2", "caption": "what IMAGE2 shows"}, ...],
         "polls": [{"question": "Poll question?", "options": ["Option 1", "Option 2"]}],
         "videos": [{"url": "https://www.youtube.com/watch?v=...", "caption": "what the video contributes"}],
+        "xPosts": [{"url": "an X post URL listed in the research brief"}] or [],
         "tags": ["ID's of relevant tags from the provided tags list, up to 5, that best fit the article topic"],
         "sources": ["full source URL 1", "full source URL 2", ...]
       }.
@@ -376,10 +382,13 @@ export const buildArticleConfig = async (
             : 'A YouTube video is optional. Use one only when the research brief contains a suitable verified URL; never invent or reconstruct one.'
       }
 
-      Twitter/X Embeds:
-      If you find a highly relevant post on the X network (Twitter) to illustrate the article, DO NOT just return the URL. Instead, return it wrapped in this exact HTML format:
-      <blockquote class="twitter-tweet"><a href="[INSERT TWEET URL HERE]"></a></blockquote><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-      
+      Post on X:
+      ${
+        xPostUrls.length
+          ? `The research brief links these posts on X: ${xPostUrls.join(', ')}. When the article quotes or discusses one of them, put one [[XPOST1]] slot right after the paragraph about it and return that exact URL in xPosts; it renders as a quote of the post. Otherwise return an empty xPosts array. Never use another post URL and never write the post's markup yourself.`
+          : 'Return an empty xPosts array and never write an [[XPOST]] slot into the content.'
+      }
+
       The research rule above is the only authority on "sources" — never add an entry it does not permit.
       Only select tags from this list: ${JSON.stringify(tags || [])}.
     `.trim()
@@ -395,6 +404,7 @@ export const buildArticleConfig = async (
     citationAllowlist: [brief, ...(knowledge?.publicUrls ?? [])].filter(Boolean).join('\n') || null,
     knowledge: knowledge?.used ?? [],
     knowledgeLinks: knowledge?.linkTargets ?? [],
+    xPostUrls,
     researchSources: researchResult.sources,
     // Billed on top of `usage` by every caller: the brief is a separate model call, so it is
     // invisible to the writer's own token count. It went unbilled entirely while research was a
