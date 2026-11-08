@@ -2,6 +2,7 @@ import type { Language } from '~~/generated/zenstack/models'
 
 import { z } from 'zod'
 import { Output } from 'ai'
+import { urlHost, ownedHosts, isOwnedHost } from '~~/shared/utils/backlinks'
 
 import { articleWriterId } from './modelRegistry'
 
@@ -129,6 +130,18 @@ export type ArticleObject = (typeof articleSchema)['_output']
  */
 export type ResearchOption = { query: string } | false | undefined
 
+/** Knowledge pages that are the publisher's own media: its feed products and pages on its blog or website host. */
+export const publisherPages = (
+  links: readonly { url: string; productId: string | null }[],
+  site: { domain: string; websiteUrl: string | null },
+) => {
+  const owned = ownedHosts(site)
+  return links.flatMap(({ url, productId }) => {
+    const host = urlHost(url)
+    return productId || (host && isOwnedHost(host, owned)) ? [url] : []
+  })
+}
+
 export const buildArticleConfig = async (
   clientSiteId: string,
   prompt: string,
@@ -178,11 +191,13 @@ export const buildArticleConfig = async (
     articleQuality,
     name: publisherName,
     domain: publisherDomain,
+    websiteUrl,
   } = await auditArticleStep(audit, 'configuration', () =>
     prisma.clientSite.findFirstOrThrow({
       select: {
         name: true,
         domain: true,
+        websiteUrl: true,
         plan: true,
         features: { where: { feature: { code: 'AI' } }, select: { isActive: true } },
         language: true,
@@ -402,6 +417,7 @@ Voice: this article runs on the publisher's own website (${publisherName}, ${pub
     language: articleLanguage,
     allowGeneratedImages: allowGeneratedImages && hasAiPlan(plan) && !features?.some((feature) => !feature.isActive),
     officialMediaPages: researchResult.officialMediaPages,
+    publisherMediaPages: publisherPages(knowledge?.linkTargets ?? [], { domain: publisherDomain, websiteUrl }),
     researchBrief: brief,
     knowledgeBrief,
     editorialDirection,

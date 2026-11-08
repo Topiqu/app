@@ -26,7 +26,7 @@ async function stubImports() {
 
 await stubImports()
 
-const { buildArticleConfig } = await import('../../../server/utils/ai/articleConfig')
+const { buildArticleConfig, publisherPages } = await import('../../../server/utils/ai/articleConfig')
 
 afterEach(() => vi.unstubAllGlobals())
 
@@ -71,6 +71,23 @@ describe('article quality configuration', () => {
     const { config } = await buildArticleConfig('site-1', 'A useful article', { research: false })
     expect(model).toHaveBeenCalledWith('articleWriter', 'gpt-6-luna')
     expect(effortOf(config)).toBe('high')
+  })
+})
+
+describe('publisher media pages', () => {
+  it('keeps feed products and pages on the blog or website host, not third-party knowledge', () => {
+    const links = [
+      { url: 'https://www.atmos-shop.cz/kotle/dc-25-s', productId: null },
+      { url: 'https://blog.atmos-shop.cz/servis', productId: null },
+      { url: 'https://shop.example.test/p/42', productId: 'product-42' },
+      { url: 'https://www.atmos.cz/katalog.pdf', productId: null },
+      { url: 'not a url', productId: null },
+    ]
+    expect(publisherPages(links, { domain: 'blog.topiqu.com', websiteUrl: 'https://atmos-shop.cz' })).toEqual([
+      'https://www.atmos-shop.cz/kotle/dc-25-s',
+      'https://blog.atmos-shop.cz/servis',
+      'https://shop.example.test/p/42',
+    ])
   })
 })
 

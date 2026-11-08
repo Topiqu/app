@@ -38,6 +38,7 @@ export const generateArticle = async (
     research,
     allowGeneratedImages,
     officialMediaPages,
+    publisherMediaPages,
   } = await buildArticleConfig(clientSiteId, prompt, opts)
   let groundingBrief = citationAllowlist
   const audit = opts?.audit
@@ -109,6 +110,7 @@ export const generateArticle = async (
       finalizeArticle(applyFormat(object, opts?.format, opts?.modules), language, {
         allowGeneratedImages,
         officialMediaPages,
+        publisherMediaPages,
         xPostUrls,
         clientSiteId,
         requireClearRights: opts?.requireClearRights,
@@ -437,6 +439,7 @@ export const streamArticle = async (
     research,
     allowGeneratedImages,
     officialMediaPages,
+    publisherMediaPages,
   } = await buildArticleConfig(clientSiteId, prompt, {
     ...opts,
     knowledgeQuery: opts.useKnowledge === false ? null : prompt,
@@ -463,6 +466,7 @@ export const streamArticle = async (
             ...callbacks,
             allowGeneratedImages,
             officialMediaPages,
+            publisherMediaPages,
             xPostUrls,
             clientSiteId,
             audit,

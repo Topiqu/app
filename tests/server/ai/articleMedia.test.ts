@@ -678,6 +678,36 @@ describe('auto-published media rights', () => {
     expect(register.mock.calls[0]?.[0].origin).toBe('PUBLISHER')
   })
 
+  it('files an image from the publisher’s own knowledge page as publisher media on autopilot', async () => {
+    library(null)
+    const page = 'https://www.atmos-shop.test/kotel-dc-25-s'
+    const image = {
+      url: 'https://cdn.topiqu.test/article-images/official-dc25s.jpg',
+      alt: 'Atmos DC 25 S',
+      credit: {
+        author: 'Atmos shop',
+        authorUrl: page,
+        source: 'Official media',
+        sourceUrl: 'https://www.atmos-shop.test/img/dc25s.jpg',
+      },
+    }
+    const loaded = vi.fn(async (pages: string[]) => (pages.includes(page) ? [image] : []))
+    vi.stubGlobal('loadPressImages', loaded)
+    vi.stubGlobal(
+      'findPressImage',
+      async (images: (typeof image)[], _query: string, accept: (found: typeof image) => boolean) =>
+        images.find(accept) ?? null,
+    )
+    const result = await finalizeArticle(object(), 'en', {
+      ...auto,
+      publisherMediaPages: [page],
+      officialMediaPages: [page, 'https://press.test/kit'],
+    })
+    expect(result.articleImageUrl).toBe(image.url)
+    expect(register.mock.calls[0]?.[0].origin).toBe('PUBLISHER')
+    expect(loaded.mock.calls).toEqual([[[page]], [['https://press.test/kit']]])
+  })
+
   it('uses credited Steam screenshots on autopilot and files them as publisher media', async () => {
     library(null)
     steam()

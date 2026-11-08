@@ -41,6 +41,8 @@ export type FinalizeCallbacks = {
   abortSignal?: AbortSignal
   allowGeneratedImages?: boolean
   officialMediaPages?: readonly string[]
+  /** The publisher's own knowledge pages; their images are its media, so their rights are clear. */
+  publisherMediaPages?: readonly string[]
   /** Canonical post URLs from the research brief; an [[XPOST]] slot may embed only these. */
   xPostUrls?: readonly string[]
   clientSiteId?: string
@@ -73,6 +75,7 @@ export const finalizeArticle = async (
     abortSignal,
     allowGeneratedImages = false,
     officialMediaPages = [],
+    publisherMediaPages = [],
     xPostUrls = [],
     clientSiteId,
     requireClearRights = false,
@@ -118,9 +121,11 @@ export const finalizeArticle = async (
 
   const acceptImage = createImageSelection()
   // Store media is uploaded by the publisher for promotion, whichever provider found it. Official pages are
-  // re-hosted on our CDN, so the original address survives only as the credit's source.
-  const fromStore = (image: Pick<ArticleImage, 'url' | 'credit'>) =>
-    [image.url, image.credit?.sourceUrl].some((url) => !!url && !!storeMediaSource(url))
+  // re-hosted on our CDN, so the original address survives only as the credit's source and the page as its author URL.
+  const ownPages = new Set(publisherMediaPages)
+  const publisherMedia = (image: Pick<ArticleImage, 'url' | 'credit'>) =>
+    [image.url, image.credit?.sourceUrl].some((url) => !!url && !!storeMediaSource(url)) ||
+    (!!image.credit?.authorUrl && ownPages.has(image.credit.authorUrl))
   const rightsClear = (asset: Partial<MediaAssetRecord>, url: string) =>
     !mediaRightsIssues({ key: url, placement: 'body', url }, asset as MediaAssetRecord).some(
       (issue) => issue.severity === 'warning',
@@ -140,7 +145,7 @@ export const finalizeArticle = async (
       mimeType: image.mimeType,
       sizeBytes: image.sizeBytes,
       contentHash: image.contentHash,
-      ...creditAsset(image.credit, image.kind !== 'ai' && fromStore(image)),
+      ...creditAsset(image.credit, image.kind !== 'ai' && publisherMedia(image)),
       ...(image.kind === 'ai' && { origin: 'TOPIQU_AI' as const }),
       width: image.width,
       height: image.height,
@@ -149,8 +154,14 @@ export const finalizeArticle = async (
     // The same rule the publish gate applies, on the asset as registered (a reused one may be confirmed).
     return { ...image, mediaId: asset.id, rightsClear: rightsClear(asset as MediaAssetRecord, image.url) }
   }
+  // Loaded apart so the publisher's pages never use up the research pages' cap; ties rank its own first.
+  const [ownImages, researchImages] = await Promise.all([
+    loadPressImages([...publisherMediaPages]),
+    loadPressImages(officialMediaPages.filter((page) => !ownPages.has(page))),
+  ])
   const officialImages = [
-    ...(await loadPressImages([...officialMediaPages])),
+    ...ownImages,
+    ...researchImages,
     ...(object.videos ?? []).flatMap((video) => {
       const thumbnail = youtubeThumbnailImage(video.url, video.caption)
       return thumbnail ? [thumbnail] : []
@@ -161,7 +172,7 @@ export const finalizeArticle = async (
   // Nobody confirms rights before an auto-publish, so a candidate that would need it is skipped
   // in favour of the next real one; AI stays the last resort.
   const clearCandidate = (image: StockImage) =>
-    rightsClear({ ...creditAsset(image.credit, fromStore(image)), rightsConfirmedAt: null }, image.url)
+    rightsClear({ ...creditAsset(image.credit, publisherMedia(image)), rightsConfirmedAt: null }, image.url)
   const findExistingImage = async (
     query: string,
     type: ArticleObject['images'][number]['type'],
