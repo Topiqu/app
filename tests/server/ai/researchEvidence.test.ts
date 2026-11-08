@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { stubNitroImports } from '../../helpers/nitroImports'
 
@@ -8,8 +8,16 @@ async function stubImports() {
 
 await stubImports()
 
-const { filterResearchSources, researchEvidence, retrievedResearchSources } =
+const { filterResearchSources, researchEvidence, researchTopic, retrievedResearchSources } =
   await import('../../../server/utils/ai/researchEvidence')
+const { youtubeVideoId } = await import('../../../shared/utils/youtube')
+
+const { generateText } = vi.hoisted(() => ({ generateText: vi.fn() }))
+
+vi.mock('ai', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('ai')>()),
+  generateText,
+}))
 
 describe('research evidence', () => {
   it('uses provider search results and opened pages when there are no inline citations', () => {
@@ -72,6 +80,81 @@ it('splits concatenated model citations while retaining only retrieved URLs', ()
   const a = 'https://publisher.test/a',
     b = 'https://publisher.test/b'
   expect(filterResearchSources([a + b + '  https://invented.test/c'], a + ' ' + b)).toEqual([a, b])
+})
+
+describe('research topic', () => {
+  const video = 'https://www.youtube.com/watch?v=HLrvinbWx3w'
+  const isVideoSearch = (options: { maxOutputTokens?: number }) => options.maxOutputTokens === 250
+  const videoFound = { text: video, sources: [], toolResults: [], usage: { totalTokens: 600 }, finishReason: 'stop' }
+
+  beforeEach(() => {
+    generateText.mockReset()
+    vi.stubGlobal('aiModel', () => 'model')
+    vi.stubGlobal('aiWebSearchTool', () => ({}))
+    vi.stubGlobal('youtubeVideoId', youtubeVideoId)
+    vi.stubGlobal('reportCaughtError', vi.fn())
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(JSON.stringify({ title: 'Zátop v kotli' }))),
+    )
+  })
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('keeps a verified video when the brief fails, under the no-research rule', async () => {
+    generateText.mockImplementation(async (options) => {
+      if (isVideoSearch(options)) return videoFound
+      throw new Error('provider overloaded')
+    })
+
+    const result = await researchTopic('Atmos DC 25 S', 'standard', true, undefined, true)
+
+    expect(result).toMatchObject({
+      status: 'fallback',
+      fallbackReason: 'error',
+      youtube: { status: 'found', url: video, title: 'Zátop v kotli' },
+      tokens: 600,
+    })
+    expect(result.brief?.split('\n')).toEqual([
+      expect.stringMatching(/^No live research was available\./),
+      `Verified YouTube video (checked against YouTube oEmbed): ${video}`,
+    ])
+  })
+
+  it('appends the video to a supported brief', async () => {
+    const page = 'https://www.atmos.eu/produkt/dc25s'
+    generateText.mockImplementation(async (options) =>
+      isVideoSearch(options)
+        ? videoFound
+        : {
+            text: `The DC 25 S is rated at 27 kW in emission class 5. ${page}`,
+            sources: [{ sourceType: 'url', url: page }],
+            toolResults: [],
+            usage: { totalTokens: 9000 },
+            finishReason: 'stop',
+          },
+    )
+
+    const result = await researchTopic('Atmos DC 25 S', 'standard', true, undefined, true)
+
+    expect(result.status).toBe('completed')
+    expect(result.brief).toBe(
+      `The DC 25 S is rated at 27 kW in emission class 5. ${page}\nVerified YouTube video (checked against YouTube oEmbed): ${video}`,
+    )
+    expect(result.tokens).toBe(9600)
+  })
+
+  it('asks the video search to look up videos, not to answer the topic', async () => {
+    generateText.mockImplementation(async (options) => {
+      if (isVideoSearch(options)) return videoFound
+      throw new Error('provider overloaded')
+    })
+
+    await researchTopic('Vyplatí se kotel Atmos DC 25 S?', 'standard', true, undefined, true)
+
+    const search = generateText.mock.calls.map(([options]) => options).find(isVideoSearch)
+    expect(search.prompt).toMatch(/^Article topic: Vyplatí se kotel Atmos DC 25 S\?\n/)
+    expect(search.prompt).toContain('Do not answer the topic itself')
+  })
 })
 
 beforeEach(stubImports)

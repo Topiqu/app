@@ -51,11 +51,12 @@ export const filterResearchSources = (sources: readonly string[], brief: string 
 }
 
 /** The brief's own output ceiling. Web search bills input and search context on top of it, so this
- *  is a headroom guard for the balance check, never the real cost — that comes back as `usage`. */
+ *  is a headroom guard for the balance check, never the real cost — that comes back as `usage`.
+ *  The timeout covers the ceiling plus thinking headroom: at high effort the brief alone thinks 5–10k tokens. */
 const RESEARCH_CONFIG = {
-  quick: { maxOutputTokens: 3000, timeoutMs: 50_000, searchContextSize: 'low' },
-  standard: { maxOutputTokens: 5000, timeoutMs: 90_000, searchContextSize: 'medium' },
-  deep: { maxOutputTokens: 8000, timeoutMs: 150_000, searchContextSize: 'high' },
+  quick: { maxOutputTokens: 3000, timeoutMs: 120_000, searchContextSize: 'low' },
+  standard: { maxOutputTokens: 5000, timeoutMs: 150_000, searchContextSize: 'medium' },
+  deep: { maxOutputTokens: 8000, timeoutMs: 210_000, searchContextSize: 'high' },
 } as const satisfies Record<
   ResearchDepth,
   { maxOutputTokens: number; timeoutMs: number; searchContextSize: 'low' | 'medium' | 'high' }
@@ -77,7 +78,8 @@ const researchYoutube = async (
           ? ' The topic is an invented story, so no video of its plot exists. Search for its real subject instead: the named character, franchise, person, place or institution.'
           : ''
       }`,
-      prompt,
+      // Given the bare topic, the model answers it (3–4k tokens, ~18 s) instead of only looking up videos.
+      prompt: `Article topic: ${prompt}\n\nFind YouTube videos for this topic. Do not answer the topic itself; reply with the video URLs only, or NONE.`,
       maxOutputTokens: 250,
       tools: { web_search: aiWebSearchTool('articleResearch', 'low') as never },
       abortSignal: signal,
@@ -109,6 +111,16 @@ const researchYoutube = async (
   }
 }
 
+// Same wording as the reviewer's default for a missing brief.
+const NO_RESEARCH_NOTE =
+  'No live research was available. The draft must avoid time-sensitive or externally attributed claims.'
+
+/** A video alone is not research, so it keeps the no-research rule for the writer and the reviewer. */
+const groundingBrief = (evidence: string | null, video?: YoutubeOutcome) =>
+  video?.status === 'found'
+    ? `${evidence ?? NO_RESEARCH_NOTE}\nVerified YouTube video (checked against YouTube oEmbed): ${video.url}`
+    : evidence
+
 export const researchTopic = async (
   prompt: string,
   depth: ResearchDepth = 'standard',
@@ -123,6 +135,9 @@ export const researchTopic = async (
   const researchSignal = abortSignal
     ? AbortSignal.any([abortSignal, AbortSignal.timeout(researchConfig.timeoutMs)])
     : AbortSignal.timeout(researchConfig.timeoutMs)
+  // Not tied to the brief's timeout: a verified video still reaches the writer when the brief fails.
+  const youtubeResearch = youtubeRequested ? researchYoutube(prompt, abortSignal, story) : Promise.resolve(null)
+  youtubeResearch.catch(() => undefined)
 
   try {
     const mainResearch = generateText({
@@ -161,20 +176,13 @@ export const researchTopic = async (
       tools: { web_search: aiWebSearchTool('articleResearch', researchConfig.searchContextSize) as never },
       abortSignal: researchSignal,
     })
-    const youtubeResearch = youtubeRequested ? researchYoutube(prompt, abortSignal, story) : Promise.resolve(null)
-    const [{ text, usage, sources, toolResults, finishReason }, youtube] = await Promise.all([
-      mainResearch,
-      youtubeResearch,
-    ])
+    const { text, usage, sources, toolResults, finishReason } = await mainResearch
+    const youtube = await youtubeResearch
 
     if (finishReason === 'length') throw new Error('Research exceeded its output budget before completing the brief')
     const evidence = researchEvidence(text, retrievedResearchSources({ sources, toolResults }))
     if (!evidence.brief && !fallbackWithoutResearch) throw new Error('Research returned no supported source material')
-    const verifiedVideo =
-      youtube?.outcome.status === 'found'
-        ? `\nVerified YouTube video (checked against YouTube oEmbed): ${youtube.outcome.url}`
-        : ''
-    const brief = `${evidence.brief ?? ''}${verifiedVideo}`.trim() || null
+    const brief = groundingBrief(evidence.brief, youtube?.outcome)
     const officialMediaPages = (evidence.brief ?? '')
       .split('\n')
       .filter((line) => /^\s*OFFICIAL MEDIA:/i.test(line))
@@ -205,15 +213,19 @@ export const researchTopic = async (
       depth,
     })
 
+    const youtube = await youtubeResearch.catch((youtubeError: unknown) => {
+      if (isAiAllowanceError(youtubeError) || abortSignal?.aborted) throw youtubeError
+      return null
+    })
     return {
-      brief: null,
-      tokens: 0,
+      brief: groundingBrief(null, youtube?.outcome),
+      tokens: youtube?.tokens ?? 0,
       sourceCount: 0,
       sources: [],
       officialMediaPages: [],
       status: 'fallback' as const,
       fallbackReason: researchSignal.aborted ? ('timeout' as const) : ('error' as const),
-      youtube: youtubeRequested ? ({ status: 'failed' } as const) : undefined,
+      youtube: youtubeRequested ? (youtube?.outcome ?? ({ status: 'failed' } as const)) : undefined,
     }
   }
 }

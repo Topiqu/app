@@ -51,7 +51,7 @@ describe('manual article generation stream', () => {
   })
 
   it('bounds research, writer inactivity, and total writing time', () => {
-    expect(articleResearch).toContain('standard: { maxOutputTokens: 5000, timeoutMs: 90_000')
+    expect(articleResearch).toContain('standard: { maxOutputTokens: 5000, timeoutMs: 150_000')
     expect(articleResearch).toContain('AbortSignal.timeout(researchConfig.timeoutMs)')
     expect(articleResearch).toContain('abortSignal: researchSignal')
     expect(endpoint).toContain("'MANUAL_GENERATION_RESEARCH_STARTED'")
