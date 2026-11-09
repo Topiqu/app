@@ -1,9 +1,6 @@
 <template>
   <div class="topiqu-dashboard-page flex min-h-0 flex-1 flex-col gap-6 py-6">
-    <header class="max-w-2xl">
-      <h1 class="text-2xl font-bold text-highlighted">{{ $t('articleBatch.title') }}</h1>
-      <p class="mt-1 text-sm text-muted">{{ $t('articleBatch.description') }}</p>
-    </header>
+    <h1 class="text-2xl font-bold text-highlighted">{{ $t('articleBatch.title') }}</h1>
 
     <div v-if="isPending" class="flex flex-col gap-6" :aria-label="$t('common.loading')" aria-busy="true">
       <USkeleton class="h-24 w-full" />
@@ -65,20 +62,11 @@ const stats = computed((): StatTile[] => {
       icon: 'mdi:calendar-plus-outline',
       label: t('articleBatch.stats.surplus.label'),
       value: number.format(credits.monthlySurplus),
-      note: t('articleBatch.stats.surplus.note', { allowance: number.format(credits.monthlyAllowance) }),
+      note: t('articleBatch.stats.surplus.note', {
+        allowance: number.format(credits.monthlyAllowance),
+        used: number.format(credits.autopilotCredits),
+      }),
       hint: t('articleBatch.stats.surplus.info'),
-    },
-    {
-      key: 'autopilot',
-      icon: 'mdi:robot-outline',
-      label: t('articleBatch.stats.autopilot.label'),
-      value: number.format(credits.autopilotCredits),
-      note: t(
-        'articleBatch.stats.autopilot.note',
-        { n: number.format(credits.autopilotPerMonth) },
-        credits.autopilotPerMonth,
-      ),
-      hint: t('articleBatch.stats.autopilot.info'),
     },
   ]
 })

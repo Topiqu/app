@@ -1,9 +1,6 @@
 <template>
   <section v-if="canChange && hasLevers" class="flex flex-col gap-3" :aria-labelledby="headingId">
-    <div>
-      <h2 :id="headingId" class="text-base font-semibold text-highlighted">{{ $t('articleBatch.levers.title') }}</h2>
-      <p class="mt-1 text-sm text-muted">{{ $t('articleBatch.levers.description') }}</p>
-    </div>
+    <h2 :id="headingId" class="text-base font-semibold text-highlighted">{{ $t('articleBatch.levers.title') }}</h2>
     <div class="grid gap-3 sm:grid-cols-2">
       <div
         v-if="quality"
@@ -15,11 +12,15 @@
           </h3>
           <p class="mt-1 text-sm text-muted">
             {{
-              $t('articleBatch.levers.quality.description', {
-                articles: overview.credits.autopilotPerMonth,
-                credits: overview.credits.autopilotPerMonth * articleCreditCost(quality),
-                allowance: overview.credits.monthlyAllowance,
-              })
+              $t(
+                'articleBatch.levers.quality.description',
+                {
+                  articles: overview.credits.autopilotPerMonth,
+                  credits: overview.credits.autopilotPerMonth * articleCreditCost(quality),
+                  allowance: overview.credits.monthlyAllowance,
+                },
+                overview.credits.autopilotPerMonth,
+              )
             }}
           </p>
         </div>
@@ -31,7 +32,7 @@
           :disabled="saving !== null"
           @click="applyQuality(quality)"
         >
-          {{ $t('articleBatch.levers.quality.apply', { level: qualityLabel(quality) }) }}
+          {{ $t('articleBatch.levers.quality.apply') }}
         </UButton>
       </div>
       <div
@@ -42,13 +43,13 @@
           <h3 class="font-medium text-highlighted">{{ $t('articleBatch.levers.tempo.title') }}</h3>
           <p class="mt-1 text-sm text-muted">
             {{
-              $t('articleBatch.levers.tempo.description', {
-                articles: interval.perMonth,
-                current: overview.credits.autopilotPerMonth,
-              })
+              $t(
+                'articleBatch.levers.tempo.description',
+                { articles: interval.perMonth, current: overview.credits.autopilotPerMonth },
+                interval.perMonth,
+              )
             }}
           </p>
-          <p class="mt-1 text-xs text-muted">{{ $t('articleBatch.levers.tempo.note') }}</p>
         </div>
         <UButton
           class="self-start"

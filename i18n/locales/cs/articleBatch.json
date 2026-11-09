@@ -2,7 +2,6 @@
   "articleBatch": {
     "navigation": "Využít volné kredity",
     "title": "Využijte volné kredity",
-    "description": "Podívejte se, co vaše kredity dokážou nad rámec autopilota, a využijte je, aniž byste články zadávali po jednom.",
     "loadFailed": "Přehled se nepodařilo načíst.",
     "disabledTitle": "K dispozici v tarifech s AI články",
     "disabledDescription": "Přejděte na vyšší tarif a Topiqu za vás bude psát články.",
@@ -18,28 +17,21 @@
       },
       "surplus": {
         "label": "Nevyužito každý měsíc",
-        "note": "z měsíční dotace {allowance} kreditů",
-        "info": "Kolik kreditů z měsíční dotace autopilot při současném rytmu nevyužije."
-      },
-      "autopilot": {
-        "label": "Autopilot spotřebuje za měsíc",
-        "note": "{n} článek | {n} články | {n} článků",
-        "info": "Kolik kreditů autopilot pravděpodobně spotřebuje v příštích 30 dnech při současném rytmu a kvalitě."
+        "note": "z dotace {allowance} spotřebuje autopilot {used}",
+        "info": "Kolik kreditů z měsíční dotace autopilot při současném rytmu a kvalitě nevyužije. Jde o odhad."
       }
     },
     "levers": {
       "title": "Doporučené změny",
-      "description": "Tato nastavení využijí více z vaší dotace bez práce navíc.",
       "saved": "Nastavení je uložené",
       "quality": {
-        "title": "Psát v kvalitě {level}",
-        "description": "Stejný počet článků za měsíc ({articles}) by spotřeboval {credits} z vašich {allowance} kreditů. Na webu jich nepřibude víc.",
-        "apply": "Přepnout na {level}"
+        "title": "Kvalita {level}",
+        "description": "Vydáte stále {articles} článek měsíčně, jen ve vyšší kvalitě, a spotřebujete {credits} z vašich {allowance} kreditů. | Vydáte stále {articles} články měsíčně, jen ve vyšší kvalitě, a spotřebujete {credits} z vašich {allowance} kreditů. | Vydáte stále {articles} článků měsíčně, jen ve vyšší kvalitě, a spotřebujete {credits} z vašich {allowance} kreditů.",
+        "apply": "Přepnout"
       },
       "tempo": {
-        "title": "Zrychlit autopilota",
-        "description": "Autopilot by psal zhruba {articles} článků za měsíc místo {current}.",
-        "note": "Víc článků znamená i víc čtení pro vaše publikum. V nastavení to můžete kdykoli změnit.",
+        "title": "Rychlejší autopilot",
+        "description": "Zhruba {articles} článek měsíčně místo {current}. | Zhruba {articles} články měsíčně místo {current}. | Zhruba {articles} článků měsíčně místo {current}.",
         "apply": "Zrychlit",
         "confirmTitle": "Zrychlit autopilota?",
         "confirmMessage": "Autopilot bude psát zhruba {articles} článků za měsíc a spotřebuje tomu odpovídající kredity. V nastavení to můžete kdykoli změnit."
@@ -47,11 +39,11 @@
     },
     "plan": {
       "title": "Plán článků",
-      "description": "Topiqu navrhne témata, vy je jedním kliknutím schválíte a články se napíší na pozadí. Návrh je zdarma.",
+      "description": "Navrhneme témata, vy je schválíte a články se napíší samy. Návrh je zdarma.",
       "propose": "Navrhnout články",
       "openSettings": "Otevřít nastavení",
       "noPermission": "Spuštění plánu vyžaduje oprávnění používat AI a upravovat články ostatních autorů.",
-      "hint": "Volné kredity stačí na {n} článek. | Volné kredity stačí na {n} články. | Volné kredity stačí na {n} článků."
+      "proposeUpTo": "Navrhnout až {n} článek | Navrhnout až {n} články | Navrhnout až {n} článků"
     },
     "proposal": {
       "listLabel": "Navržené články",
