@@ -63,6 +63,9 @@ describe('public client site read projection', () => {
       'stripePriceId',
       'monthlyPayment',
       'annualPayment',
+      'aiBudgetMonthlyMicros',
+      'aiBudgetDebtMicros',
+      'seoBudgetDebtMicros',
       'communityInsight',
     ]) {
       expect(CLIENT_SITE_SECRET_FIELDS).toContain(field)

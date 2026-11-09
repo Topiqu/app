@@ -100,6 +100,7 @@ export const CLIENT_SITE_SECRET_FIELDS = [
   'paidThrough',
   'aiBudgetMonthlyMicros',
   'aiBudgetDebtMicros',
+  'seoBudgetDebtMicros',
   'billingPlan',
   'firstPaidAt',
   'nextBillingAt',

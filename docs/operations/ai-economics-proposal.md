@@ -1,7 +1,7 @@
 # AI allowances and CUSTOM billing
 
-Implemented policy: `2026-11-04`, defined by `shared/utils/billingCatalog.ts`.
-This document describes the working tree, not an already completed production rollout.
+Implemented policy: `2026-11-06`, defined by `shared/utils/billingCatalog.ts`.
+This document describes the current implementation; it does not certify a production rollout or measured margins.
 
 ## Subscriptions and trials belong to a blog
 
@@ -11,9 +11,10 @@ Blog creation is unlimited. The first eligible, verified owner/inbox receives th
 canonical-inbox, disposable-email and registration rate-limit checks remain in force.
 Deleting a blog does not make its inbox eligible for another trial.
 
-The trial includes five article units and at most USD 1 in combined metered provider
-capacity for the entire trial, shared by all members and operations. It never renews
-daily. A paid period or explicit pack purchase is required to add paid capacity.
+The trial includes five article units, USD 2 of AI provider capacity and a separate
+USD 1 DataForSEO guard for the entire trial, shared by all members and operations.
+Neither guard renews daily. A paid period or explicit pack purchase is required to
+add paid capacity.
 
 ## Prices and seats
 
@@ -69,8 +70,9 @@ operations cannot spend it. An active AI plan is still required for generation.
 Unused plan article units carry over in a non-expiring `ROLLOVER` grant while a
 PRO/PREMIUM/CUSTOM plan is active, capped at twice the monthly allowance; the next
 expiry pass trims them to a lower plan's cap or drops them off the paid AI plans.
-Each carried unit brings USD 0.25 of article-only funding, above the USD 0.194
-STANDARD worst case. Trial units and operation counts do not carry over.
+Each carried unit brings USD 0.25 of article-only funding. The USD 0.194 cost per
+STANDARD unit is a planning estimate, not a runtime-guaranteed maximum. Trial units
+and operation counts do not carry over.
 
 Separate nonexpiring usage packs, usable with an active AI plan:
 
@@ -87,6 +89,10 @@ Checkout fulfillment. Purchased grants are idempotent by Checkout Session ID.
 
 ## Provider capacity and accounting
 
+The business target is AI provider costs averaging 25% of net base revenue. It is
+separate from the 50% enforcement guard: neither figure represents a measured margin.
+The target does not change customer article counts or automatically stop work at 25%.
+
 The AI cost guard (`BUDGET`) is 50% of the subscription base after discounts, excluding
 taxes, seats and language add-ons. Annual base revenue is normalized over twelve monthly
 slots: PRO USD 24.50/month or USD 19.60 on annual billing; PREMIUM USD 49.50 or USD 39.60;
@@ -97,7 +103,8 @@ newer tier's recurring baseline. Zero-dollar invoice receipts are retained too.
 `AiAllowanceGrant`, `AiUsageReservation` and `AiAllowanceInvoice` are system-only
 ledgers. Reservations lock the blog before allocating funds, then refund only
 known unused capacity. Unknown provider outcomes and abandoned leases retain their
-reservation. Known overruns become debt against later available capacity. A
+reservation. Known AI and SEO overruns become separate debts against later capacity
+of the same kind; neither can consume the other's funding. A
 settlement failure is reported and cannot turn an already delivered result into
 a failed customer operation. Concurrent users share the same atomic balance.
 
@@ -123,6 +130,14 @@ records that exposure and blocks further unreserved work. Whole-workflow p95 cos
 tax/refund policies and account-specific Stripe dunning still require operational
 measurement. There is no newly implemented platform-wide trial acquisition pool.
 
+Cost-guard exhaustion and reservation underestimates are reported through
+`reportCaughtError` to the configured error tracking and logger. Notification
+delivery depends on those services' deployment configuration and is not established
+by a local test. Automatic alerts for the 25% business target or USD 0.25 per charged
+article are not implemented. Evaluating either requires costs including failed
+attempts, with purchased/rollover funding distinguished from current-period revenue;
+article quality evaluations alone do not calibrate that cost.
+
 ## Deployment
 
 The three `20261104*` migrations are additive and applied by the existing Docker
@@ -131,6 +146,11 @@ scales stored monthly budgets and running invoice grants from 15% to 50% (×10/3
 four CUSTOM base/member Price IDs plus their two Product IDs, alongside existing
 PRO/PREMIUM configuration. Keep live and sandbox credentials separate. No production
 database, deployment, DNS or provider domain resources were changed by this work.
+
+`20261109120000_seo_cost_overrun` adds the zero-default SEO debt counter before the
+updated ORM queries run. It changes no prices, grants or historical charges and does
+not reconstruct past SEO underestimates. Old application code can run with the added
+column; deploy the migration before starting the new image, using the existing entrypoint.
 
 See [sandbox verification](stripe-sandbox-verification.md),
 [release checks](stripe-release-checklist.md) and

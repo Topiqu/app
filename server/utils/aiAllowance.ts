@@ -19,6 +19,8 @@ type Allocation = { id: string; amount: number }[]
 // Funding that only an article operation allocating the matching article grant may spend.
 const ARTICLE_FUNDING_SOURCES = ['ARTICLE_PURCHASE', 'ARTICLE_ROLLOVER']
 const articleFundingKey = (articleGrantId: string) => `article-funding:${articleGrantId}`
+const costDebtField = (kind: string) =>
+  kind === 'BUDGET' ? 'aiBudgetDebtMicros' : kind === 'SEO' ? 'seoBudgetDebtMicros' : null
 type AllowanceSite = Pick<
   ClientSite,
   | 'id'
@@ -329,7 +331,8 @@ export const reserveAiAllowance = async (
     // Bought and carried articles spend their own funding first; overrun debt is the shared budget's.
     const funding = grants.filter((row) => ARTICLE_FUNDING_SOURCES.includes(row.source))
     const shared = grants.filter((row) => !ARTICLE_FUNDING_SOURCES.includes(row.source))
-    const debt = kind === 'BUDGET' ? site.aiBudgetDebtMicros : 0
+    const debtField = costDebtField(kind)
+    const debt = debtField ? site[debtField] : 0
     if (grants.reduce((total, row) => total + row.remaining, 0) < amount + debt) {
       // Not awaited: the blog row stays locked until this transaction ends.
       if (isInternalAiAllowance(kind))
@@ -349,7 +352,7 @@ export const reserveAiAllowance = async (
         },
       })
     }
-    if (debt) {
+    if (debt && debtField) {
       let unpaid = debt
       const corrections: Allocation = []
       for (const row of [...shared, ...funding]) {
@@ -373,7 +376,7 @@ export const reserveAiAllowance = async (
           completedAt: now,
         },
       })
-      await tx.clientSite.update({ where: { id: clientSiteId }, data: { aiBudgetDebtMicros: 0 } })
+      await tx.clientSite.update({ where: { id: clientSiteId }, data: { [debtField]: 0 } })
     }
     const allocations: Allocation = []
     let needed = amount
@@ -427,12 +430,13 @@ export const settleAiAllowance = async (
       },
     })
     if (charged !== null && charged > row.reserved) {
-      if (row.kind === 'BUDGET')
+      const debtField = costDebtField(row.kind)
+      if (debtField)
         await tx.clientSite.update({
           where: { id: row.clientSiteId },
-          data: { aiBudgetDebtMicros: { increment: charged - row.reserved } },
+          data: { [debtField]: { increment: charged - row.reserved } },
         })
-      return { clientSiteId: row.clientSiteId, reservationId: row.id, charged, reserved: row.reserved }
+      return { clientSiteId: row.clientSiteId, reservationId: row.id, kind: row.kind, charged, reserved: row.reserved }
     }
   })
   if (overrun)
@@ -507,18 +511,21 @@ export const getAiAllowance = async (clientSiteId: string) =>
       active: period !== null,
       renewsAt: period?.end.toISOString() ?? null,
       trial: period?.trial ?? false,
-      allowances: AI_ALLOWANCE_KINDS.map((kind) => ({
-        kind,
-        included: rows
-          .filter((row) => row.kind === kind && row.source !== 'PURCHASE')
-          .reduce((total, row) => total + row.amount, 0),
-        total: rows.filter((row) => row.kind === kind).reduce((total, row) => total + row.amount, 0),
-        remaining: Math.max(
-          0,
-          rows.filter((row) => row.kind === kind).reduce((total, row) => total + row.remaining, 0) -
-            (kind === 'BUDGET' ? site.aiBudgetDebtMicros : 0),
-        ),
-      })),
+      allowances: AI_ALLOWANCE_KINDS.map((kind) => {
+        const debtField = costDebtField(kind)
+        return {
+          kind,
+          included: rows
+            .filter((row) => row.kind === kind && row.source !== 'PURCHASE')
+            .reduce((total, row) => total + row.amount, 0),
+          total: rows.filter((row) => row.kind === kind).reduce((total, row) => total + row.amount, 0),
+          remaining: Math.max(
+            0,
+            rows.filter((row) => row.kind === kind).reduce((total, row) => total + row.remaining, 0) -
+              (debtField ? site[debtField] : 0),
+          ),
+        }
+      }),
     }
   })
 

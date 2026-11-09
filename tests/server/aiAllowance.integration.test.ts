@@ -231,6 +231,30 @@ describe.skipIf(!enabled)('blog AI allowances on PostgreSQL', () => {
     await settleAiAllowance(await reserveAiAllowance(s.id, 'BUDGET', 100), 100)
     expect((await getAiAllowance(s.id)).allowances.find((row) => row.kind === 'BUDGET')?.remaining).toBe(600)
   })
+  it('deducts SEO overruns only from SEO capacity and settles them once', async () => {
+    const s = await site()
+    const reservation = await reserveAiAllowance(s.id, 'SEO', 100)
+    await Promise.all([settleAiAllowance(reservation, 300), settleAiAllowance(reservation, 300)])
+    const allowance = await getAiAllowance(s.id)
+    expect(allowance.allowances.find((row) => row.kind === 'SEO')?.remaining).toBe(9_999_700)
+    expect(allowance.allowances.find((row) => row.kind === 'BUDGET')?.remaining).toBe(24_500_000)
+    await expect(reserveAiAllowance(s.id, 'SEO', 9_999_701)).rejects.toMatchObject({
+      statusCode: 402,
+      data: { kind: 'SEO' },
+    })
+    await settleAiAllowance(await reserveAiAllowance(s.id, 'SEO', 100), 100)
+    expect((await getAiAllowance(s.id)).allowances.find((row) => row.kind === 'SEO')?.remaining).toBe(9_999_600)
+  })
+  it('retains exhausted SEO debt until new SEO funding covers it', async () => {
+    const s = await site()
+    await settleAiAllowance(await reserveAiAllowance(s.id, 'SEO', 10_000_000), 10_000_300)
+    expect((await getAiAllowance(s.id)).allowances.find((row) => row.kind === 'SEO')?.remaining).toBe(0)
+    await expect(reserveAiAllowance(s.id, 'SEO')).rejects.toMatchObject({ statusCode: 402 })
+    await db!.clientSite.update({ where: { id: s.id }, data: { plan: 'PREMIUM' } })
+    expect((await getAiAllowance(s.id)).allowances.find((row) => row.kind === 'SEO')?.remaining).toBe(9_999_700)
+    await settleAiAllowance(await reserveAiAllowance(s.id, 'SEO', 100), 100)
+    expect((await getAiAllowance(s.id)).allowances.find((row) => row.kind === 'SEO')?.remaining).toBe(9_999_600)
+  })
   it('funds 50% of discounted base revenue while excluding additional-seat revenue', async () => {
     const s = await site()
     const invoice = {

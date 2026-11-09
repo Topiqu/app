@@ -232,6 +232,7 @@ model ClientSite with Base {
     annualPaymentCents   Int?
     aiBudgetMonthlyMicros Int?
     aiBudgetDebtMicros    Int @default(0)
+    seoBudgetDebtMicros   Int @default(0)
     aiAllowanceGrants    AiAllowanceGrant[]
     aiAllowanceInvoices AiAllowanceInvoice[]
     aiUsageReservations  AiUsageReservation[]
