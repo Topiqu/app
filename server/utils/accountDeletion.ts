@@ -201,7 +201,7 @@ export const endBlogBilling = async (blog: BillingBlog) => {
     // Commit the recovery marker before Stripe: a failed transaction cannot erase evidence of a remote change.
     await prisma.clientSite.updateMany({
       where: { id: blog.id, closingAt: { not: null }, NOT: { closingSubscriptionIds: { has: subscription.id } } },
-      data: { closingSubscriptionIds: { push: subscription.id } },
+      data: { closingSubscriptionIds: { push: [subscription.id] } },
     })
     await prisma.$transaction(async (tx) => {
       const current = await lockClosingBilling(tx, blog.id)
@@ -233,7 +233,7 @@ const resumeBlogBilling = async (blog: Pick<BillingBlog, 'id'>): Promise<Billing
         if (!current) return 'ended'
         if (current.closingAt) return 'failed'
         if (!current.closingSubscriptionIds.includes(subscriptionId)) return 'resumed'
-        let ended = false
+        let ended: boolean
         try {
           const subscription = await stripe.subscriptions.retrieve(subscriptionId, {}, BILLING_REQUEST)
           ended = hasEnded(subscription.status)

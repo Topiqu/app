@@ -86,8 +86,8 @@ const billingDb = (state = { closingAt: new Date() as Date | null, closingSubscr
   })
   const updateMany = vi.fn(async ({ data }: any) => {
     if (!state.closingAt) return { count: 0 }
-    if (!state.closingSubscriptionIds.includes(data.closingSubscriptionIds.push))
-      state.closingSubscriptionIds.push(data.closingSubscriptionIds.push)
+    for (const id of data.closingSubscriptionIds.push)
+      if (!state.closingSubscriptionIds.includes(id)) state.closingSubscriptionIds.push(id)
     return { count: 1 }
   })
   const client = {
@@ -271,7 +271,7 @@ describe('blog billing', () => {
     expect(order).toEqual(['recorded', 'ended'])
     expect(update).toHaveBeenCalledWith({
       where: { id: 'site-1', closingAt: { not: null }, NOT: { closingSubscriptionIds: { has: 'sub_1' } } },
-      data: { closingSubscriptionIds: { push: 'sub_1' } },
+      data: { closingSubscriptionIds: { push: ['sub_1'] } },
     })
     expect(stripe.subscriptions.update).toHaveBeenCalledWith('sub_1', { cancel_at_period_end: true }, billingRequest)
   })
