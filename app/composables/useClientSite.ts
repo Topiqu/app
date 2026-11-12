@@ -24,6 +24,8 @@ export interface ClientSiteStatus {
   websiteUrl: string | null
   createdAt: string
   firstPaidAt: string | null
+  /** An agency pays for this blog; its own Stripe offers do not apply. */
+  agencyBilled: boolean
   trial: {
     state: TrialState
     endsAt: string | null

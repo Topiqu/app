@@ -19,9 +19,16 @@ export default defineEventHandler(async (event) => {
   return withBillingLease(membership.clientSiteId, async (leaseId) => {
     const site = await prisma.clientSite.findUniqueOrThrow({
       where: { id: membership.clientSiteId },
-      select: { plan: true, paidTeamSeats: true, stripeSubscriptionId: true, billingProvider: true },
+      select: {
+        plan: true,
+        paidTeamSeats: true,
+        stripeSubscriptionId: true,
+        billingProvider: true,
+        billingAccountId: true,
+      },
     })
     rejectShopifyBilled(event, site.billingProvider)
+    rejectAgencyBilled(site)
     if (!site.stripeSubscriptionId || (site.plan === 'CUSTOM' && site.paidTeamSeats === null))
       throw createError({ statusCode: 409, message: 'Managed subscription required' })
     const stripe = useStripe()

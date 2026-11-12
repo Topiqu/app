@@ -6,6 +6,7 @@ export const TRIAL_SELECT = {
   trialAcknowledgedAt: true,
   firstPaidAt: true,
   stripeSubscriptionId: true,
+  billingAccountId: true,
 } as const
 
 /** Mirrors `needsTrialDowngrade` in SQL; the predicate re-checks each row before it is written. */
@@ -16,6 +17,7 @@ export const expiredTrialWhere = (now: Date) => ({
   trialAcknowledgedAt: null,
   firstPaidAt: null,
   stripeSubscriptionId: null,
+  billingAccountId: null,
   deletedAt: null,
 })
 

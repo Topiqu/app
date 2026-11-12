@@ -47,12 +47,14 @@ export default defineEventHandler(async (event) => {
         stripeCustomerId: true,
         stripeSubscriptionId: true,
         billingCheckoutId: true,
+        billingAccountId: true,
       },
     })
     if (!clientSite) {
       throw createError({ statusCode: 404, message: 'ClientSite not found' })
     }
     rejectShopifyBilled(event, clientSite.billingProvider)
+    rejectAgencyBilled(clientSite)
 
     const returnUrl = await billingReturnUrl(event, origin, locale, user.language)
     if (bodyInterval !== undefined && !['month', 'year'].includes(bodyInterval))

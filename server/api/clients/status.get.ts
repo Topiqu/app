@@ -63,6 +63,7 @@ export default defineEventHandler(async (event) => {
       publishToWeb: true,
       stripeSubscriptionId: true,
       billingProvider: true,
+      billingAccountId: true,
       users: {
         where: { role: 'ai', deletedAt: null },
         orderBy: { createdAt: 'asc' },
@@ -81,6 +82,7 @@ export default defineEventHandler(async (event) => {
     translationLanguages: _translationLanguages,
     extraTranslationLanguages: _extraTranslationLanguages,
     stripeSubscriptionId,
+    billingAccountId,
     users,
     features,
     searchConsoleConnection,
@@ -214,6 +216,8 @@ export default defineEventHandler(async (event) => {
     // The paid languages only: an article can be translated into these and the site's own.
     translationLanguages: activeTranslationLanguages(clientSite),
     hasActiveSubscription: !!stripeSubscriptionId,
+    // Plan, seats and packs are the agency's to change, on its own page.
+    agencyBilled: !!billingAccountId,
     trial: {
       state,
       endsAt,

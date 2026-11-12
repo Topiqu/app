@@ -8,6 +8,8 @@ export interface TrialInfo {
   trialAcknowledgedAt?: Date | string | null
   firstPaidAt?: Date | string | null
   stripeSubscriptionId?: string | null
+  /** An agency blog is paid by its agency, so its own trial no longer applies. */
+  billingAccountId?: string | null
 }
 
 export type TrialState = 'NONE' | 'ACTIVE' | 'EXPIRED' | 'ACKNOWLEDGED'
@@ -25,7 +27,7 @@ export const trialEndsAt = (site?: TrialInfo | null): Date | null => {
 
 /** Plan and payment fields are consequences, never proof that a trial existed. */
 export const trialState = (site?: TrialInfo | null, now: Date = new Date()): TrialState => {
-  if (!site || site.firstPaidAt) return 'NONE'
+  if (!site || site.firstPaidAt || site.billingAccountId) return 'NONE'
   const endsAt = trialEndsAt(site)
   if (!endsAt) return 'NONE'
   if (site.trialAcknowledgedAt) return 'ACKNOWLEDGED'

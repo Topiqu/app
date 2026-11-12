@@ -61,6 +61,11 @@ beforeEach(() => {
     parse({ plan: 'PRO', origin: 'https://blog.example.test' }),
   )
   vi.stubGlobal('rejectShopifyBilled', vi.fn())
+  vi.stubGlobal('rejectAgencyBilled', vi.fn())
+  vi.stubGlobal(
+    'handleAgencyStripeEvent',
+    vi.fn(async () => false),
+  )
   vi.stubGlobal('billingReturnUrl', async () => 'https://blog.example.test/en/settings?tab=billing')
   vi.stubGlobal('useServerI18n', async () => ({ translate: (key: string) => key }))
   vi.stubGlobal('prisma', {

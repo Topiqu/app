@@ -26,12 +26,13 @@ export default defineEventHandler(async (event) => {
 
   const site = await prisma.clientSite.findUnique({
     where: { id: clientSiteId },
-    select: { plan: true, billingProvider: true },
+    select: { plan: true, billingProvider: true, billingAccountId: true },
   })
   if (!site || !hasAiPlan(site.plan)) {
     throw createError({ statusCode: 403, message: 'Article packs require an active AI plan' })
   }
   rejectShopifyBilled(event, site.billingProvider)
+  rejectAgencyBilled(site)
 
   // Price and article count come from the server-side catalog, never from the client.
   const articlePack = getArticlePack(pack)

@@ -47,8 +47,25 @@
       </UButton>
     </section>
 
+    <section
+      v-if="agencyBilled"
+      class="flex flex-col gap-3 rounded-(--topiqu-surface-radius) border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-neutral-900 sm:flex-row sm:items-center sm:justify-between"
+      aria-labelledby="billing-agency-title"
+    >
+      <div class="min-w-0">
+        <h2 id="billing-agency-title" class="flex items-center gap-2 font-semibold text-highlighted">
+          <UIcon name="mdi:domain" class="size-5" />
+          {{ $t('agency.billingNotice.title') }}
+        </h2>
+        <p class="mt-1 text-sm text-muted">{{ $t('agency.billingNotice.description') }}</p>
+      </div>
+      <UButton color="neutral" variant="soft" icon="mdi:domain" :to="localePath({ name: 'admin-agency' })">
+        {{ $t('agency.billingNotice.manage') }}
+      </UButton>
+    </section>
+
     <div
-      v-if="client?.billingPlan !== 'PERMANENT' && client?.nextBillingAt"
+      v-if="!agencyBilled && client?.billingPlan !== 'PERMANENT' && client?.nextBillingAt"
       class="rounded-(--topiqu-surface-radius) border border-neutral-200 bg-white p-5 dark:border-neutral-700 dark:bg-neutral-900"
     >
       <div class="flex items-center gap-2 text-xs uppercase text-neutral-600 dark:text-neutral-300 mb-2">
@@ -129,7 +146,7 @@
         </p>
       </div>
 
-      <div v-if="!shopifyBilled && client.plan !== 'BASIC'" class="space-y-3">
+      <div v-if="stripeOffers && client.plan !== 'BASIC'" class="space-y-3">
         <h3 class="text-lg font-semibold tracking-tight text-highlighted">
           {{ $t('common.translationLanguages.dialogTitle') }}
         </h3>
@@ -143,7 +160,7 @@
         />
       </div>
 
-      <div v-if="!shopifyBilled" class="space-y-4">
+      <div v-if="stripeOffers" class="space-y-4">
         <div>
           <h3 class="text-lg font-semibold tracking-tight text-highlighted">
             {{ $t('common.articlePacks.title') }}
@@ -211,12 +228,10 @@
       v-if="client && client.plan !== 'BASIC'"
       :key="client.id"
       :clientSiteId="client.id"
-      :canBuy="!shopifyBilled"
+      :canBuy="stripeOffers"
     />
     <FormClientCustomSeats
-      v-if="
-        !shopifyBilled && client?.stripeSubscriptionId && (client.plan !== 'CUSTOM' || client.paidTeamSeats != null)
-      "
+      v-if="stripeOffers && client?.stripeSubscriptionId && (client.plan !== 'CUSTOM' || client.paidTeamSeats != null)"
       :paidSeats="client.paidTeamSeats ?? null"
       @changed="emit('refresh')"
     />
@@ -438,8 +453,11 @@ const {
 const shopifyBilled = computed(() => client?.billingProvider === 'SHOPIFY')
 const shopify = shopifyBilled.value ? await useShopify() : null
 const shopifyPricingUrl = computed(() => shopify?.data.value?.pricingUrl ?? null)
+const { data: siteStatus } = await useClientSiteStatus()
+const agencyBilled = computed(() => !!siteStatus.value?.agencyBilled)
+const stripeOffers = computed(() => !shopifyBilled.value && !agencyBilled.value)
 const upgradeTargets = computed(() =>
-  shopifyBilled.value ? [] : getUpgradeTargets(client?.plan, !!client?.stripeSubscriptionId),
+  stripeOffers.value ? getUpgradeTargets(client?.plan, !!client?.stripeSubscriptionId) : [],
 )
 const selectedTarget = shallowRef<UpgradeTarget | null>(null)
 const upgradeTarget = computed(() =>
