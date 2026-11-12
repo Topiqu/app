@@ -13,6 +13,10 @@ const url = process.env.TEST_DATABASE_URL
 const enabled = !!url && /test/i.test(new URL(url).pathname) && url !== process.env.DATABASE_URL
 const db = enabled ? createDatabaseClient(url) : null
 
+afterAll(async () => {
+  await db?.$disconnect()
+})
+
 describe.skipIf(!enabled)('account deletion on PostgreSQL', () => {
   const suffix = randomUUID()
   const ownerId = randomUUID()
@@ -110,7 +114,6 @@ describe.skipIf(!enabled)('account deletion on PostgreSQL', () => {
     await db!.article.deleteMany({ where: { clientSiteId: { in: siteIds } } })
     await db!.clientSite.deleteMany({ where: { id: { in: siteIds } } })
     await db!.user.deleteMany({ where: { id: { in: userIds } } })
-    await db!.$disconnect()
   })
 
   it('deactivates and restores an account, keeping every record', async () => {
@@ -214,5 +217,120 @@ describe.skipIf(!enabled)('account deletion on PostgreSQL', () => {
     // A second run must be a no-op, and the old address must be free to register again.
     await expect(anonymizeAccount(ownerId, scheduledFor)).resolves.toBe(false)
     expect(await db!.user.count({ where: { email: `${ownerId}@example.test` } })).toBe(0)
+  })
+})
+
+describe.skipIf(!enabled)('agency closing on PostgreSQL', () => {
+  const suffix = randomUUID()
+  const ownerId = randomUUID()
+  const memberId = randomUUID()
+  const clientId = randomUUID()
+  const siteId = randomUUID()
+  const userIds = [ownerId, memberId, clientId]
+  const event = {} as never
+  let agencyId = ''
+
+  const load = () => import('../../../server/utils/accountDeletion')
+  const agency = () => db!.billingAccount.findUniqueOrThrow({ where: { id: agencyId }, select: { closingAt: true } })
+
+  beforeAll(async () => {
+    for (const [index, id] of userIds.entries())
+      await db!.user.create({
+        data: { id, username: `agency-${suffix}-${index}`, email: `${id}@example.test`, password: 'hash' },
+      })
+    const account = await db!.billingAccount.create({
+      data: {
+        kind: 'AGENCY',
+        name: `Agency ${suffix}`,
+        status: 'ACTIVE',
+        blogSlots: 3,
+        members: {
+          create: [
+            { userId: ownerId, role: 'OWNER' },
+            { userId: memberId, role: 'MEMBER' },
+          ],
+        },
+      },
+    })
+    agencyId = account.id
+    // A client's blog the agency runs: its owner is someone else, so it outlives the agency.
+    await db!.clientSite.create({
+      data: {
+        id: siteId,
+        name: suffix,
+        domain: `agency-${suffix}.test`,
+        plan: 'PRO',
+        agencyPlan: 'PRO',
+        billingAccountId: agencyId,
+      },
+    })
+    await db!.tenantMembership.create({ data: { clientSiteId: siteId, userId: clientId, role: 'OWNER' } })
+    await db!.tenantMembership.create({
+      data: { clientSiteId: siteId, userId: memberId, role: 'MEMBER', billingAccountId: agencyId },
+    })
+  })
+
+  beforeEach(async () => {
+    vi.resetModules()
+    vi.stubEnv('AUTH_SECRET', 'test-secret')
+    vi.stubGlobal('prisma', db)
+    vi.stubGlobal('languageTag', () => 'en-GB')
+    vi.stubGlobal('getIp', () => '192.0.2.1')
+    for (const name of ['invalidateAuthor', 'invalidateFeed', 'uncache', 'deleteFromCdn', 'reportCaughtError'])
+      vi.stubGlobal(name, vi.fn())
+    vi.stubGlobal('avatarKeyFromUrl', () => null)
+    vi.stubGlobal('tenantHostKey', (host: string) => host)
+    vi.stubGlobal('domainRedirectKey', (host: string) => host)
+    vi.stubGlobal('logAction', vi.fn())
+    vi.stubGlobal(
+      'sendEmail',
+      vi.fn(async () => undefined),
+    )
+    vi.stubGlobal('syncPlanFeatures', vi.fn())
+    vi.stubGlobal('revokeAgencyAccess', (await import('../../../server/utils/agency')).revokeAgencyAccess)
+    vi.stubGlobal('useStripe', () => ({ subscriptions: { update: vi.fn(), retrieve: vi.fn() } }))
+  })
+
+  afterAll(async () => {
+    vi.unstubAllGlobals()
+    vi.unstubAllEnvs()
+    await db!.clientSite.deleteMany({ where: { id: siteId } })
+    await db!.billingAccount.deleteMany({ where: { id: agencyId } })
+    await db!.user.deleteMany({ where: { id: { in: userIds } } })
+  })
+
+  it('freezes the agency while its last owner waits, and keeps it on restore', async () => {
+    const { scheduleAccountDeletion, restoreAccount, readDeletionRestoreToken, signDeletionRestoreToken } = await load()
+
+    const { scheduledFor } = await scheduleAccountDeletion(ownerId, [], event)
+    expect(await agency()).toEqual({ closingAt: scheduledFor })
+
+    const pending = await db!.user.findUniqueOrThrow({
+      where: { id: ownerId },
+      select: { deletionRequestedAt: true, deletionScheduledFor: true },
+    })
+    const token = signDeletionRestoreToken(ownerId, pending.deletionRequestedAt!, pending.deletionScheduledFor!)
+    await expect(restoreAccount(readDeletionRestoreToken(token)!, event)).resolves.toEqual({ billing: 'resumed' })
+    expect(await agency()).toEqual({ closingAt: null })
+  })
+
+  it('closes the agency with the account and hands the client blog back', async () => {
+    const { scheduleAccountDeletion, anonymizeAccount } = await load()
+
+    const { scheduledFor } = await scheduleAccountDeletion(ownerId, [], event)
+    await expect(anonymizeAccount(ownerId, scheduledFor)).resolves.toBe(true)
+
+    expect(await agency()).toEqual({ closingAt: null })
+    expect(await db!.billingAccountMember.count({ where: { accountId: agencyId } })).toBe(0)
+    const site = await db!.clientSite.findUniqueOrThrow({
+      where: { id: siteId },
+      select: { billingAccountId: true, agencyPlan: true, plan: true, deletedAt: true },
+    })
+    expect(site).toEqual({ billingAccountId: null, agencyPlan: null, plan: 'BASIC', deletedAt: null })
+    const memberships = await db!.tenantMembership.findMany({
+      where: { clientSiteId: siteId },
+      select: { userId: true, role: true },
+    })
+    expect(memberships).toEqual([{ userId: clientId, role: 'OWNER' }])
   })
 })

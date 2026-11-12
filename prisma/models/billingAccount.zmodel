@@ -21,8 +21,8 @@ enum BillingAccountRole {
     MEMBER
 }
 
-/// Owns article credits and AI funding. A blog outside an agency spends from a DIRECT account with the blog's
-/// own id, created on first use; its subscription stays on the blog. An AGENCY account pools many blogs.
+/// Owns article credits and AI funding. Every blog has a DIRECT account with its own id, which a database trigger
+/// creates with the blog; its subscription stays on the blog. An AGENCY account pools many blogs.
 model BillingAccount {
     id                   String               @id @default(uuid())
     kind                 BillingAccountKind   @default(DIRECT)
@@ -47,6 +47,9 @@ model BillingAccount {
     aiBudgetMonthlyMicros Int?
     aiBudgetDebtMicros   Int                  @default(0)
     seoBudgetDebtMicros  Int                  @default(0)
+    /// Set while the last owner's account waits for deletion; billing is frozen, as on a closing blog.
+    closingAt            DateTime?            @omit
+    closingSubscriptionIds String[]           @default([]) @omit
     wallet               ArticleCreditWallet?
     aiAllowanceGrants    AiAllowanceGrant[]
     aiAllowanceInvoices  AiAllowanceInvoice[]

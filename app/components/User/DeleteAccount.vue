@@ -89,6 +89,28 @@
             </div>
           </section>
 
+          <section v-if="preview.agencies.length" class="space-y-3">
+            <div>
+              <h3 class="text-sm font-semibold text-highlighted">{{ $t('profile.deleteAccount.agencies.title') }}</h3>
+              <p class="mt-1 text-sm leading-6 text-muted">
+                {{ $t('profile.deleteAccount.agencies.description', { days: preview.graceDays }) }}
+              </p>
+            </div>
+            <div
+              v-for="agency in preview.agencies"
+              :key="agency.id"
+              class="space-y-1 rounded-lg border border-default p-3"
+            >
+              <p class="text-sm font-medium text-highlighted">{{ agency.name }}</p>
+              <p v-if="agency.paid" class="text-xs leading-5 text-muted">
+                {{ $t('profile.deleteAccount.agencies.subscription') }}
+              </p>
+              <p v-if="agency.otherMembers" class="text-xs leading-5 text-muted">
+                {{ $t('profile.deleteAccount.agencies.members', { count: agency.otherMembers }) }}
+              </p>
+            </div>
+          </section>
+
           <UFormField :label="$t('profile.deleteAccount.emailConfirm', { email: preview.email })">
             <UInput
               v-model="form.email"
@@ -150,6 +172,7 @@ type Preview = {
     shopifyBilled: boolean
     otherMembers: number
   }[]
+  agencies: { id: string; name: string | null; paid: boolean; otherMembers: number }[]
 }
 type Result = { status: 'scheduled'; scheduledFor: string } | { status: 'confirmation_sent' }
 

@@ -1,3 +1,4 @@
+import type Stripe from 'stripe'
 import type { H3Event } from 'h3'
 
 import argon from 'argon2'
@@ -99,23 +100,59 @@ export const closingBlogs = async (userId: string) => {
   )
 }
 
+const AGENCY_BILLING_SELECT = {
+  id: true,
+  stripeCustomerId: true,
+  stripeSubscriptionId: true,
+  closingSubscriptionIds: true,
+} as const
+
+/** Agencies that close with this account: no other active person owns them. */
+export const closingAgencies = async (userId: string) => {
+  const agencies = await prisma.billingAccount.findMany({
+    where: { kind: 'AGENCY', members: { some: { userId, role: 'OWNER', deletedAt: null } } },
+    select: {
+      ...AGENCY_BILLING_SELECT,
+      name: true,
+      members: {
+        where: { deletedAt: null },
+        select: { userId: true, role: true, user: { select: { deletedAt: true } } },
+      },
+    },
+    orderBy: { createdAt: 'asc' },
+  })
+  return agencies.filter(
+    ({ members }) =>
+      !members.some((member) => member.role === 'OWNER' && member.userId !== userId && !member.user.deletedAt),
+  )
+}
+
+const ownedClosingAgencies = (userId: string) => ({
+  closingAt: { not: null },
+  members: { some: { userId, role: 'OWNER' as const, deletedAt: null } },
+})
+
 type ClosingBlog = Awaited<ReturnType<typeof closingBlogs>>[number]
-type BillingBlog = Pick<
-  ClosingBlog,
-  'id' | 'stripeCustomerId' | 'stripeSubscriptionId' | 'languageSubscriptionId' | 'closingSubscriptionIds'
->
+type BillingRecord = {
+  id: string
+  stripeCustomerId: string | null
+  stripeSubscriptionId: string | null
+  languageSubscriptionId?: string | null
+  closingSubscriptionIds: string[]
+}
 
 /** Null seats mark an individually contracted plan, whose terms this flow must not end on its own. */
 const isContracted = (blog: Pick<ClosingBlog, 'plan' | 'paidTeamSeats'>) =>
   blog.plan === 'CUSTOM' && blog.paidTeamSeats === null
 
 export const deletionPreview = async (userId: string) => {
-  const [user, blogs] = await Promise.all([
+  const [user, blogs, agencies] = await Promise.all([
     prisma.user.findUniqueOrThrow({
       where: { id: userId },
       select: { email: true, password: true, totpSecret: true },
     }),
     closingBlogs(userId),
+    closingAgencies(userId),
   ])
   return {
     email: user.email,
@@ -133,6 +170,12 @@ export const deletionPreview = async (userId: string) => {
         shopifyBilled: !!blog.shopifyConnection?.planHandle,
         otherMembers: blog.tenantMemberships.filter((member) => member.userId !== userId).length,
       })),
+    agencies: agencies.map((agency) => ({
+      id: agency.id,
+      name: agency.name,
+      paid: !!agency.stripeSubscriptionId,
+      otherMembers: agency.members.filter((member) => member.userId !== userId).length,
+    })),
   }
 }
 
@@ -159,33 +202,72 @@ const hasEnded = (status: string) => status === 'canceled' || status === 'incomp
 
 const BILLING_REQUEST = { timeout: 8000, maxNetworkRetries: 0 } as const
 
-const lockClosingBilling = async (tx: DatabaseTransaction, id: string) => {
-  const [blog] = await tx.$queryRaw<{ closingAt: Date | null; closingSubscriptionIds: string[] }[]>`
-    SELECT "closingAt", "closingSubscriptionIds" FROM "ClientSite" WHERE "id" = ${id} FOR UPDATE`
-  return blog
+type ClosingRow = { closingAt: Date | null; closingSubscriptionIds: string[] }
+
+/** A blog and an agency freeze their billing the same way; only the row that records it differs. */
+type ClosingStore = {
+  context: (id: string) => Record<string, string>
+  owns: (subscription: Stripe.Subscription, record: BillingRecord) => boolean
+  lock: (tx: DatabaseTransaction, id: string) => Promise<ClosingRow | undefined>
+  mark: (id: string, subscriptionId: string) => Promise<unknown>
+  recorded: (id: string) => Promise<{ closingSubscriptionIds: string[] } | null>
+  forget: (tx: DatabaseTransaction, id: string, closingSubscriptionIds: string[]) => Promise<unknown>
+}
+
+const BLOGS: ClosingStore = {
+  context: (id) => ({ clientSiteId: id }),
+  owns: (subscription, blog) =>
+    subscription.metadata?.clientSiteId === blog.id ||
+    subscription.id === blog.stripeSubscriptionId ||
+    subscription.id === blog.languageSubscriptionId,
+  lock: async (tx, id) =>
+    (
+      await tx.$queryRaw<ClosingRow[]>`
+        SELECT "closingAt", "closingSubscriptionIds" FROM "ClientSite" WHERE "id" = ${id} FOR UPDATE`
+    )[0],
+  mark: (id, subscriptionId) =>
+    prisma.clientSite.updateMany({
+      where: { id, closingAt: { not: null }, NOT: { closingSubscriptionIds: { has: subscriptionId } } },
+      data: { closingSubscriptionIds: { push: [subscriptionId] } },
+    }),
+  recorded: (id) => prisma.clientSite.findUnique({ where: { id }, select: { closingSubscriptionIds: true } }),
+  forget: (tx, id, closingSubscriptionIds) => tx.clientSite.update({ where: { id }, data: { closingSubscriptionIds } }),
+}
+
+const AGENCIES: ClosingStore = {
+  context: (id) => ({ billingAccountId: id }),
+  owns: (subscription, agency) =>
+    subscription.metadata?.billingAccountId === agency.id || subscription.id === agency.stripeSubscriptionId,
+  lock: async (tx, id) =>
+    (
+      await tx.$queryRaw<ClosingRow[]>`
+        SELECT "closingAt", "closingSubscriptionIds" FROM "BillingAccount" WHERE "id" = ${id} FOR UPDATE`
+    )[0],
+  mark: (id, subscriptionId) =>
+    prisma.billingAccount.updateMany({
+      where: { id, closingAt: { not: null }, NOT: { closingSubscriptionIds: { has: subscriptionId } } },
+      data: { closingSubscriptionIds: { push: [subscriptionId] } },
+    }),
+  recorded: (id) => prisma.billingAccount.findUnique({ where: { id }, select: { closingSubscriptionIds: true } }),
+  forget: (tx, id, closingSubscriptionIds) =>
+    tx.billingAccount.update({ where: { id }, data: { closingSubscriptionIds } }),
 }
 
 /** Reads Stripe rather than the row: a teammate may have subscribed again after the row was last synced. */
-const blogSubscriptions = async (blog: BillingBlog) => {
-  if (!blog.stripeCustomerId) return []
+const subscriptionsOf = async (store: ClosingStore, record: BillingRecord) => {
+  if (!record.stripeCustomerId) return []
   const { data } = await useStripe().subscriptions.list({
-    customer: blog.stripeCustomerId,
+    customer: record.stripeCustomerId,
     status: 'all',
     limit: 100,
   })
-  return data.filter(
-    (subscription) =>
-      !hasEnded(subscription.status) &&
-      (subscription.metadata?.clientSiteId === blog.id ||
-        subscription.id === blog.stripeSubscriptionId ||
-        subscription.id === blog.languageSubscriptionId),
-  )
+  return data.filter((subscription) => !hasEnded(subscription.status) && store.owns(subscription, record))
 }
 
 /** A pending plan change cannot be restored once released, so the customer resolves it before deleting. */
-export const hasScheduledBillingChange = async (blogs: BillingBlog[]) => {
+export const hasScheduledBillingChange = async (blogs: BillingRecord[]) => {
   for (const blog of blogs) {
-    if ((await blogSubscriptions(blog)).some((subscription) => subscription.schedule)) return true
+    if ((await subscriptionsOf(BLOGS, blog)).some((subscription) => subscription.schedule)) return true
   }
   return false
 }
@@ -194,17 +276,14 @@ export const hasScheduledBillingChange = async (blogs: BillingBlog[]) => {
  * The id is recorded before Stripe changes, so a crash cannot leave a subscription ended with no way to resume it.
  * One the customer already cancelled is skipped, so a restore does not revive it.
  */
-export const endBlogBilling = async (blog: BillingBlog) => {
+const endBilling = async (store: ClosingStore, record: BillingRecord) => {
   const stripe = useStripe()
-  for (const subscription of await blogSubscriptions(blog)) {
+  for (const subscription of await subscriptionsOf(store, record)) {
     if (subscription.cancel_at_period_end) continue
     // Commit the recovery marker before Stripe: a failed transaction cannot erase evidence of a remote change.
-    await prisma.clientSite.updateMany({
-      where: { id: blog.id, closingAt: { not: null }, NOT: { closingSubscriptionIds: { has: subscription.id } } },
-      data: { closingSubscriptionIds: { push: [subscription.id] } },
-    })
+    await store.mark(record.id, subscription.id)
     await prisma.$transaction(async (tx) => {
-      const current = await lockClosingBilling(tx, blog.id)
+      const current = await store.lock(tx, record.id)
       if (!current?.closingAt || !current.closingSubscriptionIds.includes(subscription.id)) return
       // Bounded provider requests under the row lock; restoration waits until they finish.
       if (subscription.schedule) {
@@ -216,20 +295,21 @@ export const endBlogBilling = async (blog: BillingBlog) => {
   }
 }
 
+export const endBlogBilling = (blog: BillingRecord) => endBilling(BLOGS, blog)
+
 type BillingState = 'resumed' | 'ended' | 'failed'
 
+const worse = (state: BillingState, next: BillingState) => (next === 'failed' || state === 'resumed' ? next : state)
+
 /** Ids stay recorded until Stripe confirms, so the hourly task can retry after an outage. */
-const resumeBlogBilling = async (blog: Pick<BillingBlog, 'id'>): Promise<BillingState> => {
+const resumeBilling = async (store: ClosingStore, record: Pick<BillingRecord, 'id'>): Promise<BillingState> => {
   const stripe = useStripe()
-  const snapshot = await prisma.clientSite.findUnique({
-    where: { id: blog.id },
-    select: { closingSubscriptionIds: true },
-  })
+  const snapshot = await store.recorded(record.id)
   let state: BillingState = 'resumed'
   for (const subscriptionId of new Set(snapshot?.closingSubscriptionIds ?? [])) {
     try {
       const outcome = await prisma.$transaction(async (tx): Promise<BillingState> => {
-        const current = await lockClosingBilling(tx, blog.id)
+        const current = await store.lock(tx, record.id)
         if (!current) return 'ended'
         if (current.closingAt) return 'failed'
         if (!current.closingSubscriptionIds.includes(subscriptionId)) return 'resumed'
@@ -243,22 +323,33 @@ const resumeBlogBilling = async (blog: Pick<BillingBlog, 'id'>): Promise<Billing
           if (!isMissingSubscription(error)) throw error
           ended = true
         }
-        await tx.clientSite.update({
-          where: { id: blog.id },
-          data: { closingSubscriptionIds: current.closingSubscriptionIds.filter((id) => id !== subscriptionId) },
-        })
+        await store.forget(
+          tx,
+          record.id,
+          current.closingSubscriptionIds.filter((id) => id !== subscriptionId),
+        )
         return ended ? 'ended' : 'resumed'
       })
-      if (outcome === 'failed' || state === 'resumed') state = outcome
+      state = worse(state, outcome)
     } catch (error) {
       state = 'failed'
       await reportCaughtError('Account deletion subscription resume failed', error, {
-        clientSiteId: blog.id,
+        ...store.context(record.id),
         subscriptionId,
       })
     }
   }
   return state
+}
+
+const endAll = async (store: ClosingStore, records: BillingRecord[], description: string) => {
+  for (const record of records) {
+    try {
+      await endBilling(store, record)
+    } catch (error) {
+      await reportCaughtError(description, error, store.context(record.id))
+    }
+  }
 }
 
 /** Retries what a request could not finish, and catches a subscription that started while a blog was closing. */
@@ -268,19 +359,32 @@ export const settleClosingBilling = async () => {
     select: BILLING_SELECT,
     take: 200,
   })
-  for (const blog of closing) {
-    try {
-      await endBlogBilling(blog)
-    } catch (error) {
-      await reportCaughtError('Closing blog billing failed', error, { clientSiteId: blog.id })
-    }
-  }
+  await endAll(BLOGS, closing, 'Closing blog billing failed')
   const restored = await prisma.clientSite.findMany({
     where: { closingAt: null, closingSubscriptionIds: { isEmpty: false } },
     select: { id: true, closingSubscriptionIds: true },
     take: 200,
   })
-  for (const blog of restored) await resumeBlogBilling(blog)
+  for (const blog of restored) await resumeBilling(BLOGS, blog)
+
+  const agencies = await prisma.billingAccount.findMany({
+    where: { kind: 'AGENCY', closingAt: { not: null }, stripeCustomerId: { not: null } },
+    select: AGENCY_BILLING_SELECT,
+    take: 200,
+  })
+  await endAll(AGENCIES, agencies, 'Closing agency billing failed')
+  const restoredAgencies = await prisma.billingAccount.findMany({
+    where: { closingAt: null, closingSubscriptionIds: { isEmpty: false } },
+    select: { id: true },
+    take: 200,
+  })
+  for (const agency of restoredAgencies) await resumeBilling(AGENCIES, agency)
+}
+
+/** Its last owner is leaving: nobody could manage a new subscription or plan change after that. */
+export const assertAgencyNotClosing = (account: { closingAt: Date | null }) => {
+  if (account.closingAt)
+    throw createError({ statusCode: 409, message: 'This agency is closing', data: { code: 'AGENCY_CLOSING' } })
 }
 
 /** Billing is frozen while a blog closes: nobody could cancel a new subscription once the blog is gone. */
@@ -374,7 +478,7 @@ export const sendDeletionConfirmEmail = (
  * and is not undone on failure, because the hourly task keeps retrying it.
  */
 export const scheduleAccountDeletion = async (userId: string, confirmedSiteIds: string[], event: H3Event) => {
-  const blogs = await closingBlogs(userId)
+  const [blogs, agencies] = await Promise.all([closingBlogs(userId), closingAgencies(userId)])
   if (!sameLiveBlogs(blogs, confirmedSiteIds))
     throw createError({ statusCode: 409, message: 'Blogs changed since the request' })
 
@@ -402,22 +506,28 @@ export const scheduleAccountDeletion = async (userId: string, confirmedSiteIds: 
       where: { id: { in: blogs.map((blog) => blog.id) } },
       data: { closingAt: scheduledFor },
     })
+    if (agencies.length)
+      await tx.billingAccount.updateMany({
+        where: { id: { in: agencies.map((agency) => agency.id) } },
+        data: { closingAt: scheduledFor },
+      })
     await logAction({
       tx,
       action: 'ACCOUNT_DELETION_REQUESTED',
       userId,
       ip: getIp(event),
-      metadata: { closingBlogs: blogs.map((blog) => blog.id), scheduledFor: scheduledFor.toISOString() },
+      metadata: {
+        closingBlogs: blogs.map((blog) => blog.id),
+        closingAgencies: agencies.map((agency) => agency.id),
+        scheduledFor: scheduledFor.toISOString(),
+      },
     })
     return current
   })
 
   await invalidateAuthor(userId)
-  for (const blog of blogs) {
-    await endBlogBilling(blog).catch((error) =>
-      reportCaughtError('Closing blog billing failed', error, { clientSiteId: blog.id }),
-    )
-  }
+  await endAll(BLOGS, blogs, 'Closing blog billing failed')
+  await endAll(AGENCIES, agencies, 'Closing agency billing failed')
   await sendScheduledEmail(user, now, scheduledFor, event)
   await notifyMembers('accountDeletionBlogClosing', blogs, userId, scheduledFor, event)
   return { scheduledFor }
@@ -442,6 +552,7 @@ export const restoreAccount = async (claims: RestoreClaims, event: H3Event) => {
       where: { closingAt: { not: null }, tenantMemberships: { some: { userId, role: 'OWNER', deletedAt: null } } },
       select: { id: true, closingSubscriptionIds: true },
     })
+    const agencies = await tx.billingAccount.findMany({ where: ownedClosingAgencies(userId), select: { id: true } })
     await tx.user.update({
       where: { id: userId },
       data: {
@@ -452,22 +563,25 @@ export const restoreAccount = async (claims: RestoreClaims, event: H3Event) => {
       },
     })
     await tx.clientSite.updateMany({ where: { id: { in: blogs.map((blog) => blog.id) } }, data: { closingAt: null } })
+    if (agencies.length)
+      await tx.billingAccount.updateMany({
+        where: { id: { in: agencies.map((agency) => agency.id) } },
+        data: { closingAt: null },
+      })
     await logAction({
       tx,
       action: 'ACCOUNT_DELETION_CANCELLED',
       userId,
       ip: getIp(event),
-      metadata: { blogs: blogs.map((blog) => blog.id) },
+      metadata: { blogs: blogs.map((blog) => blog.id), agencies: agencies.map((agency) => agency.id) },
     })
-    return { user, blogs }
+    return { user, blogs, agencies }
   })
   if (!result) return false
 
   let billing: BillingState = 'resumed'
-  for (const blog of result.blogs) {
-    const state = await resumeBlogBilling(blog)
-    if (state === 'failed' || billing === 'resumed') billing = state
-  }
+  for (const blog of result.blogs) billing = worse(billing, await resumeBilling(BLOGS, blog))
+  for (const agency of result.agencies) billing = worse(billing, await resumeBilling(AGENCIES, agency))
   await invalidateAuthor(userId)
   await sendQuietly('Account restore email failed', { userId }, () =>
     sendEmail({
@@ -549,6 +663,11 @@ export const anonymizeAccount = async (userId: string, now = new Date()) => {
     select: BILLING_SELECT,
   })
   for (const blog of billing) await endBlogBilling(blog)
+  const agencyBilling = await prisma.billingAccount.findMany({
+    where: ownedClosingAgencies(userId),
+    select: AGENCY_BILLING_SELECT,
+  })
+  for (const agency of agencyBilling) await endBilling(AGENCIES, agency)
 
   const identity = anonymizedIdentity()
   const result = await prisma.$transaction(async (tx) => {
@@ -623,6 +742,26 @@ export const anonymizeAccount = async (userId: string, now = new Date()) => {
       data: { revokedAt: now },
     })
     await tx.tenantInvitation.deleteMany({ where: { email: { equals: user.email, mode: 'insensitive' } } })
+    const agencies = await tx.billingAccount.findMany({ where: ownedClosingAgencies(userId), select: { id: true } })
+    const agencyIds = agencies.map(({ id }) => id)
+    if (agencyIds.length) {
+      // Its blogs go back to their own plan and team, as when the agency detaches them.
+      const agencyBlogs = await tx.clientSite.findMany({
+        where: { billingAccountId: { in: agencyIds }, deletedAt: null },
+        select: { id: true },
+      })
+      await tx.clientSite.updateMany({
+        where: { id: { in: agencyBlogs.map(({ id }) => id) } },
+        data: { billingAccountId: null, agencyPlan: null, monthlyUnitLimit: null, plan: 'BASIC' },
+      })
+      for (const { id } of agencyBlogs) await syncPlanFeatures(tx, id)
+      for (const id of agencyIds) await revokeAgencyAccess(tx, id, {})
+      await tx.billingAccount.updateMany({
+        where: { id: { in: agencyIds } },
+        data: { closingAt: null, closingSubscriptionIds: [] },
+      })
+    }
+    await tx.billingAccountMember.deleteMany({ where: { OR: [{ userId }, { accountId: { in: agencyIds } }] } })
     await tx.tenantMembership.deleteMany({ where: { userId } })
     await tx.articleDraft.deleteMany({ where: { userId } })
     await tx.notification.deleteMany({ where: { userId } })
@@ -677,7 +816,12 @@ export const anonymizeAccount = async (userId: string, now = new Date()) => {
         anonymizedAt: now,
       },
     })
-    await logAction({ tx, action: 'ACCOUNT_ANONYMIZED', userId, metadata: { closedBlogs: blogIds } })
+    await logAction({
+      tx,
+      action: 'ACCOUNT_ANONYMIZED',
+      userId,
+      metadata: { closedBlogs: blogIds, closedAgencies: agencyIds },
+    })
     return { avatarUrl: user.avatarUrl, closedBlogs }
   })
   if (!result) return false

@@ -153,6 +153,12 @@
         "members": "Wir informieren die anderen Mitglieder: {count}.",
         "confirm": "Gib zur Bestätigung {domain} ein"
       },
+      "agencies": {
+        "title": "Ihre Agenturen",
+        "description": "Diese Agenturen werden nach {days} Tagen zusammen mit Ihrem Konto geschlossen. Die Blogs der Agentur bleiben geöffnet und kehren zu ihrem eigenen Tarif und Team zurück. Wenn Sie das Konto wiederherstellen, bleibt die Agentur bestehen.",
+        "subscription": "Das Abo der Agentur verlängert sich nicht und endet mit dem bezahlten Zeitraum.",
+        "members": "Die anderen Mitglieder der Agentur verlieren den Zugriff: {count}."
+      },
       "emailConfirm": "Gib zur Bestätigung deine E-Mail {email} ein",
       "password": "Aktuelles Passwort",
       "emailProof": "Dein Konto hat kein Passwort, daher senden wir dir einen Bestätigungslink per E-Mail.",

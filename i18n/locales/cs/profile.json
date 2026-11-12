@@ -153,6 +153,12 @@
         "members": "Upozorníme ostatní členy: {count}.",
         "confirm": "Pro potvrzení opište {domain}"
       },
+      "agencies": {
+        "title": "Agentury, které vlastníte",
+        "description": "Tyto agentury se uzavřou spolu s účtem po {days} dnech. Jejich blogy zůstanou otevřené a vrátí se ke svému tarifu a týmu. Obnovením účtu agenturu zachováte.",
+        "subscription": "Předplatné agentury se neobnoví a skončí na konci zaplaceného období.",
+        "members": "Ostatní členové agentury ztratí přístup: {count}."
+      },
       "emailConfirm": "Pro potvrzení opište svůj e-mail {email}",
       "password": "Současné heslo",
       "emailProof": "Váš účet nemá heslo, proto vám pošleme potvrzovací odkaz e-mailem.",

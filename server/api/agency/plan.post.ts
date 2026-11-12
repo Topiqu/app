@@ -18,8 +18,9 @@ export default defineEventHandler(async (event) => {
   return withAgencyLease(accountId, async (leaseId) => {
     const account = await prisma.billingAccount.findUniqueOrThrow({
       where: { id: accountId },
-      select: { status: true, stripeSubscriptionId: true },
+      select: { status: true, stripeSubscriptionId: true, closingAt: true },
     })
+    assertAgencyNotClosing(account)
     if (!isAgencyLive(account.status) || !account.stripeSubscriptionId)
       throw createError({ statusCode: 409, message: 'No active agency subscription', data: { code: 'NOT_SUBSCRIBED' } })
     const plans = await agencyBlogPlans(prisma, accountId)
