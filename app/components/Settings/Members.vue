@@ -103,6 +103,13 @@
                   {{ member.role === 'OWNER' ? $t('common.members.owner') : $t('common.members.member') }}
                 </span>
                 <span
+                  v-if="member.agency"
+                  class="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary"
+                >
+                  <UIcon name="mdi:domain" class="size-3" aria-hidden="true" />
+                  {{ $t('common.members.agency') }}
+                </span>
+                <span
                   v-if="member.id === data?.currentMembershipId"
                   class="rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-semibold text-blue-700 dark:bg-blue-900 dark:text-blue-200"
                 >
@@ -134,6 +141,9 @@
                 :disabled="!!removingId"
                 @click="remove(member)"
               />
+              <span v-else-if="member.agency" class="text-xs text-neutral-500">{{
+                $t('common.members.agencyManaged')
+              }}</span>
             </div>
             <div class="flex flex-wrap gap-2">
               <label
@@ -243,6 +253,7 @@ type Member = {
   role: 'OWNER' | 'MEMBER'
   scopes: Scope[]
   createdAt: string
+  agency: boolean
   seatActive: boolean
   user: {
     id: string
@@ -330,7 +341,7 @@ watch(totalPages, (count) => {
 })
 const hasScope = (member: Member, scope: Scope) => member.role === 'OWNER' || member.scopes.includes(scope)
 const canEdit = (member: Member) =>
-  !!data.value?.canControl && member.role !== 'OWNER' && member.id !== data.value.currentMembershipId
+  !!data.value?.canControl && member.role !== 'OWNER' && !member.agency && member.id !== data.value.currentMembershipId
 const invite = async () => {
   busy.value = true
   seatError.value = false

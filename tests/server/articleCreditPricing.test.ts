@@ -136,6 +136,21 @@ const setup = (amounts = [1, 4]) => {
       ),
     },
   }
+  // The blog spends from its own DIRECT account, which shares its id.
+  const account = { id: 'site', kind: 'DIRECT', status: 'INACTIVE', unitBlocks: 0 }
+  const site = () => ({ id: 'site', billingAccountId: null, monthlyUnitLimit: null, plan: state.plan })
+  vi.stubGlobal(
+    'lockBlog',
+    vi.fn(async () => site()),
+  )
+  vi.stubGlobal(
+    'lockBillingAccount',
+    vi.fn(async () => account),
+  )
+  vi.stubGlobal(
+    'lockBlogAccount',
+    vi.fn(async () => ({ site: site(), account })),
+  )
   vi.stubGlobal('prisma', { $transaction: async (run: (value: typeof tx) => unknown) => run(tx) })
   return { state, tx }
 }

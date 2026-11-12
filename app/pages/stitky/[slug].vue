@@ -108,7 +108,7 @@ useSeoMeta({
     hasSeoPlan.value && !search.value && !hasExternalContentHome(clientSite) ? 'index, follow' : 'noindex, follow',
 })
 
-useHead({ link: [{ rel: 'canonical', href: canonicalUrl }] })
+useHead(() => ({ link: publicationSeoLinks(clientSite, [{ rel: 'canonical', href: canonicalUrl.value }]) }))
 
 if (hasSeoPlan.value && tag.value?.id) {
   useSchemaOrg([

@@ -12,11 +12,13 @@ export const activeTeamSeatIds = async (
   clientSiteId: string,
   plan: ClientPlan,
 ) => {
-  const custom =
-    plan === 'CUSTOM'
-      ? await db.clientSite.findUnique({ where: { id: clientSiteId }, select: { paidTeamSeats: true } })
-      : null
-  const limit = teamSeatLimit(plan, custom?.paidTeamSeats)
+  const site = await db.clientSite.findUnique({
+    where: { id: clientSiteId },
+    select: { paidTeamSeats: true, billingAccountId: true },
+  })
+  // An agency pays per blog, not per seat.
+  if (site?.billingAccountId) return null
+  const limit = teamSeatLimit(plan, site?.paidTeamSeats)
   if (limit === null) return null
   const members = await db.tenantMembership.findMany({
     where: { clientSiteId, deletedAt: null, user: { deletedAt: null } },
@@ -45,7 +47,7 @@ export const requireTeamSeatCapacity = async (
   const site = await tx.clientSite.update({
     where: { id: clientSiteId, deletedAt: null },
     data: { updatedAt: new Date() },
-    select: { plan: true, paidTeamSeats: true, billingLeaseUntil: true },
+    select: { plan: true, paidTeamSeats: true, billingLeaseUntil: true, billingAccountId: true },
   })
   if (site.billingLeaseUntil && site.billingLeaseUntil > new Date())
     throw createError({
@@ -53,7 +55,7 @@ export const requireTeamSeatCapacity = async (
       message: 'Billing change in progress',
       data: { code: 'BILLING_CHANGE_PENDING' },
     })
-  const limit = teamSeatLimit(site.plan, site.paidTeamSeats)
+  const limit = site.billingAccountId ? null : teamSeatLimit(site.plan, site.paidTeamSeats)
   if (limit === null) return
   const [members, invitations] = await Promise.all([
     tx.tenantMembership.count({

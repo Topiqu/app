@@ -77,6 +77,26 @@ const activeSubscription = (id: string, overrides: Record<string, unknown> = {})
 
 const importModule = () => import('../../../server/utils/accountDeletion')
 
+const billingRequest = { timeout: 8000, maxNetworkRetries: 0 }
+
+const billingDb = (state = { closingAt: new Date() as Date | null, closingSubscriptionIds: [] as string[] }) => {
+  const update = vi.fn(async ({ data }: any) => {
+    Object.assign(state, data)
+    return state
+  })
+  const updateMany = vi.fn(async ({ data }: any) => {
+    if (!state.closingAt) return { count: 0 }
+    for (const id of data.closingSubscriptionIds.push)
+      if (!state.closingSubscriptionIds.includes(id)) state.closingSubscriptionIds.push(id)
+    return { count: 1 }
+  })
+  const client = {
+    $queryRaw: vi.fn(async () => [{ ...state }]),
+    clientSite: { update, updateMany, findUnique: vi.fn(async () => ({ ...state })) },
+  }
+  return { ...client, $transaction: vi.fn(async (run: (tx: typeof client) => unknown) => run(client)), state }
+}
+
 const stubCommon = () => {
   vi.stubEnv('AUTH_SECRET', 'test-secret')
   vi.stubGlobal('createError', createError)
@@ -105,7 +125,11 @@ const stubCommon = () => {
 const fakeTx = (overrides: Record<string, unknown> = {}) => {
   const calls: { model: string; method: string; args: any }[] = []
   const tx: any = new Proxy(
-    { $queryRaw: vi.fn(async () => []), $executeRaw: vi.fn(async () => 1), ...overrides },
+    {
+      $queryRaw: vi.fn(async () => [{ closingAt: new Date(), closingSubscriptionIds: ['sub_1', 'sub_late'] }]),
+      $executeRaw: vi.fn(async () => 1),
+      ...overrides,
+    },
     {
       get: (target: any, model: string) =>
         model in target
@@ -221,18 +245,19 @@ describe('blog confirmation', () => {
 
 describe('blog billing', () => {
   const stubPrisma = () => {
-    const update = vi.fn(async (_args: unknown) => ({}))
-    vi.stubGlobal('prisma', { clientSite: { update } })
-    return update
+    const db = billingDb()
+    vi.stubGlobal('prisma', db)
+    return db.clientSite.updateMany
   }
   const billed = blog({ stripeCustomerId: 'cus_1', stripeSubscriptionId: 'sub_1' })
 
   it('records the subscription before ending it, so a crash cannot lose it', async () => {
     const order: string[] = []
     const update = stubPrisma()
-    update.mockImplementation(async () => {
+    const record = update.getMockImplementation()!
+    update.mockImplementation(async (args) => {
       order.push('recorded')
-      return {}
+      return record(args)
     })
     const stripe = stubStripe([activeSubscription('sub_1')])
     stripe.subscriptions.update.mockImplementation(async () => {
@@ -244,8 +269,11 @@ describe('blog billing', () => {
     await endBlogBilling(billed)
 
     expect(order).toEqual(['recorded', 'ended'])
-    expect(update).toHaveBeenCalledWith({ where: { id: 'site-1' }, data: { closingSubscriptionIds: ['sub_1'] } })
-    expect(stripe.subscriptions.update).toHaveBeenCalledWith('sub_1', { cancel_at_period_end: true })
+    expect(update).toHaveBeenCalledWith({
+      where: { id: 'site-1', closingAt: { not: null }, NOT: { closingSubscriptionIds: { has: 'sub_1' } } },
+      data: { closingSubscriptionIds: { push: ['sub_1'] } },
+    })
+    expect(stripe.subscriptions.update).toHaveBeenCalledWith('sub_1', { cancel_at_period_end: true }, billingRequest)
   })
 
   it('catches a subscription the row does not know about, such as one a teammate just started', async () => {
@@ -255,7 +283,7 @@ describe('blog billing', () => {
 
     await endBlogBilling(billed)
 
-    expect(stripe.subscriptions.update).toHaveBeenCalledWith('sub_new', { cancel_at_period_end: true })
+    expect(stripe.subscriptions.update).toHaveBeenCalledWith('sub_new', { cancel_at_period_end: true }, billingRequest)
   })
 
   it("leaves another blog's subscription on a shared customer alone", async () => {
@@ -304,8 +332,8 @@ describe('blog billing', () => {
 
     await endBlogBilling(billed)
 
-    expect(stripe.subscriptionSchedules.release).toHaveBeenCalledWith('sched_1')
-    expect(stripe.subscriptions.update).toHaveBeenCalledWith('sub_1', { cancel_at_period_end: true })
+    expect(stripe.subscriptionSchedules.release).toHaveBeenCalledWith('sched_1', {}, billingRequest)
+    expect(stripe.subscriptions.update).toHaveBeenCalledWith('sub_1', { cancel_at_period_end: true }, billingRequest)
   })
 
   it('freezes billing on a closing blog', async () => {
@@ -326,17 +354,49 @@ describe('blog billing', () => {
         blog({ stripeCustomerId: 'cus_1', stripeSubscriptionId: 'sub_1' }),
       ])
       .mockResolvedValueOnce([{ id: 'restored', closingSubscriptionIds: ['sub_back'] }])
-    const update = vi.fn(async () => ({}))
-    vi.stubGlobal('prisma', { clientSite: { findMany, update } })
+    const db = billingDb()
+    db.$queryRaw.mockImplementation(async (...args: any[]) =>
+      args[1] === 'restored' ? [{ closingAt: null, closingSubscriptionIds: ['sub_back'] }] : [{ ...db.state }],
+    )
+    db.clientSite.findUnique.mockResolvedValue({ closingAt: null, closingSubscriptionIds: ['sub_back'] })
+    vi.stubGlobal('prisma', { ...db, clientSite: { ...db.clientSite, findMany } })
     const stripe = stubStripe([activeSubscription('sub_1'), activeSubscription('sub_back')])
     stripe.subscriptions.list.mockRejectedValueOnce(new Error('Stripe down'))
     const { settleClosingBilling } = await importModule()
 
     await settleClosingBilling()
 
-    expect(stripe.subscriptions.update).toHaveBeenCalledWith('sub_1', { cancel_at_period_end: true })
-    expect(stripe.subscriptions.update).toHaveBeenCalledWith('sub_back', { cancel_at_period_end: false })
+    expect(stripe.subscriptions.update).toHaveBeenCalledWith('sub_1', { cancel_at_period_end: true }, billingRequest)
+    expect(stripe.subscriptions.update).toHaveBeenCalledWith(
+      'sub_back',
+      { cancel_at_period_end: false },
+      billingRequest,
+    )
     expect(reportCaughtError).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not cancel from a stale cron snapshot after restoration cleared the recovery marker', async () => {
+    const db = billingDb({ closingAt: null, closingSubscriptionIds: [] })
+    vi.stubGlobal('prisma', db)
+    const stripe = stubStripe([activeSubscription('sub_1')])
+    const { endBlogBilling } = await importModule()
+    await endBlogBilling({ ...billed, closingSubscriptionIds: ['sub_1'] })
+    expect(stripe.subscriptions.update).not.toHaveBeenCalled()
+    expect(db.state.closingSubscriptionIds).toEqual([])
+  })
+
+  it('rechecks restoration after the marker committed but before acquiring the billing lock', async () => {
+    const db = billingDb()
+    db.$transaction.mockImplementation(async (run) => {
+      db.state.closingAt = null
+      db.state.closingSubscriptionIds = []
+      return run(db)
+    })
+    vi.stubGlobal('prisma', db)
+    const stripe = stubStripe([activeSubscription('sub_1')])
+    const { endBlogBilling } = await importModule()
+    await endBlogBilling(billed)
+    expect(stripe.subscriptions.update).not.toHaveBeenCalled()
   })
 })
 
@@ -353,6 +413,7 @@ describe('scheduleAccountDeletion', () => {
       clientSite: {
         findMany: vi.fn(async () => options.blogs ?? []),
         update: vi.fn(async () => ({})),
+        updateMany: vi.fn(async () => ({ count: 1 })),
       },
       user: { findMany: vi.fn(async () => [{ id: 'member', email: 'm@example.test', username: 'm', language: 'en' }]) },
       $transaction: vi.fn(async (run: (client: unknown) => unknown) => {
@@ -395,7 +456,7 @@ describe('scheduleAccountDeletion', () => {
       method: 'updateMany',
       args: { where: { id: { in: ['site-1'] } }, data: { closingAt: expect.any(Date) } },
     })
-    expect(stripe.subscriptions.update).toHaveBeenCalledWith('sub_1', { cancel_at_period_end: true })
+    expect(stripe.subscriptions.update).toHaveBeenCalledWith('sub_1', { cancel_at_period_end: true }, billingRequest)
   })
 
   it('never touches Stripe when an overlapping request already claimed the account', async () => {
@@ -461,13 +522,19 @@ describe('restoreAccount', () => {
     const siteUpdate = vi.fn(async (_args: unknown) => ({}))
     const findFirst = vi.fn(async () => user)
     const tx = {
-      $queryRaw: vi.fn(async () => []),
+      $queryRaw: vi.fn(async () => [
+        { closingAt: null, closingSubscriptionIds: (blogs[0] as Blog | undefined)?.closingSubscriptionIds ?? [] },
+      ]),
       user: { findFirst, update },
-      clientSite: { findMany: vi.fn(async () => blogs), updateMany: siteUpdateMany },
+      clientSite: { findMany: vi.fn(async () => blogs), updateMany: siteUpdateMany, update: siteUpdate },
     }
     vi.stubGlobal('prisma', {
       $transaction: vi.fn(async (run: (client: unknown) => unknown) => run(tx)),
-      clientSite: { findMany: vi.fn(async () => []), update: siteUpdate },
+      clientSite: {
+        findMany: vi.fn(async () => []),
+        findUnique: vi.fn(async () => blogs[0] ?? null),
+        update: siteUpdate,
+      },
       user: { findMany: vi.fn(async () => []) },
     })
     return { update, siteUpdateMany, siteUpdate, findFirst }
@@ -485,7 +552,7 @@ describe('restoreAccount', () => {
       data: { deletedAt: null, deletionRequestedAt: null, deletionScheduledFor: null, deletionReminderSentAt: null },
     })
     expect(siteUpdateMany).toHaveBeenCalledWith({ where: { id: { in: ['site-1'] } }, data: { closingAt: null } })
-    expect(stripe.subscriptions.update).toHaveBeenCalledWith('sub_1', { cancel_at_period_end: false })
+    expect(stripe.subscriptions.update).toHaveBeenCalledWith('sub_1', { cancel_at_period_end: false }, billingRequest)
     expect(siteUpdate).toHaveBeenCalledWith({ where: { id: 'site-1' }, data: { closingSubscriptionIds: [] } })
     expect(sendEmail).toHaveBeenCalledWith(expect.objectContaining({ template: 'accountDeletionRestored' }))
   })
@@ -532,7 +599,7 @@ describe('restoreAccount', () => {
 
     await expect(restoreAccount(claims, {} as never)).resolves.toEqual({ billing: 'failed' })
 
-    expect(siteUpdate).toHaveBeenCalledWith({ where: { id: 'site-1' }, data: { closingSubscriptionIds: ['sub_1'] } })
+    expect(siteUpdate).not.toHaveBeenCalled()
     expect(reportCaughtError).toHaveBeenCalled()
   })
 })
@@ -601,7 +668,11 @@ describe('anonymizeAccount', () => {
     })
     vi.stubGlobal('prisma', {
       user: { findFirst: vi.fn(async () => (user ? { id: USER_ID } : null)) },
-      clientSite: { findMany: vi.fn(async () => billing), update: vi.fn(async () => ({})) },
+      clientSite: {
+        findMany: vi.fn(async () => billing),
+        update: vi.fn(async () => ({})),
+        updateMany: vi.fn(async () => ({ count: 1 })),
+      },
       $transaction: vi.fn(async (run: (client: unknown) => unknown) => run(tx)),
     })
     return { calls, executeRaw }
@@ -634,7 +705,7 @@ describe('anonymizeAccount', () => {
 
     await anonymizeAccount(USER_ID, now)
 
-    expect(stripe.subscriptions.update).toHaveBeenCalledWith('sub_late', { cancel_at_period_end: true })
+    expect(stripe.subscriptions.update).toHaveBeenCalledWith('sub_late', { cancel_at_period_end: true }, billingRequest)
   })
 
   it('removes personal fields from the row, and never deletes the row itself', async () => {
@@ -645,8 +716,8 @@ describe('anonymizeAccount', () => {
 
     const update = calls.find(({ model, method }) => model === 'user' && method === 'update')!.args
     expect(update.data).toMatchObject({
-      username: 'deleted-1111111122223333',
-      email: 'deleted-11111111222233334444555555555555@deleted.invalid',
+      username: expect.stringMatching(/^deleted-[a-f0-9]{32}$/),
+      email: expect.stringMatching(/^deleted-[a-f0-9]{32}@deleted\.invalid$/),
       password: null,
       bio: null,
       avatarUrl: null,
@@ -731,7 +802,7 @@ describe('anonymizeAccount', () => {
     expect(statements.some((sql) => sql.includes('"Comment"'))).toBe(true)
     expect(statements.some((sql) => sql.includes('"Notification"'))).toBe(true)
     const values = executeRaw.mock.calls.flatMap(([, ...params]) => params)
-    expect(values).toContain('@deleted-1111111122223333')
+    expect(values).toContainEqual(expect.stringMatching(/^@deleted-[a-f0-9]{32}$/))
     expect(values.some((value) => typeof value === 'string' && value.includes('Jan Novák'))).toBe(true)
   })
 

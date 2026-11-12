@@ -2,7 +2,6 @@
   "articleBatch": {
     "navigation": "Utiliser les crédits libres",
     "title": "Utilisez vos crédits libres",
-    "description": "Découvrez ce que vos crédits peuvent faire au-delà du pilote automatique et utilisez-les sans créer les articles un par un.",
     "loadFailed": "Impossible de charger l’aperçu.",
     "disabledTitle": "Disponible avec les offres incluant les articles IA",
     "disabledDescription": "Changez d’offre pour que Topiqu rédige des articles pour vous.",
@@ -18,28 +17,21 @@
       },
       "surplus": {
         "label": "Inutilisés chaque mois",
-        "note": "sur un forfait de {allowance} crédits",
-        "info": "Le nombre de crédits de votre forfait mensuel que le pilote automatique n’utilise pas à son rythme actuel."
-      },
-      "autopilot": {
-        "label": "Utilisés par le pilote automatique",
-        "note": "{n} article | {n} articles",
-        "info": "Crédits que le pilote automatique devrait utiliser dans les 30 prochains jours, à son rythme et sa qualité actuels."
+        "note": "le pilote automatique en utilise {used} sur {allowance}",
+        "info": "Le nombre de crédits de votre forfait mensuel que le pilote automatique n’utilise pas à son rythme et sa qualité actuels. Il s’agit d’une estimation."
       }
     },
     "levers": {
       "title": "Changements recommandés",
-      "description": "Ces réglages utilisent davantage votre forfait sans travail supplémentaire.",
       "saved": "Réglages enregistrés",
       "quality": {
-        "title": "Rédiger en qualité {level}",
-        "description": "{articles} articles par mois utiliseraient {credits} de vos {allowance} crédits, sans ajouter d’articles sur votre site.",
-        "apply": "Passer en {level}"
+        "title": "Qualité {level}",
+        "description": "Vous publiez toujours {articles} article par mois, en meilleure qualité, et utilisez {credits} de vos {allowance} crédits. | Vous publiez toujours {articles} articles par mois, en meilleure qualité, et utilisez {credits} de vos {allowance} crédits.",
+        "apply": "Changer"
       },
       "tempo": {
-        "title": "Accélérer le pilote automatique",
-        "description": "Le pilote automatique rédigerait environ {articles} articles par mois au lieu de {current}.",
-        "note": "Plus d’articles, c’est aussi plus de lecture pour votre public. Vous pouvez modifier cela à tout moment dans les réglages.",
+        "title": "Pilote automatique plus rapide",
+        "description": "Environ {articles} article par mois au lieu de {current}. | Environ {articles} articles par mois au lieu de {current}.",
         "apply": "Accélérer",
         "confirmTitle": "Accélérer le pilote automatique ?",
         "confirmMessage": "Le pilote automatique rédigera environ {articles} articles par mois et utilisera les crédits correspondants. Vous pouvez modifier cela à tout moment dans les réglages."
@@ -47,11 +39,11 @@
     },
     "plan": {
       "title": "Plan d’articles",
-      "description": "Topiqu propose des sujets, vous les approuvez en un clic et les articles sont rédigés en arrière-plan. La proposition est gratuite.",
+      "description": "Nous proposons des sujets, vous les approuvez et les articles se rédigent tout seuls. La proposition est gratuite.",
       "propose": "Proposer des articles",
       "openSettings": "Ouvrir les paramètres",
       "noPermission": "Lancer un plan nécessite l’autorisation d’utiliser l’IA et de modifier les articles d’autres auteurs.",
-      "hint": "Vos crédits libres couvrent {n} article. | Vos crédits libres couvrent {n} articles."
+      "proposeUpTo": "Proposer jusqu’à {n} article | Proposer jusqu’à {n} articles"
     },
     "proposal": {
       "listLabel": "Articles proposés",

@@ -25,11 +25,13 @@ export default defineEventHandler(async (event) => {
       billingProvider: true,
       stripeCustomerId: true,
       languageSubscriptionId: true,
+      billingAccountId: true,
       deletedAt: true,
     },
   })
   if (!site || site.deletedAt) throw createError({ statusCode: 404, message: t('common.errors.clientNotFound')! })
   rejectShopifyBilled(event, site.billingProvider)
+  rejectAgencyBilled(site)
   // CUSTOM is invoiced à la carte by an operator; FREE has no AI to translate with. A trial may buy too:
   // every way back to FREE cancels the add-on (`cancelTranslationLanguageSubscription`).
   if (site.plan !== 'PRO' && site.plan !== 'PREMIUM' && !(site.plan === 'CUSTOM' && site.paidTeamSeats != null))

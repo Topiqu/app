@@ -9,6 +9,7 @@ export default defineMonitoredTask({
       where: {
         billingPlan: 'ANNUAL',
         plan: { in: ['PRO', 'PREMIUM', 'CUSTOM'] },
+        billingAccountId: null,
         OR: [{ stripeSubscriptionId: { not: null } }, { billingProvider: 'SHOPIFY' }],
       },
       select: {
@@ -17,13 +18,17 @@ export default defineMonitoredTask({
         paidTeamSeats: true,
         paidThrough: true,
         stripeSubscriptionId: true,
-        articleCreditWallet: {
+        directBillingAccount: {
           select: {
-            grants: {
-              where: { source: 'PLAN' },
-              orderBy: { periodEnd: 'desc' },
-              take: 1,
-              select: { periodEnd: true },
+            wallet: {
+              select: {
+                grants: {
+                  where: { source: 'PLAN' },
+                  orderBy: { periodEnd: 'desc' },
+                  take: 1,
+                  select: { periodEnd: true },
+                },
+              },
             },
           },
         },
@@ -32,7 +37,7 @@ export default defineMonitoredTask({
 
     let granted = 0
     for (const site of sites) {
-      let periodStart = site.articleCreditWallet?.grants[0]?.periodEnd
+      let periodStart = site.directBillingAccount?.wallet?.grants[0]?.periodEnd
       const amount = articleCreditsForPlan(site.plan)
       if (!periodStart || amount <= 0) continue
       if (site.plan === 'CUSTOM' && site.paidTeamSeats === null) continue

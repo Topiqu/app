@@ -1,6 +1,7 @@
 <template>
   <dl
-    class="grid divide-y divide-default overflow-hidden rounded-(--topiqu-surface-radius) border border-default bg-default sm:grid-cols-3 sm:divide-x sm:divide-y-0"
+    class="grid divide-y divide-default overflow-hidden rounded-(--topiqu-surface-radius) border border-default bg-default sm:divide-x sm:divide-y-0"
+    :class="items.length === 2 ? 'sm:grid-cols-2' : 'sm:grid-cols-3'"
   >
     <div
       v-for="item in items"

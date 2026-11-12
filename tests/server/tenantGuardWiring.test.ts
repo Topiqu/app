@@ -5,7 +5,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs'
 const API = resolve(process.cwd(), 'server/api')
 // `createArticle` / `updateArticle` check the tenant scope inside; `requireApiKey` scopes an API request to its key's tenant.
 const GUARD =
-  /createArticle|updateArticle|requireApiKey|requireTenantScope|requireTenantMember|requireArticleAccess|requireArticleBatchAccess|hasTenantScope|requireDomainAccess|requireShopifyAccess|requireWebhookAccess|requireKnowledgeAccess|requirePublicationDraft|resolveAiUser|createIntegrationTicket|requireIntegrationActor/
+  /createArticle|updateArticle|requireApiKey|requireTenantScope|requireTenantMember|requireArticleAccess|requireArticleBatchAccess|hasTenantScope|requireDomainAccess|requireShopifyAccess|requireWebhookAccess|requireKnowledgeAccess|requirePublicationDraft|resolveAiUser|createIntegrationTicket|requireIntegrationActor|requireAgencyMember/
 
 // Routes that write without a tenant scope, each for a reason that is not "nobody checked".
 const exempt: Record<string, string> = {
@@ -48,6 +48,7 @@ const exempt: Record<string, string> = {
   'emojis/reaction.post.ts': 'reader action',
   'tenant/active.post.ts': 'switches between the caller’s own memberships',
   'tenant/index.post.ts': 'creates a tenant owned by the caller',
+  'agency/index.post.ts': 'creates an agency owned by the caller',
   'invitations/[token].post.ts': 'invitation token is the credential',
   'onboarding/checkout.post.ts': 'signup before a tenant exists',
   'onboarding/send-code.post.ts': 'signup before a tenant exists',

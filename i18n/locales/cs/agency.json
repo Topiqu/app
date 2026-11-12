@@ -1,0 +1,187 @@
+{
+  "agency": {
+    "navigation": "Agentura",
+    "title": "Agentura",
+    "loadFailed": "Agenturu se nepodařilo načíst.",
+    "status": {
+      "INACTIVE": "Neaktivní",
+      "ACTIVE": "Aktivní",
+      "PAST_DUE": "Platba po splatnosti",
+      "CANCELED": "Zrušeno"
+    },
+    "billingNotice": {
+      "title": "Platí vaše agentura",
+      "description": "Tento blog je součástí agenturního předplatného. Kredity i AI rozpočet čerpá ze sdíleného balíku agentury.",
+      "manage": "Otevřít agenturu"
+    },
+    "create": {
+      "title": "Založit agenturní účet",
+      "description": "Jedno předplatné pro všechny blogy vašich klientů. Každý blog může mít tarif Pro nebo Premium a sdílet kredity na články s ostatními, nebo zůstat zdarma.",
+      "name": "Název agentury",
+      "submit": "Založit agenturu",
+      "created": "Agentura je založena.",
+      "eyebrow": "Pro agentury",
+      "headline": "Všechny blogy klientů z jednoho balíku kreditů",
+      "benefits": [
+        {
+          "title": "Společné kredity",
+          "text": "Všechny blogy čerpají z jednoho balíku. Každému můžete nastavit měsíční limit."
+        },
+        {
+          "title": "Jedna faktura",
+          "text": "Měsíčně v USD, k tomu přehled spotřeby po blozích pro fakturaci klientům."
+        },
+        {
+          "title": "Jeden tým na všech blozích",
+          "text": "Kolegy pozvete jednou a mohou pracovat na všech blozích agentury."
+        },
+        {
+          "title": "Nic nepropadne",
+          "text": "Nevyčerpané kredity se převádějí, nejvýše do dvojnásobku měsíčního objemu."
+        }
+      ],
+      "calculator": "Spočítejte si cenu",
+      "footnote": "Ceny jsou bez DPH a účtují se měsíčně. Předplatné můžete kdykoli zrušit ve fakturaci."
+    },
+    "plan": {
+      "title": "Předplatné",
+      "summary": "Blogy: {blogs}, kredity: {units} měsíčně, cena {price}.",
+      "inactive": "Předplatné není aktivní. Zvolte, kolik blogů a kreditů potřebujete.",
+      "pastDue": "Poslední platba se nezdařila. Aktualizujte platební metodu ve fakturaci, aby vaše blogy zůstaly aktivní.",
+      "blogs": "Blogy",
+      "blocks": "Balíčky kreditů",
+      "taxExclusive": "bez DPH",
+      "portal": "Fakturace a faktury",
+      "save": "Uložit změny",
+      "subscribe": "Pokračovat k platbě",
+      "increaseNote": "Rozdíl za zbytek období se strhne hned a kredity navíc přibydou okamžitě.",
+      "decreaseNote": "Nižší počty platí od další faktury. Za běžící období se nic nevrací.",
+      "ownerOnly": "Předplatné mohou měnit jen vlastníci agentury.",
+      "saved": "Předplatné je upravené.",
+      "pendingPayment": "Změnu dokončíte zaplacením otevřené faktury.",
+      "blogHint": "{price} za blog",
+      "blockHint": "{units} kreditů za {price}",
+      "minimum": "Minimum: blogy {blogs}, balíčky kreditů {blocks}.",
+      "current": "Nyní {price} měsíčně",
+      "premium": "Příplatky Premium",
+      "premiumHint": "+{price} za blog s funkcemi Premium",
+      "summaryPremium": "Blogy: {blogs} (Premium: {premium}), kredity: {units} měsíčně, cena {price}."
+    },
+    "blogs": {
+      "title": "Blogy",
+      "slots": "Využito {used} z {total} míst pro blogy",
+      "report": "Přehled spotřeby (CSV)",
+      "empty": "Zatím žádné blogy. Založte nový, nebo přidejte blog, který vlastníte.",
+      "limitFor": "Měsíční limit kreditů pro {blog}",
+      "limitLabel": "Měsíční limit kreditů",
+      "limitHelp": "Po dosažení limitu blog přestane generovat. Sdílený balík zůstane k dispozici ostatním blogům.",
+      "removeLimit": "Bez limitu",
+      "saveLimit": "Uložit",
+      "detach": "Odebrat z agentury",
+      "detachTitle": "Odebrat {blog} z agentury?",
+      "detachText": "Blog přejde na tarif Zdarma a váš agenturní tým k němu ztratí přístup. Články zůstanou.",
+      "attachLabel": "Přidat blog",
+      "attachHelp": "Zobrazují se blogy, které vlastníte.",
+      "noFreeSlot": "Všechna místa pro blogy jsou obsazená. Přidejte blog na tarifu Zdarma, nebo v předplatném navyšte počet blogů.",
+      "attachPlaceholder": "Vyberte blog",
+      "attach": "Přidat",
+      "attached": "Blog je přidaný do agentury.",
+      "limitSaved": "Limit je uložený.",
+      "detached": "Blog je odebraný z agentury.",
+      "blocked": {
+        "SHOPIFY_BILLING": "{blog} se platí přes Shopify a do agentury ho přidat nelze.",
+        "OWN_SUBSCRIPTION": "{blog} má vlastní předplatné. Nejdřív ho zrušte ve fakturaci blogu."
+      },
+      "actionsFor": "Akce pro {blog}",
+      "setLimit": "Nastavit měsíční limit",
+      "openSite": "Otevřít web",
+      "ofLimit": "z limitu {limit}",
+      "ofAgency": "{share} % agentury",
+      "period": "Kredity a vydané články v tomto období",
+      "credits": "kredit | kredity | kreditů",
+      "articles": "{count} článek | {count} články | {count} článků",
+      "plan": "Tarif",
+      "planSaved": "Tarif změněn.",
+      "noSlot": "Žádné volné místo pro blog. Přidejte ho v předplatném.",
+      "noPremiumSlot": "Žádný volný příplatek Premium. Přidejte ho v předplatném.",
+      "changePlan": "Změnit tarif",
+      "toFreeTitle": "Přepnout {blog} na tarif Zdarma?",
+      "toFreeText": "AI, plánované články i vlastní doména se vypnou a blog přejde na adresu Topiqu. Obsah i přístup týmu zůstanou. Po návratu na placený tarif doménu znovu připojte a zapněte plánování.",
+      "toProTitle": "Přepnout {blog} na tarif Pro?",
+      "toProText": "Funkce Premium se vypnou, včetně SEO autopilota a AI viditelnosti. Autopilota bude po návratu na Premium potřeba znovu zapnout.",
+      "create": "Nový blog",
+      "createTitle": "Blog připojíme k agentuře na tarifu {plan}",
+      "createText": "Účtuje se přes agenturu, takže nepotřebuje vlastní tarif ani kartu. Tarif můžete změnit v seznamu blogů.",
+      "createAttachFailed": "Blog je vytvořený, ale k agentuře se nepřipojil. Přidejte ho níže.",
+      "emptyInactive": "Až bude předplatné aktivní, založíte tu blogy nebo přidáte ty, které vlastníte."
+    },
+    "members": {
+      "title": "Tým agentury",
+      "description": "Členové mají přístup ke všem blogům agentury. Vlastníci navíc spravují fakturaci, blogy a lidi.",
+      "you": "(vy)",
+      "roles": {
+        "OWNER": "Vlastník",
+        "MEMBER": "Člen"
+      },
+      "removeFor": "Odebrat {member}",
+      "remove": "Odebrat",
+      "email": "E-mail",
+      "emailHelp": "Člověk musí mít účet Topiqu s ověřeným e-mailem.",
+      "role": "Role",
+      "add": "Přidat",
+      "added": "Člen je přidaný.",
+      "removed": "Člen je odebraný.",
+      "removeTitle": "Odebrat {member}?",
+      "removeText": "Okamžitě ztratí přístup ke všem blogům agentury."
+    },
+    "errors": {
+      "generic": "To se nepovedlo. Zkuste to prosím znovu.",
+      "RATE_LIMITED": "Příliš mnoho pokusů. Zkuste to prosím později.",
+      "ALREADY_IN_AGENCY": "Tento účet už patří do agentury.",
+      "INVALID_QUANTITIES": "Zvolte počet v nabízeném rozsahu.",
+      "ALREADY_SUBSCRIBED": "Agentura už předplatné má.",
+      "SLOTS_BELOW_BLOGS": "Míst nemůže být méně než blogů na tarifu Pro nebo Premium.",
+      "NOT_SUBSCRIBED": "Agentura nejdřív potřebuje aktivní předplatné.",
+      "PENDING_PAYMENT": "Předchozí změna stále čeká na zaplacení.",
+      "BILLING_CHANGE_PENDING": "Právě probíhá jiná změna fakturace. Zkuste to prosím za chvíli.",
+      "ALREADY_ATTACHED": "Tento blog už patří do agentury.",
+      "SHOPIFY_BILLING": "Blogy placené přes Shopify do agentury přidat nelze.",
+      "OWN_SUBSCRIPTION": "Nejdřív zrušte vlastní předplatné blogu.",
+      "NO_FREE_SLOT": "Všechna místa pro blogy jsou obsazená.",
+      "NO_ACCOUNT": "Pro tuto adresu neexistuje účet Topiqu s ověřeným e-mailem.",
+      "NO_FREE_PREMIUM_SLOT": "Všechny příplatky Premium jsou obsazené."
+    },
+    "paidThrough": "Zaplaceno do {date}",
+    "price": {
+      "blogs": "Blogy × {count}",
+      "blocks": "Balíčky kreditů × {count} ({units} kreditů)",
+      "total": "Celkem měsíčně",
+      "change": "Změna oproti současnému tarifu",
+      "premium": "Příplatek Premium × {count}"
+    },
+    "overview": {
+      "label": "Přehled agentury",
+      "credits": "Dostupné kredity",
+      "creditsNote": "V tomto období využito {used} z {monthly}",
+      "ai": "Zbývající AI rozpočet",
+      "aiNote": "Překlady, úpravy a SEO průzkum všech blogů",
+      "slots": "Místa pro blogy",
+      "slotsNote": "Volná místa: {free}",
+      "slotsPremiumNote": "Volná místa: {free} · Premium: {used} z {total}"
+    },
+    "plans": {
+      "BASIC": "Zdarma",
+      "PRO": "Pro",
+      "PREMIUM": "Premium"
+    },
+    "planHints": {
+      "BASIC": "Bez AI, kreditů a vlastní domény. Obsah i přístup týmu zůstávají.",
+      "PRO": "Zabere místo pro blog.",
+      "PREMIUM": "Zabere místo pro blog a příplatek Premium: SEO autopilot, AI viditelnost, pět jazyků překladu."
+    },
+    "entry": {
+      "prompt": "Spravujete blogy pro klienty?",
+      "action": "Založte agenturu"
+    }
+  }
+}

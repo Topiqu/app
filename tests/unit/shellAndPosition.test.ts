@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
-import { canRenderDashboardShell, resolvePageShell } from '../../app/utils/pageShell'
 import { clampDevConsolePosition, readDevConsolePosition } from '../../app/utils/devConsolePosition'
+import {
+  canOpenAgencyWithoutBlog,
+  canRenderDashboardShell,
+  isPlatformHost,
+  resolvePageShell,
+} from '../../app/utils/pageShell'
 
 describe('application shell contract', () => {
   it.each([
@@ -21,6 +26,18 @@ describe('application shell contract', () => {
     [undefined, false],
   ] as const)('renders the dashboard for %s: %s', (role, expected) => {
     expect(canRenderDashboardShell(role, { platformHost: true })).toBe(expected)
+  })
+
+  it('opens the agency console without a blog only on the platform host', () => {
+    expect(isPlatformHost('app.topiqu.com', 'topiqu.com')).toBe(true)
+    expect(isPlatformHost('localhost', 'topiqu.com')).toBe(true)
+    expect(isPlatformHost('kavarna.topiqu.com', 'topiqu.com')).toBe(false)
+    expect(canOpenAgencyWithoutBlog('reader', true)).toBe(true)
+    expect(canOpenAgencyWithoutBlog('reader', false)).toBe(false)
+    // Blog admins and everyone else keep the admin middleware's checks.
+    expect(canOpenAgencyWithoutBlog('admin', true)).toBe(false)
+    expect(canOpenAgencyWithoutBlog('ai', true)).toBe(false)
+    expect(canOpenAgencyWithoutBlog(undefined, true)).toBe(false)
   })
 
   it('lets auth and invitation routes explicitly suppress the role shell', () => {

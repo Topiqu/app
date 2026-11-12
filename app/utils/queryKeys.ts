@@ -52,4 +52,7 @@ export const queryKeys = {
   backlinks: {
     list: ['backlinks'] as const,
   },
+  agency: {
+    overview: ['agency'] as const,
+  },
 } as const

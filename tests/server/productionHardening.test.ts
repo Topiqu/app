@@ -49,6 +49,10 @@ afterEach(() => {
 const setup = () => {
   vi.stubGlobal('defineEventHandler', (handler: unknown) => handler)
   vi.stubGlobal('createError', createError)
+  vi.stubGlobal(
+    'handleAgencyStripeEvent',
+    vi.fn(async () => false),
+  )
   vi.stubGlobal('useServerI18n', async () => ({ translate: (key: string) => key }))
 }
 

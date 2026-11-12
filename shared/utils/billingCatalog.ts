@@ -25,7 +25,7 @@ export const isInternalAiAllowance = (kind: string) => (INTERNAL_AI_ALLOWANCE_KI
 
 // AI provider cost may reach half of the net plan price (micro-USD per cent of invoice).
 export const AI_BUDGET_MICROS_PER_CENT = 5000
-// AI funding minted per carried article unit, above the $0.194 STANDARD worst case.
+// Article-only rollover funding; $0.194 per STANDARD unit is a planning estimate, not a guaranteed maximum.
 export const ARTICLE_UNIT_FUNDING_MICROS = 250_000
 
 export const AI_ALLOWANCES = {

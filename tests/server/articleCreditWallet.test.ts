@@ -33,7 +33,11 @@ const makeTx = (granted = 0) => ({
 })
 
 describe('plan article grants', () => {
-  beforeEach(() => vi.stubGlobal('createError', createError))
+  beforeEach(() => {
+    vi.stubGlobal('createError', createError)
+    vi.stubGlobal('lockBlog', vi.fn())
+    vi.stubGlobal('lockBillingAccount', vi.fn())
+  })
   afterEach(() => vi.unstubAllGlobals())
 
   it.each([
@@ -76,6 +80,7 @@ describe('plan article grants', () => {
   ])('keeps a replayed %s grant from the previous policy unchanged', async (plan, amount) => {
     const tx = makeTx(Number(amount))
     const previous = {
+      accountId: 'site1',
       clientSiteId: 'site1',
       source: 'PLAN',
       amount,
@@ -100,9 +105,9 @@ describe('plan article grants', () => {
   })
 
   it.each([
-    { clientSiteId: 'other-site', source: 'PLAN' },
-    { clientSiteId: 'site1', source: 'PURCHASE' },
-  ])('rejects a reused key belonging to $clientSiteId / $source', async (previous) => {
+    { accountId: 'other-site', clientSiteId: 'other-site', source: 'PLAN' },
+    { accountId: 'site1', clientSiteId: 'site1', source: 'PURCHASE' },
+  ])('rejects a reused key belonging to $accountId / $source', async (previous) => {
     const tx = makeTx()
     tx.articleCreditGrant.findUnique.mockResolvedValue(previous)
     await expect(grantPlanArticleCredits(tx as unknown as DatabaseTransaction, input)).rejects.toMatchObject({

@@ -10,12 +10,18 @@
       <div class="space-y-6">
         <div class="space-y-3">
           <div class="flex items-center justify-between gap-3 text-xs text-muted">
-            <span>{{ $t('common.tenant.stepProgress', { current: step + 1, total: steps.length }) }}</span>
+            <span>{{
+              $t('common.tenant.stepProgress', { current: step - firstStep + 1, total: visibleSteps.length })
+            }}</span>
             <span class="font-medium text-highlighted">{{ steps[step]?.label }}</span>
           </div>
-          <UProgress :modelValue="((step + 1) / steps.length) * 100" size="sm" />
-          <ol class="grid grid-cols-4 gap-1 sm:gap-2" :aria-label="$t('common.tenant.stepsLabel')">
-            <li v-for="(item, index) in steps" :key="item.id" class="min-w-0">
+          <UProgress :modelValue="((step - firstStep + 1) / visibleSteps.length) * 100" size="sm" />
+          <ol
+            class="grid gap-1 sm:gap-2"
+            :class="firstStep ? 'grid-cols-3' : 'grid-cols-4'"
+            :aria-label="$t('common.tenant.stepsLabel')"
+          >
+            <li v-for="{ id, label, index } in visibleSteps" :key="id" class="min-w-0">
               <UButton
                 type="button"
                 color="neutral"
@@ -35,9 +41,9 @@
                   "
                 >
                   <UIcon v-if="index !== step && isStepComplete(index)" name="mdi:check" size="12" />
-                  <template v-else>{{ index + 1 }}</template>
+                  <template v-else>{{ index - firstStep + 1 }}</template>
                 </span>
-                <span class="truncate">{{ item.label }}</span>
+                <span class="truncate">{{ label }}</span>
               </UButton>
             </li>
           </ol>
@@ -306,6 +312,15 @@
           </dl>
 
           <UAlert
+            v-if="agencyPlan"
+            color="neutral"
+            variant="soft"
+            icon="mdi:domain"
+            :title="$t('agency.blogs.createTitle', { plan: $t(`agency.plans.${agencyPlan}`) })"
+            :description="$t('agency.blogs.createText')"
+          />
+          <UAlert
+            v-else
             color="neutral"
             variant="soft"
             :icon="form.plan === 'BASIC' ? 'mdi:information-outline' : 'mdi:lock-outline'"
@@ -320,7 +335,7 @@
 
     <template #footer>
       <div class="flex w-full items-center justify-between gap-2">
-        <UButton v-if="step === 0" color="neutral" variant="soft" :disabled="creating" @click="open = false">
+        <UButton v-if="step === firstStep" color="neutral" variant="soft" :disabled="creating" @click="open = false">
           {{ $t('common.close') }}
         </UButton>
         <UButton v-else color="neutral" variant="soft" icon="mdi:arrow-left" :disabled="creating" @click="step--">
@@ -350,11 +365,16 @@
 </template>
 
 <script setup lang="ts">
+import type { AgencyBlogPlan } from '~~/shared/utils/agencyPlan'
+
 type Availability = 'idle' | 'checking' | 'available' | 'unavailable'
 type DomainReason = 'empty' | 'tooShort' | 'invalid' | 'reserved' | 'taken'
 type SelectedPlan = 'BASIC' | SubscribablePlan
 
 const open = defineModel<boolean>({ default: false })
+/** An agency's new client blog: the agency pays, so there is no plan step and it joins on this plan. */
+const { agencyPlan } = defineProps<{ agencyPlan?: AgencyBlogPlan }>()
+const firstStep = agencyPlan ? 1 : 0
 const { locale } = useI18n()
 const { getSession } = useAuth()
 const toast = useToast()
@@ -362,8 +382,8 @@ const config = useRuntimeConfig()
 const baseDomain = String(config.public.baseDomain || 'topiqu.com')
 const themes = ThemeSchema.options
 const billingIntervals: BillingInterval[] = ['month', 'year']
-const step = shallowRef(0)
-const furthestStep = shallowRef(0)
+const step = shallowRef(firstStep)
+const furthestStep = shallowRef(firstStep)
 const form = reactive({
   name: '',
   subdomain: '',
@@ -385,6 +405,7 @@ const steps = computed(() => [
   { id: 'details', label: $t('common.tenant.steps.details') },
   { id: 'review', label: $t('common.tenant.steps.review') },
 ])
+const visibleSteps = computed(() => steps.value.map((item, index) => ({ ...item, index })).slice(firstStep))
 
 const languageOptions = computed(() =>
   contentLanguages.map((language) => ({
@@ -487,7 +508,11 @@ const summaryRows = computed(() => [
     icon: 'mdi:palette-outline',
     swatch: themeColors[form.theme],
   },
-  { label: $t('common.tenant.steps.plan'), value: form.plan, icon: 'mdi:crown-outline' },
+  {
+    label: $t('common.tenant.steps.plan'),
+    value: agencyPlan ? $t(`agency.plans.${agencyPlan}`) : form.plan,
+    icon: 'mdi:crown-outline',
+  },
 ])
 
 const slugify = (value: string) =>
@@ -556,8 +581,8 @@ watch(open, (value) => {
     refreshPlanPricing()
     return
   }
-  step.value = 0
-  furthestStep.value = 0
+  step.value = firstStep
+  furthestStep.value = firstStep
   form.name = ''
   form.subdomain = ''
   form.customDomain = ''
@@ -609,7 +634,7 @@ const createTenant = async () => {
   creating.value = true
   let created = false
   try {
-    await $fetch<unknown, '/api/tenant'>('/api/tenant', {
+    const site = await $fetch<{ id: string }, '/api/tenant'>('/api/tenant', {
       method: 'POST',
       body: {
         name: form.name,
@@ -624,6 +649,14 @@ const createTenant = async () => {
     created = true
     toast.add({ color: 'success', title: $t('common.tenant.created'), description: form.name })
     await getSession()
+    if (agencyPlan) {
+      await $fetch<unknown, '/api/agency/blogs'>('/api/agency/blogs', {
+        method: 'POST',
+        body: { clientSiteId: site.id, plan: agencyPlan },
+      }).catch(() => toast.add({ color: 'warning', title: $t('agency.blogs.createAttachFailed') }))
+      window.location.reload()
+      return
+    }
 
     if (form.plan !== 'BASIC') {
       const { url } = await $fetch<{ url: string | null }, '/api/stripe/subscribe'>('/api/stripe/subscribe', {

@@ -41,6 +41,10 @@ describe('wallet checkout webhook handler', () => {
     vi.stubGlobal('useStripe', () => stripe)
     vi.stubGlobal('createError', createError)
     vi.stubGlobal('creditArticleCredits', credit)
+    vi.stubGlobal(
+      'handleAgencyStripeEvent',
+      vi.fn(async () => false),
+    )
   })
   afterEach(() => {
     vi.unstubAllGlobals()

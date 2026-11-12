@@ -7,6 +7,12 @@ export default defineNuxtRouteMiddleware((to) => {
   if (typeof to.query.invitation === 'string')
     return navigateTo(localePath({ name: 'invitation-token', params: { token: to.query.invitation } }))
 
+  const intent = agencyIntentFromQuery(to.query)
+  if (intent) {
+    useAgencyIntent().value = intent
+    return navigateTo(localePath({ name: 'admin-agency' }))
+  }
+
   if (useRequestURL().hostname.replace(/^www\./, '') === 'app.topiqu.com')
     return navigateTo(localePath({ name: 'start' }))
 

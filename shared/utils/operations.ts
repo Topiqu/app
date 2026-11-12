@@ -15,6 +15,7 @@ export const monitoredTaskIntervals = {
   'content-actions': 5,
   'gam-sync': 1440,
   'grant-annual-article-credits': 1440,
+  'agency-sync': 1440,
   'media-gc': 1440,
   'knowledge-refresh': 60,
   'shopify-billing': 60,

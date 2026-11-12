@@ -59,12 +59,15 @@ const siteLanguages = computed(() =>
 const isForeignAlternate = (hreflang: unknown) =>
   typeof hreflang === 'string' && hreflang !== 'x-default' && !siteLanguages.value?.has(hreflang.split('-')[0]!)
 const i18nLinks = computed(() =>
-  (i18nHead.value.link ?? [])
-    .filter((link) => !(isArticleRoute.value && link.rel === 'alternate'))
-    .filter((link) => !(siteLanguages.value && link.rel === 'alternate' && isForeignAlternate(link.hreflang)))
-    .map((link) =>
-      typeof link.href === 'string' ? { ...link, href: toAbsoluteUrl(link.href, canonicalOrigin) } : link,
-    ),
+  publicationSeoLinks(
+    liveClientSite.value,
+    (i18nHead.value.link ?? [])
+      .filter((link) => !(isArticleRoute.value && link.rel === 'alternate'))
+      .filter((link) => !(siteLanguages.value && link.rel === 'alternate' && isForeignAlternate(link.hreflang)))
+      .map((link) =>
+        typeof link.href === 'string' ? { ...link, href: toAbsoluteUrl(link.href, canonicalOrigin) } : link,
+      ),
+  ),
 )
 
 onMounted(() => {

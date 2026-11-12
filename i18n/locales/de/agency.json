@@ -1,0 +1,187 @@
+{
+  "agency": {
+    "navigation": "Agentur",
+    "title": "Agentur",
+    "loadFailed": "Die Agentur konnte nicht geladen werden.",
+    "status": {
+      "INACTIVE": "Inaktiv",
+      "ACTIVE": "Aktiv",
+      "PAST_DUE": "Zahlung überfällig",
+      "CANCELED": "Gekündigt"
+    },
+    "billingNotice": {
+      "title": "Abrechnung über Ihre Agentur",
+      "description": "Dieser Blog gehört zu einem Agentur-Abonnement. Credits und KI-Budget stammen aus dem gemeinsamen Kontingent der Agentur.",
+      "manage": "Agentur öffnen"
+    },
+    "create": {
+      "title": "Agenturkonto anlegen",
+      "description": "Ein Abonnement für alle Blogs Ihrer Kunden. Jeder Blog läuft mit Pro oder Premium und teilt die Artikel-Credits mit den anderen oder bleibt kostenlos.",
+      "name": "Name der Agentur",
+      "submit": "Agentur anlegen",
+      "created": "Agentur angelegt.",
+      "eyebrow": "Für Agenturen",
+      "headline": "Alle Kundenblogs aus einem Credit-Kontingent",
+      "benefits": [
+        {
+          "title": "Gemeinsame Credits",
+          "text": "Alle Blogs nutzen ein Kontingent. Für jeden Blog können Sie ein Monatslimit festlegen."
+        },
+        {
+          "title": "Eine Rechnung",
+          "text": "Monatlich in USD, dazu ein Verbrauchsbericht pro Blog für die Abrechnung mit Ihren Kunden."
+        },
+        {
+          "title": "Ein Team für alle Blogs",
+          "text": "Laden Sie Ihr Team einmal ein, dann arbeitet es an allen Agentur-Blogs."
+        },
+        {
+          "title": "Nichts verfällt",
+          "text": "Nicht genutzte Credits werden übertragen, bis zum Doppelten der Monatsmenge."
+        }
+      ],
+      "calculator": "Preis berechnen",
+      "footnote": "Preise zzgl. MwSt., monatliche Abrechnung. Sie können das Abonnement jederzeit in der Abrechnung kündigen."
+    },
+    "plan": {
+      "title": "Abonnement",
+      "summary": "{blogs} Blogs und {units} Credits pro Monat für {price}.",
+      "inactive": "Kein aktives Abonnement. Wählen Sie, wie viele Blogs und Credits Sie brauchen.",
+      "pastDue": "Die letzte Zahlung ist fehlgeschlagen. Aktualisieren Sie Ihre Zahlungsmethode in der Abrechnung, damit Ihre Blogs aktiv bleiben.",
+      "blogs": "Blogs",
+      "blocks": "Credit-Pakete",
+      "taxExclusive": "zzgl. MwSt.",
+      "portal": "Abrechnung und Rechnungen",
+      "save": "Änderungen speichern",
+      "subscribe": "Weiter zur Zahlung",
+      "increaseNote": "Die Differenz für den Rest des Zeitraums wird sofort berechnet, die zusätzlichen Credits stehen sofort bereit.",
+      "decreaseNote": "Niedrigere Mengen gelten ab der nächsten Rechnung. Der laufende Zeitraum wird nicht erstattet.",
+      "ownerOnly": "Nur Inhaber der Agentur können das Abonnement ändern.",
+      "saved": "Abonnement aktualisiert.",
+      "pendingPayment": "Bezahlen Sie die offene Rechnung, um die Änderung abzuschließen.",
+      "blogHint": "{price} pro Blog",
+      "blockHint": "{units} Credits für {price}",
+      "minimum": "Mindestens {blogs} Blogs und {blocks} Credit-Pakete.",
+      "current": "Derzeit {price} pro Monat",
+      "premium": "Premium-Add-ons",
+      "premiumHint": "+{price} pro Blog mit Premium-Funktionen",
+      "summaryPremium": "{blogs} Blogs ({premium} Premium) und {units} Credits pro Monat für {price}."
+    },
+    "blogs": {
+      "title": "Blogs",
+      "slots": "{used} von {total} Blog-Plätzen belegt",
+      "report": "Verbrauchsbericht (CSV)",
+      "empty": "Noch keine Blogs. Erstellen Sie einen neuen oder fügen Sie einen Blog hinzu, der Ihnen gehört.",
+      "limitFor": "Monatliches Credit-Limit für {blog}",
+      "limitLabel": "Monatliches Credit-Limit",
+      "limitHelp": "Sobald das Limit erreicht ist, erstellt der Blog nichts mehr. Das gemeinsame Kontingent bleibt den anderen Blogs erhalten.",
+      "removeLimit": "Kein Limit",
+      "saveLimit": "Speichern",
+      "detach": "Aus der Agentur entfernen",
+      "detachTitle": "{blog} aus der Agentur entfernen?",
+      "detachText": "Der Blog wechselt in den Tarif Kostenlos und Ihr Agenturteam verliert den Zugriff darauf. Die Artikel bleiben erhalten.",
+      "attachLabel": "Blog hinzufügen",
+      "attachHelp": "Hier erscheinen Blogs, die Ihnen gehören.",
+      "noFreeSlot": "Alle Blog-Plätze sind belegt. Fügen Sie den Blog mit Kostenlos hinzu oder erhöhen Sie die Anzahl der Blogs im Abonnement.",
+      "attachPlaceholder": "Blog auswählen",
+      "attach": "Hinzufügen",
+      "attached": "Blog zur Agentur hinzugefügt.",
+      "limitSaved": "Limit gespeichert.",
+      "detached": "Blog aus der Agentur entfernt.",
+      "blocked": {
+        "SHOPIFY_BILLING": "{blog} wird über Shopify abgerechnet und kann keiner Agentur beitreten.",
+        "OWN_SUBSCRIPTION": "{blog} hat ein eigenes Abonnement. Kündigen Sie es zuerst in der Abrechnung des Blogs."
+      },
+      "actionsFor": "Aktionen für {blog}",
+      "setLimit": "Monatslimit festlegen",
+      "openSite": "Website öffnen",
+      "ofLimit": "von {limit} Limit",
+      "ofAgency": "{share} % der Agentur",
+      "period": "Credits und veröffentlichte Artikel in diesem Zeitraum",
+      "credits": "Credit | Credits",
+      "articles": "{count} Artikel | {count} Artikel",
+      "plan": "Tarif",
+      "planSaved": "Tarif geändert.",
+      "noSlot": "Kein freier Blog-Platz. Fügen Sie einen im Abonnement hinzu.",
+      "noPremiumSlot": "Kein freies Premium-Add-on. Fügen Sie eines im Abonnement hinzu.",
+      "changePlan": "Tarif ändern",
+      "toFreeTitle": "{blog} auf Kostenlos umstellen?",
+      "toFreeText": "KI, geplante Artikel und die eigene Domain werden deaktiviert, und der Blog wechselt auf seine Topiqu-Adresse. Inhalte und Teamzugriff bleiben erhalten. Verbinden Sie nach einem Upgrade die Domain erneut und aktivieren Sie die Planung wieder.",
+      "toProTitle": "{blog} auf Pro umstellen?",
+      "toProText": "Die Premium-Funktionen werden deaktiviert, darunter SEO-Autopilot und KI-Sichtbarkeit. Den Autopiloten müssen Sie nach einem Upgrade erneut aktivieren.",
+      "create": "Neuer Blog",
+      "createTitle": "Der Blog kommt mit dem Tarif {plan} zur Agentur",
+      "createText": "Er wird über die Agentur abgerechnet und braucht daher keinen eigenen Tarif und keine Karte. Den Tarif können Sie in der Blogliste ändern.",
+      "createAttachFailed": "Der Blog wurde erstellt, konnte aber nicht zur Agentur hinzugefügt werden. Fügen Sie ihn unten hinzu.",
+      "emptyInactive": "Sobald das Abonnement aktiv ist, erstellen Sie hier Blogs oder fügen Ihre eigenen hinzu."
+    },
+    "members": {
+      "title": "Agenturteam",
+      "description": "Mitglieder haben Zugriff auf alle Agentur-Blogs. Inhaber verwalten zusätzlich Abrechnung, Blogs und Personen.",
+      "you": "(Sie)",
+      "roles": {
+        "OWNER": "Inhaber",
+        "MEMBER": "Mitglied"
+      },
+      "removeFor": "{member} entfernen",
+      "remove": "Entfernen",
+      "email": "E-Mail",
+      "emailHelp": "Die Person braucht ein Topiqu-Konto mit bestätigter E-Mail-Adresse.",
+      "role": "Rolle",
+      "add": "Hinzufügen",
+      "added": "Mitglied hinzugefügt.",
+      "removed": "Mitglied entfernt.",
+      "removeTitle": "{member} entfernen?",
+      "removeText": "Die Person verliert sofort den Zugriff auf alle Agentur-Blogs."
+    },
+    "errors": {
+      "generic": "Das hat nicht funktioniert. Bitte versuchen Sie es erneut.",
+      "RATE_LIMITED": "Zu viele Versuche. Bitte versuchen Sie es später erneut.",
+      "ALREADY_IN_AGENCY": "Dieses Konto gehört bereits zu einer Agentur.",
+      "INVALID_QUANTITIES": "Wählen Sie eine Menge im angebotenen Bereich.",
+      "ALREADY_SUBSCRIBED": "Die Agentur hat bereits ein Abonnement.",
+      "SLOTS_BELOW_BLOGS": "Es kann nicht weniger Plätze als Blogs mit Pro oder Premium geben.",
+      "NOT_SUBSCRIBED": "Die Agentur braucht zuerst ein aktives Abonnement.",
+      "PENDING_PAYMENT": "Eine frühere Änderung wartet noch auf die Zahlung.",
+      "BILLING_CHANGE_PENDING": "Gerade läuft eine andere Abrechnungsänderung. Bitte versuchen Sie es gleich noch einmal.",
+      "ALREADY_ATTACHED": "Dieser Blog gehört bereits zu einer Agentur.",
+      "SHOPIFY_BILLING": "Über Shopify abgerechnete Blogs können keiner Agentur beitreten.",
+      "OWN_SUBSCRIPTION": "Kündigen Sie zuerst das eigene Abonnement des Blogs.",
+      "NO_FREE_SLOT": "Alle Blog-Plätze sind belegt.",
+      "NO_ACCOUNT": "Für diese Adresse gibt es kein Topiqu-Konto mit bestätigter E-Mail-Adresse.",
+      "NO_FREE_PREMIUM_SLOT": "Alle Premium-Add-ons sind belegt."
+    },
+    "paidThrough": "Bezahlt bis {date}",
+    "price": {
+      "blogs": "Blogs × {count}",
+      "blocks": "Credit-Pakete × {count} ({units} Credits)",
+      "total": "Monatlich gesamt",
+      "change": "Änderung zum aktuellen Tarif",
+      "premium": "Premium-Add-on × {count}"
+    },
+    "overview": {
+      "label": "Agenturübersicht",
+      "credits": "Verfügbare Credits",
+      "creditsNote": "{used} von {monthly} in diesem Zeitraum genutzt",
+      "ai": "Verbleibendes KI-Budget",
+      "aiNote": "Übersetzungen, Überarbeitungen und SEO-Recherche aller Blogs",
+      "slots": "Blog-Plätze",
+      "slotsNote": "Freie Plätze: {free}",
+      "slotsPremiumNote": "Freie Plätze: {free} · Premium: {used} von {total}"
+    },
+    "plans": {
+      "BASIC": "Kostenlos",
+      "PRO": "Pro",
+      "PREMIUM": "Premium"
+    },
+    "planHints": {
+      "BASIC": "Ohne KI, Credits und eigene Domain. Inhalte und Teamzugriff bleiben erhalten.",
+      "PRO": "Belegt einen Blog-Platz.",
+      "PREMIUM": "Belegt einen Blog-Platz und ein Premium-Add-on: SEO-Autopilot, KI-Sichtbarkeit, fünf Übersetzungssprachen."
+    },
+    "entry": {
+      "prompt": "Sie betreuen Blogs für Kunden?",
+      "action": "Agentur einrichten"
+    }
+  }
+}

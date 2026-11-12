@@ -49,15 +49,12 @@ const skippedSites = async (pickedIds: string[]) => {
       nextReleaseAt: true,
       generationFrequency: true,
       articleQuality: true,
-      articleCreditWallet: {
-        select: {
-          reserved: true,
-          grants: {
-            where: { remaining: { gt: 0 }, OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
-            select: { remaining: true },
-          },
+      ...poolWalletSelect({
+        grants: {
+          where: { remaining: { gt: 0 }, OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
+          select: { remaining: true },
         },
-      },
+      }),
       features: { where: { isActive: true, feature: { code: 'ARTICLE_CRONS' } }, select: { id: true } },
     },
   })
@@ -69,12 +66,12 @@ const skippedSites = async (pickedIds: string[]) => {
     nextReleaseAt: site.nextReleaseAt?.toISOString() ?? null,
     generationFrequency: site.generationFrequency,
     creditsRequired: articleCreditCost(site.articleQuality),
-    articlesRemaining: site.articleCreditWallet?.grants.reduce((total, grant) => total + grant.remaining, 0) ?? 0,
+    articlesRemaining: poolOf(site)?.grants.reduce((total, grant) => total + grant.remaining, 0) ?? 0,
     reason: !site.features.length
       ? 'feature_inactive'
       : site.generationFrequency === 'NONE'
         ? 'frequency_disabled'
-        : (site.articleCreditWallet?.grants.reduce((total, grant) => total + grant.remaining, 0) ?? 0) <
+        : (poolOf(site)?.grants.reduce((total, grant) => total + grant.remaining, 0) ?? 0) <
             articleCreditCost(site.articleQuality)
           ? 'insufficient_articles'
           : 'not_due',
@@ -89,6 +86,7 @@ export type RequestedArticle = {
   generationId?: string
   batchItem?: {
     id: string
+    attempts: number
     creditKey: string
     keywordClusterId: string | null
     autoRelease: boolean
@@ -605,11 +603,21 @@ Respond ONLY in valid JSON (schema required).
               : false
 
             // In this transaction, so a worker that dies afterwards leaves proof the article exists.
-            if (batchItem)
-              await ctx.articleBatchItem.updateMany({
-                where: { id: batchItem.id },
+            if (batchItem) {
+              const { count } = await ctx.articleBatchItem.updateMany({
+                where: {
+                  id: batchItem.id,
+                  clientSiteId,
+                  status: 'RUNNING',
+                  attempts: batchItem.attempts,
+                  articleId: null,
+                  leaseUntil: { gt: new Date() },
+                },
                 data: { articleId: article.id },
               })
+              // Roll back the article too: a worker whose lease was replaced must never publish a second copy.
+              if (count !== 1) throw new Error('Article batch attempt no longer owns this item')
+            }
 
             await ctx.articleTag.createMany({
               data: generated.tags.map((tagId: string) => ({ articleId: article.id, tagId })),
@@ -901,15 +909,12 @@ const generationClientSelect = {
 
 const generationClientSelectAt = (now: Date) => ({
   ...generationClientSelect,
-  articleCreditWallet: {
-    select: {
-      reserved: true,
-      grants: {
-        where: { remaining: { gt: 0 }, OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
-        select: { remaining: true },
-      },
+  ...poolWalletSelect({
+    grants: {
+      where: { remaining: { gt: 0 }, OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
+      select: { remaining: true },
     },
-  },
+  }),
 })
 
 export const loadGenerationClient = (id: string, now = new Date()) =>
@@ -938,7 +943,7 @@ export default defineMonitoredTask({
     // Out of credits keeps its slot: the first run after a top-up generates for it.
     const funded = candidates.filter(
       (client) =>
-        (client.articleCreditWallet?.grants.reduce((total, grant) => total + grant.remaining, 0) ?? 0) >=
+        (poolOf(client)?.grants.reduce((total, grant) => total + grant.remaining, 0) ?? 0) >=
         articleCreditCost(client.articleQuality),
     )
     const due: { client: (typeof funded)[number]; slot: Date }[] = []

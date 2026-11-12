@@ -75,25 +75,23 @@ export function useArticleSeo(
 
   useHead({
     link: () =>
-      external.value
-        ? []
-        : [
-            { rel: 'canonical', href: canonical.value },
-            ...resolvedAlternates.value.map((alt) => ({
-              rel: 'alternate' as const,
-              hreflang: alt.hreflang,
-              href: alt.href,
-            })),
-            ...(resolvedAlternates.value.length
-              ? [
-                  {
-                    rel: 'alternate' as const,
-                    hreflang: 'x-default',
-                    href: resolvedAlternates.value[0]!.href,
-                  },
-                ]
-              : []),
-          ],
+      publicationSeoLinks(site.value, [
+        { rel: 'canonical', href: canonical.value },
+        ...resolvedAlternates.value.map((alt) => ({
+          rel: 'alternate' as const,
+          hreflang: alt.hreflang,
+          href: alt.href,
+        })),
+        ...(resolvedAlternates.value.length
+          ? [
+              {
+                rel: 'alternate' as const,
+                hreflang: 'x-default',
+                href: resolvedAlternates.value[0]!.href,
+              },
+            ]
+          : []),
+      ]),
   })
 
   if (!seoEnabled.value) return

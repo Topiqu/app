@@ -1,10 +1,12 @@
 import type Stripe from 'stripe'
 import type { AiAllowanceKind } from '~~/shared/utils/billingCatalog'
-import type { AiUsageReservation, ClientSite } from '~~/generated/zenstack/models'
+import type { AiUsageReservation, BillingAccount, ClientSite } from '~~/generated/zenstack/models'
 
 import { randomUUID } from 'node:crypto'
+import { hasAiPlan } from '~~/shared/utils/plans'
 import { ARTICLE_PACK_LIST } from '~~/shared/utils/articlePacks'
 import { nextArticleCreditMonth } from '~~/shared/utils/articleCredits'
+import { agencyAllowances, isAgencyLive } from '~~/shared/utils/agencyPlan'
 import {
   AI_ALLOWANCES,
   AI_ALLOWANCE_KINDS,
@@ -16,36 +18,21 @@ import {
 } from '~~/shared/utils/billingCatalog'
 
 type Allocation = { id: string; amount: number }[]
+type Terms = { start: Date; end: Date; trial: boolean; ceilings: Record<AiAllowanceKind, number> }
 // Funding that only an article operation allocating the matching article grant may spend.
 const ARTICLE_FUNDING_SOURCES = ['ARTICLE_PURCHASE', 'ARTICLE_ROLLOVER']
 const articleFundingKey = (articleGrantId: string) => `article-funding:${articleGrantId}`
-type AllowanceSite = Pick<
-  ClientSite,
-  | 'id'
-  | 'plan'
-  | 'createdAt'
-  | 'trialStartedAt'
-  | 'trialEndsAt'
-  | 'firstPaidAt'
-  | 'billingPlan'
-  | 'billingProvider'
-  | 'stripeSubscriptionId'
-  | 'paidTeamSeats'
-  | 'aiBudgetMonthlyMicros'
->
-
-const lockSite = async (tx: DatabaseTransaction, id: string) => {
-  const rows = await tx.$queryRaw<
-    { id: string }[]
-  >`SELECT id FROM "ClientSite" WHERE id = ${id} AND "deletedAt" IS NULL FOR UPDATE`
-  if (!rows.length) throw createError({ statusCode: 404, message: 'Blog not found' })
-  return tx.clientSite.findUniqueOrThrow({ where: { id } })
-}
+const costDebtField = (kind: string) =>
+  kind === 'BUDGET' ? 'aiBudgetDebtMicros' : kind === 'SEO' ? 'seoBudgetDebtMicros' : null
+// An agency's provider-cost overruns belong to its pool; a DIRECT account's stay on its blog.
+const debtOf = (site: ClientSite, account: BillingAccount, field: 'aiBudgetDebtMicros' | 'seoBudgetDebtMicros') =>
+  account.kind === 'AGENCY' ? account[field] : site[field]
 
 const grant = async (
   tx: DatabaseTransaction,
   data: {
-    clientSiteId: string
+    accountId: string
+    clientSiteId: string | null
     kind: AiAllowanceKind
     amount: number
     source: string
@@ -63,7 +50,7 @@ const grant = async (
     create: { ...data, remaining: data.amount, policyVersion: BILLING_POLICY_VERSION },
   })
   if (
-    stored.clientSiteId !== data.clientSiteId ||
+    stored.accountId !== data.accountId ||
     stored.kind !== data.kind ||
     stored.amount !== data.amount ||
     stored.source !== data.source
@@ -71,7 +58,7 @@ const grant = async (
     throw createError({ statusCode: 409, message: 'AI grant key already used' })
 }
 
-const fund = async (tx: DatabaseTransaction, site: AllowanceSite, now: Date, purchaseIds: string[] = []) => {
+const directTerms = async (tx: DatabaseTransaction, site: ClientSite, now: Date): Promise<Terms | null> => {
   if (!['PRO', 'PREMIUM', 'CUSTOM'].includes(site.plan)) return null
   const trial = Boolean(
     site.trialStartedAt && !site.firstPaidAt && site.billingPlan !== 'PERMANENT' && site.plan !== 'CUSTOM',
@@ -81,7 +68,7 @@ const fund = async (tx: DatabaseTransaction, site: AllowanceSite, now: Date, pur
   const latest = trial
     ? null
     : await tx.articleCreditGrant.findFirst({
-        where: { clientSiteId: site.id, source: 'PLAN', periodStart: { lte: now }, expiresAt: { gt: now } },
+        where: { accountId: site.id, source: 'PLAN', periodStart: { lte: now }, expiresAt: { gt: now } },
         orderBy: { periodStart: 'asc' },
         select: { periodStart: true, periodEnd: true },
       })
@@ -94,6 +81,53 @@ const fund = async (tx: DatabaseTransaction, site: AllowanceSite, now: Date, pur
     while (nextArticleCreditMonth(start) <= now) start = nextArticleCreditMonth(start)
   }
   const end = trial ? site.trialEndsAt! : (latest?.periodEnd ?? nextArticleCreditMonth(start))
+  const budget = trial
+    ? included.BUDGET
+    : (site.aiBudgetMonthlyMicros ?? Math.round(included.BUDGET * (site.billingPlan === 'ANNUAL' ? 0.8 : 1)))
+  return { start, end, trial, ceilings: { ...included, BUDGET: budget } }
+}
+
+/** An agency period exists only while its subscription is active and an invoice granted its units. */
+const agencyTerms = async (tx: DatabaseTransaction, account: BillingAccount, now: Date): Promise<Terms | null> => {
+  if (!isAgencyLive(account.status)) return null
+  const latest = await tx.articleCreditGrant.findFirst({
+    where: { accountId: account.id, source: 'PLAN', periodStart: { lte: now }, expiresAt: { gt: now } },
+    orderBy: { periodStart: 'asc' },
+    select: { periodStart: true, periodEnd: true },
+  })
+  if (!latest?.periodStart || !latest.periodEnd) return null
+  const included = agencyAllowances({
+    blogs: account.blogSlots,
+    premium: account.premiumSlots,
+    blocks: account.unitBlocks,
+  })
+  return {
+    start: latest.periodStart,
+    end: latest.periodEnd,
+    trial: false,
+    ceilings: { ...included, BUDGET: account.aiBudgetMonthlyMicros ?? included.BUDGET },
+  }
+}
+
+/** `account` is the one `site` spends from; a DIRECT account shares the blog's id. */
+const fund = async (
+  tx: DatabaseTransaction,
+  site: ClientSite,
+  account: BillingAccount,
+  now: Date,
+  purchaseIds: string[] = [],
+) => {
+  // A paused (BASIC) agency blog sits next to a funded pool it must not spend.
+  const terms =
+    account.kind === 'AGENCY'
+      ? hasAiPlan(site.plan)
+        ? await agencyTerms(tx, account, now)
+        : null
+      : await directTerms(tx, site, now)
+  if (!terms) return null
+  const { start, end, trial } = terms
+  const accountId = account.id
+  const owner = account.kind === 'AGENCY' ? null : site.id
   for (const kind of AI_ALLOWANCE_KINDS) {
     // An invoice funds this billing cycle explicitly, including discounts and prorations.
     // Annual continuation slots have no invoice and use the stored monthly base allocation.
@@ -101,42 +135,34 @@ const fund = async (tx: DatabaseTransaction, site: AllowanceSite, now: Date, pur
       kind === 'BUDGET' &&
       !trial &&
       (await tx.aiAllowanceGrant.count({
-        where: {
-          clientSiteId: site.id,
-          kind,
-          source: { in: ['PAID_BASE_BUDGET', 'PAID_BUDGET'] },
-          periodStart: start,
-        },
+        where: { accountId, kind, source: { in: ['PAID_BASE_BUDGET', 'PAID_BUDGET'] }, periodStart: start },
       }))
     )
       continue
-    const ceiling =
-      kind === 'BUDGET' && !trial
-        ? (site.aiBudgetMonthlyMicros ?? Math.round(included.BUDGET * (site.billingPlan === 'ANNUAL' ? 0.8 : 1)))
-        : included[kind]
+    const ceiling = terms.ceilings[kind]
     const existing = await tx.aiAllowanceGrant.aggregate({
-      where: { clientSiteId: site.id, kind, source: trial ? 'TRIAL' : 'PLAN', periodStart: start },
+      where: { accountId, kind, source: trial ? 'TRIAL' : 'PLAN', periodStart: start },
       _sum: { amount: true },
     })
-    const amount = Math.max(0, ceiling - (existing._sum.amount ?? 0))
     await grant(tx, {
-      clientSiteId: site.id,
+      accountId,
+      clientSiteId: owner,
       kind,
-      amount,
+      amount: Math.max(0, ceiling - (existing._sum.amount ?? 0)),
       source: trial ? 'TRIAL' : 'PLAN',
       periodStart: start,
       expiresAt: end,
-      idempotencyKey: `included:${BILLING_POLICY_VERSION}:${site.id}:${start.toISOString()}:${kind}:${ceiling}`,
+      idempotencyKey: `included:${BILLING_POLICY_VERSION}:${accountId}:${start.toISOString()}:${kind}:${ceiling}`,
     })
   }
   // Bought and carried articles retain separately funded capacity; this never consumes their balance.
   const articles = await tx.articleCreditGrant.findMany({
     where: {
-      clientSiteId: site.id,
+      accountId,
       source: { in: ['PURCHASE', 'ROLLOVER'] },
       OR: [{ remaining: { gt: 0 } }, { id: { in: purchaseIds } }],
     },
-    select: { id: true, amount: true, source: true },
+    select: { id: true, amount: true, source: true, clientSiteId: true },
   })
   // Funding minted under an earlier rate keeps its amount.
   const funded = await tx.aiAllowanceGrant.findMany({
@@ -148,7 +174,8 @@ const fund = async (tx: DatabaseTransaction, site: AllowanceSite, now: Date, pur
     const pack = ARTICLE_PACK_LIST.find((candidate) => candidate.articles === article.amount)
     const priceUsd = pack ? pack.priceUsd : article.amount * (22.49 / 25)
     await grant(tx, {
-      clientSiteId: site.id,
+      accountId,
+      clientSiteId: article.clientSiteId,
       kind: 'BUDGET',
       amount:
         article.source === 'ROLLOVER'
@@ -161,20 +188,26 @@ const fund = async (tx: DatabaseTransaction, site: AllowanceSite, now: Date, pur
   return { start, end, trial }
 }
 
-/** Stripe line amounts exclude tax; recurring discounts are applied separately. */
-export const invoiceBaseNetCents = (invoice: Stripe.Invoice, priceId?: string): number | null => {
+const linesNetCents = (invoice: Stripe.Invoice, matches: (priceId: string) => boolean): number | null => {
   if (invoice.currency !== 'usd' || invoice.lines.has_more) return null
   let total = 0
   let known = false
   for (const line of invoice.lines.data) {
     const rawPrice = line.pricing?.price_details?.price
     const id = typeof rawPrice === 'string' ? rawPrice : rawPrice?.id
-    if (!id || (priceId ? id !== priceId : !planFromPriceId(id)) || !Number.isSafeInteger(line.amount)) continue
+    if (!id || !matches(id) || !Number.isSafeInteger(line.amount)) continue
     known = true
     total += line.amount - (line.discount_amounts ?? []).reduce((sum, discount) => sum + discount.amount, 0)
   }
   return known ? total : null
 }
+
+/** Stripe line amounts exclude tax; recurring discounts are applied separately. */
+export const invoiceBaseNetCents = (invoice: Stripe.Invoice, priceId?: string): number | null =>
+  linesNetCents(invoice, (id) => (priceId ? id === priceId : !!planFromPriceId(id)))
+
+/** Agency blog and unit lines, net of discounts. */
+export const agencyInvoiceNetCents = (invoice: Stripe.Invoice): number | null => linesNetCents(invoice, isAgencyPriceId)
 
 /** Only verified paid plan lines fund AI. Seat revenue, taxes and language add-ons do not. */
 export const creditInvoiceAiBudget = async (
@@ -190,10 +223,12 @@ export const creditInvoiceAiBudget = async (
   },
 ) => {
   const { invoice, price, clientSiteId } = input
+  // A direct subscription funds the blog's own account.
+  const accountId = clientSiteId
   if (!invoice.id || invoice.currency !== 'usd') return
   const previous = await tx.aiAllowanceInvoice.findUnique({ where: { id: invoice.id } })
   if (previous) {
-    if (previous.clientSiteId !== clientSiteId) throw new Error('AI invoice tenant mismatch')
+    if (previous.accountId !== accountId) throw new Error('AI invoice tenant mismatch')
     return
   }
   const netCents = invoiceBaseNetCents(invoice)
@@ -205,7 +240,7 @@ export const creditInvoiceAiBudget = async (
   const currentCycle = fullPeriod
     ? null
     : await tx.articleCreditGrant.findFirst({
-        where: { clientSiteId, source: 'PLAN', periodStart: { lte: new Date() }, expiresAt: { gt: new Date() } },
+        where: { accountId, source: 'PLAN', periodStart: { lte: new Date() }, expiresAt: { gt: new Date() } },
         orderBy: { periodStart: 'asc' },
         select: { periodStart: true, periodEnd: true },
       })
@@ -214,7 +249,7 @@ export const creditInvoiceAiBudget = async (
   if (!start || !end) return
   const existing = await tx.aiAllowanceGrant.aggregate({
     where: {
-      clientSiteId,
+      accountId,
       kind: 'BUDGET',
       source: { in: fullPeriod ? ['PLAN', 'PAID_BASE_BUDGET'] : ['PLAN', 'PAID_BASE_BUDGET', 'PAID_BUDGET'] },
       periodStart: start,
@@ -249,6 +284,7 @@ export const creditInvoiceAiBudget = async (
       },
     })
   await grant(tx, {
+    accountId,
     clientSiteId,
     kind: 'BUDGET',
     source: fullPeriod ? 'PAID_BASE_BUDGET' : 'PAID_BUDGET',
@@ -258,7 +294,7 @@ export const creditInvoiceAiBudget = async (
     idempotencyKey: `ai-invoice:${invoice.id}`,
   })
   await tx.aiAllowanceInvoice.create({
-    data: { id: invoice.id, clientSiteId, grantedMicros: amount, policyVersion: BILLING_POLICY_VERSION },
+    data: { id: invoice.id, accountId, clientSiteId, grantedMicros: amount, policyVersion: BILLING_POLICY_VERSION },
   })
   if (amount > 0)
     await tx.articleTranslation.updateMany({
@@ -267,9 +303,79 @@ export const creditInvoiceAiBudget = async (
     })
 }
 
-const recover = async (tx: DatabaseTransaction, clientSiteId: string, now: Date) => {
+/** The agency's AI budget is half of what it paid for blogs and units, like a direct plan. */
+export const creditAgencyInvoiceAiBudget = async (
+  tx: DatabaseTransaction,
+  input: {
+    accountId: string
+    invoice: Stripe.Invoice
+    periodStart: Date
+    periodEnd: Date
+    /** Next cycle's net for blogs and units, after a quantity change; undefined on a full-period invoice. */
+    recurringBaseCents?: number | null
+  },
+) => {
+  const { invoice, accountId } = input
+  if (!invoice.id || invoice.currency !== 'usd') return
+  const previous = await tx.aiAllowanceInvoice.findUnique({ where: { id: invoice.id } })
+  if (previous) {
+    if (previous.accountId !== accountId) throw new Error('AI invoice account mismatch')
+    return
+  }
+  const netCents = agencyInvoiceNetCents(invoice)
+  if (netCents === null) return
+  const fullPeriod = invoice.billing_reason === 'subscription_create' || invoice.billing_reason === 'subscription_cycle'
+  const existing = await tx.aiAllowanceGrant.aggregate({
+    where: {
+      accountId,
+      kind: 'BUDGET',
+      source: { in: fullPeriod ? ['PLAN', 'PAID_BASE_BUDGET'] : ['PLAN', 'PAID_BASE_BUDGET', 'PAID_BUDGET'] },
+      periodStart: input.periodStart,
+    },
+    _sum: { amount: true },
+  })
+  const stored = await tx.billingAccount.findUniqueOrThrow({
+    where: { id: accountId },
+    select: { aiBudgetMonthlyMicros: true },
+  })
+  const base = fullPeriod ? netCents : input.recurringBaseCents
+  const monthly =
+    base != null ? Math.max(0, Math.floor(base * AI_BUDGET_MICROS_PER_CENT)) : (stored.aiBudgetMonthlyMicros ?? 0)
+  const room = Math.max(0, monthly - (existing._sum.amount ?? 0))
+  const amount = fullPeriod ? room : Math.min(Math.max(0, Math.floor(netCents * AI_BUDGET_MICROS_PER_CENT)), room)
+  // A late invoice for an old cycle cannot restore an old baseline.
+  if (base != null)
+    await tx.billingAccount.updateMany({
+      where: { id: accountId, OR: [{ paidThrough: null }, { paidThrough: { lte: input.periodEnd } }] },
+      data: { aiBudgetMonthlyMicros: monthly },
+    })
+  await grant(tx, {
+    accountId,
+    clientSiteId: null,
+    kind: 'BUDGET',
+    source: fullPeriod ? 'PAID_BASE_BUDGET' : 'PAID_BUDGET',
+    amount,
+    periodStart: input.periodStart,
+    expiresAt: input.periodEnd,
+    idempotencyKey: `ai-invoice:${invoice.id}`,
+  })
+  await tx.aiAllowanceInvoice.create({
+    data: { id: invoice.id, accountId, grantedMicros: amount, policyVersion: BILLING_POLICY_VERSION },
+  })
+  if (amount > 0)
+    await tx.articleTranslation.updateMany({
+      where: {
+        clientSite: { billingAccountId: accountId },
+        error: 'AI_ALLOWANCE_EXHAUSTED',
+        aiRetryAt: { not: null },
+      },
+      data: { aiRetryAt: null },
+    })
+}
+
+const recover = async (tx: DatabaseTransaction, accountId: string, now: Date) => {
   const abandoned = await tx.aiUsageReservation.findMany({
-    where: { clientSiteId, status: 'RESERVED', expiresAt: { lte: now } },
+    where: { accountId, status: 'RESERVED', expiresAt: { lte: now } },
   })
   for (const item of abandoned) {
     // A disconnected worker may have delivered a result: uncertain work cannot mint capacity again.
@@ -293,25 +399,32 @@ export const reserveAiAllowance = async (
   if (!Number.isSafeInteger(amount) || amount <= 0 || amount > 2_000_000_000)
     throw new RangeError('Invalid AI reservation')
   return prisma.$transaction(async (tx) => {
-    const site = await lockSite(tx, clientSiteId)
+    const { site, account } = await lockBlogAccount(tx, clientSiteId, { live: true })
+    const accountId = account.id
     const now = new Date()
     const articleOperation =
       typeof metadata.articleOperationId === 'string'
         ? await tx.articleCreditOperation.findFirst({
-            where: { id: metadata.articleOperationId, clientSiteId, status: 'RESERVED', expiresAt: { gt: now } },
+            where: {
+              id: metadata.articleOperationId,
+              accountId,
+              clientSiteId,
+              status: 'RESERVED',
+              expiresAt: { gt: now },
+            },
             select: { allocations: true },
           })
         : null
     const purchaseIds = articleOperation
       ? (articleOperation.allocations as Allocation).map((allocation) => allocation.id)
       : []
-    const period = await fund(tx, site, now, purchaseIds)
+    const period = await fund(tx, site, account, now, purchaseIds)
     if (!period)
       throw createError({ statusCode: 403, message: 'AI plan is not active', data: { code: 'AI_PLAN_REQUIRED' } })
-    await recover(tx, clientSiteId, now)
+    await recover(tx, accountId, now)
     const grants = await tx.aiAllowanceGrant.findMany({
       where: {
-        clientSiteId,
+        accountId,
         kind,
         remaining: { gt: 0 },
         AND: [
@@ -329,12 +442,14 @@ export const reserveAiAllowance = async (
     // Bought and carried articles spend their own funding first; overrun debt is the shared budget's.
     const funding = grants.filter((row) => ARTICLE_FUNDING_SOURCES.includes(row.source))
     const shared = grants.filter((row) => !ARTICLE_FUNDING_SOURCES.includes(row.source))
-    const debt = kind === 'BUDGET' ? site.aiBudgetDebtMicros : 0
+    const debtField = costDebtField(kind)
+    const debt = debtField ? debtOf(site, account, debtField) : 0
     if (grants.reduce((total, row) => total + row.remaining, 0) < amount + debt) {
       // Not awaited: the blog row stays locked until this transaction ends.
       if (isInternalAiAllowance(kind))
         void reportCaughtError('AI cost cap reached', new Error('AI_COST_CAP_REACHED'), {
           clientSiteId,
+          accountId,
           kind,
           plan: site.plan,
           task: metadata.task,
@@ -349,7 +464,7 @@ export const reserveAiAllowance = async (
         },
       })
     }
-    if (debt) {
+    if (debt && debtField) {
       let unpaid = debt
       const corrections: Allocation = []
       for (const row of [...shared, ...funding]) {
@@ -362,6 +477,7 @@ export const reserveAiAllowance = async (
       }
       await tx.aiUsageReservation.create({
         data: {
+          accountId,
           clientSiteId,
           kind,
           reserved: debt,
@@ -373,7 +489,7 @@ export const reserveAiAllowance = async (
           completedAt: now,
         },
       })
-      await tx.clientSite.update({ where: { id: clientSiteId }, data: { aiBudgetDebtMicros: 0 } })
+      await updateAccountTerms(tx, account, { [debtField]: 0 })
     }
     const allocations: Allocation = []
     let needed = amount
@@ -387,6 +503,7 @@ export const reserveAiAllowance = async (
     return tx.aiUsageReservation.create({
       data: {
         id: randomUUID(),
+        accountId,
         clientSiteId,
         kind,
         reserved: amount,
@@ -398,16 +515,18 @@ export const reserveAiAllowance = async (
   })
 }
 
+/** Settles against the account that was reserved from, even if the blog has since moved. */
 export const settleAiAllowance = async (
   reservation: Pick<AiUsageReservation, 'id' | 'clientSiteId'>,
   charged: number | null,
 ) => {
   const overrun = await prisma.$transaction(async (tx) => {
-    await lockSite(tx, reservation.clientSiteId)
+    await lockBlog(tx, reservation.clientSiteId, { live: true })
     const row = await tx.aiUsageReservation.findFirstOrThrow({
       where: { id: reservation.id, clientSiteId: reservation.clientSiteId },
     })
     if (row.status !== 'RESERVED') return
+    const account = await lockBillingAccount(tx, row.accountId)
     if (charged !== null && (!Number.isSafeInteger(charged) || charged < 0))
       throw new RangeError('Invalid AI settlement')
     const used = charged === null ? row.reserved : Math.min(charged, row.reserved)
@@ -427,12 +546,16 @@ export const settleAiAllowance = async (
       },
     })
     if (charged !== null && charged > row.reserved) {
-      if (row.kind === 'BUDGET')
-        await tx.clientSite.update({
-          where: { id: row.clientSiteId },
-          data: { aiBudgetDebtMicros: { increment: charged - row.reserved } },
-        })
-      return { clientSiteId: row.clientSiteId, reservationId: row.id, charged, reserved: row.reserved }
+      const debtField = costDebtField(row.kind)
+      if (debtField) await updateAccountTerms(tx, account, { [debtField]: { increment: charged - row.reserved } })
+      return {
+        clientSiteId: row.clientSiteId,
+        accountId: row.accountId,
+        reservationId: row.id,
+        kind: row.kind,
+        charged,
+        reserved: row.reserved,
+      }
     }
   })
   if (overrun)
@@ -461,6 +584,7 @@ export const withAiAllowance = async <T>(
   return result
 }
 
+/** A pack is the blog's own purchase; it lands on the blog's DIRECT account. */
 export const creditAiUsagePack = async (
   clientSiteId: string,
   packId: keyof typeof AI_USAGE_PACKS,
@@ -469,9 +593,11 @@ export const creditAiUsagePack = async (
   const pack = AI_USAGE_PACKS[packId]
   if (!pack || !purchaseId) throw new RangeError('Invalid AI pack')
   await prisma.$transaction(async (tx) => {
-    await lockSite(tx, clientSiteId)
+    await lockBlog(tx, clientSiteId, { live: true })
+    await lockBillingAccount(tx, clientSiteId)
     for (const kind of AI_ALLOWANCE_KINDS)
       await grant(tx, {
+        accountId: clientSiteId,
         clientSiteId,
         kind,
         source: 'PURCHASE',
@@ -491,13 +617,13 @@ export const creditAiUsagePack = async (
 
 export const getAiAllowance = async (clientSiteId: string) =>
   prisma.$transaction(async (tx) => {
-    const site = await lockSite(tx, clientSiteId)
+    const { site, account } = await lockBlogAccount(tx, clientSiteId, { live: true })
     const now = new Date()
-    const period = await fund(tx, site, now)
-    await recover(tx, clientSiteId, now)
+    const period = await fund(tx, site, account, now)
+    await recover(tx, account.id, now)
     const rows = await tx.aiAllowanceGrant.findMany({
       where: {
-        clientSiteId,
+        accountId: account.id,
         source: { notIn: ARTICLE_FUNDING_SOURCES },
         OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
       },
@@ -505,20 +631,24 @@ export const getAiAllowance = async (clientSiteId: string) =>
     })
     return {
       active: period !== null,
+      pooled: account.kind === 'AGENCY',
       renewsAt: period?.end.toISOString() ?? null,
       trial: period?.trial ?? false,
-      allowances: AI_ALLOWANCE_KINDS.map((kind) => ({
-        kind,
-        included: rows
-          .filter((row) => row.kind === kind && row.source !== 'PURCHASE')
-          .reduce((total, row) => total + row.amount, 0),
-        total: rows.filter((row) => row.kind === kind).reduce((total, row) => total + row.amount, 0),
-        remaining: Math.max(
-          0,
-          rows.filter((row) => row.kind === kind).reduce((total, row) => total + row.remaining, 0) -
-            (kind === 'BUDGET' ? site.aiBudgetDebtMicros : 0),
-        ),
-      })),
+      allowances: AI_ALLOWANCE_KINDS.map((kind) => {
+        const debtField = costDebtField(kind)
+        return {
+          kind,
+          included: rows
+            .filter((row) => row.kind === kind && row.source !== 'PURCHASE')
+            .reduce((total, row) => total + row.amount, 0),
+          total: rows.filter((row) => row.kind === kind).reduce((total, row) => total + row.amount, 0),
+          remaining: Math.max(
+            0,
+            rows.filter((row) => row.kind === kind).reduce((total, row) => total + row.remaining, 0) -
+              (debtField ? debtOf(site, account, debtField) : 0),
+          ),
+        }
+      }),
     }
   })
 
@@ -528,4 +658,24 @@ export const aiBudgetError = async (clientSiteId: string) => {
   if (!allowance.active) return 'AI_PLAN_REQUIRED' as const
   const budget = allowance.allowances.find((row) => row.kind === 'BUDGET')
   return budget && budget.remaining > 0 ? null : ('AI_ALLOWANCE_EXHAUSTED' as const)
+}
+
+/** An agency's AI budget for its overview, read without funding a period. */
+export const getAccountAiBudget = async (accountId: string) => {
+  const now = new Date()
+  const [rows, account] = await Promise.all([
+    prisma.aiAllowanceGrant.findMany({
+      where: {
+        accountId,
+        kind: 'BUDGET',
+        source: { notIn: ARTICLE_FUNDING_SOURCES },
+        OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
+      },
+      select: { amount: true, remaining: true },
+    }),
+    prisma.billingAccount.findUniqueOrThrow({ where: { id: accountId }, select: { aiBudgetDebtMicros: true } }),
+  ])
+  const total = rows.reduce((sum, row) => sum + row.amount, 0)
+  const remaining = rows.reduce((sum, row) => sum + row.remaining, 0) - account.aiBudgetDebtMicros
+  return { total, remaining: Math.max(0, remaining) }
 }

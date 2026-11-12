@@ -39,7 +39,13 @@ const revokeToBasic = async (
   await serializableTransaction(async (tx) => {
     await assertBillingLease(tx, clientSiteId, leaseId)
     const changed = await tx.clientSite.updateMany({
-      where: { id: clientSiteId, stripeSubscriptionId: subscriptionId, billingProvider: 'STRIPE', deletedAt: null },
+      where: {
+        id: clientSiteId,
+        stripeSubscriptionId: subscriptionId,
+        billingProvider: 'STRIPE',
+        billingAccountId: null,
+        deletedAt: null,
+      },
       data: {
         plan: 'BASIC',
         stripePriceId: null,
@@ -71,6 +77,7 @@ export default defineEventHandler(async (event) => {
     }
   }
   if (!stripeEvent) throw createError({ statusCode: 400 })
+  if (await handleAgencyStripeEvent(stripe, stripeEvent)) return { received: true }
 
   if (
     stripeEvent.type === 'checkout.session.completed' ||
@@ -125,6 +132,8 @@ export default defineEventHandler(async (event) => {
                 id: clientSiteId,
                 deletedAt: null,
                 billingProvider: 'STRIPE',
+                // An agency blog's plan is the agency's; a stray blog subscription cannot override it.
+                billingAccountId: null,
                 OR: [{ stripeSubscriptionId: null }, { stripeSubscriptionId: subscriptionId }],
               },
               data: {
@@ -210,6 +219,7 @@ export default defineEventHandler(async (event) => {
                 id: clientSiteId,
                 stripeSubscriptionId: subscription.id,
                 billingProvider: 'STRIPE',
+                billingAccountId: null,
                 deletedAt: null,
               },
               data: {
@@ -284,7 +294,12 @@ export default defineEventHandler(async (event) => {
           await assertBillingLease(tx, clientSiteId, leaseId)
           if (invoice.billing_reason === 'subscription_update') {
             const activeSlot = await tx.articleCreditGrant.findFirst({
-              where: { clientSiteId, source: 'PLAN', periodStart: { lte: new Date() }, expiresAt: { gt: new Date() } },
+              where: {
+                accountId: clientSiteId,
+                source: 'PLAN',
+                periodStart: { lte: new Date() },
+                expiresAt: { gt: new Date() },
+              },
               orderBy: { periodStart: 'asc' },
               select: { periodStart: true, periodEnd: true },
             })
@@ -297,6 +312,7 @@ export default defineEventHandler(async (event) => {
             where: {
               id: clientSiteId,
               billingProvider: 'STRIPE',
+              billingAccountId: null,
               deletedAt: null,
               // Invoice events can precede Checkout; never replace another subscription or customer.
               OR: [

@@ -17,7 +17,7 @@
       v-if="canStart && batch?.status !== 'PROPOSED' && batch?.status !== 'ACTIVE'"
       class="flex flex-col gap-3 rounded-(--topiqu-surface-radius) border border-dashed border-default p-4 sm:flex-row sm:items-center sm:justify-between"
     >
-      <p class="text-sm text-toned">
+      <p v-if="startHint" class="text-sm text-toned">
         {{ startHint }}
       </p>
       <template v-if="!overview.hasProfile">
@@ -40,7 +40,11 @@
         :disabled="!affordable"
         @click="propose"
       >
-        {{ $t('articleBatch.plan.propose') }}
+        {{
+          affordable
+            ? $t('articleBatch.plan.proposeUpTo', { n: affordable }, affordable)
+            : $t('articleBatch.plan.propose')
+        }}
       </UButton>
     </div>
     <p v-else-if="!canStart && !batch" class="text-sm text-muted">{{ $t('articleBatch.plan.noPermission') }}</p>
@@ -69,9 +73,7 @@ const affordable = computed(() =>
 )
 const startHint = computed(() => {
   if (!overview.hasProfile) return t('articleBatch.errors.NO_PROFILE')
-  return affordable.value
-    ? t('articleBatch.plan.hint', { n: affordable.value }, affordable.value)
-    : t('articleBatch.errors.NO_CREDITS')
+  return affordable.value ? null : t('articleBatch.errors.NO_CREDITS')
 })
 
 const propose = async () => {

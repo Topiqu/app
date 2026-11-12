@@ -11,6 +11,7 @@ import "./knowledge"
 import "./generation"
 import "./onboarding"
 import "./apiKey"
+import "./billingAccount"
 
 model User with Base {
     username                      String            @unique @length(3, 50, "Uživatelské jméno musí mít 3–50 znaků")
@@ -64,6 +65,7 @@ model User with Base {
     approvals                     Approval[]
     onboardingRequest OnboardingRequest?
     tenantMemberships             TenantMembership[]
+    billingAccountMemberships     BillingAccountMember[]
     tenantInvitations             TenantInvitation[] @relation("InvitationSender")
     @@allow('read', true)
     @@allow('create', true)
@@ -82,6 +84,9 @@ model TenantMembership with Base {
     user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
     role         TenantRole    @default(MEMBER)
     scopes       TenantScope[]
+    /// Set when the row projects an agency membership; the agency, not the blog team, manages it.
+    billingAccountId String?
+    billingAccount   BillingAccount? @relation(fields: [billingAccountId], references: [id], onDelete: Cascade)
 
     @@unique([clientSiteId, userId])
     @@index([userId])

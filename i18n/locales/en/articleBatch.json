@@ -2,7 +2,6 @@
   "articleBatch": {
     "navigation": "Use free credits",
     "title": "Use your free credits",
-    "description": "See what your credits can do beyond the autopilot, and put them to work without writing articles one by one.",
     "loadFailed": "The overview could not be loaded.",
     "disabledTitle": "Available on plans with AI articles",
     "disabledDescription": "Upgrade your plan to have Topiqu write articles for you.",
@@ -18,28 +17,21 @@
       },
       "surplus": {
         "label": "Unused every month",
-        "note": "of a {allowance} credit allowance",
-        "info": "How many credits of your monthly allowance the autopilot does not use at its current rhythm."
-      },
-      "autopilot": {
-        "label": "Autopilot uses monthly",
-        "note": "{n} article | {n} articles",
-        "info": "Credits the autopilot is expected to use in the next 30 days at its current rhythm and quality."
+        "note": "the autopilot uses {used} of {allowance}",
+        "info": "How many credits of your monthly allowance the autopilot does not use at its current rhythm and quality. This is an estimate."
       }
     },
     "levers": {
       "title": "Recommended changes",
-      "description": "These settings use more of your allowance without any extra work.",
       "saved": "Settings saved",
       "quality": {
-        "title": "Write in {level} quality",
-        "description": "{articles} articles a month would use {credits} of your {allowance} credits, with no more articles on your site.",
-        "apply": "Switch to {level}"
+        "title": "{level} quality",
+        "description": "You still publish {articles} article a month, in higher quality, and use {credits} of your {allowance} credits. | You still publish {articles} articles a month, in higher quality, and use {credits} of your {allowance} credits.",
+        "apply": "Switch"
       },
       "tempo": {
-        "title": "Speed up the autopilot",
-        "description": "The autopilot would write about {articles} articles a month instead of {current}.",
-        "note": "More articles also means more to read for your audience. Change it any time in settings.",
+        "title": "Faster autopilot",
+        "description": "About {articles} article a month instead of {current}. | About {articles} articles a month instead of {current}.",
         "apply": "Speed up",
         "confirmTitle": "Speed up the autopilot?",
         "confirmMessage": "The autopilot will write about {articles} articles a month and use credits accordingly. You can change this any time in settings."
@@ -47,11 +39,11 @@
     },
     "plan": {
       "title": "Article plan",
-      "description": "Topiqu proposes topics, you approve them with one click and the articles are written in the background. The proposal is free.",
+      "description": "We propose topics, you approve them and the articles get written on their own. The proposal is free.",
       "propose": "Propose articles",
       "openSettings": "Open settings",
       "noPermission": "Starting a plan requires permission to use AI and edit other authors’ articles.",
-      "hint": "Your free credits cover {n} article. | Your free credits cover {n} articles."
+      "proposeUpTo": "Propose up to {n} article | Propose up to {n} articles"
     },
     "proposal": {
       "listLabel": "Proposed articles",

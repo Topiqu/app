@@ -1,8 +1,10 @@
 import "./client"
+import "./billingAccount"
 
+/// One per billing account: a blog's own DIRECT account, or an agency's shared pool.
 model ArticleCreditWallet {
     id String @id
-    clientSite ClientSite @relation(fields: [id], references: [id], onDelete: Restrict)
+    account BillingAccount @relation(fields: [id], references: [id], onDelete: Restrict)
     grants ArticleCreditGrant[]
     operations ArticleCreditOperation[]
     entries ArticleCreditLedgerEntry[]
@@ -13,10 +15,13 @@ model ArticleCreditWallet {
     @@deny('all', true)
 }
 
+/// `clientSiteId` is the blog a grant was made for; an agency's subscription grants belong to no blog.
 model ArticleCreditGrant {
     id String @id @default(uuid())
-    clientSiteId String
-    wallet ArticleCreditWallet @relation(fields: [clientSiteId], references: [id], onDelete: Restrict)
+    accountId String
+    wallet ArticleCreditWallet @relation(fields: [accountId], references: [id], onDelete: Restrict)
+    clientSiteId String?
+    clientSite ClientSite? @relation(fields: [clientSiteId], references: [id], onDelete: Restrict)
     entries ArticleCreditLedgerEntry[]
     source String
     amount Int
@@ -27,14 +32,18 @@ model ArticleCreditGrant {
     policyVersion String
     idempotencyKey String @unique
     createdAt DateTime @default(now())
-    @@index([clientSiteId, expiresAt])
+    @@index([accountId, expiresAt])
+    @@index([clientSiteId])
     @@deny('all', true)
 }
 
+/// `clientSiteId` is the blog that spent the credits.
 model ArticleCreditOperation {
     id String @id @default(uuid())
+    accountId String
+    wallet ArticleCreditWallet @relation(fields: [accountId], references: [id], onDelete: Restrict)
     clientSiteId String
-    wallet ArticleCreditWallet @relation(fields: [clientSiteId], references: [id], onDelete: Restrict)
+    clientSite ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Restrict)
     entries ArticleCreditLedgerEntry[]
     action String
     status String @default('RESERVED')
@@ -46,6 +55,7 @@ model ArticleCreditOperation {
     expiresAt DateTime
     createdAt DateTime @default(now())
     completedAt DateTime?
+    @@index([accountId, createdAt])
     @@index([clientSiteId, createdAt])
     @@index([status, expiresAt])
     @@deny('all', true)
@@ -53,8 +63,10 @@ model ArticleCreditOperation {
 
 model ArticleCreditLedgerEntry {
     id String @id @default(uuid())
-    clientSiteId String
-    wallet ArticleCreditWallet @relation(fields: [clientSiteId], references: [id], onDelete: Restrict)
+    accountId String
+    wallet ArticleCreditWallet @relation(fields: [accountId], references: [id], onDelete: Restrict)
+    clientSiteId String?
+    clientSite ClientSite? @relation(fields: [clientSiteId], references: [id], onDelete: Restrict)
     kind String
     amount Int
     operationId String?
@@ -64,6 +76,7 @@ model ArticleCreditLedgerEntry {
     reason String
     idempotencyKey String @unique
     createdAt DateTime @default(now())
+    @@index([accountId, createdAt, id])
     @@index([clientSiteId, createdAt, id])
     @@deny('all', true)
 }

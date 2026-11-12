@@ -2,7 +2,6 @@
   "articleBatch": {
     "navigation": "Freie Credits nutzen",
     "title": "Nutzen Sie Ihre freien Credits",
-    "description": "Sehen Sie, was Ihre Credits über den Autopilot hinaus leisten können, und setzen Sie sie ein, ohne Artikel einzeln anzulegen.",
     "loadFailed": "Die Übersicht konnte nicht geladen werden.",
     "disabledTitle": "Verfügbar in Tarifen mit KI-Artikeln",
     "disabledDescription": "Wechseln Sie den Tarif, damit Topiqu Artikel für Sie schreibt.",
@@ -18,28 +17,21 @@
       },
       "surplus": {
         "label": "Jeden Monat ungenutzt",
-        "note": "von {allowance} Credits Monatskontingent",
-        "info": "Wie viele Credits Ihres Monatskontingents der Autopilot im aktuellen Rhythmus nicht nutzt."
-      },
-      "autopilot": {
-        "label": "Autopilot verbraucht monatlich",
-        "note": "{n} Artikel | {n} Artikel",
-        "info": "Credits, die der Autopilot in den nächsten 30 Tagen bei aktuellem Rhythmus und aktueller Qualität voraussichtlich verbraucht."
+        "note": "der Autopilot verbraucht {used} von {allowance}",
+        "info": "Wie viele Credits Ihres Monatskontingents der Autopilot bei aktuellem Rhythmus und aktueller Qualität nicht nutzt. Das ist eine Schätzung."
       }
     },
     "levers": {
       "title": "Empfohlene Änderungen",
-      "description": "Mit diesen Einstellungen nutzen Sie mehr von Ihrem Kontingent ohne Mehraufwand.",
       "saved": "Einstellungen gespeichert",
       "quality": {
-        "title": "In Qualität {level} schreiben",
-        "description": "{articles} Artikel im Monat würden {credits} Ihrer {allowance} Credits nutzen, ohne dass mehr Artikel auf Ihrer Website erscheinen.",
-        "apply": "Zu {level} wechseln"
+        "title": "Qualität {level}",
+        "description": "Sie veröffentlichen weiterhin {articles} Artikel im Monat, nur in höherer Qualität, und verbrauchen {credits} Ihrer {allowance} Credits. | Sie veröffentlichen weiterhin {articles} Artikel im Monat, nur in höherer Qualität, und verbrauchen {credits} Ihrer {allowance} Credits.",
+        "apply": "Wechseln"
       },
       "tempo": {
-        "title": "Autopilot beschleunigen",
-        "description": "Der Autopilot würde etwa {articles} Artikel im Monat schreiben statt {current}.",
-        "note": "Mehr Artikel bedeuten auch mehr Lesestoff für Ihr Publikum. Sie können das jederzeit in den Einstellungen ändern.",
+        "title": "Schnellerer Autopilot",
+        "description": "Etwa {articles} Artikel im Monat statt {current}. | Etwa {articles} Artikel im Monat statt {current}.",
         "apply": "Beschleunigen",
         "confirmTitle": "Autopilot beschleunigen?",
         "confirmMessage": "Der Autopilot schreibt dann etwa {articles} Artikel im Monat und verbraucht entsprechend Credits. Sie können das jederzeit in den Einstellungen ändern."
@@ -47,11 +39,11 @@
     },
     "plan": {
       "title": "Artikelplan",
-      "description": "Topiqu schlägt Themen vor, Sie genehmigen sie mit einem Klick und die Artikel entstehen im Hintergrund. Der Vorschlag ist kostenlos.",
+      "description": "Wir schlagen Themen vor, Sie genehmigen sie und die Artikel entstehen von selbst. Der Vorschlag ist kostenlos.",
       "propose": "Artikel vorschlagen",
       "openSettings": "Einstellungen öffnen",
       "noPermission": "Zum Starten eines Plans benötigen Sie die Berechtigung, KI zu nutzen und Artikel anderer Autoren zu bearbeiten.",
-      "hint": "Ihre freien Credits reichen für {n} Artikel. | Ihre freien Credits reichen für {n} Artikel."
+      "proposeUpTo": "Bis zu {n} Artikel vorschlagen | Bis zu {n} Artikel vorschlagen"
     },
     "proposal": {
       "listLabel": "Vorgeschlagene Artikel",

@@ -1766,6 +1766,8 @@
       "owner": "Inhaber",
       "member": "Mitglied",
       "you": "Du",
+      "agency": "Agentur",
+      "agencyManaged": "Zugriff wird von der Agentur verwaltet",
       "joined": "Beigetreten am {date}",
       "permissions": "Berechtigungen",
       "remove": "Entfernen",

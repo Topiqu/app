@@ -13,9 +13,10 @@ export default defineEventHandler(async (event) => {
   )
   const site = await prisma.clientSite.findUniqueOrThrow({
     where: { id: membership.clientSiteId },
-    select: { plan: true, billingProvider: true, stripeCustomerId: true },
+    select: { plan: true, billingProvider: true, stripeCustomerId: true, billingAccountId: true },
   })
   rejectShopifyBilled(event, site.billingProvider)
+  rejectAgencyBilled(site)
   if (!hasAiPlan(site.plan)) throw createError({ statusCode: 403, message: 'AI plan required' })
   const pack = AI_USAGE_PACKS[packId]
   const { translate } = await useServerI18n(event)

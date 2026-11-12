@@ -26,6 +26,7 @@ import "./models/websiteImport"
 import "./models/onboarding"
 import "./models/apiKey"
 import "./models/articleBatch"
+import "./models/billingAccount"
 
 datasource db {
     provider  = "postgresql"

@@ -1766,6 +1766,8 @@
       "owner": "Vlastník",
       "member": "Člen",
       "you": "Vy",
+      "agency": "Agentura",
+      "agencyManaged": "Přístup spravuje agentura",
       "joined": "Připojení {date}",
       "permissions": "Oprávnění",
       "remove": "Odebrat",

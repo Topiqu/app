@@ -107,6 +107,7 @@ describe('POST /api/stripe/translation-languages', () => {
         }),
       },
     })
+    vi.stubGlobal('rejectAgencyBilled', vi.fn())
     vi.stubGlobal('rejectShopifyBilled', (_event: unknown, provider: string) => {
       if (provider === 'SHOPIFY') throw createError({ statusCode: 409 })
     })

@@ -10,9 +10,9 @@ export const notifyCreditsDepleted = async (clientSiteId: string) => {
       name: true,
       domain: true,
       logoUrl: true,
-      articleCreditWallet: {
-        select: { grants: { orderBy: { createdAt: 'desc' }, take: 1, select: { id: true } } },
-      },
+      id: true,
+      billingAccountId: true,
+      ...poolWalletSelect({ grants: { orderBy: { createdAt: 'desc' }, take: 1, select: { id: true } } }),
       tenantMemberships: {
         where: {
           deletedAt: null,
@@ -25,7 +25,8 @@ export const notifyCreditsDepleted = async (clientSiteId: string) => {
   })
   if (!site?.tenantMemberships.length) return { sent: 0 }
 
-  const idempotencyKey = `credits-depleted:${clientSiteId}:${site.articleCreditWallet?.grants[0]?.id ?? 'none'}`
+  // Keyed by the pool, so an agency hears once when its shared units run out, not once per blog.
+  const idempotencyKey = `credits-depleted:${spendingAccountId(site)}:${poolOf(site)?.grants[0]?.id ?? 'none'}`
   if (await prisma.log.findUnique({ where: { idempotencyKey }, select: { id: true } })) return { sent: 0 }
 
   const origin = import.meta.dev ? 'http://localhost:3000' : `https://${site.domain}`

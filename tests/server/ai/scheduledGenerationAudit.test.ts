@@ -3,8 +3,10 @@ import type { JsonValue } from '@zenstackhq/orm'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { stubNitroImports } from '../../helpers/nitroImports'
+import { stubBillingAccountImports } from '../../helpers/billingImports'
 
 async function stubImports() {
+  await stubBillingAccountImports()
   await stubNitroImports(import('../../../server/utils/ai/articleUsage'), 'withArticleUsageStage', 'bindArticleUsage')
   await stubNitroImports(import('../../../server/utils/keywords/plan'), 'themeKey', 'themeOf')
   await stubNitroImports(import('../../../server/utils/databaseJson'), 'toDatabaseJson')
@@ -205,6 +207,7 @@ describe('article batch items', () => {
     topic: 'Pond care in winter',
     batchItem: {
       id: 'item-1',
+      attempts: 1,
       creditKey: 'article-batch:item-1:1',
       keywordClusterId: null,
       autoRelease: false,
@@ -280,7 +283,35 @@ describe('article batch items', () => {
   it('saves the article and its item link in one transaction, so a dead worker leaves proof', async () => {
     const { run, linkBatchItem } = await setup(undefined, null, 'STANDARD', { request: batchItem() })
     await run()
-    expect(linkBatchItem).toHaveBeenCalledWith({ where: { id: 'item-1' }, data: { articleId: 'article-1' } })
+    expect(linkBatchItem).toHaveBeenCalledWith({
+      where: {
+        id: 'item-1',
+        clientSiteId: 'tenant-1',
+        status: 'RUNNING',
+        attempts: 1,
+        articleId: null,
+        leaseUntil: { gt: expect.any(Date) },
+      },
+      data: { articleId: 'article-1' },
+    })
+  })
+
+  it('rolls back persistence when a replacement attempt already owns the item', async () => {
+    const { run, linkBatchItem, transaction } = await setup(undefined, null, 'STANDARD', { request: batchItem() })
+    linkBatchItem.mockResolvedValueOnce({ count: 0 })
+    let rolledBack = false
+    const transact = transaction.getMockImplementation()!
+    transaction.mockImplementation(async (callback) => {
+      try {
+        return await transact(callback)
+      } catch (error) {
+        rolledBack = true
+        throw error
+      }
+    })
+    await expect(run()).resolves.toMatchObject({ status: 'failed' })
+    expect(rolledBack).toBe(true)
+    expect(invalidateFeed).not.toHaveBeenCalled()
   })
 
   it('holds a spread item that fails review and tells someone the same day', async () => {

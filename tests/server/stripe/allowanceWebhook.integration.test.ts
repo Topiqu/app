@@ -10,6 +10,7 @@ import type { DatabaseTransaction } from '../../../server/utils/database'
 
 import { stubNitroImports } from '../../helpers/nitroImports'
 import { createDatabaseClient } from '../../../server/utils/database'
+import { stubBillingAccountImports } from '../../helpers/billingImports'
 
 const url = process.env.TEST_DATABASE_URL
 const enabled = Boolean(url && /test/i.test(new URL(url).pathname) && url !== process.env.DATABASE_URL)
@@ -30,6 +31,11 @@ describe.skipIf(!enabled)('subscription invoice allowances on PostgreSQL', () =>
       db!.$transaction(work),
     )
     vi.stubGlobal('syncPlanFeatures', vi.fn())
+    vi.stubGlobal(
+      'handleAgencyStripeEvent',
+      vi.fn(async () => false),
+    )
+    await stubBillingAccountImports()
     await stubNitroImports(
       import('../../../shared/utils/articleCredits'),
       'ARTICLE_CREDIT_POLICY_VERSION',

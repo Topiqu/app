@@ -5,7 +5,7 @@ export const useDashboardAccess = (clientSite: Readonly<Ref<{ id: string } | nul
   const preview = useWidgetPagePreview()
   const hostname = useRequestURL().hostname
   const baseDomain = useRuntimeConfig().public.baseDomain
-  const platformHost = isRootHost(hostname, baseDomain) || ['localhost', '127.0.0.1'].includes(hostname)
+  const platformHost = isPlatformHost(hostname, baseDomain)
 
   return computed(
     () =>
