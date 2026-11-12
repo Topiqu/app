@@ -18,7 +18,7 @@ export const billingReturnUrl = async (
   origin: unknown,
   suppliedLocale?: unknown,
   accountLocale?: unknown,
-  tab: 'billing' | 'ai' = 'billing',
+  tab: 'billing' | 'ai' | 'agency' = 'billing',
 ) => {
   const returnOrigin = await billingReturnOrigin(event, origin)
   if (suppliedLocale !== undefined && !isLanguage(suppliedLocale)) {
@@ -32,5 +32,5 @@ export const billingReturnUrl = async (
     : isUiLanguage(cookieLocale)
       ? cookieLocale
       : uiLanguageOf(accountLocale)
-  return `${returnOrigin}${homePath(locale)}/settings?tab=${tab}`
+  return `${returnOrigin}${homePath(locale)}${tab === 'agency' ? '/admin/agency' : `/settings?tab=${tab}`}`
 }
