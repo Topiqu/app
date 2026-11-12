@@ -66,13 +66,12 @@ const skippedSites = async (pickedIds: string[]) => {
     nextReleaseAt: site.nextReleaseAt?.toISOString() ?? null,
     generationFrequency: site.generationFrequency,
     creditsRequired: articleCreditCost(site.articleQuality),
-    articlesRemaining: poolOf(site)?.grants.reduce((total, grant) => total + grant.remaining, 0) ?? 0,
+    articlesRemaining: spendableUnits(site),
     reason: !site.features.length
       ? 'feature_inactive'
       : site.generationFrequency === 'NONE'
         ? 'frequency_disabled'
-        : (poolOf(site)?.grants.reduce((total, grant) => total + grant.remaining, 0) ?? 0) <
-            articleCreditCost(site.articleQuality)
+        : spendableUnits(site) < articleCreditCost(site.articleQuality)
           ? 'insufficient_articles'
           : 'not_due',
   }))
@@ -941,11 +940,7 @@ export default defineMonitoredTask({
     const candidates = await loadGenerationCandidates(now)
 
     // Out of credits keeps its slot: the first run after a top-up generates for it.
-    const funded = candidates.filter(
-      (client) =>
-        (poolOf(client)?.grants.reduce((total, grant) => total + grant.remaining, 0) ?? 0) >=
-        articleCreditCost(client.articleQuality),
-    )
+    const funded = candidates.filter((client) => spendableUnits(client) >= articleCreditCost(client.articleQuality))
     const due: { client: (typeof funded)[number]; slot: Date }[] = []
     for (const client of funded) {
       const plan = planRun(client, now)

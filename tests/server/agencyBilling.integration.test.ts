@@ -12,7 +12,9 @@ import { createDatabaseClient } from '../../server/utils/database'
 import { stubBillingAccountImports } from '../helpers/billingImports'
 import { agencyAllowances, agencyUnits } from '../../shared/utils/agencyPlan'
 import { ARTICLE_CREDIT_POLICY_VERSION } from '../../shared/utils/articleCredits'
+import { poolWalletSelect, spendableUnits } from '../../server/utils/billingAccount'
 import {
+  creditAiUsagePack,
   creditAgencyInvoiceAiBudget,
   getAccountAiBudget,
   getAiAllowance,
@@ -28,6 +30,7 @@ import {
   withAgencyLease,
 } from '../../server/utils/agency'
 import {
+  creditArticleCredits,
   getAccountWallet,
   getArticleCreditWallet,
   grantPlanArticleCredits,
@@ -149,6 +152,72 @@ describe.skipIf(!enabled)('agency billing accounts on PostgreSQL', () => {
     await settleArticleCredit(operation, false)
     expect((await getAccountWallet(f.accountId)).available).toBe(5)
     expect((await getArticleCreditWallet(f.a)).available).toBe(0)
+  })
+
+  it("spends a blog's own credits from before the agency first, outside its share of the pool", async () => {
+    const f = await agency({ units: 10 })
+    await creditArticleCredits({
+      clientSiteId: f.a,
+      amount: 3,
+      source: 'PURCHASE',
+      idempotencyKey: `own-pack:${f.a}`,
+      reason: 'Bought before the agency',
+    })
+    await db!.clientSite.update({ where: { id: f.a }, data: { monthlyUnitLimit: 1 } })
+    expect(await getArticleCreditWallet(f.a)).toMatchObject({ pooled: true, available: 13, own: 3 })
+
+    const spend = async (amount: number) => {
+      const operation = await reserveArticleCredit(f.a, 'MANUAL_ARTICLE', randomUUID(), {}, amount)
+      await settleArticleCredit(operation, true)
+      return operation.accountId
+    }
+    expect(await spend(2)).toBe(f.a)
+    // Partly covered: one operation draws from one account, so the pool pays all of it.
+    expect(await spend(1)).toBe(f.a)
+    expect(await spend(1)).toBe(f.accountId)
+    await expect(reserveArticleCredit(f.a, 'MANUAL_ARTICLE')).rejects.toMatchObject({
+      data: { code: 'BLOG_UNIT_LIMIT_REACHED' },
+    })
+    expect((await getAccountWallet(f.accountId)).available).toBe(9)
+    expect(await getArticleCreditWallet(f.a)).toMatchObject({ available: 9, own: 0 })
+  })
+
+  it("counts a blog's own credits where the scheduler decides whether it can write", async () => {
+    const f = await agency({ units: 2 })
+    await creditArticleCredits({
+      clientSiteId: f.a,
+      amount: 3,
+      source: 'PURCHASE',
+      idempotencyKey: `own-cron:${f.a}`,
+      reason: 'Bought before the agency',
+    })
+    const units = async (id: string) =>
+      spendableUnits(
+        await db!.clientSite.findUniqueOrThrow({
+          where: { id },
+          select: poolWalletSelect({ grants: { where: { remaining: { gt: 0 } }, select: { remaining: true } } }),
+        }),
+      )
+    expect(await units(f.a)).toBe(5)
+    expect(await units(f.b)).toBe(2)
+  })
+
+  it("spends a blog's own AI pack before the agency budget, and never mints it a plan allowance", async () => {
+    const f = await agency()
+    await creditAiUsagePack(f.a, 'small', `pack-${f.a}`)
+    const budget = async () => (await getAiAllowance(f.a)).allowances.find((row) => row.kind === 'BUDGET')!
+    const pool = agencyAllowances({ blogs: 3, premium: 0, blocks: 4 }).BUDGET
+    expect(await budget()).toMatchObject({ total: pool + 1_000_000, remaining: pool + 1_000_000 })
+
+    const own = await reserveAiAllowance(f.a, 'BUDGET', 600_000)
+    expect(own.accountId).toBe(f.a)
+    await settleAiAllowance(own, 600_000)
+    // The rest of the pack no longer covers the call, so the agency pays for all of it.
+    const shared = await reserveAiAllowance(f.a, 'BUDGET', 600_000)
+    expect(shared.accountId).toBe(f.accountId)
+    await settleAiAllowance(shared, 600_000)
+    expect(await budget()).toMatchObject({ remaining: pool - 600_000 + 400_000 })
+    expect(await db!.aiAllowanceGrant.count({ where: { accountId: f.a, source: { not: 'PURCHASE' } } })).toBe(0)
   })
 
   it('funds agency AI from the pool, at most half of the list price', async () => {

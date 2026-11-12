@@ -325,6 +325,8 @@
       "explanation": "Unused plan credits carry over while your plan is active, up to twice the monthly allowance. Purchased credits never expire.",
       "reserved": "Temporarily reserved",
       "reservedHint": "Each article reserves 1, 2 or 3 credits according to quality. A technical failure returns the full amount.",
+      "own": "This blog's own credits",
+      "ownHint": "Bought before it joined the agency. They are spent first and stay with the blog if it leaves.",
       "reasons": {
         "manualArticle": "Manually created article",
         "scheduledArticle": "Automatically created article",

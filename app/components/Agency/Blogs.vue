@@ -76,6 +76,12 @@
               <span class="shrink-0 tabular-nums">
                 {{ $t('agency.blogs.articles', { count: blog.published }, blog.published) }}
               </span>
+              <template v-if="blog.ownUnits">
+                <span aria-hidden="true">·</span>
+                <span class="shrink-0 tabular-nums">
+                  {{ $t('agency.blogs.ownCredits', { count: blog.ownUnits }, blog.ownUnits) }}
+                </span>
+              </template>
             </p>
           </div>
         </div>

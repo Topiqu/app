@@ -101,6 +101,7 @@
       "period": "Crédits et articles publiés sur la période",
       "credits": "crédit | crédits",
       "articles": "{count} article | {count} articles",
+      "ownCredits": "{count} crédit propre | {count} crédits propres",
       "plan": "Forfait",
       "planSaved": "Forfait modifié.",
       "noSlot": "Aucun emplacement libre. Ajoutez-en un dans l’abonnement.",

@@ -325,6 +325,8 @@
       "explanation": "Les crédits du forfait non utilisés sont reportés tant que le forfait est actif, jusqu’à deux fois l’allocation mensuelle. Les crédits achetés n’expirent pas.",
       "reserved": "Réservés temporairement",
       "reservedHint": "Chaque article réserve 1, 2 ou 3 crédits selon la qualité. Un échec technique restitue la totalité.",
+      "own": "Crédits propres du blog",
+      "ownHint": "Achetés avant son arrivée dans l’agence. Ils sont utilisés en premier et restent au blog s’il quitte l’agence.",
       "reasons": {
         "manualArticle": "Article créé manuellement",
         "scheduledArticle": "Article créé automatiquement",

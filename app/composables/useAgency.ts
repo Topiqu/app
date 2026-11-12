@@ -35,6 +35,8 @@ export interface AgencyBlog {
   monthlyUnitLimit: number | null
   unitsUsed: number
   published: number
+  /** Credits the blog bought before it joined; it spends them before the pool. */
+  ownUnits: number
 }
 
 export interface AgencyPeriod {

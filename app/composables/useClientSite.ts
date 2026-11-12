@@ -16,6 +16,8 @@ export interface ClientSiteStatus {
     reserved: number
     balance: number
     grants: { id: string; remaining: number; expiresAt: string | null; periodEnd: string | null; source: string }[]
+    /** An agency blog's own credits from before it joined, spent before the pool. */
+    own?: number
   }
   /** Available article credits; retained under the original API field name. */
   articlesRemaining: number

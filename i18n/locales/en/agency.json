@@ -101,6 +101,7 @@
       "period": "Credits and published articles this period",
       "credits": "credit | credits",
       "articles": "{count} article | {count} articles",
+      "ownCredits": "{count} own credit | {count} own credits",
       "plan": "Plan",
       "planSaved": "Plan changed.",
       "noSlot": "No free blog slot. Add one in the subscription.",

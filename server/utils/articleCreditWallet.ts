@@ -148,6 +148,31 @@ async function walletView(tx: Tx, account: BillingAccount) {
   }
 }
 
+/**
+ * An agency blog's own credits from before it joined, which it spends first. Locked after the blog and before the
+ * agency; null when the blog never had a wallet of its own.
+ */
+const ownWallet = async (tx: Tx, site: ClientSite) => {
+  if (!site.billingAccountId) return null
+  if (!(await tx.articleCreditWallet.findUnique({ where: { id: site.id }, select: { id: true } }))) return null
+  return walletView(tx, await lockBillingAccount(tx, site.id))
+}
+
+/** What the blog can spend: an agency blog adds its own leftover credits to the pool. The blog is locked. */
+async function blogWallet(tx: Tx, site: ClientSite) {
+  const own = await ownWallet(tx, site)
+  const pool = await walletView(tx, await lockBillingAccount(tx, spendingAccountId(site)))
+  if (!own) return { ...pool, own: 0 }
+  return {
+    ...pool,
+    balance: pool.balance + own.balance,
+    reserved: pool.reserved + own.reserved,
+    available: pool.available + own.available,
+    grants: [...own.grants, ...pool.grants],
+    own: own.available,
+  }
+}
+
 /** The account's current billing period, or the last 30 days when it has none. */
 const periodStartOf = async (tx: Tx, accountId: string) => {
   const now = new Date()
@@ -400,16 +425,21 @@ export async function reserveArticleCredit(
 ) {
   validateAmount(amount)
   return prisma.$transaction(async (tx) => {
-    const { site, account } = await lockBlogAccount(tx, clientSiteId)
-    const accountId = account.id
-    const current = await walletView(tx, account)
+    const site = await lockBlog(tx, clientSiteId)
+    const own = await ownWallet(tx, site)
+    const account = await lockBillingAccount(tx, spendingAccountId(site))
+    const pool = await walletView(tx, account)
     const previous = await tx.articleCreditOperation.findUnique({ where: { idempotencyKey: key } })
     if (previous) throw createError({ statusCode: 409, message: 'Operation already submitted' })
     // A paused (BASIC) agency blog keeps its place in the agency, not its share of the pool.
     if (account.kind === 'AGENCY' && !hasAiPlan(site.plan))
       throw createError({ statusCode: 403, message: 'AI plan is not active', data: { code: 'AI_PLAN_REQUIRED' } })
 
-    if (site.monthlyUnitLimit !== null) {
+    // One operation draws from one account, so the blog's own credits go first only when they cover all of it.
+    const fromOwn = !!own && own.available >= amount
+    const accountId = fromOwn ? site.id : account.id
+    const current = fromOwn ? own : pool
+    if (!fromOwn && site.monthlyUnitLimit !== null) {
       const used = await blogUnitsUsed(tx, site, accountId)
       if (used + amount > site.monthlyUnitLimit)
         throw createError({
@@ -464,7 +494,10 @@ export async function reserveArticleCredit(
   })
 }
 
-/** Settles against the pool that was charged, even if the blog has since moved to another account. */
+/**
+ * Settles against the pool that was charged, even if the blog has since moved to another account. Returns what the
+ * blog can spend now.
+ */
 export async function settleArticleCredit(
   operation: Pick<ArticleCreditOperation, 'id' | 'clientSiteId'>,
   charge: boolean,
@@ -472,12 +505,12 @@ export async function settleArticleCredit(
   transaction?: Tx,
 ) {
   const write = async (tx: Tx) => {
-    await lockBlog(tx, operation.clientSiteId)
+    const site = await lockBlog(tx, operation.clientSiteId)
     const current = await tx.articleCreditOperation.findFirstOrThrow({
       where: { id: operation.id, clientSiteId: operation.clientSiteId },
     })
     const account = await lockBillingAccount(tx, current.accountId)
-    if (current.status !== 'RESERVED') return walletView(tx, account)
+    if (current.status !== 'RESERVED') return blogWallet(tx, site)
 
     if (!charge) {
       for (const allocation of current.allocations as Allocation)
@@ -517,14 +550,14 @@ export async function settleArticleCredit(
         idempotencyKey: `settle:${current.id}`,
       },
     })
-    return walletView(tx, account)
+    return blogWallet(tx, site)
   }
   return transaction ? write(transaction) : prisma.$transaction(write)
 }
 
-/** The wallet the blog spends from; for an agency blog this is the shared pool. */
+/** What the blog can spend: its own wallet, or for an agency blog the shared pool plus its own leftover credits. */
 export async function getArticleCreditWallet(clientSiteId: string, transaction?: Tx) {
-  const read = async (tx: Tx) => walletView(tx, (await lockBlogAccount(tx, clientSiteId)).account)
+  const read = async (tx: Tx) => blogWallet(tx, await lockBlog(tx, clientSiteId))
   return transaction ? read(transaction) : prisma.$transaction(read)
 }
 

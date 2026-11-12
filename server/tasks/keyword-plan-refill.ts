@@ -54,7 +54,7 @@ export default defineMonitoredTask({
     for (const site of sites) {
       if (attempted >= MAX_REBUILDS) break
       const quality = articleQualityOf(site.articleQuality)
-      const credits = poolOf(site)?.grants.reduce((total, grant) => total + grant.remaining, 0) ?? 0
+      const credits = spendableUnits(site)
       const schedule = releaseScheduleOf(site)
       // A site that cannot write consumes no topics, so its stock waits for the credits.
       if (!schedule || !hasAiPlan(site.plan) || credits < articleCreditCost(quality)) continue

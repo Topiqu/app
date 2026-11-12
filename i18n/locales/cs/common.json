@@ -325,6 +325,8 @@
       "explanation": "Nevyčerpané kredity z tarifu se při aktivním tarifu převádějí, nejvýše do dvojnásobku měsíční dotace. Dokoupené kredity neexpirují.",
       "reserved": "Dočasně rezervováno",
       "reservedHint": "Článek podle kvality rezervuje 1, 2 nebo 3 kredity. Při technické chybě se celá částka vrátí.",
+      "own": "Vlastní kredity blogu",
+      "ownHint": "Koupené před vstupem do agentury. Čerpají se přednostně a zůstanou blogu, pokud agenturu opustí.",
       "reasons": {
         "manualArticle": "Ručně vytvořený článek",
         "scheduledArticle": "Automaticky vytvořený článek",

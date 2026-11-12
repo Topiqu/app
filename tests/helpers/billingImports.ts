@@ -11,5 +11,6 @@ export const stubBillingAccountImports = () =>
     'updateAccountTerms',
     'poolWalletSelect',
     'poolOf',
+    'spendableUnits',
     'rejectAgencyBilled',
   )

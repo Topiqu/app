@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { hasAiPlan } from '../../shared/utils/plans'
 import { articleQualityOf } from '../../shared/utils/articleQuality'
 import { articleCreditCost } from '../../shared/utils/articleCredits'
-import { poolOf, poolWalletSelect } from '../../server/utils/billingAccount'
+import { poolOf, poolWalletSelect, spendableUnits } from '../../server/utils/billingAccount'
 
 const findMany = vi.fn()
 const refill = vi.fn()
@@ -29,6 +29,7 @@ const stubGlobals = () => {
     activeFeatureFilter: (code: string) => ({ features: { some: { isActive: true, feature: { code } } } }),
     articleQualityOf,
     poolOf,
+    spendableUnits,
     poolWalletSelect,
     articleCreditCost,
     hasAiPlan,

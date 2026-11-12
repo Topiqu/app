@@ -424,6 +424,11 @@ export const agencyBlogUsage = async (accountId: string, chosen?: AgencyPeriod) 
     },
     _count: { _all: true },
   })
+  // Read without the ledger locks, so a just-expired grant may still count until the blog next spends.
+  const own = await prisma.articleCreditWallet.findMany({
+    where: { id: { in: attached.map(({ id }) => id) } },
+    select: { id: true, balance: true, reserved: true },
+  })
   const unitsOf = (id: string) => usage.find((row) => row.clientSiteId === id)?._sum.reserved ?? 0
   return {
     period,
@@ -438,6 +443,12 @@ export const agencyBlogUsage = async (accountId: string, chosen?: AgencyPeriod) 
       monthlyUnitLimit: blog.monthlyUnitLimit,
       unitsUsed: unitsOf(blog.id),
       published: published.find((row) => row.clientSiteId === blog.id)?._count._all ?? 0,
+      ownUnits: Math.max(
+        0,
+        own
+          .filter((wallet) => wallet.id === blog.id)
+          .reduce((total, wallet) => total + wallet.balance - wallet.reserved, 0),
+      ),
     })),
     // Left the agency since; their articles after leaving are no longer the agency's, so only units count.
     former: blogs

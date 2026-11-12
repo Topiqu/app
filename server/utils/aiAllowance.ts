@@ -155,7 +155,12 @@ const fund = async (
       idempotencyKey: `included:${BILLING_POLICY_VERSION}:${accountId}:${start.toISOString()}:${kind}:${ceiling}`,
     })
   }
-  // Bought and carried articles retain separately funded capacity; this never consumes their balance.
+  await fundArticles(tx, accountId, purchaseIds)
+  return { start, end, trial }
+}
+
+/** Bought and carried articles retain separately funded capacity; this never consumes their balance. */
+const fundArticles = async (tx: DatabaseTransaction, accountId: string, purchaseIds: string[]) => {
   const articles = await tx.articleCreditGrant.findMany({
     where: {
       accountId,
@@ -185,7 +190,6 @@ const fund = async (
       idempotencyKey: articleFundingKey(article.id),
     })
   }
-  return { start, end, trial }
 }
 
 const linesNetCents = (invoice: Stripe.Invoice, matches: (priceId: string) => boolean): number | null => {
@@ -390,6 +394,98 @@ const recover = async (tx: DatabaseTransaction, accountId: string, now: Date) =>
   }
 }
 
+/** The article grants a reserved article operation on this account draws from; their funding is its to spend. */
+const purchasesOf = async (
+  tx: DatabaseTransaction,
+  accountId: string,
+  clientSiteId: string,
+  metadata: Record<string, unknown>,
+  now: Date,
+) => {
+  if (typeof metadata.articleOperationId !== 'string') return []
+  const operation = await tx.articleCreditOperation.findFirst({
+    where: { id: metadata.articleOperationId, accountId, clientSiteId, status: 'RESERVED', expiresAt: { gt: now } },
+    select: { allocations: true },
+  })
+  return operation ? (operation.allocations as Allocation).map((allocation) => allocation.id) : []
+}
+
+const spendableGrants = (
+  tx: DatabaseTransaction,
+  accountId: string,
+  kind: AiAllowanceKind,
+  purchaseIds: string[],
+  now: Date,
+) =>
+  tx.aiAllowanceGrant.findMany({
+    where: {
+      accountId,
+      kind,
+      remaining: { gt: 0 },
+      AND: [
+        { OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
+        {
+          OR: [
+            { source: { notIn: ARTICLE_FUNDING_SOURCES } },
+            { idempotencyKey: { in: purchaseIds.map(articleFundingKey) } },
+          ],
+        },
+      ],
+    },
+    orderBy: [{ expiresAt: { sort: 'asc', nulls: 'last' } }, { createdAt: 'asc' }, { id: 'asc' }],
+  })
+
+/**
+ * An agency blog's own packs and the funding of its own bought articles, from before it joined. Used only when they
+ * cover the whole call, because one reservation draws from one account. Its DIRECT account is locked before the pool.
+ */
+const ownGrants = async (
+  tx: DatabaseTransaction,
+  site: ClientSite,
+  kind: AiAllowanceKind,
+  amount: number,
+  metadata: Record<string, unknown>,
+  now: Date,
+) => {
+  if (!site.billingAccountId || !hasAiPlan(site.plan)) return null
+  const purchaseIds = await purchasesOf(tx, site.id, site.id, metadata, now)
+  const owned = await tx.aiAllowanceGrant.count({
+    where: {
+      accountId: site.id,
+      kind,
+      remaining: { gt: 0 },
+      source: { notIn: ARTICLE_FUNDING_SOURCES },
+      OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
+    },
+  })
+  if (!owned && !purchaseIds.length) return null
+  const account = await lockBillingAccount(tx, site.id)
+  // Never `fund`: its plan terms would read the agency's plan as the blog's own and mint an allowance.
+  if (purchaseIds.length) await fundArticles(tx, site.id, purchaseIds)
+  await recover(tx, site.id, now)
+  const grants = await spendableGrants(tx, site.id, kind, purchaseIds, now)
+  const debtField = costDebtField(kind)
+  const debt = debtField ? site[debtField] : 0
+  if (grants.reduce((total, row) => total + row.remaining, 0) < amount + debt) return null
+  return { account, grants, renewsAt: null }
+}
+
+const poolGrants = async (
+  tx: DatabaseTransaction,
+  site: ClientSite,
+  kind: AiAllowanceKind,
+  metadata: Record<string, unknown>,
+  now: Date,
+) => {
+  const account = await lockBillingAccount(tx, spendingAccountId(site))
+  const purchaseIds = await purchasesOf(tx, account.id, site.id, metadata, now)
+  const period = await fund(tx, site, account, now, purchaseIds)
+  if (!period)
+    throw createError({ statusCode: 403, message: 'AI plan is not active', data: { code: 'AI_PLAN_REQUIRED' } })
+  await recover(tx, account.id, now)
+  return { account, grants: await spendableGrants(tx, account.id, kind, purchaseIds, now), renewsAt: period.end }
+}
+
 export const reserveAiAllowance = async (
   clientSiteId: string,
   kind: AiAllowanceKind,
@@ -399,46 +495,11 @@ export const reserveAiAllowance = async (
   if (!Number.isSafeInteger(amount) || amount <= 0 || amount > 2_000_000_000)
     throw new RangeError('Invalid AI reservation')
   return prisma.$transaction(async (tx) => {
-    const { site, account } = await lockBlogAccount(tx, clientSiteId, { live: true })
-    const accountId = account.id
+    const site = await lockBlog(tx, clientSiteId, { live: true })
     const now = new Date()
-    const articleOperation =
-      typeof metadata.articleOperationId === 'string'
-        ? await tx.articleCreditOperation.findFirst({
-            where: {
-              id: metadata.articleOperationId,
-              accountId,
-              clientSiteId,
-              status: 'RESERVED',
-              expiresAt: { gt: now },
-            },
-            select: { allocations: true },
-          })
-        : null
-    const purchaseIds = articleOperation
-      ? (articleOperation.allocations as Allocation).map((allocation) => allocation.id)
-      : []
-    const period = await fund(tx, site, account, now, purchaseIds)
-    if (!period)
-      throw createError({ statusCode: 403, message: 'AI plan is not active', data: { code: 'AI_PLAN_REQUIRED' } })
-    await recover(tx, accountId, now)
-    const grants = await tx.aiAllowanceGrant.findMany({
-      where: {
-        accountId,
-        kind,
-        remaining: { gt: 0 },
-        AND: [
-          { OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
-          {
-            OR: [
-              { source: { notIn: ARTICLE_FUNDING_SOURCES } },
-              { idempotencyKey: { in: purchaseIds.map(articleFundingKey) } },
-            ],
-          },
-        ],
-      },
-      orderBy: [{ expiresAt: { sort: 'asc', nulls: 'last' } }, { createdAt: 'asc' }, { id: 'asc' }],
-    })
+    const { account, grants, renewsAt } =
+      (await ownGrants(tx, site, kind, amount, metadata, now)) ?? (await poolGrants(tx, site, kind, metadata, now))
+    const accountId = account.id
     // Bought and carried articles spend their own funding first; overrun debt is the shared budget's.
     const funding = grants.filter((row) => ARTICLE_FUNDING_SOURCES.includes(row.source))
     const shared = grants.filter((row) => !ARTICLE_FUNDING_SOURCES.includes(row.source))
@@ -460,7 +521,7 @@ export const reserveAiAllowance = async (
         data: {
           code: 'AI_ALLOWANCE_EXHAUSTED',
           kind,
-          renewsAt: period.end.toISOString(),
+          renewsAt: renewsAt?.toISOString() ?? null,
         },
       })
     }
@@ -621,14 +682,20 @@ export const getAiAllowance = async (clientSiteId: string) =>
     const now = new Date()
     const period = await fund(tx, site, account, now)
     await recover(tx, account.id, now)
-    const rows = await tx.aiAllowanceGrant.findMany({
-      where: {
-        accountId: account.id,
-        source: { notIn: ARTICLE_FUNDING_SOURCES },
-        OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
-      },
-      select: { kind: true, amount: true, remaining: true, source: true },
-    })
+    const rowsOf = (accountId: string) =>
+      tx.aiAllowanceGrant.findMany({
+        where: {
+          accountId,
+          source: { notIn: ARTICLE_FUNDING_SOURCES },
+          OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
+        },
+        select: { kind: true, amount: true, remaining: true, source: true },
+      })
+    const rows = await rowsOf(account.id)
+    // An agency blog also spends its own packs from before it joined; their debt is the blog's own.
+    const own = account.kind === 'AGENCY' && period ? await rowsOf(site.id) : []
+    const sum = (list: typeof rows, kind: string, field: 'amount' | 'remaining') =>
+      list.filter((row) => row.kind === kind).reduce((total, row) => total + row[field], 0)
     return {
       active: period !== null,
       pooled: account.kind === 'AGENCY',
@@ -641,12 +708,10 @@ export const getAiAllowance = async (clientSiteId: string) =>
           included: rows
             .filter((row) => row.kind === kind && row.source !== 'PURCHASE')
             .reduce((total, row) => total + row.amount, 0),
-          total: rows.filter((row) => row.kind === kind).reduce((total, row) => total + row.amount, 0),
-          remaining: Math.max(
-            0,
-            rows.filter((row) => row.kind === kind).reduce((total, row) => total + row.remaining, 0) -
-              (debtField ? debtOf(site, account, debtField) : 0),
-          ),
+          total: sum(rows, kind, 'amount') + sum(own, kind, 'amount'),
+          remaining:
+            Math.max(0, sum(rows, kind, 'remaining') - (debtField ? debtOf(site, account, debtField) : 0)) +
+            (own.length ? Math.max(0, sum(own, kind, 'remaining') - (debtField ? site[debtField] : 0)) : 0),
         }
       }),
     }

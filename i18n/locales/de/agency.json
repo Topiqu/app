@@ -101,6 +101,7 @@
       "period": "Credits und veröffentlichte Artikel in diesem Zeitraum",
       "credits": "Credit | Credits",
       "articles": "{count} Artikel | {count} Artikel",
+      "ownCredits": "{count} eigener Credit | {count} eigene Credits",
       "plan": "Tarif",
       "planSaved": "Tarif geändert.",
       "noSlot": "Kein freier Blog-Platz. Fügen Sie einen im Abonnement hinzu.",

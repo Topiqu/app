@@ -151,6 +151,7 @@ const setup = (amounts = [1, 4]) => {
     'lockBlogAccount',
     vi.fn(async () => ({ site: site(), account })),
   )
+  vi.stubGlobal('spendingAccountId', () => account.id)
   vi.stubGlobal('prisma', { $transaction: async (run: (value: typeof tx) => unknown) => run(tx) })
   return { state, tx }
 }
