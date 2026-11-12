@@ -22,8 +22,14 @@ definePageMeta({ middleware: 'auth', shell: 'product', dashboardSidebar: false }
 const route = useRoute()
 const errorKey = computed(() => authErrorKey(route.query.error))
 const localePath = useLocalePath()
+const agencyIntent = useAgencyIntent()
+const intent = agencyIntentFromQuery(route.query)
+if (intent) agencyIntent.value = intent
+// `start` opens the agency console for someone who came to run an agency.
 const appRedirect =
-  useRequestURL().hostname.replace(/^www\./, '') === 'app.topiqu.com' ? localePath({ name: 'start' }) : undefined
+  useRequestURL().hostname.replace(/^www\./, '') === 'app.topiqu.com' || agencyIntent.value
+    ? localePath({ name: 'start' })
+    : undefined
 const toast = useToast()
 const { getSession, data } = useAuth()
 

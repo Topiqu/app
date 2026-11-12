@@ -178,6 +178,10 @@
       "BASIC": "Bez AI, kreditů a vlastní domény. Obsah i přístup týmu zůstávají.",
       "PRO": "Zabere místo pro blog.",
       "PREMIUM": "Zabere místo pro blog a příplatek Premium: SEO autopilot, AI viditelnost, pět jazyků překladu."
+    },
+    "entry": {
+      "prompt": "Spravujete blogy pro klienty?",
+      "action": "Založte agenturu"
     }
   }
 }

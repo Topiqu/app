@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
+import { agencyIntentFromQuery } from '../../app/utils/agencyIntent'
 import { AI_ALLOWANCES, AI_BUDGET_MICROS_PER_CENT } from '../../shared/utils/billingCatalog'
 import {
   AGENCY_MAX_BLOCKS,
@@ -72,5 +73,19 @@ describe('agency plan', () => {
 
   it('keeps blogs live through dunning only', () => {
     expect(['ACTIVE', 'PAST_DUE', 'INACTIVE', 'CANCELED'].filter(isAgencyLive)).toEqual(['ACTIVE', 'PAST_DUE'])
+  })
+})
+
+describe('agency intent from the landing', () => {
+  it('keeps a valid calculator pick and drops an invalid one but not the intent', () => {
+    expect(agencyIntentFromQuery({ intent: 'agency', blogs: '5', premium: '1', blocks: '6' })).toEqual({
+      blogs: 5,
+      premium: 1,
+      blocks: 6,
+    })
+    expect(agencyIntentFromQuery({ intent: 'agency', blogs: '2', blocks: '4' })).toEqual({})
+    expect(agencyIntentFromQuery({ intent: 'agency', blogs: '5', premium: '9', blocks: '4' })).toEqual({})
+    expect(agencyIntentFromQuery({ intent: 'agency' })).toEqual({})
+    expect(agencyIntentFromQuery({ blogs: '5', blocks: '6' })).toBeNull()
   })
 })

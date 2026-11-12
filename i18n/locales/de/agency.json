@@ -178,6 +178,10 @@
       "BASIC": "Ohne KI, Credits und eigene Domain. Inhalte und Teamzugriff bleiben erhalten.",
       "PRO": "Belegt einen Blog-Platz.",
       "PREMIUM": "Belegt einen Blog-Platz und ein Premium-Add-on: SEO-Autopilot, KI-Sichtbarkeit, fünf Übersetzungssprachen."
+    },
+    "entry": {
+      "prompt": "Sie betreuen Blogs für Kunden?",
+      "action": "Agentur einrichten"
     }
   }
 }

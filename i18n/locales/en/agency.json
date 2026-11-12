@@ -178,6 +178,10 @@
       "BASIC": "No AI, credits or custom domain. Content and team access stay.",
       "PRO": "Uses a blog slot.",
       "PREMIUM": "Uses a blog slot and a Premium add-on: SEO autopilot, AI visibility, five translation languages."
+    },
+    "entry": {
+      "prompt": "Managing blogs for clients?",
+      "action": "Set up an agency"
     }
   }
 }

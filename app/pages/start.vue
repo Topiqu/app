@@ -13,6 +13,12 @@
       <h1 class="text-3xl font-bold tracking-tight">{{ $t('common.entry.title') }}</h1>
       <p class="text-muted">{{ $t('common.entry.description') }}</p>
       <UButton icon="mdi:plus" @click="createOpen = true">{{ $t('common.tenant.createAction') }}</UButton>
+      <p class="text-sm text-muted">
+        {{ $t('agency.entry.prompt') }}
+        <ULink :to="localePath({ name: 'admin-agency' })" class="font-medium text-primary">
+          {{ $t('agency.entry.action') }}
+        </ULink>
+      </p>
       <TenantCreate v-model="createOpen" />
     </template>
   </main>
@@ -27,6 +33,8 @@ const pending = shallowRef(true)
 const failed = shallowRef(false)
 const createOpen = shallowRef(false)
 const shopifyInstall = useCookie<string | null>(SHOPIFY_INSTALL_COOKIE)
+const agencyIntent = useAgencyIntent()
+const agencyPath = () => localePath({ name: 'admin-agency' })
 
 useSeoMeta({ robots: 'noindex, nofollow' })
 
@@ -40,7 +48,12 @@ const openWorkspace = async () => {
 
     const memberships = await $fetch<{ clientSiteId: string }[], '/api/tenant/memberships'>('/api/tenant/memberships')
     const active = memberships.find((item) => item.clientSiteId === auth.value?.user.clientSiteId) ?? memberships[0]
-    if (!active) return
+    if (!active) {
+      // Without a blog, an agency member or someone who came to start one belongs in the agency console.
+      const agency = agencyIntent.value ? true : (await $fetch<{ agency: unknown }>('/api/agency')).agency
+      if (agency) await navigateTo(agencyPath(), { replace: true })
+      return
+    }
 
     if (active.clientSiteId !== auth.value.user.clientSiteId) {
       await $fetch<unknown, '/api/tenant/active'>('/api/tenant/active', {
@@ -54,7 +67,9 @@ const openWorkspace = async () => {
     await navigateTo(
       shopifyInstall.value
         ? localePath({ name: 'settings', query: { tab: 'integrations', shopify: 'install' } })
-        : localePath({ name: 'admin' }),
+        : agencyIntent.value
+          ? agencyPath()
+          : localePath({ name: 'admin' }),
       { replace: true },
     )
   } catch {

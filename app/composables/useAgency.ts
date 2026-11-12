@@ -122,9 +122,17 @@ export const AGENCY_STATUS_COLORS = {
   CANCELED: 'error',
 } as const satisfies Record<AgencyStatus, string>
 
-/** Quantities picked before the agency exists carry over into its first checkout. */
-export const useAgencyDraft = (catalog: AgencyCatalog) =>
-  useState('agency-draft', () => ({ blogs: catalog.minBlogs, premium: 0, blocks: catalog.minBlocks }))
+export const useAgencyIntent = () =>
+  useCookie<AgencyIntent | null>(AGENCY_INTENT_COOKIE, { maxAge: 86400, sameSite: 'lax', default: () => null })
+
+/** Quantities picked before the agency exists, here or in the landing calculator, carry over into its first checkout. */
+export const useAgencyDraft = (catalog: AgencyCatalog) => {
+  const intent = useAgencyIntent()
+  return useState('agency-draft', () => {
+    const picked = { blogs: catalog.minBlogs, premium: 0, blocks: catalog.minBlocks, ...intent.value }
+    return isAgencyQuantities(picked) ? picked : { blogs: catalog.minBlogs, premium: 0, blocks: catalog.minBlocks }
+  })
+}
 
 /** Slots the attached blogs take; a deleted blog frees its slot, as on the server. */
 export const agencySlotsUsed = (blogs: AgencyBlog[]) => {

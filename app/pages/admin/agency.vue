@@ -58,7 +58,7 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({ middleware: 'admin', shell: 'dashboard' })
+definePageMeta({ middleware: 'agency', shell: 'dashboard' })
 useSeoMeta({ title: () => $t('agency.title') })
 
 const { formatTime } = useTime()
@@ -68,4 +68,14 @@ const owner = computed(() => data.value?.role === 'OWNER')
 const blogs = computed(() => (data.value?.blogs ?? []).filter((blog) => !blog.deleted))
 const live = computed(() => isAgencyLive(data.value?.agency?.status ?? 'INACTIVE'))
 const slots = computed(() => agencySlotsUsed(data.value?.blogs ?? []))
+
+// The landing's pick seeds the draft until the first subscription starts.
+const agencyIntent = useAgencyIntent()
+watch(
+  () => data.value?.agency?.status,
+  (status) => {
+    if (status && status !== 'INACTIVE' && agencyIntent.value) agencyIntent.value = null
+  },
+  { immediate: true },
+)
 </script>

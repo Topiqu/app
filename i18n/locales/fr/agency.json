@@ -178,6 +178,10 @@
       "BASIC": "Sans IA, crédits ni domaine personnalisé. Le contenu et l’accès de l’équipe sont conservés.",
       "PRO": "Occupe un emplacement de blog.",
       "PREMIUM": "Occupe un emplacement de blog et une option Premium : pilote automatique SEO, visibilité IA, cinq langues de traduction."
+    },
+    "entry": {
+      "prompt": "Vous gérez des blogs pour des clients ?",
+      "action": "Créer une agence"
     }
   }
 }
