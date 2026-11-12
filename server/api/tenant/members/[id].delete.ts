@@ -6,6 +6,9 @@ export default defineEventHandler(async (event) => {
   })
   if (!target) throw createError({ statusCode: 404, message: 'Member not found' })
   if (target.role === 'OWNER') throw createError({ statusCode: 403, message: 'Owner cannot be removed' })
+  // The agency sync would recreate the row; it is managed from /admin/agency.
+  if (target.billingAccountId)
+    throw createError({ statusCode: 409, message: 'Managed by the agency', data: { code: 'AGENCY_MEMBERSHIP' } })
   if (target.id === membership.id) throw createError({ statusCode: 400, message: 'You cannot remove yourself' })
   const removedAt = new Date()
   const [user, next, tenant, owner] = await Promise.all([

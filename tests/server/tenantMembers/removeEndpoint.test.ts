@@ -1,3 +1,4 @@
+import { createError } from 'h3'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 describe('DELETE /api/tenant/members/:id', () => {
@@ -54,5 +55,26 @@ describe('DELETE /api/tenant/members/:id', () => {
         data: expect.objectContaining({ tenantName: 'Tenant', ownerEmail: 'owner@example.com' }),
       }),
     )
+  })
+
+  it('refuses a membership the agency manages', async () => {
+    const transaction = vi.fn()
+    vi.stubGlobal('createError', createError)
+    vi.stubGlobal('prisma', {
+      tenantMembership: {
+        findFirst: vi.fn().mockResolvedValue({
+          id: 'membership-2',
+          userId: 'member-1',
+          role: 'MEMBER',
+          scopes: [],
+          billingAccountId: 'agency-1',
+        }),
+      },
+      $transaction: transaction,
+    })
+
+    const handler = (await import('../../../server/api/tenant/members/[id].delete')).default
+    await expect(handler({} as never)).rejects.toMatchObject({ statusCode: 409, data: { code: 'AGENCY_MEMBERSHIP' } })
+    expect(transaction).not.toHaveBeenCalled()
   })
 })

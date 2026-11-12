@@ -6,7 +6,7 @@ import { TENANT_SCOPES } from '../../../server/utils/tenantMembership'
 afterEach(() => vi.unstubAllGlobals())
 beforeEach(() => vi.resetModules())
 
-const setup = async (scopes: string[], currentScopes = ['ARTICLE_WRITE', 'AI_USE']) => {
+const setup = async (scopes: string[], currentScopes = ['ARTICLE_WRITE', 'AI_USE'], billingAccountId?: string) => {
   const update = vi.fn().mockResolvedValue({ id: 'member-2', scopes: [...new Set(scopes)] })
   const log = vi.fn()
   vi.stubGlobal('defineEventHandler', (handler: unknown) => handler)
@@ -21,9 +21,13 @@ const setup = async (scopes: string[], currentScopes = ['ARTICLE_WRITE', 'AI_USE
   vi.stubGlobal('readValidatedBody', async (_event: unknown, parse: (value: unknown) => unknown) => parse({ scopes }))
   vi.stubGlobal('prisma', {
     tenantMembership: {
-      findFirst: vi
-        .fn()
-        .mockResolvedValue({ id: 'member-2', userId: 'author-1', role: 'MEMBER', scopes: currentScopes }),
+      findFirst: vi.fn().mockResolvedValue({
+        id: 'member-2',
+        userId: 'author-1',
+        role: 'MEMBER',
+        scopes: currentScopes,
+        billingAccountId,
+      }),
       update,
     },
   })
@@ -71,5 +75,11 @@ describe('tenant scope change audit', () => {
         }),
       }),
     )
+  })
+
+  it('refuses a membership the agency manages', async () => {
+    const { run, update } = await setup(['ARTICLE_WRITE'], ['ARTICLE_WRITE', 'AI_USE'], 'agency-1')
+    await expect(run()).rejects.toMatchObject({ statusCode: 409, data: { code: 'AGENCY_MEMBERSHIP' } })
+    expect(update).not.toHaveBeenCalled()
   })
 })

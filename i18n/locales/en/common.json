@@ -1766,6 +1766,8 @@
       "owner": "Owner",
       "member": "Member",
       "you": "You",
+      "agency": "Agency",
+      "agencyManaged": "Access is managed by the agency",
       "joined": "Joined {date}",
       "permissions": "Permissions",
       "remove": "Remove",

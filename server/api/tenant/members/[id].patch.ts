@@ -9,6 +9,9 @@ export default defineEventHandler(async (event) => {
   })
   if (!target) throw createError({ statusCode: 404, message: 'Member not found' })
   if (target.role === 'OWNER') throw createError({ statusCode: 403, message: 'Owner permissions cannot be changed' })
+  // The agency sync would overwrite the scopes; they are managed from /admin/agency.
+  if (target.billingAccountId)
+    throw createError({ statusCode: 409, message: 'Managed by the agency', data: { code: 'AGENCY_MEMBERSHIP' } })
   if (target.id === membership.id && !body.scopes.includes('MEMBER_CONTROL'))
     throw createError({ statusCode: 400, message: 'You cannot remove your own member control permission' })
   const scopes = [...new Set(body.scopes)]
