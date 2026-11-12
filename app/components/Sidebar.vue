@@ -67,6 +67,17 @@
         />
         <UButton
           v-if="auth?.user?.role === 'admin'"
+          :to="localePath({ name: 'admin-agency' })"
+          icon="mdi:domain"
+          color="neutral"
+          variant="ghost"
+          :label="collapsed ? undefined : $t('agency.navigation')"
+          :aria-label="$t('agency.navigation')"
+          :square="collapsed"
+          :ui="{ base: collapsed ? 'self-center' : 'w-full justify-start' }"
+        />
+        <UButton
+          v-if="auth?.user?.role === 'admin'"
           :to="localePath({ name: 'settings' })"
           icon="mdi:cog-outline"
           color="neutral"

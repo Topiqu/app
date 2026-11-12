@@ -1,0 +1,183 @@
+{
+  "agency": {
+    "navigation": "Agency",
+    "title": "Agency",
+    "loadFailed": "The agency could not be loaded.",
+    "status": {
+      "INACTIVE": "Inactive",
+      "ACTIVE": "Active",
+      "PAST_DUE": "Payment overdue",
+      "CANCELED": "Canceled"
+    },
+    "billingNotice": {
+      "title": "Billed by your agency",
+      "description": "This blog is part of an agency subscription. Its credits and AI budget come from the agency's shared pool.",
+      "manage": "Open agency"
+    },
+    "create": {
+      "title": "Create an agency account",
+      "description": "One subscription for all your clients' blogs. Each blog runs on Pro or Premium and shares article credits with the others, or stays on Free at no cost.",
+      "name": "Agency name",
+      "submit": "Create agency",
+      "created": "Agency created.",
+      "eyebrow": "For agencies",
+      "headline": "Every client blog, one credit pool",
+      "benefits": [
+        {
+          "title": "Shared credits",
+          "text": "All blogs draw from one pool. Give any blog a monthly limit."
+        },
+        {
+          "title": "One invoice",
+          "text": "Monthly in USD, with a per-blog usage report for billing your clients."
+        },
+        {
+          "title": "One team, every blog",
+          "text": "Invite colleagues once and they can work on every agency blog."
+        },
+        {
+          "title": "Nothing goes to waste",
+          "text": "Unused credits carry over, up to twice the monthly amount."
+        }
+      ],
+      "calculator": "Estimate your price",
+      "footnote": "Prices exclude VAT and are billed monthly. You can cancel at any time in billing."
+    },
+    "plan": {
+      "title": "Subscription",
+      "summary": "{blogs} blogs and {units} credits a month for {price}.",
+      "inactive": "No active subscription. Choose how many blogs and credits you need.",
+      "pastDue": "The last payment failed. Update your payment method in billing so your blogs stay active.",
+      "blogs": "Blogs",
+      "blocks": "Credit packs",
+      "taxExclusive": "excl. VAT",
+      "portal": "Billing and invoices",
+      "save": "Save changes",
+      "subscribe": "Continue to payment",
+      "increaseNote": "The difference for the rest of this period is charged now and the extra credits are added right away.",
+      "decreaseNote": "Lower quantities apply from the next invoice. The current period is not refunded.",
+      "ownerOnly": "Only agency owners can change the subscription.",
+      "saved": "Subscription updated.",
+      "pendingPayment": "Pay the open invoice to complete the change.",
+      "blogHint": "{price} per blog",
+      "blockHint": "{units} credits for {price}",
+      "minimum": "At least {blogs} blogs and {blocks} credit packs.",
+      "current": "Currently {price} a month",
+      "premium": "Premium add-ons",
+      "premiumHint": "+{price} per blog with Premium features",
+      "summaryPremium": "{blogs} blogs ({premium} Premium) and {units} credits a month for {price}."
+    },
+    "blogs": {
+      "title": "Blogs",
+      "slots": "{used} of {total} blog slots used",
+      "report": "Usage report (CSV)",
+      "empty": "No blogs yet. Create a new one or add a blog you own.",
+      "limitFor": "Monthly credit limit for {blog}",
+      "limitLabel": "Monthly credit limit",
+      "limitHelp": "The blog stops generating once it reaches the limit. The shared pool stays available to the other blogs.",
+      "removeLimit": "No limit",
+      "saveLimit": "Save",
+      "detach": "Remove from agency",
+      "detachTitle": "Remove {blog} from the agency?",
+      "detachText": "The blog moves to the Free plan and your agency team loses access to it. Its articles stay.",
+      "attachLabel": "Add a blog",
+      "attachHelp": "Blogs you own appear here.",
+      "noFreeSlot": "All blog slots are in use. Add the blog on Free, or add more blogs to the subscription.",
+      "attachPlaceholder": "Choose a blog",
+      "attach": "Add",
+      "attached": "Blog added to the agency.",
+      "limitSaved": "Limit saved.",
+      "detached": "Blog removed from the agency.",
+      "blocked": {
+        "SHOPIFY_BILLING": "{blog} is billed through Shopify and cannot join an agency.",
+        "OWN_SUBSCRIPTION": "{blog} has its own subscription. Cancel it in the blog's billing first."
+      },
+      "actionsFor": "Actions for {blog}",
+      "setLimit": "Set monthly limit",
+      "openSite": "Open site",
+      "ofLimit": "of {limit} limit",
+      "ofAgency": "{share}% of agency",
+      "period": "Credits and published articles this period",
+      "credits": "credit | credits",
+      "articles": "{count} article | {count} articles",
+      "plan": "Plan",
+      "planSaved": "Plan changed.",
+      "noSlot": "No free blog slot. Add one in the subscription.",
+      "noPremiumSlot": "No free Premium add-on. Add one in the subscription.",
+      "changePlan": "Change plan",
+      "toFreeTitle": "Switch {blog} to Free?",
+      "toFreeText": "AI, scheduled articles and the custom domain stop, and the blog moves to its Topiqu address. Content and team access stay. After an upgrade, reconnect the domain and turn the schedule back on.",
+      "toProTitle": "Switch {blog} to Pro?",
+      "toProText": "Premium features stop, including SEO autopilot and AI visibility. The autopilot has to be turned on again after an upgrade.",
+      "create": "New blog",
+      "createTitle": "The blog joins the agency on {plan}",
+      "createText": "It is billed through the agency, so it needs no plan or card of its own. You can change its plan in the list of blogs.",
+      "createAttachFailed": "The blog was created but could not join the agency. Add it below.",
+      "emptyInactive": "Once the subscription is active, create blogs here or add ones you own."
+    },
+    "members": {
+      "title": "Agency team",
+      "description": "Members get access to every agency blog. Owners also manage billing, blogs and people.",
+      "you": "(you)",
+      "roles": {
+        "OWNER": "Owner",
+        "MEMBER": "Member"
+      },
+      "removeFor": "Remove {member}",
+      "remove": "Remove",
+      "email": "Email",
+      "emailHelp": "The person needs a Topiqu account with a verified email address.",
+      "role": "Role",
+      "add": "Add",
+      "added": "Member added.",
+      "removed": "Member removed.",
+      "removeTitle": "Remove {member}?",
+      "removeText": "They lose access to every agency blog at once."
+    },
+    "errors": {
+      "generic": "That did not work. Please try again.",
+      "RATE_LIMITED": "Too many attempts. Please try again later.",
+      "ALREADY_IN_AGENCY": "This account already belongs to an agency.",
+      "INVALID_QUANTITIES": "Choose a quantity within the offered range.",
+      "ALREADY_SUBSCRIBED": "The agency already has a subscription.",
+      "SLOTS_BELOW_BLOGS": "You cannot have fewer slots than blogs on Pro or Premium.",
+      "NOT_SUBSCRIBED": "The agency needs an active subscription first.",
+      "PENDING_PAYMENT": "A previous change is still waiting for payment.",
+      "BILLING_CHANGE_PENDING": "Another billing change is in progress. Please try again in a moment.",
+      "ALREADY_ATTACHED": "This blog already belongs to an agency.",
+      "SHOPIFY_BILLING": "Blogs billed through Shopify cannot join an agency.",
+      "OWN_SUBSCRIPTION": "Cancel the blog's own subscription first.",
+      "NO_FREE_SLOT": "All blog slots are in use.",
+      "NO_ACCOUNT": "No Topiqu account with a verified email uses this address.",
+      "NO_FREE_PREMIUM_SLOT": "All Premium add-ons are in use."
+    },
+    "paidThrough": "Paid through {date}",
+    "price": {
+      "blogs": "Blogs × {count}",
+      "blocks": "Credit packs × {count} ({units} credits)",
+      "total": "Monthly total",
+      "change": "Change from current plan",
+      "premium": "Premium add-on × {count}"
+    },
+    "overview": {
+      "label": "Agency overview",
+      "credits": "Available credits",
+      "creditsNote": "{used} of {monthly} used this period",
+      "ai": "AI budget left",
+      "aiNote": "Translations, edits and SEO research across all blogs",
+      "slots": "Blog slots",
+      "slotsNote": "Free slots: {free}",
+      "slotsPremiumNote": "Free slots: {free} · Premium: {used} of {total}"
+    },
+    "plans": {
+      "BASIC": "Free",
+      "PRO": "Pro",
+      "PREMIUM": "Premium"
+    },
+    "planHints": {
+      "BASIC": "No AI, credits or custom domain. Content and team access stay.",
+      "PRO": "Uses a blog slot.",
+      "PREMIUM": "Uses a blog slot and a Premium add-on: SEO autopilot, AI visibility, five translation languages."
+    }
+  }
+}

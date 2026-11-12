@@ -1,0 +1,183 @@
+{
+  "agency": {
+    "navigation": "Agence",
+    "title": "Agence",
+    "loadFailed": "L’agence n’a pas pu être chargée.",
+    "status": {
+      "INACTIVE": "Inactif",
+      "ACTIVE": "Actif",
+      "PAST_DUE": "Paiement en retard",
+      "CANCELED": "Résilié"
+    },
+    "billingNotice": {
+      "title": "Facturé par votre agence",
+      "description": "Ce blog fait partie d’un abonnement agence. Ses crédits et son budget IA proviennent du stock partagé de l’agence.",
+      "manage": "Ouvrir l’agence"
+    },
+    "create": {
+      "title": "Créer un compte agence",
+      "description": "Un seul abonnement pour tous les blogs de vos clients. Chaque blog fonctionne en Pro ou en Premium et partage ses crédits d’articles avec les autres, ou reste gratuit.",
+      "name": "Nom de l’agence",
+      "submit": "Créer l’agence",
+      "created": "Agence créée.",
+      "eyebrow": "Pour les agences",
+      "headline": "Tous les blogs de vos clients, un seul stock de crédits",
+      "benefits": [
+        {
+          "title": "Crédits partagés",
+          "text": "Tous les blogs puisent dans le même stock. Vous pouvez fixer une limite mensuelle par blog."
+        },
+        {
+          "title": "Une seule facture",
+          "text": "Mensuelle en USD, avec un rapport de consommation par blog pour facturer vos clients."
+        },
+        {
+          "title": "Une équipe pour tous les blogs",
+          "text": "Invitez vos collègues une seule fois et ils travaillent sur tous les blogs de l’agence."
+        },
+        {
+          "title": "Rien ne se perd",
+          "text": "Les crédits inutilisés sont reportés, jusqu’à deux fois le volume mensuel."
+        }
+      ],
+      "calculator": "Estimez votre prix",
+      "footnote": "Prix HT, facturés chaque mois. Vous pouvez résilier à tout moment depuis la facturation."
+    },
+    "plan": {
+      "title": "Abonnement",
+      "summary": "{blogs} blogs et {units} crédits par mois pour {price}.",
+      "inactive": "Aucun abonnement actif. Choisissez le nombre de blogs et de crédits dont vous avez besoin.",
+      "pastDue": "Le dernier paiement a échoué. Mettez à jour votre moyen de paiement dans la facturation pour que vos blogs restent actifs.",
+      "blogs": "Blogs",
+      "blocks": "Packs de crédits",
+      "taxExclusive": "HT",
+      "portal": "Facturation et factures",
+      "save": "Enregistrer les modifications",
+      "subscribe": "Passer au paiement",
+      "increaseNote": "La différence pour le reste de la période est facturée maintenant et les crédits supplémentaires sont ajoutés immédiatement.",
+      "decreaseNote": "Les quantités réduites s’appliquent à partir de la prochaine facture. La période en cours n’est pas remboursée.",
+      "ownerOnly": "Seuls les propriétaires de l’agence peuvent modifier l’abonnement.",
+      "saved": "Abonnement mis à jour.",
+      "pendingPayment": "Réglez la facture ouverte pour finaliser la modification.",
+      "blogHint": "{price} par blog",
+      "blockHint": "{units} crédits pour {price}",
+      "minimum": "Au moins {blogs} blogs et {blocks} packs de crédits.",
+      "current": "Actuellement {price} par mois",
+      "premium": "Options Premium",
+      "premiumHint": "+{price} par blog avec les fonctionnalités Premium",
+      "summaryPremium": "{blogs} blogs ({premium} Premium) et {units} crédits par mois pour {price}."
+    },
+    "blogs": {
+      "title": "Blogs",
+      "slots": "{used} emplacements de blog utilisés sur {total}",
+      "report": "Rapport de consommation (CSV)",
+      "empty": "Aucun blog pour l’instant. Créez-en un ou ajoutez un blog qui vous appartient.",
+      "limitFor": "Limite mensuelle de crédits pour {blog}",
+      "limitLabel": "Limite mensuelle de crédits",
+      "limitHelp": "Une fois la limite atteinte, le blog ne génère plus rien. Le stock partagé reste disponible pour les autres blogs.",
+      "removeLimit": "Sans limite",
+      "saveLimit": "Enregistrer",
+      "detach": "Retirer de l’agence",
+      "detachTitle": "Retirer {blog} de l’agence ?",
+      "detachText": "Le blog passe au forfait Gratuit et votre équipe d’agence n’y a plus accès. Ses articles sont conservés.",
+      "attachLabel": "Ajouter un blog",
+      "attachHelp": "Les blogs dont vous êtes propriétaire apparaissent ici.",
+      "noFreeSlot": "Tous les emplacements de blog sont occupés. Ajoutez le blog en Gratuit ou augmentez le nombre de blogs dans l’abonnement.",
+      "attachPlaceholder": "Choisissez un blog",
+      "attach": "Ajouter",
+      "attached": "Blog ajouté à l’agence.",
+      "limitSaved": "Limite enregistrée.",
+      "detached": "Blog retiré de l’agence.",
+      "blocked": {
+        "SHOPIFY_BILLING": "{blog} est facturé via Shopify et ne peut pas rejoindre une agence.",
+        "OWN_SUBSCRIPTION": "{blog} a son propre abonnement. Résiliez-le d’abord dans la facturation du blog."
+      },
+      "actionsFor": "Actions pour {blog}",
+      "setLimit": "Définir une limite mensuelle",
+      "openSite": "Ouvrir le site",
+      "ofLimit": "sur une limite de {limit}",
+      "ofAgency": "{share} % de l’agence",
+      "period": "Crédits et articles publiés sur la période",
+      "credits": "crédit | crédits",
+      "articles": "{count} article | {count} articles",
+      "plan": "Forfait",
+      "planSaved": "Forfait modifié.",
+      "noSlot": "Aucun emplacement libre. Ajoutez-en un dans l’abonnement.",
+      "noPremiumSlot": "Aucune option Premium libre. Ajoutez-en une dans l’abonnement.",
+      "changePlan": "Changer de forfait",
+      "toFreeTitle": "Passer {blog} au forfait Gratuit ?",
+      "toFreeText": "L’IA, les articles planifiés et le domaine personnalisé s’arrêtent, et le blog passe à son adresse Topiqu. Le contenu et l’accès de l’équipe sont conservés. Après une mise à niveau, reconnectez le domaine et réactivez la planification.",
+      "toProTitle": "Passer {blog} au forfait Pro ?",
+      "toProText": "Les fonctionnalités Premium s’arrêtent, dont le pilote automatique SEO et la visibilité IA. Le pilote automatique devra être réactivé après une mise à niveau.",
+      "create": "Nouveau blog",
+      "createTitle": "Le blog rejoint l’agence avec le forfait {plan}",
+      "createText": "Il est facturé via l’agence : il n’a besoin ni de son propre forfait ni de carte. Vous pouvez changer son forfait dans la liste des blogs.",
+      "createAttachFailed": "Le blog a été créé mais n’a pas pu rejoindre l’agence. Ajoutez-le ci-dessous.",
+      "emptyInactive": "Une fois l’abonnement actif, créez ici des blogs ou ajoutez ceux qui vous appartiennent."
+    },
+    "members": {
+      "title": "Équipe de l’agence",
+      "description": "Les membres accèdent à tous les blogs de l’agence. Les propriétaires gèrent en plus la facturation, les blogs et les personnes.",
+      "you": "(vous)",
+      "roles": {
+        "OWNER": "Propriétaire",
+        "MEMBER": "Membre"
+      },
+      "removeFor": "Retirer {member}",
+      "remove": "Retirer",
+      "email": "E-mail",
+      "emailHelp": "La personne doit avoir un compte Topiqu avec une adresse e-mail vérifiée.",
+      "role": "Rôle",
+      "add": "Ajouter",
+      "added": "Membre ajouté.",
+      "removed": "Membre retiré.",
+      "removeTitle": "Retirer {member} ?",
+      "removeText": "La personne perd immédiatement l’accès à tous les blogs de l’agence."
+    },
+    "errors": {
+      "generic": "Cela n’a pas fonctionné. Veuillez réessayer.",
+      "RATE_LIMITED": "Trop de tentatives. Veuillez réessayer plus tard.",
+      "ALREADY_IN_AGENCY": "Ce compte appartient déjà à une agence.",
+      "INVALID_QUANTITIES": "Choisissez une quantité dans la plage proposée.",
+      "ALREADY_SUBSCRIBED": "L’agence a déjà un abonnement.",
+      "SLOTS_BELOW_BLOGS": "Il ne peut pas y avoir moins d’emplacements que de blogs en Pro ou Premium.",
+      "NOT_SUBSCRIBED": "L’agence a d’abord besoin d’un abonnement actif.",
+      "PENDING_PAYMENT": "Une modification précédente attend encore son paiement.",
+      "BILLING_CHANGE_PENDING": "Une autre modification de facturation est en cours. Veuillez réessayer dans un instant.",
+      "ALREADY_ATTACHED": "Ce blog appartient déjà à une agence.",
+      "SHOPIFY_BILLING": "Les blogs facturés via Shopify ne peuvent pas rejoindre une agence.",
+      "OWN_SUBSCRIPTION": "Résiliez d’abord l’abonnement propre du blog.",
+      "NO_FREE_SLOT": "Tous les emplacements de blog sont occupés.",
+      "NO_ACCOUNT": "Aucun compte Topiqu avec une adresse e-mail vérifiée n’utilise cette adresse.",
+      "NO_FREE_PREMIUM_SLOT": "Toutes les options Premium sont utilisées."
+    },
+    "paidThrough": "Payé jusqu’au {date}",
+    "price": {
+      "blogs": "Blogs × {count}",
+      "blocks": "Packs de crédits × {count} ({units} crédits)",
+      "total": "Total mensuel",
+      "change": "Écart avec l’abonnement actuel",
+      "premium": "Option Premium × {count}"
+    },
+    "overview": {
+      "label": "Aperçu de l’agence",
+      "credits": "Crédits disponibles",
+      "creditsNote": "{used} sur {monthly} utilisés sur la période",
+      "ai": "Budget IA restant",
+      "aiNote": "Traductions, retouches et recherche SEO de tous les blogs",
+      "slots": "Emplacements de blog",
+      "slotsNote": "Emplacements libres : {free}",
+      "slotsPremiumNote": "Emplacements libres : {free} · Premium : {used} sur {total}"
+    },
+    "plans": {
+      "BASIC": "Gratuit",
+      "PRO": "Pro",
+      "PREMIUM": "Premium"
+    },
+    "planHints": {
+      "BASIC": "Sans IA, crédits ni domaine personnalisé. Le contenu et l’accès de l’équipe sont conservés.",
+      "PRO": "Occupe un emplacement de blog.",
+      "PREMIUM": "Occupe un emplacement de blog et une option Premium : pilote automatique SEO, visibilité IA, cinq langues de traduction."
+    }
+  }
+}
