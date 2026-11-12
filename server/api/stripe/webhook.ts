@@ -2,6 +2,8 @@ import type Stripe from 'stripe'
 import type { ClientPlan } from '~~/generated/zenstack/models'
 import type { AiUsagePackId } from '~~/shared/utils/billingCatalog'
 
+import { reportMetaSubscribe } from '~~/server/utils/metaConversions'
+
 /** Read provider state inside the same lease as app billing changes. A preliminary read,
  * when needed, supplies identity only; it is never used for entitlement reconciliation. */
 const withSubscriptionBilling = async <T>(
@@ -19,11 +21,23 @@ const withSubscriptionBilling = async <T>(
   })
 }
 
-const recordFirstPayment = (tx: DatabaseTransaction, clientSiteId: string, subscriptionId: string) =>
-  tx.clientSite.updateMany({
-    where: { id: clientSiteId, stripeSubscriptionId: subscriptionId, firstPaidAt: null },
-    data: { firstPaidAt: new Date() },
-  })
+/** True only for the call that set it, so the first payment is reported once. */
+const recordFirstPayment = async (tx: DatabaseTransaction, clientSiteId: string, subscriptionId: string) =>
+  (
+    await tx.clientSite.updateMany({
+      where: { id: clientSiteId, stripeSubscriptionId: subscriptionId, firstPaidAt: null },
+      data: { firstPaidAt: new Date() },
+    })
+  ).count > 0
+
+const paidValue = (cents?: number | null, currency?: string | null) =>
+  cents && currency ? { amount: cents / 100, currency } : undefined
+
+const subscriptionValue = ({ items }: Stripe.Subscription) =>
+  paidValue(
+    items.data.reduce((total, item) => total + (item.price.unit_amount ?? 0) * (item.quantity ?? 1), 0),
+    items.data[0]?.price.currency,
+  )
 
 /**
  * `clearSubscription` only for a terminal deletion — an `unpaid` subscription still exists in
@@ -125,7 +139,7 @@ export default defineEventHandler(async (event) => {
           const derivedPlan = subscriptionPlan(subscription, metadataPlan)
           const paid = marksFirstPayment(subscription?.status, derivedPlan)
 
-          await serializableTransaction(async (tx) => {
+          const firstPaid = await serializableTransaction(async (tx) => {
             await assertBillingLease(tx, clientSiteId, leaseId)
             const changed = await tx.clientSite.updateMany({
               where: {
@@ -149,9 +163,14 @@ export default defineEventHandler(async (event) => {
               },
             })
 
-            if (changed.count && paid && subscriptionId) await recordFirstPayment(tx, clientSiteId, subscriptionId)
+            const first =
+              changed.count && paid && subscriptionId
+                ? await recordFirstPayment(tx, clientSiteId, subscriptionId)
+                : false
             if (changed.count && derivedPlan) await syncPlanFeatures(tx, clientSiteId)
+            return first
           })
+          if (firstPaid) void reportMetaSubscribe({ clientSiteId }, paidValue(session.amount_total, session.currency))
           return { received: true }
         },
       )
@@ -212,7 +231,7 @@ export default defineEventHandler(async (event) => {
 
         // Fires on both trial-end promotion and portal-driven plan changes (PRO↔PREMIUM).
         if (subscription.status === 'active' && derivedPlan) {
-          await serializableTransaction(async (tx) => {
+          const firstPaid = await serializableTransaction(async (tx) => {
             await assertBillingLease(tx, clientSiteId, leaseId)
             const changed = await tx.clientSite.updateMany({
               where: {
@@ -231,9 +250,12 @@ export default defineEventHandler(async (event) => {
               },
             })
 
-            if (changed.count && trialEnded) await recordFirstPayment(tx, clientSiteId, subscription.id)
+            const first =
+              changed.count && trialEnded ? await recordFirstPayment(tx, clientSiteId, subscription.id) : false
             if (changed.count) await syncPlanFeatures(tx, clientSiteId)
+            return first
           })
+          if (firstPaid) void reportMetaSubscribe({ clientSiteId }, subscriptionValue(subscription))
         }
         return { received: true }
       },
@@ -290,7 +312,8 @@ export default defineEventHandler(async (event) => {
               )
             : undefined
 
-        await serializableTransaction(async (tx) => {
+        const firstPaid = await serializableTransaction(async (tx) => {
+          let first = false
           await assertBillingLease(tx, clientSiteId, leaseId)
           if (invoice.billing_reason === 'subscription_update') {
             const activeSlot = await tx.articleCreditGrant.findFirst({
@@ -335,7 +358,7 @@ export default defineEventHandler(async (event) => {
             },
           })
           if (changed.count) {
-            await recordFirstPayment(tx, clientSiteId, subscriptionId)
+            first = await recordFirstPayment(tx, clientSiteId, subscriptionId)
             await tx.clientSite.updateMany({
               where: { id: clientSiteId, OR: [{ paidThrough: null }, { paidThrough: { lt: invoicePeriodEnd } }] },
               data: { paidThrough: invoicePeriodEnd },
@@ -360,7 +383,9 @@ export default defineEventHandler(async (event) => {
                 recurringBaseCents,
               })
           }
+          return first
         })
+        if (firstPaid) void reportMetaSubscribe({ clientSiteId }, paidValue(invoice.amount_paid, invoice.currency))
         return { received: true }
       },
     )

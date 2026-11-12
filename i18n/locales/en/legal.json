@@ -107,13 +107,13 @@
           "icon": "mdi:cookie",
           "iconColor": "text-amber-500",
           "title": "6. Cookies",
-          "content": "Essential cookies handle sign-in, security, language and storing your cookie choice for 180 days. Analytics cookies (Topiqu statistics for 30 days and, where enabled, Google Analytics 4) and Google advertising cookies (non-personalised ads only) run only with your consent. You can change your choice under Cookie settings in the site footer."
+          "content": "Essential cookies handle sign-in, security, language and storing your cookie choice for 180 days. Analytics cookies (Topiqu statistics for 30 days and, where enabled, Google Analytics 4) and Google advertising cookies (non-personalised ads only) run only with your consent. On topiqu.com, the Meta Pixel (Meta Platforms Ireland) measures sign-ups from our advertising, also only with your consent. You can change your choice under Cookie settings in the site footer."
         },
         {
           "icon": "mdi:share-variant",
           "iconColor": "text-orange-500",
           "title": "7. Who receives data",
-          "content": "We share data with service providers acting as processors or, where applicable, independent controllers, including: Stripe (payments), AI model providers, services you choose to connect or sign in with, hosting, storage and email providers, Cloudflare (CDN and security), technical monitoring providers and Google (analytics and advertising, only with consent). Some are based in the US; these transfers rely on safeguards such as the EU Standard Contractual Clauses or the EU–US Data Privacy Framework, with details available on request. We also disclose data where the law requires it."
+          "content": "We share data with service providers acting as processors or, where applicable, independent controllers, including: Stripe (payments), AI model providers, services you choose to connect or sign in with, hosting, storage and email providers, Cloudflare (CDN and security), technical monitoring providers Google (analytics and advertising) and Meta (measuring our advertising), both only with consent. Some are based in the US; these transfers rely on safeguards such as the EU Standard Contractual Clauses or the EU–US Data Privacy Framework, with details available on request. We also disclose data where the law requires it."
         },
         {
           "icon": "mdi:timer-sand",
@@ -134,7 +134,7 @@
           "content": "The controller is Vojtěch Benjamín Tomaník, company ID 24088765, Czech Republic. The registered address is listed in the ARES register (ares.gov.cz). Contact: privacy&#64;topiqu.com. We announce material changes to this policy by email or in the app."
         }
       ],
-      "updatedAt": "5 November 2026"
+      "updatedAt": "12 November 2026"
     }
   }
 }

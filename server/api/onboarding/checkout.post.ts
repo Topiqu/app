@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { randomBytes } from 'crypto'
+import { landingMetaSignals, reportMetaSignUp } from '~~/server/utils/metaConversions'
 
 const LOGIN_TOKEN_TTL_MS = 30 * 60 * 1000
 const SIGNUPS_PER_IP_PER_DAY = 10
@@ -239,6 +240,11 @@ export default defineEventHandler(async (event) => {
       })
     }
 
+    if (attempt.userId)
+      void reportMetaSignUp({ id: attempt.userId, email: body.email }, landingMetaSignals(event), {
+        url: `https://${process.env.BASE_DOMAIN || 'topiqu.com'}/`,
+        trial,
+      })
     return finishOnboardingCheckout(attempt, body)
   })
 })

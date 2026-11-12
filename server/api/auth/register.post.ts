@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { reportPlatformSignUp } from '~~/server/utils/metaConversions'
 
 export default defineEventHandler(async (event) => {
   const { translate: t } = await useServerI18n(event)
@@ -30,6 +31,7 @@ export default defineEventHandler(async (event) => {
   })
 
   await issueEmailVerification(event, email, user.id)
+  reportPlatformSignUp(event, { id: user.id, email })
 
   return user
 })
