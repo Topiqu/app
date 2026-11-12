@@ -175,7 +175,7 @@ export default defineNuxtConfig({
               'content-actions',
             ],
             '0 4 * * *': ['gam-sync'],
-            '15 4 * * *': ['grant-annual-article-credits'],
+            '15 4 * * *': ['grant-annual-article-credits', 'agency-sync'],
             '30 4 * * *': ['media-gc'],
             '45 * * * *': ['knowledge-refresh'],
             '20 * * * *': ['shopify-billing'],
