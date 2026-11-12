@@ -11,18 +11,33 @@ const WEBHOOK_LEASE_WAIT_MS = 5_000
 const pending = () =>
   createError({ statusCode: 409, message: 'Billing change in progress', data: { code: 'BILLING_CHANGE_PENDING' } })
 
-/** The signed-in person's agency. Only OWNER changes billing, blogs and people. */
+/**
+ * The signed-in person's agency, resolved through the policy client, which reads an agency only to its members.
+ * Only OWNER changes billing, blogs and people. Ledger, projection and Stripe writes stay on the system client.
+ */
 export const requireAgencyMember = async (event: H3Event, { owner = false } = {}) => {
   const user = await requireUser(event)
   if (user.role === 'ai') throw createError({ statusCode: 403, message: 'Forbidden' })
-  const member = await prisma.billingAccountMember.findFirst({
+  const db = await getEnhancedPrisma(user)
+  const member = await db.billingAccountMember.findFirst({
     where: { userId: user.id, deletedAt: null, account: { kind: 'AGENCY' } },
     orderBy: [{ role: 'asc' }, { createdAt: 'asc' }],
     select: { id: true, role: true, scopes: true, accountId: true },
   })
   if (!member) throw createError({ statusCode: 404, message: 'No agency', data: { code: 'NO_AGENCY' } })
   if (owner && member.role !== 'OWNER') throw createError({ statusCode: 403, message: 'Agency owner required' })
-  return { user, member }
+  return { user, member, db }
+}
+
+type PolicyClient = Awaited<ReturnType<typeof getEnhancedPrisma>>
+
+/** A blog id from the request, proven to be one of this agency's blogs by the policy client. */
+export const requireAgencyBlog = async (db: PolicyClient, accountId: string, clientSiteId: string) => {
+  const account = await db.billingAccount.findFirst({
+    where: { id: accountId },
+    select: { agencySites: { where: { id: clientSiteId }, select: { id: true } } },
+  })
+  if (!account?.agencySites.length) throw createError({ statusCode: 404, message: 'Blog not found' })
 }
 
 /**

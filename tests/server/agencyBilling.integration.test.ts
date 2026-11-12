@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { createError } from 'h3'
 import { randomUUID } from 'node:crypto'
+import { PolicyPlugin } from '@zenstackhq/plugin-policy'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 
 import type { DatabaseTransaction } from '../../server/utils/database'
@@ -24,6 +25,7 @@ import {
 import {
   agencyBlogUsage,
   agencyPeriods,
+  requireAgencyBlog,
   revokeAgencyAccess,
   syncAgencyMemberships,
   syncAgencySites,
@@ -64,6 +66,15 @@ describe.skipIf(!enabled)('agency billing accounts on PostgreSQL', () => {
     await db?.$disconnect()
     vi.unstubAllGlobals()
   })
+
+  /** A person in an agency, and the policy client a request of theirs would use. */
+  const person = async (accountId: string, role: 'OWNER' | 'MEMBER') => {
+    const id = randomUUID()
+    await db!.user.create({ data: { id, username: `agency-${id}`, email: `${id}@example.test` } })
+    await db!.billingAccountMember.create({ data: { accountId, userId: id, role } })
+    return { id, role: 'user', clientSiteId: null }
+  }
+  const scoped = (user: { id: string }) => db!.$use(new PolicyPlugin()).$setAuth(user as never)
 
   const start = () => new Date(Date.now() - 86400000)
   const end = () => new Date(Date.now() + 29 * 86400000)
@@ -426,15 +437,32 @@ describe.skipIf(!enabled)('agency billing accounts on PostgreSQL', () => {
     expect(await db!.tenantMembership.count({ where: { userId: client.id } })).toBe(1)
   })
 
+  it('reads an agency, its blogs and its people only to its members through the policy client', async () => {
+    const f = await agency()
+    const other = await agency()
+    const insider = await person(f.accountId, 'MEMBER')
+    const outsider = await person(other.accountId, 'OWNER')
+
+    await expect(requireAgencyBlog(scoped(insider), f.accountId, f.a)).resolves.toBeUndefined()
+    // Another agency's blog, and this agency's blog asked for by someone outside it.
+    await expect(requireAgencyBlog(scoped(insider), f.accountId, other.a)).rejects.toMatchObject({ statusCode: 404 })
+    await expect(requireAgencyBlog(scoped(outsider), f.accountId, f.a)).rejects.toMatchObject({ statusCode: 404 })
+    expect(await scoped(outsider).billingAccountMember.findFirst({ where: { accountId: f.accountId } })).toBeNull()
+    expect(await scoped(insider).billingAccountMember.count({ where: { accountId: f.accountId } })).toBe(1)
+  })
+
   it('changes a blog plan only within the slots and frees the slot of a deleted blog', async () => {
     const f = await agency({ blogs: 1, premium: 1 })
     await db!.clientSite.update({ where: { id: f.b }, data: { agencyPlan: 'BASIC', plan: 'BASIC' } })
     let request: { id: string; body: unknown } = { id: f.a, body: {} }
+    const owner = await person(f.accountId, 'OWNER')
     vi.stubGlobal('defineEventHandler', (handler: unknown) => handler)
     vi.stubGlobal('requireAgencyMember', async () => ({
-      user: { id: randomUUID() },
+      user: owner,
       member: { accountId: f.accountId },
+      db: scoped(owner),
     }))
+    await stubNitroImports(import('../../server/utils/agency'), 'requireAgencyBlog')
     vi.stubGlobal('getRouterParam', () => request.id)
     vi.stubGlobal('readValidatedBody', async (_event: unknown, parse: (body: unknown) => unknown) =>
       parse(request.body),

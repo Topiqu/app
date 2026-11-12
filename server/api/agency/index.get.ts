@@ -21,8 +21,8 @@ const catalog = {
 }
 
 /** Blogs the person owns through their own team, not yet billed by an agency. */
-const attachableBlogs = async (userId: string) => {
-  const rows = await prisma.tenantMembership.findMany({
+const attachableBlogs = async (db: Awaited<ReturnType<typeof getEnhancedPrisma>>, userId: string) => {
+  const rows = await db.tenantMembership.findMany({
     where: {
       userId,
       role: 'OWNER',
@@ -50,15 +50,15 @@ const attachableBlogs = async (userId: string) => {
 export default defineEventHandler(async (event) => {
   const user = await requireUser(event)
   if (user.role === 'ai') throw createError({ statusCode: 403, message: 'Forbidden' })
-  const member = await prisma.billingAccountMember.findFirst({
+  const db = await getEnhancedPrisma(user)
+  const member = await db.billingAccountMember.findFirst({
     where: { userId: user.id, deletedAt: null, account: { kind: 'AGENCY' } },
     orderBy: [{ role: 'asc' }, { createdAt: 'asc' }],
     select: { role: true, accountId: true },
   })
-  const attachable = await attachableBlogs(user.id)
+  const attachable = await attachableBlogs(db, user.id)
   if (!member) return { agency: null, attachable, catalog }
 
-  const db = await getEnhancedPrisma(user)
   const account = await db.billingAccount.findUnique({
     where: { id: member.accountId },
     select: {
@@ -80,7 +80,7 @@ export default defineEventHandler(async (event) => {
     getAccountAiBudget(account.id),
     agencyBlogUsage(account.id),
     agencyPeriods(account.id),
-    prisma.billingAccountMember.findMany({
+    db.billingAccountMember.findMany({
       where: { accountId: account.id, deletedAt: null },
       orderBy: [{ role: 'asc' }, { createdAt: 'asc' }],
       select: { id: true, role: true, userId: true, user: { select: { email: true, username: true } } },

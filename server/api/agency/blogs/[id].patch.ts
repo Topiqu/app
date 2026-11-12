@@ -10,9 +10,10 @@ const schema = z
   .refine((body) => body.monthlyUnitLimit !== undefined || body.plan !== undefined)
 
 export default defineEventHandler(async (event) => {
-  const { user, member } = await requireAgencyMember(event, { owner: true })
+  const { user, member, db } = await requireAgencyMember(event, { owner: true })
   const clientSiteId = getRouterParam(event, 'id')
   if (!clientSiteId) throw createError({ statusCode: 400, message: 'Missing blog' })
+  await requireAgencyBlog(db, member.accountId, clientSiteId)
   const { monthlyUnitLimit, plan } = await readValidatedBody(event, schema.parse)
   const accountId = member.accountId
 

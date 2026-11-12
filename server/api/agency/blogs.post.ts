@@ -3,14 +3,14 @@ import { AGENCY_BLOG_PLANS, agencySlotShortfall, isAgencyLive } from '~~/shared/
 
 /** The agency owner brings a blog they own into the agency's billing and team, on a plan the slots cover. */
 export default defineEventHandler(async (event) => {
-  const { user, member } = await requireAgencyMember(event, { owner: true })
+  const { user, member, db } = await requireAgencyMember(event, { owner: true })
   const { clientSiteId, plan } = await readValidatedBody(
     event,
     z.object({ clientSiteId: z.uuid(), plan: z.enum(AGENCY_BLOG_PLANS).default('PRO') }).parse,
   )
   const accountId = member.accountId
   // Ownership through the blog's own team, so an agency can never take over someone else's blog.
-  const owner = await prisma.tenantMembership.findUnique({
+  const owner = await db.tenantMembership.findUnique({
     where: { clientSiteId_userId: { clientSiteId, userId: user.id } },
     select: { role: true, deletedAt: true, billingAccountId: true },
   })
