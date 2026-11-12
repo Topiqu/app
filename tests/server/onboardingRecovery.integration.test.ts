@@ -7,6 +7,7 @@ import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vites
 
 import { stubNitroImports } from '../helpers/nitroImports'
 import { createDatabaseClient } from '../../server/utils/database'
+import { stubBillingAccountImports } from '../helpers/billingImports'
 
 const url = process.env.TEST_DATABASE_URL
 const enabled = !!url && /test/i.test(new URL(url).pathname) && url !== process.env.DATABASE_URL
@@ -70,6 +71,7 @@ describe.skipIf(!enabled)('durable onboarding recovery on PostgreSQL', () => {
     await stubNitroImports(import('../../server/utils/trialInbox'), 'inboxOwnsSite')
     await stubNitroImports(import('../../shared/utils/articleCredits'), 'ARTICLE_CREDIT_POLICY_VERSION')
     await stubNitroImports(import('../../server/utils/articleCreditWallet'), 'creditArticleCredits')
+    await stubBillingAccountImports()
     await stubNitroImports(
       import('../../server/utils/onboardingRequest'),
       'withOnboardingRequest',
