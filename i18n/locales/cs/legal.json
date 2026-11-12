@@ -107,13 +107,13 @@
           "icon": "mdi:cookie",
           "iconColor": "text-amber-500",
           "title": "6. Cookies",
-          "content": "Nezbytné cookies zajišťují přihlášení, zabezpečení, jazyk a uložení vaší volby cookies na 180 dní. Analytické cookies (statistiky Topiqu na 30 dní, případně Google Analytics 4) a reklamní cookies Googlu (pouze nepersonalizované reklamy) se spustí jen s vaším souhlasem. Volbu změníte v Nastavení cookies v patičce webu."
+          "content": "Nezbytné cookies zajišťují přihlášení, zabezpečení, jazyk a uložení vaší volby cookies na 180 dní. Analytické cookies (statistiky Topiqu na 30 dní, případně Google Analytics 4) a reklamní cookies Googlu (pouze nepersonalizované reklamy) se spustí jen s vaším souhlasem. Na topiqu.com měří Meta Pixel (Meta Platforms Ireland) registrace z naší reklamy, rovněž jen s vaším souhlasem. Volbu změníte v Nastavení cookies v patičce webu."
         },
         {
           "icon": "mdi:share-variant",
           "iconColor": "text-orange-500",
           "title": "7. Komu údaje předáváme",
-          "content": "Údaje zpřístupňujeme poskytovatelům služeb, kteří jednají jako zpracovatelé nebo případně jako samostatní správci, mimo jiné: Stripe (platby), poskytovatelům AI modelů, službám, které si propojíte nebo přes které se přihlásíte, poskytovatelům hostingu, úložiště a e-mailů, Cloudflare (CDN a bezpečnost), poskytovatelům technického monitoringu a Google (analytika a reklama, jen se souhlasem). Část z nich sídlí v USA; předání se opírají o záruky, jako jsou standardní smluvní doložky EU nebo EU–US Data Privacy Framework, a podrobnosti sdělíme na vyžádání. Údaje poskytneme také tam, kde to ukládá zákon."
+          "content": "Údaje zpřístupňujeme poskytovatelům služeb, kteří jednají jako zpracovatelé nebo případně jako samostatní správci, mimo jiné: Stripe (platby), poskytovatelům AI modelů, službám, které si propojíte nebo přes které se přihlásíte, poskytovatelům hostingu, úložiště a e-mailů, Cloudflare (CDN a bezpečnost), poskytovatelům technického monitoringu Google (analytika a reklama) a Meta (měření naší reklamy), obojí jen se souhlasem. Část z nich sídlí v USA; předání se opírají o záruky, jako jsou standardní smluvní doložky EU nebo EU–US Data Privacy Framework, a podrobnosti sdělíme na vyžádání. Údaje poskytneme také tam, kde to ukládá zákon."
         },
         {
           "icon": "mdi:timer-sand",
@@ -134,7 +134,7 @@
           "content": "Správcem je Vojtěch Benjamín Tomaník, IČO 24088765, Česká republika. Sídlo je uvedeno v registru ARES (ares.gov.cz). Kontakt: privacy&#64;topiqu.com. Podstatné změny těchto zásad oznámíme e-mailem nebo v aplikaci."
         }
       ],
-      "updatedAt": "5. 11. 2026"
+      "updatedAt": "12. 11. 2026"
     }
   }
 }

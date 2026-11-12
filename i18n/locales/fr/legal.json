@@ -107,13 +107,13 @@
           "icon": "mdi:cookie",
           "iconColor": "text-amber-500",
           "title": "6. Cookies",
-          "content": "Les cookies essentiels servent à la connexion, à la sécurité, à la langue et à mémoriser votre choix de cookies pendant 180 jours. Les cookies d'analyse (statistiques Topiqu pendant 30 jours et, le cas échéant, Google Analytics 4) et publicitaires de Google (annonces non personnalisées uniquement) ne fonctionnent qu'avec votre consentement. Vous pouvez modifier votre choix via Paramètres des cookies en pied de page."
+          "content": "Les cookies essentiels servent à la connexion, à la sécurité, à la langue et à mémoriser votre choix de cookies pendant 180 jours. Les cookies d'analyse (statistiques Topiqu pendant 30 jours et, le cas échéant, Google Analytics 4) et publicitaires de Google (annonces non personnalisées uniquement) ne fonctionnent qu'avec votre consentement. Sur topiqu.com, le pixel Meta (Meta Platforms Ireland) mesure les inscriptions issues de nos publicités, également uniquement avec votre consentement. Vous pouvez modifier votre choix via Paramètres des cookies en pied de page."
         },
         {
           "icon": "mdi:share-variant",
           "iconColor": "text-orange-500",
           "title": "7. Destinataires",
-          "content": "Nous partageons les données avec des prestataires agissant comme sous-traitants ou, le cas échéant, comme responsables de traitement indépendants, notamment : Stripe (paiements), des fournisseurs de modèles d'IA, les services que vous connectez ou utilisez pour vous identifier, des fournisseurs d'hébergement, de stockage et d'e-mails, Cloudflare (CDN et sécurité), des fournisseurs de supervision technique et Google (analyse et publicité, uniquement avec consentement). Certains sont établis aux États-Unis ; ces transferts reposent sur des garanties telles que les clauses contractuelles types de l'UE ou le Data Privacy Framework UE–États-Unis, détails sur demande. Nous communiquons aussi des données lorsque la loi l'exige."
+          "content": "Nous partageons les données avec des prestataires agissant comme sous-traitants ou, le cas échéant, comme responsables de traitement indépendants, notamment : Stripe (paiements), des fournisseurs de modèles d'IA, les services que vous connectez ou utilisez pour vous identifier, des fournisseurs d'hébergement, de stockage et d'e-mails, Cloudflare (CDN et sécurité), des fournisseurs de supervision technique Google (analyse et publicité) et Meta (mesure de nos publicités), uniquement avec consentement. Certains sont établis aux États-Unis ; ces transferts reposent sur des garanties telles que les clauses contractuelles types de l'UE ou le Data Privacy Framework UE–États-Unis, détails sur demande. Nous communiquons aussi des données lorsque la loi l'exige."
         },
         {
           "icon": "mdi:timer-sand",
@@ -134,7 +134,7 @@
           "content": "Le responsable est Vojtěch Benjamín Tomaník, IČO 24088765, République tchèque. L'adresse du siège figure au registre ARES (ares.gov.cz). Contact : privacy&#64;topiqu.com. Nous annonçons les modifications importantes de la présente politique par e-mail ou dans l'application."
         }
       ],
-      "updatedAt": "5 novembre 2026"
+      "updatedAt": "12 novembre 2026"
     }
   }
 }

@@ -107,13 +107,13 @@
           "icon": "mdi:cookie",
           "iconColor": "text-amber-500",
           "title": "6. Cookies",
-          "content": "Notwendige Cookies dienen der Anmeldung, Sicherheit und Sprache und speichern deine Cookie-Auswahl für 180 Tage. Analyse-Cookies (Topiqu-Statistiken für 30 Tage und gegebenenfalls Google Analytics 4) und Werbe-Cookies von Google (nur nicht personalisierte Werbung) laufen nur mit deiner Einwilligung. Deine Auswahl änderst du unter Cookie-Einstellungen in der Fußzeile."
+          "content": "Notwendige Cookies dienen der Anmeldung, Sicherheit und Sprache und speichern deine Cookie-Auswahl für 180 Tage. Analyse-Cookies (Topiqu-Statistiken für 30 Tage und gegebenenfalls Google Analytics 4) und Werbe-Cookies von Google (nur nicht personalisierte Werbung) laufen nur mit deiner Einwilligung. Auf topiqu.com misst das Meta Pixel (Meta Platforms Ireland) Registrierungen aus unserer Werbung, ebenfalls nur mit Einwilligung. Deine Auswahl änderst du unter Cookie-Einstellungen in der Fußzeile."
         },
         {
           "icon": "mdi:share-variant",
           "iconColor": "text-orange-500",
           "title": "7. Empfänger",
-          "content": "Wir geben Daten an Dienstleister weiter, die als Auftragsverarbeiter oder gegebenenfalls als eigenständige Verantwortliche handeln, unter anderem: Stripe (Zahlungen), Anbieter von KI-Modellen, Dienste, die du verbindest oder zur Anmeldung nutzt, Anbieter von Hosting, Speicher und E-Mail, Cloudflare (CDN und Sicherheit), Anbieter technischer Überwachung und Google (Analyse und Werbung, nur mit Einwilligung). Einige sitzen in den USA; diese Übermittlungen stützen sich auf Garantien wie die EU-Standardvertragsklauseln oder das EU-US Data Privacy Framework, Einzelheiten auf Anfrage. Daten geben wir auch heraus, wenn das Gesetz es verlangt."
+          "content": "Wir geben Daten an Dienstleister weiter, die als Auftragsverarbeiter oder gegebenenfalls als eigenständige Verantwortliche handeln, unter anderem: Stripe (Zahlungen), Anbieter von KI-Modellen, Dienste, die du verbindest oder zur Anmeldung nutzt, Anbieter von Hosting, Speicher und E-Mail, Cloudflare (CDN und Sicherheit), Anbieter technischer Überwachung Google (Analyse und Werbung) und Meta (Messung unserer Werbung), beide nur mit Einwilligung. Einige sitzen in den USA; diese Übermittlungen stützen sich auf Garantien wie die EU-Standardvertragsklauseln oder das EU-US Data Privacy Framework, Einzelheiten auf Anfrage. Daten geben wir auch heraus, wenn das Gesetz es verlangt."
         },
         {
           "icon": "mdi:timer-sand",
@@ -134,7 +134,7 @@
           "content": "Verantwortlich ist Vojtěch Benjamín Tomaník, IČO 24088765, Tschechische Republik. Die Geschäftsanschrift steht im Register ARES (ares.gov.cz). Kontakt: privacy&#64;topiqu.com. Wesentliche Änderungen dieser Erklärung kündigen wir per E-Mail oder in der App an."
         }
       ],
-      "updatedAt": "5. November 2026"
+      "updatedAt": "12. November 2026"
     }
   }
 }
