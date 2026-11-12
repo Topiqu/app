@@ -13,8 +13,19 @@
         </p>
       </div>
       <div class="flex flex-wrap gap-2">
+        <UDropdownMenu v-if="periods.length > 1" :items="reports">
+          <UButton
+            color="neutral"
+            variant="outline"
+            size="sm"
+            icon="mdi:tray-arrow-down"
+            trailingIcon="mdi:chevron-down"
+          >
+            {{ $t('agency.blogs.report') }}
+          </UButton>
+        </UDropdownMenu>
         <UButton
-          v-if="blogs.length"
+          v-else-if="blogs.length || periods.length"
           to="/api/agency/report"
           external
           download
@@ -172,14 +183,15 @@
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { AgencyBlogPlan } from '~~/shared/utils/agencyPlan'
 
-import type { AgencyAccount, AgencyAttachableBlog, AgencyBlog } from '~/composables/useAgency'
+import type { AgencyAccount, AgencyAttachableBlog, AgencyBlog, AgencyPeriod } from '~/composables/useAgency'
 
-const { agency, blogs, slots, attachable } = defineProps<{
+const { agency, blogs, slots, attachable, periods } = defineProps<{
   agency: AgencyAccount
   /** Live blogs only; a deleted blog takes no slot. */
   blogs: AgencyBlog[]
   slots: { paid: number; premium: number }
   attachable: AgencyAttachableBlog[]
+  periods: AgencyPeriod[]
   owner: boolean
   live: boolean
 }>()
@@ -229,6 +241,26 @@ const attachItems = computed(() =>
     .map((blog) => ({ label: `${blog.name} · ${blog.domain}`, value: blog.id })),
 )
 const blocked = computed(() => attachable.filter((blog) => blog.blocked))
+
+// One report per billing period; a blog that left the agency still shows what it spent in it.
+const reports = computed((): DropdownMenuItem[][] => {
+  const dates = new Intl.DateTimeFormat(locale.value, { dateStyle: 'medium' })
+  return periods.length > 1
+    ? [
+        [
+          { type: 'label', label: t('agency.blogs.reportPeriod') },
+          ...periods.map((period) => ({
+            label: period.end
+              ? dates.formatRange(new Date(period.start), new Date(period.end))
+              : dates.format(new Date(period.start)),
+            icon: 'mdi:file-delimited-outline',
+            to: `/api/agency/report?period=${encodeURIComponent(period.start)}`,
+            external: true,
+          })),
+        ],
+      ]
+    : []
+})
 
 // Without a limit the bar shows the blog's share of the agency's spend this period.
 const rows = computed(() => {

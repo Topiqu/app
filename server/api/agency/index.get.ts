@@ -75,10 +75,11 @@ export default defineEventHandler(async (event) => {
   })
   if (!account) throw createError({ statusCode: 404, message: 'No agency', data: { code: 'NO_AGENCY' } })
 
-  const [wallet, aiBudget, { period, blogs }, members] = await Promise.all([
+  const [wallet, aiBudget, { period, blogs, usedUnits }, periods, members] = await Promise.all([
     getAccountWallet(account.id),
     getAccountAiBudget(account.id),
     agencyBlogUsage(account.id),
+    agencyPeriods(account.id),
     prisma.billingAccountMember.findMany({
       where: { accountId: account.id, deletedAt: null },
       orderBy: [{ role: 'asc' }, { createdAt: 'asc' }],
@@ -102,7 +103,9 @@ export default defineEventHandler(async (event) => {
       hasBillingPortal: Boolean(account.stripeCustomerId),
     },
     period,
-    units: { available: wallet.available, reserved: wallet.reserved },
+    periods,
+    // Includes blogs that left the agency during the period.
+    units: { available: wallet.available, reserved: wallet.reserved, used: usedUnits },
     // Null until the period's budget is funded, which is not the same as spent.
     aiBudgetLeft: aiBudget.total ? Math.round((aiBudget.remaining / aiBudget.total) * 100) : null,
     blogs,

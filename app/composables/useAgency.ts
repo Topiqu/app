@@ -37,6 +37,11 @@ export interface AgencyBlog {
   published: number
 }
 
+export interface AgencyPeriod {
+  start: string
+  end: string | null
+}
+
 export interface AgencyAttachableBlog {
   id: string
   name: string
@@ -58,7 +63,8 @@ interface AgencyOverview {
   agency: AgencyAccount | null
   role?: AgencyRole
   period?: { start: string; end: string | null } | null
-  units?: { available: number; reserved: number }
+  periods?: AgencyPeriod[]
+  units?: { available: number; reserved: number; used: number }
   aiBudgetLeft?: number | null
   blogs?: AgencyBlog[]
   members?: AgencyMember[]

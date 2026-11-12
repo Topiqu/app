@@ -12,7 +12,6 @@ import { createDatabaseClient } from '../../server/utils/database'
 import { stubBillingAccountImports } from '../helpers/billingImports'
 import { agencyAllowances, agencyUnits } from '../../shared/utils/agencyPlan'
 import { ARTICLE_CREDIT_POLICY_VERSION } from '../../shared/utils/articleCredits'
-import { revokeAgencyAccess, syncAgencyMemberships, syncAgencySites, withAgencyLease } from '../../server/utils/agency'
 import {
   creditAgencyInvoiceAiBudget,
   getAccountAiBudget,
@@ -20,6 +19,14 @@ import {
   reserveAiAllowance,
   settleAiAllowance,
 } from '../../server/utils/aiAllowance'
+import {
+  agencyBlogUsage,
+  agencyPeriods,
+  revokeAgencyAccess,
+  syncAgencyMemberships,
+  syncAgencySites,
+  withAgencyLease,
+} from '../../server/utils/agency'
 import {
   getAccountWallet,
   getArticleCreditWallet,
@@ -422,6 +429,59 @@ describe.skipIf(!enabled)('agency billing accounts on PostgreSQL', () => {
       omit: { billingLeaseId: false },
     })
     expect(account.billingLeaseId).toBeNull()
+  })
+
+  it('reports what a blog spent from the pool after it left, and each period on its own', async () => {
+    const f = await agency({ units: 10 })
+    await settleArticleCredit(await reserveArticleCredit(f.a, 'MANUAL_ARTICLE', randomUUID(), {}, 3), true)
+    await settleArticleCredit(await reserveArticleCredit(f.b, 'MANUAL_ARTICLE', randomUUID(), {}, 2), true)
+    await db!.clientSite.update({
+      where: { id: f.a },
+      data: { billingAccountId: null, agencyPlan: null, plan: 'BASIC' },
+    })
+    // A finished period: its grant is spent and one charge falls inside it.
+    const past = { start: new Date(Date.now() - 31 * 86400000), end: new Date(Date.now() - 2 * 86400000) }
+    await db!.articleCreditGrant.create({
+      data: {
+        accountId: f.accountId,
+        source: 'PLAN',
+        amount: 10,
+        remaining: 0,
+        periodStart: past.start,
+        periodEnd: past.end,
+        expiresAt: past.end,
+        policyVersion: ARTICLE_CREDIT_POLICY_VERSION,
+        idempotencyKey: `agency-past:${f.accountId}`,
+      },
+    })
+    await db!.articleCreditOperation.create({
+      data: {
+        accountId: f.accountId,
+        clientSiteId: f.b,
+        action: 'MANUAL_ARTICLE',
+        status: 'COMPLETED',
+        reserved: 4,
+        charged: 4,
+        allocations: [],
+        metadata: {},
+        idempotencyKey: `agency-past-operation:${f.accountId}`,
+        expiresAt: past.end,
+        createdAt: new Date(past.end.getTime() - 86400000),
+      },
+    })
+
+    const current = await agencyBlogUsage(f.accountId)
+    expect(current.usedUnits).toBe(5)
+    expect(current.blogs.map(({ id, unitsUsed }) => ({ id, unitsUsed }))).toEqual([{ id: f.b, unitsUsed: 2 }])
+    expect(current.former).toEqual([expect.objectContaining({ id: f.a, unitsUsed: 3 })])
+
+    const periods = await agencyPeriods(f.accountId)
+    expect(periods).toHaveLength(2)
+    expect(periods[1]).toEqual(past)
+    const previous = await agencyBlogUsage(f.accountId, past)
+    expect(previous.usedUnits).toBe(4)
+    expect(previous.blogs.map(({ id, unitsUsed }) => ({ id, unitsUsed }))).toEqual([{ id: f.b, unitsUsed: 4 }])
+    expect(previous.former).toEqual([])
   })
 
   it('gives every new blog its own DIRECT account in the database', async () => {

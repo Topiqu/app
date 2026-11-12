@@ -71,6 +71,7 @@
       "title": "Blogs",
       "slots": "{used} of {total} blog slots used",
       "report": "Usage report (CSV)",
+      "reportPeriod": "Billing period",
       "empty": "No blogs yet. Create a new one or add a blog you own.",
       "limitFor": "Monthly credit limit for {blog}",
       "limitLabel": "Monthly credit limit",

@@ -362,52 +362,86 @@ export const handleAgencyStripeEvent = async (stripe: Stripe, event: Stripe.Even
   return true
 }
 
-/** Each agency blog with what it spent and published in the current period. */
-export const agencyBlogUsage = async (accountId: string) => {
+type AgencyPeriod = { start: Date; end: Date | null }
+
+/** The agency's billing periods, newest first; every paid invoice opens or tops up one. */
+export const agencyPeriods = async (accountId: string) => {
+  const grants = await prisma.articleCreditGrant.findMany({
+    where: { accountId, source: 'PLAN', periodStart: { not: null } },
+    orderBy: { periodStart: 'desc' },
+    select: { periodStart: true, periodEnd: true },
+    take: 200,
+  })
+  const periods = new Map<number, AgencyPeriod>()
+  for (const { periodStart, periodEnd } of grants)
+    if (periodStart && !periods.has(periodStart.getTime()))
+      periods.set(periodStart.getTime(), { start: periodStart, end: periodEnd })
+  return [...periods.values()].slice(0, 24)
+}
+
+/**
+ * What each blog spent from the pool in a period, the current one by default. Usage is read from the pool's own
+ * operations, so a blog that has left since still answers for what it spent while attached.
+ */
+export const agencyBlogUsage = async (accountId: string, chosen?: AgencyPeriod) => {
   const now = new Date()
-  const [period, blogs] = await Promise.all([
-    prisma.articleCreditGrant.findFirst({
-      where: { accountId, source: 'PLAN', periodStart: { lte: now }, expiresAt: { gt: now } },
-      orderBy: { periodStart: 'asc' },
-      select: { periodStart: true, periodEnd: true },
-    }),
-    prisma.clientSite.findMany({
-      where: { billingAccountId: accountId },
-      orderBy: { createdAt: 'asc' },
-      select: { id: true, name: true, domain: true, deletedAt: true, monthlyUnitLimit: true, agencyPlan: true },
-    }),
-  ])
-  const since = period?.periodStart ?? new Date(now.getTime() - 30 * 86400000)
-  const ids = blogs.map(({ id }) => id)
-  const [usage, published] = await Promise.all([
-    prisma.articleCreditOperation.groupBy({
-      by: ['clientSiteId'],
-      where: {
-        accountId,
-        clientSiteId: { in: ids },
-        status: { in: ['RESERVED', 'COMPLETED'] },
-        createdAt: { gte: since },
-      },
-      _sum: { reserved: true },
-    }),
-    prisma.article.groupBy({
-      by: ['clientSiteId'],
-      where: { clientSiteId: { in: ids }, status: 'published', publishedAt: { gte: since } },
-      _count: { _all: true },
-    }),
-  ])
+  const period =
+    chosen ??
+    (await prisma.articleCreditGrant
+      .findFirst({
+        where: { accountId, source: 'PLAN', periodStart: { lte: now }, expiresAt: { gt: now } },
+        orderBy: { periodStart: 'asc' },
+        select: { periodStart: true, periodEnd: true },
+      })
+      .then((slot) => (slot?.periodStart ? { start: slot.periodStart, end: slot.periodEnd } : null)))
+  const since = period?.start ?? new Date(now.getTime() - 30 * 86400000)
+  const createdAt = { gte: since, ...(period?.end ? { lt: period.end } : {}) }
+  const usage = await prisma.articleCreditOperation.groupBy({
+    by: ['clientSiteId'],
+    where: { accountId, status: { in: ['RESERVED', 'COMPLETED'] }, createdAt },
+    _sum: { reserved: true },
+  })
+  const blogs = await prisma.clientSite.findMany({
+    where: { OR: [{ billingAccountId: accountId }, { id: { in: usage.map((row) => row.clientSiteId) } }] },
+    orderBy: { createdAt: 'asc' },
+    select: {
+      id: true,
+      name: true,
+      domain: true,
+      deletedAt: true,
+      monthlyUnitLimit: true,
+      agencyPlan: true,
+      billingAccountId: true,
+    },
+  })
+  const attached = blogs.filter((blog) => blog.billingAccountId === accountId)
+  const published = await prisma.article.groupBy({
+    by: ['clientSiteId'],
+    where: {
+      clientSiteId: { in: attached.map(({ id }) => id) },
+      status: 'published',
+      publishedAt: createdAt,
+    },
+    _count: { _all: true },
+  })
+  const unitsOf = (id: string) => usage.find((row) => row.clientSiteId === id)?._sum.reserved ?? 0
   return {
-    period: period ? { start: period.periodStart, end: period.periodEnd } : null,
+    period,
     since,
-    blogs: blogs.map((blog) => ({
+    usedUnits: usage.reduce((total, row) => total + (row._sum.reserved ?? 0), 0),
+    blogs: attached.map((blog) => ({
       id: blog.id,
       name: blog.name,
       domain: blog.domain,
       deleted: blog.deletedAt !== null,
       plan: blog.agencyPlan ?? 'BASIC',
       monthlyUnitLimit: blog.monthlyUnitLimit,
-      unitsUsed: usage.find((row) => row.clientSiteId === blog.id)?._sum.reserved ?? 0,
+      unitsUsed: unitsOf(blog.id),
       published: published.find((row) => row.clientSiteId === blog.id)?._count._all ?? 0,
     })),
+    // Left the agency since; their articles after leaving are no longer the agency's, so only units count.
+    former: blogs
+      .filter((blog) => blog.billingAccountId !== accountId)
+      .map((blog) => ({ id: blog.id, name: blog.name, domain: blog.domain, unitsUsed: unitsOf(blog.id) })),
   }
 }

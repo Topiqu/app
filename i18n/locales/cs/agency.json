@@ -71,6 +71,7 @@
       "title": "Blogy",
       "slots": "Využito {used} z {total} míst pro blogy",
       "report": "Přehled spotřeby (CSV)",
+      "reportPeriod": "Fakturační období",
       "empty": "Zatím žádné blogy. Založte nový, nebo přidejte blog, který vlastníte.",
       "limitFor": "Měsíční limit kreditů pro {blog}",
       "limitLabel": "Měsíční limit kreditů",

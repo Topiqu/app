@@ -71,6 +71,7 @@
       "title": "Blogs",
       "slots": "{used} emplacements de blog utilisés sur {total}",
       "report": "Rapport de consommation (CSV)",
+      "reportPeriod": "Période de facturation",
       "empty": "Aucun blog pour l’instant. Créez-en un ou ajoutez un blog qui vous appartient.",
       "limitFor": "Limite mensuelle de crédits pour {blog}",
       "limitLabel": "Limite mensuelle de crédits",
