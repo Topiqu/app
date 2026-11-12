@@ -43,14 +43,22 @@
       <AgencyOverview
         v-if="live"
         :agency="data.agency"
-        :blogs
         :slots
         :available="data.units?.available ?? 0"
+        :used="data.units?.used ?? 0"
         :aiBudgetLeft="data.aiBudgetLeft ?? null"
       />
 
       <div class="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
-        <AgencyBlogs :agency="data.agency" :blogs :slots :attachable="data.attachable" :owner :live />
+        <AgencyBlogs
+          :agency="data.agency"
+          :blogs
+          :slots
+          :attachable="data.attachable"
+          :periods="data.periods ?? []"
+          :owner
+          :live
+        />
         <AgencyPlan :agency="data.agency" :catalog="data.catalog" :owner :slots />
       </div>
     </template>

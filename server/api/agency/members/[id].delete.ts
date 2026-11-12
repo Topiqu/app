@@ -1,7 +1,10 @@
 export default defineEventHandler(async (event) => {
-  const { user, member } = await requireAgencyMember(event, { owner: true })
+  const { user, member, db } = await requireAgencyMember(event, { owner: true })
   const id = getRouterParam(event, 'id')
   if (!id) throw createError({ statusCode: 400, message: 'Missing member' })
+  // The policy client reads only this agency's people, so a foreign id is a 404 before any write.
+  if (!(await db.billingAccountMember.findFirst({ where: { id, accountId: member.accountId }, select: { id: true } })))
+    throw createError({ statusCode: 404, message: 'Member not found' })
 
   const removed = await serializableTransaction(async (tx) => {
     const target = await tx.billingAccountMember.findFirst({

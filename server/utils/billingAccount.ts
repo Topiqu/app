@@ -14,6 +14,18 @@ export const poolOf = <W>(site: {
   directBillingAccount: { wallet: W | null } | null
 }) => (site.billingAccount ?? site.directBillingAccount)?.wallet ?? null
 
+type Remaining = { grants: { remaining: number }[] }
+
+/** Unexpired units the blog can spend: its pool, plus an agency blog's own credits from before it joined. */
+export const spendableUnits = (site: {
+  billingAccount: { wallet: Remaining | null } | null
+  directBillingAccount: { wallet: Remaining | null } | null
+}) =>
+  [site.billingAccount?.wallet, site.directBillingAccount?.wallet].reduce(
+    (total, wallet) => total + (wallet?.grants.reduce((sum, grant) => sum + grant.remaining, 0) ?? 0),
+    0,
+  )
+
 /** Lock order is always blog, then account, so no account lock is ever held while waiting for a blog. */
 export const lockBlog = async (tx: DatabaseTransaction, id: string, { live = false } = {}) => {
   const rows = live

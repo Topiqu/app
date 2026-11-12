@@ -1,8 +1,9 @@
 /** The blog leaves the agency: back to its own BASIC plan, its own team, and its own (DIRECT) credits. */
 export default defineEventHandler(async (event) => {
-  const { user, member } = await requireAgencyMember(event, { owner: true })
+  const { user, member, db } = await requireAgencyMember(event, { owner: true })
   const clientSiteId = getRouterParam(event, 'id')
   if (!clientSiteId) throw createError({ statusCode: 400, message: 'Missing blog' })
+  await requireAgencyBlog(db, member.accountId, clientSiteId)
   const accountId = member.accountId
 
   await serializableTransaction(async (tx) => {

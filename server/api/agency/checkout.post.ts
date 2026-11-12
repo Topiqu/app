@@ -22,8 +22,9 @@ export default defineEventHandler(async (event) => {
   return withAgencyLease(accountId, async (leaseId) => {
     const account = await prisma.billingAccount.findUniqueOrThrow({
       where: { id: accountId },
-      select: { stripeCustomerId: true, stripeSubscriptionId: true, billingCheckoutId: true },
+      select: { stripeCustomerId: true, stripeSubscriptionId: true, billingCheckoutId: true, closingAt: true },
     })
+    assertAgencyNotClosing(account)
     const stripe = useStripe()
     if (account.stripeSubscriptionId) {
       const existing = await stripe.subscriptions.retrieve(account.stripeSubscriptionId)

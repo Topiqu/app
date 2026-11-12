@@ -153,6 +153,12 @@
         "members": "We will let the other members know: {count}.",
         "confirm": "Type {domain} to confirm"
       },
+      "agencies": {
+        "title": "Agencies you own",
+        "description": "These agencies close together with your account after {days} days. Their blogs stay open and return to their own plan and team. Restoring the account keeps the agency.",
+        "subscription": "Its subscription will not renew and ends at the end of the paid period.",
+        "members": "Other members of the agency lose access: {count}."
+      },
       "emailConfirm": "Type your email {email} to confirm",
       "password": "Current password",
       "emailProof": "Your account has no password, so we will email you a link to confirm.",

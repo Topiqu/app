@@ -21,8 +21,8 @@ const catalog = {
 }
 
 /** Blogs the person owns through their own team, not yet billed by an agency. */
-const attachableBlogs = async (userId: string) => {
-  const rows = await prisma.tenantMembership.findMany({
+const attachableBlogs = async (db: Awaited<ReturnType<typeof getEnhancedPrisma>>, userId: string) => {
+  const rows = await db.tenantMembership.findMany({
     where: {
       userId,
       role: 'OWNER',
@@ -50,15 +50,15 @@ const attachableBlogs = async (userId: string) => {
 export default defineEventHandler(async (event) => {
   const user = await requireUser(event)
   if (user.role === 'ai') throw createError({ statusCode: 403, message: 'Forbidden' })
-  const member = await prisma.billingAccountMember.findFirst({
+  const db = await getEnhancedPrisma(user)
+  const member = await db.billingAccountMember.findFirst({
     where: { userId: user.id, deletedAt: null, account: { kind: 'AGENCY' } },
     orderBy: [{ role: 'asc' }, { createdAt: 'asc' }],
     select: { role: true, accountId: true },
   })
-  const attachable = await attachableBlogs(user.id)
+  const attachable = await attachableBlogs(db, user.id)
   if (!member) return { agency: null, attachable, catalog }
 
-  const db = await getEnhancedPrisma(user)
   const account = await db.billingAccount.findUnique({
     where: { id: member.accountId },
     select: {
@@ -75,11 +75,12 @@ export default defineEventHandler(async (event) => {
   })
   if (!account) throw createError({ statusCode: 404, message: 'No agency', data: { code: 'NO_AGENCY' } })
 
-  const [wallet, aiBudget, { period, blogs }, members] = await Promise.all([
+  const [wallet, aiBudget, { period, blogs, usedUnits }, periods, members] = await Promise.all([
     getAccountWallet(account.id),
     getAccountAiBudget(account.id),
     agencyBlogUsage(account.id),
-    prisma.billingAccountMember.findMany({
+    agencyPeriods(account.id),
+    db.billingAccountMember.findMany({
       where: { accountId: account.id, deletedAt: null },
       orderBy: [{ role: 'asc' }, { createdAt: 'asc' }],
       select: { id: true, role: true, userId: true, user: { select: { email: true, username: true } } },
@@ -102,7 +103,9 @@ export default defineEventHandler(async (event) => {
       hasBillingPortal: Boolean(account.stripeCustomerId),
     },
     period,
-    units: { available: wallet.available, reserved: wallet.reserved },
+    periods,
+    // Includes blogs that left the agency during the period.
+    units: { available: wallet.available, reserved: wallet.reserved, used: usedUnits },
     // Null until the period's budget is funded, which is not the same as spent.
     aiBudgetLeft: aiBudget.total ? Math.round((aiBudget.remaining / aiBudget.total) * 100) : null,
     blogs,

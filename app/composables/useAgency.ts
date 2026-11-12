@@ -35,6 +35,13 @@ export interface AgencyBlog {
   monthlyUnitLimit: number | null
   unitsUsed: number
   published: number
+  /** Credits the blog bought before it joined; it spends them before the pool. */
+  ownUnits: number
+}
+
+export interface AgencyPeriod {
+  start: string
+  end: string | null
 }
 
 export interface AgencyAttachableBlog {
@@ -58,7 +65,8 @@ interface AgencyOverview {
   agency: AgencyAccount | null
   role?: AgencyRole
   period?: { start: string; end: string | null } | null
-  units?: { available: number; reserved: number }
+  periods?: AgencyPeriod[]
+  units?: { available: number; reserved: number; used: number }
   aiBudgetLeft?: number | null
   blogs?: AgencyBlog[]
   members?: AgencyMember[]

@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { createError } from 'h3'
 import { randomUUID } from 'node:crypto'
+import { PolicyPlugin } from '@zenstackhq/plugin-policy'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 
 import type { DatabaseTransaction } from '../../server/utils/database'
@@ -12,8 +13,9 @@ import { createDatabaseClient } from '../../server/utils/database'
 import { stubBillingAccountImports } from '../helpers/billingImports'
 import { agencyAllowances, agencyUnits } from '../../shared/utils/agencyPlan'
 import { ARTICLE_CREDIT_POLICY_VERSION } from '../../shared/utils/articleCredits'
-import { revokeAgencyAccess, syncAgencyMemberships, syncAgencySites, withAgencyLease } from '../../server/utils/agency'
+import { poolWalletSelect, spendableUnits } from '../../server/utils/billingAccount'
 import {
+  creditAiUsagePack,
   creditAgencyInvoiceAiBudget,
   getAccountAiBudget,
   getAiAllowance,
@@ -21,6 +23,16 @@ import {
   settleAiAllowance,
 } from '../../server/utils/aiAllowance'
 import {
+  agencyBlogUsage,
+  agencyPeriods,
+  requireAgencyBlog,
+  revokeAgencyAccess,
+  syncAgencyMemberships,
+  syncAgencySites,
+  withAgencyLease,
+} from '../../server/utils/agency'
+import {
+  creditArticleCredits,
   getAccountWallet,
   getArticleCreditWallet,
   grantPlanArticleCredits,
@@ -54,6 +66,15 @@ describe.skipIf(!enabled)('agency billing accounts on PostgreSQL', () => {
     await db?.$disconnect()
     vi.unstubAllGlobals()
   })
+
+  /** A person in an agency, and the policy client a request of theirs would use. */
+  const person = async (accountId: string, role: 'OWNER' | 'MEMBER') => {
+    const id = randomUUID()
+    await db!.user.create({ data: { id, username: `agency-${id}`, email: `${id}@example.test` } })
+    await db!.billingAccountMember.create({ data: { accountId, userId: id, role } })
+    return { id, role: 'user', clientSiteId: null }
+  }
+  const scoped = (user: { id: string }) => db!.$use(new PolicyPlugin()).$setAuth(user as never)
 
   const start = () => new Date(Date.now() - 86400000)
   const end = () => new Date(Date.now() + 29 * 86400000)
@@ -142,6 +163,72 @@ describe.skipIf(!enabled)('agency billing accounts on PostgreSQL', () => {
     await settleArticleCredit(operation, false)
     expect((await getAccountWallet(f.accountId)).available).toBe(5)
     expect((await getArticleCreditWallet(f.a)).available).toBe(0)
+  })
+
+  it("spends a blog's own credits from before the agency first, outside its share of the pool", async () => {
+    const f = await agency({ units: 10 })
+    await creditArticleCredits({
+      clientSiteId: f.a,
+      amount: 3,
+      source: 'PURCHASE',
+      idempotencyKey: `own-pack:${f.a}`,
+      reason: 'Bought before the agency',
+    })
+    await db!.clientSite.update({ where: { id: f.a }, data: { monthlyUnitLimit: 1 } })
+    expect(await getArticleCreditWallet(f.a)).toMatchObject({ pooled: true, available: 13, own: 3 })
+
+    const spend = async (amount: number) => {
+      const operation = await reserveArticleCredit(f.a, 'MANUAL_ARTICLE', randomUUID(), {}, amount)
+      await settleArticleCredit(operation, true)
+      return operation.accountId
+    }
+    expect(await spend(2)).toBe(f.a)
+    // Partly covered: one operation draws from one account, so the pool pays all of it.
+    expect(await spend(1)).toBe(f.a)
+    expect(await spend(1)).toBe(f.accountId)
+    await expect(reserveArticleCredit(f.a, 'MANUAL_ARTICLE')).rejects.toMatchObject({
+      data: { code: 'BLOG_UNIT_LIMIT_REACHED' },
+    })
+    expect((await getAccountWallet(f.accountId)).available).toBe(9)
+    expect(await getArticleCreditWallet(f.a)).toMatchObject({ available: 9, own: 0 })
+  })
+
+  it("counts a blog's own credits where the scheduler decides whether it can write", async () => {
+    const f = await agency({ units: 2 })
+    await creditArticleCredits({
+      clientSiteId: f.a,
+      amount: 3,
+      source: 'PURCHASE',
+      idempotencyKey: `own-cron:${f.a}`,
+      reason: 'Bought before the agency',
+    })
+    const units = async (id: string) =>
+      spendableUnits(
+        await db!.clientSite.findUniqueOrThrow({
+          where: { id },
+          select: poolWalletSelect({ grants: { where: { remaining: { gt: 0 } }, select: { remaining: true } } }),
+        }),
+      )
+    expect(await units(f.a)).toBe(5)
+    expect(await units(f.b)).toBe(2)
+  })
+
+  it("spends a blog's own AI pack before the agency budget, and never mints it a plan allowance", async () => {
+    const f = await agency()
+    await creditAiUsagePack(f.a, 'small', `pack-${f.a}`)
+    const budget = async () => (await getAiAllowance(f.a)).allowances.find((row) => row.kind === 'BUDGET')!
+    const pool = agencyAllowances({ blogs: 3, premium: 0, blocks: 4 }).BUDGET
+    expect(await budget()).toMatchObject({ total: pool + 1_000_000, remaining: pool + 1_000_000 })
+
+    const own = await reserveAiAllowance(f.a, 'BUDGET', 600_000)
+    expect(own.accountId).toBe(f.a)
+    await settleAiAllowance(own, 600_000)
+    // The rest of the pack no longer covers the call, so the agency pays for all of it.
+    const shared = await reserveAiAllowance(f.a, 'BUDGET', 600_000)
+    expect(shared.accountId).toBe(f.accountId)
+    await settleAiAllowance(shared, 600_000)
+    expect(await budget()).toMatchObject({ remaining: pool - 600_000 + 400_000 })
+    expect(await db!.aiAllowanceGrant.count({ where: { accountId: f.a, source: { not: 'PURCHASE' } } })).toBe(0)
   })
 
   it('funds agency AI from the pool, at most half of the list price', async () => {
@@ -350,15 +437,32 @@ describe.skipIf(!enabled)('agency billing accounts on PostgreSQL', () => {
     expect(await db!.tenantMembership.count({ where: { userId: client.id } })).toBe(1)
   })
 
+  it('reads an agency, its blogs and its people only to its members through the policy client', async () => {
+    const f = await agency()
+    const other = await agency()
+    const insider = await person(f.accountId, 'MEMBER')
+    const outsider = await person(other.accountId, 'OWNER')
+
+    await expect(requireAgencyBlog(scoped(insider), f.accountId, f.a)).resolves.toBeUndefined()
+    // Another agency's blog, and this agency's blog asked for by someone outside it.
+    await expect(requireAgencyBlog(scoped(insider), f.accountId, other.a)).rejects.toMatchObject({ statusCode: 404 })
+    await expect(requireAgencyBlog(scoped(outsider), f.accountId, f.a)).rejects.toMatchObject({ statusCode: 404 })
+    expect(await scoped(outsider).billingAccountMember.findFirst({ where: { accountId: f.accountId } })).toBeNull()
+    expect(await scoped(insider).billingAccountMember.count({ where: { accountId: f.accountId } })).toBe(1)
+  })
+
   it('changes a blog plan only within the slots and frees the slot of a deleted blog', async () => {
     const f = await agency({ blogs: 1, premium: 1 })
     await db!.clientSite.update({ where: { id: f.b }, data: { agencyPlan: 'BASIC', plan: 'BASIC' } })
     let request: { id: string; body: unknown } = { id: f.a, body: {} }
+    const owner = await person(f.accountId, 'OWNER')
     vi.stubGlobal('defineEventHandler', (handler: unknown) => handler)
     vi.stubGlobal('requireAgencyMember', async () => ({
-      user: { id: randomUUID() },
+      user: owner,
       member: { accountId: f.accountId },
+      db: scoped(owner),
     }))
+    await stubNitroImports(import('../../server/utils/agency'), 'requireAgencyBlog')
     vi.stubGlobal('getRouterParam', () => request.id)
     vi.stubGlobal('readValidatedBody', async (_event: unknown, parse: (body: unknown) => unknown) =>
       parse(request.body),
@@ -422,6 +526,59 @@ describe.skipIf(!enabled)('agency billing accounts on PostgreSQL', () => {
       omit: { billingLeaseId: false },
     })
     expect(account.billingLeaseId).toBeNull()
+  })
+
+  it('reports what a blog spent from the pool after it left, and each period on its own', async () => {
+    const f = await agency({ units: 10 })
+    await settleArticleCredit(await reserveArticleCredit(f.a, 'MANUAL_ARTICLE', randomUUID(), {}, 3), true)
+    await settleArticleCredit(await reserveArticleCredit(f.b, 'MANUAL_ARTICLE', randomUUID(), {}, 2), true)
+    await db!.clientSite.update({
+      where: { id: f.a },
+      data: { billingAccountId: null, agencyPlan: null, plan: 'BASIC' },
+    })
+    // A finished period: its grant is spent and one charge falls inside it.
+    const past = { start: new Date(Date.now() - 31 * 86400000), end: new Date(Date.now() - 2 * 86400000) }
+    await db!.articleCreditGrant.create({
+      data: {
+        accountId: f.accountId,
+        source: 'PLAN',
+        amount: 10,
+        remaining: 0,
+        periodStart: past.start,
+        periodEnd: past.end,
+        expiresAt: past.end,
+        policyVersion: ARTICLE_CREDIT_POLICY_VERSION,
+        idempotencyKey: `agency-past:${f.accountId}`,
+      },
+    })
+    await db!.articleCreditOperation.create({
+      data: {
+        accountId: f.accountId,
+        clientSiteId: f.b,
+        action: 'MANUAL_ARTICLE',
+        status: 'COMPLETED',
+        reserved: 4,
+        charged: 4,
+        allocations: [],
+        metadata: {},
+        idempotencyKey: `agency-past-operation:${f.accountId}`,
+        expiresAt: past.end,
+        createdAt: new Date(past.end.getTime() - 86400000),
+      },
+    })
+
+    const current = await agencyBlogUsage(f.accountId)
+    expect(current.usedUnits).toBe(5)
+    expect(current.blogs.map(({ id, unitsUsed }) => ({ id, unitsUsed }))).toEqual([{ id: f.b, unitsUsed: 2 }])
+    expect(current.former).toEqual([expect.objectContaining({ id: f.a, unitsUsed: 3 })])
+
+    const periods = await agencyPeriods(f.accountId)
+    expect(periods).toHaveLength(2)
+    expect(periods[1]).toEqual(past)
+    const previous = await agencyBlogUsage(f.accountId, past)
+    expect(previous.usedUnits).toBe(4)
+    expect(previous.blogs.map(({ id, unitsUsed }) => ({ id, unitsUsed }))).toEqual([{ id: f.b, unitsUsed: 4 }])
+    expect(previous.former).toEqual([])
   })
 
   it('gives every new blog its own DIRECT account in the database', async () => {

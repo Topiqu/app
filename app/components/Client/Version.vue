@@ -93,6 +93,13 @@
                 </div>
                 <p class="mt-0.5 text-xs text-muted">{{ $t('common.wallet.reservedHint') }}</p>
               </div>
+              <div v-if="wallet.own">
+                <div class="flex items-baseline justify-between gap-3">
+                  <dt class="min-w-0 text-muted">{{ $t('common.wallet.own') }}</dt>
+                  <dd class="shrink-0 tabular-nums text-highlighted">{{ wallet.own.toLocaleString(locale) }}</dd>
+                </div>
+                <p class="mt-0.5 text-xs text-muted">{{ $t('common.wallet.ownHint') }}</p>
+              </div>
               <div v-if="carried" class="flex items-baseline justify-between gap-3">
                 <dt class="min-w-0 text-muted">{{ $t('common.wallet.carried') }}</dt>
                 <dd class="shrink-0 tabular-nums text-highlighted">{{ carried.toLocaleString(locale) }}</dd>

@@ -153,6 +153,12 @@
         "members": "Nous préviendrons les autres membres : {count}.",
         "confirm": "Saisissez {domain} pour confirmer"
       },
+      "agencies": {
+        "title": "Vos agences",
+        "description": "Ces agences fermeront avec votre compte après {days} jours. Leurs blogs restent ouverts et retrouvent leur propre offre et leur équipe. Restaurer le compte conserve l'agence.",
+        "subscription": "L'abonnement de l'agence ne sera pas renouvelé et prendra fin à l'issue de la période payée.",
+        "members": "Les autres membres de l'agence perdront l'accès : {count}."
+      },
       "emailConfirm": "Saisissez votre e-mail {email} pour confirmer",
       "password": "Mot de passe actuel",
       "emailProof": "Votre compte n'a pas de mot de passe : nous vous enverrons un lien de confirmation par e-mail.",

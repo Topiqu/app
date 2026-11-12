@@ -29,13 +29,14 @@
 </template>
 
 <script setup lang="ts">
-import type { AgencyAccount, AgencyBlog } from '~/composables/useAgency'
+import type { AgencyAccount } from '~/composables/useAgency'
 
-const { agency, blogs, slots, available, aiBudgetLeft } = defineProps<{
+const { agency, slots, available, used, aiBudgetLeft } = defineProps<{
   agency: AgencyAccount
-  blogs: AgencyBlog[]
   slots: { paid: number; premium: number }
   available: number
+  /** The pool's spend this period, including blogs that have left since. */
+  used: number
   aiBudgetLeft: number | null
 }>()
 
@@ -44,7 +45,6 @@ const { t, locale } = useI18n()
 const meters = computed(() => {
   const number = new Intl.NumberFormat(locale.value)
   const monthly = agencyUnits(agency.unitBlocks)
-  const used = blogs.reduce((sum, blog) => sum + blog.unitsUsed, 0)
   const free = Math.max(agency.blogSlots - slots.paid, 0)
   const percent = (part: number, whole: number) => (whole ? Math.min(100, Math.round((part / whole) * 100)) : 0)
   return [

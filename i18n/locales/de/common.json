@@ -325,6 +325,8 @@
       "explanation": "Nicht genutzte Tarif-Credits werden bei aktivem Tarif übertragen, bis zum Doppelten des Monatskontingents. Gekaufte Credits verfallen nicht.",
       "reserved": "Vorübergehend reserviert",
       "reservedHint": "Je nach Qualität werden 1, 2 oder 3 Credits reserviert. Bei einem technischen Fehler wird der gesamte Betrag freigegeben.",
+      "own": "Eigene Credits des Blogs",
+      "ownHint": "Vor dem Beitritt zur Agentur gekauft. Sie werden zuerst verbraucht und bleiben beim Blog, wenn er die Agentur verlässt.",
       "reasons": {
         "manualArticle": "Manuell erstellter Artikel",
         "scheduledArticle": "Automatisch erstellter Artikel",
