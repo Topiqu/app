@@ -1,12 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { notifyCreditsDepleted } from '../../../server/utils/creditsDepleted'
+import { poolOf, poolWalletSelect, spendingAccountId } from '../../../server/utils/billingAccount'
 
 const site = (overrides = {}) => ({
   name: 'Herní magazín',
   domain: 'hry.topiqu.com',
   logoUrl: null,
-  articleCreditWallet: { grants: [{ id: 'grant-2' }] },
+  id: 'site-1',
+  billingAccountId: null,
+  billingAccount: null,
+  directBillingAccount: { wallet: { grants: [{ id: 'grant-2' }] } },
   tenantMemberships: [
     { user: { id: 'owner', email: 'owner@example.com', language: 'cs' } },
     { user: { id: 'billing', email: 'billing@example.com', language: 'de' } },
@@ -25,6 +29,9 @@ beforeEach(() => {
   vi.stubGlobal('prisma', { clientSite: { findUnique: findSite }, log: { findUnique: findLog } })
   vi.stubGlobal('sendEmail', sendEmail)
   vi.stubGlobal('logAction', logAction)
+  vi.stubGlobal('poolOf', poolOf)
+  vi.stubGlobal('poolWalletSelect', poolWalletSelect)
+  vi.stubGlobal('spendingAccountId', spendingAccountId)
 })
 
 afterEach(() => {

@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { hasAiPlan } from '../../shared/utils/plans'
 import { articleQualityOf } from '../../shared/utils/articleQuality'
 import { articleCreditCost } from '../../shared/utils/articleCredits'
+import { poolOf, poolWalletSelect } from '../../server/utils/billingAccount'
 
 const findMany = vi.fn()
 const refill = vi.fn()
@@ -27,6 +28,8 @@ const stubGlobals = () => {
     prisma: { clientSite: { findMany } },
     activeFeatureFilter: (code: string) => ({ features: { some: { isActive: true, feature: { code } } } }),
     articleQualityOf,
+    poolOf,
+    poolWalletSelect,
     articleCreditCost,
     hasAiPlan,
     hasDataForSeo,
@@ -46,7 +49,8 @@ const site = (id: string, changes: Record<string, unknown> = {}) => ({
   plan: 'PRO',
   articleQuality: 'STANDARD',
   generationFrequency: 'INTERVAL',
-  articleCreditWallet: { grants: [{ remaining: 5 }] },
+  billingAccount: null,
+  directBillingAccount: { wallet: { grants: [{ remaining: 5 }] } },
   ...changes,
 })
 
@@ -91,9 +95,9 @@ describe('keyword-plan-refill task', () => {
   it('leaves out a site that cannot write an article', async () => {
     findMany.mockResolvedValue([
       site('free', { plan: 'FREE' }),
-      site('broke', { articleCreditWallet: { grants: [] } }),
-      site('no-wallet', { articleCreditWallet: null }),
-      site('ultra', { articleQuality: 'ULTRA', articleCreditWallet: { grants: [{ remaining: 2 }] } }),
+      site('broke', { directBillingAccount: { wallet: { grants: [] } } }),
+      site('no-wallet', { directBillingAccount: { wallet: null } }),
+      site('ultra', { articleQuality: 'ULTRA', directBillingAccount: { wallet: { grants: [{ remaining: 2 }] } } }),
     ])
     await expect(run()).resolves.toEqual({ result: { checked: 0, attempted: 0, failed: 0 } })
     expect(refill).not.toHaveBeenCalled()

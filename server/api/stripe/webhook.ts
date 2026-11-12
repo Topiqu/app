@@ -284,7 +284,12 @@ export default defineEventHandler(async (event) => {
           await assertBillingLease(tx, clientSiteId, leaseId)
           if (invoice.billing_reason === 'subscription_update') {
             const activeSlot = await tx.articleCreditGrant.findFirst({
-              where: { clientSiteId, source: 'PLAN', periodStart: { lte: new Date() }, expiresAt: { gt: new Date() } },
+              where: {
+                accountId: clientSiteId,
+                source: 'PLAN',
+                periodStart: { lte: new Date() },
+                expiresAt: { gt: new Date() },
+              },
               orderBy: { periodStart: 'asc' },
               select: { periodStart: true, periodEnd: true },
             })

@@ -5,8 +5,10 @@ import { PolicyPlugin } from '@zenstackhq/plugin-policy'
 import { afterAll, beforeAll, describe, expect, it, vi, beforeEach } from 'vitest'
 
 import { stubNitroImports } from '../../helpers/nitroImports'
+import { stubBillingAccountImports } from '../../helpers/billingImports'
 
 async function stubImports() {
+  await stubBillingAccountImports()
   await stubNitroImports(import('../../../server/utils/keywords/serp'), 'serpSignals')
   await stubNitroImports(import('../../../server/utils/keywords/dataforseo'), 'dataForSeo', 'hasDataForSeo')
   await stubNitroImports(import('../../../server/utils/ai/reasoning'), 'aiReasoning')

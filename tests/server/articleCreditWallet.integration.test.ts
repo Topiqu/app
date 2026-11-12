@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 
 import { createDatabaseClient } from '../../server/utils/database'
+import { stubBillingAccountImports } from '../helpers/billingImports'
 import {
   creditArticleCredits,
   getArticleCreditWallet,
@@ -17,7 +18,8 @@ const enabled = !!url && /test/i.test(new URL(url).pathname) && url !== process.
 const db = enabled ? createDatabaseClient(url) : null
 
 describe.skipIf(!enabled)('article wallet on PostgreSQL', () => {
-  beforeAll(() => {
+  beforeAll(async () => {
+    await stubBillingAccountImports()
     vi.stubGlobal('prisma', db)
     vi.stubGlobal('createError', createError)
   })

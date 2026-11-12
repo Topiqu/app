@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 
 import { createDatabaseClient } from '../../server/utils/database'
+import { stubBillingAccountImports } from '../helpers/billingImports'
 import { releaseScheduleSettings } from '../../shared/utils/releaseSchedule'
 import { cancelArticleBatch, confirmArticleBatch } from '../../server/utils/articleBatch'
 import { planProfile, refillKeywordPlan, refreshKeywordPlan } from '../../server/utils/keywords/plan'
@@ -16,7 +17,8 @@ const enabled = !!url && /test/i.test(new URL(url).pathname) && url !== process.
 const db = enabled ? createDatabaseClient(url) : null
 
 describe.skipIf(!enabled)('article batches on PostgreSQL', () => {
-  beforeAll(() => {
+  beforeAll(async () => {
+    await stubBillingAccountImports()
     for (const [name, value] of Object.entries({
       prisma: db,
       createError,

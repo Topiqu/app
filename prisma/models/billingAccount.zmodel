@@ -1,0 +1,75 @@
+import "./base"
+import "./client"
+import "./user"
+import "./aiUsage"
+import "./articleCreditWallet"
+
+enum BillingAccountKind {
+    DIRECT
+    AGENCY
+}
+
+enum AgencyStatus {
+    INACTIVE
+    ACTIVE
+    PAST_DUE
+    CANCELED
+}
+
+enum BillingAccountRole {
+    OWNER
+    MEMBER
+}
+
+/// Owns article credits and AI funding. A blog outside an agency spends from a DIRECT account with the blog's
+/// own id, created on first use; its subscription stays on the blog. An AGENCY account pools many blogs.
+model BillingAccount {
+    id                   String               @id @default(uuid())
+    kind                 BillingAccountKind   @default(DIRECT)
+    directSiteId         String?              @unique
+    directSite           ClientSite?          @relation("DirectBillingAccount", fields: [directSiteId], references: [id], onDelete: Cascade)
+    name                 String?              @length(1, 80)
+    agencySites          ClientSite[]         @relation("AgencySites")
+    members              BillingAccountMember[]
+    projectedMemberships TenantMembership[]
+    status               AgencyStatus         @default(INACTIVE)
+    blogSlots            Int                  @default(0)
+    /// PREMIUM add-ons, each on top of a blog slot.
+    premiumSlots         Int                  @default(0)
+    unitBlocks           Int                  @default(0)
+    stripeCustomerId     String?              @omit
+    stripeSubscriptionId String?              @unique @omit
+    billingCheckoutId    String?              @omit
+    billingLeaseId       String?              @omit
+    billingLeaseUntil    DateTime?            @omit
+    firstPaidAt          DateTime?
+    paidThrough          DateTime?
+    aiBudgetMonthlyMicros Int?
+    aiBudgetDebtMicros   Int                  @default(0)
+    seoBudgetDebtMicros  Int                  @default(0)
+    wallet               ArticleCreditWallet?
+    aiAllowanceGrants    AiAllowanceGrant[]
+    aiAllowanceInvoices  AiAllowanceInvoice[]
+    aiUsageReservations  AiUsageReservation[]
+    createdAt            DateTime             @default(now())
+    updatedAt            DateTime             @updatedAt
+
+    @@index([kind, status])
+    @@allow('read', kind == AGENCY && members?[userId == auth().id && deletedAt == null])
+    @@allow('all', auth().role == 'superadmin')
+}
+
+/// A person of the agency. Their access to every agency blog is projected into `TenantMembership`.
+model BillingAccountMember with Base {
+    accountId String
+    account   BillingAccount     @relation(fields: [accountId], references: [id], onDelete: Cascade)
+    userId    String
+    user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+    role      BillingAccountRole @default(MEMBER)
+    scopes    TenantScope[]
+
+    @@unique([accountId, userId])
+    @@index([userId])
+    @@allow('read', auth().id == userId || account.members?[userId == auth().id && deletedAt == null])
+    @@allow('all', auth().role == 'superadmin')
+}

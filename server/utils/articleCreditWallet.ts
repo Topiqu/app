@@ -1,26 +1,20 @@
 import type { JsonValue } from '@zenstackhq/orm'
-import type { ArticleCreditOperation } from '~~/generated/zenstack/models'
+import type { ArticleCreditOperation, BillingAccount, ClientSite } from '~~/generated/zenstack/models'
 
 import { randomUUID } from 'node:crypto'
+import { hasAiPlan } from '~~/shared/utils/plans'
+import { agencyRolloverCap, isAgencyLive } from '~~/shared/utils/agencyPlan'
 
 type Tx = DatabaseTransaction
 type Allocation = { id: string; amount: number }[]
+type Owner = { accountId: string; clientSiteId: string | null }
 
 const validateAmount = (amount: number) => {
   if (!Number.isSafeInteger(amount) || amount <= 0) throw new Error('Article credit amount must be a positive integer')
 }
 
-async function lockWallet(tx: Tx, clientSiteId: string) {
-  const sites = await tx.$queryRaw<{ id: string }[]>`
-    SELECT "id" FROM "ClientSite" WHERE "id" = ${clientSiteId} FOR UPDATE`
-  if (!sites[0]) throw createError({ statusCode: 404, message: 'Article wallet owner not found' })
-
-  return tx.articleCreditWallet.upsert({
-    where: { id: clientSiteId },
-    create: { id: clientSiteId },
-    update: {},
-  })
-}
+const ensureWallet = (tx: Tx, accountId: string) =>
+  tx.articleCreditWallet.upsert({ where: { id: accountId }, create: { id: accountId }, update: {} })
 
 // Expiring credits first, then carried plan credits, then purchased and admin credits.
 const spendOrder = <T extends { source: string; expiresAt: Date | null }>(grants: T[]) => {
@@ -28,11 +22,18 @@ const spendOrder = <T extends { source: string; expiresAt: Date | null }>(grants
   return grants.sort((a, b) => rank(a) - rank(b))
 }
 
-async function expireCredits(tx: Tx, grant: { id: string; clientSiteId: string }, amount: number) {
+const rolloverCap = async (tx: Tx, account: BillingAccount) => {
+  if (account.kind === 'AGENCY') return isAgencyLive(account.status) ? agencyRolloverCap(account.unitBlocks) : 0
+  const site = await tx.clientSite.findUniqueOrThrow({ where: { id: account.id }, select: { plan: true } })
+  return articleRolloverCap(site.plan)
+}
+
+async function expireCredits(tx: Tx, grant: { id: string } & Owner, amount: number) {
   await tx.articleCreditGrant.update({ where: { id: grant.id }, data: { remaining: { decrement: amount } } })
-  await tx.articleCreditWallet.update({ where: { id: grant.clientSiteId }, data: { balance: { decrement: amount } } })
+  await tx.articleCreditWallet.update({ where: { id: grant.accountId }, data: { balance: { decrement: amount } } })
   await tx.articleCreditLedgerEntry.create({
     data: {
+      accountId: grant.accountId,
       clientSiteId: grant.clientSiteId,
       grantId: grant.id,
       kind: 'EXPIRE',
@@ -44,14 +45,14 @@ async function expireCredits(tx: Tx, grant: { id: string; clientSiteId: string }
   })
 }
 
-async function expireAvailableGrants(tx: Tx, clientSiteId: string) {
-  const site = await tx.clientSite.findUniqueOrThrow({ where: { id: clientSiteId }, select: { plan: true } })
+async function expireAvailableGrants(tx: Tx, account: BillingAccount) {
+  const accountId = account.id
   const carried = await tx.articleCreditGrant.findMany({
-    where: { clientSiteId, source: 'ROLLOVER', remaining: { gt: 0 } },
+    where: { accountId, source: 'ROLLOVER', remaining: { gt: 0 } },
     orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
   })
   // A downgrade trims carried credits to the new cap; leaving the paid AI plans drops them.
-  let room = articleRolloverCap(site.plan) - carried.reduce((total, grant) => total + grant.remaining, 0)
+  let room = (await rolloverCap(tx, account)) - carried.reduce((total, grant) => total + grant.remaining, 0)
   for (const grant of carried) {
     if (room >= 0) break
     const lapsed = Math.min(grant.remaining, -room)
@@ -60,7 +61,7 @@ async function expireAvailableGrants(tx: Tx, clientSiteId: string) {
   }
 
   const expired = await tx.articleCreditGrant.findMany({
-    where: { clientSiteId, remaining: { gt: 0 }, expiresAt: { lte: new Date() } },
+    where: { accountId, remaining: { gt: 0 }, expiresAt: { lte: new Date() } },
     orderBy: [{ expiresAt: 'asc' }, { createdAt: 'asc' }, { id: 'asc' }],
   })
   for (const grant of expired) {
@@ -70,7 +71,8 @@ async function expireAvailableGrants(tx: Tx, clientSiteId: string) {
       await tx.articleCreditGrant.update({ where: { id: grant.id }, data: { remaining: { decrement: carry } } })
       const next = await tx.articleCreditGrant.create({
         data: {
-          clientSiteId,
+          accountId,
+          clientSiteId: grant.clientSiteId,
           source: 'ROLLOVER',
           amount: carry,
           remaining: carry,
@@ -81,7 +83,8 @@ async function expireAvailableGrants(tx: Tx, clientSiteId: string) {
       // The balance does not change; the entry links the carried grant to the period it came from.
       await tx.articleCreditLedgerEntry.create({
         data: {
-          clientSiteId,
+          accountId,
+          clientSiteId: grant.clientSiteId,
           grantId: next.id,
           kind: 'ROLLOVER',
           amount: 0,
@@ -94,9 +97,9 @@ async function expireAvailableGrants(tx: Tx, clientSiteId: string) {
   }
 }
 
-async function releaseExpiredOperations(tx: Tx, clientSiteId: string) {
+async function releaseExpiredOperations(tx: Tx, accountId: string) {
   const operations = await tx.articleCreditOperation.findMany({
-    where: { clientSiteId, status: 'RESERVED', expiresAt: { lte: new Date() } },
+    where: { accountId, status: 'RESERVED', expiresAt: { lte: new Date() } },
   })
   for (const operation of operations) {
     for (const allocation of operation.allocations as Allocation)
@@ -109,12 +112,13 @@ async function releaseExpiredOperations(tx: Tx, clientSiteId: string) {
       data: { status: 'EXPIRED', completedAt: new Date() },
     })
     await tx.articleCreditWallet.update({
-      where: { id: clientSiteId },
+      where: { id: accountId },
       data: { reserved: { decrement: operation.reserved } },
     })
     await tx.articleCreditLedgerEntry.create({
       data: {
-        clientSiteId,
+        accountId,
+        clientSiteId: operation.clientSiteId,
         operationId: operation.id,
         kind: 'RELEASE',
         amount: 0,
@@ -125,9 +129,55 @@ async function releaseExpiredOperations(tx: Tx, clientSiteId: string) {
   }
 }
 
+/** The calling transaction holds the account lock. */
+async function walletView(tx: Tx, account: BillingAccount) {
+  await ensureWallet(tx, account.id)
+  await releaseExpiredOperations(tx, account.id)
+  await expireAvailableGrants(tx, account)
+  const wallet = await tx.articleCreditWallet.findUniqueOrThrow({ where: { id: account.id } })
+  const grants = await tx.articleCreditGrant.findMany({
+    where: { accountId: account.id, remaining: { gt: 0 } },
+    orderBy: [{ expiresAt: { sort: 'asc', nulls: 'last' } }, { createdAt: 'asc' }],
+    select: { id: true, source: true, remaining: true, expiresAt: true, periodEnd: true },
+  })
+  return {
+    ...wallet,
+    pooled: account.kind === 'AGENCY',
+    available: wallet.balance - wallet.reserved,
+    grants: spendOrder(grants),
+  }
+}
+
+/** The account's current billing period, or the last 30 days when it has none. */
+const periodStartOf = async (tx: Tx, accountId: string) => {
+  const now = new Date()
+  const slot = await tx.articleCreditGrant.findFirst({
+    where: { accountId, source: 'PLAN', periodStart: { lte: now }, expiresAt: { gt: now } },
+    orderBy: { periodStart: 'asc' },
+    select: { periodStart: true },
+  })
+  return slot?.periodStart ?? new Date(now.getTime() - 30 * 86400000)
+}
+
+/** Units this blog has spent or holds from its account in the current period. */
+export const blogUnitsUsed = async (tx: Tx, site: Pick<ClientSite, 'id'>, accountId: string) => {
+  const used = await tx.articleCreditOperation.aggregate({
+    where: {
+      accountId,
+      clientSiteId: site.id,
+      status: { in: ['RESERVED', 'COMPLETED'] },
+      createdAt: { gte: await periodStartOf(tx, accountId) },
+    },
+    _sum: { reserved: true },
+  })
+  return used._sum.reserved ?? 0
+}
+
+/** Direct-subscription credits land on the blog's own account unless an account is named. */
 export async function creditArticleCredits(
   input: {
-    clientSiteId: string
+    clientSiteId?: string | null
+    accountId?: string
     amount: number
     source: 'TRIAL' | 'PLAN' | 'PURCHASE' | 'BONUS' | 'ADMIN' | 'ROLLOVER'
     idempotencyKey: string
@@ -142,12 +192,18 @@ export async function creditArticleCredits(
   transaction?: Tx,
 ) {
   validateAmount(input.amount)
+  const accountId = input.accountId ?? input.clientSiteId
+  if (!accountId) throw new Error('Article credits need an owner')
+  const clientSiteId = input.clientSiteId ?? null
   const write = async (tx: Tx) => {
-    await lockWallet(tx, input.clientSiteId)
+    if (clientSiteId) await lockBlog(tx, clientSiteId)
+    await lockBillingAccount(tx, accountId)
+    await ensureWallet(tx, accountId)
     const previous = await tx.articleCreditGrant.findUnique({ where: { idempotencyKey: input.idempotencyKey } })
     if (previous) {
       if (
-        previous.clientSiteId !== input.clientSiteId ||
+        previous.accountId !== accountId ||
+        previous.clientSiteId !== clientSiteId ||
         previous.amount !== input.amount ||
         previous.source !== input.source
       )
@@ -157,7 +213,8 @@ export async function creditArticleCredits(
 
     const grant = await tx.articleCreditGrant.create({
       data: {
-        clientSiteId: input.clientSiteId,
+        accountId,
+        clientSiteId,
         source: input.source,
         amount: input.amount,
         remaining: input.amount,
@@ -169,12 +226,13 @@ export async function creditArticleCredits(
       },
     })
     await tx.articleCreditWallet.update({
-      where: { id: input.clientSiteId },
+      where: { id: accountId },
       data: { balance: { increment: input.amount } },
     })
     await tx.articleCreditLedgerEntry.create({
       data: {
-        clientSiteId: input.clientSiteId,
+        accountId,
+        clientSiteId,
         grantId: grant.id,
         kind: input.ledgerKind ?? 'CREDIT',
         amount: input.amount,
@@ -188,36 +246,40 @@ export async function creditArticleCredits(
   return transaction ? write(transaction) : prisma.$transaction(write)
 }
 
-/** A plan's allowance for one period. A mid-period PRO → PREMIUM change adds only the difference. */
+/** One period's included units. A mid-period upgrade adds only the difference. */
 export async function grantPlanArticleCredits(
   tx: Tx,
   input: {
-    clientSiteId: string
-    plan: string
+    clientSiteId?: string
+    accountId?: string
+    plan?: string
+    amount?: number
     idempotencyKey: string
     reason: string
     periodStart: Date
     periodEnd: Date
   },
 ) {
-  const amount = articleCreditsForPlan(input.plan)
-  if (amount <= 0) return
+  const amount = input.amount ?? articleCreditsForPlan(input.plan)
+  const accountId = input.accountId ?? input.clientSiteId
+  if (amount <= 0 || !accountId) return
   // Replayed billing events keep their original grant even if the allowance policy changed.
   const previous = await tx.articleCreditGrant.findUnique({ where: { idempotencyKey: input.idempotencyKey } })
   if (previous) {
-    if (previous.clientSiteId !== input.clientSiteId || previous.source !== 'PLAN')
+    if (previous.accountId !== accountId || previous.source !== 'PLAN')
       throw createError({ statusCode: 409, message: 'Article credit grant key already used' })
     return previous
   }
   // Downgrades never claw back articles already granted.
   const active = await tx.articleCreditGrant.aggregate({
-    where: { clientSiteId: input.clientSiteId, source: 'PLAN', expiresAt: { gt: input.periodStart } },
+    where: { accountId, source: 'PLAN', expiresAt: { gt: input.periodStart } },
     _sum: { amount: true },
   })
   const grantAmount = Math.max(0, amount - (active._sum.amount ?? 0))
   if (grantAmount > 0)
     await creditArticleCredits(
       {
+        accountId,
         clientSiteId: input.clientSiteId,
         amount: grantAmount,
         source: 'PLAN',
@@ -231,6 +293,7 @@ export async function grantPlanArticleCredits(
     )
 }
 
+/** Admin corrections act on the pool the blog spends from; a refund returns to the pool that was charged. */
 export async function adjustArticleCredits(input: {
   clientSiteId: string
   amount: number
@@ -244,7 +307,7 @@ export async function adjustArticleCredits(input: {
     if (!input.operationId)
       throw createError({ statusCode: 400, message: 'A refund must reference a completed article operation' })
     return prisma.$transaction(async (tx) => {
-      await lockWallet(tx, input.clientSiteId)
+      await lockBlog(tx, input.clientSiteId)
       const previous = await tx.articleCreditGrant.findUnique({ where: { idempotencyKey: `admin:${input.key}` } })
       if (previous) {
         if (previous.clientSiteId !== input.clientSiteId || previous.amount !== input.amount)
@@ -258,11 +321,12 @@ export async function adjustArticleCredits(input: {
       if (input.amount !== operation.charged)
         throw createError({ statusCode: 400, message: 'Refund amount must match the operation charge' })
       const refunded = await tx.articleCreditLedgerEntry.findFirst({
-        where: { clientSiteId: input.clientSiteId, operationId: operation.id, kind: 'REFUND' },
+        where: { operationId: operation.id, kind: 'REFUND' },
       })
       if (refunded) throw createError({ statusCode: 409, message: 'Article operation already refunded' })
       return creditArticleCredits(
         {
+          accountId: operation.accountId,
           clientSiteId: input.clientSiteId,
           amount: operation.charged,
           source: 'ADMIN',
@@ -275,29 +339,33 @@ export async function adjustArticleCredits(input: {
       )
     })
   }
-  if (input.kind !== 'DEBIT')
-    return creditArticleCredits({
-      clientSiteId: input.clientSiteId,
-      amount: input.amount,
-      source: input.kind === 'BONUS' ? 'BONUS' : 'ADMIN',
-      idempotencyKey: `admin:${input.key}`,
-      reason: input.reason,
-      expiresAt: input.kind === 'BONUS' ? new Date(Date.now() + 30 * 24 * 60 * 60_000) : null,
-      ledgerKind: input.kind,
-    })
 
   return prisma.$transaction(async (tx) => {
-    const wallet = await lockWallet(tx, input.clientSiteId)
-    await expireAvailableGrants(tx, input.clientSiteId)
+    const { account } = await lockBlogAccount(tx, input.clientSiteId)
+    if (input.kind !== 'DEBIT')
+      return creditArticleCredits(
+        {
+          accountId: account.id,
+          clientSiteId: input.clientSiteId,
+          amount: input.amount,
+          source: input.kind === 'BONUS' ? 'BONUS' : 'ADMIN',
+          idempotencyKey: `admin:${input.key}`,
+          reason: input.reason,
+          expiresAt: input.kind === 'BONUS' ? new Date(Date.now() + 30 * 24 * 60 * 60_000) : null,
+          ledgerKind: input.kind,
+        },
+        tx,
+      )
+
     const previous = await tx.articleCreditLedgerEntry.findUnique({ where: { idempotencyKey: `admin:${input.key}` } })
     if (previous) return previous
-    const current = await tx.articleCreditWallet.findUniqueOrThrow({ where: { id: wallet.id } })
-    if (current.balance - current.reserved < input.amount)
+    const current = await walletView(tx, account)
+    if (current.available < input.amount)
       throw createError({ statusCode: 409, message: 'Adjustment exceeds available article credits' })
 
     let remaining = input.amount
     const grants = await tx.articleCreditGrant.findMany({
-      where: { clientSiteId: input.clientSiteId, remaining: { gt: 0 } },
+      where: { accountId: account.id, remaining: { gt: 0 } },
       orderBy: [{ expiresAt: { sort: 'asc', nulls: 'last' } }, { createdAt: 'asc' }, { id: 'asc' }],
     })
     for (const grant of spendOrder(grants)) {
@@ -307,11 +375,12 @@ export async function adjustArticleCredits(input: {
       remaining -= used
     }
     await tx.articleCreditWallet.update({
-      where: { id: input.clientSiteId },
+      where: { id: account.id },
       data: { balance: { decrement: input.amount } },
     })
     return tx.articleCreditLedgerEntry.create({
       data: {
+        accountId: account.id,
         clientSiteId: input.clientSiteId,
         kind: 'ADJUSTMENT',
         amount: -input.amount,
@@ -331,24 +400,34 @@ export async function reserveArticleCredit(
 ) {
   validateAmount(amount)
   return prisma.$transaction(async (tx) => {
-    const wallet = await lockWallet(tx, clientSiteId)
-    await releaseExpiredOperations(tx, clientSiteId)
-    await expireAvailableGrants(tx, clientSiteId)
+    const { site, account } = await lockBlogAccount(tx, clientSiteId)
+    const accountId = account.id
+    const current = await walletView(tx, account)
     const previous = await tx.articleCreditOperation.findUnique({ where: { idempotencyKey: key } })
     if (previous) throw createError({ statusCode: 409, message: 'Operation already submitted' })
+    // A paused (BASIC) agency blog keeps its place in the agency, not its share of the pool.
+    if (account.kind === 'AGENCY' && !hasAiPlan(site.plan))
+      throw createError({ statusCode: 403, message: 'AI plan is not active', data: { code: 'AI_PLAN_REQUIRED' } })
 
-    const current = await tx.articleCreditWallet.findUniqueOrThrow({ where: { id: wallet.id } })
-    const available = current.balance - current.reserved
-    if (available < amount)
+    if (site.monthlyUnitLimit !== null) {
+      const used = await blogUnitsUsed(tx, site, accountId)
+      if (used + amount > site.monthlyUnitLimit)
+        throw createError({
+          statusCode: 402,
+          message: 'Blog unit limit reached',
+          data: { code: 'BLOG_UNIT_LIMIT_REACHED', required: amount, limit: site.monthlyUnitLimit, used },
+        })
+    }
+    if (current.available < amount)
       throw createError({
         statusCode: 402,
         message: 'Insufficient article credits',
-        data: { required: amount, available },
+        data: { required: amount, available: current.available },
       })
 
     const grants = await tx.articleCreditGrant.findMany({
       where: {
-        clientSiteId,
+        accountId,
         remaining: { gt: 0 },
         OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
       },
@@ -370,6 +449,7 @@ export async function reserveArticleCredit(
       })
     const operation = await tx.articleCreditOperation.create({
       data: {
+        accountId,
         clientSiteId,
         action,
         reserved: amount,
@@ -379,11 +459,12 @@ export async function reserveArticleCredit(
         expiresAt: new Date(Date.now() + 30 * 60_000),
       },
     })
-    await tx.articleCreditWallet.update({ where: { id: clientSiteId }, data: { reserved: { increment: amount } } })
+    await tx.articleCreditWallet.update({ where: { id: accountId }, data: { reserved: { increment: amount } } })
     return operation
   })
 }
 
+/** Settles against the pool that was charged, even if the blog has since moved to another account. */
 export async function settleArticleCredit(
   operation: Pick<ArticleCreditOperation, 'id' | 'clientSiteId'>,
   charge: boolean,
@@ -391,11 +472,12 @@ export async function settleArticleCredit(
   transaction?: Tx,
 ) {
   const write = async (tx: Tx) => {
-    await lockWallet(tx, operation.clientSiteId)
+    await lockBlog(tx, operation.clientSiteId)
     const current = await tx.articleCreditOperation.findFirstOrThrow({
       where: { id: operation.id, clientSiteId: operation.clientSiteId },
     })
-    if (current.status !== 'RESERVED') return getArticleCreditWallet(operation.clientSiteId, tx)
+    const account = await lockBillingAccount(tx, current.accountId)
+    if (current.status !== 'RESERVED') return walletView(tx, account)
 
     if (!charge) {
       for (const allocation of current.allocations as Allocation)
@@ -418,7 +500,7 @@ export async function settleArticleCredit(
       },
     })
     await tx.articleCreditWallet.update({
-      where: { id: operation.clientSiteId },
+      where: { id: account.id },
       data: {
         reserved: { decrement: current.reserved },
         ...(charge ? { balance: { decrement: current.reserved } } : {}),
@@ -426,6 +508,7 @@ export async function settleArticleCredit(
     })
     await tx.articleCreditLedgerEntry.create({
       data: {
+        accountId: account.id,
         clientSiteId: operation.clientSiteId,
         operationId: current.id,
         kind: charge ? 'DEBIT' : 'RELEASE',
@@ -434,24 +517,14 @@ export async function settleArticleCredit(
         idempotencyKey: `settle:${current.id}`,
       },
     })
-    return getArticleCreditWallet(operation.clientSiteId, tx)
+    return walletView(tx, account)
   }
   return transaction ? write(transaction) : prisma.$transaction(write)
 }
 
+/** The wallet the blog spends from; for an agency blog this is the shared pool. */
 export async function getArticleCreditWallet(clientSiteId: string, transaction?: Tx) {
-  const read = async (tx: Tx) => {
-    await lockWallet(tx, clientSiteId)
-    await releaseExpiredOperations(tx, clientSiteId)
-    await expireAvailableGrants(tx, clientSiteId)
-    const wallet = await tx.articleCreditWallet.findUniqueOrThrow({ where: { id: clientSiteId } })
-    const grants = await tx.articleCreditGrant.findMany({
-      where: { clientSiteId, remaining: { gt: 0 } },
-      orderBy: [{ expiresAt: { sort: 'asc', nulls: 'last' } }, { createdAt: 'asc' }],
-      select: { id: true, source: true, remaining: true, expiresAt: true, periodEnd: true },
-    })
-    return { ...wallet, available: wallet.balance - wallet.reserved, grants: spendOrder(grants) }
-  }
+  const read = async (tx: Tx) => walletView(tx, (await lockBlogAccount(tx, clientSiteId)).account)
   return transaction ? read(transaction) : prisma.$transaction(read)
 }
 
@@ -476,3 +549,7 @@ export async function withArticleCreditReservation<T>(
     throw error
   }
 }
+
+/** An agency's shared pool, for its own overview. Locks only the account. */
+export const getAccountWallet = (accountId: string) =>
+  prisma.$transaction(async (tx) => walletView(tx, await lockBillingAccount(tx, accountId)))

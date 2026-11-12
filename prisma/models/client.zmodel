@@ -22,6 +22,7 @@ import "./widget"
 import "./websiteImport"
 import "./onboarding"
 import "./apiKey"
+import "./billingAccount"
 
 enum GenerationFrequency {
     NONE
@@ -144,7 +145,17 @@ model ClientSite with Base {
     intervalMinHours     Int                 @default(24)
     intervalMaxHours     Int                 @default(72)
     nextReleaseAt        DateTime?
-    articleCreditWallet  ArticleCreditWallet?
+    /// The agency whose pool this blog spends; null spends from the blog's own DIRECT account.
+    billingAccountId     String?
+    billingAccount       BillingAccount?     @relation("AgencySites", fields: [billingAccountId], references: [id], onDelete: Restrict)
+    directBillingAccount BillingAccount?     @relation("DirectBillingAccount")
+    /// Agency cap on article units this blog may spend per agency billing period; null = no cap.
+    monthlyUnitLimit     Int?
+    /// The plan its agency picked (BASIC, PRO or PREMIUM); `plan` caches it while the agency is live. Null outside an agency.
+    agencyPlan           ClientPlan?
+    articleCreditGrants  ArticleCreditGrant[]
+    articleCreditOperations ArticleCreditOperation[]
+    articleCreditEntries ArticleCreditLedgerEntry[]
     autoRelease          Boolean             @default(false)
     commentsEnabled      Boolean             @default(true)
     commentGifsEnabled   Boolean             @default(true)
@@ -286,6 +297,7 @@ model ClientSite with Base {
     @@index([domain, name, plan, billingPlan])
     @@index([trialEndsAt, trialAcknowledgedAt])
     @@index([nextReleaseAt])
+    @@index([billingAccountId])
 }
 
 model Feature with Base {

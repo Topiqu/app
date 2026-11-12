@@ -3,8 +3,10 @@ import type { JsonValue } from '@zenstackhq/orm'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { stubNitroImports } from '../../helpers/nitroImports'
+import { stubBillingAccountImports } from '../../helpers/billingImports'
 
 async function stubImports() {
+  await stubBillingAccountImports()
   await stubNitroImports(import('../../../server/utils/ai/articleUsage'), 'withArticleUsageStage', 'bindArticleUsage')
   await stubNitroImports(import('../../../server/utils/keywords/plan'), 'themeKey', 'themeOf')
   await stubNitroImports(import('../../../server/utils/databaseJson'), 'toDatabaseJson')

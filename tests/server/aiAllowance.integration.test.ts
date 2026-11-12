@@ -5,6 +5,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 
 import { toDatabaseJson } from '../../server/utils/databaseJson'
 import { createDatabaseClient } from '../../server/utils/database'
+import { stubBillingAccountImports } from '../helpers/billingImports'
 import { ARTICLE_CREDIT_POLICY_VERSION } from '../../shared/utils/articleCredits'
 import { creditArticleCredits, reserveArticleCredit } from '../../server/utils/articleCreditWallet'
 import {
@@ -22,7 +23,8 @@ const db = enabled ? createDatabaseClient(url) : null
 const reported = vi.fn()
 
 describe.skipIf(!enabled)('blog AI allowances on PostgreSQL', () => {
-  beforeAll(() => {
+  beforeAll(async () => {
+    await stubBillingAccountImports()
     vi.stubGlobal('prisma', db)
     vi.stubGlobal('createError', createError)
     vi.stubGlobal('toDatabaseJson', toDatabaseJson)

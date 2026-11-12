@@ -1,4 +1,5 @@
 import "./client"
+import "./billingAccount"
 
 /// Provider usage per AI call. Internal cost telemetry, never a customer entitlement.
 model AiUsage {
@@ -17,8 +18,11 @@ model AiUsage {
 /// Server-owned operation allowances and provider-cost funding, separate from article balances.
 model AiAllowanceGrant {
     id String @id @default(uuid())
-    clientSiteId String
-    clientSite ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Restrict)
+    accountId String
+    account BillingAccount @relation(fields: [accountId], references: [id], onDelete: Restrict)
+    /// The blog the grant was made for; an agency's subscription funding belongs to no blog.
+    clientSiteId String?
+    clientSite ClientSite? @relation(fields: [clientSiteId], references: [id], onDelete: Restrict)
     kind String
     source String
     amount Int
@@ -28,25 +32,31 @@ model AiAllowanceGrant {
     idempotencyKey String @unique
     policyVersion String
     createdAt DateTime @default(now())
-    @@index([clientSiteId, kind, expiresAt])
+    @@index([accountId, kind, expiresAt])
+    @@index([clientSiteId])
     @@deny('all', true)
 }
 
 /// Records every recognized paid invoice, even when its funding is zero.
 model AiAllowanceInvoice {
     id String @id
-    clientSiteId String
-    clientSite ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Restrict)
+    accountId String
+    account BillingAccount @relation(fields: [accountId], references: [id], onDelete: Restrict)
+    clientSiteId String?
+    clientSite ClientSite? @relation(fields: [clientSiteId], references: [id], onDelete: Restrict)
     grantedMicros Int
     policyVersion String
     createdAt DateTime @default(now())
-    @@index([clientSiteId, createdAt])
+    @@index([accountId, createdAt])
+    @@index([clientSiteId])
     @@deny('all', true)
 }
 
 /// Reserves before provider work; unknown-cost failures retain their conservative reservation.
 model AiUsageReservation {
     id String @id @default(uuid())
+    accountId String
+    account BillingAccount @relation(fields: [accountId], references: [id], onDelete: Restrict)
     clientSiteId String
     clientSite ClientSite @relation(fields: [clientSiteId], references: [id], onDelete: Restrict)
     kind String
@@ -58,6 +68,7 @@ model AiUsageReservation {
     expiresAt DateTime
     createdAt DateTime @default(now())
     completedAt DateTime?
-    @@index([clientSiteId, status, expiresAt])
+    @@index([accountId, status, expiresAt])
+    @@index([clientSiteId, createdAt])
     @@deny('all', true)
 }

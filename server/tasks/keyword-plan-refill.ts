@@ -39,14 +39,12 @@ export default defineMonitoredTask({
         releaseDays: true,
         intervalMinHours: true,
         intervalMaxHours: true,
-        articleCreditWallet: {
-          select: {
-            grants: {
-              where: { remaining: { gt: 0 }, OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
-              select: { remaining: true },
-            },
+        ...poolWalletSelect({
+          grants: {
+            where: { remaining: { gt: 0 }, OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
+            select: { remaining: true },
           },
-        },
+        }),
       },
     })
 
@@ -56,7 +54,7 @@ export default defineMonitoredTask({
     for (const site of sites) {
       if (attempted >= MAX_REBUILDS) break
       const quality = articleQualityOf(site.articleQuality)
-      const credits = site.articleCreditWallet?.grants.reduce((total, grant) => total + grant.remaining, 0) ?? 0
+      const credits = poolOf(site)?.grants.reduce((total, grant) => total + grant.remaining, 0) ?? 0
       const schedule = releaseScheduleOf(site)
       // A site that cannot write consumes no topics, so its stock waits for the credits.
       if (!schedule || !hasAiPlan(site.plan) || credits < articleCreditCost(quality)) continue
