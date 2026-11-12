@@ -15,9 +15,9 @@
       <UButton icon="mdi:plus" @click="createOpen = true">{{ $t('common.tenant.createAction') }}</UButton>
       <p class="text-sm text-muted">
         {{ $t('agency.entry.prompt') }}
-        <ULink :to="localePath({ name: 'admin-agency' })" class="font-medium text-primary">
+        <NuxtLink :to="localePath({ name: 'admin-agency' })" class="font-medium text-primary hover:underline">
           {{ $t('agency.entry.action') }}
-        </ULink>
+        </NuxtLink>
       </p>
       <TenantCreate v-model="createOpen" />
     </template>
