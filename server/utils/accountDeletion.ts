@@ -804,6 +804,7 @@ export const anonymizeAccount = async (userId: string, now = new Date()) => {
         totpTempSecret: null,
         onboardingLoginToken: null,
         onboardingLoginTokenExpiresAt: null,
+        metaSignals: DbNull,
         emailVerified: false,
         allowNotifs: false,
         allowEmail: false,

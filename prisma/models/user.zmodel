@@ -30,6 +30,8 @@ model User with Base {
     deletionScheduledFor          DateTime?         @omit
     deletionReminderSentAt        DateTime?         @omit
     anonymizedAt                  DateTime?         @omit
+    /// Meta cookies, IP and user agent from a sign-up that accepted the pixel (`metaConversions.ts`).
+    metaSignals                   Json?             @omit
     emailVerified                 Boolean           @default(false)
     allowNotifs                   Boolean           @default(true)
     allowEmail                    Boolean           @default(true)

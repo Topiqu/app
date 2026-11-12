@@ -3,6 +3,7 @@ import type { H3Event } from 'h3'
 import type { AgencyStatus, TenantScope } from '~~/generated/zenstack/models'
 
 import { randomUUID } from 'node:crypto'
+import { reportMetaSubscribe } from '~~/server/utils/metaConversions'
 import { agencySlotShortfall, agencyUnits, isAgencyLive } from '~~/shared/utils/agencyPlan'
 
 const LEASE_MS = 5 * 60_000
@@ -301,7 +302,7 @@ export const creditAgencyInvoice = async (
       )
     : undefined
   const now = new Date()
-  await serializableTransaction(async (tx) => {
+  const firstPaid = await serializableTransaction(async (tx) => {
     await assertAgencyLease(tx, accountId, leaseId)
     await lockBillingAccount(tx, accountId)
     if (update) {
@@ -315,7 +316,10 @@ export const creditAgencyInvoice = async (
         periodEnd = slot.periodEnd
       }
     }
-    await tx.billingAccount.updateMany({ where: { id: accountId, firstPaidAt: null }, data: { firstPaidAt: now } })
+    const first = await tx.billingAccount.updateMany({
+      where: { id: accountId, firstPaidAt: null },
+      data: { firstPaidAt: now },
+    })
     await tx.billingAccount.updateMany({
       where: { id: accountId, OR: [{ paidThrough: null }, { paidThrough: { lt: servicePeriodEnd } }] },
       data: { paidThrough: servicePeriodEnd },
@@ -329,7 +333,10 @@ export const creditAgencyInvoice = async (
       periodEnd,
     })
     await creditAgencyInvoiceAiBudget(tx, { accountId, invoice, periodStart, periodEnd, recurringBaseCents })
+    return first.count > 0
   })
+  if (firstPaid && invoice.amount_paid)
+    void reportMetaSubscribe({ accountId }, { amount: invoice.amount_paid / 100, currency: invoice.currency })
 }
 
 /** Routes an agency subscription event; returns false for every event that is not an agency's. */
