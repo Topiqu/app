@@ -510,7 +510,7 @@ describe('article media finalization', () => {
     expect(result.articleImageUrl).toBe('https://images.test/ai')
   })
 
-  it('draws an AI picture from its caption or title, so slots and covers show different scenes', async () => {
+  it('draws an AI picture from its caption, and a cover from the title only as context', async () => {
     vi.mocked(findStockImage).mockResolvedValue(null)
     vi.mocked(generateImage).mockImplementation(
       async (prompt) => ({ url: `https://images.test/${prompt.length}`, width: 1200, height: 800 }) as never,
@@ -527,7 +527,28 @@ describe('article media finalization', () => {
     const prompts = vi.mocked(generateImage).mock.calls.map((call) => call[0])
     expect(prompts).toContain('heat pump. Měření hluku zvukoměrem u plotu.')
     expect(prompts).toContain('heat pump. Vnitřní hydraulický modul v technické místnosti.')
-    expect(prompts).toContain('abstract game design. The Witcher 4') // a cover is told apart by its title
+    expect(prompts).toContain('abstract game design. Context only, not the subject: an article titled "The Witcher 4".')
+  })
+
+  it('lets a planned cover subject lead the AI cover and the check of found covers', async () => {
+    const candidate = hit('unit')
+    vi.mocked(findStockImage).mockImplementation(async (_type, _query, _chains, accept) => {
+      await accept!(candidate.image)
+      return null
+    })
+    imageDepicts.mockResolvedValue({ depicts: false })
+    vi.mocked(generateImage).mockResolvedValue({ url: 'https://images.test/ai', width: 1024, height: 1024 } as never)
+    const subject = 'Venkovní jednotka tepelného čerpadla u zdi domu.'
+    await finalizeArticle({ ...draft(), coverImage: aiCover('heat pump unit'), images: [] }, 'cs', {
+      allowGeneratedImages: true,
+      coverSubject: subject,
+    })
+    expect(vi.mocked(generateImage).mock.calls[0]![0]).toBe(`heat pump unit. ${subject}`)
+    expect(imageDepicts).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ wanted: subject, language: 'cs' }),
+      undefined,
+    )
   })
 
   it('describes a found picture in the language of the article, not the archive', async () => {
