@@ -230,16 +230,20 @@ export const finalizeArticle = async (
     // Official pages come from the subject's own publisher. Store and library hits only matched words in a
     // title or description (a "Heat Pump" app prefixes any heat pump query), so each one is looked at first.
     let checks = 0
+    const alts = new WeakMap<StockImage, string>()
+    const described = (image: StockImage) => ({ ...image, alt: alts.get(image) ?? image.alt })
     const depicts = (subject: string, intent: typeof type) => async (image: StockImage) => {
       if (checks >= IMAGE_CHECKS) return false
       checks += 1
       const verdict = await auditArticleStep(
         audit,
         'image_check',
-        () => imageDepicts(image, { title: object.title, query: subject, type: intent, ...need }, abortSignal),
+        () =>
+          imageDepicts(image, { title: object.title, query: subject, type: intent, language, ...need }, abortSignal),
         (result) => ({ ...result }),
         { query: subject, sourceUrl: image.credit?.sourceUrl ?? image.url },
       )
+      if (verdict.depicts && verdict.alt) alts.set(image, verdict.alt)
       return verdict.depicts
     }
     const shows = (subject: string, intent: typeof type) => async (image: StockImage) =>
@@ -250,18 +254,19 @@ export const finalizeArticle = async (
       for (const search of storeSearches) {
         const screenshot = await search(query, pick)
         if (screenshot && (await depicts(query, type)(screenshot)))
-          return { image: screenshot, kind: 'illustration', source: 'screenshot' }
+          return { image: described(screenshot), kind: 'illustration', source: 'screenshot' }
       }
     }
     // A broader subject is searched where photos are, and judged as any fitting picture of that kind.
     const hit = await findStockImage(broader ? 'photo' : type, query, undefined, shows(query, broader ? 'stock' : type))
-    if (hit && acceptImage(hit.image)) return { ...hit, source: 'library' }
+    if (hit && acceptImage(hit.image)) return { ...hit, image: described(hit.image), source: 'library' }
     // A named subject has real photos even when the scene the writer described does not; that beats
     // an AI illustration of any intent.
     const subject = photoSubjectQuery(query)
     if (subject) {
       const portrait = await findStockImage('photo', subject, undefined, shows(subject, 'photo'))
-      if (portrait && acceptImage(portrait.image)) return { ...portrait, kind: 'illustration', source: 'library' }
+      if (portrait && acceptImage(portrait.image))
+        return { ...portrait, image: described(portrait.image), kind: 'illustration', source: 'library' }
     }
     return null
   }

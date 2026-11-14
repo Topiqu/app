@@ -530,6 +530,23 @@ describe('article media finalization', () => {
     expect(prompts).toContain('abstract game design. The Witcher 4') // a cover is told apart by its title
   })
 
+  it('describes a found picture in the language of the article, not the archive', async () => {
+    const found = hit('meter')
+    vi.mocked(findStockImage).mockImplementation(async (_type, query, _chains, accept) =>
+      query === 'sound level meter' && (await accept!(found.image)) ? found : null,
+    )
+    imageDepicts.mockResolvedValue({ depicts: true, alt: 'Zvukoměr měří hluk u plotu.' })
+    const object = {
+      ...draft(),
+      coverImage: aiCover(),
+      content: '<h2>Hluk</h2>[[IMAGE1]]',
+      images: [{ type: 'stock' as const, query: 'sound level meter', broaderQuery: '', caption: 'Měření hluku.' }],
+    }
+    const result = await finalizeArticle(object, 'cs')
+    expect(result.content).toContain('alt="Zvukoměr měří hluk u plotu."')
+    expect(result.content).not.toContain('Verified catalogue description')
+  })
+
   it('illustrates a photo cover nobody photographed without depicting people or the event', async () => {
     vi.mocked(findStockImage).mockResolvedValue(null)
     vi.mocked(generateImage).mockResolvedValue({ url: 'https://images.test/ai', width: 1200, height: 800 } as never)

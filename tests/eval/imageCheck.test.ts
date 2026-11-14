@@ -219,11 +219,13 @@ describe.skipIf(process.env.AI_EVAL !== '1')('image check eval', () => {
   it.concurrent.each(cases)(
     '$id',
     async ({ id, expected, url, alt, title, query, wanted, context }) => {
-      const verdict = await imageDepicts({ url, alt }, { title, query, type: 'stock', wanted, context })
+      const verdict = await imageDepicts({ url, alt }, { title, query, type: 'stock', wanted, context, language: 'cs' })
       results.push({ id, expected, ...verdict })
       console.info(id, expected, verdict)
       expect(verdict.failure).toBeUndefined()
       if (expected !== 'either') expect(verdict.depicts).toBe(expected === 'accept')
+      // The archive describes it in English; the reader of a Czech article gets a Czech alt text.
+      if (verdict.depicts) expect(verdict.alt).toMatch(/[áčďéěíňóřšťúůýž]/i)
     },
     60_000,
   )
