@@ -294,6 +294,8 @@ describe('requested topics', () => {
     expect(prompt).toContain('## REQUESTED TOPIC')
     expect(prompt).toContain('Subject: Zazimování zahradního jezírka')
     expect(prompt).toContain('Editorial preferences: Pro začátečníky')
+    // An unrelated plan keyword once became the title prefix of a requested topic.
+    expect(prompt).toContain('Take a KEYWORD PLAN entry only when its keyword is this same subject')
   })
 
   it('leaves scheduled picks unchanged', () => {
