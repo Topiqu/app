@@ -166,6 +166,12 @@ describe('authored Bun entry', () => {
     expect(runtime.localFetch).not.toHaveBeenCalled()
   })
 
+  it('waits for a slow response as long as Cloudflare does unless configured otherwise', async () => {
+    expect((await entry(false, true)).serve).toHaveBeenCalledWith(expect.objectContaining({ idleTimeout: 100 }))
+    vi.stubEnv('NITRO_BUN_IDLE_TIMEOUT', '30')
+    expect((await entry(false, true)).serve).toHaveBeenCalledWith(expect.objectContaining({ idleTimeout: 30 }))
+  })
+
   it('sets the native cap and forwards allowed multipart bytes unchanged', async () => {
     const runtime = await entry(false, true)
     expect(runtime.serve).toHaveBeenCalledWith(expect.objectContaining({ maxRequestBodySize: 16 * 1024 * 1024 }))

@@ -52,7 +52,8 @@ const idleTimeout = Number.parseInt(process.env.NITRO_BUN_IDLE_TIMEOUT ?? '', 10
 const server = Bun.serve({
   port: process.env.NITRO_PORT || process.env.PORT || 3000,
   hostname: process.env.NITRO_HOST || process.env.HOST,
-  idleTimeout: Number.isNaN(idleTimeout) ? undefined : idleTimeout,
+  // Bun's default closes a connection idle for 10 s, dropping slower AI responses; Cloudflare waits 100 s.
+  idleTimeout: Number.isNaN(idleTimeout) ? 100 : idleTimeout,
   maxRequestBodySize: MULTIPART_BODY_MAX_BYTES,
   websocket: ws?.websocket,
   async fetch(request, nativeServer) {
