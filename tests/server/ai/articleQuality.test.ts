@@ -113,7 +113,7 @@ describe('revision edits', () => {
     content: '<h2>Pokuty</h2><p>Pokuta je až 2 mil. Kč.</p><p>Úřad   může nařídit odstranění.</p>',
     keyTakeaways: ['Pokuta až 2 mil. Kč', 'Hrozí odstranění'],
   }
-  const none = { title: null, perex: null, answer: null, keyTakeaways: null, faq: null, sources: null }
+  const none = { title: null, perex: null, answer: null, keyTakeaways: null, faq: null, videos: null, sources: null }
 
   it('applies replacements and insertions and reports only the changed text', () => {
     const result = applyRevisionEdits(article, {
@@ -136,6 +136,17 @@ describe('revision edits', () => {
       '<p>Pokuta je až 2 mil. Kč, u firem až 4 mil. Kč.</p>',
       '<p>Výše závisí na typu stavby.</p>',
     ])
+  })
+
+  it('adds the verified video an edit returns along with its slot', () => {
+    const video = { url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', caption: 'Odstranění stavby' }
+    const result = applyRevisionEdits(article, {
+      ...none,
+      edits: [{ find: '<h2>Pokuty</h2>', replace: '[[VIDEO1]]', insertAfter: true }],
+      videos: [video, { url: 'https://youtu.be/abcdefghijk', caption: 'Druhé' }],
+    })
+    expect(result).toMatchObject({ ok: true, draft: { videos: [video] } })
+    if (result.ok) expect(result.draft.content).toContain('<h2>Pokuty</h2>[[VIDEO1]]')
   })
 
   it('tolerates whitespace differences in a quoted excerpt', () => {

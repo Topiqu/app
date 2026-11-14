@@ -134,6 +134,7 @@ const asEdits = (revision: Partial<typeof draft>) => ({
   answer: null,
   keyTakeaways: null,
   faq: null,
+  videos: null,
   sources: revision.sources ?? null,
 })
 

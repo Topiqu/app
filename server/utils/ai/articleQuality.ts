@@ -79,7 +79,7 @@ type ReviewDraft = {
   images?: Array<{ query: string }>
   faq?: Array<{ question: string; answer: string }>
   polls?: Array<{ question: string; options: string[] }>
-  videos?: Array<{ url: string }>
+  videos?: Array<{ url: string; caption?: string }>
   sources?: string[]
 }
 
@@ -222,6 +222,11 @@ export const revisionEditsSchema = z.object({
     .array(z.object({ question: z.string(), answer: z.string() }))
     .nullable()
     .describe('The complete replacement FAQ, or null to keep it'),
+  // Without this field an edit could only add the slot, never the video, so the finding never closed.
+  videos: z
+    .array(z.object({ url: z.string(), caption: z.string() }))
+    .nullable()
+    .describe('The verified YouTube video from the research brief for a [[VIDEO1]] slot; null to keep the videos'),
   sources: z
     .array(z.string())
     .nullable()
@@ -244,6 +249,7 @@ Return edits, not a new article:
 - Make the smallest change that resolves each finding: correct a figure in place, delete an unsupported sentence, rewrite one paragraph. Add a section only when a finding says the article fails to deliver what it promises.
 - Replace title, perex, answer, keyTakeaways or faq only when a finding concerns them; otherwise return null. A replaced list replaces the whole list.
 - Keep numbered image, poll and video slot markers ([[IMAGE1]], [[POLL1]], [[VIDEO1]]) unless a finding concerns them.
+- A missing video is added as one [[VIDEO1]] slot through an edit plus its URL from the research brief in \`videos\`, with a caption in the article language; never as a link to the video. Otherwise \`videos\` is null.
 - \`sources\` lists the full verification URL behind every fact your edits add; null when they add none.
 ${revisionRules()}
 `.trim()
@@ -329,6 +335,8 @@ export const applyRevisionEdits = <T extends EditableDraft>(
   // A deletion cannot need a new citation; the caller filters these against the grounding URLs.
   if (!removalOnly && edits.sources?.length)
     (next as EditableDraft).sources = [...new Set([...(draft.sources ?? []), ...edits.sources])]
+  const video = edits.videos?.[0]
+  if (!removalOnly && video) (next as EditableDraft).videos = [{ url: video.url, caption: video.caption.slice(0, 200) }]
   for (const field of ['title', 'perex', 'answer'] as const) {
     const value = edits[field]
     const current: string = draft[field] ?? ''
@@ -397,9 +405,9 @@ const BLOCKABLE_CODES = new Set([
 const structureIssues = (draft: ReviewDraft, context: Pick<ReviewContext, 'modules' | 'researchBrief' | 'format'>) => {
   const requested = new Set(context.modules ?? [])
   const requiredStructureIssues: ReviewIssue[] = []
-  const requireModule = (module: string, delivered: boolean, note: string) => {
+  const requireModule = (module: string, delivered: boolean, note: string, blocking = true) => {
     if (requested.has(module) && !delivered)
-      requiredStructureIssues.push({ code: 'broken_structure', note, key: `module.${module}`, blocking: true })
+      requiredStructureIssues.push({ code: 'broken_structure', note, key: `module.${module}`, blocking })
   }
   requireModule('answer', !!draft.answer?.trim(), 'Add the requested direct-answer field.')
   requireModule('takeaways', (draft.keyTakeaways?.length ?? 0) >= 2, 'Add at least two requested key takeaways.')
@@ -415,12 +423,14 @@ const structureIssues = (draft: ReviewDraft, context: Pick<ReviewContext, 'modul
     'Add the requested body-image instructions and matching numbered slots.',
   )
   requireModule('table', /<table(?:\s|>)/i.test(draft.content), 'Add the requested comparison table.')
-  // Only research can supply a URL, so a video is owed only when the brief verified one.
+  // Only research can supply a URL, so a video is owed only when the brief verified one. It never holds the
+  // article: the autopilot adds the module to every researched topic, and the text is complete without it.
   if (/^Verified YouTube video\b/m.test(context.researchBrief ?? ''))
     requireModule(
       'youtube',
       (draft.videos?.length ?? 0) === 1 && /\[\[VIDEO1\]\]/.test(draft.content),
       'Add the verified YouTube video from the research brief and its [[VIDEO1]] slot.',
+      false,
     )
   if (context.format === 'story' && /<[ou]l(?:\s|>)/i.test(draft.content))
     requiredStructureIssues.push({
