@@ -16,6 +16,7 @@ async function stubImports() {
     'createImageSelection',
     'photoSubjectQuery',
     'matchesImageQuery',
+    'usableSize',
   )
   await stubNitroImports(import('../../../server/utils/images/http'), 'fetchJson', 'imageApiHeaders')
   await stubNitroImports(import('../../../server/utils/images/openverse'), 'openverse')

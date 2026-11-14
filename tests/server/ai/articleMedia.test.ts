@@ -124,6 +124,7 @@ beforeEach(() => {
   vi.stubGlobal('applyContentSlots', applyContentSlots)
   vi.stubGlobal('dropAuthoredImages', dropAuthoredImages)
   vi.stubGlobal('generateImage', vi.fn())
+  vi.stubGlobal('usedLibraryImageUrls', async () => [])
 })
 afterEach(() => vi.unstubAllGlobals())
 
@@ -400,6 +401,133 @@ describe('article media finalization', () => {
     expect(result.articleImageUrl).toBe('https://images.test/mountains')
     expect(result.articleImageCredit?.kind).toBe('illustration')
     expect(generateImage).not.toHaveBeenCalled()
+  })
+
+  it('falls back from an exact body subject to a photo of the object alone, labelled as illustrative', async () => {
+    vi.mocked(findStockImage).mockImplementation(async (_type, query) =>
+      query === 'air source heat pump' ? hit('heat-pump') : null,
+    )
+    vi.mocked(generateImage).mockResolvedValue({ url: 'https://images.test/ai', width: 1200, height: 800 } as never)
+    const object = {
+      ...draft(),
+      coverImage: aiCover(),
+      content: '<h2>Hluk</h2>[[IMAGE1]]',
+      images: [
+        {
+          type: 'stock' as const,
+          query: 'Czech family house outdoor air source heat pump',
+          broaderQuery: 'air source heat pump',
+          caption: 'Venkovní jednotka u rodinného domu.',
+        },
+      ],
+    }
+    const result = await finalizeArticle(object, 'cs', { allowGeneratedImages: true })
+    expect(result.content).toContain('https://images.test/heat-pump')
+    expect(generateImage).toHaveBeenCalledTimes(1) // the abstract cover only
+  })
+
+  it('judges a broader picture by the picture wanted in its slot and the text around it', async () => {
+    vi.mocked(findStockImage).mockImplementation(async (_type, query, _chains, accept) =>
+      query === 'sound level meter' && (await accept!(hit('meter').image)) ? hit('meter') : null,
+    )
+    imageDepicts.mockResolvedValue({ depicts: false })
+    const object = {
+      ...draft(),
+      coverImage: aiCover(),
+      content: '<p>Úvod článku.</p><h2>Hluk</h2><p>Hluk měříme zvukoměrem u plotu.</p>[[IMAGE1]]',
+      images: [
+        {
+          type: 'stock' as const,
+          query: 'sound level meter at garden fence',
+          broaderQuery: 'sound level meter',
+          caption: 'Měření hluku zvukoměrem u plotu.',
+        },
+      ],
+    }
+    await finalizeArticle(object, 'cs')
+    expect(imageDepicts).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        query: 'sound level meter',
+        type: 'stock',
+        wanted: 'Měření hluku zvukoměrem u plotu.',
+        context: expect.stringContaining('Hluk měříme zvukoměrem u plotu.'),
+      }),
+      undefined,
+    )
+  })
+
+  it('never takes a store screenshot for a broader subject that happens to be an app title', async () => {
+    steamSearch.mockImplementation(async (query, accept) => {
+      const screenshot = { url: 'https://shared.steamstatic.com/ss_heatpump.jpg', alt: 'Heat Pump' }
+      return query === 'heat pump outdoor unit' && accept(screenshot) ? screenshot : null
+    })
+    vi.mocked(findStockImage).mockImplementation(async (_type, query) =>
+      query === 'heat pump outdoor unit' ? hit('heat-pump') : null,
+    )
+    const object = {
+      ...draft(),
+      coverImage: {
+        type: 'stock' as const,
+        query: 'air source heat pump outdoor unit beside house wall',
+        broaderQuery: 'heat pump outdoor unit',
+      },
+      images: [],
+    }
+    const result = await finalizeArticle(object, 'cs', { allowGeneratedImages: true })
+    expect(steamSearch).not.toHaveBeenCalledWith('heat pump outdoor unit', expect.any(Function))
+    expect(result.articleImageUrl).toBe('https://images.test/heat-pump')
+  })
+
+  it('looks at a store screenshot before taking it, since a generic app title prefixes many queries', async () => {
+    steamSearch.mockImplementation(async (_query, accept) => {
+      const screenshot = { url: 'https://shared.steamstatic.com/ss_heatpump.jpg', alt: 'Heat Pump' }
+      return accept(screenshot) ? screenshot : null
+    })
+    imageDepicts.mockImplementation(async (image: { url: string }) => ({ depicts: !image.url.includes('steamstatic') }))
+    vi.mocked(findStockImage).mockImplementation(async (_type, _query, _chains, accept) =>
+      (await accept!(hit('unit').image)) ? hit('unit') : null,
+    )
+    const object = {
+      ...draft(),
+      coverImage: { type: 'stock' as const, query: 'heat pump outdoor unit old house', broaderQuery: '' },
+      images: [],
+    }
+    expect((await finalizeArticle(object, 'cs')).articleImageUrl).toBe('https://images.test/unit')
+  })
+
+  it('never reuses a library photo another article of the blog already shows', async () => {
+    vi.stubGlobal('usedLibraryImageUrls', async () => ['https://images.test/coffee'])
+    vi.stubGlobal('registerMediaAsset', async (input: { url: string }) => ({ ...input, id: input.url }))
+    vi.mocked(findStockImage).mockResolvedValue(hit('coffee'))
+    vi.mocked(generateImage).mockResolvedValue({ url: 'https://images.test/ai', width: 1200, height: 800 } as never)
+    const object = {
+      ...draft(),
+      coverImage: { type: 'stock' as const, query: 'coffee beans', broaderQuery: '' },
+      images: [],
+    }
+    const result = await finalizeArticle(object, 'cs', { clientSiteId: 'site', allowGeneratedImages: true })
+    expect(result.articleImageUrl).toBe('https://images.test/ai')
+  })
+
+  it('draws an AI picture from its caption or title, so slots and covers show different scenes', async () => {
+    vi.mocked(findStockImage).mockResolvedValue(null)
+    vi.mocked(generateImage).mockImplementation(
+      async (prompt) => ({ url: `https://images.test/${prompt.length}`, width: 1200, height: 800 }) as never,
+    )
+    const object = {
+      ...draft(),
+      coverImage: aiCover(),
+      content: '<h2>Hluk</h2>[[IMAGE1]][[IMAGE2]]',
+      images: ['Měření hluku zvukoměrem u plotu.', 'Vnitřní hydraulický modul v technické místnosti.'].map(
+        (caption) => ({ type: 'stock' as const, query: 'heat pump', broaderQuery: '', caption }),
+      ),
+    }
+    await finalizeArticle(object, 'cs', { allowGeneratedImages: true })
+    const prompts = vi.mocked(generateImage).mock.calls.map((call) => call[0])
+    expect(prompts).toContain('heat pump. Měření hluku zvukoměrem u plotu.')
+    expect(prompts).toContain('heat pump. Vnitřní hydraulický modul v technické místnosti.')
+    expect(prompts).toContain('abstract game design. The Witcher 4') // a cover is told apart by its title
   })
 
   it('illustrates a photo cover nobody photographed without depicting people or the event', async () => {

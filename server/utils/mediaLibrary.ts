@@ -78,6 +78,20 @@ export const storageKeyFromMediaUrl = (url: string, cdnUrl = useRuntimeConfig().
   }
 }
 
+/** Library photos a live article of the blog already shows: another article reusing one repeats its thumbnail in every listing. */
+export const usedLibraryImageUrls = async (clientSiteId: string) => {
+  const assets = await prisma.mediaAsset.findMany({
+    where: {
+      clientSiteId,
+      purgedAt: null,
+      origin: { in: ['CREATIVE_COMMONS', 'PUBLIC_DOMAIN'] },
+      articleUsages: { some: { deletedAt: null, article: { deletedAt: null } } },
+    },
+    select: { url: true, sourceUrl: true },
+  })
+  return assets.flatMap((asset) => [asset.url, asset.sourceUrl].filter((url): url is string => !!url))
+}
+
 export const registerMediaAsset = async (input: RegisterMediaInput) => {
   const reusable = await prisma.mediaAsset.findFirst({
     where: {

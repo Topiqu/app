@@ -36,6 +36,10 @@ const identityWords = (query: string) => {
     .filter((word) => !descriptiveWords.has(word))
 }
 
+// A small original blurs at column width and a strip shows as a line; unknown size gets the benefit of the doubt.
+export const usableSize = ({ width, height }: { width?: number; height?: number }) =>
+  !width || !height || (Math.max(width, height) >= 800 && Math.max(width, height) <= 3 * Math.min(width, height))
+
 /** A catalogue hit without evidence for the requested subject is not usable. Requiring every
  * descriptive word as well rejected nearly every real photo and pushed articles onto AI images. */
 export const matchesImageQuery = (description: string | undefined, query: string) => {
@@ -78,9 +82,9 @@ const canonicalImageUrl = (value: string) => {
   }
 }
 
-/** Reserve synchronously before emitting concurrent image results; `taken` only looks. */
-export const createImageSelection = () => {
-  const used = new Set<string>()
+/** Reserve synchronously before emitting concurrent image results; `taken` only looks. `usedUrls` start out taken. */
+export const createImageSelection = (usedUrls: readonly string[] = []) => {
+  const used = new Set(usedUrls.map(canonicalImageUrl))
   const keys = (image: Pick<ArticleImage, 'url' | 'credit'>) =>
     [image.url, image.credit?.sourceUrl].filter((url): url is string => !!url).map(canonicalImageUrl)
   const taken = (image: Pick<ArticleImage, 'url' | 'credit'>) => keys(image).some((key) => used.has(key))

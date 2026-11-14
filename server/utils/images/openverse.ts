@@ -48,7 +48,7 @@ export const pickOpenverseImage = async (
   query?: string,
   accept?: ImageAccept,
 ): Promise<StockImage | null> => {
-  results = query ? results.filter((result) => matchesImageQuery(result.title, query)) : results
+  results = results.filter((result) => usableSize(result) && (!query || matchesImageQuery(result.title, query)))
   const landscape = (result: OpenverseResult) => !!result.width && !!result.height && result.width > result.height
 
   for (const result of [...results.filter(landscape), ...results.filter((result) => !landscape(result))]) {

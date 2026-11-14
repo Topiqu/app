@@ -5,7 +5,7 @@ import type { ImageProvider, StockImage } from '../../../server/utils/images/typ
 import { stubNitroImports } from '../../helpers/nitroImports'
 
 async function stubImports() {
-  await stubNitroImports(import('../../../server/utils/images/selection'), 'matchesImageQuery')
+  await stubNitroImports(import('../../../server/utils/images/selection'), 'matchesImageQuery', 'usableSize')
   await stubNitroImports(import('../../../server/utils/images/http'), 'fetchJson', 'imageApiHeaders')
   await stubNitroImports(import('../../../server/utils/images/openverse'), 'openverse')
   await stubNitroImports(import('../../../server/utils/images/wikimedia'), 'wikimedia')
@@ -31,7 +31,7 @@ const chains = (over: Partial<Record<'photo' | 'stock', ImageProvider[]>> = {}) 
 describe('findStockImage', () => {
   it('uses only the keyless providers in the production chains', () => {
     expect(imageChains.photo.map(({ name }) => name)).toEqual(['wikimedia', 'openverse'])
-    expect(imageChains.stock.map(({ name }) => name)).toEqual(['openverse'])
+    expect(imageChains.stock.map(({ name }) => name)).toEqual(['openverse', 'wikimedia'])
   })
 
   it('serves a photo intent from the documentary chain', async () => {
@@ -73,6 +73,23 @@ describe('findStockImage', () => {
 
     expect(await findStockImage('generate', 'q', chains({ photo: [photo] }))).toMatchObject({ kind: 'illustration' })
     expect(photo.search).toHaveBeenCalledWith('q', undefined)
+  })
+
+  it('falls back to Commons for a stock picture when Openverse finds nothing', async () => {
+    const commons = provider('wikimedia', hit('wikimedia'))
+    const result = await findStockImage('stock', 'sound level meter', {
+      photo: [commons],
+      stock: [provider('openverse', null), commons],
+    })
+    expect(result).toMatchObject({ kind: 'illustration', image: { url: 'https://wikimedia/x.jpg' } })
+  })
+
+  it('never asks a provider twice for one photo', async () => {
+    const commons = provider('wikimedia', null)
+    const openverse = provider('openverse', null)
+    expect(await findStockImage('photo', 'q', { photo: [commons, openverse], stock: [openverse, commons] })).toBeNull()
+    expect(commons.search).toHaveBeenCalledOnce()
+    expect(openverse.search).toHaveBeenCalledOnce()
   })
 
   it('returns null when every provider is empty', async () => {
