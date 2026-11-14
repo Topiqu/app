@@ -1,5 +1,5 @@
-import { generateText } from 'ai'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { generateText, NoObjectGeneratedError, NoOutputGeneratedError } from 'ai'
 
 import { stubNitroImports } from '../../helpers/nitroImports'
 
@@ -108,6 +108,48 @@ describe('story and video structure review', () => {
 
     const embedded = { ...story, content: `${story.content}[[VIDEO1]]`, videos: [{ url: 'https://youtu.be/abc' }] }
     expect((await reviewArticle(embedded, { ...context, researchBrief: verifiedVideo })).review.approved).toBe(true)
+  })
+})
+
+describe('copy desk answer', () => {
+  const draft = { title: 'Dub, nebo buk', perex: 'Srovnání dřevin.', content: '<h2>Dub</h2><p>Dub je tvrdý.</p>' }
+  const context = { prompt: 'Dub, nebo buk', researchBrief: null, verifyFacts: false }
+
+  const usage = { outputTokens: 18_000, outputTokenDetails: { reasoningTokens: 17_950 } } as never
+  const noAnswer = {
+    usage,
+    rawFinishReason: 'max_tokens',
+    get output(): never {
+      throw new NoOutputGeneratedError()
+    },
+  }
+  const rejected = new NoObjectGeneratedError({ response: {} as never, usage, finishReason: 'stop' })
+
+  const reported = vi.fn()
+  beforeEach(() => {
+    reported.mockClear()
+    vi.stubGlobal('reportCaughtError', reported)
+  })
+
+  it.each([
+    ['no answer text', async () => noAnswer, 'max_tokens'],
+    ['JSON the schema rejects', async () => Promise.reject(rejected), 'stop'],
+  ])('asks once more after %s instead of holding the article', async (_label, unusable, finishReason) => {
+    vi.mocked(generateText).mockImplementationOnce(unusable as never)
+    const result = await reviewArticle(draft, context)
+    expect(generateText).toHaveBeenCalledTimes(2)
+    expect(result.review.approved).toBe(true)
+    expect(reported).toHaveBeenCalledWith(expect.any(String), expect.anything(), {
+      finishReason,
+      outputTokens: 18_000,
+      reasoningTokens: 17_950,
+    })
+  })
+
+  it('does not repeat a copy desk that timed out', async () => {
+    vi.mocked(generateText).mockRejectedValueOnce(new DOMException('Timed out', 'TimeoutError'))
+    await expect(reviewArticle(draft, context)).rejects.toThrow('Timed out')
+    expect(generateText).toHaveBeenCalledTimes(1)
   })
 })
 
