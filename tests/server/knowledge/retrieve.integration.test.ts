@@ -19,6 +19,7 @@ const url = process.env.TEST_DATABASE_URL
 const enabled = !!url && /test/i.test(new URL(url).pathname) && url !== process.env.DATABASE_URL
 const db = enabled ? createDatabaseClient(url) : null
 const sites: string[] = []
+const reportCaughtError = vi.fn()
 
 const axis = (index: number) => Array.from({ length: 1536 }, (_, position) => (position === index ? 1 : 0))
 
@@ -93,7 +94,7 @@ describe.skipIf(!enabled)('knowledge retrieval on PostgreSQL', () => {
     vi.stubGlobal('aiModel', () => 'test-model')
     vi.stubGlobal('aiEmbeddingModel', () => 'test-embedding')
     vi.stubGlobal('logAction', vi.fn())
-    vi.stubGlobal('reportCaughtError', vi.fn())
+    vi.stubGlobal('reportCaughtError', reportCaughtError)
     vi.stubGlobal('recordAiUsage', vi.fn())
   })
   afterAll(async () => {
@@ -221,6 +222,29 @@ describe.skipIf(!enabled)('knowledge retrieval on PostgreSQL', () => {
     })
     expect(tracked?.usageCount).toBe(1)
     expect(tracked?.lastUsedAt).toBeInstanceOf(Date)
+  })
+
+  it('caps the relevance gate’s answer instead of rejecting a longer one', async () => {
+    const site = await tenant()
+    for (let index = 0; index < 10; index++) await indexedSource(site, `Heat pump fact number ${index}.`, axis(0))
+
+    const result = await retrieveKnowledge(site, 'heat pump')
+    expect(result.used).toHaveLength(8)
+  })
+
+  it('keeps the closest excerpts when the relevance gate fails', async () => {
+    const site = await tenant()
+    for (let index = 0; index < 6; index++) await indexedSource(site, `Radiator finding number ${index}.`, axis(0))
+    vi.mocked(generateText).mockRejectedValueOnce(new Error('No object generated: response did not match schema.'))
+
+    const result = await retrieveKnowledge(site, 'radiator')
+    expect(result.used).toHaveLength(4)
+    expect(result.brief).toContain('Radiator finding number')
+    expect(reportCaughtError).toHaveBeenCalledWith(
+      'Knowledge relevance gate failed, using the closest excerpts',
+      expect.any(Error),
+      { clientSiteId: site },
+    )
   })
 
   it('skips the model call entirely when the tenant has nothing indexed', async () => {
