@@ -14,6 +14,7 @@ export const AI_MODELS = {
   articleWriter: LUNA,
   articleEditor: HAIKU,
   imageCheck: HAIKU,
+  imagePlan: HAIKU,
   linkedinPost: LUNA,
   translation: LUNA,
   marketFit: HAIKU,

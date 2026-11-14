@@ -5,6 +5,8 @@ import { unwrapContentSlots } from '~~/shared/utils/contentSlots'
 import { isAiAllowanceError } from '~~/shared/utils/aiAllowanceError'
 
 type FinalizeImage = { slot: number; html: string }
+// What a found picture is judged against: the picture wanted there and the text it sits in.
+type ImageNeed = { wanted: string; context: string }
 
 const IMAGE_MARKER = /\[\[\s*IMAGE\s*(\d+)\s*\]\]/gi
 // Enough of a block to tell it apart; whitespace is dropped because HTML and the editor space lists differently.
@@ -59,6 +61,10 @@ const creditAsset = (credit?: ImageCredit, publisher = false) => {
 
 const illustrationPrompt = (subject: string) =>
   `Atmospheric editorial illustration evoking ${subject}. No people, faces, logos, text or depiction of a specific real event.`
+// Keywords alone drew one scene for every slot of an article and every cover of a blog; the caption, or the
+// title for a cover, says what this picture is about.
+const slotPrompt = ({ query, caption }: { query: string; caption?: string }) =>
+  caption?.trim() ? `${query}. ${caption.trim()}` : query
 export type FinalizeCallbacks = {
   audit?: import('../articleGenerationAudit').ArticleGenerationAudit
   onImage?: (image: FinalizeImage) => void
@@ -144,7 +150,7 @@ export const finalizeArticle = async (
     }
   }
 
-  const acceptImage = createImageSelection()
+  const acceptImage = createImageSelection(clientSiteId ? await usedLibraryImageUrls(clientSiteId) : [])
   // Store media is uploaded by the publisher for promotion, whichever provider found it. Official pages are
   // re-hosted on our CDN, so the original address survives only as the credit's source and the page as its author URL.
   const ownPages = new Set(publisherMediaPages)
@@ -198,46 +204,57 @@ export const finalizeArticle = async (
   // in favour of the next real one; AI stays the last resort.
   const clearCandidate = (image: StockImage) =>
     rightsClear({ ...creditAsset(image.credit, publisherMedia(image)), rightsConfirmedAt: null }, image.url)
+  const plainText = object.content.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ')
+  const coverNeed = (query: string): ImageNeed => ({
+    wanted: query,
+    context: `${object.perex}\n${plainText.slice(0, 2600)}`,
+  })
+  // The paragraphs a body picture sits between tell more about what fits there than the article start.
+  const slotNeed = ({ query, caption }: ArticleObject['images'][number], slot: number): ImageNeed => {
+    const at = plainText.search(new RegExp(`\\[\\[\\s*IMAGE\\s*${slot}\\s*\\]\\]`, 'i'))
+    return {
+      wanted: caption?.trim() || query,
+      context: at < 0 ? plainText.slice(0, 2600) : plainText.slice(Math.max(0, at - 1500), at + 1000),
+    }
+  }
   const findExistingImage = async (
     query: string,
     type: ArticleObject['images'][number]['type'],
+    need: ImageNeed,
     clearOnly = requireClearRights,
+    broader = false,
   ): Promise<{ image: StockImage; kind: ImageKind; source: ArticleMediaSource } | null> => {
     const clear = clearOnly ? clearCandidate : undefined
     // `acceptImage` records the pick, so it runs only once the candidate passed every other check.
     const pick = (image: StockImage) => (!clear || clear(image)) && acceptImage(image)
-    // Official pages and store screenshots come from the subject's own publisher; library hits only
-    // matched words in a description, so each one is looked at before it is taken.
+    // Official pages come from the subject's own publisher. Store and library hits only matched words in a
+    // title or description (a "Heat Pump" app prefixes any heat pump query), so each one is looked at first.
     let checks = 0
-    const shows = (subject: string, intent: typeof type) => async (image: StockImage) => {
-      if ((clear && !clear(image)) || acceptImage.taken(image) || checks >= IMAGE_CHECKS) return false
+    const depicts = (subject: string, intent: typeof type) => async (image: StockImage) => {
+      if (checks >= IMAGE_CHECKS) return false
       checks += 1
       const verdict = await auditArticleStep(
         audit,
         'image_check',
-        () =>
-          imageDepicts(
-            image,
-            {
-              title: object.title,
-              query: subject,
-              type: intent,
-              context: `${object.perex}\n${object.content.replace(/<[^>]+>/g, ' ').slice(0, 2600)}`,
-            },
-            abortSignal,
-          ),
+        () => imageDepicts(image, { title: object.title, query: subject, type: intent, ...need }, abortSignal),
         (result) => ({ ...result }),
         { query: subject, sourceUrl: image.credit?.sourceUrl ?? image.url },
       )
       return verdict.depicts
     }
-    const official = await findPressImage(officialImages, query, pick, officialImageCache)
-    if (official) return { image: official, kind: 'illustration', source: 'official' }
-    for (const search of storeSearches) {
-      const screenshot = await search(query, pick)
-      if (screenshot) return { image: screenshot, kind: 'illustration', source: 'screenshot' }
+    const shows = (subject: string, intent: typeof type) => async (image: StockImage) =>
+      (!clear || clear(image)) && !acceptImage.taken(image) && (await depicts(subject, intent)(image))
+    if (!broader) {
+      const official = await findPressImage(officialImages, query, pick, officialImageCache)
+      if (official) return { image: official, kind: 'illustration', source: 'official' }
+      for (const search of storeSearches) {
+        const screenshot = await search(query, pick)
+        if (screenshot && (await depicts(query, type)(screenshot)))
+          return { image: screenshot, kind: 'illustration', source: 'screenshot' }
+      }
     }
-    const hit = await findStockImage(type, query, undefined, shows(query, type))
+    // A broader subject is searched where photos are, and judged as any fitting picture of that kind.
+    const hit = await findStockImage(broader ? 'photo' : type, query, undefined, shows(query, broader ? 'stock' : type))
     if (hit && acceptImage(hit.image)) return { ...hit, source: 'library' }
     // A named subject has real photos even when the scene the writer described does not; that beats
     // an AI illustration of any intent.
@@ -247,6 +264,22 @@ export const finalizeArticle = async (
       if (portrait && acceptImage(portrait.image)) return { ...portrait, kind: 'illustration', source: 'library' }
     }
     return null
+  }
+  // A broader subject is a real photo of something else, so it is credited as illustrative. It is searched in
+  // archives only (a generic name like "heat pump" is also some app's title) and still judged by what is wanted
+  // there, or "heat pump" passes an industrial plant for a garden unit.
+  const findExistingOrBroader = async (
+    query: string,
+    broaderQuery: string | undefined,
+    type: ArticleObject['images'][number]['type'],
+    need: ImageNeed,
+    clearOnly = requireClearRights,
+  ) => {
+    const broader = broaderQuery?.trim()
+    const exact = await findExistingImage(query, type, need, clearOnly)
+    const related =
+      exact || !broader || broader === query ? null : await findExistingImage(broader, type, need, clearOnly, true)
+    return exact ?? (related && { ...related, kind: 'illustration' as const })
   }
   let articleImageUrl = ''
   let articleImageCredit: CoverCredit | null = null
@@ -273,19 +306,15 @@ export const finalizeArticle = async (
   if (object.coverImage) {
     const { query, broaderQuery, type } = object.coverImage
     const broader = broaderQuery?.trim()
-    const findCover = async (clearOnly: boolean) => {
-      const exact = await findExistingImage(query, type, clearOnly)
-      // A broader subject is a real photo of something else, so it is credited as illustrative.
-      const related =
-        exact || !broader || broader === query ? null : await findExistingImage(broader, 'photo', clearOnly)
-      return exact ?? (related && { ...related, kind: 'illustration' as const })
-    }
+    const findCover = (clearOnly: boolean) => findExistingOrBroader(query, broader, type, coverNeed(query), clearOnly)
     let hit = await findCover(requireClearRights)
     // An article without a cover goes unread, so the cover alone falls back to a labelled AI
     // illustration even for a photo subject — one that shows no person, logo, text or real event.
     const generated = hit
       ? null
-      : await tryGenerateImage(type === 'photo' ? illustrationPrompt(broader || query) : query)
+      : await tryGenerateImage(
+          type === 'photo' ? illustrationPrompt(broader || query) : slotPrompt({ query, caption: object.title }),
+        )
     // With no illustration either, a real cover that needs confirming still beats none; the article waits.
     if (!hit && !generated && requireClearRights) hit = await findCover(false)
     articleImageUrl = hit?.image.url ?? generated?.url ?? ''
@@ -311,7 +340,12 @@ export const finalizeArticle = async (
     instruction: ArticleObject['images'][number],
     idx: number,
   ): Promise<{ image: ArticleImage; source: ArticleMediaSource } | null> => {
-    const hit = await findExistingImage(instruction.query, instruction.type)
+    const hit = await findExistingOrBroader(
+      instruction.query,
+      instruction.broaderQuery,
+      instruction.type,
+      slotNeed(instruction, idx + 1),
+    )
     if (hit)
       return {
         source: hit.source,
@@ -326,7 +360,11 @@ export const finalizeArticle = async (
       }
 
     const prompt =
-      instruction.type !== 'photo' ? instruction.query : illustrative ? illustrationPrompt(instruction.query) : null
+      instruction.type !== 'photo'
+        ? slotPrompt(instruction)
+        : illustrative
+          ? illustrationPrompt(instruction.query)
+          : null
     const generated = prompt ? await tryGenerateImage(prompt, { filenameSuffix: idx.toString() }) : null
 
     return generated && acceptImage(generated) ? { source: 'ai', image: { ...generated, kind: 'ai' } } : null
@@ -348,7 +386,7 @@ export const finalizeArticle = async (
       // Inline images are optional: an auto-published article replaces or drops one it cannot clear.
       if (requireClearRights && !registered.rightsClear) {
         const generated =
-          img.type === 'photo' ? null : await tryGenerateImage(img.query, { filenameSuffix: idx.toString() })
+          img.type === 'photo' ? null : await tryGenerateImage(slotPrompt(img), { filenameSuffix: idx.toString() })
         if (!generated || !acceptImage(generated)) {
           slotSources[idx] = null
           slotUrls[idx] = null

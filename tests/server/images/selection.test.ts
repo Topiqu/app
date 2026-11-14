@@ -3,7 +3,7 @@ import { describe, expect, it, beforeEach } from 'vitest'
 import { stubNitroImports } from '../../helpers/nitroImports'
 
 async function stubImports() {
-  await stubNitroImports(import('../../../server/utils/images/selection'), 'matchesImageQuery')
+  await stubNitroImports(import('../../../server/utils/images/selection'), 'matchesImageQuery', 'usableSize')
   await stubNitroImports(import('../../../server/utils/images/http'), 'fetchJson', 'imageApiHeaders')
 }
 
@@ -68,6 +68,18 @@ describe('article image relevance and uniqueness', () => {
       }),
     ).toBe(false)
     expect(accept({ url: 'https://images.test/kovir' })).toBe(true)
+  })
+
+  it('starts with the photos other articles of the blog already show as taken', () => {
+    const accept = createImageSelection(['https://images.test/coffee?w=1200', 'https://archive.test/beans'])
+    expect(accept({ url: 'https://images.test/coffee?w=600' })).toBe(false)
+    expect(
+      accept({
+        url: 'https://cdn.test/beans.jpg',
+        credit: { source: 'archive', sourceUrl: 'https://archive.test/beans' },
+      }),
+    ).toBe(false)
+    expect(accept({ url: 'https://images.test/grinder' })).toBe(true)
   })
 })
 

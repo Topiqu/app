@@ -1,10 +1,11 @@
 /**
  * Ordered by what each library actually holds: Commons has the real people, places and events a
- * news piece needs. Openverse backs it up and supplies broadly reusable stock imagery.
+ * news piece needs. Openverse backs it up and supplies broadly reusable stock imagery; Commons backs it up
+ * in turn, because Openverse times out often enough to leave every stock picture to AI.
  */
 export const imageChains: Record<'photo' | 'stock', ImageProvider[]> = {
   photo: [wikimedia, openverse],
-  stock: [openverse],
+  stock: [openverse, wikimedia],
 }
 
 const firstHit = async (providers: ImageProvider[], query: string, accept?: ImageAccept) => {
@@ -28,7 +29,13 @@ export const findStockImage = async (
     if (documentary) return { image: documentary, kind: intent === 'photo' ? 'photo' : 'illustration' }
   }
 
-  const stock = await firstHit(chains.stock, query, accept)
+  // A provider the photo chain already asked would only answer the same again.
+  const tried = intent === 'stock' ? [] : chains.photo
+  const stock = await firstHit(
+    chains.stock.filter((provider) => !tried.includes(provider)),
+    query,
+    accept,
+  )
 
   return stock ? { image: stock, kind: 'illustration' } : null
 }

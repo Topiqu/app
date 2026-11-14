@@ -19,6 +19,32 @@ const imageInstruction = z.object({
     ),
 })
 
+const broaderQuery = z
+  .string()
+  .max(200)
+  .describe(
+    'Broader English archive keywords for a subject that certainly has photos: the place, organisation, product line or field, or an everyday object alone (e.g. "Jeseniky mountains", "air source heat pump"). Empty only when the query is already that broad.',
+  )
+
+/** How the writer asks for pictures; the re-pick of a saved article's pictures (`articleImages.ts`) follows the same rules. */
+export const imageRules = (inventedStory = false) =>
+  [
+    'For the coverImage and each image in the content you MUST pick one of three intents. You are describing what the picture needs to be, not where it comes from — the system picks the library.',
+    `- Use 'photo': for a real, identifiable subject — a named person, place, organisation, product or event (e.g. "Vladimir Putin 2024", "Tokyo Shibuya crossing", "PlayStation 5 console"). Name the subject in English the way a photo archive would catalogue it.`,
+    `- Use 'stock': for mood, atmosphere or a generic scene where any fitting picture works (e.g. "office meeting", "gaming setup at night"). Short, precise English keyword.`,
+    `- Use 'generate': ONLY for what cannot be photographed — abstract ideas, humor, non-existent concepts (e.g. "AI eating old code"). Provide short archive search keywords; existing suitable images are always searched first. NEVER use it for a real person, a real place or a real event.`,
+    'A missing documentary photo is not permission to invent a depiction of a real person or event. Leave that image slot empty if the licensed search fails.',
+    inventedStory
+      ? `This story is invented, so no photo of its scenes exists. Use 'photo' for the real places, institutions, objects and franchise material it passes through, named as an archive catalogues them (e.g. "Vsetin railway station", "Mortal Kombat Johnny Cage"), never for the invented scene. Use 'generate' for an invented scene, described by its setting, light and mood without naming any character or real person.`
+      : '',
+    'The coverImage and every content image also carry a "broaderQuery" for when the exact subject has no photo: the place, organisation, product line or field it belongs to, or an everyday object alone. Archive search matches every word, so each extra word can leave it empty.',
+    'Preserve the exact product, installment number and named subject in each query. For games, request a screenshot of the actual game, not cosplay, fan art, an older installment, a generic forest or a gaming desk. Do not pad the article with generic mood images. Each visual must contribute distinct relevant information: the cover and each content image show a different subject or a clearly different view (the outdoor unit, the indoor module, a radiator, a measurement), never the same object in a similar scene twice.',
+    `Preserve the article's geographic setting where it changes what the picture shows: when the subject is Czech housing, a Czech place, institution or local rule, ask for that Czech place or setting, never a generic American house, US institution or unrelated foreign event, and keep it in broaderQuery too. Infer location from the subject and research, never from the article language alone. An everyday object looks the same in any country (a heat pump unit, a radiator, a coffee machine, oak boards), so its broaderQuery names the object alone, with no country or setting.`,
+    `Each content image also needs a "caption": one factual sentence, in the same language as the article, saying what is in the picture — for 'photo' name who or what it is and when. Never write "Illustrative image", "AI generated", "Source:" or any credit into the caption; the system adds those itself.`,
+  ]
+    .filter(Boolean)
+    .join('\n')
+
 const optimizationCriteria = optimizationScoringConfig.criteria
 
 export const articleSchema = z.object({
@@ -60,19 +86,11 @@ export const articleSchema = z.object({
     )
     .max(5)
     .describe('2-5 FAQ entries, or empty when the format raises no recurring questions'),
-  coverImage: imageInstruction
-    .extend({
-      broaderQuery: z
-        .string()
-        .max(200)
-        .describe(
-          'Broader English archive keywords for a subject that certainly has photos: the place, organisation, product line or field (e.g. "Jeseniky mountains"). Empty only when the query is already that broad.',
-        ),
-    })
-    .describe('Cover image instruction'),
+  coverImage: imageInstruction.extend({ broaderQuery }).describe('Cover image instruction'),
   images: z
     .array(
       imageInstruction.extend({
+        broaderQuery,
         caption: z
           .string()
           .min(3)
@@ -320,7 +338,7 @@ For our own products the first-party entry is the specification: state its figur
         "faq": [{"question": "...", "answer": "..."}] or [],
         "content": "the article body for v-html on frontend, with h2, h3, strong, underline, italic and lists, and blockquote only for an attributed verbatim quotation. Include image slots like [[IMAGE1]], [[IMAGE2]], etc. where images should appear, each as a bare marker between paragraphs: never inside a tag or attribute, and never write <img> or <figure> yourself.",
         "coverImage": {"type": "stock", "query": "search keyword OR generation prompt", "broaderQuery": "broader subject keywords"},
-        "images": [{"type": "photo", "query": "keyword for IMAGE1", "caption": "what IMAGE1 shows"}, {"type": "generate", "query": "prompt for IMAGE2", "caption": "what IMAGE2 shows"}, ...],
+        "images": [{"type": "photo", "query": "keyword for IMAGE1", "broaderQuery": "broader subject keywords", "caption": "what IMAGE1 shows"}, {"type": "generate", "query": "prompt for IMAGE2", "broaderQuery": "", "caption": "what IMAGE2 shows"}, ...],
         "polls": [{"question": "Poll question?", "options": ["Option 1", "Option 2"]}],
         "videos": [{"url": "https://www.youtube.com/watch?v=...", "caption": "what the video contributes"}],
         "xPosts": [{"url": "an X post URL listed in the research brief"}] or [],
@@ -351,20 +369,7 @@ For our own products the first-party entry is the specification: state its figur
       Write the title, perex, answer, takeaways, FAQ, body, and captions entirely in ${LANGUAGE_NAMES[articleLanguage]}. The prompt's language and the company's presentation language do not change the selected article language.
       
       Image Rules:
-      For the coverImage and each image in the content you MUST pick one of three intents. You are describing what the picture needs to be, not where it comes from — the system picks the library.
-      - Use 'photo': for a real, identifiable subject — a named person, place, organisation, product or event (e.g. "Vladimir Putin 2024", "Tokyo Shibuya crossing", "PlayStation 5 console"). Name the subject in English the way a photo archive would catalogue it.
-      - Use 'stock': for mood, atmosphere or a generic scene where any fitting picture works (e.g. "office meeting", "gaming setup at night"). Short, precise English keyword.
-      - Use 'generate': ONLY for what cannot be photographed — abstract ideas, humor, non-existent concepts (e.g. "AI eating old code"). Provide short archive search keywords; existing suitable images are always searched first. NEVER use it for a real person, a real place or a real event.
-      A missing documentary photo is not permission to invent a depiction of a real person or event. Leave that image slot empty if the licensed search fails.
-      ${
-        format === 'story' && illustrative
-          ? 'This story is invented, so no photo of its scenes exists. Use \'photo\' for the real places, institutions, objects and franchise material it passes through, named as an archive catalogues them (e.g. "Vsetin railway station", "Mortal Kombat Johnny Cage"), never for the invented scene. Use \'generate\' for an invented scene, described by its setting, light and mood without naming any character or real person.'
-          : ''
-      }
-      Every article needs a cover, so the coverImage also carries a "broaderQuery" for when the exact subject has no photo: the place, organisation, product line or field it belongs to.
-      Preserve the exact product, installment number and named subject in each query. For games, request a screenshot of the actual game, not cosplay, fan art, an older installment, a generic forest or a gaming desk. Do not pad the article with generic mood images. Each visual must contribute distinct relevant information.
-      Preserve the article's geographic setting in every query, including broaderQuery: when the subject concerns Czech housing, institutions or local rules, ask for the relevant Czech place or Czech setting, never a generic American house, US institution or unrelated foreign event. Infer location from the subject and research, never from the article language alone. A broader search may relax the activity, not silently move the story to another country.
-      Each content image also needs a "caption": one factual sentence, in the same language as the article, saying what is in the picture — for 'photo' name who or what it is and when. Never write "Illustrative image", "AI generated", "Source:" or any credit into the caption; the system adds those itself.
+      ${imageRules(format === 'story' && illustrative)}
 
       ${
         imagesSelected === true

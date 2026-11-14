@@ -33,9 +33,9 @@ describe('imageDepicts', () => {
 
   it('shows the model the preview with the article and the wanted subject, without thinking', async () => {
     fetchPublicUrl.mockResolvedValue(jpeg())
-    vi.mocked(generateText).mockResolvedValue({ output: { depicts: false } } as never)
+    vi.mocked(generateText).mockResolvedValue({ output: { fit: 3, reason: 'Another house.' } } as never)
 
-    await expect(imageDepicts(image, check)).resolves.toEqual({ depicts: false })
+    await expect(imageDepicts(image, check)).resolves.toEqual({ depicts: false, fit: 3, reason: 'Another house.' })
 
     expect(fetchPublicUrl).toHaveBeenCalledWith('https://images.test/thumb.jpg', 8000, undefined)
     const call = vi.mocked(generateText).mock.calls[0]![0] as any
@@ -44,20 +44,20 @@ describe('imageDepicts', () => {
     const [picture, text] = call.messages[0].content
     expect(picture).toEqual({ type: 'image', image: new Uint8Array([255, 216, 255]), mediaType: 'image/jpeg' })
     expect(text.text).toContain('Article: Dotace na zateplení 2026')
-    expect(text.text).toContain('Wanted picture: house facade insulation')
-    expect(text.text).toContain('does not have to be that exact one')
+    expect(text.text).toContain('Picture wanted here: house facade insulation')
+    expect(text.text).not.toContain('itself is wanted')
   })
 
   it('requires the subject itself for a photo', async () => {
     fetchPublicUrl.mockResolvedValue(jpeg())
-    vi.mocked(generateText).mockResolvedValue({ output: { depicts: true } } as never)
+    vi.mocked(generateText).mockResolvedValue({ output: { fit: 4, reason: 'The summit.' } } as never)
     await expect(imageDepicts({ ...image, previewUrl: undefined }, { ...check, type: 'photo' })).resolves.toEqual({
       depicts: true,
+      fit: 4,
+      reason: 'The summit.',
     })
     expect(fetchPublicUrl).toHaveBeenCalledWith('https://images.test/original.jpg', 8000, undefined)
-    expect((vi.mocked(generateText).mock.calls[0]![0] as any).messages[0].content[1].text).toContain(
-      'must show this subject itself',
-    )
+    expect((vi.mocked(generateText).mock.calls[0]![0] as any).messages[0].content[1].text).toContain('itself is wanted')
   })
 
   it('rejects what is not a readable image without asking the model', async () => {
@@ -68,13 +68,25 @@ describe('imageDepicts', () => {
 
   it('checks geographic context and archive metadata rather than treating article language as location', async () => {
     fetchPublicUrl.mockResolvedValue(jpeg())
-    vi.mocked(generateText).mockResolvedValue({ output: { depicts: false } } as never)
+    vi.mocked(generateText).mockResolvedValue({ output: { fit: 1, reason: 'US.' } } as never)
     await imageDepicts({ ...image, alt: 'US housing development' }, { ...check, context: 'Czech housing subsidies' })
     const call = vi.mocked(generateText).mock.calls[0]![0] as any
     const text = call.messages[0].content[1].text
     expect(text).toContain('Czech housing subsidies')
     expect(text).toContain('US housing development')
     expect(text).toContain('Do not infer country solely from the article language')
+  })
+
+  it('judges the picture wanted in its place, and lets only a good fit through', async () => {
+    fetchPublicUrl.mockResolvedValue(jpeg())
+    vi.mocked(generateText).mockResolvedValue({ output: { fit: 3, reason: 'An 1861 engraving.' } } as never)
+    const wanted = 'Litinový radiátor ve starém domě.'
+    await expect(imageDepicts(image, { ...check, query: 'cast iron radiator', wanted })).resolves.toMatchObject({
+      depicts: false,
+    })
+    const text = (vi.mocked(generateText).mock.calls[0]![0] as any).messages[0].content[1].text
+    expect(text).toContain(`Picture wanted here: ${wanted}`)
+    expect(text).toContain('Archive search that found it: cast iron radiator')
   })
 
   it('rejects when the download or the model fails', async () => {

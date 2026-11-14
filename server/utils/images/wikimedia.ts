@@ -76,7 +76,10 @@ const rankWikimediaPages = (pages: CommonsPage[], query?: string): CommonsPage[]
     : pages
   const usable = [...pages]
     .sort((a, b) => (a.index ?? 0) - (b.index ?? 0))
-    .filter((page) => !!page.imageinfo?.[0]?.url && RASTER.has(page.imageinfo[0]?.mime ?? ''))
+    .filter(
+      (page) =>
+        !!page.imageinfo?.[0]?.url && RASTER.has(page.imageinfo[0]?.mime ?? '') && usableSize(page.imageinfo[0]),
+    )
   const landscape = (page: CommonsPage) => {
     const info = page.imageinfo?.[0]
     return !!info?.width && !!info.height && info.width > info.height

@@ -3,7 +3,7 @@ import { describe, expect, it, beforeEach } from 'vitest'
 import { stubNitroImports } from '../../helpers/nitroImports'
 
 async function stubImports() {
-  await stubNitroImports(import('../../../server/utils/images/selection'), 'matchesImageQuery')
+  await stubNitroImports(import('../../../server/utils/images/selection'), 'matchesImageQuery', 'usableSize')
   await stubNitroImports(import('../../../server/utils/images/http'), 'fetchJson', 'imageApiHeaders')
 }
 
@@ -131,6 +131,17 @@ describe('openverseImage', () => {
     expect(openverseImage({ url: 'https://x/1.jpg', license: 'pdm', license_version: 'N/A' })!.credit.license).toBe(
       'Public Domain Mark',
     )
+  })
+
+  it('skips a picture too small or too thin for the article column', async () => {
+    const small = { url: 'https://x/small.jpg', width: 472, height: 300 }
+    const strip = { url: 'https://x/strip.jpg', width: 2400, height: 240 }
+    expect(
+      await pickOpenverseImage([small, strip, { url: 'https://x/big.jpg', width: 1600, height: 900 }]),
+    ).toMatchObject({
+      url: 'https://x/big.jpg',
+    })
+    expect(await pickWikimediaImage([commonsPage({ width: 472, height: 300 })])).toBeNull()
   })
 
   it('is null without a usable URL', () => {
