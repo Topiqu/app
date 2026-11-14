@@ -223,6 +223,25 @@ describe('article media finalization', () => {
     expect(JSON.parse(poll.attr('data-options')!)).toEqual([{ label: 'Jotaro' }, { label: 'Tom & <b>Jerry</b>' }])
   })
 
+  it('embeds a video only through its slot and drops a link the writer wrote in its place', async () => {
+    vi.mocked(findStockImage).mockResolvedValue(null)
+    const video = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+    const finalized = await finalizeArticle(
+      {
+        ...draft(),
+        content: `<p>a</p><p><a href="${video}">Video na YouTube</a></p><p>b</p>[[VIDEO1]]`,
+        images: [],
+        videos: [{ url: video, caption: 'Odmrazování' }],
+      },
+      'cs',
+    )
+
+    expect(finalized.content).not.toContain('Video na YouTube')
+    expect(finalized.content).toMatch(
+      /^<p>a<\/p><p>b<\/p><figure class="article-video"><div data-youtube-video><iframe class="youtube-video" src="https:\/\/www\.youtube-nocookie\.com\/embed\/dQw4w9WgXcQ"/,
+    )
+  })
+
   it('embeds only an X post the research brief listed, and drops a slot it cannot fill', async () => {
     vi.mocked(findStockImage).mockResolvedValue(null)
     const fetchXPost = vi.fn(async (url: string) => ({
