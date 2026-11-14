@@ -100,8 +100,11 @@ describe('story and video structure review', () => {
         code: 'broken_structure',
         note: expect.stringContaining('[[VIDEO1]]'),
         key: 'module.youtube',
+        blocking: false,
       }),
     )
+    // The revision is still asked for it, but a missing video never holds the article.
+    expect(missing.review.approved).toBe(true)
 
     const embedded = { ...story, content: `${story.content}[[VIDEO1]]`, videos: [{ url: 'https://youtu.be/abc' }] }
     expect((await reviewArticle(embedded, { ...context, researchBrief: verifiedVideo })).review.approved).toBe(true)

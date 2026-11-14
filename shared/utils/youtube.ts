@@ -27,3 +27,11 @@ export const youtubeEmbedUrl = (raw: string) => {
 /** AI body HTML never owns an iframe; verified video slots are rendered server-side afterwards. */
 export const stripUntrustedIframes = (html: string) =>
   html.replace(/<iframe\b[^>]*>[\s\S]*?<\/iframe\s*>/gi, '').replace(/<iframe\b[^>]*\/?\s*>/gi, '')
+
+const LINK_PARAGRAPH = /<p\b[^>]*>\s*<a\b[^>]*?\bhref=(["'])(.*?)\1[^>]*>(?:(?!<\/a>)[\s\S])*<\/a>\s*<\/p>/gi
+
+/** A paragraph that is only a YouTube link stands in for an embed, which only a verified video slot may add. */
+export const dropYoutubeLinkParagraphs = (html: string) =>
+  html.replace(LINK_PARAGRAPH, (paragraph, _quote: string, href: string) =>
+    youtubeVideoId(href.replace(/&amp;/g, '&')) ? '' : paragraph,
+  )

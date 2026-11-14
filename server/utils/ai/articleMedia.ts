@@ -388,7 +388,7 @@ export const finalizeArticle = async (
     ),
   )
 
-  object.content = dropBlankLines(dropAuthoredImages(stripUntrustedIframes(object.content)))
+  object.content = dropBlankLines(dropAuthoredImages(dropYoutubeLinkParagraphs(stripUntrustedIframes(object.content))))
   object.content = applyContentSlots(object.content, 'IMAGE', generatedImages)
 
   const polls = (object.polls ?? []).map((poll, idx) => {
