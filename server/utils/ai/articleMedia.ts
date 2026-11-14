@@ -61,10 +61,14 @@ const creditAsset = (credit?: ImageCredit, publisher = false) => {
 
 const illustrationPrompt = (subject: string) =>
   `Atmospheric editorial illustration evoking ${subject}. No people, faces, logos, text or depiction of a specific real event.`
-// Keywords alone drew one scene for every slot of an article and every cover of a blog; the caption, or the
-// title for a cover, says what this picture is about.
+// Keywords alone drew one scene for every slot of an article; the caption says what this picture is about.
 const slotPrompt = ({ query, caption }: { query: string; caption?: string }) =>
   caption?.trim() ? `${query}. ${caption.trim()}` : query
+// Even as context, the title drew the same scene for every cover of a blog on one topic; a subject replaces it.
+const coverPrompt = (query: string, title: string, subject?: string) =>
+  subject?.trim()
+    ? slotPrompt({ query, caption: subject })
+    : `${query}. Context only, not the subject: an article titled "${title}".`
 export type FinalizeCallbacks = {
   audit?: import('../articleGenerationAudit').ArticleGenerationAudit
   onImage?: (image: FinalizeImage) => void
@@ -81,6 +85,8 @@ export type FinalizeCallbacks = {
   requireClearRights?: boolean
   /** An invented story's scenes were never photographed, so a missed photo slot may become an illustration. */
   illustrative?: boolean
+  /** What a reader should see on the cover, in plain words; it is to the cover what a caption is to a slot. */
+  coverSubject?: string
 }
 
 /** Falls back to English wording rather than dropping the disclosure when a key is missing. */
@@ -111,6 +117,7 @@ export const finalizeArticle = async (
     clientSiteId,
     requireClearRights = false,
     illustrative = false,
+    coverSubject,
     audit,
   } = callbacks
   // Fetched alongside the images; a deleted or private post simply drops its slot.
@@ -206,7 +213,7 @@ export const finalizeArticle = async (
     rightsClear({ ...creditAsset(image.credit, publisherMedia(image)), rightsConfirmedAt: null }, image.url)
   const plainText = object.content.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ')
   const coverNeed = (query: string): ImageNeed => ({
-    wanted: query,
+    wanted: coverSubject?.trim() || query,
     context: `${object.perex}\n${plainText.slice(0, 2600)}`,
   })
   // The paragraphs a body picture sits between tell more about what fits there than the article start.
@@ -230,16 +237,20 @@ export const finalizeArticle = async (
     // Official pages come from the subject's own publisher. Store and library hits only matched words in a
     // title or description (a "Heat Pump" app prefixes any heat pump query), so each one is looked at first.
     let checks = 0
+    const alts = new WeakMap<StockImage, string>()
+    const described = (image: StockImage) => ({ ...image, alt: alts.get(image) ?? image.alt })
     const depicts = (subject: string, intent: typeof type) => async (image: StockImage) => {
       if (checks >= IMAGE_CHECKS) return false
       checks += 1
       const verdict = await auditArticleStep(
         audit,
         'image_check',
-        () => imageDepicts(image, { title: object.title, query: subject, type: intent, ...need }, abortSignal),
+        () =>
+          imageDepicts(image, { title: object.title, query: subject, type: intent, language, ...need }, abortSignal),
         (result) => ({ ...result }),
         { query: subject, sourceUrl: image.credit?.sourceUrl ?? image.url },
       )
+      if (verdict.depicts && verdict.alt) alts.set(image, verdict.alt)
       return verdict.depicts
     }
     const shows = (subject: string, intent: typeof type) => async (image: StockImage) =>
@@ -250,18 +261,19 @@ export const finalizeArticle = async (
       for (const search of storeSearches) {
         const screenshot = await search(query, pick)
         if (screenshot && (await depicts(query, type)(screenshot)))
-          return { image: screenshot, kind: 'illustration', source: 'screenshot' }
+          return { image: described(screenshot), kind: 'illustration', source: 'screenshot' }
       }
     }
     // A broader subject is searched where photos are, and judged as any fitting picture of that kind.
     const hit = await findStockImage(broader ? 'photo' : type, query, undefined, shows(query, broader ? 'stock' : type))
-    if (hit && acceptImage(hit.image)) return { ...hit, source: 'library' }
+    if (hit && acceptImage(hit.image)) return { ...hit, image: described(hit.image), source: 'library' }
     // A named subject has real photos even when the scene the writer described does not; that beats
     // an AI illustration of any intent.
     const subject = photoSubjectQuery(query)
     if (subject) {
       const portrait = await findStockImage('photo', subject, undefined, shows(subject, 'photo'))
-      if (portrait && acceptImage(portrait.image)) return { ...portrait, kind: 'illustration', source: 'library' }
+      if (portrait && acceptImage(portrait.image))
+        return { ...portrait, image: described(portrait.image), kind: 'illustration', source: 'library' }
     }
     return null
   }
@@ -313,7 +325,7 @@ export const finalizeArticle = async (
     const generated = hit
       ? null
       : await tryGenerateImage(
-          type === 'photo' ? illustrationPrompt(broader || query) : slotPrompt({ query, caption: object.title }),
+          type === 'photo' ? illustrationPrompt(broader || query) : coverPrompt(query, object.title, coverSubject),
         )
     // With no illustration either, a real cover that needs confirming still beats none; the article waits.
     if (!hit && !generated && requireClearRights) hit = await findCover(false)

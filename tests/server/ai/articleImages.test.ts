@@ -40,6 +40,7 @@ beforeEach(async () => {
   })
   vi.mocked(generateText).mockResolvedValue({
     output: {
+      coverSubject: 'Zahrada mezi dvěma domy',
       coverImage: planned('heat pump garden'),
       images: [
         { ...planned('sound level meter'), caption: 'Měření hluku zvukoměrem.' },
@@ -70,11 +71,11 @@ describe('picking the pictures of a saved article again', () => {
     })
   })
 
-  it('plans one picture per slot and a cover unlike the other covers of the blog, rights-clear when published', async () => {
+  it('plans one picture per slot and a named cover subject unlike the other covers, rights-clear when published', async () => {
     await repickArticleImages('site', article)
     const call = vi.mocked(generateText).mock.calls[0]![0]
     expect(call.instructions).toContain('IMAGE RULES')
-    expect(call.instructions).toContain('clearly different from every cover in otherCovers')
+    expect(call.instructions).toContain("Name the cover's main subject in coverSubject first")
     expect(JSON.parse(String(call.prompt))).toMatchObject({
       text: expect.stringContaining('[[IMAGE1]]'),
       slots: [
@@ -90,7 +91,12 @@ describe('picking the pictures of a saved article again', () => {
       'hydraulic module',
     ])
     expect(language).toBe('cs')
-    expect(options).toMatchObject({ clientSiteId: 'site', allowGeneratedImages: true, requireClearRights: true })
+    expect(options).toMatchObject({
+      clientSiteId: 'site',
+      allowGeneratedImages: true,
+      requireClearRights: true,
+      coverSubject: 'Zahrada mezi dvěma domy',
+    })
   })
 
   it('keeps the cover when nothing new was found', async () => {
