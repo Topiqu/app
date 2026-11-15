@@ -1,6 +1,7 @@
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
-import { agencyIntentFromQuery } from '../../app/utils/agencyIntent'
+import { AGENCY_START_QUERY, agencyIntentFromQuery } from '../../app/utils/agencyIntent'
 import { AI_ALLOWANCES, AI_BUDGET_MICROS_PER_CENT } from '../../shared/utils/billingCatalog'
 import {
   AGENCY_MAX_BLOCKS,
@@ -87,5 +88,12 @@ describe('agency intent from the landing', () => {
     expect(agencyIntentFromQuery({ intent: 'agency', blogs: '5', premium: '9', blocks: '4' })).toEqual({})
     expect(agencyIntentFromQuery({ intent: 'agency' })).toEqual({})
     expect(agencyIntentFromQuery({ blogs: '5', blocks: '6' })).toBeNull()
+  })
+
+  it('opens the agency only for the sign-in that carried the intent', () => {
+    expect(agencyIntentFromQuery(AGENCY_START_QUERY)).not.toBeNull()
+    expect(agencyIntentFromQuery({})).toBeNull()
+    // The cookie of an earlier agency visit sent later blog sign-ups to the agency checkout.
+    expect(readFileSync('app/pages/start.vue', 'utf8')).not.toContain('useAgencyIntent')
   })
 })

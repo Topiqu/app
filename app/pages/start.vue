@@ -33,7 +33,7 @@ const pending = shallowRef(true)
 const failed = shallowRef(false)
 const createOpen = shallowRef(false)
 const shopifyInstall = useCookie<string | null>(SHOPIFY_INSTALL_COOKIE)
-const agencyIntent = useAgencyIntent()
+const agencyIntent = agencyIntentFromQuery(useRoute().query) !== null
 const agencyPath = () => localePath({ name: 'admin-agency' })
 
 useSeoMeta({ robots: 'noindex, nofollow' })
@@ -50,7 +50,7 @@ const openWorkspace = async () => {
     const active = memberships.find((item) => item.clientSiteId === auth.value?.user.clientSiteId) ?? memberships[0]
     if (!active) {
       // Without a blog, an agency member or someone who came to start one belongs in the agency console.
-      const agency = agencyIntent.value ? true : (await $fetch<{ agency: unknown }>('/api/agency')).agency
+      const agency = agencyIntent || (await $fetch<{ agency: unknown }>('/api/agency')).agency
       if (agency) await navigateTo(agencyPath(), { replace: true })
       return
     }
@@ -67,7 +67,7 @@ const openWorkspace = async () => {
     await navigateTo(
       shopifyInstall.value
         ? localePath({ name: 'settings', query: { tab: 'integrations', shopify: 'install' } })
-        : agencyIntent.value
+        : agencyIntent
           ? agencyPath()
           : localePath({ name: 'admin' }),
       { replace: true },
