@@ -75,5 +75,6 @@ export default defineSitemapEventHandler(async (event) => {
     for (const author of authors) urls.push({ loc: authorPath(primary, author), changefreq: 'weekly', priority: 0.4 })
   }
 
-  return urls
+  // `routes.ts` paths are percent-encoded already; the module would encode their `%` a second time.
+  return urls.map((url) => ({ ...url, _encoded: true }))
 })
