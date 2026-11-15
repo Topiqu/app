@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
-import { brandTitle, buildCanonicalOrigin, toAbsoluteUrl } from '../../shared/utils/seo'
+import { brandTitle, buildCanonicalOrigin, withOrigin } from '../../shared/utils/seo'
 
 describe('buildCanonicalOrigin', () => {
   it('forces https and strips www by default', () => {
@@ -20,24 +20,27 @@ describe('buildCanonicalOrigin', () => {
   })
 })
 
-describe('toAbsoluteUrl', () => {
+describe('withOrigin', () => {
   const origin = 'https://pixbo.topiqu.com'
 
   it('absolutises the relative hreflang hrefs emitted by useLocaleHead', () => {
-    expect(toAbsoluteUrl('/en/articles/foo', origin)).toBe('https://pixbo.topiqu.com/en/articles/foo')
-    expect(toAbsoluteUrl('/', origin)).toBe('https://pixbo.topiqu.com/')
+    expect(withOrigin('/en/articles/foo', origin)).toBe('https://pixbo.topiqu.com/en/articles/foo')
+    expect(withOrigin('/', origin)).toBe('https://pixbo.topiqu.com/')
   })
 
-  it('leaves already-absolute urls untouched', () => {
-    expect(toAbsoluteUrl('https://other.topiqu.com/cs', origin)).toBe('https://other.topiqu.com/cs')
+  it("moves the platform-based canonical and alternates onto the blog's origin", () => {
+    expect(withOrigin('https://topiqu.com/cs', origin)).toBe('https://pixbo.topiqu.com/cs')
+    expect(withOrigin('https://topiqu.com/en/tags/a%20b?page=2', origin)).toBe(
+      'https://pixbo.topiqu.com/en/tags/a%20b?page=2',
+    )
   })
 
   it('passes empty values through instead of resolving them to the origin', () => {
-    expect(toAbsoluteUrl('', origin)).toBe('')
+    expect(withOrigin('', origin)).toBe('')
   })
 
   it('falls back to the input when the origin is unusable', () => {
-    expect(toAbsoluteUrl('/en', '')).toBe('/en')
+    expect(withOrigin('/en', '')).toBe('/en')
   })
 })
 
