@@ -2,6 +2,7 @@ import { createError } from 'h3'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { stubNitroImports } from '../../helpers/nitroImports'
+import { CommentCreateSchema } from '../../../shared/databaseSchemas'
 
 async function stubImports() {
   await stubNitroImports(import('../../../server/utils/articleViewerAccess'), 'canReadArticle')
@@ -135,5 +136,24 @@ describe('POST /api/comments reply', () => {
     } finally {
       logged.mockRestore()
     }
+  })
+})
+
+describe('POST /api/comments body', () => {
+  it('accepts what the comment form sends, which names no author', () => {
+    const body = { articleId: 'article-1', content: 'Hello', gifUrl: null }
+    expect(CommentCreateSchema.parse(body)).toEqual(body)
+    expect(CommentCreateSchema.parse({ ...body, parentId: 'parent-1' })).toMatchObject({ parentId: 'parent-1' })
+  })
+
+  it('takes neither an author nor moderation state from the body', () => {
+    const parsed = CommentCreateSchema.safeParse({
+      articleId: 'article-1',
+      content: 'Hello',
+      userId: 'someone-else',
+      sentimentStatus: 'DONE',
+    })
+    expect(parsed.data ?? {}).not.toHaveProperty('userId')
+    expect(parsed.data ?? {}).not.toHaveProperty('sentimentStatus')
   })
 })

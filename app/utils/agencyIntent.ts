@@ -7,6 +7,9 @@ export const AGENCY_INTENT_COOKIE = 'agency_intent'
 
 export type AgencyIntent = Partial<AgencyQuantities>
 
+/** What a sign-in hands to `start`. Routing follows this query, never the cookie, which outlives the visit. */
+export const AGENCY_START_QUERY = { intent: 'agency' } as const
+
 /** `?intent=agency&blogs=…&premium=…&blocks=…`: the landing calculator's pick, kept only when it is a valid order. */
 export const agencyIntentFromQuery = (query: Record<string, unknown>): AgencyIntent | null => {
   if (query.intent !== 'agency') return null
