@@ -65,7 +65,7 @@ const i18nLinks = computed(() =>
       .filter((link) => !(isArticleRoute.value && link.rel === 'alternate'))
       .filter((link) => !(siteLanguages.value && link.rel === 'alternate' && isForeignAlternate(link.hreflang)))
       .map((link) =>
-        typeof link.href === 'string' ? { ...link, href: toAbsoluteUrl(link.href, canonicalOrigin) } : link,
+        typeof link.href === 'string' ? { ...link, href: withOrigin(link.href, canonicalOrigin) } : link,
       ),
   ),
 )
@@ -149,7 +149,11 @@ useHead(() => ({
       : []),
   ],
   meta: [
-    ...(i18nHead.value.meta || []),
+    ...(i18nHead.value.meta || []).map((meta) =>
+      meta.property === 'og:url' && typeof meta.content === 'string'
+        ? { ...meta, content: withOrigin(meta.content, canonicalOrigin) }
+        : meta,
+    ),
     {
       name: 'keywords',
       content: Array.isArray(liveClientSite.value?.keywords)

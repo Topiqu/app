@@ -14,10 +14,12 @@ export const buildCanonicalOrigin = (protocol: string, host: string, keepProtoco
   return `${scheme}//${host.replace(/^www\./, '')}`
 }
 
-export const toAbsoluteUrl = (href: string, origin: string) => {
-  if (!href) return href
+/** `useLocaleHead` builds its URLs on the static `i18n.baseUrl` (the platform); a blog serves its own origin. */
+export const withOrigin = (href: string, origin: string) => {
+  if (!href || !origin) return href
   try {
-    return new URL(href, origin).href
+    const url = new URL(href, origin)
+    return `${origin}${url.pathname}${url.search}${url.hash}`
   } catch {
     return href
   }
