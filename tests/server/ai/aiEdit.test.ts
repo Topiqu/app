@@ -140,4 +140,17 @@ describe('author first-hand account', () => {
   })
 })
 
+describe('legal duty scope', () => {
+  const article = readFileSync(resolve(process.cwd(), 'server/utils/ai/articleConfig.ts'), 'utf8')
+  const quality = readFileSync(resolve(process.cwd(), 'server/utils/ai/articleQuality.ts'), 'utf8')
+
+  it('keeps the trigger of a duty from the writer through the verifier, reviser and recheck', () => {
+    expect(article).toContain('${OBLIGATION_SCOPE_RULE}')
+    expect(quality).toContain('${OBLIGATION_SCOPE_RULE} A duty the draft presents as required more broadly')
+    expect(quality).toContain('${OBLIGATION_SCOPE_RULE}\n${SOURCE_CONFLICT_RULE}\n${AUTHORIAL_REASONING}')
+    expect(quality).toContain('never propose content the draft does not contain')
+    expect(quality).toContain('A new statement of what a law or rule requires, forbids or exempts is a specific too')
+  })
+})
+
 beforeEach(stubImports)
