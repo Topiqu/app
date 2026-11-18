@@ -8,12 +8,14 @@
         <UIcon name="i-mdi-poll" class="size-5" />
       </span>
       <UInput
-        v-model="localQuestion"
+        :modelValue="node.attrs.question"
+        :aria-label="$t('articles.poll.questionPlaceholder')"
         :placeholder="$t('articles.poll.questionPlaceholder')"
         size="xl"
         class="min-w-0 flex-1"
         :ui="{ base: 'font-semibold text-highlighted' }"
-        @input="syncQuestion"
+        @update:modelValue="update({ question: String($event ?? '') })"
+        @blur="node.attrs.question?.trim() || update({ question: $t('articles.poll.defaultQuestion') })"
         @click.stop
         @mousedown.stop
         @focus.stop
@@ -27,14 +29,14 @@
         class="shrink-0 opacity-70 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
         :aria-label="$t('common.delete')"
         :title="$t('common.delete')"
-        @click.stop.prevent="deleteNode"
+        @click.stop.prevent="deleteNode()"
         @mousedown.stop.prevent
       />
     </div>
 
     <div class="space-y-2">
       <div
-        v-for="(opt, i) in localOptions"
+        v-for="(opt, i) in options"
         :key="i"
         class="flex items-center gap-2 rounded-lg border border-default bg-elevated/40 p-2 transition-colors hover:border-primary/40 hover:bg-elevated"
       >
@@ -44,19 +46,20 @@
           {{ i + 1 }}
         </span>
         <UInput
-          v-model="opt.label"
+          :modelValue="opt.label"
+          :aria-label="$t('articles.poll.option', { index: i + 1 })"
           :placeholder="$t('articles.poll.optionPlaceholder')"
           variant="none"
           class="min-w-0 flex-1"
           :ui="{ base: 'bg-transparent text-highlighted' }"
-          @input="syncOptions"
+          @update:modelValue="setLabel(i, String($event ?? ''))"
           @click.stop
           @mousedown.stop
           @focus.stop
         />
 
         <UButton
-          v-if="localOptions.length > 1"
+          v-if="options.length > 1"
           square
           size="sm"
           color="error"
@@ -65,7 +68,7 @@
           class="shrink-0"
           :aria-label="$t('common.delete')"
           :title="$t('common.delete')"
-          @click.stop.prevent="rm(i)"
+          @click.stop.prevent="remove(i)"
           @mousedown.stop.prevent
         />
       </div>
@@ -84,57 +87,31 @@
   </node-view-wrapper>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { nodeViewProps, NodeViewWrapper } from '@tiptap/vue-3'
 
+import type { PollOptionData } from '../shared/utils/polls'
+
+// Read through `props.node` on every render: Tiptap swaps in a new node on undo, a content reload or
+// ids stamped on save, and a copy taken at setup kept showing (and writing back) the old options.
+// Text is stored as typed, so spaces survive mid-word; `renderHTML` trims it, and an emptied question
+// gets its default on blur rather than while the author is retyping it.
 const props = defineProps(nodeViewProps)
+const { deleteNode } = props
 
-const { node, updateAttributes, deleteNode } = props
-
-const defaultOption = () => ({ label: $t('articles.poll.defaultOption') })
-
-const localQuestion = shallowRef(node.attrs.question || $t('articles.poll.defaultQuestion'))
-const localOptions = ref(node.attrs.options?.length ? node.attrs.options.map((o) => ({ ...o })) : [defaultOption()])
-const localId = shallowRef(node.attrs.id || crypto.randomUUID())
-
-const syncQuestion = () => {
-  const question = localQuestion.value.trim() || $t('articles.poll.defaultQuestion')
-  const validOptions = localOptions.value.length ? localOptions.value : [defaultOption()]
-  updateAttributes({ question, id: localId.value, options: validOptions })
-}
-
-const syncOptions = () => {
-  const validOptions = localOptions.value.length ? localOptions.value : [defaultOption()]
-  localOptions.value = validOptions
-  updateAttributes({
-    question: localQuestion.value.trim() || $t('articles.poll.defaultQuestion'),
-    id: localId.value,
-    options: validOptions,
-  })
-}
-
-const add = () => {
-  localOptions.value = [...localOptions.value, { label: '' }]
-  syncOptions()
-}
-
-const rm = (i) => {
-  if (localOptions.value.length <= 1) return
-  localOptions.value = localOptions.value.filter((_, idx) => idx !== i)
-  syncOptions()
-}
-
-watch(
-  () => node.attrs.question,
-  (newVal) => {
-    localQuestion.value = newVal || $t('articles.poll.defaultQuestion')
-  },
+const options = computed<PollOptionData[]>(() =>
+  props.node.attrs.options?.length ? props.node.attrs.options : [{ label: $t('articles.poll.defaultOption') }],
 )
 
-watch(
-  () => node.attrs.id,
-  (newVal) => {
-    localId.value = newVal || crypto.randomUUID()
-  },
-)
+const update = (attrs: { question?: string; options?: PollOptionData[] }) =>
+  props.updateAttributes({ id: props.node.attrs.id || crypto.randomUUID(), ...attrs })
+
+const setLabel = (index: number, label: string) =>
+  update({ options: options.value.map((option, i) => (i === index ? { ...option, label } : option)) })
+
+const add = () => update({ options: [...options.value, { label: '' }] })
+
+const remove = (index: number) => {
+  if (options.value.length > 1) update({ options: options.value.filter((_, i) => i !== index) })
+}
 </script>
