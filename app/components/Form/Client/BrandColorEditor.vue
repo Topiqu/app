@@ -61,7 +61,7 @@
           @update:modelValue="emit('update:accentColor', $event)"
         />
       </div>
-      <UTooltip :text="$t('common.preferences.branding.fromLogoNeedsLogo')" :disabled="!!logoUrl">
+      <UTooltip v-if="clientId" :text="$t('common.preferences.branding.fromLogoNeedsLogo')" :disabled="!!logoUrl">
         <span class="inline-flex">
           <UButton
             type="button"
@@ -109,7 +109,7 @@
           <p class="mt-0.5 text-xs text-muted">{{ $t('common.preferences.branding.gradientHelp') }}</p>
         </div>
         <UButton
-          v-if="!advanced"
+          v-if="!advanced && clientId"
           :to="localePath({ name: 'settings', query: { tab: 'billing' } })"
           color="neutral"
           variant="soft"
@@ -118,6 +118,9 @@
           class="shrink-0"
           :label="$t('common.preferences.branding.unlockPro')"
         />
+        <UBadge v-else-if="!advanced" color="neutral" variant="soft" icon="mdi:lock-outline">
+          {{ $t('common.preferences.branding.unlockPro') }}
+        </UBadge>
       </div>
       <URadioGroup
         :modelValue="selectedGradientPreset"

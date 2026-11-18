@@ -2,6 +2,11 @@ export default defineNuxtRouteMiddleware((to) => {
   const { data: auth } = useAuth()
   const localePath = useLocalePath()
 
+  // Redeem the new account's proof even when a previous account still has a session.
+  if (to.query.created === 'true') return
+  // An explicit registration must show which account is already signed in.
+  if (to.query.mode === 'register') return
+
   if (auth.value?.user == null) return
 
   if (typeof to.query.invitation === 'string')

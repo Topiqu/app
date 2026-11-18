@@ -25,6 +25,8 @@
 </template>
 
 <script setup lang="ts">
+import type { AgencyStatus } from '~/composables/useAgency'
+
 definePageMeta({ shell: 'product', dashboardSidebar: false })
 
 const { data: auth, getSession } = useAuth()
@@ -49,9 +51,11 @@ const openWorkspace = async () => {
     const memberships = await $fetch<{ clientSiteId: string }[], '/api/tenant/memberships'>('/api/tenant/memberships')
     const active = memberships.find((item) => item.clientSiteId === auth.value?.user.clientSiteId) ?? memberships[0]
     if (!active) {
-      // Without a blog, an agency member or someone who came to start one belongs in the agency console.
-      const agency = agencyIntent || (await $fetch<{ agency: unknown }>('/api/agency')).agency
-      if (agency) await navigateTo(agencyPath(), { replace: true })
+      // Only explicit agency intent or a live agency skips ordinary blog setup.
+      const agency = agencyIntent
+        ? null
+        : (await $fetch<{ agency: { status: AgencyStatus } | null }>('/api/agency')).agency
+      if (agencyIntent || (agency && isAgencyLive(agency.status))) await navigateTo(agencyPath(), { replace: true })
       return
     }
 

@@ -7,10 +7,19 @@ import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
 import AuthForm from '../../app/components/Auth/Form.vue'
 import ProfileEmail from '../../app/components/User/Email.vue'
 
-const mocks = vi.hoisted(() => ({ fetch: vi.fn(), toast: vi.fn(), getSession: vi.fn(), navigate: vi.fn() }))
+const mocks = vi.hoisted(() => ({
+  fetch: vi.fn(),
+  toast: vi.fn(),
+  getSession: vi.fn(),
+  navigate: vi.fn(),
+  user: null as { email: string; role: string; name: string } | null,
+}))
 mockNuxtImport('$fetch', () => mocks.fetch)
 mockNuxtImport('useToast', () => () => ({ add: mocks.toast }))
-mockNuxtImport('useAuth', () => () => ({ data: shallowRef(null), getSession: mocks.getSession }))
+mockNuxtImport('useAuth', () => () => ({
+  data: shallowRef(mocks.user ? { user: mocks.user } : null),
+  getSession: mocks.getSession,
+}))
 mockNuxtImport('useI18n', () => () => ({ locale: shallowRef('en'), t: (key: string) => key }))
 mockNuxtImport('useLocalePath', () => () => (route: unknown) => route)
 mockNuxtImport('useRequestURL', () => () => new URL('https://app.topiqu.com'))
@@ -83,12 +92,60 @@ enableAutoUnmount(afterEach)
 beforeEach(() => {
   vi.useFakeTimers()
   vi.clearAllMocks()
+  mocks.user = null
   mocks.fetch.mockReset().mockResolvedValue({ message: 'Requested' })
   mocks.getSession.mockResolvedValue(undefined)
 })
 afterEach(() => vi.useRealTimers())
 
 describe('email verification consumers', () => {
+  it('can leave verification and return to the sign-in form without being trapped on the code screen', async () => {
+    mocks.fetch.mockRejectedValueOnce({ data: { data: { code: 'email_not_verified' } } })
+    const wrapper = mount(AuthForm, { global: options })
+    await wrapper.get('input[type="email"]').setValue('new@example.invalid')
+    await wrapper.get('input[type="password"]').setValue('new-account-password')
+    await wrapper.get('form').trigger('submit')
+    await flushPromises()
+    expect(wrapper.find('input[autocomplete="one-time-code"]').exists()).toBe(true)
+    wrapper.findComponent({ name: 'UTabs' }).vm.$emit('update:modelValue', 'login')
+    await flushPromises()
+    expect(wrapper.find('input[autocomplete="one-time-code"]').exists()).toBe(false)
+    expect(wrapper.get('input[type="email"]').element.value).toBe('new@example.invalid')
+  })
+
+  it('verifies and signs in the submitted email while another account is present, then reloads its destination', async () => {
+    mocks.user = { email: 'old@example.invalid', role: 'admin', name: 'Previous user' }
+    mocks.fetch.mockRejectedValueOnce({ data: { data: { code: 'email_not_verified' } } })
+    const wrapper = mount(AuthForm, { props: { redirectTo: '/en/start' }, global: options })
+    expect(wrapper.findComponent({ name: 'UAlert' }).props('title')).toBe('common.auth.signedInAs')
+    await wrapper.get('input[type="email"]').setValue('new@example.invalid')
+    await wrapper.get('input[type="password"]').setValue('new-account-password')
+    await wrapper.get('form').trigger('submit')
+    await flushPromises()
+    await wrapper.get('input[autocomplete="one-time-code"]').setValue('aabbccdd')
+    await wrapper.get('form').trigger('submit')
+    await flushPromises()
+    expect(mocks.fetch).toHaveBeenCalledWith(
+      '/api/auth/verify',
+      expect.objectContaining({
+        body: {
+          email: 'new@example.invalid',
+          code: 'aabbccdd',
+        },
+      }),
+    )
+    expect(mocks.fetch).toHaveBeenCalledWith(
+      '/api/auth/sign-in/credentials',
+      expect.objectContaining({
+        body: {
+          email: 'new@example.invalid',
+          password: 'new-account-password',
+        },
+      }),
+    )
+    expect(mocks.navigate).toHaveBeenCalledWith('/en/start', { external: true, replace: true })
+  })
+
   it('submits the profile email with the eight-character hexadecimal code', async () => {
     const { wrapper, email, verified } = profile()
     await button(wrapper, 'common.auth.sendCode').trigger('click')

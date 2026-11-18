@@ -1056,7 +1056,10 @@
       "enterCode": "Enter verification code",
       "logout": "Log out",
       "welcomeBack": "Welcome back",
-      "accountDeletionPending": "This account is scheduled for deletion. We emailed you a link to restore it."
+      "accountDeletionPending": "This account is scheduled for deletion. We emailed you a link to restore it.",
+      "finishingRegistration": "Finishing your registration…",
+      "signedInAs": "Signed in as {email}",
+      "registrationSwitchAccount": "You are already signed in. Verifying a new account will switch this browser to that account."
     },
     "upload": {
       "rejected": "Image not accepted",

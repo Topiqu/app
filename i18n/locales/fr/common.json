@@ -1056,7 +1056,10 @@
       "enterCode": "Saisir le code de vérification",
       "logout": "Se déconnecter",
       "welcomeBack": "Bon retour",
-      "accountDeletionPending": "Ce compte est programmé pour suppression. Nous vous avons envoyé un lien pour le restaurer."
+      "accountDeletionPending": "Ce compte est programmé pour suppression. Nous vous avons envoyé un lien pour le restaurer.",
+      "finishingRegistration": "Finalisation de votre inscription…",
+      "signedInAs": "Connecté avec {email}",
+      "registrationSwitchAccount": "Vous êtes déjà connecté. La vérification d’un nouveau compte basculera ce navigateur vers ce compte."
     },
     "upload": {
       "rejected": "Image refusée",

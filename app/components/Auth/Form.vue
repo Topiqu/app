@@ -1,12 +1,14 @@
 <template>
   <div class="w-full">
-    <UCard v-if="data?.user && !internalMode">
-      <div class="text-center">
-        <p class="text-lg font-semibold text-success">{{ $t('common.auth.welcome') }} {{ data.user?.name }}!</p>
-        <AuthLogout />
-      </div>
-    </UCard>
-    <div v-else-if="internalMode === 'forgot' || internalMode === 'reset'">
+    <UAlert
+      v-if="data?.user"
+      color="neutral"
+      variant="soft"
+      class="mb-4"
+      :title="$t('common.auth.signedInAs', { email: data.user.email })"
+      :description="$t('common.auth.registrationSwitchAccount')"
+    />
+    <div v-if="internalMode === 'forgot' || internalMode === 'reset'">
       <AuthForgot :mode="internalMode" @update:mode="internalMode = $event" />
     </div>
     <UCard v-else>
@@ -175,10 +177,10 @@ const { data, getSession } = useAuth()
 const localePath = useLocalePath()
 const afterSignIn = () => {
   const role = data.value?.user.role ?? 'reader'
-  if (props.redirectTo) return navigateTo(props.redirectTo)
-  if (role === 'superadmin') return navigateTo(localePath({ name: 'master' }))
-  if (role === 'admin') return navigateTo(localePath({ name: 'admin' }))
-  return navigateTo(localePath({ name: 'uzivatel' }))
+  const destination =
+    props.redirectTo || localePath({ name: role === 'superadmin' ? 'master' : role === 'admin' ? 'admin' : 'uzivatel' })
+  // Signing in may replace another account; none of its stores may survive the switch.
+  return navigateTo(destination, { external: true, replace: true })
 }
 
 const init = {
@@ -194,12 +196,18 @@ const init = {
 const form = ref<typeof init>(init)
 const internalMode = shallowRef<'login' | 'register' | 'forgot' | 'reset' | 'totp'>('login')
 const authTabs = computed(() => [
-  { label: $t('common.auth.login'), value: 'login' },
-  { label: $t('common.auth.register'), value: 'register' },
+  { label: $t('common.auth.login'), value: 'login', disabled: submitting.value || resendingVerification.value },
+  { label: $t('common.auth.register'), value: 'register', disabled: submitting.value || resendingVerification.value },
 ])
 const authTab = computed({
   get: () => (internalMode.value === 'register' ? 'register' : 'login'),
-  set: (value: string) => (internalMode.value = value === 'register' ? 'register' : 'login'),
+  set: (value: string) => {
+    internalMode.value = value === 'register' ? 'register' : 'login'
+    verifyMode.value = false
+    form.value.code = ''
+    form.value.totpCode = ''
+    form.value.totpChallenge = ''
+  },
 })
 const verifyMode = shallowRef<boolean>(false)
 const showPassword = shallowRef(false)

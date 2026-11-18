@@ -14,6 +14,9 @@
     />
     <template v-else-if="!data.agency">
       <h1 class="text-2xl font-bold text-highlighted">{{ $t('agency.title') }}</h1>
+      <UButton :to="localePath({ name: 'start' })" color="neutral" variant="outline" icon="mdi:web">
+        {{ $t('agency.entry.singleBlog') }}
+      </UButton>
       <AgencyCreate :catalog="data.catalog" />
     </template>
     <template v-else>
@@ -61,6 +64,9 @@
         />
         <AgencyPlan :agency="data.agency" :catalog="data.catalog" :owner :slots />
       </div>
+      <UButton v-if="!live" :to="localePath({ name: 'start' })" color="neutral" variant="outline" icon="mdi:web">
+        {{ $t('agency.entry.singleBlog') }}
+      </UButton>
     </template>
   </div>
 </template>
@@ -70,6 +76,7 @@ definePageMeta({ middleware: 'agency', shell: 'dashboard' })
 useSeoMeta({ title: () => $t('agency.title') })
 
 const { formatTime } = useTime()
+const localePath = useLocalePath()
 const { data, error, isPending } = useAgency()
 
 const owner = computed(() => data.value?.role === 'OWNER')

@@ -1056,7 +1056,10 @@
       "enterCode": "Bestätigungscode eingeben",
       "logout": "Abmelden",
       "welcomeBack": "Willkommen zurück",
-      "accountDeletionPending": "Dieses Konto ist zur Löschung vorgemerkt. Wir haben dir einen Link zur Wiederherstellung geschickt."
+      "accountDeletionPending": "Dieses Konto ist zur Löschung vorgemerkt. Wir haben dir einen Link zur Wiederherstellung geschickt.",
+      "finishingRegistration": "Deine Registrierung wird abgeschlossen…",
+      "signedInAs": "Angemeldet als {email}",
+      "registrationSwitchAccount": "Du bist bereits angemeldet. Nach der Bestätigung eines neuen Kontos wechselt dieser Browser zu diesem Konto."
     },
     "upload": {
       "rejected": "Bild nicht angenommen",

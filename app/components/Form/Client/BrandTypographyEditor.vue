@@ -45,7 +45,7 @@
       </template>
     </URadioGroup>
 
-    <div>
+    <div v-if="clientId">
       <div class="flex items-center justify-between gap-3">
         <div class="min-w-0">
           <p class="text-sm font-medium text-highlighted">{{ $t('common.preferences.branding.customFont') }}</p>

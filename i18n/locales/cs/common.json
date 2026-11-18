@@ -1056,7 +1056,10 @@
       "enterCode": "Zadejte ověřovací kód",
       "logout": "Odhlásit se",
       "welcomeBack": "Vítejte zpět",
-      "accountDeletionPending": "Tento účet je naplánovaný ke smazání. Poslali jsme vám e-mail s odkazem na obnovení."
+      "accountDeletionPending": "Tento účet je naplánovaný ke smazání. Poslali jsme vám e-mail s odkazem na obnovení.",
+      "finishingRegistration": "Dokončujeme vaši registraci…",
+      "signedInAs": "Přihlášeni jako {email}",
+      "registrationSwitchAccount": "Už jste přihlášeni. Ověření nového účtu přepne tento prohlížeč na nový účet."
     },
     "upload": {
       "rejected": "Obrázek nelze použít",
