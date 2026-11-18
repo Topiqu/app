@@ -2,29 +2,39 @@
   <section class="max-w-3xl space-y-5" data-api-keys>
     <UProgress v-if="isPending" :aria-label="$t('common.loading')" />
     <template v-else>
-      <div v-if="created" class="space-y-2 rounded-lg border border-success/40 bg-success/5 p-4" role="status">
-        <p class="font-medium text-highlighted">
-          {{ $t('common.preferences.api.createdTitle', { name: created.name }) }}
-        </p>
-        <div class="flex items-center gap-2">
-          <UInput
-            class="min-w-0 flex-1"
-            :ui="{ base: 'font-mono' }"
-            :modelValue="created.key"
-            readonly
-            :aria-label="$t('common.preferences.api.label')"
-          />
-          <UButton
-            square
-            color="neutral"
-            variant="soft"
-            :icon="copied ? 'mdi:check' : 'mdi:content-copy'"
-            :aria-label="copied ? $t('common.preferences.api.copied') : $t('common.preferences.api.copy')"
-            @click="copy(created.key)"
-          />
-        </div>
-        <p class="text-xs text-muted">{{ $t('common.preferences.api.shownOnce') }}</p>
-      </div>
+      <!-- The key is never shown again, so only the button closes the dialog; it is dropped once the close animation ends. -->
+      <UModal
+        v-model:open="createdOpen"
+        :title="$t('common.preferences.api.createdTitle', { name: created?.name })"
+        :description="$t('common.preferences.api.shownOnce')"
+        :dismissible="false"
+        :close="false"
+        @after:leave="created = null"
+      >
+        <template #body>
+          <div class="flex items-center gap-2">
+            <UInput
+              class="min-w-0 flex-1"
+              :ui="{ base: 'font-mono' }"
+              :modelValue="created?.key"
+              readonly
+              :aria-label="$t('common.preferences.api.label')"
+              @focus="selectKey"
+            />
+            <UButton
+              square
+              color="neutral"
+              variant="soft"
+              :icon="copied ? 'mdi:check' : 'mdi:content-copy'"
+              :aria-label="copied ? $t('common.preferences.api.copied') : $t('common.preferences.api.copy')"
+              @click="created && copy(created.key)"
+            />
+          </div>
+        </template>
+        <template #footer>
+          <UButton class="ml-auto" @click="createdOpen = false">{{ $t('common.preferences.api.done') }}</UButton>
+        </template>
+      </UModal>
 
       <ul v-if="keys.length" class="divide-y divide-default rounded-lg border border-default">
         <li v-for="apiKey in keys" :key="apiKey.id" class="flex items-start justify-between gap-3 p-3">
@@ -114,6 +124,8 @@ const keys = computed(() => data.value?.keys ?? [])
 const name = shallowRef('')
 const scopes = shallowRef<ApiKeyScope[]>(['READ'])
 const created = shallowRef<{ name: string; key: string } | null>(null)
+const createdOpen = shallowRef(false)
+const selectKey = (event: FocusEvent) => (event.target as HTMLInputElement).select()
 const busy = shallowRef<string | null>(null)
 
 // READ is always granted, so it is shown checked and locked.
@@ -145,6 +157,7 @@ const create = () =>
       body: { name: name.value.trim(), scopes: scopes.value },
     })
     created.value = { name: result.apiKey.name, key: result.key }
+    createdOpen.value = true
     name.value = ''
     scopes.value = ['READ']
     await refetch()
