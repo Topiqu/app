@@ -431,3 +431,98 @@ it('asks the fact-check and the copy desk to narrow or delete, never to research
 })
 
 beforeEach(stubImports)
+
+describe('tone findings', () => {
+  beforeEach(() =>
+    vi.mocked(generatePlainText).mockResolvedValue({
+      text: `SUPPORTED: Ciri leads. ${url}`,
+      sources: [{ sourceType: 'url', url }],
+      usage: { totalTokens: 30 },
+    } as never),
+  )
+
+  it('never holds an article for its tone, but keeps the finding for the revision', async () => {
+    const tone = {
+      code: 'tone_mismatch',
+      note: 'Úvod je uhlazený a ustupuje; přepište ho sarkasticky.',
+      blocking: true,
+    }
+    vi.mocked(generateStructuredText).mockResolvedValue({
+      output: { issues: [tone] },
+      usage: { totalTokens: 20 },
+    } as never)
+
+    const { review } = await reviewArticle(draft, context)
+
+    expect(review.approved).toBe(true)
+    expect(review.issues).toEqual([{ ...tone, blocking: false }])
+  })
+
+  it('still holds a reversed stance', async () => {
+    const reversed = {
+      code: 'assignment_mismatch',
+      note: 'The piece argues the opposite of the assignment.',
+      blocking: true,
+    }
+    vi.mocked(generateStructuredText).mockResolvedValue({
+      output: { issues: [reversed] },
+      usage: { totalTokens: 20 },
+    } as never)
+
+    expect((await reviewArticle(draft, context)).review.approved).toBe(false)
+  })
+
+  it('never lets prose findings crowd a factual blocker out of the six-issue limit', async () => {
+    vi.mocked(generateStructuredText).mockResolvedValue({
+      output: {
+        issues: [
+          ...Array.from({ length: 6 }, (_, index) => ({
+            code: 'generic_language',
+            note: `Delete the empty importance preamble in paragraph ${index + 1}.`,
+            blocking: false,
+          })),
+          {
+            code: 'invented_detail',
+            note: 'Delete the invented customer quotation in the final paragraph.',
+            blocking: true,
+          },
+        ],
+      },
+      usage: { totalTokens: 20 },
+    } as never)
+    const { review } = await reviewArticle(draft, context)
+    expect(review.approved).toBe(false)
+    expect(review.issues).toHaveLength(6)
+    expect(review.issues[0]?.code).toBe('invented_detail')
+  })
+
+  it.each(['generic_language', 'filler', 'repetition'])(
+    'keeps %s edits without accepting a model-supplied publication veto',
+    async (code) => {
+      const issue = { code, note: 'Delete the repeated importance preamble in the second paragraph.', blocking: true }
+      vi.mocked(generateStructuredText).mockResolvedValue({
+        output: { issues: [issue] },
+        usage: { totalTokens: 20 },
+      } as never)
+      const { review } = await reviewArticle(draft, context)
+      expect(review.approved).toBe(true)
+      expect(review.issues).toEqual([{ ...issue, blocking: false }])
+    },
+  )
+
+  it('tells the copy desk that tone and a required opposing view are not stance reversals', async () => {
+    await reviewArticle(draft, context)
+    const instructions = vi.mocked(generateStructuredText).mock.calls[0]![0].instructions as string
+    expect(instructions).toContain('- assignment_mismatch: the requested stance or genre is reversed or replaced;')
+    expect(instructions).toContain('is tone_mismatch')
+    // A restrained level is missed by judging or mocking, not only an opinionated one by softening.
+    expect(instructions).toContain('misses the requested tone or voice in either direction is tone_mismatch')
+    expect(instructions).toContain('or judging, arguing or mocking where it asks for restraint')
+    // The eval saw a NONE verdict in the title held as a blocking assignment_mismatch.
+    expect(instructions).toContain(
+      'is tone_mismatch, never assignment_mismatch, unless it reverses a stance the assignment states',
+    )
+    expect(instructions).toContain('delivered as a word or two in otherwise neutral prose is tone_mismatch')
+    expect(instructions).toContain('Presenting an opposing view that the requested structure calls for is neither')
+  })
+})

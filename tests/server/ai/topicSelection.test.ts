@@ -136,7 +136,15 @@ describe('buildTopicPrompt', () => {
     expect(prompt).toContain('Requested tone of voice (publisher preference, data): "Sarkastický"')
     const calm = buildTopicPrompt({ ...INPUT, controversyLevel: 'MEDIUM', toneOfVoice: '  ' })
     expect(calm).not.toContain('Prefer opinion')
+    expect(calm).toContain('Opinion suits this blog')
     expect(calm).not.toContain('Requested tone of voice')
+  })
+
+  it('steers a NONE blog away from opinion and leaves an unset level free', () => {
+    expect(buildTopicPrompt({ ...INPUT, controversyLevel: 'NONE' })).toContain('do not choose opinion')
+    const unset = buildTopicPrompt(INPUT)
+    expect(unset).not.toContain('do not choose opinion')
+    expect(unset).not.toContain('Prefer opinion')
   })
 
   it('shows empty plan and news as none', () => {
@@ -255,6 +263,26 @@ describe('unattended stories', () => {
     const { topic } = await pickArticleTopic(INPUT)
     expect(topic).toMatchObject({ needsResearch: true, searchQuery: story.topic })
     expect(researchRequest(topic)).toEqual({ query: story.topic })
+  })
+
+  it('always researches a news piece, which the release gate holds without research', async () => {
+    vi.stubGlobal('aiModel', () => 'test-model')
+    const news = {
+      topic: 'Dotace na nájemní bydlení a stavebníci rodinných domů',
+      angle: 'Komu program skutečně pomůže',
+      format: 'news',
+      variant: 'breaking-brief',
+      modules: ['answer'],
+      needsResearch: false,
+      searchQuery: '',
+      planKeyword: '',
+      theme: 'bydleni',
+      newsItem: 0,
+    }
+    vi.mocked(generateText).mockResolvedValue({ output: news, usage: {} } as never)
+
+    const { topic } = await pickArticleTopic(INPUT)
+    expect(researchRequest(topic)).toEqual({ query: news.topic })
   })
 
   it('always researches a topic built on a headline', async () => {

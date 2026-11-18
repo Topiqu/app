@@ -108,6 +108,22 @@ describe('tenant settings audit', () => {
     },
   )
 
+  it.each([
+    ['MEDIUM', 'MEDIUM'],
+    ['', null],
+    [null, null],
+  ])('saves the controversy level %j as %j', async (level, stored) => {
+    const { run, db } = await setup({ aiControversyLevel: level })
+    await run()
+    expect(db.clientSite.update.mock.calls[0]![0].data.aiControversyLevel).toBe(stored)
+  })
+
+  it('rejects a controversy level the writer does not know before writing any settings', async () => {
+    const { run, db } = await setup({ aiControversyLevel: 'EXTREME' })
+    await expect(run()).rejects.toMatchObject({ statusCode: 400 })
+    expect(db.clientSite.update).not.toHaveBeenCalled()
+  })
+
   it('saves validated footer settings on a paid tenant', async () => {
     const footerSettings = {
       enabled: false,

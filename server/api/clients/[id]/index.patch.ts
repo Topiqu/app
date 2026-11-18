@@ -82,6 +82,12 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: parsed.error.message })
   }
   const data: any = { ...parsed.data }
+  // The column is free text; anything but a known level would silently read as LOW in every prompt.
+  if (data.aiControversyLevel !== undefined) {
+    if (data.aiControversyLevel && !isControversyLevel(data.aiControversyLevel))
+      throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })
+    data.aiControversyLevel ||= null
+  }
   if (footerSettings !== undefined) {
     const footer = footerSettings === null ? null : FooterSettingsSchema.safeParse(footerSettings)
     if (footer && !footer.success) throw createError({ statusCode: 400, message: t('common.errors.invalidRequest')! })

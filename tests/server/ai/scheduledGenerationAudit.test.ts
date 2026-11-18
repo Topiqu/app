@@ -88,7 +88,7 @@ const setup = async (
     keyTakeaways: [],
     faq: [],
     articleImageUrl: 'https://images.test/cover',
-    editorialReview: options.editorialReview ?? { approved: true },
+    editorialReview: options.editorialReview ?? { approved: true, issues: [] },
     research: { status: 'skipped' },
     usage: { totalTokens: 42 },
   }
@@ -143,6 +143,7 @@ const setup = async (
   vi.stubGlobal('selectedModulesFor', () => [])
   vi.stubGlobal('autopilotModules', (_format: string, picked: string[]) => picked)
   vi.stubGlobal('researchRequest', () => false)
+  vi.stubGlobal('supportedSourceUrls', () => [])
   const writer = vi.fn(async () => {
     if (failure === 'generation') throw new Error('Writer unavailable')
     if (options.writerError) throw options.writerError

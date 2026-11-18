@@ -2,8 +2,8 @@ import { randomUUID } from 'node:crypto'
 
 import { uiLanguageOf } from '../../shared/utils/language'
 import { articleWriterId } from '../utils/ai/modelRegistry'
-import { releaseHoldOf } from '../../shared/utils/articleGeneration'
 import { isAiAllowanceError } from '../../shared/utils/aiAllowanceError'
+import { releaseHoldOf, researchGrounded, researchHasSources } from '../../shared/utils/articleGeneration'
 
 type ScheduledClient = Awaited<ReturnType<typeof loadGenerationCandidates>>[number]
 type GeneratedArticle = Awaited<ReturnType<typeof generateArticle>>
@@ -334,7 +334,8 @@ Prompted by: "${newsPick.title}" (${newsPick.domain}, ${newsPick.publishedAt.sli
 The headline is a lead, not a source. Every fact comes from the research; leave out what it cannot confirm.`
         : ''
 
-      const cronFormat = topic?.format ?? 'news'
+      // Without a picked topic nothing is researched, and the release gate would hold an unresearched news piece.
+      const cronFormat = topic?.format ?? 'analysis'
       const cronModules = autopilotModules(
         cronFormat,
         topic ? selectedModulesFor(topic.format, topic.modules) : selectedModulesFor(cronFormat),
@@ -496,8 +497,16 @@ Respond ONLY in valid JSON (schema required).
       }
 
       const researchRequired = cronFormat === 'news' || topic?.needsResearch === true
+      const review = generated.editorialReview
+      const verifiedSources = review?.issues.some((issue) => issue.key === 'verificationIncomplete')
+        ? []
+        : supportedSourceUrls(review?.verification)
       const researchApproved =
-        !researchRequired || (generated.research?.status === 'completed' && generated.research?.sourceCount > 0)
+        !researchRequired || researchGrounded({ research: generated.research, verifiedSources: verifiedSources.length })
+      // Released on the fact check alone, the article cites what that check retrieved.
+      const sources = researchHasSources(generated.research)
+        ? generated.sources
+        : [...new Set([...(generated.sources ?? []), ...verifiedSources])]
       const qualityApproved = generated.editorialReview?.approved === true && researchApproved
       stage = 'publication'
       const mediaReport = await auditArticleStep(
@@ -572,7 +581,7 @@ Respond ONLY in valid JSON (schema required).
                 seriesOrder: appliedSeries.seriesOrder,
                 // The streaming path carries these through `applyAiFinal`; the cron writes the row itself
                 // and dropped them, so every cron article shipped with a NULL `sources` column.
-                sources: linkableSources(generated.sources),
+                sources: linkableSources(sources),
                 // Same omission, and it silently wasted the work: `finalizeArticle` already fetched or
                 // generated the cover before this row was written, so the cost was paid either way.
                 imageUrl: generated.articleImageUrl || null,
@@ -701,7 +710,7 @@ Respond ONLY in valid JSON (schema required).
             polls: (contentWithPolls.match(/data-poll-id/gi) ?? []).length,
             youtubeVideos: (contentWithPolls.match(/data-youtube-video/gi) ?? []).length,
           },
-          sources: generated.sources?.length ?? 0,
+          sources: sources?.length ?? 0,
           tokens,
           researched: topic ? researchRequest(topic) !== false : false,
           keywordPlan: {

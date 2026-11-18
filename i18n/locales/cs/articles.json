@@ -812,6 +812,7 @@
               "poll": "Doplňte právě jednu požadovanou anketu.",
               "images": "Doplňte do textu požadované obrázky.",
               "table": "Doplňte požadovanou tabulku.",
+            "tone_mismatch": "Tón neodpovídá zadání",
               "youtube": "Vložte YouTube video, které našla rešerše."
             },
             "repeatedTableSubjects": "Tabulka opakuje řádky pro: {subjects}. Každá položka patří do jednoho řádku.",

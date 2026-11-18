@@ -83,6 +83,7 @@
         "focus": "Blog-Schwerpunkt",
         "audience": "Primäre Zielgruppe",
         "aiToneOfVoice": "Schreibstil",
+        "aiControversyLevel": "Meinungsstärke",
         "language": "Inhaltssprache",
         "socials": "Social-Media-Profile",
         "knowledge": "Wissensquellen"
@@ -1633,20 +1634,27 @@
           }
         },
         "controversyLevel": {
-          "label": "Kontroversitätsgrad",
-          "help": "Höhere Stufen erlauben stärkere Meinungen, aber keine geringere faktische Genauigkeit.",
-          "placeholder": "Wie stark soll sich die KI mit kontroversen Themen befassen?",
+          "label": "Meinungsstärke",
+          "recommended": "Empfohlen",
+          "help": "Legt fest, wie deutlich Artikel Position beziehen. Die Wortwahl bestimmt der Schreibstil. Fakten werden auf jeder Stufe gleich streng geprüft.",
+          "exampleLabel": "Beispiel:",
           "options": {
-            "NONE": "Keine (unbedenkliche Themen)",
-            "LOW": "Niedrig (gelegentliche Denkanstöße)",
-            "MEDIUM": "Mittel (sachliche Debatte)",
-            "HIGH": "Hoch (provokante Meinungen)"
+            "NONE": "Neutral (erklärt, wertet nicht)",
+            "LOW": "Sachlich (empfiehlt, wo die Fakten eindeutig sind)",
+            "MEDIUM": "Meinungsstark (klare These, gelegentlich Ironie)",
+            "HIGH": "Pointiert (provokante These, Sarkasmus)"
           },
           "short": {
-            "NONE": "Keine",
-            "LOW": "Niedrig",
-            "MEDIUM": "Mittel",
-            "HIGH": "Hoch"
+            "NONE": "Neutral",
+            "LOW": "Sachlich",
+            "MEDIUM": "Meinungsstark",
+            "HIGH": "Pointiert"
+          },
+          "examples": {
+            "NONE": "„Die Viertagewoche hat in manchen Firmen die Produktivität erhöht und in anderen die Planung erschwert; das Ergebnis hängt von der Art der Arbeit ab.“",
+            "LOW": "„Für Büroteams sprechen die Daten für einen Versuch: Starten Sie mit einem dreimonatigen Pilotprojekt.“",
+            "MEDIUM": "„Die Viertagewoche funktioniert, und Firmen, die sie ablehnen, verteidigen meist Gewohnheit statt Ergebnisse.“",
+            "HIGH": "„Fünf Tage am Schreibtisch: das teuerste Ritual, das Manager immer noch nicht infrage stellen.“"
           }
         }
       },

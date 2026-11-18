@@ -84,6 +84,19 @@ describe('website import values and usage', () => {
     expect(WebsiteValuesSchema.safeParse({ ...values, accentColor: '#invented' }).success).toBe(false)
     expect(WebsiteValuesSchema.safeParse({ ...values, logoUrl: 'javascript:alert(1)' }).success).toBe(false)
   })
+  it('proposes only a known opinion strength and keeps the review of results from before it', () => {
+    const values = emptyWebsiteValues()
+    expect(hasWebsiteImportValue('aiControversyLevel', values)).toBe(false)
+    expect(hasWebsiteImportValue('aiControversyLevel', { ...values, aiControversyLevel: 'MEDIUM' })).toBe(true)
+    expect(WebsiteValuesSchema.safeParse({ ...values, aiControversyLevel: 'EXTREME' }).success).toBe(false)
+    const { aiControversyLevel: _, ...older } = values
+    expect(WebsiteValuesSchema.parse(older).aiControversyLevel).toBeNull()
+  })
+  it('compares the opinion strength as the level the writer applies', () => {
+    const site = { ...emptyWebsiteValues(), aiControversyLevel: null }
+    expect(websiteSnapshot(site).aiControversyLevel).toBe('LOW')
+    expect(websiteSnapshot({ ...site, aiControversyLevel: 'high' }).aiControversyLevel).toBe('HIGH')
+  })
   it('takes an explicit safe snapshot and makes social ordering deterministic', () => {
     const site = {
       ...emptyWebsiteValues(),

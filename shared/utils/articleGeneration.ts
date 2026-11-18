@@ -99,6 +99,18 @@ export const releaseHoldOf = (input: {
   const reasons: ReleaseHoldReason[] = []
   if (input.review?.approved !== true) reasons.push('review')
   if (!input.researchApproved) reasons.push('research')
+export const researchHasSources = (research?: Pick<GenerationResearchResult, 'status' | 'sourceCount'> | null) =>
+  research?.status === 'completed' && research.sourceCount > 0
+
+/**
+ * Retrieved sources ground a news piece: its own research, or, when the research failed, the URLs a
+ * complete live fact check retrieved for the claims it confirmed.
+ */
+export const researchGrounded = (input: {
+  research?: Pick<GenerationResearchResult, 'status' | 'sourceCount'> | null
+  verifiedSources: number
+}) => researchHasSources(input.research) || input.verifiedSources > 0
+
   if (!input.mediaApproved) reasons.push('media')
   if (!input.coverApproved) reasons.push('cover')
   const issues = (input.review?.issues ?? [])

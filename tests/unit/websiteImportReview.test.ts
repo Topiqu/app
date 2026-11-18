@@ -112,6 +112,21 @@ describe('website suggestions review', () => {
     await button.trigger('click')
     expect(wrapper.emitted('apply')?.[0]?.[0]).toEqual(['keywords', 'focus', 'audience', 'language', 'knowledge'])
   })
+  it('offers the proposed opinion strength as a level and names the current one', async () => {
+    const job = fixture()
+    job.result!.values.aiControversyLevel = 'MEDIUM'
+    job.current.aiControversyLevel = 'LOW'
+    const wrapper = render(job)
+    const field = wrapper.get('[data-website-field="aiControversyLevel"]')
+    expect(field.find('u-select-stub').exists()).toBe(true)
+    expect(field.text()).toContain('common.websiteImport.current')
+    await wrapper
+      .findAll('button')
+      .find((item) => item.text() === 'common.websiteImport.allCorrect')!
+      .trigger('click')
+    expect(wrapper.emitted('apply')?.[0]?.[0]).toContain('aiControversyLevel')
+    expect(wrapper.emitted('apply')?.[0]?.[1]).toMatchObject({ aiControversyLevel: 'MEDIUM' })
+  })
   it('allows an empty field to be edited again instead of removing its input', async () => {
     const wrapper = render()
     const field = wrapper.get('[data-website-field="focus"]')

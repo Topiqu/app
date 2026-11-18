@@ -817,6 +817,7 @@
               "poll": "Ergänzen Sie genau eine angeforderte Umfrage.",
               "images": "Fügen Sie die angeforderten Bilder in den Text ein.",
               "table": "Ergänzen Sie die angeforderte Tabelle.",
+            "tone_mismatch": "Ton weicht ab",
               "youtube": "Betten Sie das von der Recherche gefundene YouTube-Video ein."
             },
             "repeatedTableSubjects": "Die Tabelle wiederholt Zeilen für: {subjects}. Verwenden Sie eine Zeile pro Eintrag.",

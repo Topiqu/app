@@ -130,7 +130,7 @@ export const ARTICLE_FORMATS = {
       'contrarian-case': {
         shape: 'Defends a position that cuts against the usual framing.',
         structure:
-          'Name the conventional view fairly, make the opposing case from specifics, and finish on its hardest implication.',
+          'Name the conventional view accurately, make the opposing case from specifics, and finish on its hardest implication.',
       },
       'principle-first': {
         shape: 'Derives a position from one clearly stated principle.',
@@ -145,7 +145,7 @@ export const ARTICLE_FORMATS = {
       'steelman-rebuttal': {
         shape: 'Presents the strongest opposing case before answering it.',
         structure:
-          'Build the opposition without caricature, identify the point of disagreement, then defend the article position there.',
+          'State the opposing case accurately and briefly, in the article’s own voice, identify where it fails, then defend the article position there. Stating it accurately is not conceding it.',
       },
     },
   },

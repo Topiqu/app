@@ -817,6 +817,7 @@
               "poll": "Add exactly one requested poll.",
               "images": "Add the requested images to the body.",
               "table": "Add the requested table.",
+            "tone_mismatch": "Tone mismatch",
               "youtube": "Embed the YouTube video found by research."
             },
             "repeatedTableSubjects": "The table repeats rows for: {subjects}. Use one row per subject.",

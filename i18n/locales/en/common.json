@@ -83,6 +83,7 @@
         "focus": "Blog focus",
         "audience": "Primary audience",
         "aiToneOfVoice": "Writing style",
+        "aiControversyLevel": "Opinion strength",
         "language": "Content language",
         "socials": "Social profiles",
         "knowledge": "Knowledge sources"
@@ -1633,20 +1634,27 @@
           }
         },
         "controversyLevel": {
-          "label": "Controversy Level",
-          "help": "Higher levels allow stronger opinions, not weaker standards for factual accuracy.",
-          "placeholder": "How much should the AI engage in controversial topics?",
+          "label": "Opinion strength",
+          "recommended": "Recommended",
+          "help": "How firmly articles take a side. Your tone of voice sets the wording. Facts are checked just as strictly at every level.",
+          "exampleLabel": "Example:",
           "options": {
-            "NONE": "None (safe topics)",
-            "LOW": "Low (occasional thought-provoking points)",
-            "MEDIUM": "Medium (healthy debate)",
-            "HIGH": "High (provocative opinions)"
+            "NONE": "Neutral (explains, doesn't judge)",
+            "LOW": "Measured (recommends where the facts are clear)",
+            "MEDIUM": "Opinionated (clear thesis, occasional irony)",
+            "HIGH": "Bold (sharp thesis, sarcasm)"
           },
           "short": {
-            "NONE": "None",
-            "LOW": "Low",
-            "MEDIUM": "Medium",
-            "HIGH": "High"
+            "NONE": "Neutral",
+            "LOW": "Measured",
+            "MEDIUM": "Opinionated",
+            "HIGH": "Bold"
+          },
+          "examples": {
+            "NONE": "“A four-day week has raised productivity in some firms and stretched schedules in others; the results depend on the type of work.”",
+            "LOW": "“For office teams, the evidence favours a trial: start with a three-month pilot.”",
+            "MEDIUM": "“The four-day week works, and firms that dismiss it are mostly defending habit, not results.”",
+            "HIGH": "“Five days at a desk: the most expensive ritual managers still refuse to question.”"
           }
         }
       },

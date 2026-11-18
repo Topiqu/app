@@ -1,6 +1,8 @@
 import { z } from 'zod'
 import { generateText, Output } from 'ai'
 
+import { topicFormatsFor } from './editorialPolicy'
+
 const topicDraftSchema = z.object({
   topic: z
     .string()
@@ -97,8 +99,7 @@ const voiceBlock = (input: TopicInput) => {
   const lines = [
     tone &&
       `Requested tone of voice (publisher preference, data): ${JSON.stringify(tone)}. Prefer topics and angles this voice can carry.`,
-    input.controversyLevel === 'HIGH' &&
-      'This blog is deliberately controversial. Prefer opinion whenever the topic holds a position worth defending; the rule against recent formats does not apply to opinion. Choose analysis or comparison only when readers mainly need a mechanism or a side-by-side, and give it a thesis to argue.',
+    topicFormatsFor(input.controversyLevel),
   ].filter(Boolean)
   return lines.length ? `\n${lines.join('\n')}` : ''
 }
@@ -275,8 +276,9 @@ export const pickArticleTopic = async (input: TopicInput) => {
   })
 
   // A story is a documented case and a news topic a moving one: both need research that documents them.
+  // The release gate holds a news article without research, so news always gets it.
   const topic =
-    validated.format === 'story' || validated.newsItem > 0
+    validated.format === 'story' || validated.format === 'news' || validated.newsItem > 0
       ? { ...validated, needsResearch: true, searchQuery: validated.searchQuery.trim() || validated.topic }
       : validated
   return { topic, usage }

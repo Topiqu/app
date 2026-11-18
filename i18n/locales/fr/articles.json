@@ -812,6 +812,7 @@
               "poll": "Ajoutez exactement un sondage demandé.",
               "images": "Ajoutez les images demandées dans le texte.",
               "table": "Ajoutez le tableau demandé.",
+            "tone_mismatch": "Ton non respecté",
               "youtube": "Intégrez la vidéo YouTube trouvée par la recherche."
             },
             "repeatedTableSubjects": "Le tableau répète des lignes pour : {subjects}. Utilisez une ligne par élément.",

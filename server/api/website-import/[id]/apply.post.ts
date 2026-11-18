@@ -79,6 +79,9 @@ export default defineEventHandler(async (event) => {
         ...(fields.includes('focus') ? { focus: values.focus } : {}),
         ...(fields.includes('audience') ? { audience: values.audience } : {}),
         ...(fields.includes('aiToneOfVoice') ? { aiToneOfVoice: values.aiToneOfVoice } : {}),
+        ...(fields.includes('aiControversyLevel') && values.aiControversyLevel
+          ? { aiControversyLevel: values.aiControversyLevel }
+          : {}),
         ...(fields.includes('language') && values.language ? { language: values.language } : {}),
       },
     })

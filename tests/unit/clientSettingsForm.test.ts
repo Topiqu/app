@@ -99,7 +99,8 @@ describe('buildClientSettingsForm', () => {
       faviconUrl: 'https://cdn/favicon.png',
       typographyPreset: 'EDITORIAL',
       aiToneOfVoice: 'friendly',
-      aiControversyLevel: 'low',
+      // A lowercase legacy value loads as its level, so saving an untouched form does not rewrite it.
+      aiControversyLevel: 'LOW',
       gtagId: 'G-123',
       gamNetworkCode: '456',
       autoRelease: true,
@@ -125,6 +126,7 @@ describe('buildClientSettingsForm', () => {
     const edited = { ...form, articleQuality: 'ULTRA' as const }
     expect(buildClientSettingsPatch(edited, form)).toEqual({ articleQuality: 'ULTRA' })
     expect(buildClientSettingsForm(null).articleQuality).toBe('STANDARD')
+    expect(buildClientSettingsForm(baseClient({ aiControversyLevel: null })).aiControversyLevel).toBe('LOW')
   })
 
   it('preserves an explicitly removed avatar on an existing author', () => {
