@@ -1,6 +1,5 @@
 import { mergeAttributes, Node } from '@tiptap/core'
-
-import { isCalloutTone, type CalloutTone } from '../shared/utils/articleEmbeds'
+import { isCalloutTone, type CalloutTone } from '~~/shared/utils/articleEmbeds'
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {

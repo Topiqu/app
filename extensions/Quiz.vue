@@ -126,8 +126,7 @@
 
 <script setup lang="ts">
 import { nodeViewProps, NodeViewWrapper } from '@tiptap/vue-3'
-
-import { QUIZ_MAX_OPTIONS, QUIZ_MIN_OPTIONS, type QuizOptionData } from '../shared/utils/polls'
+import { QUIZ_MAX_OPTIONS, QUIZ_MIN_OPTIONS, type QuizOptionData } from '~~/shared/utils/polls'
 
 // Read through `props.node` on every render: Tiptap swaps in a new node (e.g. ids stamped on save),
 // so a copy taken at setup would write stale options back on the next keystroke.
