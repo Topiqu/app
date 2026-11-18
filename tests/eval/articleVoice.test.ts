@@ -200,6 +200,30 @@ const reviewCases = [
       '<h2>Jednotlivec potřebuje prostor nesouhlasit</h2><p>Komunismus odmítám z principu: žádná představa společného dobra nemá předem rušit právo člověka rozhodovat o vlastním životě. Pokud kolektivní cíl převáží nad možností nesouhlasit, svoboda se stává podmíněným svolením.</p><h2>Rovnost tento problém neřeší</h2><p>Požadavek rovnosti si zaslouží vážnou odpověď. Podle mého názoru však rovnost nemůže ospravedlnit potlačení jednotlivce. Spravedlivé uspořádání musí chránit také toho, kdo odmítá jeho hlavní ideu.</p>',
     mismatch: false,
   },
+  // A restrained level is missed in the other direction: a polemic where the site asked for an explainer.
+  {
+    id: 'none-polemic-cs',
+    prompt: 'Fixace hypotéky: tři, nebo pět let?',
+    level: 'NONE',
+    format: 'guide' as const,
+    title: 'Tříletá fixace je sázka pro naivní',
+    // Substance kept, only the voice overshoots: a rant with no guide in it is rightly assignment_mismatch.
+    content:
+      '<h2>Co fixace určuje</h2><p>Fixace určuje, jak dlouho se nemění úroková sazba, a tím i splátka. Po jejím konci banka nabídne sazbu podle trhu, takže kratší fixace dřív zachytí pokles sazeb, ale i jejich růst.</p><h2>Proč je tříletá fixace hazard</h2><p>Kdo si dnes bere tři roky, sází na pokles sazeb jako v loterii a banky se mu smějí. Pětiletá fixace dává splátku, se kterou počítáte déle, a kdo tvrdí opak, nerozumí číslům.</p><h2>Co zvolit</h2><p>Berte pět let. Jiná volba nedává smysl.</p>',
+    mismatch: false,
+    toneMismatch: true,
+  },
+  {
+    id: 'none-explainer-en',
+    prompt: 'Fixed mortgage rate: three or five years?',
+    level: 'NONE',
+    format: 'guide' as const,
+    title: 'Three or Five Years: How Fixed-Rate Periods Differ',
+    content:
+      '<h2>What a shorter period offers</h2><p>A three-year fix resets sooner, so the borrower benefits earlier if rates fall and is exposed earlier if they rise.</p><h2>What a longer period offers</h2><p>A five-year fix keeps the payment predictable for longer. Which period suits a household depends on its budget margin and how long it plans to keep the loan.</p>',
+    mismatch: false,
+    toneMismatch: false,
+  },
 ]
 
 const results: unknown[] = []
@@ -229,11 +253,11 @@ describe.skipIf(process.env.AI_EVAL !== '1')('article voice eval', () => {
         { title: item.title, perex: item.title, content: item.content },
         {
           prompt: item.prompt,
-          format: 'opinion',
+          format: item.format ?? 'opinion',
           modules: [],
           researchBrief: null,
           verifyFacts: false,
-          editorialDirection: editorialPolicy('opinion', 'HIGH', false, item.tone),
+          editorialDirection: editorialPolicy(item.format ?? 'opinion', item.level ?? 'HIGH', false, item.tone),
         },
       )
       results.push({ id: `review-${item.id}`, review: result.review })
@@ -243,6 +267,8 @@ describe.skipIf(process.env.AI_EVAL !== '1')('article voice eval', () => {
         result.review.issues.map((issue) => issue.code),
       )
       expect(result.review.issues.some((issue) => issue.code === 'assignment_mismatch')).toBe(item.mismatch)
+      if (item.toneMismatch !== undefined)
+        expect(result.review.issues.some((issue) => issue.code === 'tone_mismatch')).toBe(item.toneMismatch)
       // These excerpts test fidelity, not whether a complete article meets every copy-desk criterion.
       if (item.mismatch) expect(result.review.approved).toBe(false)
     },
