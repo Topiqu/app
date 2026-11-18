@@ -12,7 +12,7 @@
         class="mb-4"
       />
       <div v-if="handoffPending" role="status" aria-live="polite" class="space-y-4 text-center">
-        <UIcon name="mdi:loading" class="size-6 animate-spin motion-reduce:animate-none" />
+        <UProgress :aria-label="$t('common.auth.finishingRegistration')" />
         <p>{{ $t('common.auth.finishingRegistration') }}</p>
       </div>
       <AuthForm v-else :mode="initialMode" :redirectTo="invitationRedirect || appRedirect" />
