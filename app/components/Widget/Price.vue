@@ -1,9 +1,20 @@
 <template>
-  <section class="rounded-2xl border border-default bg-elevated p-5" :aria-label="$t('widgets.price.label')">
-    <ul class="grid grid-cols-[repeat(auto-fill,minmax(min(100%,9rem),1fr))] gap-x-6 gap-y-4">
-      <li v-for="asset in config.assets" :key="asset" class="min-w-0">
-        <span class="block text-xs font-semibold uppercase tracking-wider text-muted">{{ asset }}</span>
-        <span class="block truncate text-lg font-semibold tabular-nums text-highlighted" :title="format(asset)">
+  <section class="@container rounded-2xl border border-default bg-elevated p-5" :aria-label="$t('widgets.price.label')">
+    <!-- On a phone the tiles stack into one tall column, so narrow slots get one row per rate instead. -->
+    <!-- @md measures the widget, not the viewport: the same slot can be wide on a page and narrow in the editor. -->
+    <ul
+      class="divide-y divide-default @md:grid @md:grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] @md:gap-x-6 @md:gap-y-4 @md:divide-y-0"
+    >
+      <li
+        v-for="asset in config.assets"
+        :key="asset"
+        class="flex min-w-0 items-baseline justify-between gap-4 py-1.5 first:pt-0 last:pb-0 @md:block @md:py-0"
+      >
+        <span class="block shrink-0 text-xs font-semibold uppercase tracking-wider text-muted">{{ asset }}</span>
+        <span
+          class="block min-w-0 truncate font-semibold tabular-nums text-highlighted @md:text-lg"
+          :title="format(asset)"
+        >
           {{ format(asset) }}
         </span>
       </li>

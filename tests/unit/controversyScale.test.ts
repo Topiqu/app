@@ -30,19 +30,39 @@ afterEach(() => {
 })
 
 describe('controversy scale', () => {
-  it('starts at zero without changing an unset preference', async () => {
+  // Unset is LOW, the level the writer applies to it; showing NONE would promise a voice it never gets.
+  it('shows an unset preference as LOW without changing it', async () => {
     const wrapper = await mountScale()
     const slider = wrapper.get('[role="slider"]')
-    expect(slider.attributes('aria-valuenow')).toBe('0')
+    expect(slider.attributes('aria-valuenow')).toBe('1')
     expect(slider.attributes('aria-valuemin')).toBe('0')
     expect(slider.attributes('aria-valuemax')).toBe('3')
     expect(slider.attributes('aria-labelledby')).toBeTruthy()
-    expect(slider.attributes('aria-valuetext')).toContain('0:')
+    expect(slider.attributes('aria-valuetext')).toContain('1:')
     expect(wrapper.emitted('update:modelValue')).toBeUndefined()
   })
 
+  it('marks the default level as recommended, also for screen readers', async () => {
+    const wrapper = await mountScale('HIGH')
+    const marker = wrapper.get('[data-recommended]')
+    expect(marker.text()).toBe('common.preferences.aiAuthor.controversyLevel.recommended')
+    expect(marker.attributes('style')).toBe(wrapper.findAll('button')[1]!.attributes('style'))
+    expect(wrapper.findAll('button')[1]!.attributes('aria-label')).toContain(
+      'common.preferences.aiAuthor.controversyLevel.recommended',
+    )
+    expect(wrapper.findAll('button')[0]!.attributes('aria-label')).not.toContain('recommended')
+  })
+
+  it('shows an example sentence for the selected level and describes the slider with it', async () => {
+    const wrapper = await mountScale('HIGH')
+    const slider = wrapper.get('[role="slider"]')
+    const [exampleId] = slider.attributes('aria-describedby')!.split(' ')
+    expect(wrapper.get(`#${exampleId}`).text()).toContain('common.preferences.aiAuthor.controversyLevel.examples.HIGH')
+  })
+
   it.each([
-    ['', 0],
+    ['', 1],
+    ['low', 1],
     ['NONE', 0],
     ['LOW', 1],
     ['MEDIUM', 2],
@@ -54,7 +74,7 @@ describe('controversy scale', () => {
     expect(100 - parseFloat(range.style.right)).toBeCloseTo((tier / 3) * 100)
   })
 
-  it('lets the user select a tier directly and return to zero', async () => {
+  it('lets the user select a tier directly and return to the lowest', async () => {
     const wrapper = await mountScale()
     const choices = wrapper.findAll('button')
     await choices[3]!.trigger('click')
@@ -66,7 +86,7 @@ describe('controversy scale', () => {
   })
 
   it('moves between tiers with arrow keys and supports Home and End', async () => {
-    const wrapper = await mountScale()
+    const wrapper = await mountScale('NONE')
     const slider = wrapper.get('[role="slider"]')
     await slider.trigger('keydown', { key: 'ArrowRight' })
     expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual(['LOW'])

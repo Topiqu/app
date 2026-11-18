@@ -1,5 +1,6 @@
 import { z } from './zod'
 import { LANGUAGE_OPTIONS } from '../siteSchemas'
+import { CONTROVERSY_LEVELS } from './controversyLevel'
 
 export const WEBSITE_IMPORT_CONSENT_VERSION = 1
 export const WEBSITE_IMPORT_FIELDS = [
@@ -10,6 +11,7 @@ export const WEBSITE_IMPORT_FIELDS = [
   'focus',
   'audience',
   'aiToneOfVoice',
+  'aiControversyLevel',
   'language',
   'socials',
   'knowledge',
@@ -40,6 +42,8 @@ export const WebsiteValuesSchema = z.object({
   focus: z.string().min(1).max(1000).nullable(),
   audience: z.string().min(1).max(1000).nullable(),
   aiToneOfVoice: z.string().min(1).max(500).nullable(),
+  // Results from before the level have none; a required field would fail their whole review.
+  aiControversyLevel: z.enum(CONTROVERSY_LEVELS).nullable().default(null),
   language: z.enum(LANGUAGE_OPTIONS).nullable(),
   socials: z.array(WebsiteSocialSchema).max(8),
 })
@@ -107,6 +111,7 @@ export const emptyWebsiteValues = (): WebsiteValues => ({
   focus: null,
   audience: null,
   aiToneOfVoice: null,
+  aiControversyLevel: null,
   language: null,
   socials: [],
 })

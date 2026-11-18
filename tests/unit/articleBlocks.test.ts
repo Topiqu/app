@@ -125,3 +125,65 @@ describe('in-body ad break', () => {
     expect(types(p(30)).filter((type) => type === 'ad')).toHaveLength(1)
   })
 })
+
+describe('quiz, CTA and chart blocks', () => {
+  const quiz = (options: unknown, extra = '') =>
+    `<div data-type="quiz" data-poll-id="q1" data-question="Kolik?" data-options='${JSON.stringify(options)}'${extra}></div>`
+
+  it('renders a stamped quiz with its answer and explanation', () => {
+    const { blocks } = articleBlocks(
+      quiz(
+        [
+          { id: 'a', label: 'Jedna' },
+          { id: 'b', label: 'Dvě', correct: true },
+        ],
+        ' data-explanation="Protože."',
+      ),
+    )
+    expect(blocks).toEqual([
+      {
+        type: 'quiz',
+        pollId: 'q1',
+        question: 'Kolik?',
+        options: [
+          { id: 'a', label: 'Jedna' },
+          { id: 'b', label: 'Dvě', correct: true },
+        ],
+        explanation: 'Protože.',
+      },
+    ])
+  })
+
+  it('leaves out a quiz that cannot be scored', () => {
+    expect(
+      articleBlocks(
+        quiz([
+          { id: 'a', label: 'Jedna' },
+          { id: 'b', label: 'Dvě' },
+        ]),
+      ).blocks,
+    ).toEqual([])
+    expect(articleBlocks(quiz([{ id: 'a', label: 'Jedna', correct: true }])).blocks).toEqual([])
+  })
+
+  it('renders a CTA with a usable link and drops one without', () => {
+    const cta = (url: string) =>
+      `<div data-type="cta" data-tone="info" data-title="Poradíme" data-text="" data-label="Kontakt" data-url="${url}"><p><strong>Poradíme</strong></p><p><a href="${url}">Kontakt</a></p></div>`
+    expect(articleBlocks(cta('/kontakt')).blocks).toEqual([
+      { type: 'cta', cta: { title: 'Poradíme', text: '', label: 'Kontakt', url: '/kontakt', tone: 'info' } },
+    ])
+    expect(articleBlocks(`<p>a</p>${cta('javascript:alert(1)')}`).blocks).toEqual([{ type: 'html', html: '<p>a</p>' }])
+  })
+
+  it('draws a marked numeric table as a chart and keeps the table for its data view', () => {
+    const table = (kind: string, value: string) =>
+      `<table data-chart="${kind}"><tbody><tr><th>Rok</th><th>Cena</th></tr><tr><td>2024</td><td>10 Kč</td></tr><tr><td>2025</td><td>${value}</td></tr></tbody></table>`
+    const [chart] = articleBlocks(table('line', '12,5 Kč')).blocks
+    expect(chart).toMatchObject({
+      type: 'chart',
+      chart: { kind: 'line', categories: ['2024', '2025'], series: [{ name: 'Cena', values: [10, 12.5] }] },
+    })
+    expect((chart as { html: string }).html).toContain('<table data-chart="line">')
+    expect(articleBlocks(table('bar', 'nevím')).blocks.map(({ type }) => type)).toEqual(['html'])
+  })
+})

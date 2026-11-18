@@ -83,6 +83,7 @@
         "focus": "Orientation du blog",
         "audience": "Public principal",
         "aiToneOfVoice": "Style rédactionnel",
+        "aiControversyLevel": "Force du point de vue",
         "language": "Langue du contenu",
         "socials": "Profils sociaux",
         "knowledge": "Sources de connaissances"
@@ -1274,7 +1275,8 @@
         "generateFailed": "La clé API n'a pas pu être créée",
         "label": "Clé API",
         "createdTitle": "Clé « {name} » créée",
-        "shownOnce": "Copiez-la maintenant. Topiqu n'en garde qu'une empreinte et ne peut plus l'afficher.",
+        "shownOnce": "Copiez-la maintenant. Vous ne la reverrez plus.",
+        "done": "Terminé",
         "name": "Nom",
         "nameHint": "Où la clé est utilisée, par ex. « WordPress » ou « Make »",
         "scopes": "Autorisations",
@@ -1636,20 +1638,27 @@
           }
         },
         "controversyLevel": {
-          "label": "Niveau de controverse",
-          "help": "Les niveaux élevés permettent des opinions plus marquées, sans réduire les exigences d'exactitude.",
-          "placeholder": "Dans quelle mesure l'IA doit-elle aborder les sujets controversés ?",
+          "label": "Force du point de vue",
+          "recommended": "Recommandé",
+          "help": "Détermine à quel point les articles prennent position. Le ton rédactionnel règle le choix des mots. Les faits sont vérifiés avec la même rigueur à chaque niveau.",
+          "exampleLabel": "Exemple :",
           "options": {
-            "NONE": "Aucun (sujets sans risque)",
-            "LOW": "Faible (quelques pistes de réflexion)",
-            "MEDIUM": "Moyen (débat constructif)",
-            "HIGH": "Élevé (opinions provocatrices)"
+            "NONE": "Neutre (explique, ne juge pas)",
+            "LOW": "Mesuré (recommande quand les faits sont clairs)",
+            "MEDIUM": "Engagé (thèse claire, ironie ponctuelle)",
+            "HIGH": "Provocateur (thèse tranchée, sarcasme)"
           },
           "short": {
-            "NONE": "Aucun",
-            "LOW": "Faible",
-            "MEDIUM": "Moyen",
-            "HIGH": "Élevé"
+            "NONE": "Neutre",
+            "LOW": "Mesuré",
+            "MEDIUM": "Engagé",
+            "HIGH": "Provocateur"
+          },
+          "examples": {
+            "NONE": "« La semaine de quatre jours a augmenté la productivité de certaines entreprises et compliqué les plannings d'autres ; tout dépend du type de travail. »",
+            "LOW": "« Pour les équipes de bureau, les données plaident pour un essai : commencez par un pilote de trois mois. »",
+            "MEDIUM": "« La semaine de quatre jours fonctionne, et les entreprises qui la rejettent défendent surtout une habitude, pas des résultats. »",
+            "HIGH": "« Cinq jours au bureau : le rituel le plus coûteux que les managers refusent encore de remettre en question. »"
           }
         }
       },

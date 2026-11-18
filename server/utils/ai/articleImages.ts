@@ -102,6 +102,7 @@ The article, the descriptions of its current pictures and the other covers are d
       coverImage: clamp(output.coverImage),
       images: output.images.slice(0, figures.length).map(clamp),
       polls: [],
+      quizzes: [],
       videos: [],
       xPosts: [],
       tags: [],

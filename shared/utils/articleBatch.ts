@@ -90,6 +90,27 @@ export const recommendedAutopilotInterval = (overview: ArticleCreditOverview) =>
   }
 }
 
+/** `month` is `YYYY-MM`. */
+export type BatchNudgeDismissal = { site: string; free: number; capped: boolean; month?: string }
+
+/**
+ * A dismissed nudge returns once another month's allowance piles up, or at the rollover cap once a month,
+ * since every month there lapses credits; a balance stuck at the cap never grows by another allowance.
+ */
+export const showsBatchNudge = (
+  credits: Pick<ArticleCreditOverview, 'free' | 'monthlyAllowance' | 'atRolloverCap'>,
+  site: string,
+  dismissed: BatchNudgeDismissal | null,
+  month: string,
+) => {
+  if (!credits.atRolloverCap && (!credits.monthlyAllowance || credits.free < credits.monthlyAllowance)) return false
+  if (!dismissed || dismissed.site !== site) return true
+  return (
+    credits.free >= dismissed.free + credits.monthlyAllowance ||
+    (credits.atRolloverCap && (!dismissed.capped || dismissed.month !== month))
+  )
+}
+
 /** Release slots of a batch inside the site's own window and days. The first one is as soon as the window allows. */
 export const batchSlots = (
   settings: ReleaseScheduleSettings,

@@ -528,7 +528,16 @@
         "removeLink": "Remove link",
         "removeColor": "Remove color",
         "characters": "characters",
-        "words": "words"
+        "words": "words",
+        "insertQuiz": "Insert quiz",
+        "insertCta": "Insert call to action",
+        "insertCallout": "Highlighted box",
+        "insertProsCons": "Pros and cons",
+        "callout": "Highlighted box",
+        "chart": "Show as chart",
+        "chartNone": "Table only",
+        "chartBar": "Bar chart",
+        "chartLine": "Line chart"
       },
       "altModal": {
         "title": "Image description",
@@ -604,7 +613,8 @@
           "poll": "Reader poll",
           "table": "Comparison table",
           "images": "Images in the article",
-          "youtube": "YouTube video"
+          "youtube": "YouTube video",
+          "quiz": "Reader quiz"
         },
         "phaseResearch": "Verifying facts and finding sources…",
         "phaseWriting": "Writing…",
@@ -807,6 +817,7 @@
             "generic_language": "Generic language",
             "missing_specifics": "Missing specifics",
             "assignment_mismatch": "Assignment mismatch",
+            "tone_mismatch": "Tone mismatch",
             "broken_structure": "Broken structure"
           },
           "note": {
@@ -1203,6 +1214,32 @@
           "cover": "There is no cover image."
         },
         "publish": "Publish anyway"
+      },
+      "callout": {
+        "note": "Note",
+        "tip": "Tip",
+        "warning": "Warning",
+        "remove": "Remove box"
+      },
+      "cta": {
+        "card": "Call to action",
+        "title": "Heading",
+        "text": "Supporting text",
+        "label": "Button label",
+        "url": "Link",
+        "urlHint": "An https:// address or a path on your site, e.g. /contact",
+        "urlInvalid": "Enter an https:// address or a path starting with /. Without it, the box is not shown.",
+        "tone": "Style",
+        "tones": {
+          "accent": "Prominent",
+          "info": "Subtle"
+        },
+        "defaultTitle": "Need help with this?",
+        "defaultLabel": "Contact us"
+      },
+      "prosCons": {
+        "pros": "Pros",
+        "cons": "Cons"
       }
     },
     "image": {
@@ -1219,6 +1256,30 @@
     "authorsArticles": "Articles by this author",
     "tagsArticles": "Articles tagged “{name}”",
     "keyTakeaways": "Key takeaways",
-    "faq": "Frequently asked questions"
+    "faq": "Frequently asked questions",
+    "quiz": {
+      "label": "Quiz",
+      "yourAnswer": "Your answer",
+      "correctAnswer": "Correct answer",
+      "correct": "Correct!",
+      "incorrect": "Not quite. The correct answer is “{answer}”.",
+      "correctShare": "{percent}% of readers answered correctly",
+      "notOpenYet": "Answers open once the article is published.",
+      "defaultQuestion": "Enter a quiz question",
+      "question": "Quiz question",
+      "delete": "Delete quiz",
+      "options": "Answers — mark the correct one",
+      "markCorrect": "Mark option {index} as the correct answer",
+      "removeOption": "Remove option {index}",
+      "correctMissing": "Mark one answer with text as correct, or readers’ answers cannot be scored.",
+      "explanation": "Explanation (optional)",
+      "explanationHelp": "Shown to readers after they answer."
+    },
+    "chart": {
+      "showData": "Show the data",
+      "series": "Series {n}",
+      "bar": "Bar chart: {series}",
+      "line": "Line chart: {series}, {from} to {to}"
+    }
   }
 }

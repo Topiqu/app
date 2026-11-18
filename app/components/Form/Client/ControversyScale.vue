@@ -28,18 +28,18 @@
         />
         <SliderThumb
           :aria-labelledby="labelId"
-          :aria-describedby="helpId"
+          :aria-describedby="`${exampleId} ${helpId}`"
           :aria-valuetext="`${tier}: ${currentLabel}`"
           class="block size-6 cursor-grab rounded-full bg-primary shadow-md ring-4 ring-default outline-none focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary/40 active:cursor-grabbing"
         />
       </SliderRoot>
 
-      <div class="relative h-7">
+      <div class="relative h-11">
         <UButton
           v-for="(option, index) in levels"
           :key="option"
           :label="$t(`common.preferences.aiAuthor.controversyLevel.short.${option}`)"
-          :aria-label="`${index}: ${$t(`common.preferences.aiAuthor.controversyLevel.options.${option}`)}`"
+          :aria-label="`${index}: ${$t(`common.preferences.aiAuthor.controversyLevel.options.${option}`)}${index === recommended ? `, ${$t('common.preferences.aiAuthor.controversyLevel.recommended')}` : ''}`"
           :aria-pressed="tier === index"
           color="neutral"
           variant="link"
@@ -49,8 +49,23 @@
           :style="{ left: stop(index) }"
           @click="tier = index"
         />
+        <span
+          class="pointer-events-none absolute top-6 -translate-x-1/2 whitespace-nowrap text-xs font-medium text-primary"
+          :style="{ left: stop(recommended) }"
+          aria-hidden="true"
+          data-recommended
+        >
+          {{ $t('common.preferences.aiAuthor.controversyLevel.recommended') }}
+        </span>
       </div>
     </div>
+
+    <p :id="exampleId" class="text-sm leading-6 text-default">
+      <span class="font-medium text-highlighted">{{
+        $t('common.preferences.aiAuthor.controversyLevel.exampleLabel')
+      }}</span>
+      {{ $t(`common.preferences.aiAuthor.controversyLevel.examples.${levels[tier]}`) }}
+    </p>
 
     <p :id="helpId" class="text-xs leading-5 text-muted">
       {{ $t('common.preferences.aiAuthor.controversyLevel.help') }}
@@ -61,9 +76,11 @@
 <script setup lang="ts">
 import { SliderRange, SliderRoot, SliderThumb, SliderTrack } from 'reka-ui'
 
-const level = defineModel<string>({ default: 'NONE' })
-const levels = ['NONE', 'LOW', 'MEDIUM', 'HIGH'] as const
+const level = defineModel<string>({ default: DEFAULT_CONTROVERSY_LEVEL })
+const levels = CONTROVERSY_LEVELS
+const recommended = levels.indexOf(DEFAULT_CONTROVERSY_LEVEL)
 const labelId = useId()
+const exampleId = useId()
 const helpId = useId()
 const { t } = useI18n()
 
@@ -71,13 +88,9 @@ const { t } = useI18n()
 const stop = (index: number) => `calc(${(index / 3) * 100}% + ${12 - (index / 3) * 24}px)`
 
 const tier = computed({
-  get: () =>
-    Math.max(
-      0,
-      levels.findIndex((value) => value === level.value.toUpperCase()),
-    ),
+  get: () => levels.indexOf(controversyLevelOf(level.value)),
   set: (value: number) => {
-    level.value = levels[value] ?? 'NONE'
+    level.value = levels[value] ?? DEFAULT_CONTROVERSY_LEVEL
   },
 })
 const sliderValue = computed({

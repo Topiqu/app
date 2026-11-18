@@ -53,7 +53,7 @@ export const articleTextMetrics = (content: string) => {
           return
         }
         if (BLOCK_TAGS.has(name)) text.push(' ')
-        if (attributes['data-type'] === 'poll' && attributes['data-poll-id']) {
+        if ((attributes['data-type'] === 'poll' || attributes['data-type'] === 'quiz') && attributes['data-poll-id']) {
           text.push(attributes['data-question'] ?? '', ' ')
           try {
             const options: unknown = JSON.parse(attributes['data-options'] ?? '[]')

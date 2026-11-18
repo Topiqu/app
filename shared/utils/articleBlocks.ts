@@ -1,12 +1,23 @@
 import { ARTICLE_TABLE_CLASS } from './articleProse'
-import { normalizePollOptions, type PollOptionData } from './polls'
-import { readProductCard, readXPost, type ProductCardData, type XPostData } from './articleEmbeds'
+import { readChart, type ChartData } from './articleChart'
+import { normalizePollOptions, normalizeQuizOptions, type PollOptionData, type QuizOptionData } from './polls'
+import {
+  readCta,
+  readProductCard,
+  readXPost,
+  type ArticleCtaData,
+  type ProductCardData,
+  type XPostData,
+} from './articleEmbeds'
 
 export type ArticleBlock =
   | { type: 'html'; html: string }
   | { type: 'poll'; pollId: string; question: string; options: PollOptionData[] }
+  | { type: 'quiz'; pollId: string; question: string; options: QuizOptionData[]; explanation: string }
   | { type: 'product'; product: ProductCardData }
   | { type: 'xPost'; post: XPostData }
+  | { type: 'cta'; cta: ArticleCtaData }
+  | { type: 'chart'; chart: ChartData; html: string }
   | { type: 'ad' }
 
 export type ArticleHeading = { id: string; text: string; level: number }
@@ -18,6 +29,8 @@ export type ArticleNode = {
   outerHtml: string
   text: string
   attr: (name: string) => string | null
+  /** Text of each table row's cells, header row first; only tables need it. */
+  cells?: () => string[][]
 }
 
 const HEADING_TAG = /^H([1-6])$/
@@ -67,6 +80,21 @@ const readPoll = (node: ArticleNode): ArticleBlock | null => {
   return { type: 'poll', pollId, question: node.attr('data-question') || '', options }
 }
 
+/** A quiz without a stamped id or a marked answer cannot be scored, so it is left out. */
+const readQuiz = (node: ArticleNode): ArticleBlock | null => {
+  const pollId = node.attr('data-poll-id')
+  if (!pollId) return null
+  let options: QuizOptionData[]
+  try {
+    options = normalizeQuizOptions(JSON.parse(node.attr('data-options') || '[]'))
+  } catch {
+    return null
+  }
+  const question = node.attr('data-question')?.trim()
+  if (!question || options.length < 2 || !options.some((option) => option.correct)) return null
+  return { type: 'quiz', pollId, question, options, explanation: node.attr('data-explanation')?.trim() ?? '' }
+}
+
 /** Shorter bodies get no in-body ad: one there reads as an interruption, not a pause. */
 export const AD_MIN_PARAGRAPHS = 6
 
@@ -86,7 +114,7 @@ export const adBreakIndex = (nodes: ArticleNode[]) => {
 }
 
 /**
- * Body into `v-html` runs plus poll, product and X post blocks, with anchor ids stamped on headings. Adjacent HTML
+ * Body into `v-html` runs plus poll, quiz, CTA, chart, product and X post blocks, with anchor ids stamped on headings. Adjacent HTML
  * nodes merge into one run — a wrapper per node breaks the adjacent-sibling rules `prose` uses.
  */
 export const buildArticleBlocks = (nodes: ArticleNode[], { adBreak = false } = {}) => {
@@ -124,6 +152,25 @@ export const buildArticleBlocks = (nodes: ArticleNode[], { adBreak = false } = {
       continue
     }
 
+    if (node.tag === 'DIV' && node.attr('data-type') === 'quiz') {
+      const quiz = readQuiz(node)
+      if (quiz) {
+        flush()
+        blocks.push(quiz)
+      }
+      continue
+    }
+
+    // Without a usable link the fallback would be a dead button, so the block is dropped instead.
+    if (node.tag === 'DIV' && node.attr('data-type') === 'cta') {
+      const cta = readCta(node.attr)
+      if (cta) {
+        flush()
+        blocks.push({ type: 'cta', cta })
+      }
+      continue
+    }
+
     const embed =
       node.tag === 'DIV' && node.attr('data-type') === 'product'
         ? readProductCard(node.attr)
@@ -137,7 +184,12 @@ export const buildArticleBlocks = (nodes: ArticleNode[], { adBreak = false } = {
     }
 
     if (node.tag === 'TABLE') {
-      run += `<div class="${ARTICLE_TABLE_CLASS}">${node.outerHtml}</div>`
+      const html = `<div class="${ARTICLE_TABLE_CLASS}">${node.outerHtml}</div>`
+      const chart = node.attr('data-chart') ? readChart(node.attr('data-chart'), node.cells?.() ?? []) : null
+      if (chart) {
+        flush()
+        blocks.push({ type: 'chart', chart, html })
+      } else run += html
       continue
     }
 

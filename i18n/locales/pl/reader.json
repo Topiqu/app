@@ -157,6 +157,21 @@
     "xPost": {
       "media": "Wpis zawiera zdjęcie lub wideo.",
       "view": "Zobacz na X"
+    },
+    "quiz": {
+      "label": "Quiz",
+      "yourAnswer": "Twoja odpowiedź",
+      "correctAnswer": "Poprawna odpowiedź",
+      "correct": "Dobrze!",
+      "incorrect": "Nie tym razem. Poprawna odpowiedź to „{answer}”.",
+      "correctShare": "{percent}% czytelników odpowiedziało poprawnie",
+      "notOpenYet": "Odpowiadać można po publikacji artykułu."
+    },
+    "chart": {
+      "showData": "Pokaż dane",
+      "series": "Seria {n}",
+      "bar": "Wykres słupkowy: {series}",
+      "line": "Wykres liniowy: {series}, od {from} do {to}"
     }
   },
   "common": {

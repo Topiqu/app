@@ -4,6 +4,8 @@ import * as cheerio from 'cheerio'
 import { unwrapContentSlots } from '~~/shared/utils/contentSlots'
 import { isAiAllowanceError } from '~~/shared/utils/aiAllowanceError'
 
+import { normalizeBodyBlocks } from './bodyBlocks'
+
 type FinalizeImage = { slot: number; html: string }
 // What a found picture is judged against: the picture wanted there and the text it sits in.
 type ImageNeed = { wanted: string; context: string }
@@ -438,7 +440,9 @@ export const finalizeArticle = async (
     ),
   )
 
-  object.content = dropBlankLines(dropAuthoredImages(dropYoutubeLinkParagraphs(stripUntrustedIframes(object.content))))
+  object.content = normalizeBodyBlocks(
+    dropBlankLines(dropAuthoredImages(dropYoutubeLinkParagraphs(stripUntrustedIframes(object.content)))),
+  )
   object.content = applyContentSlots(object.content, 'IMAGE', generatedImages)
 
   const polls = (object.polls ?? []).map((poll, idx) => {
@@ -450,6 +454,22 @@ export const finalizeArticle = async (
     }
   })
   object.content = applyContentSlots(object.content, 'POLL', polls)
+
+  // Ids come from `syncArticlePolls` on save, as for polls; a quiz whose answer index misses its options is dropped.
+  const quizzes = (object.quizzes ?? []).flatMap((quiz, idx) => {
+    if (quiz.correct >= quiz.options.length) return []
+    const options = quiz.options.map((label, i) => ({ label, ...(i === quiz.correct && { correct: true }) }))
+    const explanation = quiz.explanation.trim()
+    return [
+      {
+        slot: idx + 1,
+        html:
+          `<div data-type="quiz" data-question="${escapeHtml(quiz.question)}" data-options="${escapeHtml(JSON.stringify(options))}"` +
+          `${explanation ? ` data-explanation="${escapeHtml(explanation)}"` : ''}></div>`,
+      },
+    ]
+  })
+  object.content = applyContentSlots(object.content, 'QUIZ', quizzes)
 
   const videos = (object.videos ?? []).flatMap((video, idx) => {
     const src = youtubeEmbedUrl(video.url)

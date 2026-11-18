@@ -1,8 +1,8 @@
 import { Node } from '@tiptap/core'
 import { VueNodeViewRenderer } from '@tiptap/vue-3'
+import { normalizePollOptions } from '~~/shared/utils/polls'
 
 import Poll from './Poll.vue'
-import { normalizePollOptions } from '../shared/utils/polls'
 
 export default Node.create({
   name: 'poll',

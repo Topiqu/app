@@ -2,7 +2,7 @@ import { fitText, optimizationScoringConfig } from '../../../shared/utils/articl
 
 /** The broad editorial shape, chosen before the article is written. */
 export type ArticleFormat = 'news' | 'analysis' | 'guide' | 'comparison' | 'opinion' | 'story'
-export type ArticleModule = 'answer' | 'takeaways' | 'faq' | 'poll' | 'table' | 'images' | 'youtube'
+export type ArticleModule = 'answer' | 'takeaways' | 'faq' | 'poll' | 'quiz' | 'table' | 'images' | 'youtube'
 
 type VariantSpec = { shape: string; structure: string }
 type FormatSpec = {
@@ -40,7 +40,7 @@ export const ARTICLE_FORMATS = {
   analysis: {
     shape: 'Takes one claim, number or decision apart and shows what holds up.',
     words: [700, 1100],
-    allowedModules: ['answer', 'takeaways', 'table', 'images', 'youtube'],
+    allowedModules: ['answer', 'takeaways', 'quiz', 'table', 'images', 'youtube'],
     defaultModules: ['answer', 'takeaways'],
     variants: {
       'claim-audit': {
@@ -68,7 +68,7 @@ export const ARTICLE_FORMATS = {
   guide: {
     shape: 'Procedural. The reader came to do the thing, not to read about it.',
     words: [700, 1100],
-    allowedModules: ['answer', 'takeaways', 'faq', 'images', 'youtube'],
+    allowedModules: ['answer', 'takeaways', 'faq', 'quiz', 'images', 'youtube'],
     defaultModules: ['answer', 'takeaways', 'faq'],
     variants: {
       'step-by-step': {
@@ -96,7 +96,7 @@ export const ARTICLE_FORMATS = {
   comparison: {
     shape: 'Two or more options side by side, with the case for each and who it suits.',
     words: [600, 900],
-    allowedModules: ['answer', 'takeaways', 'faq', 'poll', 'table', 'images', 'youtube'],
+    allowedModules: ['answer', 'takeaways', 'faq', 'poll', 'quiz', 'table', 'images', 'youtube'],
     defaultModules: ['answer', 'takeaways', 'faq', 'table'],
     variants: {
       'head-to-head': {
@@ -130,7 +130,7 @@ export const ARTICLE_FORMATS = {
       'contrarian-case': {
         shape: 'Defends a position that cuts against the usual framing.',
         structure:
-          'Name the conventional view fairly, make the opposing case from specifics, and finish on its hardest implication.',
+          'Name the conventional view accurately, make the opposing case from specifics, and finish on its hardest implication.',
       },
       'principle-first': {
         shape: 'Derives a position from one clearly stated principle.',
@@ -145,7 +145,7 @@ export const ARTICLE_FORMATS = {
       'steelman-rebuttal': {
         shape: 'Presents the strongest opposing case before answering it.',
         structure:
-          'Build the opposition without caricature, identify the point of disagreement, then defend the article position there.',
+          'State the opposing case accurately and briefly, in the article’s own voice, identify where it fails, then defend the article position there. Stating it accurately is not conceding it.',
       },
     },
   },
@@ -180,7 +180,16 @@ export const ARTICLE_FORMATS = {
 } as const satisfies Record<ArticleFormat, FormatSpec>
 
 export const ARTICLE_FORMAT_NAMES = Object.keys(ARTICLE_FORMATS) as ArticleFormat[]
-export const ARTICLE_MODULE_NAMES = ['answer', 'takeaways', 'faq', 'poll', 'table', 'images', 'youtube'] as const
+export const ARTICLE_MODULE_NAMES = [
+  'answer',
+  'takeaways',
+  'faq',
+  'poll',
+  'quiz',
+  'table',
+  'images',
+  'youtube',
+] as const
 export const ARTICLE_STRUCTURE_VARIANTS = ARTICLE_FORMAT_NAMES.flatMap((format) =>
   Object.keys(ARTICLE_FORMATS[format].variants),
 )
@@ -250,6 +259,9 @@ const moduleRules = (selected: readonly ArticleModule[]) => {
     has('poll')
       ? 'The author explicitly requested a reader poll. Include exactly one concise poll with 2-5 meaningful options.'
       : 'This article must NOT contain a reader poll.',
+    has('quiz')
+      ? 'The author explicitly requested a reader quiz. Include exactly one quiz that tests a fact the article explains.'
+      : 'This article must NOT contain a reader quiz.',
     has('images')
       ? 'This article must contain 1-4 useful images in the body, each represented by a numbered image slot and matching image instruction.'
       : 'This article must NOT contain images in the body.',
@@ -319,6 +331,7 @@ type Formattable = {
   keyTakeaways?: string[]
   faq?: { question: string; answer: string }[]
   polls?: unknown[]
+  quizzes?: unknown[]
   images?: unknown[]
   videos?: unknown[]
 }
@@ -341,6 +354,7 @@ export const applyFormat = <T extends Formattable>(
     keyTakeaways: has('takeaways') ? object.keyTakeaways : [],
     faq: has('faq') ? object.faq : [],
     polls: has('poll') ? object.polls : [],
+    quizzes: has('quiz') ? object.quizzes : [],
     images: has('images') ? object.images : [],
     videos: has('youtube') ? object.videos : [],
   } as T

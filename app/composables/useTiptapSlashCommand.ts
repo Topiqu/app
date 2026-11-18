@@ -13,6 +13,10 @@ export interface SlashCommandHandlers {
   openImagePrompt: () => void
   openYoutubePrompt: () => void
   insertPoll: () => void
+  insertQuiz: () => void
+  insertCta: () => void
+  insertCallout: () => void
+  insertProsCons: () => void
   openProductPicker: () => void
   openXPostPrompt: () => void
 }
@@ -50,7 +54,11 @@ export function useTiptapSlashCommand(handlers: SlashCommandHandlers) {
     item('blockquote', 'mdi:format-quote-open', (chain) => chain.setBlockquote().run()),
     prompt('insertImage', 'mdi:image', handlers.openImagePrompt),
     prompt('insertYoutube', 'mdi:youtube', handlers.openYoutubePrompt),
+    prompt('insertCallout', 'mdi:information-box-outline', handlers.insertCallout),
+    prompt('insertProsCons', 'mdi:scale-balance', handlers.insertProsCons),
     prompt('insertPoll', 'mdi:poll', handlers.insertPoll),
+    prompt('insertQuiz', 'mdi:help-circle-outline', handlers.insertQuiz),
+    prompt('insertCta', 'mdi:bullhorn-outline', handlers.insertCta),
     prompt('insertProduct', 'mdi:shopping-outline', handlers.openProductPicker),
     prompt('insertXPost', 'mdi:twitter', handlers.openXPostPrompt),
   ]

@@ -109,6 +109,20 @@ export const articleSchema = z.object({
       }),
     )
     .describe('Array of polls corresponding to slots in content, empty array if none'),
+  quizzes: z
+    .array(
+      z.object({
+        question: z.string().min(5).max(255).describe('Quiz question about a fact the article explains'),
+        options: z.array(z.string().min(1).max(255)).min(2).max(5).describe('Answer options (2-5)'),
+        correct: z.number().int().min(0).max(4).describe('0-based index of the one correct option'),
+        explanation: z
+          .string()
+          .max(300)
+          .describe('One or two sentences on why the answer is correct, from the article'),
+      }),
+    )
+    .max(1)
+    .describe('One quiz corresponding to [[QUIZ1]], or an empty array'),
   videos: z
     .array(
       z.object({
@@ -319,6 +333,7 @@ For our own products the first-party entry is the specification: state its figur
   const pollsSelected = selectedModules ? selectedModules.includes('poll') : null
   const tablesSelected = selectedModules ? selectedModules.includes('table') : null
   const videosSelected = selectedModules ? selectedModules.includes('youtube') : null
+  const quizSelected = selectedModules ? selectedModules.includes('quiz') : null
   const xPostUrls = findXPostUrls(brief)
   const currentDateTime = new Date().toISOString()
 
@@ -340,6 +355,7 @@ For our own products the first-party entry is the specification: state its figur
         "coverImage": {"type": "stock", "query": "search keyword OR generation prompt", "broaderQuery": "broader subject keywords"},
         "images": [{"type": "photo", "query": "keyword for IMAGE1", "broaderQuery": "broader subject keywords", "caption": "what IMAGE1 shows"}, {"type": "generate", "query": "prompt for IMAGE2", "broaderQuery": "", "caption": "what IMAGE2 shows"}, ...],
         "polls": [{"question": "Poll question?", "options": ["Option 1", "Option 2"]}],
+        "quizzes": [{"question": "Quiz question?", "options": ["Option 1", "Option 2", "Option 3"], "correct": 1, "explanation": "why option 2 is right"}] or [],
         "videos": [{"url": "https://www.youtube.com/watch?v=...", "caption": "what the video contributes"}],
         "xPosts": [{"url": "an X post URL listed in the research brief"}] or [],
         "tags": ["ID's of relevant tags from the provided tags list, up to 5, that best fit the article topic"],
@@ -407,6 +423,28 @@ For our own products the first-party entry is the specification: state its figur
           : videosSelected === false
             ? 'Return an empty videos array and never write a [[VIDEO]] slot into the content.'
             : 'A YouTube video is optional. Use one only when the research brief contains a suitable verified URL; never invent or reconstruct one.'
+      }
+
+      Quiz:
+      ${
+        quizSelected === true
+          ? 'The author requested a reader quiz. Put one [[QUIZ1]] slot after the section that explains its answer and return exactly one matching quiz: a question the article answers, 3-4 plausible options, the index of the one correct option and a short explanation drawn from the article. Never quiz trivia the article does not cover.'
+          : quizSelected === false
+            ? 'Return an empty quizzes array and never write a [[QUIZ]] slot into the content.'
+            : 'A quiz is optional. Add one only when the article teaches a fact worth testing; otherwise return an empty quizzes array.'
+      }
+
+      Body blocks (write the markup yourself, inside "content"):
+      ${
+        format === 'story' || format === 'opinion'
+          ? '- Never write a callout box or a pros and cons block in this format.'
+          : `- Callout: <aside data-type="callout" data-tone="warning|tip|note"><p>…</p></aside>. At most one per article, only for a hazard, deadline, legal condition or practical tip the reader must not miss; one to three sentences, no heading inside. Never use it to restate or summarise the article.
+      - Pros and cons: <div data-type="pros-cons"><div data-side="pros"><p>{label for advantages}</p><ul><li>…</li></ul></div><div data-side="cons"><p>{label for drawbacks}</p><ul><li>…</li></ul></div></div>, labels in the article language. ${format === 'comparison' || !format ? 'Use one per option the article evaluates, only when both sides have at least two specific, supported points.' : 'Use at most one, only when the article weighs a single option and both sides have at least two specific, supported points.'}`
+      }
+      ${
+        tablesSelected === false
+          ? ''
+          : '- Chart: when a table compares one or two numeric measures across categories or over time, add data-chart="bar" (categories) or data-chart="line" (time series, oldest first) to its <table> tag. Numbers stay in the cells with their units, the first column holds the labels, and every cell of a charted column is a single number. Never mark a table whose values are text, ranges or mixed units.'
       }
 
       Post on X:

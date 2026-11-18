@@ -291,7 +291,7 @@ const emit = defineEmits<{
   'update:username': [string]
   'update:bio': [string]
   'update:aiToneOfVoice': [string | null]
-  'update:aiControversyLevel': [string | null]
+  'update:aiControversyLevel': [ControversyLevel]
   'update:avatarUrl': [string]
   'update:autoRelease': [boolean]
   'update:aiSeriesEnabled': [boolean]
@@ -359,8 +359,8 @@ const toggleToneSuggestion = (suggestion: string) => {
 }
 
 const aiControversyLevel = computed({
-  get: () => props.aiControversyLevel ?? 'NONE',
-  set: (v) => emit('update:aiControversyLevel', v === 'NONE' ? null : v),
+  get: () => controversyLevelOf(props.aiControversyLevel),
+  set: (v) => emit('update:aiControversyLevel', v),
 })
 
 const toneSuggestions = computed(() => [

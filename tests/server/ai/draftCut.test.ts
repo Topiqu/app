@@ -16,7 +16,13 @@ describe('cut draft', () => {
   })
 
   it('counts each slot kind the body uses', () => {
-    expect(slotCounts('<p>[[IMAGE1]]</p><p>[[IMAGE3]]</p>[[POLL1]]')).toEqual({ IMAGE: 3, POLL: 1, VIDEO: 0, XPOST: 0 })
+    expect(slotCounts('<p>[[IMAGE1]]</p><p>[[IMAGE3]]</p>[[POLL1]][[QUIZ1]]')).toEqual({
+      IMAGE: 3,
+      POLL: 1,
+      QUIZ: 1,
+      VIDEO: 0,
+      XPOST: 0,
+    })
   })
 
   it('finishes a body with two sections and keeps a body the writer had already closed', () => {

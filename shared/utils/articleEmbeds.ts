@@ -115,3 +115,43 @@ export const readXPost = (attr: Attr): XPostData | null => {
     media,
   }
 }
+
+export const CALLOUT_TONES = ['note', 'tip', 'warning'] as const
+export type CalloutTone = (typeof CALLOUT_TONES)[number]
+export const isCalloutTone = (value: unknown): value is CalloutTone => CALLOUT_TONES.includes(value as CalloutTone)
+
+export const CTA_TONES = ['accent', 'info'] as const
+export type CtaTone = (typeof CTA_TONES)[number]
+export type ArticleCtaData = { title: string; text: string; label: string; url: string; tone: CtaTone }
+
+export const CTA_LIMITS = { title: 80, text: 280, label: 40 } as const
+
+/** An https URL or a path on the publication itself; `//host` would leave the site while looking local. */
+export const ctaUrl = (value: string | null | undefined) => {
+  const trimmed = value?.trim() ?? ''
+  if (/^\/(?![/\\])/.test(trimmed)) return trimmed
+  const url = URL.parse(trimmed)
+  return url && url.protocol === 'https:' && !url.username && !url.password ? url.href : null
+}
+
+/** Fields live in attributes; the inner paragraphs are what exports, feeds and a broken block show. */
+export const ctaHtml = ({ title, text, label, url, tone }: ArticleCtaData) =>
+  `<div data-type="cta" data-tone="${tone}" data-title="${escapeMarkup(title)}" data-text="${escapeMarkup(text)}"` +
+  ` data-label="${escapeMarkup(label)}" data-url="${escapeMarkup(url)}">` +
+  `<p><strong>${escapeText(title)}</strong></p>${text ? `<p>${escapeText(text)}</p>` : ''}` +
+  `<p><a href="${escapeMarkup(url)}">${escapeText(label)}</a></p></div>`
+
+export const readCta = (attr: Attr): ArticleCtaData | null => {
+  const title = attr('data-title')?.trim().slice(0, CTA_LIMITS.title) ?? ''
+  const label = attr('data-label')?.trim().slice(0, CTA_LIMITS.label) ?? ''
+  const url = ctaUrl(attr('data-url'))
+  if (!title || !label || !url) return null
+  const tone = attr('data-tone')
+  return {
+    title,
+    text: attr('data-text')?.trim().slice(0, CTA_LIMITS.text) ?? '',
+    label,
+    url,
+    tone: CTA_TONES.includes(tone as CtaTone) ? (tone as CtaTone) : 'accent',
+  }
+}

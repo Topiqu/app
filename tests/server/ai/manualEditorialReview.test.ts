@@ -154,6 +154,30 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals())
 
 describe('manual editorial review', () => {
+  it('holds a stylistic revision that deletes a supported answer requested by the assignment', async () => {
+    const note = 'Restore the supported compatibility exception requested in the assignment.'
+    const revision = { ...draft, content: '<h2>Compatibility</h2><p>Some games work.</p>' }
+    vi.mocked(generateStructuredText)
+      .mockResolvedValueOnce(
+        response(
+          { issues: [{ code: 'repetition', note: 'Merge the duplicated compatibility answer.', blocking: false }] },
+          10,
+        ) as never,
+      )
+      .mockResolvedValueOnce(response(asEdits(revision), 20) as never)
+      .mockResolvedValueOnce(
+        response({ findings: [{ id: 1, resolved: true }], introduced: [], omitted: [{ note }] }, 5) as never,
+      )
+    const generation = await streamArticle('site', 'Explain the compatibility exception.', { research: false })
+    expect(await generation.review(draft)).toEqual(revision)
+    expect(generation.editorialReview).toMatchObject({
+      approved: false,
+      checkedAfterRevision: true,
+      issues: [{ code: 'missing_specifics', note, blocking: true }],
+    })
+    expect(generateStructuredText).toHaveBeenCalledTimes(3)
+  })
+
   it('checks the revision before approving it and accounts for every call', async () => {
     const revision = { ...draft, title: 'Ciri leads The Witcher 4' }
     vi.mocked(generateStructuredText)
@@ -541,13 +565,44 @@ describe('manual editorial review', () => {
       .mockResolvedValueOnce(response(review, 10) as never)
       .mockResolvedValueOnce(response(asEdits(revision), 20) as never)
       .mockResolvedValueOnce(
-        response({ findings: [{ id: 2, resolved: true, reason: '' }], introduced: [] }, 5) as never,
+        // Blocking findings now precede prose suggestions before the review's issue cap.
+        response({ findings: [{ id: 1, resolved: true, reason: '' }], introduced: [] }, 5) as never,
       )
     const generation = await streamArticle('site', 'Write a report', { research: false })
 
     expect((await generation.review(draft)).content).toBe(revision.content)
     expect(generation.editorialReview).toMatchObject({ approved: true, revisionMode: 'edits' })
     expect(vi.mocked(generateStructuredText).mock.calls[1]![0].prompt).not.toContain('complete replacement object')
+  })
+
+  it('publishes an article whose tone the revision could not sharpen, revising it with edits', async () => {
+    const tone = { code: 'tone_mismatch', note: 'Úvod je uhlazený; přepište ho sarkasticky.', blocking: true }
+    const revision = { ...draft, content: '<p>A sharper draft.</p>' }
+    vi.mocked(generateStructuredText)
+      .mockResolvedValueOnce(response({ issues: [tone] }, 10) as never)
+      .mockResolvedValueOnce(response(asEdits(revision), 20) as never)
+      .mockResolvedValueOnce(
+        response({ findings: [{ id: 1, resolved: false, reason: 'Still polite.' }], introduced: [] }, 5) as never,
+      )
+    const generation = await streamArticle('site', 'Write a report', { research: false })
+
+    expect((await generation.review(draft)).content).toBe(revision.content)
+    expect(generation.editorialReview).toMatchObject({
+      approved: true,
+      revisionMode: 'edits',
+      issues: [{ code: 'tone_mismatch', blocking: false }],
+    })
+    const revisionCall = vi.mocked(generateStructuredText).mock.calls[1]![0]
+    expect(`${revisionCall.instructions}${revisionCall.prompt}`).toContain(
+      'where it asks for restraint, replace the unrequested verdict, polemic or irony with explanation',
+    )
+    expect(`${revisionCall.instructions}${revisionCall.prompt}`).toContain(
+      'When a correction narrows a sharp claim, keep its edge',
+    )
+    // The eval saw the recheck accept a single sharp line as a restored HIGH voice.
+    expect(vi.mocked(generateStructuredText).mock.calls[2]![0].instructions).toContain(
+      'one changed word or a single sharp line in otherwise measured prose does not resolve a missing edge',
+    )
   })
 
   it('falls back to a full rewrite when an edit quotes text that is not in the draft', async () => {

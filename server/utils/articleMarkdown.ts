@@ -100,9 +100,10 @@ const block = ($: cheerio.CheerioAPI, node: AnyNode): string => {
       return table($, el)
     case 'hr':
       return '---'
+    case 'aside':
     case 'div':
-      // Poll blocks carry their question and options in attributes, not in the markup.
-      if (el.attribs['data-type'] === 'poll') {
+      // Poll and quiz blocks carry their question and options in attributes, not in the markup.
+      if (el.attribs['data-type'] === 'poll' || el.attribs['data-type'] === 'quiz') {
         const question = el.attribs['data-question'] ?? ''
         let options: { label?: string }[]
         try {

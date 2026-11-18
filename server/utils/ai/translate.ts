@@ -1,4 +1,5 @@
 import type { Language } from '~~/generated/zenstack/models'
+import type { ArticleCtaData } from '~~/shared/utils/articleEmbeds'
 
 import { z } from 'zod'
 import * as cheerio from 'cheerio'
@@ -8,6 +9,7 @@ const verbatimToken = (i: number) => `[[BLK_${i}]]`
 const pollToken = (i: number) => `[[POLLBLK_${i}]]`
 const imgToken = (i: number) => `[[IMGBLK_${i}]]`
 const attrToken = (i: number) => `[[ATTR_${i}]]`
+const ctaToken = (i: number) => `[[CTABLK_${i}]]`
 
 const TRANSLATABLE_ATTRS = ['title', 'aria-label'] as const
 
@@ -23,7 +25,10 @@ interface TranslatableArticle {
 interface ExtractedPoll {
   pollId: string
   question: string
-  options: { id: string; label: string }[]
+  options: { id: string; label: string; correct?: boolean }[]
+  /** A quiz travels with the polls: the same text fields plus its explanation. */
+  kind?: 'quiz'
+  explanation?: string
 }
 
 interface ExtractedImage {
@@ -38,6 +43,7 @@ interface MaskResult {
   polls: ExtractedPoll[]
   images: ExtractedImage[]
   attrs: string[]
+  ctas: ArticleCtaData[]
 }
 
 const safeParse = (raw: string | undefined): unknown => {
@@ -65,17 +71,31 @@ export const maskContentBlocks = (content: string): MaskResult => {
   const polls: ExtractedPoll[] = []
   const images: ExtractedImage[] = []
   const attrs: string[] = []
+  const ctas: ArticleCtaData[] = []
 
-  $('div[data-type="poll"]').each((_, el) => {
+  $('div[data-type="poll"], div[data-type="quiz"]').each((_, el) => {
     const $el = $(el)
     const pollId = $el.attr('data-poll-id') || $el.attr('data-id') || ''
     const question = ($el.attr('data-question') || '').trim()
-    const options = normalizePollOptions(safeParse($el.attr('data-options'))).map((o) => ({
-      id: o.id || '',
-      label: o.label,
-    }))
+    const raw = safeParse($el.attr('data-options'))
+    if ($el.attr('data-type') === 'quiz') {
+      const options = normalizeQuizOptions(raw).map((o) => ({ id: o.id || '', label: o.label, correct: o.correct }))
+      const explanation = ($el.attr('data-explanation') || '').trim()
+      $el.replaceWith(pollToken(polls.length))
+      polls.push({ pollId, question, options, kind: 'quiz', explanation })
+      return
+    }
+    const options = normalizePollOptions(raw).map((o) => ({ id: o.id || '', label: o.label }))
     $el.replaceWith(pollToken(polls.length))
     polls.push({ pollId, question, options })
+  })
+
+  // Only the three texts go to the model; tone and link stay here.
+  $('div[data-type="cta"]').each((_, el) => {
+    const cta = readCta((name) => $(el).attr(name) ?? null)
+    if (!cta) return void $(el).remove()
+    $(el).replaceWith(ctaToken(ctas.length))
+    ctas.push(cta)
   })
 
   $('blockquote.twitter-tweet').each((_, el) => {
@@ -119,16 +139,20 @@ export const maskContentBlocks = (content: string): MaskResult => {
     }
   })
 
-  return { masked: $('body').html() ?? content, verbatim, polls, images, attrs }
+  return { masked: $('body').html() ?? content, verbatim, polls, images, attrs, ctas }
 }
 
 const buildPollHtml = (poll: ExtractedPoll): string => {
   const $ = cheerio.load('<div></div>')
   const $div = $('div').first()
-  $div.attr('data-type', 'poll')
+  $div.attr('data-type', poll.kind ?? 'poll')
   if (poll.pollId) $div.attr('data-poll-id', poll.pollId)
   $div.attr('data-question', poll.question)
-  $div.attr('data-options', JSON.stringify(poll.options.map((o) => ({ id: o.id, label: o.label }))))
+  $div.attr(
+    'data-options',
+    JSON.stringify(poll.options.map((o) => ({ id: o.id, label: o.label, ...(o.correct && { correct: true }) }))),
+  )
+  if (poll.explanation) $div.attr('data-explanation', poll.explanation)
   return $.html($div)
 }
 
@@ -152,8 +176,12 @@ export const rebuildContent = (
   polls: ExtractedPoll[],
   images: ExtractedImage[] = [],
   attrs: string[] = [],
+  ctas: ArticleCtaData[] = [],
 ): string => {
   let out = translatedMasked
+  ctas.forEach((cta, i) => {
+    out = out.split(ctaToken(i)).join(ctaHtml(cta))
+  })
   polls.forEach((poll, i) => {
     out = out.split(pollToken(i)).join(buildPollHtml(poll))
   })
@@ -180,9 +208,13 @@ export const translationSchema = z.object({
       z.object({
         question: z.string().describe('Translated poll question'),
         options: z.array(z.string()).describe('Translated option labels, same order as input'),
+        explanation: z.string().describe('Translated quiz explanation, empty string if the source was empty'),
       }),
     )
-    .describe('Translated polls in the same order as provided'),
+    .describe('Translated polls and quizzes in the same order as provided'),
+  ctas: z
+    .array(z.object({ title: z.string(), text: z.string(), label: z.string() }))
+    .describe('Translated call-to-action title, text and button label, same order as input'),
   images: z
     .array(
       z.object({
@@ -218,16 +250,17 @@ export const generateTranslation = async (
   localPassages: string[] = [],
 ) => {
   const targetName = LANGUAGE_NAMES[targetLang]
-  const { masked, verbatim, polls, images, attrs } = maskContentBlocks(article.content)
+  const { masked, verbatim, polls, images, attrs, ctas } = maskContentBlocks(article.content)
 
   const instructions = `
     You are a professional translator. Translate the supplied article into ${targetName}.
     Rules:
     - Preserve ALL HTML tags, attributes, and overall structure exactly.
-    - Preserve every placeholder token (e.g. [[BLK_0]], [[POLLBLK_0]], [[IMGBLK_0]], [[ATTR_0]]) verbatim and in its original position. Never translate, remove, reorder, or duplicate them.
+    - Preserve every placeholder token (e.g. [[BLK_0]], [[POLLBLK_0]], [[IMGBLK_0]], [[ATTR_0]], [[CTABLK_0]]) verbatim and in its original position. Never translate, remove, reorder, or duplicate them.
     - Translate only human-readable text: headings, paragraphs, captions, list items, link text.
     - Keep URLs, code, and any embed markup unchanged.
-    - For polls: return them in the SAME order, each with the SAME number of options in the SAME order; translate only the question and option labels.
+    - For polls (quizzes included): return them in the SAME order, each with the SAME number of options in the SAME order; translate only the question, option labels and explanation.
+    - For ctas: return them in the SAME order; translate the title, text and button label so they read as natural ${targetName}. Leave the text empty if its source is empty.
     - For images: return them in the SAME order; translate only the alt and title text. Leave an entry empty if its source is empty.
     - For attrs: return them in the SAME order; these are human-readable attribute texts (link titles, aria-labels) — translate each into ${targetName}.
     - For keyTakeaways and faq: return the SAME number of entries in the SAME order. Never add an entry the source does not have — an empty array stays empty.
@@ -248,7 +281,12 @@ export const generateTranslation = async (
       title: article.title,
       excerpt: article.excerpt ?? '',
       content: masked,
-      polls: polls.map((p) => ({ question: p.question, options: p.options.map((o) => o.label) })),
+      polls: polls.map((p) => ({
+        question: p.question,
+        options: p.options.map((o) => o.label),
+        explanation: p.explanation ?? '',
+      })),
+      ctas: ctas.map(({ title, text, label }) => ({ title, text, label })),
       images: images.map((img) => ({ alt: img.alt ?? '', title: img.title ?? '' })),
       attrs,
       answer: article.answer ?? '',
@@ -261,12 +299,19 @@ export const generateTranslation = async (
   const rebuiltPolls: ExtractedPoll[] = polls.map((poll, i) => {
     const translated = object.polls[i]
     return {
-      pollId: poll.pollId,
+      ...poll,
       question: translated?.question?.trim() || poll.question,
-      options: poll.options.map((o, oi) => ({
-        id: o.id,
-        label: translated?.options?.[oi]?.trim() || o.label,
-      })),
+      options: poll.options.map((o, oi) => ({ ...o, label: translated?.options?.[oi]?.trim() || o.label })),
+      explanation: poll.explanation ? translated?.explanation?.trim() || poll.explanation : poll.explanation,
+    }
+  })
+  const rebuiltCtas = ctas.map((cta, i) => {
+    const translated = object.ctas[i]
+    return {
+      ...cta,
+      title: translated?.title?.trim().slice(0, CTA_LIMITS.title) || cta.title,
+      text: cta.text ? translated?.text?.trim().slice(0, CTA_LIMITS.text) || cta.text : '',
+      label: translated?.label?.trim().slice(0, CTA_LIMITS.label) || cta.label,
     }
   })
 
@@ -284,7 +329,7 @@ export const generateTranslation = async (
   return {
     title: object.title,
     excerpt: object.excerpt?.trim() || null,
-    content: rebuildContent(object.content, verbatim, rebuiltPolls, rebuiltImages, rebuiltAttrs),
+    content: rebuildContent(object.content, verbatim, rebuiltPolls, rebuiltImages, rebuiltAttrs, rebuiltCtas),
     answer: object.answer?.trim() || null,
     // Indexed against the source, so a model that drops or invents an entry cannot change the count.
     keyTakeaways: sourceTakeaways.map((original, i) => object.keyTakeaways?.[i]?.trim() || original),

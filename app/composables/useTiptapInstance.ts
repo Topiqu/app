@@ -1,10 +1,15 @@
+import Quiz from '~~/extensions/quiz'
+import { Cta } from '~~/extensions/cta'
 import { XPost } from '~~/extensions/xPost'
 import StarterKit from '@tiptap/starter-kit'
 import { Link } from '@tiptap/extension-link'
 import { Indent } from '~~/extensions/indent'
+import { Callout } from '~~/extensions/callout'
 import { Color } from '@tiptap/extension-color'
 import { InlineImage } from '~~/extensions/image'
+import { TableRow } from '@tiptap/extension-table'
 import { Youtube } from '@tiptap/extension-youtube'
+import { ChartTable } from '~~/extensions/chartTable'
 import SlashCommand from '~~/extensions/slashCommand'
 import { Underline } from '@tiptap/extension-underline'
 import { ProductCard } from '~~/extensions/productCard'
@@ -13,17 +18,18 @@ import { TextStyle } from '@tiptap/extension-text-style'
 import { Typography } from '@tiptap/extension-typography'
 import { Blockquote } from '@tiptap/extension-blockquote'
 import { Dropcursor } from '@tiptap/extension-dropcursor'
-import { Table, TableRow } from '@tiptap/extension-table'
 import { AiDisclosure } from '~~/extensions/aiDisclosure'
 import { Figcaption, Figure } from '~~/extensions/figure'
 import { FontFamily } from '@tiptap/extension-font-family'
 import { useEditor, VueNodeViewRenderer } from '@tiptap/vue-3'
+import { ProsCons, ProsConsSide } from '~~/extensions/prosCons'
 import { CharacterCount } from '@tiptap/extension-character-count'
-import { ColoredTableCell, ColoredTableHeader } from '~~/extensions/tableCellColor'
 // eslint-disable-next-line
 import Poll from '~~/extensions/poll'
+import { ColoredTableCell, ColoredTableHeader } from '~~/extensions/tableCellColor'
 
 import TiptapImage from '~/components/File/TiptapImage.vue'
+import TiptapCtaNode from '~/components/Tiptap/CtaNode.vue'
 import TiptapFigure from '~/components/File/TiptapFigure.vue'
 import TiptapXPostNode from '~/components/Tiptap/XPostNode.vue'
 import TiptapProductNode from '~/components/Tiptap/ProductNode.vue'
@@ -69,11 +75,16 @@ export function useTiptapInstance(opts: UseTiptapInstanceOptions) {
         ccLanguage: 'cs',
       }),
       // Matches the 7rem cell min-width in main.css, so dragging cannot go below what CSS renders.
-      Table.configure({ resizable: true, cellMinWidth: 112 }),
+      ChartTable.configure({ resizable: true, cellMinWidth: 112 }),
       TableRow,
       ColoredTableHeader,
       ColoredTableCell,
       Poll,
+      Quiz,
+      Callout,
+      ProsCons,
+      ProsConsSide,
+      Cta.extend({ addNodeView: () => VueNodeViewRenderer(TiptapCtaNode) }),
       ProductCard.extend({ addNodeView: () => VueNodeViewRenderer(TiptapProductNode) }),
       XPost.extend({ addNodeView: () => VueNodeViewRenderer(TiptapXPostNode) }),
       Indent,

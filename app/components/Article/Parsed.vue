@@ -2,6 +2,14 @@
   <div ref="root" @error.capture="handleMediaError">
     <template v-for="(block, i) in blocks" :key="i">
       <ArticlePoll v-if="block.type === 'poll'" :poll="block" :articleId="articleId" />
+      <ArticleQuiz v-else-if="block.type === 'quiz'" :quiz="block" :articleId="articleId" />
+      <ArticleChart v-else-if="block.type === 'chart'" :chart="block.chart" :html="block.html" />
+      <WidgetCta
+        v-else-if="block.type === 'cta'"
+        :config="{ ...block.cta, button: { url: block.cta.url, label: block.cta.label }, image: null }"
+        heading="p"
+        class="not-prose my-8"
+      />
       <ArticleProductCard v-else-if="block.type === 'product'" :product="block.product" />
       <ArticleXPost v-else-if="block.type === 'xPost'" :post="block.post" />
       <template v-else-if="block.type === 'ad'">

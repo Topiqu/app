@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 
 import { stubNitroImports } from '../../helpers/nitroImports'
 
@@ -141,6 +141,91 @@ describe('research topic', () => {
       `The DC 25 S is rated at 27 kW in emission class 5. ${page}\nVerified YouTube video (checked against YouTube oEmbed): ${video}`,
     )
     expect(result.tokens).toBe(9600)
+  })
+
+  it.each([
+    ['a failed search', () => Promise.reject(new Error('provider overloaded'))],
+    [
+      'an empty brief',
+      () =>
+        Promise.resolve({
+          text: 'Nothing found.',
+          sources: [],
+          toolResults: [],
+          usage: { totalTokens: 300 },
+          finishReason: 'stop',
+        }),
+    ],
+  ])('retries %s once within the same budget', async (_case, first) => {
+    const page = 'https://www.atmos.eu/produkt/dc25s'
+    generateText.mockImplementationOnce(first).mockResolvedValueOnce({
+      text: `The DC 25 S is rated at 27 kW in emission class 5. ${page}`,
+      sources: [{ sourceType: 'url', url: page }],
+      toolResults: [],
+      usage: { totalTokens: 9000 },
+      finishReason: 'stop',
+    })
+
+    const result = await researchTopic('Atmos DC 25 S')
+
+    expect(generateText).toHaveBeenCalledTimes(2)
+    expect(result.status).toBe('completed')
+    expect(result.tokens).toBe(_case === 'an empty brief' ? 9300 : 9000)
+  })
+
+  it('falls back after the second failure instead of looping', async () => {
+    generateText.mockRejectedValue(new Error('provider overloaded'))
+
+    const result = await researchTopic('Atmos DC 25 S')
+
+    expect(generateText).toHaveBeenCalledTimes(2)
+    expect(result).toMatchObject({ status: 'fallback', fallbackReason: 'error' })
+  })
+
+  it('bills an unusable brief even when the retry then fails', async () => {
+    generateText
+      .mockResolvedValueOnce({
+        text: 'Nothing found.',
+        sources: [],
+        toolResults: [],
+        usage: { totalTokens: 300 },
+        finishReason: 'stop',
+      })
+      .mockRejectedValueOnce(new Error('provider overloaded'))
+
+    const result = await researchTopic('Atmos DC 25 S')
+
+    expect(result).toMatchObject({ status: 'fallback', fallbackReason: 'error', tokens: 300 })
+  })
+
+  it('does not retry a brief cut off by its output ceiling', async () => {
+    generateText.mockResolvedValue({
+      text: 'The DC 25 S is rated',
+      sources: [],
+      toolResults: [],
+      usage: { totalTokens: 5000 },
+      finishReason: 'length',
+    })
+
+    const result = await researchTopic('Atmos DC 25 S')
+
+    expect(generateText).toHaveBeenCalledTimes(1)
+    expect(result).toMatchObject({ status: 'fallback', tokens: 5000 })
+  })
+
+  it('does not start a retry the remaining budget cannot finish', async () => {
+    const start = Date.now()
+    const now = vi.spyOn(Date, 'now').mockReturnValue(start)
+    onTestFinished(() => now.mockRestore())
+    generateText.mockImplementationOnce(async () => {
+      now.mockReturnValue(start + 100_000)
+      throw new Error('provider overloaded')
+    })
+
+    const result = await researchTopic('Atmos DC 25 S')
+
+    expect(generateText).toHaveBeenCalledTimes(1)
+    expect(result.status).toBe('fallback')
   })
 
   it('asks the video search to look up videos, not to answer the topic', async () => {
