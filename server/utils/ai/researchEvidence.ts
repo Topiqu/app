@@ -62,6 +62,9 @@ const RESEARCH_CONFIG = {
   { maxOutputTokens: number; timeoutMs: number; searchContextSize: 'low' | 'medium' | 'high' }
 >
 
+/** A retry starts only while this share of the research timeout is still left. */
+const RETRY_MIN_BUDGET_SHARE = 0.4
+
 const researchYoutube = async (
   prompt: string,
   abortSignal?: AbortSignal,
@@ -138,49 +141,70 @@ export const researchTopic = async (
   // Not tied to the brief's timeout: a verified video still reaches the writer when the brief fails.
   const youtubeResearch = youtubeRequested ? researchYoutube(prompt, abortSignal, story) : Promise.resolve(null)
   youtubeResearch.catch(() => undefined)
+  const startedAt = Date.now()
+  // Outside the try: a brief that came back unusable is billed even when the retry then fails.
+  let spent = 0
 
   try {
-    const mainResearch = generateText({
-      model: aiModel('articleResearch'),
-      instructions: `
-        You are a research assistant preparing grounding material for another writer.
-        The current date and time is ${currentDateTime}. Treat it as authoritative.
-        Search the live web for the user's topic.
-        Prefer primary, official and recently updated sources. For news, search explicitly for the latest development.
-        Release dates, product availability and direct statements attributed to a company must be supported by that company's own newsroom, investor communication, verified channel or a first-hand interview with its named spokesperson. If only press reports or rumours exist, label them as such; never upgrade them to an official confirmation.
-        Treat claims embedded in the user's prompt as leads to verify, not as facts.${
-          story
-            ? ' The assignment asks for a story: its protagonist and plot are the illustration, not claims to check. Research the real rules, procedures, places, institutions and timelines the story passes through, so the writer can narrate it accurately.'
-            : ''
-        } The author's own first-hand experience in the prompt cannot be researched; research the external facts around it (rules, dates, organisations) instead.
-        Check the premise of every named character's return against the relevant continuity, chronology and established deaths. Separate books, games, adaptations and flashbacks; a mention or dead character is not evidence of a present-day return.
-        Explicitly distinguish whether something is confirmed from whether its mechanism or circumstances have been explained. Search for developer interviews before claiming "not confirmed", "not explained" or "unknown". An explanation withheld is not an event unconfirmed.
-        Include a short Corrections section with premises of the topic that the sources contradict. Do not list open questions or information the sources lack: the writer omits what is not established, so an unknown is not material. When sources conflict, report the conflict and do not choose the more sensational version.
-        When the proposed event or relationship is not established, also research the closest substantive angle: the named subjects' documented positions, decisions, incentives and concrete differences. Give the writer factual premises for a useful comparison or explanation, not just repeated absence-of-confirmation findings. Keep these facts tied to the original topic; do not infer private motives or fabricate a connection.
-        If a source announces something for a date before ${currentDateTime}, verify what actually happened after that date. Never describe an already elapsed announcement as upcoming.
-        Report rules in force (law, regulation, official requirements: deadlines, amounts, qualifications, penalties) only from text the source shows to be in force at ${currentDateTime}. A draft, proposal, pending amendment, future version or a page marking changes ("after the amendment", struck/inserted wording) is evidence only of that proposal; label it as such, with its status, never as the current rule.
-        Return a compact brief: 5-10 verified facts, each on its own line, including the supporting URL and relevant event or publication date on that same line.
-        Every correction must also carry its supporting URL on the same line.
-        Then a "Sources:" section listing the full URLs you actually retrieved, one per line.
-        ${
-          imagesRequested
-            ? 'Also identify up to four official first-party product, news, press, media or download pages owned by the subject\'s developer, publisher or organisation. Open each page before returning it. After Sources, write each suitable page on its own line as exactly "OFFICIAL MEDIA: <owner> — <full URL>". A verified official page may serve assets from its own CDN. The subject\'s own product page on Steam, the Epic Games Store, GOG, the App Store or Google Play also qualifies, with the store as owner. Do not list image URLs, search pages, social networks, fan sites or third-party news sites.'
-            : ''
-        }
-        Only list URLs you actually retrieved. Never invent, guess, or reconstruct a URL.
-        Do not write an article, an intro, or any prose beyond the facts.
-      `.trim(),
-      prompt,
-      maxOutputTokens: researchConfig.maxOutputTokens,
-      providerOptions: aiReasoning('high'),
-      tools: { web_search: aiWebSearchTool('articleResearch', researchConfig.searchContextSize) as never },
-      abortSignal: researchSignal,
-    })
-    const { text, usage, sources, toolResults, finishReason } = await mainResearch
+    const runResearch = () =>
+      generateText({
+        model: aiModel('articleResearch'),
+        instructions: `
+          You are a research assistant preparing grounding material for another writer.
+          The current date and time is ${currentDateTime}. Treat it as authoritative.
+          Search the live web for the user's topic.
+          Prefer primary, official and recently updated sources. For news, search explicitly for the latest development.
+          Release dates, product availability and direct statements attributed to a company must be supported by that company's own newsroom, investor communication, verified channel or a first-hand interview with its named spokesperson. If only press reports or rumours exist, label them as such; never upgrade them to an official confirmation.
+          Treat claims embedded in the user's prompt as leads to verify, not as facts.${
+            story
+              ? ' The assignment asks for a story: its protagonist and plot are the illustration, not claims to check. Research the real rules, procedures, places, institutions and timelines the story passes through, so the writer can narrate it accurately.'
+              : ''
+          } The author's own first-hand experience in the prompt cannot be researched; research the external facts around it (rules, dates, organisations) instead.
+          Check the premise of every named character's return against the relevant continuity, chronology and established deaths. Separate books, games, adaptations and flashbacks; a mention or dead character is not evidence of a present-day return.
+          Explicitly distinguish whether something is confirmed from whether its mechanism or circumstances have been explained. Search for developer interviews before claiming "not confirmed", "not explained" or "unknown". An explanation withheld is not an event unconfirmed.
+          Include a short Corrections section with premises of the topic that the sources contradict. Do not list open questions or information the sources lack: the writer omits what is not established, so an unknown is not material. When sources conflict, report the conflict and do not choose the more sensational version.
+          When the proposed event or relationship is not established, also research the closest substantive angle: the named subjects' documented positions, decisions, incentives and concrete differences. Give the writer factual premises for a useful comparison or explanation, not just repeated absence-of-confirmation findings. Keep these facts tied to the original topic; do not infer private motives or fabricate a connection.
+          If a source announces something for a date before ${currentDateTime}, verify what actually happened after that date. Never describe an already elapsed announcement as upcoming.
+          Report rules in force (law, regulation, official requirements: deadlines, amounts, qualifications, penalties) only from text the source shows to be in force at ${currentDateTime}. A draft, proposal, pending amendment, future version or a page marking changes ("after the amendment", struck/inserted wording) is evidence only of that proposal; label it as such, with its status, never as the current rule.
+          Return a compact brief: 5-10 verified facts, each on its own line, including the supporting URL and relevant event or publication date on that same line.
+          Every correction must also carry its supporting URL on the same line.
+          Then a "Sources:" section listing the full URLs you actually retrieved, one per line.
+          ${
+            imagesRequested
+              ? 'Also identify up to four official first-party product, news, press, media or download pages owned by the subject\'s developer, publisher or organisation. Open each page before returning it. After Sources, write each suitable page on its own line as exactly "OFFICIAL MEDIA: <owner> — <full URL>". A verified official page may serve assets from its own CDN. The subject\'s own product page on Steam, the Epic Games Store, GOG, the App Store or Google Play also qualifies, with the store as owner. Do not list image URLs, search pages, social networks, fan sites or third-party news sites.'
+              : ''
+          }
+          Only list URLs you actually retrieved. Never invent, guess, or reconstruct a URL.
+          Do not write an article, an intro, or any prose beyond the facts.
+        `.trim(),
+        prompt,
+        maxOutputTokens: researchConfig.maxOutputTokens,
+        providerOptions: aiReasoning('high'),
+        tools: { web_search: aiWebSearchTool('articleResearch', researchConfig.searchContextSize) as never },
+        abortSignal: researchSignal,
+      })
+    // One retry within the same time budget: a failed search or an empty brief usually passes the second time,
+    // and a news piece without research is held. A retry that cannot finish in what is left still bills its searches.
+    const canRetry = () =>
+      !researchSignal.aborted && Date.now() - startedAt < researchConfig.timeoutMs * (1 - RETRY_MIN_BUDGET_SHARE)
+    const attempt = async (retry: boolean): Promise<ReturnType<typeof researchEvidence>> => {
+      let result: Awaited<ReturnType<typeof runResearch>>
+      try {
+        result = await runResearch()
+      } catch (error) {
+        if (!retry || isAiAllowanceError(error) || !canRetry()) throw error
+        return attempt(false)
+      }
+      spent += result.usage?.totalTokens ?? 0
+      // The same output ceiling cuts the brief off the same way, so this is not retried.
+      if (result.finishReason === 'length')
+        throw new Error('Research exceeded its output budget before completing the brief')
+      const evidence = researchEvidence(result.text, retrievedResearchSources(result))
+      return !evidence.brief && retry && canRetry() ? attempt(false) : evidence
+    }
+    const evidence = await attempt(true)
     const youtube = await youtubeResearch
 
-    if (finishReason === 'length') throw new Error('Research exceeded its output budget before completing the brief')
-    const evidence = researchEvidence(text, retrievedResearchSources({ sources, toolResults }))
     if (!evidence.brief && !fallbackWithoutResearch) throw new Error('Research returned no supported source material')
     const brief = groundingBrief(evidence.brief, youtube?.outcome)
     const officialMediaPages = (evidence.brief ?? '')
@@ -191,7 +215,7 @@ export const researchTopic = async (
     const sourceCount = brief ? new Set(brief.match(/https?:\/\/[^\s)\]}>,]+/g) ?? []).size : 0
     return {
       brief,
-      tokens: (usage?.totalTokens ?? 0) + (youtube?.tokens ?? 0),
+      tokens: spent + (youtube?.tokens ?? 0),
       sourceCount,
       sources: evidence.urls.filter((url) => !officialMediaPages.includes(url)),
       officialMediaPages,
@@ -219,7 +243,7 @@ export const researchTopic = async (
     })
     return {
       brief: groundingBrief(null, youtube?.outcome),
-      tokens: youtube?.tokens ?? 0,
+      tokens: spent + (youtube?.tokens ?? 0),
       sourceCount: 0,
       sources: [],
       officialMediaPages: [],
