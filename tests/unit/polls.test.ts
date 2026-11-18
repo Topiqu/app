@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { normalizePollOptions, pollOptionsAttr } from '../../shared/utils/polls'
+import { normalizePollOptions, normalizeQuizOptions, pollOptionsAttr, quizOptionsAttr } from '../../shared/utils/polls'
 
 describe('normalizePollOptions', () => {
   it('keeps the id/label shape and the legacy plain-string shape', () => {
@@ -48,5 +48,55 @@ describe('pollOptionsAttr', () => {
 
   it('upgrades the legacy string shape without inventing ids', () => {
     expect(JSON.parse(pollOptionsAttr(['Ano', 'Ne'], 'Možnost 1'))).toEqual([{ label: 'Ano' }, { label: 'Ne' }])
+  })
+})
+
+describe('normalizeQuizOptions', () => {
+  it('keeps the flag on the option it was written on, even after a dropped entry', () => {
+    expect(
+      normalizeQuizOptions([{ label: ' ' }, { id: 'o1', label: 'Ano' }, { id: 'o2', label: 'Ne', correct: true }]),
+    ).toEqual([
+      { id: 'o1', label: 'Ano' },
+      { id: 'o2', label: 'Ne', correct: true },
+    ])
+  })
+
+  it('keeps only the first flagged option and omits the key elsewhere', () => {
+    const options = normalizeQuizOptions([
+      { label: 'A', correct: false },
+      { label: 'B', correct: true },
+      { label: 'C', correct: true },
+    ])
+    expect(options).toEqual([{ label: 'A' }, { label: 'B', correct: true }, { label: 'C' }])
+    expect(options.filter((o) => 'correct' in o)).toHaveLength(1)
+  })
+
+  it('accepts only a literal true and tolerates the legacy string shape', () => {
+    expect(normalizeQuizOptions([{ label: 'A', correct: 'true' }, 'B'])).toEqual([{ label: 'A' }, { label: 'B' }])
+  })
+
+  it('never returns an empty array', () => {
+    expect(normalizeQuizOptions([])).toHaveLength(1)
+    expect(normalizeQuizOptions({ label: 'A', correct: true })).toHaveLength(1)
+  })
+})
+
+describe('quizOptionsAttr', () => {
+  const options = [
+    { id: 'o1', label: 'Šest' },
+    { id: 'o2', label: 'Osm', correct: true },
+  ]
+
+  it('carries the ids and the correct flag through', () => {
+    expect(JSON.parse(quizOptionsAttr(options, 'Možnost 1'))).toEqual(options)
+  })
+
+  it('is idempotent', () => {
+    const once = quizOptionsAttr(options, 'Možnost 1')
+    expect(quizOptionsAttr(JSON.parse(once), 'Možnost 1')).toBe(once)
+  })
+
+  it('falls back to the caller-supplied label only when there is nothing to normalize', () => {
+    expect(quizOptionsAttr(undefined, 'Option 1')).toBe(JSON.stringify([{ label: 'Option 1' }]))
   })
 })

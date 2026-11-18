@@ -11,9 +11,13 @@
     <!-- Container queries: the same widget sits full-width on the homepage and in a narrow editor preview. -->
     <div class="grid items-center gap-5 p-5 @md:p-6" :class="{ '@xl:grid-cols-[2fr_1fr]': config.image?.url }">
       <div class="min-w-0 space-y-3">
-        <h2 :id="titleId" class="text-lg font-semibold tracking-tight text-balance break-words @md:text-xl">
+        <component
+          :is="heading"
+          :id="titleId"
+          class="text-lg font-semibold tracking-tight text-balance break-words @md:text-xl"
+        >
           {{ config.title }}
-        </h2>
+        </component>
         <p v-if="config.text" class="text-sm leading-relaxed text-pretty break-words opacity-90">{{ config.text }}</p>
         <UButton
           :to="config.button.url"
@@ -40,6 +44,11 @@
 <script setup lang="ts">
 import type { CtaConfig } from '~~/shared/utils/widgets'
 
-const { config, preview = false } = defineProps<{ config: CtaConfig; preview?: boolean }>()
+// Inside an article body the title is a paragraph: a heading there would join the article outline.
+const {
+  config,
+  preview = false,
+  heading = 'h2',
+} = defineProps<{ config: CtaConfig; preview?: boolean; heading?: 'h2' | 'p' }>()
 const titleId = useId()
 </script>

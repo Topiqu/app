@@ -38,6 +38,16 @@ export const articleBlocks = (content: string | null | undefined, options?: { ad
           outerHtml: $.html(node),
           text: $(node).text(),
           attr: (name) => node.attribs?.[name] ?? null,
+          cells: () =>
+            $(node)
+              .find('tr')
+              .toArray()
+              .map((row) =>
+                $(row)
+                  .children('th, td')
+                  .toArray()
+                  .map((cell) => $(cell).text().trim()),
+              ),
         }
       }
       return {

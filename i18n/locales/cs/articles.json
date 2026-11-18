@@ -523,7 +523,16 @@
         "removeLink": "Odstranit odkaz",
         "removeColor": "Odstranit barvu",
         "characters": "znaků",
-        "words": "slov"
+        "words": "slov",
+        "insertQuiz": "Vložit kvíz",
+        "insertCta": "Vložit výzvu k akci",
+        "insertCallout": "Zvýrazněný box",
+        "insertProsCons": "Výhody a nevýhody",
+        "callout": "Zvýrazněný box",
+        "chart": "Zobrazit jako graf",
+        "chartNone": "Jen tabulka",
+        "chartBar": "Sloupcový graf",
+        "chartLine": "Spojnicový graf"
       },
       "altModal": {
         "title": "Popis obrázku",
@@ -599,7 +608,8 @@
           "poll": "Anketa",
           "table": "Srovnávací tabulka",
           "images": "Obrázky v článku",
-          "youtube": "Video z YouTube"
+          "youtube": "Video z YouTube",
+          "quiz": "Kvíz pro čtenáře"
         },
         "phaseResearch": "Ověřují se fakta a hledají zdroje…",
         "phaseWriting": "Píšu…",
@@ -802,6 +812,7 @@
             "generic_language": "Obecné formulace",
             "missing_specifics": "Chybí konkrétní údaje",
             "assignment_mismatch": "Nesoulad se zadáním",
+            "tone_mismatch": "Tón neodpovídá zadání",
             "broken_structure": "Rozbitá struktura"
           },
           "note": {
@@ -812,7 +823,6 @@
               "poll": "Doplňte právě jednu požadovanou anketu.",
               "images": "Doplňte do textu požadované obrázky.",
               "table": "Doplňte požadovanou tabulku.",
-            "tone_mismatch": "Tón neodpovídá zadání",
               "youtube": "Vložte YouTube video, které našla rešerše."
             },
             "repeatedTableSubjects": "Tabulka opakuje řádky pro: {subjects}. Každá položka patří do jednoho řádku.",
@@ -1199,6 +1209,32 @@
           "cover": "Chybí titulní obrázek."
         },
         "publish": "Publikovat i tak"
+      },
+      "callout": {
+        "note": "Poznámka",
+        "tip": "Tip",
+        "warning": "Upozornění",
+        "remove": "Zrušit box"
+      },
+      "cta": {
+        "card": "Výzva k akci",
+        "title": "Nadpis",
+        "text": "Doplňující text",
+        "label": "Text tlačítka",
+        "url": "Odkaz",
+        "urlHint": "Adresa https:// nebo cesta na vašem webu, např. /kontakt",
+        "urlInvalid": "Zadejte adresu https:// nebo cestu začínající /. Bez ní se box nezobrazí.",
+        "tone": "Styl",
+        "tones": {
+          "accent": "Výrazný",
+          "info": "Decentní"
+        },
+        "defaultTitle": "Potřebujete s tím pomoct?",
+        "defaultLabel": "Kontaktujte nás"
+      },
+      "prosCons": {
+        "pros": "Výhody",
+        "cons": "Nevýhody"
       }
     },
     "image": {
@@ -1215,6 +1251,30 @@
     "authorsArticles": "Články tohoto autora",
     "tagsArticles": "Články se štítkem „{name}“",
     "keyTakeaways": "Klíčové body",
-    "faq": "Časté otázky"
+    "faq": "Časté otázky",
+    "quiz": {
+      "label": "Kvíz",
+      "yourAnswer": "Vaše odpověď",
+      "correctAnswer": "Správná odpověď",
+      "correct": "Správně!",
+      "incorrect": "Tentokrát ne. Správná odpověď je „{answer}“.",
+      "correctShare": "{percent} % čtenářů odpovědělo správně",
+      "notOpenYet": "Odpovídat půjde po zveřejnění článku.",
+      "defaultQuestion": "Zadejte otázku kvízu",
+      "question": "Otázka kvízu",
+      "delete": "Smazat kvíz",
+      "options": "Odpovědi – označte správnou",
+      "markCorrect": "Označit možnost {index} jako správnou odpověď",
+      "removeOption": "Odebrat možnost {index}",
+      "correctMissing": "Označte jednu vyplněnou odpověď jako správnou, jinak nepůjde odpovědi vyhodnotit.",
+      "explanation": "Vysvětlení (nepovinné)",
+      "explanationHelp": "Čtenáři ho uvidí po odpovědi."
+    },
+    "chart": {
+      "showData": "Zobrazit data",
+      "series": "Řada {n}",
+      "bar": "Sloupcový graf: {series}",
+      "line": "Spojnicový graf: {series}, {from} až {to}"
+    }
   }
 }

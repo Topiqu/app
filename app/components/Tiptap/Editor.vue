@@ -14,6 +14,10 @@
           :limit
           @openLink="openLink"
           @insertPoll="insertPoll"
+          @insertQuiz="insertQuiz"
+          @insertCta="insertCta"
+          @insertCallout="toggleCallout"
+          @insertProsCons="insertProsCons"
           @openProductPicker="productPickerOpen = true"
           @openXPostPrompt="xPostPromptOpen = true"
           @uploadFile="uploadImage"
@@ -25,6 +29,7 @@
         <!-- No v-if on bubble menus: Tiptap detaches their element, so unmounting one on an `edit`
              toggle crashes the patch and freezes the whole editor page. They gate on isEditable. -->
         <TiptapToolbarTableBubble :editor />
+        <TiptapToolbarCalloutBubble :editor />
         <TiptapToolbarImageBubble :editor @replace="openReplace" @inspect="openMediaDetail" />
 
         <EditorContent
@@ -168,6 +173,39 @@ const insertPoll = () =>
     }),
   )
 
+// The first option starts as the correct one, so a new quiz is never saved without an answer.
+const insertQuiz = () =>
+  run((c) =>
+    c.insertContent({
+      type: 'quiz',
+      attrs: {
+        id: crypto.randomUUID(),
+        question: $t('articles.quiz.defaultQuestion'),
+        options: [1, 2].map((i) => ({
+          label: $t('articles.poll.option', { index: i }),
+          ...(i === 1 && { correct: true }),
+        })),
+        explanation: '',
+      },
+    }),
+  )
+
+const insertCta = () =>
+  run((c) =>
+    c.insertCta({
+      title: $t('articles.editor.cta.defaultTitle'),
+      text: '',
+      label: $t('articles.editor.cta.defaultLabel'),
+      url: '',
+      tone: 'accent',
+    }),
+  )
+
+const toggleCallout = () => run((c) => (editor.value?.isActive('callout') ? c.unsetCallout() : c.setCallout('note')))
+
+const insertProsCons = () =>
+  run((c) => c.insertProsCons({ pros: $t('articles.editor.prosCons.pros'), cons: $t('articles.editor.prosCons.cons') }))
+
 const focusEditor = () => editor.value?.chain().focus().run()
 
 const handleEditorClick = async () => {
@@ -199,6 +237,20 @@ const validateContent = (html: string) => {
       p.setAttribute('data-options', options)
     }
   })
+  // Same pass for quizzes, whose options also carry the correct-answer flag.
+  doc.querySelectorAll('div[data-type="quiz"]').forEach((quiz) => {
+    let raw: unknown = []
+    try {
+      raw = JSON.parse(quiz.getAttribute('data-options') ?? '[]')
+    } catch (e) {
+      console.error(e)
+    }
+    const options = quizOptionsAttr(raw, $t('articles.poll.defaultOption'))
+    if (options !== quiz.getAttribute('data-options')) {
+      changed = true
+      quiz.setAttribute('data-options', options)
+    }
+  })
   return changed ? doc.body.innerHTML : html
 }
 
@@ -206,6 +258,10 @@ const { suggestion } = useTiptapSlashCommand({
   openImagePrompt: () => openLink({ type: 'image' }),
   openYoutubePrompt: () => openLink({ type: 'youtube' }),
   insertPoll: () => insertPoll(),
+  insertQuiz: () => insertQuiz(),
+  insertCta: () => insertCta(),
+  insertCallout: () => toggleCallout(),
+  insertProsCons: () => insertProsCons(),
   openProductPicker: () => (productPickerOpen.value = true),
   openXPostPrompt: () => (xPostPromptOpen.value = true),
 })

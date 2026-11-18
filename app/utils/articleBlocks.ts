@@ -13,6 +13,10 @@ export const parseArticleBlocks = (content: string | null | undefined) => {
         outerHtml: el.outerHTML,
         text: el.textContent ?? '',
         attr: (name) => el.getAttribute(name),
+        cells: () =>
+          Array.from(el.querySelectorAll('tr'), (row) =>
+            Array.from(row.querySelectorAll(':scope > th, :scope > td'), (cell) => cell.textContent?.trim() ?? ''),
+          ),
       }
     }
     return {

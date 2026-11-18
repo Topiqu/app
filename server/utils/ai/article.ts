@@ -553,7 +553,7 @@ export const streamArticle = async (
           ...config,
           prompt: `${prompt}
 
-Your previous answer was cut off after the article below. The article is final: do not rewrite it. Return only the remaining fields for exactly this text. It has ${slots.IMAGE} image, ${slots.POLL} poll, ${slots.VIDEO} video and ${slots.XPOST} X post slots; return exactly that many entries of each, in slot order.
+Your previous answer was cut off after the article below. The article is final: do not rewrite it. Return only the remaining fields for exactly this text. It has ${slots.IMAGE} image, ${slots.POLL} poll, ${slots.QUIZ} quiz, ${slots.VIDEO} video and ${slots.XPOST} X post slots; return exactly that many entries of each, in slot order.
 
 Title: ${body.title}
 Perex: ${body.perex}
@@ -583,6 +583,7 @@ ${body.content}`,
         coverImage: { type: 'photo' as const, query: body.title, broaderQuery: '' },
         images: [],
         polls: [],
+        quizzes: [],
         videos: [],
         xPosts: [],
         tags: [],

@@ -5,7 +5,16 @@ import { htmlToText } from './articleBlocks'
 export const ARTICLE_GENERATION_FORMATS = ['news', 'analysis', 'guide', 'comparison', 'opinion', 'story'] as const
 export type ArticleGenerationFormat = (typeof ARTICLE_GENERATION_FORMATS)[number]
 
-export const ARTICLE_GENERATION_MODULES = ['answer', 'takeaways', 'faq', 'poll', 'table', 'images', 'youtube'] as const
+export const ARTICLE_GENERATION_MODULES = [
+  'answer',
+  'takeaways',
+  'faq',
+  'poll',
+  'quiz',
+  'table',
+  'images',
+  'youtube',
+] as const
 export type ArticleGenerationModule = (typeof ARTICLE_GENERATION_MODULES)[number]
 
 /** What a format proposes when chosen in the editor; the author can still pick any module.
@@ -90,15 +99,6 @@ export interface ReleaseHold {
   issues: GenerationReviewIssue[]
 }
 
-export const releaseHoldOf = (input: {
-  review: GenerationReview | null
-  researchApproved: boolean
-  mediaApproved: boolean
-  coverApproved: boolean
-}): ReleaseHold => {
-  const reasons: ReleaseHoldReason[] = []
-  if (input.review?.approved !== true) reasons.push('review')
-  if (!input.researchApproved) reasons.push('research')
 export const researchHasSources = (research?: Pick<GenerationResearchResult, 'status' | 'sourceCount'> | null) =>
   research?.status === 'completed' && research.sourceCount > 0
 
@@ -111,6 +111,15 @@ export const researchGrounded = (input: {
   verifiedSources: number
 }) => researchHasSources(input.research) || input.verifiedSources > 0
 
+export const releaseHoldOf = (input: {
+  review: GenerationReview | null
+  researchApproved: boolean
+  mediaApproved: boolean
+  coverApproved: boolean
+}): ReleaseHold => {
+  const reasons: ReleaseHoldReason[] = []
+  if (input.review?.approved !== true) reasons.push('review')
+  if (!input.researchApproved) reasons.push('research')
   if (!input.mediaApproved) reasons.push('media')
   if (!input.coverApproved) reasons.push('cover')
   const issues = (input.review?.issues ?? [])
@@ -402,6 +411,7 @@ export const missingArticleModules = (
     takeaways: Boolean(article.keyTakeaways?.length),
     faq: Boolean(article.faq?.length),
     poll: /data-type=["']poll["']/i.test(content),
+    quiz: /data-type=["']quiz["']/i.test(content),
     table: /<table\b/i.test(content),
     images: /<img\b/i.test(content),
     youtube: /data-youtube-video/i.test(content),

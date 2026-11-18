@@ -26,14 +26,21 @@ const makeDb = (polls: Array<{ id: string; options: string[] }> = []) => {
   return db
 }
 
-const optionsAttr = (opts: Array<{ id?: string; label: string }>) => JSON.stringify(opts).replace(/"/g, '&quot;')
+const optionsAttr = (opts: Array<{ id?: string; label: string; correct?: boolean }>) =>
+  JSON.stringify(opts).replace(/"/g, '&quot;')
 
-const pollBlock = (attrs: Record<string, string>) => {
+const block = (type: 'poll' | 'quiz', attrs: Record<string, string>) => {
   const a = Object.entries(attrs)
     .map(([k, v]) => `${k}="${v}"`)
     .join(' ')
-  return `<div data-type="poll" ${a}></div>`
+  return `<div data-type="${type}" ${a}></div>`
 }
+const pollBlock = (attrs: Record<string, string>) => block('poll', attrs)
+const quizBlock = (attrs: Record<string, string>) => block('quiz', attrs)
+
+// The rewritten `data-options` of each block, in document order.
+const optionsOf = (html: string) =>
+  [...html.matchAll(/data-options="([^"]*)"/g)].map((m) => JSON.parse(m[1]!.replace(/&quot;/g, '"')))
 
 describe('syncArticlePolls', () => {
   beforeEach(() => vi.clearAllMocks())
@@ -169,5 +176,147 @@ describe('syncArticlePolls', () => {
 
     expect(db.poll.create).toHaveBeenCalledWith({ data: { articleId: ARTICLE, question: 'Q1', order: 0 } })
     expect(db.pollOption.create).toHaveBeenCalledWith({ data: { pollId: 'new-poll-1', label: 'A1', order: 0 } })
+  })
+
+  it('gives a copied poll a row of its own instead of sharing the original’s', async () => {
+    const db = makeDb([{ id: 'poll-1', options: ['opt-a'] }])
+    const copy = pollBlock({
+      'data-poll-id': 'poll-1',
+      'data-question': 'P',
+      'data-options': optionsAttr([{ id: 'opt-a', label: 'A' }]),
+    })
+
+    const result = await syncArticlePolls(db, ARTICLE, copy + copy)
+
+    expect(db.poll.create).toHaveBeenCalledTimes(1)
+    expect(optionsOf(result)).toEqual([[{ id: 'opt-a', label: 'A' }], [{ id: 'new-opt-1', label: 'A' }]])
+    expect(db.poll.deleteMany).toHaveBeenCalledWith({
+      where: { articleId: ARTICLE, id: { notIn: ['poll-1', 'new-poll-1'] } },
+    })
+  })
+})
+
+describe('syncArticlePolls with quizzes', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('stores a quiz like a poll and keeps the correct flag on the option it was written on', async () => {
+    const db = makeDb()
+    const content = quizBlock({
+      'data-question': 'Kolik nohou má pavouk?',
+      'data-options': optionsAttr([{ label: 'Šest' }, { label: 'Osm', correct: true }, { label: 'Deset' }]),
+      'data-explanation': 'Pavoukovci mají &quot;osm&quot; noh.',
+    })
+
+    const result = await syncArticlePolls(db, ARTICLE, content)
+
+    expect(db.poll.create).toHaveBeenCalledWith({
+      data: { articleId: ARTICLE, question: 'Kolik nohou má pavouk?', order: 0 },
+    })
+    expect(db.pollOption.create).toHaveBeenCalledTimes(3)
+    expect(result).toContain('data-type="quiz"')
+    expect(result).toContain('data-poll-id="new-poll-1"')
+    expect(optionsOf(result)).toEqual([
+      [
+        { id: 'new-opt-1', label: 'Šest' },
+        { id: 'new-opt-2', label: 'Osm', correct: true },
+        { id: 'new-opt-3', label: 'Deset' },
+      ],
+    ])
+    expect(result).toContain('data-explanation="Pavoukovci mají &quot;osm&quot; noh."')
+  })
+
+  it('keeps one correct option, and a poll never gains the flag', async () => {
+    const db = makeDb([
+      { id: 'quiz-1', options: ['q-a', 'q-b'] },
+      { id: 'poll-1', options: ['p-a'] },
+    ])
+    const content =
+      quizBlock({
+        'data-poll-id': 'quiz-1',
+        'data-question': 'Q',
+        'data-options': optionsAttr([
+          { id: 'q-a', label: 'A (renamed)', correct: true },
+          { id: 'q-b', label: 'B', correct: true },
+        ]),
+      }) +
+      pollBlock({
+        'data-poll-id': 'poll-1',
+        'data-question': 'P',
+        'data-options': optionsAttr([{ id: 'p-a', label: 'A', correct: true }]),
+      })
+
+    const result = await syncArticlePolls(db, ARTICLE, content)
+
+    expect(db.poll.create).not.toHaveBeenCalled()
+    expect(db.pollOption.update).toHaveBeenCalledWith({
+      where: { id: 'q-a' },
+      data: { label: 'A (renamed)', order: 0 },
+    })
+    expect(optionsOf(result)).toEqual([
+      [
+        { id: 'q-a', label: 'A (renamed)', correct: true },
+        { id: 'q-b', label: 'B' },
+      ],
+      [{ id: 'p-a', label: 'A' }],
+    ])
+  })
+
+  it('orders polls and quizzes together, in document order', async () => {
+    const db = makeDb([
+      { id: 'poll-1', options: ['p1'] },
+      { id: 'quiz-1', options: ['q1'] },
+      { id: 'poll-2', options: ['p2'] },
+    ])
+    const opts = (id: string) => optionsAttr([{ id, label: id }])
+    const content =
+      pollBlock({ 'data-poll-id': 'poll-1', 'data-question': 'P1', 'data-options': opts('p1') }) +
+      '<p>text</p>' +
+      quizBlock({ 'data-poll-id': 'quiz-1', 'data-question': 'Q1', 'data-options': opts('q1') }) +
+      pollBlock({ 'data-poll-id': 'poll-2', 'data-question': 'P2', 'data-options': opts('p2') })
+
+    await syncArticlePolls(db, ARTICLE, content)
+
+    expect(db.poll.update.mock.calls.map(([args]: any) => [args.where.id, args.data.order])).toEqual([
+      ['poll-1', 0],
+      ['quiz-1', 1],
+      ['poll-2', 2],
+    ])
+    // A quiz row is no orphan to the poll cleanup.
+    expect(db.poll.deleteMany).toHaveBeenCalledWith({
+      where: { articleId: ARTICLE, id: { notIn: ['poll-1', 'quiz-1', 'poll-2'] } },
+    })
+  })
+
+  it('gives a quiz that claims a poll’s row a row of its own, leaving the poll’s options alone', async () => {
+    const db = makeDb([{ id: 'poll-1', options: ['opt-a', 'opt-b'] }])
+    const content =
+      pollBlock({
+        'data-poll-id': 'poll-1',
+        'data-question': 'P',
+        'data-options': optionsAttr([
+          { id: 'opt-a', label: 'A' },
+          { id: 'opt-b', label: 'B' },
+        ]),
+      }) +
+      quizBlock({
+        'data-poll-id': 'poll-1',
+        'data-question': 'Q',
+        'data-options': optionsAttr([{ id: 'opt-a', label: 'A', correct: true }]),
+      })
+
+    const result = await syncArticlePolls(db, ARTICLE, content)
+
+    expect(db.poll.findFirst).toHaveBeenCalledTimes(1)
+    expect(db.poll.update).toHaveBeenCalledTimes(1)
+    expect(db.poll.create).toHaveBeenCalledWith({ data: { articleId: ARTICLE, question: 'Q', order: 1 } })
+    // Only the poll pass touches the poll's options; the quiz cannot rename or prune them.
+    expect(db.pollOption.update).toHaveBeenCalledTimes(2)
+    expect(db.pollOption.create).toHaveBeenCalledWith({ data: { pollId: 'new-poll-1', label: 'A', order: 0 } })
+    expect(db.pollOption.deleteMany).toHaveBeenCalledTimes(2)
+    expect(db.pollOption.deleteMany).toHaveBeenLastCalledWith({
+      where: { pollId: 'new-poll-1', id: { notIn: ['new-opt-1'] } },
+    })
+    expect(result).toContain('data-poll-id="new-poll-1"')
+    expect(optionsOf(result)[1]).toEqual([{ id: 'new-opt-1', label: 'A', correct: true }])
   })
 })

@@ -119,6 +119,24 @@
             @click="emit('insertPoll')"
           />
           <UButton
+            icon="mdi:help-circle-outline"
+            :class="optionalClass"
+            color="neutral"
+            variant="ghost"
+            :title="$t('articles.editor.toolbar.insertQuiz')"
+            :aria-label="$t('articles.editor.toolbar.insertQuiz')"
+            @click="emit('insertQuiz')"
+          />
+          <UButton
+            icon="mdi:bullhorn-outline"
+            :class="optionalClass"
+            color="neutral"
+            variant="ghost"
+            :title="$t('articles.editor.toolbar.insertCta')"
+            :aria-label="$t('articles.editor.toolbar.insertCta')"
+            @click="emit('insertCta')"
+          />
+          <UButton
             icon="mdi:shopping-outline"
             :class="optionalClass"
             color="neutral"
@@ -189,15 +207,33 @@
           />
         </UFieldGroup>
 
-        <UButton
-          icon="mdi:table-plus"
-          :class="optionalClass"
-          color="neutral"
-          variant="ghost"
-          :title="$t('articles.editor.toolbar.insertTable')"
-          :aria-label="$t('articles.editor.toolbar.insertTable')"
-          @click="run((c) => c.insertTable({ rows: 3, cols: 3, withHeaderRow: true }))"
-        />
+        <UFieldGroup class="shrink-0" :class="optionalClass">
+          <UButton
+            icon="mdi:table-plus"
+            color="neutral"
+            variant="ghost"
+            :title="$t('articles.editor.toolbar.insertTable')"
+            :aria-label="$t('articles.editor.toolbar.insertTable')"
+            @click="run((c) => c.insertTable({ rows: 3, cols: 3, withHeaderRow: true }))"
+          />
+          <UButton
+            icon="mdi:information-box-outline"
+            color="neutral"
+            variant="ghost"
+            :title="$t('articles.editor.toolbar.insertCallout')"
+            :aria-label="$t('articles.editor.toolbar.insertCallout')"
+            :active="editor.isActive('callout')"
+            @click="emit('insertCallout')"
+          />
+          <UButton
+            icon="mdi:scale-balance"
+            color="neutral"
+            variant="ghost"
+            :title="$t('articles.editor.toolbar.insertProsCons')"
+            :aria-label="$t('articles.editor.toolbar.insertProsCons')"
+            @click="emit('insertProsCons')"
+          />
+        </UFieldGroup>
 
         <UButton
           icon="mdi:creation-outline"
@@ -252,7 +288,18 @@ const { editor, limit } = defineProps<{ editor: Editor; limit: number }>()
 const emit = defineEmits<{
   (e: 'openLink', payload: { type: 'link' | 'image' | 'youtube'; url?: string }): void
   (e: 'uploadFile', files: FileList | null): void
-  (e: 'insertPoll' | 'focusEditor' | 'openMedia' | 'openProductPicker' | 'openXPostPrompt'): void
+  (
+    e:
+      | 'insertPoll'
+      | 'insertQuiz'
+      | 'insertCta'
+      | 'insertCallout'
+      | 'insertProsCons'
+      | 'focusEditor'
+      | 'openMedia'
+      | 'openProductPicker'
+      | 'openXPostPrompt',
+  ): void
 }>()
 
 const sk = useTiptapShortcuts()

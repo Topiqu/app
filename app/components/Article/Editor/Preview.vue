@@ -16,8 +16,8 @@
 <script setup lang="ts">
 import type { CoverCredit } from '~~/shared/utils/imageCredit'
 
-// Polls are inert here: a poll only gets its `data-poll-id` from `syncArticlePolls` on save, and
-// `ArticleParsed` degrades an unstamped block to raw HTML.
+// Polls and quizzes are inert here: they only get a `data-poll-id` from `syncArticlePolls` on save;
+// `ArticleParsed` degrades an unstamped poll to raw HTML and leaves an unstamped quiz out.
 const props = defineProps<{
   title?: string | null
   excerpt?: string | null

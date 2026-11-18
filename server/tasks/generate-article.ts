@@ -682,7 +682,9 @@ Respond ONLY in valid JSON (schema required).
         answer: Boolean(generated.answer),
         takeaways: Boolean(generated.keyTakeaways?.length),
         faq: Boolean(generated.faq?.length),
-        poll: /data-poll-id/i.test(contentWithPolls),
+        // A quiz carries `data-poll-id` too, so the type decides which module was delivered.
+        poll: /<div\b[^>]*\bdata-type="poll"[^>]*\bdata-poll-id=/i.test(contentWithPolls),
+        quiz: /<div\b[^>]*\bdata-type="quiz"[^>]*\bdata-poll-id=/i.test(contentWithPolls),
         table: /<table\b/i.test(contentWithPolls),
         images: /<img\b/i.test(contentWithPolls),
         youtube: /data-youtube-video/i.test(contentWithPolls),

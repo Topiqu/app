@@ -523,7 +523,16 @@
         "removeLink": "Supprimer le lien",
         "removeColor": "Supprimer la couleur",
         "characters": "caractères",
-        "words": "mots"
+        "words": "mots",
+        "insertQuiz": "Insérer un quiz",
+        "insertCta": "Insérer un appel à l’action",
+        "insertCallout": "Encadré",
+        "insertProsCons": "Avantages et inconvénients",
+        "callout": "Encadré",
+        "chart": "Afficher en graphique",
+        "chartNone": "Tableau seul",
+        "chartBar": "Graphique en barres",
+        "chartLine": "Graphique linéaire"
       },
       "altModal": {
         "title": "Description de l'image",
@@ -599,7 +608,8 @@
           "poll": "Sondage des lecteurs",
           "table": "Tableau comparatif",
           "images": "Images dans l'article",
-          "youtube": "Vidéo YouTube"
+          "youtube": "Vidéo YouTube",
+          "quiz": "Quiz pour les lecteurs"
         },
         "phaseResearch": "Vérification des faits et recherche de sources…",
         "phaseWriting": "Rédaction en cours…",
@@ -802,6 +812,7 @@
             "generic_language": "Formulations génériques",
             "missing_specifics": "Détails manquants",
             "assignment_mismatch": "Non-respect de la consigne",
+            "tone_mismatch": "Ton non respecté",
             "broken_structure": "Structure défaillante"
           },
           "note": {
@@ -812,7 +823,6 @@
               "poll": "Ajoutez exactement un sondage demandé.",
               "images": "Ajoutez les images demandées dans le texte.",
               "table": "Ajoutez le tableau demandé.",
-            "tone_mismatch": "Ton non respecté",
               "youtube": "Intégrez la vidéo YouTube trouvée par la recherche."
             },
             "repeatedTableSubjects": "Le tableau répète des lignes pour : {subjects}. Utilisez une ligne par élément.",
@@ -1199,6 +1209,32 @@
           "cover": "Il manque une image de couverture."
         },
         "publish": "Publier quand même"
+      },
+      "callout": {
+        "note": "Remarque",
+        "tip": "Astuce",
+        "warning": "Attention",
+        "remove": "Retirer l’encadré"
+      },
+      "cta": {
+        "card": "Appel à l’action",
+        "title": "Titre",
+        "text": "Texte d’accompagnement",
+        "label": "Texte du bouton",
+        "url": "Lien",
+        "urlHint": "Une adresse https:// ou un chemin sur votre site, p. ex. /contact",
+        "urlInvalid": "Saisissez une adresse https:// ou un chemin commençant par /. Sans lien, l’encadré n’est pas affiché.",
+        "tone": "Style",
+        "tones": {
+          "accent": "Marqué",
+          "info": "Discret"
+        },
+        "defaultTitle": "Besoin d’aide à ce sujet ?",
+        "defaultLabel": "Contactez-nous"
+      },
+      "prosCons": {
+        "pros": "Avantages",
+        "cons": "Inconvénients"
       }
     },
     "image": {
@@ -1215,6 +1251,30 @@
     "authorsArticles": "Articles de cet auteur",
     "tagsArticles": "Articles avec le tag « {name} »",
     "keyTakeaways": "Points clés",
-    "faq": "Questions fréquentes"
+    "faq": "Questions fréquentes",
+    "quiz": {
+      "label": "Quiz",
+      "yourAnswer": "Votre réponse",
+      "correctAnswer": "Bonne réponse",
+      "correct": "Bonne réponse !",
+      "incorrect": "Pas tout à fait. La bonne réponse est « {answer} ».",
+      "correctShare": "{percent} % des lecteurs ont bien répondu",
+      "notOpenYet": "Les réponses seront ouvertes à la publication de l’article.",
+      "defaultQuestion": "Saisissez la question du quiz",
+      "question": "Question du quiz",
+      "delete": "Supprimer le quiz",
+      "options": "Réponses – cochez la bonne",
+      "markCorrect": "Marquer l’option {index} comme bonne réponse",
+      "removeOption": "Retirer l’option {index}",
+      "correctMissing": "Cochez une réponse renseignée comme bonne, sinon les réponses ne pourront pas être évaluées.",
+      "explanation": "Explication (facultative)",
+      "explanationHelp": "Affichée aux lecteurs après leur réponse."
+    },
+    "chart": {
+      "showData": "Afficher les données",
+      "series": "Série {n}",
+      "bar": "Graphique en barres : {series}",
+      "line": "Graphique linéaire : {series}, de {from} à {to}"
+    }
   }
 }
