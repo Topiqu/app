@@ -157,6 +157,21 @@
     "xPost": {
       "media": "Het bericht bevat een foto of video.",
       "view": "Bekijk op X"
+    },
+    "quiz": {
+      "label": "Quiz",
+      "yourAnswer": "Je antwoord",
+      "correctAnswer": "Juiste antwoord",
+      "correct": "Goed zo!",
+      "incorrect": "Niet helemaal. Het juiste antwoord is ‘{answer}’.",
+      "correctShare": "{percent}% van de lezers antwoordde goed",
+      "notOpenYet": "Je kunt antwoorden zodra het artikel is gepubliceerd."
+    },
+    "chart": {
+      "showData": "Gegevens tonen",
+      "series": "Reeks {n}",
+      "bar": "Staafdiagram: {series}",
+      "line": "Lijndiagram: {series}, van {from} tot {to}"
     }
   },
   "common": {

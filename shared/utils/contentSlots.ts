@@ -1,11 +1,11 @@
-export type SlotKind = 'IMAGE' | 'POLL' | 'VIDEO' | 'XPOST'
+export type SlotKind = 'IMAGE' | 'POLL' | 'QUIZ' | 'VIDEO' | 'XPOST'
 
 export type ContentSlot = { slot: number; html: string }
 
 const slotPattern = (kind: SlotKind, slot?: number) =>
   new RegExp(`\\[\\[\\s*${kind}\\s*(${slot ?? '\\d+'})\\s*\\]\\]`, 'gi')
 
-const anySlot = String.raw`\[\[\s*(?:IMAGE|POLL|VIDEO|XPOST)\s*\d+\s*\]\]`
+const anySlot = String.raw`\[\[\s*(?:IMAGE|POLL|QUIZ|VIDEO|XPOST)\s*\d+\s*\]\]`
 const slotInImg = new RegExp(String.raw`<img\b[^>]*?(${anySlot})[^>]*>`, 'gi')
 const slotInFigure = new RegExp(
   String.raw`<figure\b[^>]*>(?:(?!</figure>)[\s\S])*?(${anySlot})(?:(?!</figure>)[\s\S])*?</figure>`,
@@ -50,4 +50,7 @@ export const applyContentSlots = (content: string, kind: SlotKind, slots: Conten
  * author's body as literal text.
  */
 export const stripContentSlots = (content: string) =>
-  (['IMAGE', 'POLL', 'VIDEO', 'XPOST'] as const).reduce((body, kind) => applyContentSlots(body, kind, []), content)
+  (['IMAGE', 'POLL', 'QUIZ', 'VIDEO', 'XPOST'] as const).reduce(
+    (body, kind) => applyContentSlots(body, kind, []),
+    content,
+  )

@@ -83,6 +83,7 @@
         "focus": "Zaměření blogu",
         "audience": "Primární publikum",
         "aiToneOfVoice": "Styl psaní",
+        "aiControversyLevel": "Síla názoru",
         "language": "Jazyk obsahu",
         "socials": "Sociální profily",
         "knowledge": "Znalostní podklady"
@@ -1271,7 +1272,8 @@
         "generateFailed": "API klíč se nepodařilo vytvořit",
         "label": "API klíč",
         "createdTitle": "Klíč „{name}“ je vytvořený",
-        "shownOnce": "Zkopírujte si ho hned. Topiqu si ukládá jen otisk a klíč už znovu zobrazit nemůže.",
+        "shownOnce": "Zkopírujte si ho teď, znovu ho už neuvidíte.",
+        "done": "Hotovo",
         "name": "Název",
         "nameHint": "Kde se klíč používá, např. „WordPress“ nebo „Make“",
         "scopes": "Oprávnění",
@@ -1633,20 +1635,27 @@
           }
         },
         "controversyLevel": {
-          "label": "Míra kontroverze",
-          "help": "Vyšší úroveň dovolí autorovi formulovat výraznější názory, ne obcházet fakta.",
-          "placeholder": "Jak moc se má AI pouštět do kontroverzních témat?",
+          "label": "Síla názoru",
+          "recommended": "Doporučeno",
+          "help": "Určuje, jak výrazně články zaujmou stanovisko. Volbu slov řídí styl psaní. Fakta se ověřují na každé úrovni stejně přísně.",
+          "exampleLabel": "Ukázka:",
           "options": {
-            "NONE": "Žádná (bezpečná témata)",
-            "LOW": "Nízká (občasné zamyšlení)",
-            "MEDIUM": "Střední (zdravá diskuze)",
-            "HIGH": "Vysoká (provokativní názory)"
+            "NONE": "Neutrální (vysvětluje, nehodnotí)",
+            "LOW": "Věcný (doporučí, kde fakta jasně ukazují směr)",
+            "MEDIUM": "Názorový (jasná teze, občasná ironie)",
+            "HIGH": "Ostrý (provokativní teze, sarkasmus)"
           },
           "short": {
-            "NONE": "Žádná",
-            "LOW": "Nízká",
-            "MEDIUM": "Střední",
-            "HIGH": "Vysoká"
+            "NONE": "Neutrální",
+            "LOW": "Věcný",
+            "MEDIUM": "Názorový",
+            "HIGH": "Ostrý"
+          },
+          "examples": {
+            "NONE": "„Čtyřdenní týden některým firmám zvýšil produktivitu, jiným zkomplikoval rozvrhy. Výsledek závisí na typu práce.“",
+            "LOW": "„U kancelářských týmů data mluví pro vyzkoušení: začněte tříměsíčním pilotem.“",
+            "MEDIUM": "„Čtyřdenní týden funguje a firmy, které ho odmítají, většinou brání zvyk, ne výsledky.“",
+            "HIGH": "„Pět dní u stolu: nejdražší rituál, který manažeři pořád odmítají zpochybnit.“"
           }
         }
       },

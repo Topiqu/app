@@ -41,6 +41,7 @@ export const websiteSnapshot = (site: {
   focus: string | null
   audience: string | null
   aiToneOfVoice: string | null
+  aiControversyLevel: string | null
   language: WebsiteValues['language']
   socials: WebsiteValues['socials']
 }): WebsiteValues => ({
@@ -51,6 +52,8 @@ export const websiteSnapshot = (site: {
   focus: site.focus,
   audience: site.audience,
   aiToneOfVoice: site.aiToneOfVoice,
+  // The level the writer applies, so an unset site compares as the default it already writes at.
+  aiControversyLevel: controversyLevelOf(site.aiControversyLevel),
   language: site.language,
   keywords: Array.isArray(site.keywords)
     ? site.keywords.filter((value): value is string => typeof value === 'string')

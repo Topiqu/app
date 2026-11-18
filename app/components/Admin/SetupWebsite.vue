@@ -84,6 +84,12 @@ const summary = computed(() => {
   const rows = (['focus', 'audience', 'aiToneOfVoice'] as const)
     .filter((field) => values[field]?.trim())
     .map((field) => ({ field: field as WebsiteImportField, value: values[field]! }))
+  // Accept-all applies the level too, so the summary names it rather than hiding a change to the voice.
+  if (values.aiControversyLevel)
+    rows.push({
+      field: 'aiControversyLevel',
+      value: t(`common.preferences.aiAuthor.controversyLevel.options.${values.aiControversyLevel}`),
+    })
   const pages = job.value?.knowledge.length ?? 0
   return pages
     ? [...rows, { field: 'knowledge' as const, value: t('common.setup.checklist.website.sources', pages) }]

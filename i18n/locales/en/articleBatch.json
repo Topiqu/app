@@ -129,9 +129,10 @@
       }
     },
     "nudge": {
-      "title": "You have {n} free credits",
-      "description": "Topiqu can propose how to use them. You only approve.",
-      "action": "See how"
+      "title": "{n} free credit | {n} free credits",
+      "description": "We’ll suggest how to use them.",
+      "capped": "Unused credits no longer carry over. We’ll suggest how to use them.",
+      "action": "View"
     }
   }
 }

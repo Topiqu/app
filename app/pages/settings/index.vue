@@ -204,7 +204,7 @@
             @update:username="form.aiUser.username = $event"
             @update:bio="form.aiUser.bio = $event"
             @update:aiToneOfVoice="form.aiToneOfVoice = $event ?? ''"
-            @update:aiControversyLevel="form.aiControversyLevel = $event ?? ''"
+            @update:aiControversyLevel="form.aiControversyLevel = $event"
             @update:avatarUrl="((form.aiUser.avatarUrl = $event), (pristine.aiUser.avatarUrl = $event))"
             @update:autoRelease="form.autoRelease = $event"
             @update:aiSeriesEnabled="form.aiSeriesEnabled = $event"

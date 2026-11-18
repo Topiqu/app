@@ -157,6 +157,17 @@ describe('bounded website AI requests', () => {
     expect(result.values).not.toHaveProperty('topics')
     expect(result.topics).toEqual([])
   })
+  it('proposes an opinion strength from how the site itself writes', async () => {
+    mocks.text = JSON.stringify({ ...emptyWebsiteValues(), aiControversyLevel: 'MEDIUM' })
+    const result = await analyzeWebsite('import-1', 'site-1', {
+      language: 'cs',
+      research: 'Evidence',
+      pages: [],
+      metadata: { logoUrls: [], faviconUrls: [], colors: [], socials: [] },
+    })
+    expect(result.values.aiControversyLevel).toBe('MEDIUM')
+    expect(JSON.stringify(mocks.requests[0])).toContain('LOW for most company sites')
+  })
   it('keeps the settings when a proposed topic is unusable and caps the topics at three', async () => {
     const topic = (index: number) => ({
       topic: `Jak vybrat kávu na espresso, díl ${index}`,

@@ -49,7 +49,7 @@ export interface ClientSettingsForm extends PublicationChannelSettings, ReleaseS
   socials: { platform: SocialPlatform; url: string }[]
   aiUser: { username: string; bio: string; avatarUrl: string; optimizedAvatarUrl: string }
   aiToneOfVoice: string
-  aiControversyLevel: string
+  aiControversyLevel: ControversyLevel
   gtagId: string
   gamNetworkCode: string
   autoRelease: boolean
@@ -88,7 +88,7 @@ const emptyForm = (): ClientSettingsForm => ({
   socials: [],
   aiUser: { username: '', bio: '', avatarUrl: '', optimizedAvatarUrl: '' },
   aiToneOfVoice: '',
-  aiControversyLevel: '',
+  aiControversyLevel: DEFAULT_CONTROVERSY_LEVEL,
   gtagId: '',
   gamNetworkCode: '',
   autoRelease: false,
@@ -160,7 +160,7 @@ export function buildClientSettingsForm(client?: ClientSite | null): ClientSetti
       optimizedAvatarUrl: '',
     },
     aiToneOfVoice: client.aiToneOfVoice ?? '',
-    aiControversyLevel: client.aiControversyLevel ?? '',
+    aiControversyLevel: controversyLevelOf(client.aiControversyLevel),
     gtagId: client.gtagId ?? '',
     gamNetworkCode: client.gamNetworkCode ?? '',
     autoRelease: client.autoRelease ?? false,

@@ -46,6 +46,10 @@ describe('settings integrations catalog', () => {
     // The settings payload no longer carries a key; a new one lives in component state until the page closes.
     expect(settings).not.toContain('apiKey')
     expect(keys).toContain("$t('common.preferences.api.shownOnce')")
+    // A new key is shown in a dialog that only the button closes, so a stray click cannot lose it.
+    expect(keys).toContain(':dismissible="false"')
+    // Cleared only after the close animation, so the closing dialog never shows an empty key.
+    expect(keys).toContain('@after:leave="created = null"')
     expect(keys).toContain("variant: 'danger'")
   })
 

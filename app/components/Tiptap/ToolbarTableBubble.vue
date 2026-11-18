@@ -26,6 +26,24 @@
       />
     </div>
     <div class="shrink-0"><TiptapColorPicker v-model="cellColor" labelKey="cellColor" :portal="false" size="sm" /></div>
+    <div
+      class="flex shrink-0 items-center gap-1 border-s border-default ps-1"
+      role="group"
+      :aria-label="$t('articles.editor.toolbar.chart')"
+    >
+      <UButton
+        v-for="kind in chartKinds"
+        :key="kind.value ?? 'none'"
+        :icon="kind.icon"
+        :color="chart === kind.value ? 'primary' : 'neutral'"
+        :variant="chart === kind.value ? 'soft' : 'ghost'"
+        size="sm"
+        :title="$t(kind.label)"
+        :aria-label="$t(kind.label)"
+        :aria-pressed="chart === kind.value"
+        @click="run((c) => c.updateAttributes('table', { chart: kind.value }))"
+      />
+    </div>
   </BubbleMenu>
 </template>
 
@@ -56,6 +74,14 @@ const getReferencedElement = () => {
   const element = node instanceof Element ? node : node.parentElement
   return element?.closest('td, th, table') ?? null
 }
+
+// The page draws a marked table as a chart when its numbers parse; otherwise it stays a table.
+const chartKinds = [
+  { value: null, icon: 'mdi:table', label: 'articles.editor.toolbar.chartNone' },
+  { value: 'bar', icon: 'mdi:chart-bar', label: 'articles.editor.toolbar.chartBar' },
+  { value: 'line', icon: 'mdi:chart-line', label: 'articles.editor.toolbar.chartLine' },
+] as const
+const chart = computed(() => editor.getAttributes('table').chart ?? null)
 
 const run = (fn: (c: ChainedCommands) => ChainedCommands) => {
   fn(editor.chain().focus()).run()

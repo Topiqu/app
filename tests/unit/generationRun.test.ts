@@ -7,6 +7,7 @@ import {
   missingArticleModules,
   reduceGenerationRun,
   releaseHoldOf,
+  researchGrounded,
   startGenerationRun,
   writtenHeadings,
   type GenerationEvent,
@@ -246,5 +247,21 @@ describe('writtenHeadings', () => {
       ),
     ).toEqual(['Cena & dotace', 'Instalace'])
     expect(writtenHeadings(null)).toEqual([])
+  })
+})
+
+describe('researchGrounded', () => {
+  const grounded = (status: 'completed' | 'fallback', sourceCount: number, verifiedSources: number) =>
+    researchGrounded({ research: { status, sourceCount }, verifiedSources })
+
+  it('grounds a news piece in its research or, when research failed, in the live fact check', () => {
+    expect(grounded('completed', 3, 0)).toBe(true)
+    expect(grounded('fallback', 0, 2)).toBe(true)
+  })
+
+  it('does not ground a piece without retrieved sources', () => {
+    expect(grounded('completed', 0, 0)).toBe(false)
+    expect(grounded('fallback', 0, 0)).toBe(false)
+    expect(researchGrounded({ research: null, verifiedSources: 0 })).toBe(false)
   })
 })

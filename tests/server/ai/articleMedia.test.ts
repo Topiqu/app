@@ -244,6 +244,23 @@ describe('article media finalization', () => {
     )
   })
 
+  it('fills a quiz slot with its answer flag and drops one whose answer index misses', async () => {
+    vi.mocked(findStockImage).mockResolvedValue(null)
+    const object = (correct: number) => ({
+      ...draft(),
+      content: '<p>a</p>[[QUIZ1]]<p>b</p>',
+      images: [],
+      quizzes: [{ question: 'Kolik?', options: ['Jedna', 'Dvě "2"'], correct, explanation: ' Protože. ' }],
+    })
+
+    const quiz = load((await finalizeArticle(object(1))).content)('div[data-type="quiz"]')
+    expect(quiz.attr('data-question')).toBe('Kolik?')
+    expect(JSON.parse(quiz.attr('data-options')!)).toEqual([{ label: 'Jedna' }, { label: 'Dvě "2"', correct: true }])
+    expect(quiz.attr('data-explanation')).toBe('Protože.')
+
+    expect((await finalizeArticle(object(2))).content).toBe('<p>a</p><p>b</p>')
+  })
+
   it('embeds only an X post the research brief listed, and drops a slot it cannot fill', async () => {
     vi.mocked(findStockImage).mockResolvedValue(null)
     const fetchXPost = vi.fn(async (url: string) => ({

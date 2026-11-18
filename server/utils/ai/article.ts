@@ -5,6 +5,7 @@ import { generateText, Output, streamText } from 'ai'
 import { isAiAllowanceError } from '~~/shared/utils/aiAllowanceError'
 
 import { slotCounts } from './draftCut'
+import { repairArticleHtml } from './articleHtml'
 
 export const generateArticle = async (
   clientSiteId: string,
@@ -237,6 +238,7 @@ const reviseDraft = async (
   )
   tokens += rewritten.usage.totalTokens ?? 0
   rewritten.output.sources = filterResearchSources(rewritten.output.sources, groundingBrief)
+  rewritten.output.content = repairArticleHtml(rewritten.output.content)
   return { draft: rewritten.output, changes: undefined, mode: 'rewrite' as const, tokens }
 }
 
@@ -245,8 +247,11 @@ const reviseDraft = async (
  * revision fixed them, and if only removable specifics still block, delete them. Only a blocking finding
  * left after that holds the article.
  */
-const editorialPass = async (draft: ArticleObject, input: EditorialPassInput) => {
+const editorialPass = async (written: ArticleObject, input: EditorialPassInput) => {
   const { audit, context, abortSignal } = input
+  // The review and the reader both get sound markup, whichever step produced the defect.
+  const content = repairArticleHtml(written.content)
+  const draft = content === written.content ? written : { ...written, content }
   const first = await auditArticleStep(
     audit,
     'review',
@@ -548,7 +553,7 @@ export const streamArticle = async (
           ...config,
           prompt: `${prompt}
 
-Your previous answer was cut off after the article below. The article is final: do not rewrite it. Return only the remaining fields for exactly this text. It has ${slots.IMAGE} image, ${slots.POLL} poll, ${slots.VIDEO} video and ${slots.XPOST} X post slots; return exactly that many entries of each, in slot order.
+Your previous answer was cut off after the article below. The article is final: do not rewrite it. Return only the remaining fields for exactly this text. It has ${slots.IMAGE} image, ${slots.POLL} poll, ${slots.QUIZ} quiz, ${slots.VIDEO} video and ${slots.XPOST} X post slots; return exactly that many entries of each, in slot order.
 
 Title: ${body.title}
 Perex: ${body.perex}
@@ -578,6 +583,7 @@ ${body.content}`,
         coverImage: { type: 'photo' as const, query: body.title, broaderQuery: '' },
         images: [],
         polls: [],
+        quizzes: [],
         videos: [],
         xPosts: [],
         tags: [],

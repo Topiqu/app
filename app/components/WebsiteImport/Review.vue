@@ -43,6 +43,14 @@
             class="w-full"
           />
           <USelect
+            v-else-if="field === 'aiControversyLevel'"
+            :modelValue="draft.aiControversyLevel ?? undefined"
+            :items="controversyItems"
+            :aria-label="$t('common.websiteImport.fields.aiControversyLevel')"
+            :disabled="disabled || busy"
+            @update:modelValue="draft.aiControversyLevel = $event ?? null"
+          />
+          <USelect
             v-else-if="field === 'language'"
             :modelValue="draft.language ?? undefined"
             :items="languageItems"
@@ -132,6 +140,8 @@ const can = useTenantScope()
 const { t } = useI18n()
 const fields = WEBSITE_IMPORT_FIELDS
 const languageItems = computed(() => LANGUAGE_OPTIONS.map((value) => ({ value, label: t(`languages.${value}`) })))
+const controversyLabel = (level: ControversyLevel) => t(`common.preferences.aiAuthor.controversyLevel.options.${level}`)
+const controversyItems = computed(() => CONTROVERSY_LEVELS.map((value) => ({ value, label: controversyLabel(value) })))
 const available = computed(() =>
   fields.filter(
     (field) =>
@@ -154,6 +164,8 @@ const currentText = (field: WebsiteImportField) => {
   if (field === 'knowledge') return ''
   const value = job.current[field]
   if (JSON.stringify(value) === JSON.stringify(draft.value[field])) return ''
+  if (field === 'aiControversyLevel')
+    return job.current.aiControversyLevel ? controversyLabel(job.current.aiControversyLevel) : ''
   return Array.isArray(value)
     ? value
         .map((item) => (typeof item === 'string' ? item : item.url))

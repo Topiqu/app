@@ -157,6 +157,21 @@
     "xPost": {
       "media": "A publicação inclui uma foto ou um vídeo.",
       "view": "Ver no X"
+    },
+    "quiz": {
+      "label": "Quiz",
+      "yourAnswer": "A sua resposta",
+      "correctAnswer": "Resposta correta",
+      "correct": "Correto!",
+      "incorrect": "Não exatamente. A resposta correta é «{answer}».",
+      "correctShare": "{percent}% dos leitores acertaram",
+      "notOpenYet": "Poderá responder assim que o artigo for publicado."
+    },
+    "chart": {
+      "showData": "Mostrar os dados",
+      "series": "Série {n}",
+      "bar": "Gráfico de barras: {series}",
+      "line": "Gráfico de linhas: {series}, de {from} a {to}"
     }
   },
   "common": {

@@ -20,8 +20,8 @@ export const cutUnfinished = (html: string) => {
 
 /** The highest number of each slot kind the body uses, so the fields written after it can match them. */
 export const slotCounts = (html: string) => {
-  const counts = { IMAGE: 0, POLL: 0, VIDEO: 0, XPOST: 0 }
-  for (const [, kind, number] of html.matchAll(/\[\[(IMAGE|POLL|VIDEO|XPOST)(\d+)\]\]/g))
+  const counts = { IMAGE: 0, POLL: 0, QUIZ: 0, VIDEO: 0, XPOST: 0 }
+  for (const [, kind, number] of html.matchAll(/\[\[(IMAGE|POLL|QUIZ|VIDEO|XPOST)(\d+)\]\]/g))
     counts[kind as keyof typeof counts] = Math.max(counts[kind as keyof typeof counts], Number(number))
   return counts
 }
@@ -33,6 +33,7 @@ const TAIL_KEYS = [
   'coverImage',
   'images',
   'polls',
+  'quizzes',
   'videos',
   'xPosts',
   'tags',

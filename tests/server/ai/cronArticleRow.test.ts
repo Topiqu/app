@@ -16,7 +16,7 @@ describe('generate-article cron row', () => {
   })
 
   it('persists the citations through the linkable filter', () => {
-    expect(task).toMatch(/sources:\s*linkableSources\(generated\.sources\)/)
+    expect(task).toMatch(/sources:\s*linkableSources\(sources\)/)
   })
 
   // Without it a cron cover keeps its picture and loses the AI disclosure that goes under it.
@@ -66,8 +66,13 @@ describe('generate-article cron row', () => {
     expect(task).toContain('editorialReview: true')
     expect(task).toContain('generated.editorialTokens')
     expect(task).toContain('generated.editorialReview?.approved === true')
-    expect(task).toContain("generated.research?.status === 'completed'")
-    expect(task).toContain('generated.research?.sourceCount > 0')
+    expect(task).toContain('researchGrounded({')
+    expect(task).toContain("issue.key === 'verificationIncomplete'")
+    // A piece released on the fact check alone cites the URLs that check retrieved.
+    expect(task).toContain('supportedSourceUrls(review?.verification)')
+    expect(task).toContain('sources: linkableSources(sources)')
+    // Without a picked topic nothing is researched, so the fallback must not be a news piece the gate holds.
+    expect(task).toContain("topic?.format ?? 'analysis'")
     // An API article never auto-releases: it has no slot and is always a draft. Only a SPREAD batch item may.
     expect(task).toContain(
       'const autoRelease = (request ? batchItem?.autoRelease === true : client.autoRelease) && client.publishToWeb',

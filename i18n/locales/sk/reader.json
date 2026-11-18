@@ -157,6 +157,21 @@
     "xPost": {
       "media": "Príspevok obsahuje fotku alebo video.",
       "view": "Zobraziť na X"
+    },
+    "quiz": {
+      "label": "Kvíz",
+      "yourAnswer": "Vaša odpoveď",
+      "correctAnswer": "Správna odpoveď",
+      "correct": "Správne!",
+      "incorrect": "Tentoraz nie. Správna odpoveď je „{answer}“.",
+      "correctShare": "{percent} % čitateľov odpovedalo správne",
+      "notOpenYet": "Odpovedať bude možné po zverejnení článku."
+    },
+    "chart": {
+      "showData": "Zobraziť údaje",
+      "series": "Rad {n}",
+      "bar": "Stĺpcový graf: {series}",
+      "line": "Čiarový graf: {series}, {from} až {to}"
     }
   },
   "common": {

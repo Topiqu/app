@@ -8,6 +8,7 @@ export const WEBSITE_SITE_SELECT = {
   focus: true,
   audience: true,
   aiToneOfVoice: true,
+  aiControversyLevel: true,
   language: true,
   socials: { select: { platform: true, url: true } },
 } as const

@@ -7,6 +7,7 @@ import {
   clearOfAutopilot,
   recommendedArticleQuality,
   recommendedAutopilotInterval,
+  showsBatchNudge,
 } from '../../shared/utils/articleBatch'
 
 const HOUR = 3_600_000
@@ -137,5 +138,39 @@ describe('clearOfAutopilot', () => {
   it('leaves a distant slot alone', () => {
     expect(clearOfAutopilot(slot, new Date('2026-11-11T12:00:00.000Z'))).toBe(slot)
     expect(clearOfAutopilot(slot, null)).toBe(slot)
+  })
+})
+
+describe('showsBatchNudge', () => {
+  const credits = (free: number, atRolloverCap = false) => ({ free, monthlyAllowance: 100, atRolloverCap })
+
+  const month = '2026-11'
+
+  it('waits until a month of allowance piles up', () => {
+    expect(showsBatchNudge(credits(99), 'site', null, month)).toBe(false)
+    expect(showsBatchNudge(credits(100), 'site', null, month)).toBe(true)
+    expect(showsBatchNudge({ free: 5, monthlyAllowance: 0, atRolloverCap: false }, 'site', null, month)).toBe(false)
+  })
+
+  it('shows lapsing credits whatever the balance', () => {
+    expect(showsBatchNudge(credits(20, true), 'site', null, month)).toBe(true)
+  })
+
+  it('returns after a dismissal only when another month piles up or credits start to lapse', () => {
+    const dismissed = { site: 'site', free: 1430, capped: false, month }
+    expect(showsBatchNudge(credits(1529), 'site', dismissed, month)).toBe(false)
+    expect(showsBatchNudge(credits(1530), 'site', dismissed, month)).toBe(true)
+    expect(showsBatchNudge(credits(1430, true), 'site', dismissed, month)).toBe(true)
+    expect(showsBatchNudge(credits(1430, true), 'site', { ...dismissed, capped: true }, month)).toBe(false)
+  })
+
+  it('returns each month the balance stays at the cap', () => {
+    const dismissed = { site: 'site', free: 1430, capped: true, month }
+    expect(showsBatchNudge(credits(1430, true), 'site', dismissed, '2026-12')).toBe(true)
+    expect(showsBatchNudge(credits(1430, true), 'site', { site: 'site', free: 1430, capped: true }, month)).toBe(true)
+  })
+
+  it('ignores a dismissal made on another site', () => {
+    expect(showsBatchNudge(credits(1430), 'other', { site: 'site', free: 1430, capped: false }, month)).toBe(true)
   })
 })

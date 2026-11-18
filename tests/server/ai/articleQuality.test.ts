@@ -26,6 +26,7 @@ const {
   buildRevisionPrompt,
   editorialReviewSchema,
   onlyRemoves,
+  supportedSourceUrls,
   verdictLines,
 } = await import('../../../server/utils/ai/articleQuality')
 
@@ -104,6 +105,18 @@ describe('verification audit', () => {
     expect(verdictLines(text)).toContain('Pro costs 49 USD')
     expect(verdictLines('No verdicts here.')).toBeNull()
   })
+
+  it('takes release sources only from confirmed verdicts with a retrieved URL', () => {
+    const verdicts = [
+      '- **SUPPORTED** — EU AI Act applies from August 2026 — https://eur-lex.europa.eu/eli/reg/2024/1689 — 2024-07',
+      'SUPPORTED — Pro costs 49 USD — first-party knowledge — 2026-09',
+      'CONTRADICTED — release in 2025 — delayed to 2027 — https://example.com/news',
+      'UNSUPPORTED MATERIAL — "Ciri returns" — https://example.com/rumour',
+      'SUPPORTED — same act — https://eur-lex.europa.eu/eli/reg/2024/1689.',
+    ].join('\n')
+    expect(supportedSourceUrls([verdicts])).toEqual(['https://eur-lex.europa.eu/eli/reg/2024/1689'])
+    expect(supportedSourceUrls()).toEqual([])
+  })
 })
 
 describe('revision edits', () => {
@@ -147,6 +160,23 @@ describe('revision edits', () => {
     })
     expect(result).toMatchObject({ ok: true, draft: { videos: [video] } })
     if (result.ok) expect(result.draft.content).toContain('<h2>Pokuty</h2>[[VIDEO1]]')
+  })
+
+  // The eval caught this shipping: an insertion after a paragraph close came back as loose text repeating its anchor.
+  it('repairs an insertion that lands outside a block and repeats the sentence it follows', () => {
+    const result = applyRevisionEdits(article, {
+      ...none,
+      edits: [
+        {
+          find: '<p>Pokuta je až 2 mil. Kč.</p>',
+          replace: 'Pokuta je až 2 mil. Kč. U firem může být vyšší.',
+          insertAfter: true,
+        },
+      ],
+    })
+    expect(result.ok && result.draft.content).toBe(
+      '<h2>Pokuty</h2><p>Pokuta je až 2 mil. Kč.</p><p>U firem může být vyšší.</p><p>Úřad   může nařídit odstranění.</p>',
+    )
   })
 
   it('tolerates whitespace differences in a quoted excerpt', () => {

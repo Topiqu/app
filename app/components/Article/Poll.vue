@@ -25,12 +25,12 @@
           <UBadge v-if="selectedOption === opt.id" color="primary" variant="soft" size="xs">
             {{ $t('articles.poll.yourVote') }}
           </UBadge>
-          <span v-if="hasVoted" class="shrink-0 text-xs tabular-nums opacity-80">{{ getPercentage(opt.id) }}%</span>
+          <span v-if="hasVoted" class="shrink-0 text-xs tabular-nums opacity-80">{{ percentage(opt.id) }}%</span>
         </span>
       </UButton>
       <UProgress
         v-if="hasVoted"
-        :modelValue="getPercentage(opt.id)"
+        :modelValue="percentage(opt.id)"
         :max="100"
         :color="selectedOption === opt.id ? 'success' : 'neutral'"
         size="sm"
@@ -42,7 +42,7 @@
     </p>
     <div v-if="hasVoted" class="mt-4 flex items-center gap-1.5 text-sm text-muted" aria-live="polite">
       <UIcon name="mdi:account-group-outline" class="size-4" />
-      {{ `${getTotalVotes} ${$t('articles.votes').toLowerCase()}` }}
+      {{ `${totalVotes} ${$t('articles.votes').toLowerCase()}` }}
     </div>
   </div>
 </template>
@@ -54,73 +54,10 @@ const props = defineProps<{
   poll: { type: string; pollId: string; question: string; options: PollOptionData[] }
   articleId: string
 }>()
-// Vote counts keyed by optionId.
-const voteCounts = reactive<Record<string, number>>({})
-const hasVoted = shallowRef(false)
-const selectedOption = shallowRef<string | null>(null)
-// False while the article is a draft or scheduled: its admins see the poll, but it takes no votes.
-const open = shallowRef(true)
-const toast = useToast()
-const voting = shallowRef(false)
-const optimisticStatus = useOptimisticStatus()
 
-const fetchResults = async () => {
-  if (!props.articleId || !props.poll.pollId) return
-  try {
-    const res = await $fetch<
-      { pollResult: string | null; voteCounts: Record<string, number>; open?: boolean },
-      '/api/articles/:id/vote'
-    >(`/api/articles/${props.articleId}/vote?pollId=${props.poll.pollId}` as '/api/articles/:id/vote')
-    Object.assign(voteCounts, res.voteCounts || {})
-    hasVoted.value = !!res.pollResult
-    selectedOption.value = res.pollResult ? String(res.pollResult) : null
-    open.value = res.open !== false
-  } catch (e) {
-    console.error('Failed to fetch poll results:', e)
-  }
-}
-
-const getPercentage = (optionId?: string) => {
-  const totalVotes = Object.values(voteCounts).reduce((sum, count) => sum + count, 0)
-  const optionVotes = (optionId && voteCounts[optionId]) || 0
-  return totalVotes ? Math.round((optionVotes / totalVotes) * 100) : 0
-}
-
-const getTotalVotes = computed(() => Object.values(voteCounts).reduce((sum, count) => sum + count, 0))
-const replaceVoteCounts = (next: Record<string, number>) => {
-  for (const option of props.poll.options) if (option.id) voteCounts[option.id] = next[option.id] ?? 0
-}
-
-const vote = async (optionId?: string) => {
-  if (hasVoted.value || voting.value || !open.value || !optionId) return
-  const previousCounts = { ...voteCounts }
-  const previousSelection = selectedOption.value
-  const previousHasVoted = hasVoted.value
-  voting.value = true
-  hasVoted.value = true
-  selectedOption.value = optionId
-  voteCounts[optionId] = (voteCounts[optionId] ?? 0) + 1
-  optimisticStatus.saving()
-  try {
-    const res = await $fetch<{ pollResult: string; voteCounts: Record<string, number> }, '/api/articles/:id/vote'>(
-      `/api/articles/${props.articleId}/vote` as '/api/articles/:id/vote',
-      {
-        method: 'POST',
-        body: { pollId: props.poll.pollId, optionId },
-      },
-    )
-    replaceVoteCounts(res.voteCounts)
-    optimisticStatus.saved()
-  } catch (e: any) {
-    replaceVoteCounts(previousCounts)
-    hasVoted.value = previousHasVoted
-    selectedOption.value = previousSelection
-    optimisticStatus.reverted()
-    toast.add({ color: 'error', title: fetchErrorMessage(e, $t('common.messages.operationFailed')) })
-  } finally {
-    voting.value = false
-  }
-}
-
-onMounted(fetchResults)
+const { hasVoted, selectedOption, open, voting, totalVotes, percentage, vote } = usePollVotes({
+  articleId: () => props.articleId,
+  pollId: () => props.poll.pollId,
+  options: () => props.poll.options,
+})
 </script>

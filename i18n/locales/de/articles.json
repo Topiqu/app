@@ -528,7 +528,16 @@
         "removeLink": "Link entfernen",
         "removeColor": "Farbe entfernen",
         "characters": "Zeichen",
-        "words": "Wörter"
+        "words": "Wörter",
+        "insertQuiz": "Quiz einfügen",
+        "insertCta": "Handlungsaufforderung einfügen",
+        "insertCallout": "Hervorgehobener Kasten",
+        "insertProsCons": "Vor- und Nachteile",
+        "callout": "Hervorgehobener Kasten",
+        "chart": "Als Diagramm anzeigen",
+        "chartNone": "Nur Tabelle",
+        "chartBar": "Balkendiagramm",
+        "chartLine": "Liniendiagramm"
       },
       "altModal": {
         "title": "Bildbeschreibung",
@@ -604,7 +613,8 @@
           "poll": "Leserumfrage",
           "table": "Vergleichstabelle",
           "images": "Bilder im Artikel",
-          "youtube": "YouTube-Video"
+          "youtube": "YouTube-Video",
+          "quiz": "Leserquiz"
         },
         "phaseResearch": "Fakten werden geprüft und Quellen gesucht…",
         "phaseWriting": "Wird geschrieben…",
@@ -807,6 +817,7 @@
             "generic_language": "Allgemeine Formulierungen",
             "missing_specifics": "Fehlende Details",
             "assignment_mismatch": "Abweichung vom Auftrag",
+            "tone_mismatch": "Ton weicht ab",
             "broken_structure": "Fehlerhafte Struktur"
           },
           "note": {
@@ -1203,6 +1214,32 @@
           "cover": "Es fehlt ein Titelbild."
         },
         "publish": "Trotzdem veröffentlichen"
+      },
+      "callout": {
+        "note": "Hinweis",
+        "tip": "Tipp",
+        "warning": "Warnung",
+        "remove": "Kasten entfernen"
+      },
+      "cta": {
+        "card": "Handlungsaufforderung",
+        "title": "Überschrift",
+        "text": "Begleittext",
+        "label": "Button-Text",
+        "url": "Link",
+        "urlHint": "Eine https://-Adresse oder ein Pfad auf Ihrer Website, z. B. /kontakt",
+        "urlInvalid": "Geben Sie eine https://-Adresse oder einen Pfad mit / am Anfang ein. Ohne sie wird der Kasten nicht angezeigt.",
+        "tone": "Stil",
+        "tones": {
+          "accent": "Auffällig",
+          "info": "Dezent"
+        },
+        "defaultTitle": "Brauchen Sie dabei Hilfe?",
+        "defaultLabel": "Kontaktieren Sie uns"
+      },
+      "prosCons": {
+        "pros": "Vorteile",
+        "cons": "Nachteile"
       }
     },
     "image": {
@@ -1219,6 +1256,30 @@
     "authorsArticles": "Artikel dieses Autors",
     "tagsArticles": "Artikel mit dem Tag „{name}“",
     "keyTakeaways": "Das Wichtigste auf einen Blick",
-    "faq": "Häufig gestellte Fragen"
+    "faq": "Häufig gestellte Fragen",
+    "quiz": {
+      "label": "Quiz",
+      "yourAnswer": "Ihre Antwort",
+      "correctAnswer": "Richtige Antwort",
+      "correct": "Richtig!",
+      "incorrect": "Leider nicht. Richtig ist „{answer}“.",
+      "correctShare": "{percent} % der Leser haben richtig geantwortet",
+      "notOpenYet": "Antworten sind möglich, sobald der Artikel veröffentlicht ist.",
+      "defaultQuestion": "Quizfrage eingeben",
+      "question": "Quizfrage",
+      "delete": "Quiz löschen",
+      "options": "Antworten – markieren Sie die richtige",
+      "markCorrect": "Option {index} als richtige Antwort markieren",
+      "removeOption": "Option {index} entfernen",
+      "correctMissing": "Markieren Sie eine ausgefüllte Antwort als richtig, sonst lassen sich die Antworten nicht auswerten.",
+      "explanation": "Erklärung (optional)",
+      "explanationHelp": "Wird den Lesern nach ihrer Antwort angezeigt."
+    },
+    "chart": {
+      "showData": "Daten anzeigen",
+      "series": "Reihe {n}",
+      "bar": "Balkendiagramm: {series}",
+      "line": "Liniendiagramm: {series}, {from} bis {to}"
+    }
   }
 }

@@ -10,7 +10,7 @@ async function stubImports() {
 await stubImports()
 
 const { localPassagesRule, maskContentBlocks, rebuildContent } = await import('../../../server/utils/ai/translate')
-const { productCardHtml, xPostHtml } = await import('../../../shared/utils/articleEmbeds')
+const { ctaHtml, productCardHtml, xPostHtml } = await import('../../../shared/utils/articleEmbeds')
 
 const optionsAttr = (opts: Array<{ id: string; label: string }>) => JSON.stringify(opts).replace(/"/g, '&quot;')
 
@@ -183,3 +183,44 @@ describe('localPassagesRule', () => {
 })
 
 beforeEach(stubImports)
+
+describe('quizzes and calls to action', () => {
+  const quiz = `<div data-type="quiz" data-poll-id="quiz-1" data-question="Kolik?" data-options="${optionsAttr([
+    { id: 'q-a', label: 'Jedna' },
+    { id: 'q-b', label: 'Dvě', correct: true } as { id: string; label: string },
+  ])}" data-explanation="Protože dvě."></div>`
+  const cta = ctaHtml({ title: 'Poradíme', text: 'Ozvěte se.', label: 'Kontakt', url: '/kontakt', tone: 'info' })
+
+  it('sends only their texts to the model and restores ids, answer and link', () => {
+    const { masked, verbatim, polls, images, attrs, ctas } = maskContentBlocks(`<p>Úvod</p>${quiz}${cta}`)
+    expect(masked).toBe('<p>Úvod</p>[[POLLBLK_0]][[CTABLK_0]]')
+    expect(polls[0]).toMatchObject({ kind: 'quiz', explanation: 'Protože dvě.', question: 'Kolik?' })
+    expect(ctas).toEqual([{ title: 'Poradíme', text: 'Ozvěte se.', label: 'Kontakt', url: '/kontakt', tone: 'info' }])
+
+    const translatedPolls = [
+      {
+        ...polls[0]!,
+        question: 'How many?',
+        options: polls[0]!.options.map((o, i) => ({ ...o, label: ['One', 'Two'][i]! })),
+        explanation: 'Because two.',
+      },
+    ]
+    const translatedCtas = [{ ...ctas[0]!, title: 'We can help', text: 'Get in touch.', label: 'Contact' }]
+    const rebuilt = rebuildContent(masked, verbatim, translatedPolls, images, attrs, translatedCtas)
+
+    expect(rebuilt).toContain('data-type="quiz"')
+    expect(rebuilt).toContain('data-poll-id="quiz-1"')
+    expect(rebuilt).toContain(
+      '&quot;id&quot;:&quot;q-b&quot;,&quot;label&quot;:&quot;Two&quot;,&quot;correct&quot;:true',
+    )
+    expect(rebuilt).toContain('data-explanation="Because two."')
+    expect(rebuilt).toContain(
+      ctaHtml({ title: 'We can help', text: 'Get in touch.', label: 'Contact', url: '/kontakt', tone: 'info' }),
+    )
+  })
+
+  it('drops a CTA without a usable link instead of translating its fallback', () => {
+    const broken = ctaHtml({ title: 'T', text: '', label: 'L', url: 'http://x.test', tone: 'accent' })
+    expect(maskContentBlocks(`<p>a</p>${broken}`).masked).toBe('<p>a</p>')
+  })
+})
