@@ -56,7 +56,10 @@
             <p v-if="shopifyInstall" class="mt-1 text-sm text-muted">{{ $t('common.tenant.shopifyPlans') }}</p>
           </div>
 
-          <div class="grid gap-3 sm:grid-cols-3">
+          <div
+            class="grid grid-cols-1 gap-3"
+            :class="planOptions.length > 1 ? 'sm:grid-cols-2 lg:grid-cols-4' : undefined"
+          >
             <button
               v-for="plan in planOptions"
               :key="plan.value"
@@ -154,49 +157,16 @@
             </div>
           </UFormField>
 
-          <div>
-            <h3 class="font-semibold text-highlighted">{{ $t('common.tenant.theme') }}</h3>
-            <p class="mt-1 text-sm text-muted">{{ $t('common.tenant.themeDescription') }}</p>
-          </div>
-          <div class="grid grid-cols-5 gap-3 sm:grid-cols-8">
-            <UButton
-              v-for="theme in themes"
-              :key="theme"
-              type="button"
-              color="neutral"
-              variant="ghost"
-              class="relative mx-auto size-11 cursor-pointer rounded-xl border-2 shadow-sm transition-transform hover:scale-105 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary"
-              :class="
-                form.theme === theme
-                  ? 'border-white ring-3 ring-primary ring-offset-2 ring-offset-white dark:ring-offset-neutral-900'
-                  : 'border-transparent hover:border-neutral-300 dark:hover:border-neutral-600'
-              "
-              :style="{ backgroundColor: themeColors[theme] }"
-              :aria-label="
-                $t('common.actions.selectTheme', { theme: $t(`common.preferences.branding.colors.${theme}`) })
-              "
-              :aria-pressed="form.theme === theme"
-              @click="form.theme = theme"
-            >
-              <UIcon
-                v-if="form.theme === theme"
-                name="mdi:check-bold"
-                size="20"
-                class="pointer-events-none absolute inset-0 z-10 m-auto text-inverted drop-shadow-md"
-              />
-            </UButton>
-          </div>
-          <div class="flex items-center gap-3 rounded-xl border border-default bg-muted/50 p-4">
-            <span class="size-9 shrink-0 rounded-lg" :style="{ backgroundColor: themeColors[form.theme] }" />
-            <div>
-              <div class="text-sm font-semibold text-highlighted">
-                {{ form.name || $t('common.tenant.namePlaceholder') }}
-              </div>
-              <div class="text-xs text-muted">
-                {{ languageOptions.find((item) => item.value === form.language)?.label }}
-              </div>
-            </div>
-          </div>
+          <TenantAppearance
+            v-model:theme="form.theme"
+            v-model:accentColor="form.accentColor"
+            v-model:brandGradient="form.brandGradient"
+            v-model:typographyPreset="form.typographyPreset"
+            v-model:tagline="form.tagline"
+            :name="form.name"
+            :domain="selectedDomain"
+            :plan="agencyPlan || form.plan"
+          />
         </div>
 
         <div v-else-if="step === 2" class="space-y-5">
@@ -247,7 +217,13 @@
           />
 
           <UFormField :label="$t('common.tenant.name')">
-            <UInput v-model="form.name" autofocus :placeholder="$t('common.tenant.namePlaceholder')" class="w-full" />
+            <UInput
+              v-model="form.name"
+              autofocus
+              :maxlength="80"
+              :placeholder="$t('common.tenant.namePlaceholder')"
+              class="w-full"
+            />
           </UFormField>
 
           <UFormField :label="usesCustomDomain ? $t('common.tenant.customDomain') : $t('common.tenant.subdomain')">
@@ -366,6 +342,8 @@
 
 <script setup lang="ts">
 import type { AgencyBlogPlan } from '~~/shared/utils/agencyPlan'
+import type { BrandGradient } from '~~/shared/utils/publicationBranding'
+import type { PublicationTypography } from '~~/generated/zenstack/models'
 
 type Availability = 'idle' | 'checking' | 'available' | 'unavailable'
 type DomainReason = 'empty' | 'tooShort' | 'invalid' | 'reserved' | 'taken'
@@ -380,7 +358,6 @@ const { getSession } = useAuth()
 const toast = useToast()
 const config = useRuntimeConfig()
 const baseDomain = String(config.public.baseDomain || 'topiqu.com')
-const themes = ThemeSchema.options
 const billingIntervals: BillingInterval[] = ['month', 'year']
 const step = shallowRef(firstStep)
 const furthestStep = shallowRef(firstStep)
@@ -390,6 +367,10 @@ const form = reactive({
   customDomain: '',
   language: (isLanguage(locale.value) ? locale.value : 'en') as Language,
   theme: 'indigo' as ThemeKey,
+  accentColor: '',
+  brandGradient: null as BrandGradient | null,
+  typographyPreset: 'MODERN' as PublicationTypography,
+  tagline: '',
   plan: 'BASIC' as SelectedPlan,
   interval: 'month' as BillingInterval,
   domainType: 'SUBDOMAIN' as 'SUBDOMAIN' | 'CUSTOM',
@@ -504,15 +485,23 @@ const summaryRows = computed(() => [
   },
   {
     label: $t('common.tenant.theme'),
-    value: form.theme,
+    value: form.accentColor || $t(`common.preferences.branding.colors.${form.theme}`),
     icon: 'mdi:palette-outline',
-    swatch: themeColors[form.theme],
+    swatch: resolveBrandAccent(form.theme, form.accentColor),
   },
   {
     label: $t('common.tenant.steps.plan'),
     value: agencyPlan ? $t(`agency.plans.${agencyPlan}`) : form.plan,
     icon: 'mdi:crown-outline',
   },
+  {
+    label: $t('common.preferences.branding.typography'),
+    value: $t(`common.preferences.branding.${form.typographyPreset.toLowerCase()}`),
+    icon: 'mdi:format-font',
+  },
+  ...(form.tagline
+    ? [{ label: $t('common.preferences.branding.tagline'), value: form.tagline, icon: 'mdi:text' }]
+    : []),
 ])
 
 const slugify = (value: string) =>
@@ -588,6 +577,10 @@ watch(open, (value) => {
   form.customDomain = ''
   form.language = isLanguage(locale.value) ? locale.value : 'en'
   form.theme = 'indigo'
+  form.accentColor = ''
+  form.brandGradient = null
+  form.typographyPreset = 'MODERN'
+  form.tagline = ''
   form.plan = 'BASIC'
   form.interval = 'month'
   form.domainType = 'SUBDOMAIN'
@@ -644,6 +637,10 @@ const createTenant = async () => {
         selectedPlan: form.plan,
         language: form.language,
         theme: form.theme,
+        accentColor: form.accentColor,
+        brandGradient: form.brandGradient,
+        typographyPreset: form.typographyPreset,
+        tagline: form.tagline,
       },
     })
     created = true

@@ -183,7 +183,8 @@
     },
     "entry": {
       "prompt": "Managing blogs for clients?",
-      "action": "Set up an agency"
+      "action": "Set up an agency",
+      "singleBlog": "Create a single blog instead"
     }
   }
 }

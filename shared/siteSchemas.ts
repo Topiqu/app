@@ -35,3 +35,27 @@ export const THEME_OPTIONS = [
 export const LanguageSchema = z.enum(LANGUAGE_OPTIONS)
 export const UiLanguageSchema = z.enum(UI_LANGUAGE_OPTIONS)
 export const ThemeSchema = z.enum(THEME_OPTIONS)
+
+/** Appearance collected before a blog exists; font uploads belong to settings after creation. */
+export const BlogAppearanceSchema = z.object({
+  theme: ThemeSchema.optional(),
+  accentColor: z
+    .string()
+    .regex(/^#[0-9a-f]{6}$/i)
+    .or(z.literal(''))
+    .nullable()
+    .optional(),
+  brandGradient: z
+    .object({
+      colors: z
+        .array(z.string().regex(/^#[0-9a-f]{6}$/i))
+        .min(2)
+        .max(3),
+      angle: z.number().int().min(0).max(360),
+    })
+    .strict()
+    .nullable()
+    .optional(),
+  typographyPreset: z.enum(['MODERN', 'EDITORIAL', 'MAGAZINE', 'SYSTEM']).optional(),
+  tagline: z.string().trim().max(80).optional(),
+})

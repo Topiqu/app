@@ -183,7 +183,8 @@
     },
     "entry": {
       "prompt": "Spravujete blogy pro klienty?",
-      "action": "Založte agenturu"
+      "action": "Založte agenturu",
+      "singleBlog": "Vytvořit samostatný blog"
     }
   }
 }

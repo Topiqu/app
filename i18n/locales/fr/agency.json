@@ -183,7 +183,8 @@
     },
     "entry": {
       "prompt": "Vous gérez des blogs pour des clients ?",
-      "action": "Créer une agence"
+      "action": "Créer une agence",
+      "singleBlog": "Créer plutôt un seul blog"
     }
   }
 }

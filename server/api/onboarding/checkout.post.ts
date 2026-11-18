@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { randomBytes } from 'crypto'
+import { BlogAppearanceSchema } from '~~/shared/siteSchemas'
 import { landingMetaSignals, reportMetaSignUp } from '~~/server/utils/metaConversions'
 
 const LOGIN_TOKEN_TTL_MS = 30 * 60 * 1000
@@ -9,12 +10,7 @@ const schema = z.object({
   siteName: z.string().min(1).max(255),
   domain: z.string().min(1).max(253),
   domainType: z.enum(['SUBDOMAIN', 'CUSTOM']).default('SUBDOMAIN'),
-  theme: z.string().optional(),
-  // Branding chosen in the landing wizard; custom font files need the site to exist, so they are not accepted here.
-  accentColor: z.string().optional(),
-  brandGradient: z.unknown().optional(),
-  typographyPreset: z.enum(['MODERN', 'EDITORIAL', 'MAGAZINE', 'SYSTEM']).optional(),
-  tagline: z.string().trim().max(80).optional(),
+  ...BlogAppearanceSchema.shape,
   language: z.enum(LANGUAGE_OPTIONS),
   username: z.string().min(3).max(50),
   email: z.email(),
@@ -114,7 +110,7 @@ export default defineEventHandler(async (event) => {
             name: body.siteName,
             domain: fullSubdomain,
             language: body.language,
-            theme: (body.theme || 'blue') as any,
+            theme: body.theme || 'indigo',
             accentColor: normalizeAccentColor(body.accentColor),
             brandGradient: parseBrandGradient(body.brandGradient) ?? undefined,
             typographyPreset: body.typographyPreset ?? 'MODERN',

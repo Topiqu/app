@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { randomBytes } from 'node:crypto'
+import { BlogAppearanceSchema } from '~~/shared/siteSchemas'
 
 const schema = z.object({
   name: z.string().trim().min(1).max(80),
@@ -8,6 +9,7 @@ const schema = z.object({
   domainType: z.enum(['SUBDOMAIN', 'CUSTOM']).default('SUBDOMAIN'),
   selectedPlan: z.enum(['BASIC', 'PRO', 'PREMIUM', 'CUSTOM']).default('BASIC'),
   language: LanguageSchema,
+  ...BlogAppearanceSchema.shape,
   theme: z.enum(ThemeSchema.options).default('indigo'),
 })
 
@@ -71,6 +73,10 @@ export default defineEventHandler(async (event) => {
           domain,
           language: body.language,
           theme: body.theme,
+          accentColor: normalizeAccentColor(body.accentColor),
+          brandGradient: parseBrandGradient(body.brandGradient) ?? undefined,
+          typographyPreset: body.typographyPreset ?? 'MODERN',
+          tagline: body.tagline || null,
           plan: 'BASIC',
           ...domainVerificationDefaults(domain, randomBytes(24).toString('base64url'), baseDomain),
         },

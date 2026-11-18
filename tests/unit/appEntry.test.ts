@@ -66,4 +66,25 @@ describe('app entry routing', () => {
     await middleware({ query: { invitation: 'invite-token' } } as never, {} as never)
     expect(navigateTo).toHaveBeenCalledWith({ name: 'invitation-token', params: { token: 'invite-token' } })
   })
+
+  it('lets an onboarding handoff replace an older signed-in account instead of redirecting it away', async () => {
+    state.user = { role: 'admin' }
+    const { default: middleware } = await import('../../app/middleware/auth')
+    await middleware({ query: { created: 'true', token: 'new-account-one-time-token' } } as never, {} as never)
+    expect(navigateTo).not.toHaveBeenCalled()
+  })
+
+  it('lets a signed-in person explicitly register another account and see the identity warning', async () => {
+    state.user = { role: 'admin' }
+    const { default: middleware } = await import('../../app/middleware/auth')
+    await middleware({ query: { mode: 'register' } } as never, {} as never)
+    expect(navigateTo).not.toHaveBeenCalled()
+  })
+
+  it('keeps a tokenless registration recovery on sign-in instead of opening an older account', async () => {
+    state.user = { role: 'admin' }
+    const { default: middleware } = await import('../../app/middleware/auth')
+    await middleware({ query: { created: 'true' } } as never, {} as never)
+    expect(navigateTo).not.toHaveBeenCalled()
+  })
 })

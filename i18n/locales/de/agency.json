@@ -183,7 +183,8 @@
     },
     "entry": {
       "prompt": "Sie betreuen Blogs für Kunden?",
-      "action": "Agentur einrichten"
+      "action": "Agentur einrichten",
+      "singleBlog": "Stattdessen einen einzelnen Blog erstellen"
     }
   }
 }
