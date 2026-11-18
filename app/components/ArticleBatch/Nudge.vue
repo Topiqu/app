@@ -1,42 +1,54 @@
 <template>
   <UAlert
-    v-if="visible"
-    color="primary"
+    v-if="visible && data"
+    :color="data.credits.atRolloverCap ? 'warning' : 'primary'"
     variant="subtle"
     icon="mdi:star-four-points-outline"
-    :title="$t('articleBatch.nudge.title', { n: data!.credits.free })"
-    :description="$t('articleBatch.nudge.description')"
+    :title="$t('articleBatch.nudge.title', { n: number.format(data.credits.free) }, data.credits.free)"
+    :description="$t(data.credits.atRolloverCap ? 'articleBatch.nudge.capped' : 'articleBatch.nudge.description')"
     :actions="[
       {
         label: $t('articleBatch.nudge.action'),
-        color: 'primary',
+        color: data.credits.atRolloverCap ? 'warning' : 'primary',
         variant: 'solid',
         to: localePath({ name: 'admin-credits' }),
       },
     ]"
     close
-    @update:open="dismissed = true"
+    @update:open="dismiss"
   />
 </template>
 
 <script setup lang="ts">
-// One article a week beyond the autopilot is not worth interrupting anyone for.
-const MIN_FREE_CREDITS = 10
+import type { BatchNudgeDismissal } from '~~/shared/utils/articleBatch'
 
+const { locale } = useI18n()
 const localePath = useLocalePath()
 const can = useTenantScope()
 const { data } = useArticleBatchOverview()
-// Per month, so a dismissal does not hide credits that keep piling up.
-const dismissed = useLocalStorage(`article-batch-nudge:${new Date().toISOString().slice(0, 7)}`, false, {
-  // The article list is server-rendered: reading storage during hydration would mismatch.
-  initOnMounted: true,
+const number = computed(() => new Intl.NumberFormat(locale.value))
+const month = new Date().toISOString().slice(0, 7)
+// A cookie, not localStorage: the dashboard is server-rendered, and a dismissed nudge would flash until mount.
+const dismissed = useCookie<BatchNudgeDismissal | null>('article-batch-nudge', {
+  default: () => null,
+  maxAge: 60 * 60 * 24 * 365,
+  sameSite: 'lax',
 })
 const visible = computed(
   () =>
-    !dismissed.value &&
     can('ARTICLE_WRITE_OTHERS') &&
     data.value?.enabled === true &&
-    data.value.credits.free >= MIN_FREE_CREDITS &&
-    !['PROPOSED', 'ACTIVE'].includes(data.value.batch?.status ?? ''),
+    !['PROPOSED', 'ACTIVE'].includes(data.value.batch?.status ?? '') &&
+    showsBatchNudge(data.value.credits, data.value.clientSiteId, dismissed.value, month),
 )
+
+const dismiss = () => {
+  if (!data.value) return
+  dismissed.value = {
+    site: data.value.clientSiteId,
+    free: data.value.credits.free,
+    capped: data.value.credits.atRolloverCap,
+    month,
+  }
+}
 </script>

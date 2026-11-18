@@ -129,9 +129,10 @@
       }
     },
     "nudge": {
-      "title": "Vous avez {n} crédits libres",
-      "description": "Topiqu propose comment les utiliser. Il vous suffit d’approuver.",
-      "action": "Voir comment"
+      "title": "{n} crédit libre | {n} crédits libres",
+      "description": "Nous vous suggérons comment les utiliser.",
+      "capped": "Les crédits inutilisés ne sont plus reportés. Nous vous suggérons comment les utiliser.",
+      "action": "Voir"
     }
   }
 }

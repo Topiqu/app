@@ -129,8 +129,9 @@
       }
     },
     "nudge": {
-      "title": "Sie haben {n} freie Credits",
-      "description": "Topiqu schlägt vor, wie Sie sie nutzen können. Sie genehmigen nur noch.",
+      "title": "{n} freier Credit | {n} freie Credits",
+      "description": "Wir schlagen vor, wie Sie sie nutzen.",
+      "capped": "Ungenutzte Credits werden nicht mehr übertragen. Wir schlagen vor, wie Sie sie nutzen.",
       "action": "Ansehen"
     }
   }

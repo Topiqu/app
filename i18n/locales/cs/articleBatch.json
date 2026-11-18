@@ -129,9 +129,10 @@
       }
     },
     "nudge": {
-      "title": "Volné kredity k využití: {n}",
-      "description": "Topiqu vám navrhne, jak je využít. Vy jen schválíte.",
-      "action": "Podívat se"
+      "title": "{n} volný kredit | {n} volné kredity | {n} volných kreditů",
+      "description": "Navrhneme, jak je využít.",
+      "capped": "Nevyužité kredity se už nepřevádějí. Navrhneme, jak je využít.",
+      "action": "Zobrazit"
     }
   }
 }
