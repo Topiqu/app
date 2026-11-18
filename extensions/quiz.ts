@@ -1,8 +1,8 @@
 import { Node } from '@tiptap/core'
 import { VueNodeViewRenderer } from '@tiptap/vue-3'
+import { normalizeQuizOptions } from '~~/shared/utils/polls'
 
 import Quiz from './Quiz.vue'
-import { normalizeQuizOptions } from '../shared/utils/polls'
 
 const DEFAULT_QUESTION = 'Q1'
 

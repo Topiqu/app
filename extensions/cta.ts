@@ -1,8 +1,7 @@
 import type { DOMOutputSpec } from '@tiptap/pm/model'
+import type { ArticleCtaData } from '~~/shared/utils/articleEmbeds'
 
 import { Node } from '@tiptap/core'
-
-import type { ArticleCtaData } from '../shared/utils/articleEmbeds'
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {

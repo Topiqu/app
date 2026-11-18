@@ -88,9 +88,9 @@
 </template>
 
 <script setup lang="ts">
-import { nodeViewProps, NodeViewWrapper } from '@tiptap/vue-3'
+import type { PollOptionData } from '~~/shared/utils/polls'
 
-import type { PollOptionData } from '../shared/utils/polls'
+import { nodeViewProps, NodeViewWrapper } from '@tiptap/vue-3'
 
 // Read through `props.node` on every render: Tiptap swaps in a new node on undo, a content reload or
 // ids stamped on save, and a copy taken at setup kept showing (and writing back) the old options.
