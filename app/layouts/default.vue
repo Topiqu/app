@@ -16,7 +16,7 @@
           <WidgetSlot
             v-if="isPublicationSurface && footerVisible"
             name="FOOTER"
-            class="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8"
+            class="mx-auto w-full max-w-7xl px-4 pb-12 sm:px-6 lg:px-8"
           />
           <Footer v-if="shell !== 'dashboard'" />
         </div>
@@ -40,7 +40,7 @@
       <WidgetSlot
         v-if="isPublicationSurface && footerVisible"
         name="FOOTER"
-        class="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8"
+        class="mx-auto w-full max-w-7xl px-4 pb-12 sm:px-6 lg:px-8"
       />
       <Footer />
     </template>
